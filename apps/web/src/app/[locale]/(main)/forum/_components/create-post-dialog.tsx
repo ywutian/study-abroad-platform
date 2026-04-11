@@ -173,17 +173,12 @@ export function CreatePostDialog({
                 <Alert className="bg-amber-50 border-amber-200">
                   <ShieldAlert className="h-4 w-4 text-amber-600" />
                   <AlertDescription className="flex items-center justify-between text-amber-800">
-                    <span className="text-sm">
-                      {locale === 'zh'
-                        ? '论坛组队帖已切为 legacy 只读。请到 /teams 创建新的比赛组队卡。'
-                        : 'Legacy forum team posts are now read-only. Create new competition recruitment cards in /teams.'}
-                    </span>
+                    <span className="text-sm">{t('legacyTeamReadOnly')}</span>
                     <Link
                       href="/teams"
                       className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
                     >
-                      {locale === 'zh' ? '前往 /teams' : 'Open /teams'}{' '}
-                      <ArrowRight className="h-3 w-3" />
+                      {t('openTeams')} <ArrowRight className="h-3 w-3" />
                     </Link>
                   </AlertDescription>
                 </Alert>

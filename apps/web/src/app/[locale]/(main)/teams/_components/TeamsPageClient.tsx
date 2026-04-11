@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   resumeRoutes,
@@ -114,7 +114,6 @@ const DEFAULT_FORM: RecruitmentFormState = {
 
 export function TeamsPageClient() {
   const t = useTranslations('teams');
-  const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const authUserId = useAuthStore((state) => state.user?.id ?? null);
@@ -261,7 +260,7 @@ export function TeamsPageClient() {
         intentMode: form.intentMode,
       }),
     onSuccess: () => {
-      toast.success(locale === 'zh' ? '组队卡已创建' : 'Recruitment card created');
+      toast.success(t('recruitment.toast.cardCreated'));
       invalidateRecruitmentQueries();
       setTab('my-team');
     },
@@ -285,7 +284,7 @@ export function TeamsPageClient() {
         intentMode: form.intentMode,
       }),
     onSuccess: () => {
-      toast.success(locale === 'zh' ? '组队卡已更新' : 'Recruitment card updated');
+      toast.success(t('recruitment.toast.cardUpdated'));
       invalidateRecruitmentQueries();
     },
   });
@@ -293,7 +292,7 @@ export function TeamsPageClient() {
   const publishMutation = useMutation({
     mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentPublish(cardId)),
     onSuccess: () => {
-      toast.success(locale === 'zh' ? '组队卡已发布' : 'Recruitment card published');
+      toast.success(t('recruitment.toast.cardPublished'));
       invalidateRecruitmentQueries();
     },
   });
@@ -301,7 +300,7 @@ export function TeamsPageClient() {
   const closeMutation = useMutation({
     mutationFn: (cardId: string) => apiClient.post(teamRoutes.recruitmentClose(cardId)),
     onSuccess: () => {
-      toast.success(locale === 'zh' ? '组队卡已关闭' : 'Recruitment card closed');
+      toast.success(t('recruitment.toast.cardClosed'));
       invalidateRecruitmentQueries();
     },
   });
@@ -317,7 +316,7 @@ export function TeamsPageClient() {
         consentConfirmed,
       }),
     onSuccess: () => {
-      toast.success(locale === 'zh' ? '展示信息已更新' : 'Member display updated');
+      toast.success(t('recruitment.toast.displayUpdated'));
       invalidateRecruitmentQueries();
     },
   });
@@ -338,9 +337,7 @@ export function TeamsPageClient() {
     onSuccess: (data: { matched?: boolean; match?: { conversationId?: string | null } }) => {
       invalidateRecruitmentQueries();
       if (data?.matched) {
-        toast.success(
-          locale === 'zh' ? '互相右滑，已创建群聊' : 'It matched and opened a group chat'
-        );
+        toast.success(t('recruitment.toast.matched'));
       }
     },
   });
@@ -391,33 +388,25 @@ export function TeamsPageClient() {
     <PageContainer maxWidth="7xl">
       <PageHeader
         title={t('title')}
-        description={
-          locale === 'zh'
-            ? '比赛组队匹配与成队工作台'
-            : 'Competition recruitment matching workspace'
-        }
+        description={t('recruitment.description')}
         icon={Users}
         color="amber"
       />
 
       <Tabs value={tab} onValueChange={(value) => setTab(value as typeof tab)} className="mt-6">
         <TabsList className="grid w-full max-w-xl grid-cols-3">
-          <TabsTrigger value="match">{locale === 'zh' ? 'Match' : 'Match'}</TabsTrigger>
-          <TabsTrigger value="matches">{locale === 'zh' ? 'Matches' : 'Matches'}</TabsTrigger>
-          <TabsTrigger value="my-team">{locale === 'zh' ? 'My Team' : 'My Team'}</TabsTrigger>
+          <TabsTrigger value="match">{t('recruitment.tab.match')}</TabsTrigger>
+          <TabsTrigger value="matches">{t('recruitment.tab.matches')}</TabsTrigger>
+          <TabsTrigger value="my-team">{t('recruitment.tab.myTeam')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="match" className="mt-6">
           {!currentCard ? (
             <EmptyState
               type="teams"
-              title={
-                locale === 'zh'
-                  ? '先创建并发布一张组队卡'
-                  : 'Create and publish a recruitment card first'
-              }
+              title={t('recruitment.empty.noCard')}
               action={{
-                label: locale === 'zh' ? '前往 My Team' : 'Open My Team',
+                label: t('recruitment.tab.myTeam'),
                 onClick: () => setTab('my-team'),
               }}
             />
@@ -426,19 +415,15 @@ export function TeamsPageClient() {
               <Card className="overflow-hidden">
                 <div className="h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
                 <CardHeader>
-                  <CardTitle>{locale === 'zh' ? 'Swipe Deck' : 'Swipe Deck'}</CardTitle>
-                  <CardDescription>
-                    {locale === 'zh'
-                      ? '只会发同比赛同赛道且人数兼容的卡。'
-                      : 'Deck only includes compatible cards from the same competition track.'}
-                  </CardDescription>
+                  <CardTitle>{t('recruitment.swipeDeck.title')}</CardTitle>
+                  <CardDescription>{t('recruitment.swipeDeck.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {deckLoading ? (
                     <Skeleton className="h-[420px] w-full rounded-xl" />
                   ) : activeDeckCard ? (
                     <div className="space-y-4">
-                      <RecruitmentCardPreview card={activeDeckCard} locale={locale} />
+                      <RecruitmentCardPreview card={activeDeckCard} />
                       <div className="flex gap-3">
                         <Button
                           variant="outline"
@@ -453,7 +438,7 @@ export function TeamsPageClient() {
                           }
                         >
                           <X className="h-4 w-4" />
-                          {locale === 'zh' ? '左滑' : 'Pass'}
+                          {t('recruitment.swipeDeck.pass')}
                         </Button>
                         <Button
                           className="flex-1 gap-2 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600"
@@ -467,16 +452,16 @@ export function TeamsPageClient() {
                           }
                         >
                           <Heart className="h-4 w-4" />
-                          {locale === 'zh' ? '右滑' : 'Like'}
+                          {t('recruitment.swipeDeck.like')}
                         </Button>
                       </div>
                     </div>
                   ) : (
                     <EmptyState
                       type="teams"
-                      title={locale === 'zh' ? '当前牌堆为空' : 'Deck is empty'}
+                      title={t('recruitment.empty.deckEmpty')}
                       action={{
-                        label: locale === 'zh' ? '刷新' : 'Refresh',
+                        label: t('recruitment.refresh'),
                         onClick: () =>
                           queryClient.invalidateQueries({
                             queryKey: ['teams', 'recruitments', 'deck'],
@@ -489,10 +474,10 @@ export function TeamsPageClient() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>{locale === 'zh' ? '当前我的卡' : 'Current Card'}</CardTitle>
+                  <CardTitle>{t('recruitment.currentCard')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <RecruitmentCardPreview card={currentCard} locale={locale} compact />
+                  <RecruitmentCardPreview card={currentCard} compact />
                 </CardContent>
               </Card>
             </div>
@@ -509,9 +494,9 @@ export function TeamsPageClient() {
           ) : matches.length === 0 ? (
             <EmptyState
               type="teams"
-              title={locale === 'zh' ? '还没有新的匹配' : 'No matches yet'}
+              title={t('recruitment.empty.noMatches')}
               action={{
-                label: locale === 'zh' ? '去划卡' : 'Open deck',
+                label: t('recruitment.openDeck'),
                 onClick: () => setTab('match'),
               }}
             />
@@ -530,17 +515,13 @@ export function TeamsPageClient() {
                       </div>
                       <Badge variant="secondary">
                         {match.matchKind === 'TEAM_UP'
-                          ? locale === 'zh'
-                            ? '可组队'
-                            : 'Team up'
-                          : locale === 'zh'
-                            ? '交流'
-                            : 'Networking'}
+                          ? t('recruitment.matchKind.teamUp')
+                          : t('recruitment.matchKind.networking')}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <RecruitmentCardPreview card={match.otherCard} locale={locale} compact />
+                    <RecruitmentCardPreview card={match.otherCard} compact />
                     <div className="flex gap-3">
                       {match.conversationId && (
                         <Button
@@ -548,7 +529,7 @@ export function TeamsPageClient() {
                           onClick={() => router.push(`/chat?conversation=${match.conversationId}`)}
                         >
                           <MessageSquare className="h-4 w-4" />
-                          {locale === 'zh' ? '进入群聊' : 'Open chat'}
+                          {t('recruitment.openChat')}
                         </Button>
                       )}
                       {match.canInvite && match.otherCard.members.length > 0 && (
@@ -567,7 +548,7 @@ export function TeamsPageClient() {
                             })
                           }
                         >
-                          {locale === 'zh' ? '邀请对方入队' : 'Invite to my team'}
+                          {t('recruitment.inviteToTeam')}
                         </Button>
                       )}
                     </div>
@@ -638,14 +619,8 @@ export function TeamsPageClient() {
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardHeader>
-                <CardTitle>
-                  {locale === 'zh' ? '组队卡编辑器' : 'Recruitment Card Editor'}
-                </CardTitle>
-                <CardDescription>
-                  {locale === 'zh'
-                    ? '先选择 backing team；如果没有队伍，可以直接创建一张 solo card。'
-                    : 'Choose a backing team first. You can also create a solo card directly.'}
-                </CardDescription>
+                <CardTitle>{t('recruitment.editor.title')}</CardTitle>
+                <CardDescription>{t('recruitment.editor.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {myRecruitmentsLoading || contextsLoading ? (
@@ -653,14 +628,14 @@ export function TeamsPageClient() {
                 ) : (
                   <>
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={locale === 'zh' ? '绑定队伍' : 'Backing Team'}>
+                      <Field label={t('recruitment.field.backingTeam')}>
                         <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="new-solo">
-                              {locale === 'zh' ? '新建 Solo Team' : 'Create Solo Team'}
+                              {t('recruitment.field.createSoloTeam')}
                             </SelectItem>
                             {(myRecruitments?.items ?? []).map((item) => (
                               <SelectItem key={item.team.id} value={item.team.id}>
@@ -670,7 +645,7 @@ export function TeamsPageClient() {
                           </SelectContent>
                         </Select>
                       </Field>
-                      <Field label={locale === 'zh' ? '比赛赛道' : 'Competition Track'}>
+                      <Field label={t('recruitment.field.competitionTrack')}>
                         <Select
                           value={form.competitionTrackId}
                           onValueChange={(value) =>
@@ -678,9 +653,7 @@ export function TeamsPageClient() {
                           }
                         >
                           <SelectTrigger>
-                            <SelectValue
-                              placeholder={locale === 'zh' ? '选择赛道' : 'Select track'}
-                            />
+                            <SelectValue placeholder={t('recruitment.field.selectTrack')} />
                           </SelectTrigger>
                           <SelectContent>
                             {contextOptions.map((track) => (
@@ -695,82 +668,70 @@ export function TeamsPageClient() {
                     </div>
 
                     {selectedTeamId === 'new-solo' && (
-                      <Field label={locale === 'zh' ? 'Solo 队伍名' : 'Solo Team Name'}>
+                      <Field label={t('recruitment.field.soloTeamName')}>
                         <Input
                           value={form.teamName}
                           onChange={(event) =>
                             setForm((prev) => ({ ...prev, teamName: event.target.value }))
                           }
-                          placeholder={locale === 'zh' ? '默认会自动生成' : 'Optional'}
+                          placeholder={t('recruitment.field.soloTeamNamePlaceholder')}
                         />
                       </Field>
                     )}
 
-                    <Field label={locale === 'zh' ? '首屏摘要' : 'Headline'}>
+                    <Field label={t('recruitment.field.headline')}>
                       <Input
                         value={form.headline}
                         onChange={(event) =>
                           setForm((prev) => ({ ...prev, headline: event.target.value }))
                         }
-                        placeholder={
-                          locale === 'zh'
-                            ? '几秒内让对方知道你想做什么'
-                            : 'Make the value proposition obvious in seconds'
-                        }
+                        placeholder={t('recruitment.field.headlinePlaceholder')}
                       />
                     </Field>
 
-                    <Field label={locale === 'zh' ? '详细说明' : 'Detail Note'}>
+                    <Field label={t('recruitment.field.detailNote')}>
                       <Textarea
                         value={form.detailNote}
                         onChange={(event) =>
                           setForm((prev) => ({ ...prev, detailNote: event.target.value }))
                         }
                         rows={5}
-                        placeholder={
-                          locale === 'zh'
-                            ? '补充赛题理解、协作方式、亮点经历'
-                            : 'Add context, working style, and highlight experience'
-                        }
+                        placeholder={t('recruitment.field.detailNotePlaceholder')}
                       />
                     </Field>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Field label={locale === 'zh' ? '我能提供' : 'Offer Roles'}>
+                      <Field label={t('recruitment.field.offerRoles')}>
                         <Input
                           value={form.offerRoles}
                           onChange={(event) =>
                             setForm((prev) => ({ ...prev, offerRoles: event.target.value }))
                           }
-                          placeholder={
-                            locale === 'zh' ? '建模, 编程, 答辩' : 'Modeling, Coding, Pitching'
-                          }
+                          placeholder={t('recruitment.field.offerRolesPlaceholder')}
                         />
                       </Field>
-                      <Field label={locale === 'zh' ? '我需要' : 'Need Roles'}>
+                      <Field label={t('recruitment.field.needRoles')}>
                         <Input
                           value={form.needRoles}
                           onChange={(event) =>
                             setForm((prev) => ({ ...prev, needRoles: event.target.value }))
                           }
-                          placeholder={locale === 'zh' ? '文案, 设计, PM' : 'Writing, Design, PM'}
+                          placeholder={t('recruitment.field.needRolesPlaceholder')}
                         />
                       </Field>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-3">
-                      <Field label={locale === 'zh' ? '技能标签' : 'Skill Tags'}>
+                      <Field label={t('recruitment.field.skillTags')}>
                         <Input
                           value={form.skillTags}
                           onChange={(event) =>
                             setForm((prev) => ({ ...prev, skillTags: event.target.value }))
                           }
-                          placeholder={
-                            locale === 'zh' ? 'Python, Latex, Figma' : 'Python, Latex, Figma'
-                          }
+                          placeholder={t('recruitment.field.skillTagsPlaceholder')}
                         />
                       </Field>
-                      <Field label={locale === 'zh' ? '目标人数' : 'Target Size'}>
+                      <Field label={t('recruitment.field.targetSize')}>
                         <Input
                           value={form.targetTeamSize}
                           onChange={(event) =>
@@ -780,7 +741,7 @@ export function TeamsPageClient() {
                           min={2}
                         />
                       </Field>
-                      <Field label={locale === 'zh' ? '模式' : 'Intent'}>
+                      <Field label={t('recruitment.field.intent')}>
                         <Select
                           value={form.intentMode}
                           onValueChange={(value: 'TEAM_UP' | 'NETWORKING_ONLY') =>
@@ -792,10 +753,10 @@ export function TeamsPageClient() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="TEAM_UP">
-                              {locale === 'zh' ? '正式组队' : 'Team up'}
+                              {t('recruitment.intentMode.teamUp')}
                             </SelectItem>
                             <SelectItem value="NETWORKING_ONLY">
-                              {locale === 'zh' ? '仅交流' : 'Networking only'}
+                              {t('recruitment.intentMode.networkingOnly')}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -803,7 +764,7 @@ export function TeamsPageClient() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-4">
-                      <Field label={locale === 'zh' ? '投入' : 'Availability'}>
+                      <Field label={t('recruitment.field.availability')}>
                         <Select
                           value={form.availabilityBand || 'none'}
                           onValueChange={(value) =>
@@ -817,19 +778,17 @@ export function TeamsPageClient() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">
-                              {locale === 'zh' ? '未设置' : 'Unset'}
-                            </SelectItem>
+                            <SelectItem value="none">{t('recruitment.option.unset')}</SelectItem>
                             <SelectItem value="LESS_THAN_5_HOURS">{'<5h'}</SelectItem>
                             <SelectItem value="FIVE_TO_TEN_HOURS">{'5-10h'}</SelectItem>
                             <SelectItem value="TEN_PLUS_HOURS">{'10h+'}</SelectItem>
                             <SelectItem value="WEEKENDS_ONLY">
-                              {locale === 'zh' ? '仅周末' : 'Weekends only'}
+                              {t('recruitment.option.weekendsOnly')}
                             </SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
-                      <Field label={locale === 'zh' ? '协作方式' : 'Mode'}>
+                      <Field label={t('recruitment.field.collaborationMode')}>
                         <Select
                           value={form.collaborationMode || 'none'}
                           onValueChange={(value) =>
@@ -843,18 +802,12 @@ export function TeamsPageClient() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">
-                              {locale === 'zh' ? '未设置' : 'Unset'}
-                            </SelectItem>
-                            <SelectItem value="ONLINE">
-                              {locale === 'zh' ? '线上' : 'Online'}
-                            </SelectItem>
+                            <SelectItem value="none">{t('recruitment.option.unset')}</SelectItem>
+                            <SelectItem value="ONLINE">{t('recruitment.option.online')}</SelectItem>
                             <SelectItem value="OFFLINE">
-                              {locale === 'zh' ? '线下' : 'Offline'}
+                              {t('recruitment.option.offline')}
                             </SelectItem>
-                            <SelectItem value="HYBRID">
-                              {locale === 'zh' ? '混合' : 'Hybrid'}
-                            </SelectItem>
+                            <SelectItem value="HYBRID">{t('recruitment.option.hybrid')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </Field>
@@ -867,26 +820,24 @@ export function TeamsPageClient() {
                           placeholder="UTC+8"
                         />
                       </Field>
-                      <Field label={locale === 'zh' ? '城市' : 'City'}>
+                      <Field label={t('recruitment.field.city')}>
                         <Input
                           value={form.city}
                           onChange={(event) =>
                             setForm((prev) => ({ ...prev, city: event.target.value }))
                           }
-                          placeholder={
-                            locale === 'zh' ? '北京 / 上海 / Remote' : 'SF / NYC / Remote'
-                          }
+                          placeholder={t('recruitment.field.cityPlaceholder')}
                         />
                       </Field>
                     </div>
 
-                    <Field label={locale === 'zh' ? '语言' : 'Languages'}>
+                    <Field label={t('recruitment.field.languages')}>
                       <Input
                         value={form.languages}
                         onChange={(event) =>
                           setForm((prev) => ({ ...prev, languages: event.target.value }))
                         }
-                        placeholder={locale === 'zh' ? '中文, English' : 'English, 中文'}
+                        placeholder={t('recruitment.field.languagesPlaceholder')}
                       />
                     </Field>
 
@@ -905,12 +856,8 @@ export function TeamsPageClient() {
                         }
                       >
                         {currentCard
-                          ? locale === 'zh'
-                            ? '保存组队卡'
-                            : 'Save card'
-                          : locale === 'zh'
-                            ? '创建组队卡'
-                            : 'Create card'}
+                          ? t('recruitment.action.saveCard')
+                          : t('recruitment.action.createCard')}
                       </Button>
                       {currentCard && (
                         <>
@@ -919,19 +866,19 @@ export function TeamsPageClient() {
                             disabled={publishMutation.isPending}
                             onClick={() => publishMutation.mutate(currentCard.id)}
                           >
-                            {locale === 'zh' ? '发布' : 'Publish'}
+                            {t('recruitment.action.publish')}
                           </Button>
                           <Button
                             variant="outline"
                             disabled={closeMutation.isPending}
                             onClick={() => closeMutation.mutate(currentCard.id)}
                           >
-                            {locale === 'zh' ? '关闭' : 'Close'}
+                            {t('recruitment.action.close')}
                           </Button>
                         </>
                       )}
                       <Button variant="outline" onClick={() => router.push('/teams/create')}>
-                        {locale === 'zh' ? '传统 Team 设置页' : 'Open legacy team settings'}
+                        {t('recruitment.action.legacySettings')}
                       </Button>
                     </div>
                   </>
@@ -942,29 +889,23 @@ export function TeamsPageClient() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{locale === 'zh' ? '我的展示信息' : 'My Display Settings'}</CardTitle>
-                  <CardDescription>
-                    {locale === 'zh'
-                      ? '发布前每个成员都要确认自己的展示配置。'
-                      : 'Every member has to confirm their own display settings before publish.'}
-                  </CardDescription>
+                  <CardTitle>{t('recruitment.display.title')}</CardTitle>
+                  <CardDescription>{t('recruitment.display.description')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Field label={locale === 'zh' ? '一句话介绍' : 'Intro Line'}>
+                  <Field label={t('recruitment.display.introLine')}>
                     <Input
                       value={introLine}
                       onChange={(event) => setIntroLine(event.target.value)}
                     />
                   </Field>
-                  <Field label={locale === 'zh' ? '展示简历' : 'Selected Resume'}>
+                  <Field label={t('recruitment.display.selectedResume')}>
                     <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">
-                          {locale === 'zh' ? '不展示简历' : 'No resume'}
-                        </SelectItem>
+                        <SelectItem value="none">{t('recruitment.display.noResume')}</SelectItem>
                         {resumes.map((resume) => (
                           <SelectItem key={resume.id} value={resume.id}>
                             {resume.title}
@@ -978,19 +919,19 @@ export function TeamsPageClient() {
                       active={showSchool}
                       onClick={() => setShowSchool((value) => !value)}
                       icon={ShieldCheck}
-                      label={locale === 'zh' ? '展示学校' : 'Show school'}
+                      label={t('recruitment.display.showSchool')}
                     />
                     <ToggleBadge
                       active={showGrade}
                       onClick={() => setShowGrade((value) => !value)}
                       icon={Clock3}
-                      label={locale === 'zh' ? '展示年级' : 'Show grade'}
+                      label={t('recruitment.display.showGrade')}
                     />
                     <ToggleBadge
                       active={showAwards}
                       onClick={() => setShowAwards((value) => !value)}
                       icon={Sparkles}
-                      label={locale === 'zh' ? '展示奖项' : 'Show awards'}
+                      label={t('recruitment.display.showAwards')}
                     />
                   </div>
                   <div className="flex gap-3">
@@ -999,13 +940,13 @@ export function TeamsPageClient() {
                       disabled={!currentCard || memberProfileMutation.isPending}
                       onClick={() => memberProfileMutation.mutate(false)}
                     >
-                      {locale === 'zh' ? '仅保存' : 'Save'}
+                      {t('recruitment.display.save')}
                     </Button>
                     <Button
                       disabled={!currentCard || memberProfileMutation.isPending}
                       onClick={() => memberProfileMutation.mutate(true)}
                     >
-                      {locale === 'zh' ? '确认并同意展示' : 'Confirm consent'}
+                      {t('recruitment.display.confirmConsent')}
                     </Button>
                   </div>
                 </CardContent>
@@ -1013,18 +954,13 @@ export function TeamsPageClient() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>
-                    {locale === 'zh' ? '当前卡片概览' : 'Current Card Overview'}
-                  </CardTitle>
+                  <CardTitle>{t('recruitment.currentCardOverview')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {currentCard ? (
-                    <RecruitmentCardPreview card={currentCard} locale={locale} />
+                    <RecruitmentCardPreview card={currentCard} />
                   ) : (
-                    <EmptyState
-                      type="teams"
-                      title={locale === 'zh' ? '还没有组队卡' : 'No recruitment card yet'}
-                    />
+                    <EmptyState type="teams" title={t('recruitment.empty.noCardYet')} />
                   )}
                 </CardContent>
               </Card>
@@ -1038,13 +974,12 @@ export function TeamsPageClient() {
 
 function RecruitmentCardPreview({
   card,
-  locale,
   compact = false,
 }: {
   card: TeamRecruitmentCardFrontDto;
-  locale: string;
   compact?: boolean;
 }) {
+  const t = useTranslations('teams');
   return (
     <div
       className={`rounded-2xl border bg-gradient-to-br from-background to-amber-50/70 dark:to-amber-950/30 p-5 ${compact ? 'space-y-3' : 'space-y-4'}`}
@@ -1070,13 +1005,13 @@ function RecruitmentCardPreview({
         {card.timezone && <Badge variant="outline">{card.timezone}</Badge>}
       </div>
 
-      <CardBlock title={locale === 'zh' ? '我能提供' : 'Offer'} items={card.offerRoles} />
-      <CardBlock title={locale === 'zh' ? '我需要' : 'Need'} items={card.needRoles} />
-      <CardBlock title={locale === 'zh' ? '技能' : 'Skills'} items={card.skillTags} />
+      <CardBlock title={t('recruitment.card.offer')} items={card.offerRoles} />
+      <CardBlock title={t('recruitment.card.need')} items={card.needRoles} />
+      <CardBlock title={t('recruitment.card.skills')} items={card.skillTags} />
 
       {!compact && card.members.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">{locale === 'zh' ? '成员摘要' : 'Members'}</p>
+          <p className="text-sm font-medium">{t('recruitment.card.members')}</p>
           <div className="grid gap-2">
             {card.members.map((member) => (
               <div key={member.userId} className="rounded-xl border bg-background/70 p-3">
@@ -1088,7 +1023,7 @@ function RecruitmentCardPreview({
                     </p>
                   </div>
                   {member.consentConfirmedAt && (
-                    <Badge variant="secondary">{locale === 'zh' ? '已确认' : 'Confirmed'}</Badge>
+                    <Badge variant="secondary">{t('recruitment.card.confirmed')}</Badge>
                   )}
                 </div>
               </div>

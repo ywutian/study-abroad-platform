@@ -275,9 +275,7 @@ export function PostDetailDialog({
                       </div>
                       <div className="space-y-2">
                         <div className="rounded-lg border border-amber-200 bg-white/70 p-3 text-sm text-amber-900">
-                          {locale === 'zh'
-                            ? '论坛组队帖已切为 legacy 只读，历史内容可看但不能再申请加入。请到 /teams 发起新的比赛组队匹配。'
-                            : 'Legacy forum team posts are now read-only. Historical content stays visible, but new applications are disabled. Use /teams for live competition matching.'}
+                          {t('legacyTeamHistorical')}
                         </div>
                         <Button
                           variant="outline"
@@ -285,7 +283,7 @@ export function PostDetailDialog({
                             window.location.href = '/teams';
                           }}
                         >
-                          {locale === 'zh' ? '前往 /teams' : 'Open /teams'}
+                          {t('openTeams')}
                         </Button>
                       </div>
                     </CardContent>

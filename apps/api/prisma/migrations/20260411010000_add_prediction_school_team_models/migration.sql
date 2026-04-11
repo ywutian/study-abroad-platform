@@ -577,3 +577,65 @@ ALTER TABLE "TeamMatch" ADD CONSTRAINT "TeamMatch_conversationId_fkey" FOREIGN K
 
 -- PredictionOutcomeLabelRecord
 ALTER TABLE "PredictionOutcomeLabelRecord" ADD CONSTRAINT "PredictionOutcomeLabelRecord_predictionResultId_fkey" FOREIGN KEY ("predictionResultId") REFERENCES "PredictionResult"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ============================================
+-- AlterTable: Message — add new columns
+-- ============================================
+
+ALTER TABLE "Message" ADD COLUMN IF NOT EXISTS "isSystem" BOOLEAN NOT NULL DEFAULT false;
+
+-- ============================================
+-- AlterTable: PredictionResult — add new columns
+-- ============================================
+
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "policyVersionId" TEXT;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "predictionModelId" TEXT;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "servedTrace" JSONB;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "sourceSummary" JSONB;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "uncertaintyReasons" JSONB;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "confidenceReason" TEXT;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "applicationRound" TEXT;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "applicationYear" INTEGER;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "cohortKey" TEXT;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "selectivityBand" TEXT;
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "outcomeLabel" "PredictionOutcomeLabel";
+ALTER TABLE "PredictionResult" ADD COLUMN IF NOT EXISTS "outcomeLabeledAt" TIMESTAMP(3);
+
+-- PredictionResult indexes on new columns
+CREATE INDEX IF NOT EXISTS "PredictionResult_policyVersionId_idx" ON "PredictionResult"("policyVersionId");
+CREATE INDEX IF NOT EXISTS "PredictionResult_predictionModelId_idx" ON "PredictionResult"("predictionModelId");
+CREATE INDEX IF NOT EXISTS "PredictionResult_outcomeLabel_idx" ON "PredictionResult"("outcomeLabel");
+CREATE INDEX IF NOT EXISTS "PredictionResult_applicationRound_applicationYear_idx" ON "PredictionResult"("applicationRound", "applicationYear");
+CREATE INDEX IF NOT EXISTS "PredictionResult_cohortKey_idx" ON "PredictionResult"("cohortKey");
+
+-- PredictionResult foreign keys on new columns
+ALTER TABLE "PredictionResult" ADD CONSTRAINT "PredictionResult_policyVersionId_fkey" FOREIGN KEY ("policyVersionId") REFERENCES "PredictionPolicyVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PredictionResult" ADD CONSTRAINT "PredictionResult_predictionModelId_fkey" FOREIGN KEY ("predictionModelId") REFERENCES "PredictionModel"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- ============================================
+-- AlterTable: PredictionSnapshot — add new columns
+-- ============================================
+
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "policyVersionId" TEXT;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "predictionModelId" TEXT;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "servedTrace" JSONB;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "sourceSummary" JSONB;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "uncertaintyReasons" JSONB;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "confidenceReason" TEXT;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "applicationRound" TEXT;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "applicationYear" INTEGER;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "cohortKey" TEXT;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "selectivityBand" TEXT;
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "outcomeLabel" "PredictionOutcomeLabel";
+ALTER TABLE "PredictionSnapshot" ADD COLUMN IF NOT EXISTS "outcomeLabeledAt" TIMESTAMP(3);
+
+-- PredictionSnapshot indexes on new columns
+CREATE INDEX IF NOT EXISTS "PredictionSnapshot_policyVersionId_idx" ON "PredictionSnapshot"("policyVersionId");
+CREATE INDEX IF NOT EXISTS "PredictionSnapshot_predictionModelId_idx" ON "PredictionSnapshot"("predictionModelId");
+CREATE INDEX IF NOT EXISTS "PredictionSnapshot_outcomeLabel_idx" ON "PredictionSnapshot"("outcomeLabel");
+CREATE INDEX IF NOT EXISTS "PredictionSnapshot_applicationRound_applicationYear_idx" ON "PredictionSnapshot"("applicationRound", "applicationYear");
+CREATE INDEX IF NOT EXISTS "PredictionSnapshot_cohortKey_idx" ON "PredictionSnapshot"("cohortKey");
+
+-- PredictionSnapshot foreign keys on new columns
+ALTER TABLE "PredictionSnapshot" ADD CONSTRAINT "PredictionSnapshot_policyVersionId_fkey" FOREIGN KEY ("policyVersionId") REFERENCES "PredictionPolicyVersion"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PredictionSnapshot" ADD CONSTRAINT "PredictionSnapshot_predictionModelId_fkey" FOREIGN KEY ("predictionModelId") REFERENCES "PredictionModel"("id") ON DELETE SET NULL ON UPDATE CASCADE;

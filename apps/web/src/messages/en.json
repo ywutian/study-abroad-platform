@@ -5105,7 +5105,10 @@
       "askQuestionPrompt": "I'd like to ask a question about studying abroad:",
       "essayHelp": "Essay Help",
       "essayHelpPrompt": "I'm working on my essay and not sure what angle to take. Please give me some suggestions or point me to good essay writing posts on the forum."
-    }
+    },
+    "legacyTeamReadOnly": "Legacy forum team posts are now read-only. Create new competition recruitment cards in /teams.",
+    "legacyTeamHistorical": "Legacy forum team posts are now read-only. Historical content stays visible, but new applications are disabled. Use /teams for live competition matching.",
+    "openTeams": "Open /teams"
   },
   "teams": {
     "title": "Teams",
@@ -5228,6 +5231,111 @@
       "public": "Public",
       "unlisted": "Unlisted",
       "private": "Private"
+    },
+    "recruitment": {
+      "description": "Competition recruitment matching workspace",
+      "tab": {
+        "match": "Match",
+        "matches": "Matches",
+        "myTeam": "My Team"
+      },
+      "swipeDeck": {
+        "title": "Swipe Deck",
+        "description": "Deck only includes compatible cards from the same competition track.",
+        "pass": "Pass",
+        "like": "Like"
+      },
+      "currentCard": "Current Card",
+      "currentCardOverview": "Current Card Overview",
+      "refresh": "Refresh",
+      "openDeck": "Open deck",
+      "openChat": "Open chat",
+      "inviteToTeam": "Invite to my team",
+      "matchKind": {
+        "teamUp": "Team up",
+        "networking": "Networking"
+      },
+      "empty": {
+        "noCard": "Create and publish a recruitment card first",
+        "deckEmpty": "Deck is empty",
+        "noMatches": "No matches yet",
+        "noCardYet": "No recruitment card yet"
+      },
+      "editor": {
+        "title": "Recruitment Card Editor",
+        "description": "Choose a backing team first. You can also create a solo card directly."
+      },
+      "field": {
+        "backingTeam": "Backing Team",
+        "createSoloTeam": "Create Solo Team",
+        "competitionTrack": "Competition Track",
+        "selectTrack": "Select track",
+        "soloTeamName": "Solo Team Name",
+        "soloTeamNamePlaceholder": "Optional",
+        "headline": "Headline",
+        "headlinePlaceholder": "Make the value proposition obvious in seconds",
+        "detailNote": "Detail Note",
+        "detailNotePlaceholder": "Add context, working style, and highlight experience",
+        "offerRoles": "Offer Roles",
+        "offerRolesPlaceholder": "Modeling, Coding, Pitching",
+        "needRoles": "Need Roles",
+        "needRolesPlaceholder": "Writing, Design, PM",
+        "skillTags": "Skill Tags",
+        "skillTagsPlaceholder": "Python, Latex, Figma",
+        "targetSize": "Target Size",
+        "intent": "Intent",
+        "availability": "Availability",
+        "collaborationMode": "Mode",
+        "city": "City",
+        "cityPlaceholder": "SF / NYC / Remote",
+        "languages": "Languages",
+        "languagesPlaceholder": "English, Chinese"
+      },
+      "intentMode": {
+        "teamUp": "Team up",
+        "networkingOnly": "Networking only"
+      },
+      "option": {
+        "unset": "Unset",
+        "weekendsOnly": "Weekends only",
+        "online": "Online",
+        "offline": "Offline",
+        "hybrid": "Hybrid"
+      },
+      "action": {
+        "saveCard": "Save card",
+        "createCard": "Create card",
+        "publish": "Publish",
+        "close": "Close",
+        "legacySettings": "Open legacy team settings"
+      },
+      "display": {
+        "title": "My Display Settings",
+        "description": "Every member has to confirm their own display settings before publish.",
+        "introLine": "Intro Line",
+        "selectedResume": "Selected Resume",
+        "noResume": "No resume",
+        "showSchool": "Show school",
+        "showGrade": "Show grade",
+        "showAwards": "Show awards",
+        "save": "Save",
+        "confirmConsent": "Confirm consent"
+      },
+      "card": {
+        "offer": "Offer",
+        "need": "Need",
+        "skills": "Skills",
+        "members": "Members",
+        "confirmed": "Confirmed"
+      },
+      "toast": {
+        "cardCreated": "Recruitment card created",
+        "cardUpdated": "Recruitment card updated",
+        "cardPublished": "Recruitment card published",
+        "cardClosed": "Recruitment card closed",
+        "displayUpdated": "Member display updated",
+        "matched": "It matched and opened a group chat"
+      }
     }
   },
   "points": {
