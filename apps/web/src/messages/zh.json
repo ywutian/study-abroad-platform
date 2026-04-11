@@ -5230,12 +5230,12 @@
     "recruitment": {
       "description": "比赛组队匹配与成队工作台",
       "tab": {
-        "match": "Match",
-        "matches": "Matches",
-        "myTeam": "My Team"
+        "match": "匹配",
+        "matches": "已匹配",
+        "myTeam": "我的队伍"
       },
       "swipeDeck": {
-        "title": "Swipe Deck",
+        "title": "划卡匹配",
         "description": "只会发同比赛同赛道且人数兼容的卡。",
         "pass": "左滑",
         "like": "右滑"
@@ -5258,14 +5258,14 @@
       },
       "editor": {
         "title": "组队卡编辑器",
-        "description": "先选择 backing team；如果没有队伍，可以直接创建一张 solo card。"
+        "description": "先选择关联队伍；如果没有队伍，可以直接创建一张个人卡。"
       },
       "field": {
         "backingTeam": "绑定队伍",
-        "createSoloTeam": "新建 Solo Team",
+        "createSoloTeam": "新建个人队伍",
         "competitionTrack": "比赛赛道",
         "selectTrack": "选择赛道",
-        "soloTeamName": "Solo 队伍名",
+        "soloTeamName": "个人队伍名",
         "soloTeamNamePlaceholder": "默认会自动生成",
         "headline": "首屏摘要",
         "headlinePlaceholder": "几秒内让对方知道你想做什么",
@@ -5282,9 +5282,9 @@
         "availability": "投入",
         "collaborationMode": "协作方式",
         "city": "城市",
-        "cityPlaceholder": "北京 / 上海 / Remote",
+        "cityPlaceholder": "北京 / 上海 / 远程",
         "languages": "语言",
-        "languagesPlaceholder": "中文, English"
+        "languagesPlaceholder": "中文、英文"
       },
       "intentMode": {
         "teamUp": "正式组队",
@@ -5302,7 +5302,7 @@
         "createCard": "创建组队卡",
         "publish": "发布",
         "close": "关闭",
-        "legacySettings": "传统 Team 设置页"
+        "legacySettings": "传统队伍设置页"
       },
       "display": {
         "title": "我的展示信息",
