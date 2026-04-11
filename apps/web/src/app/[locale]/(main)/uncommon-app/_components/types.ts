@@ -1,4 +1,5 @@
 import type React from 'react';
+import type { AIAnalysisResult } from '@study-abroad/shared';
 
 export enum AgentType {
   ORCHESTRATOR = 'orchestrator',
@@ -62,16 +63,7 @@ export interface Profile {
   awards: Array<{ id: string; name: string }>;
 }
 
-export interface AIAnalysis {
-  overallScore: number;
-  admissionPrediction: string;
-  strengths: string[];
-  weaknesses: string[];
-  improvements: string[];
-  recommendedActivities: string[];
-  timeline: Array<{ date: string; task: string }>;
-  projectedImprovement: number;
-}
+export type AIAnalysis = AIAnalysisResult;
 
 export interface TieredRecommendations {
   safety: SchoolRecommendation[];

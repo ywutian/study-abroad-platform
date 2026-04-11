@@ -291,13 +291,15 @@ export class ProfileCrudService {
     userId: string,
     data: CreateRecommendationLetterDto,
   ) {
-    return this.prisma.recommendationLetter.create({
+    const letter = await this.prisma.recommendationLetter.create({
       data: {
         ...data,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         user: { connect: { id: userId } },
       },
     });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return letter;
   }
 
   async updateRecommendationLetter(
@@ -311,13 +313,15 @@ export class ProfileCrudService {
     if (!letter) {
       throw new NotFoundException('Recommendation letter not found');
     }
-    return this.prisma.recommendationLetter.update({
+    const updated = await this.prisma.recommendationLetter.update({
       where: { id },
       data: {
         ...data,
         dueDate: data.dueDate ? new Date(data.dueDate) : data.dueDate,
       },
     });
+    await this.cacheInvalidation.onProfileChange(userId);
+    return updated;
   }
 
   async deleteRecommendationLetter(userId: string, id: string) {
@@ -328,6 +332,7 @@ export class ProfileCrudService {
       throw new NotFoundException('Recommendation letter not found');
     }
     await this.prisma.recommendationLetter.delete({ where: { id } });
+    await this.cacheInvalidation.onProfileChange(userId);
     return { success: true };
   }
 }

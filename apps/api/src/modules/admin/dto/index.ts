@@ -13,3 +13,5 @@ export * from './review.dto';
 export * from './high-school.dto';
 export * from './user-permission.dto';
 export * from './update-priority.dto';
+export * from './prediction-workflow.dto';
+export * from './application-analysis-workflow.dto';

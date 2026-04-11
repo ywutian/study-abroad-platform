@@ -66,6 +66,7 @@ export type ApiRoutePrefix = (typeof API_ROUTES)[keyof typeof API_ROUTES];
 export const profileRoutes = {
   me: () => `${API_ROUTES.PROFILES}/me`,
   aiAnalysis: () => `${API_ROUTES.PROFILES}/me/ai-analysis`,
+  aiAnalysisFeedback: () => `${API_ROUTES.PROFILES}/me/ai-analysis/feedback`,
   testScores: () => `${API_ROUTES.PROFILES}/me/test-scores`,
   testScore: (id: string) => `${API_ROUTES.PROFILES}/me/test-scores/${id}`,
   activities: () => `${API_ROUTES.PROFILES}/me/activities`,
@@ -98,15 +99,19 @@ export const chatRoutes = {
   conversations: () => `${API_ROUTES.CHATS}/conversations`,
   conversation: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}`,
   conversationMessages: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/messages`,
+  conversationRead: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/read`,
+  conversationPin: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/pin`,
   message: (messageId: string) => `${API_ROUTES.CHATS}/messages/${messageId}`,
   follow: (userId: string) => `${API_ROUTES.CHATS}/follow/${userId}`,
   block: (userId: string) => `${API_ROUTES.CHATS}/block/${userId}`,
+  report: () => `${API_ROUTES.CHATS}/report`,
 };
 
 export const predictionRoutes = {
   predict: () => API_ROUTES.PREDICTIONS,
   history: () => `${API_ROUTES.PREDICTIONS}/history`,
-  report: (id: string) => `${API_ROUTES.PREDICTIONS}/${id}/report`,
+  result: (schoolId: string) => `${API_ROUTES.PREDICTIONS}/${schoolId}/result`,
+  report: (schoolId: string) => `${API_ROUTES.PREDICTIONS}/${schoolId}/result`,
 };
 
 export const recommendationRoutes = {
@@ -177,6 +182,8 @@ export const resumeRoutes = {
 export const schoolRoutes = {
   list: () => API_ROUTES.SCHOOLS,
   byId: (id: string) => `${API_ROUTES.SCHOOLS}/${id}`,
+  communityRatingSummary: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/community-ratings/summary`,
+  communityRatingMe: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/community-ratings/me`,
 };
 
 export const highSchoolRoutes = {
@@ -196,6 +203,7 @@ export const caseRoutes = {
 
 export const notificationRoutes = {
   list: () => API_ROUTES.NOTIFICATIONS,
+  unreadCount: () => `${API_ROUTES.NOTIFICATIONS}/unread-count`,
   byId: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}`,
   delete: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}`,
   deleteAll: () => API_ROUTES.NOTIFICATIONS,
@@ -220,8 +228,20 @@ export const peerReviewRoutes = {
 export const teamRoutes = {
   list: () => API_ROUTES.TEAMS,
   byId: (id: string) => `${API_ROUTES.TEAMS}/${id}`,
+  joinByToken: () => `${API_ROUTES.TEAMS}/join`,
   join: (id: string) => `${API_ROUTES.TEAMS}/${id}/join`,
   leave: (id: string) => `${API_ROUTES.TEAMS}/${id}/leave`,
+  recruitmentContexts: () => `${API_ROUTES.TEAMS}/recruitment-contexts`,
+  recruitments: () => `${API_ROUTES.TEAMS}/recruitments`,
+  myRecruitments: () => `${API_ROUTES.TEAMS}/recruitments/me`,
+  recruitmentDeck: () => `${API_ROUTES.TEAMS}/recruitments/deck`,
+  recruitmentById: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}`,
+  recruitmentMemberProfile: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}/members/me`,
+  recruitmentPublish: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}/publish`,
+  recruitmentClose: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}/close`,
+  recruitmentSwipe: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}/swipes`,
+  matches: () => `${API_ROUTES.TEAMS}/matches`,
+  matchInviteMembers: (id: string) => `${API_ROUTES.TEAMS}/matches/${id}/invite-members`,
 };
 
 export const userRoutes = {
@@ -380,11 +400,94 @@ export const adminRoutes = {
   calibrationsSuggestions: () => `${API_ROUTES.ADMIN}/calibrations/suggestions`,
   calibrationsPlattStatus: () => `${API_ROUTES.ADMIN}/calibrations/platt-status`,
   calibrationsRetrain: () => `${API_ROUTES.ADMIN}/calibrations/retrain`,
+  predictionWorkflowObservations: () => `${API_ROUTES.ADMIN}/prediction-workflow/observations`,
+  predictionWorkflowObservationReview: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/observations/${id}/review`,
+  predictionWorkflowSignalsBuild: () => `${API_ROUTES.ADMIN}/prediction-workflow/signals/build`,
+  predictionWorkflowSignals: () => `${API_ROUTES.ADMIN}/prediction-workflow/signals`,
+  predictionWorkflowPolicies: () => `${API_ROUTES.ADMIN}/prediction-workflow/policies`,
+  predictionWorkflowPolicyCandidate: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/${id}/candidate`,
+  predictionWorkflowPolicyShadow: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/${id}/shadow`,
+  predictionWorkflowPolicyShadowRefresh: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/${id}/shadow-refresh`,
+  predictionWorkflowPolicyGates: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/${id}/gates`,
+  predictionWorkflowPolicyShadowMetrics: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/${id}/shadow-metrics`,
+  predictionWorkflowPolicyActivate: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/${id}/activate`,
+  predictionWorkflowPolicyRollback: () =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/policies/rollback`,
+  predictionWorkflowOutcomes: () => `${API_ROUTES.ADMIN}/prediction-workflow/outcomes`,
+  predictionWorkflowOutcomeReview: (id: string) =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/outcomes/${id}/review`,
+  applicationAnalysisWorkflowEvidence: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence`,
+  applicationAnalysisWorkflowEvidenceReview: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence/${id}/review`,
+  applicationAnalysisWorkflowPolicies: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies`,
+  applicationAnalysisWorkflowPolicyCandidate: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/${id}/candidate`,
+  applicationAnalysisWorkflowPolicyShadow: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/${id}/shadow`,
+  applicationAnalysisWorkflowPolicyShadowRefresh: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/${id}/shadow-refresh`,
+  applicationAnalysisWorkflowPolicyGates: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/${id}/gates`,
+  applicationAnalysisWorkflowPolicyActivate: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/${id}/activate`,
+  applicationAnalysisWorkflowPolicyRollback: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/rollback`,
+  applicationAnalysisWorkflowEvaluations: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/evaluations`,
+  applicationAnalysisWorkflowExperiments: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments`,
+  applicationAnalysisWorkflowExperimentSweep: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/sweep`,
+  applicationAnalysisWorkflowExperimentShadow: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/shadow`,
+  applicationAnalysisWorkflowExperimentCanary: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/canary`,
+  applicationAnalysisWorkflowExperimentEvaluate: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/evaluate`,
+  applicationAnalysisWorkflowExperimentGates: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/gates`,
+  applicationAnalysisWorkflowExperimentActivate: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/activate`,
+  applicationAnalysisWorkflowExperimentRetire: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/retire`,
+  applicationAnalysisWorkflowExperimentConfig: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/${id}/config`,
+  applicationAnalysisWorkflowExperimentEvaluations: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiment-evaluations`,
+  applicationAnalysisWorkflowExperimentSweeps: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiment-sweeps`,
+  applicationAnalysisWorkflowExperimentIncidents: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiment-incidents`,
+  applicationAnalysisWorkflowExperimentIncidentAcknowledge: (id: string) =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiment-incidents/${id}/acknowledge`,
+  applicationAnalysisWorkflowExperimentFeedback: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiment-feedback`,
+  applicationAnalysisWorkflowRecoursePreview: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/recourse-preview`,
+  applicationAnalysisWorkflowUncertaintyPreview: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/uncertainty-preview`,
+  applicationAnalysisWorkflowFairnessReport: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments/fairness-report`,
 
   // Schools (under /schools/admin prefix)
   schoolsLogoFillStatus: () => `${API_ROUTES.SCHOOLS}/admin/logo-fill-status`,
   schoolsDataQuality: () => `${API_ROUTES.SCHOOLS}/admin/data-quality`,
   schoolsFillLogosByDomain: () => `${API_ROUTES.SCHOOLS}/admin/fill-logos-by-domain`,
+  schoolsCommunityRatings: (schoolId: string) =>
+    `${API_ROUTES.SCHOOLS}/admin/community-ratings/${schoolId}`,
+  schoolsCommunityRatingHide: (ratingId: string) =>
+    `${API_ROUTES.SCHOOLS}/admin/community-ratings/${ratingId}/hide`,
+  schoolsCommunityRatingRestore: (ratingId: string) =>
+    `${API_ROUTES.SCHOOLS}/admin/community-ratings/${ratingId}/restore`,
 };
 
 export const adminAiAgentRoutes = {

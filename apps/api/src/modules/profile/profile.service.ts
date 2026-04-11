@@ -457,6 +457,16 @@ export class ProfileService {
     return this.analysisService.calculateProfileGrade(userId);
   }
 
+  async calculateCompleteness(userId: string): Promise<{
+    score: number;
+    sections: Record<
+      string,
+      { score: number; maxScore: number; missing: string[] }
+    >;
+  }> {
+    return this.analysisService.calculateCompleteness(userId);
+  }
+
   // ============================================
   // Activity Templates
   // ============================================

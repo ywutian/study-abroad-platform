@@ -31,13 +31,14 @@ import {
   DollarSign,
   Users,
   ExternalLink,
-  Mic,
+  Sparkles,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
-import { essayPromptRoutes } from '@study-abroad/shared';
+import { AgentType, essayPromptRoutes } from '@study-abroad/shared';
+import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { getDisplayRankings, RANKING_LIST_KEYS } from '@/lib/utils/ranking';
 import type { TargetSchool } from './types';
@@ -338,6 +339,7 @@ export function SchoolSelectionTab({
                               'bg-muted text-muted-foreground': !school.prediction.tier,
                             })}
                           >
+                            {t('school.prediction.personalEstimate')}{' '}
                             {Math.round(school.prediction.probability * 100)}%
                           </span>
                         )}
@@ -433,10 +435,51 @@ export function SchoolSelectionTab({
                         <span className="text-xs">{t('profile.schoolSelection.writeEssay')}</span>
                       </Button>
                     )}
+                    {school.prediction && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-primary gap-1 px-2"
+                        onClick={() =>
+                          openFloatingAgentChat({
+                            message: t('profile.schoolSelection.askAiPrompt', {
+                              schoolName: getSchoolName(school, locale),
+                              probability: Math.round(school.prediction!.probability * 100),
+                            }),
+                            context: {
+                              type: 'selected-schools',
+                              source: 'profile_school_list',
+                              schools: [
+                                {
+                                  id: school.id,
+                                  name: school.name,
+                                  nameZh: school.nameZh,
+                                  usNewsRank: school.usNewsRank,
+                                  acceptanceRate: school.acceptanceRate,
+                                  prediction: {
+                                    probability: school.prediction?.probability,
+                                    tier: school.prediction?.tier as
+                                      | 'reach'
+                                      | 'match'
+                                      | 'safety'
+                                      | undefined,
+                                  },
+                                },
+                              ],
+                            },
+                            agentHint: AgentType.SCHOOL,
+                          })
+                        }
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span className="text-xs">{t('profile.schoolSelection.askAi')}</span>
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                      aria-label={t('profile.actions.delete')}
                       onClick={() => {
                         if (school._listItemId) {
                           onRemoveSchool(school._listItemId);
@@ -449,6 +492,7 @@ export function SchoolSelectionTab({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
+                      aria-label={t('profile.schoolSelection.toggleDetails')}
                       onClick={() =>
                         setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)
                       }
@@ -490,7 +534,10 @@ export function SchoolSelectionTab({
             {t('profile.schoolSelection.dataDisclaimer')}
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="inline-flex ml-1 align-middle">
+                <button
+                  className="inline-flex ml-1 align-middle"
+                  aria-label={t('schoolSelector.dataSourceInfo')}
+                >
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </TooltipTrigger>

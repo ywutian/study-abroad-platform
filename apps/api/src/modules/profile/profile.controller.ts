@@ -11,9 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
-import { ProfileAiService } from '../ai/profile-ai.service';
 import { SchoolListService } from '../school-list/school-list.service';
-import { RedisService } from '../../common/redis/redis.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
@@ -40,7 +38,9 @@ import {
   CreateSemesterGpaDto,
   UpdateSemesterGpaDto,
   UpdateGpaByGradeDto,
+  SubmitApplicationAnalysisFeedbackDto,
 } from './dto';
+import { ProfileApplicationAnalysisService } from './profile-application-analysis.service';
 
 @ApiTags('profiles')
 @ApiBearerAuth()
@@ -48,9 +48,8 @@ import {
 export class ProfileController {
   constructor(
     private readonly profileService: ProfileService,
-    private readonly profileAiService: ProfileAiService,
+    private readonly profileApplicationAnalysisService: ProfileApplicationAnalysisService,
     private readonly schoolListService: SchoolListService,
-    private readonly redis: RedisService,
   ) {}
 
   // ============================================
@@ -61,6 +60,12 @@ export class ProfileController {
   @ApiOperation({ summary: 'Get current user profile' })
   async getMyProfile(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.findByUserId(user.id);
+  }
+
+  @Get('me/completeness')
+  @ApiOperation({ summary: 'Get current user profile completeness' })
+  async getMyProfileCompleteness(@CurrentUser() user: CurrentUserPayload) {
+    return this.profileService.calculateCompleteness(user.id);
   }
 
   @Put('me')
@@ -90,61 +95,27 @@ export class ProfileController {
   // ============================================
 
   @Get('me/ai-analysis')
+  @ThrottleAI()
   @ApiOperation({
-    summary: 'Get AI profile analysis (red/yellow/green scoring)',
+    summary: 'Get structured application analysis with school-level strategy',
   })
   async getAIAnalysis(@CurrentUser() user: CurrentUserPayload) {
-    // 检查 Redis 缓存
-    const cacheKey = `ai:profile-analysis:${user.id}`;
-    const cached = await this.redis.getJSON<any>(cacheKey);
-    if (cached) {
-      return { ...cached, status: 'cached' as const };
-    }
-
-    const profile = await this.profileService.findByUserId(user.id);
-
-    if (!profile) {
-      return this.profileAiService.analyzeProfileDetailed({}, user.locale);
-    }
-
-    // 构建分析请求
-    const request = {
-      gpa: profile.gpa ? Number(profile.gpa) : undefined,
-      gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
-      testScores:
-        (profile as any).testScores?.map((s: any) => ({
-          type: s.type,
-          score: s.score,
-        })) || [],
-      activities:
-        (profile as any).activities?.map((a: any) => ({
-          name: a.name,
-          category: a.category,
-          role: a.role,
-          description: a.description ?? undefined,
-          hoursPerWeek: a.hoursPerWeek ?? undefined,
-          weeksPerYear: a.weeksPerYear ?? undefined,
-          tier: a.activityTemplate?.tier ?? undefined,
-        })) || [],
-      awards:
-        (profile as any).awards?.map((a: any) => ({
-          name: a.name,
-          level: a.level,
-          tier: a.competition?.tier ?? undefined,
-          competitionName: a.competition?.name ?? undefined,
-        })) || [],
-      targetMajor: profile.targetMajor || undefined,
-    };
-
-    const result = await this.profileAiService.analyzeProfileDetailed(
-      request,
+    return this.profileApplicationAnalysisService.getAnalysisForUser(
+      user.id,
       user.locale,
     );
+  }
 
-    // 缓存 1 小时，profile 变化时通过 CacheInvalidationService 失效
-    await this.redis.setJSON(cacheKey, result, 3600);
-
-    return { ...result, status: 'fresh' as const };
+  @Post('me/ai-analysis/feedback')
+  @ApiOperation({
+    summary:
+      'Submit applicant feedback for experimental application-analysis guidance',
+  })
+  async submitAIAnalysisFeedback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: SubmitApplicationAnalysisFeedbackDto,
+  ) {
+    return this.profileApplicationAnalysisService.submitFeedback(user.id, dto);
   }
 
   // ============================================
@@ -186,11 +157,14 @@ export class ProfileController {
   }
 
   // ============================================
-  // Profile Grade (AI Analysis for Uncommon App)
+  // Profile Grade (Legacy compatibility only)
   // ============================================
 
   @Get('me/grade')
-  @ApiOperation({ summary: 'Get AI profile grade for Uncommon App' })
+  @ApiOperation({
+    summary:
+      'Get legacy profile grade (compatibility path; use /profiles/me/ai-analysis for school-aware analysis)',
+  })
   async getProfileGrade(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<ProfileGradeResponseDto> {

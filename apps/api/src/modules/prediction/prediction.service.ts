@@ -13,6 +13,9 @@ import { safeRefund } from '../points/refund.helper';
 import { PREDICTION_LOCK_TTL } from './prediction-error';
 
 import { PredictionResultDto } from './dto';
+import { InternalPredictionResult } from './prediction-persistence.service';
+import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
+import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
 import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
@@ -24,6 +27,7 @@ import {
   calculateConfidence,
   enforceMonotonicity,
   calculateSelectivityIndex,
+  resolveContextualAcceptanceRate,
 } from './utils/score-calculator';
 import {
   extractFeatureVector,
@@ -50,6 +54,8 @@ import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionMemoryService } from './prediction-memory.service';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import { PredictionPolicyService } from './prediction-policy.service';
+import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
 
 // ============================================
 // Constants
@@ -98,10 +104,13 @@ export class PredictionService {
     private memoryService: PredictionMemoryService,
     private persistenceService: PredictionPersistenceService,
     private reportingService: PredictionReportingService,
+    private policyService: PredictionPolicyService,
     @Optional() private caseIncentiveService?: CaseIncentiveService,
     @Optional() private modelRegistry?: ModelRegistryService,
     @Optional() private shadowEvaluator?: ShadowEvaluatorService,
     @Optional() private modelMonitor?: ModelMonitorService,
+    @Optional() private mlPrimaryService?: PredictionMlPrimaryService,
+    @Optional() private featureFlagService?: FeatureFlagService,
   ) {}
 
   // ==================== School Calibration (delegated to PredictionCalibrationService) ====================
@@ -128,8 +137,14 @@ export class PredictionService {
     profileId: string,
     schoolId: string,
     profileHash?: string,
+    policyVersionId?: string,
   ): Promise<PredictionResultDto | null> {
-    return this.cacheService.getFromCache(profileId, schoolId, profileHash);
+    return this.cacheService.getFromCache(
+      profileId,
+      schoolId,
+      profileHash,
+      policyVersionId,
+    );
   }
 
   /** @deprecated Use PredictionCacheService.saveToCache() directly */
@@ -138,12 +153,14 @@ export class PredictionService {
     schoolId: string,
     result: PredictionResultDto,
     profileHash?: string,
+    policyVersionId?: string,
   ): Promise<void> {
     return this.cacheService.saveToCache(
       profileId,
       schoolId,
       result,
       profileHash,
+      policyVersionId,
     );
   }
 
@@ -452,15 +469,62 @@ export class PredictionService {
       dataPoints: number;
     };
   }> {
+    return this.runPredictionWithLock(
+      profileId,
+      schoolIds,
+      forceRefresh,
+      locale,
+      true,
+    );
+  }
+
+  async predictForApplicationAnalysis(
+    profileId: string,
+    schoolIds: string[],
+    locale = 'zh',
+  ): Promise<{
+    results: PredictionResultDto[];
+    dataCompleteness: number;
+    memoryContext: {
+      previousPredictions: number;
+      knownPreferences: string[];
+      dataPoints: number;
+    };
+  }> {
+    return this.runPredictionWithLock(
+      profileId,
+      schoolIds,
+      true,
+      locale,
+      false,
+    );
+  }
+
+  private async runPredictionWithLock(
+    profileId: string,
+    schoolIds: string[],
+    forceRefresh: boolean,
+    locale: string,
+    chargePoints: boolean,
+  ): Promise<{
+    results: PredictionResultDto[];
+    dataCompleteness: number;
+    memoryContext: {
+      previousPredictions: number;
+      knownPreferences: string[];
+      dataPoints: number;
+    };
+  }> {
     this.logger.log('Prediction requested', {
       profileId,
       schoolCount: schoolIds.length,
       forceRefresh,
+      chargePoints,
     });
 
     // 扣除积分
     let chargedUserId: string | undefined;
-    if (this.caseIncentiveService) {
+    if (chargePoints && this.caseIncentiveService) {
       const profile = await this.prisma.profile.findUnique({
         where: { id: profileId },
         select: { userId: true },
@@ -566,6 +630,7 @@ export class PredictionService {
     const roundMap = new Map(
       schoolListItems.map((item) => [item.schoolId, item.round]),
     );
+    const defaultApplicationRound = profile.applicationRound ?? undefined;
 
     // Fetch latest MBTI and Holland assessment results for profile enrichment
     const assessmentResults = await this.prisma.assessmentResult.findMany({
@@ -594,6 +659,9 @@ export class PredictionService {
 
     const profileMetrics = this.extractProfileMetrics(profileInput);
     const profileHash = this.hashProfileData(profile);
+    const policyVersionId = this.policyService
+      ? await this.policyService.resolveServedPolicyVersionId()
+      : MODEL_VERSION;
 
     // Phase 1.5: 加载 Platt 校准参数（如果有足够校准数据）
     const plattParams = await this.getPlattCalibration();
@@ -669,6 +737,7 @@ export class PredictionService {
           profileId,
           school.id,
           profileHash,
+          policyVersionId,
         );
         if (cached) {
           // Attach schoolMeta to cached results too
@@ -695,6 +764,27 @@ export class PredictionService {
       for (const p of programs) programMap.set(p.schoolId, p);
     }
 
+    // Pre-compute v5 feature flags ONCE (not per-school)
+    let v5MlPrimary = false;
+    let v5Shadow = false;
+    if (this.mlPrimaryService && this.featureFlagService) {
+      try {
+        const userId = await this.prisma.profile
+          .findUnique({ where: { id: profileId }, select: { userId: true } })
+          .then((p) => p?.userId);
+        if (userId) {
+          [v5MlPrimary, v5Shadow] = await Promise.all([
+            this.featureFlagService.isEnabled('prediction-ml-primary', {
+              userId,
+            }),
+            this.featureFlagService.isEnabled('prediction-shadow', { userId }),
+          ]);
+        }
+      } catch {
+        // Feature flag check failed, stay on legacy
+      }
+    }
+
     // 并行预测（控制并发上限为 3）
     const CONCURRENCY = 3;
     const freshResults: PredictionResultDto[] = [];
@@ -714,7 +804,10 @@ export class PredictionService {
             profileHash,
             programMap.get(school.id),
             dataCompleteness,
-            roundMap.get(school.id) || undefined,
+            roundMap.get(school.id) ?? defaultApplicationRound,
+            policyVersionId,
+            v5MlPrimary,
+            v5Shadow,
           ),
         ),
       );
@@ -811,7 +904,66 @@ export class PredictionService {
     programData?: any,
     dataCompleteness?: number,
     applicationRound?: string,
+    policyVersionId?: string,
+    v5MlPrimary = false,
+    v5Shadow = false,
   ): Promise<PredictionResultDto> {
+    // === v5 ML-Primary feature flag branch ===
+    if (this.mlPrimaryService && (v5MlPrimary || v5Shadow)) {
+      try {
+        const schoolInputV5 = this.schoolToInput(school);
+        if (applicationRound) schoolInputV5.applicationRound = applicationRound;
+        const schoolMetricsV5 = this.extractSchoolMetrics(schoolInputV5);
+
+        const mlResult = await this.mlPrimaryService.predictForSchool(
+          profileId,
+          school,
+          profileInput,
+          schoolInputV5,
+          profileMetrics,
+          schoolMetricsV5,
+          applicationRound || 'RD',
+          locale,
+        );
+
+        if (v5Shadow) {
+          // Shadow mode: log comparison, fall through to legacy
+          this.logger.debug(
+            `[Shadow] ML-Primary: ${mlResult.probability.toFixed(3)} for ${school.name}`,
+          );
+        } else {
+          // ML-Primary mode: cache, persist, and return the served result
+          this.cacheService
+            .saveToCache(
+              profileId,
+              school.id,
+              mlResult,
+              profileHash,
+              policyVersionId,
+              'v5',
+            )
+            .catch(() => {
+              /* swallow cache errors */
+            });
+          await this.savePrediction(profileId, school.id, mlResult);
+          if (this.modelMonitor) {
+            this.modelMonitor
+              .recordPrediction(mlResult.probability)
+              .catch(() => {
+                /* swallow */
+              });
+          }
+          return mlResult;
+        }
+      } catch (err) {
+        this.logger.warn(
+          'ML-Primary pipeline failed, falling back to legacy',
+          err,
+        );
+      }
+    }
+    // === End v5 branch ===
+
     const schoolInput = this.schoolToInput(school);
 
     // Inject application round from user's school list
@@ -1102,8 +1254,39 @@ export class PredictionService {
       }
     }
 
+    // Re-apply round context to the served probability so favorable rounds remain
+    // directionally better even when AI/fusion noise under-reacts to application round.
+    const roundMultiplier = schoolInput.applicationRound
+      ? (ROUND_MULTIPLIERS[schoolInput.applicationRound] ?? 1.0)
+      : 1.0;
+    if (roundMultiplier !== 1.0) {
+      fusedResult.probability = Math.max(
+        0.05,
+        Math.min(0.95, fusedResult.probability * roundMultiplier),
+      );
+      fusedResult.probabilityLow = Math.max(
+        0.01,
+        Math.min(0.95, fusedResult.probabilityLow * roundMultiplier),
+      );
+      fusedResult.probabilityHigh = Math.max(
+        fusedResult.probability,
+        Math.min(0.99, fusedResult.probabilityHigh * roundMultiplier),
+      );
+    }
+
     // 确定 tier
-    const tier = calculateTier(fusedResult.probability, schoolMetrics);
+    const tierContext = resolveContextualAcceptanceRate({
+      schoolMeta: {
+        acceptanceRate: schoolInput.acceptanceRate,
+        intlAcceptanceRate: schoolInput.intlAcceptanceRate,
+      },
+      isInternational: Boolean(profileInput.isInternational),
+      roundContext: schoolInput.applicationRound,
+    });
+    const tierSchoolMetrics = tierContext
+      ? { ...schoolMetrics, acceptanceRate: tierContext.rate }
+      : schoolMetrics;
+    const tier = calculateTier(fusedResult.probability, tierSchoolMetrics);
 
     // 选择最佳 factors (优先 AI，回退 stats)
     const factors = aiResult?.factors?.length
@@ -1136,7 +1319,33 @@ export class PredictionService {
     // 选择最佳 comparison (优先 AI，回退 stats)
     const comparison = aiResult?.comparison || statsResult.comparison;
 
-    const result: PredictionResultDto = {
+    const servedTrace = this.policyService.buildTracePayload({
+      policyVersionId: policyVersionId ?? MODEL_VERSION,
+      profile: profileInput,
+      school: schoolInput,
+      roundContext: schoolInput.applicationRound,
+      confidence: confidenceLevel,
+      schoolMeta: {
+        acceptanceRate: schoolInput.acceptanceRate,
+        intlAcceptanceRate: schoolInput.intlAcceptanceRate,
+        usNewsRank: schoolInput.usNewsRank,
+        graduationRate: schoolInput.graduationRate,
+      },
+    });
+
+    const resolvedPolicyVersionId =
+      servedTrace?.policyVersionId ?? policyVersionId ?? MODEL_VERSION;
+    const resolvedApplicationRound =
+      servedTrace?.roundContext ?? schoolInput.applicationRound ?? 'RD';
+    const confidenceReason = this.generateConfidenceReason(
+      confidenceLevel,
+      profileInput,
+      servedTrace?.sourceSummary,
+      servedTrace?.uncertaintyReasons,
+      locale,
+    );
+
+    const result: InternalPredictionResult = {
       schoolId: school.id,
       schoolName:
         locale === 'zh'
@@ -1157,7 +1366,18 @@ export class PredictionService {
       },
       crossEngineConsistency: fusedResult.crossEngineConsistency,
       modelVersion: MODEL_VERSION,
+      // Public API field names
+      servedPolicyVersionId: resolvedPolicyVersionId,
+      cohortKey: servedTrace?.cohortKey,
+      roundContext: resolvedApplicationRound,
+      sourceSummary: servedTrace?.sourceSummary,
+      uncertaintyReasons: servedTrace?.uncertaintyReasons,
+      confidenceReason,
       majorBreakdown: majorBreakdownResult,
+      // Internal fields for DB persistence (not in public DTO)
+      policyVersionId: resolvedPolicyVersionId,
+      applicationRound: resolvedApplicationRound,
+      servedTrace: servedTrace ?? undefined,
     };
 
     // Attach community insight if target major exists
@@ -1180,7 +1400,13 @@ export class PredictionService {
     }
 
     // 保存到缓存
-    await this.saveToCache(profileId, school.id, result, profileHash);
+    await this.saveToCache(
+      profileId,
+      school.id,
+      result,
+      profileHash,
+      policyVersionId,
+    );
 
     // 保存到数据库
     await this.savePrediction(profileId, school.id, result);
@@ -1217,6 +1443,82 @@ export class PredictionService {
   }
 
   // ==================== 辅助方法 ====================
+
+  /**
+   * Turn the raw low/medium/high confidence key into a short user-facing explanation.
+   */
+  private generateConfidenceReason(
+    confidence: 'low' | 'medium' | 'high',
+    profile: ProfileInput,
+    sourceSummary?: Array<{ label: string; detail?: string }>,
+    uncertaintyReasons?: string[],
+    locale = 'zh',
+  ): string {
+    const isZh = locale === 'zh';
+    const hasScores = (profile.testScores?.length ?? 0) > 0;
+    const hasActivities = (profile.activities?.length ?? 0) > 0;
+    const hasAwards = (profile.awards?.length ?? 0) > 0;
+    const hasRoundSignal = (sourceSummary ?? []).some((item) =>
+      /round-aware adjustment/i.test(item.label),
+    );
+    const hasMatchedSignals = (sourceSummary ?? []).some((item) =>
+      /(cohort|historical|international|feeder)/i.test(
+        `${item.label} ${item.detail ?? ''}`,
+      ),
+    );
+    const missingSignals = [
+      !hasScores ? (isZh ? '标化成绩' : 'test scores') : null,
+      !hasActivities ? (isZh ? '活动经历' : 'activities') : null,
+      !hasAwards ? (isZh ? '奖项信息' : 'awards') : null,
+    ].filter(Boolean) as string[];
+
+    if (confidence === 'high') {
+      if (isZh) {
+        return `这份预测使用了较完整的成绩与经历信息${
+          hasMatchedSignals ? '，并结合了更贴近你背景的历史信号' : ''
+        }${hasRoundSignal ? '，申请轮次也已纳入计算' : ''}，所以参考程度较高。`;
+      }
+      return `This estimate uses a fairly complete academic and profile record${
+        hasMatchedSignals
+          ? ' and incorporates historical signals that are closer to your background'
+          : ''
+      }${
+        hasRoundSignal
+          ? ', with your application round included in the calculation'
+          : ''
+      }, so the data support level is high.`;
+    }
+
+    if (confidence === 'medium') {
+      if (isZh) {
+        return `这份预测已经结合了你的核心成绩信息和学校背景数据${
+          hasRoundSignal ? '，申请轮次也已纳入计算' : ''
+        }${
+          missingSignals.length || (uncertaintyReasons?.length ?? 0) > 0
+            ? `，但${missingSignals.length ? `${missingSignals.join('、')}和` : ''}更细的匹配信号仍然有限`
+            : '，但个体化信号还不算充分'
+        }，所以参考程度为中。`;
+      }
+      return `This estimate combines your core academic record with school-level context${
+        hasRoundSignal ? ', including your application round' : ''
+      }${
+        missingSignals.length || (uncertaintyReasons?.length ?? 0) > 0
+          ? `, but ${missingSignals.length ? `${missingSignals.join(', ')} and ` : ''}more tailored matching signals are still limited`
+          : ', though the personalized signal depth is still moderate'
+      }, so the data support level is medium.`;
+    }
+
+    if (isZh) {
+      return `这份预测目前更多依赖学校整体数据${
+        hasRoundSignal ? '和轮次修正' : ''
+      }，因为${missingSignals.length ? missingSignals.join('、') : '个人档案要素'}或可匹配历史样本还不够完整，所以参考程度偏低。`;
+    }
+    return `This estimate currently leans more on broad school-level data${
+      hasRoundSignal ? ' and round-based adjustment' : ''
+    } because ${
+      missingSignals.length ? missingSignals.join(', ') : 'key profile details'
+    } or matched historical cohorts are still incomplete, so the data support level is low.`;
+  }
 
   /**
    * Generate actionable suggestions based on prediction tier, confidence, and profile gaps.
@@ -1363,7 +1665,7 @@ export class PredictionService {
   private async savePrediction(
     profileId: string,
     schoolId: string,
-    result: PredictionResultDto,
+    result: InternalPredictionResult,
   ): Promise<void> {
     return this.persistenceService.savePrediction(profileId, schoolId, result);
   }
@@ -1385,12 +1687,19 @@ export class PredictionService {
   async reportActualResult(
     profileId: string,
     schoolId: string,
-    actualResult: 'ADMITTED' | 'REJECTED' | 'WAITLISTED',
+    actualResult: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED',
+    options?: {
+      notes?: string;
+      evidenceUrl?: string;
+      round?: string;
+      isFinal?: boolean;
+    },
   ): Promise<void> {
     return this.reportingService.reportActualResult(
       profileId,
       schoolId,
       actualResult,
+      options,
     );
   }
 

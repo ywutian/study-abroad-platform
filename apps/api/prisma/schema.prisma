@@ -158,6 +158,7 @@ enum ReportTargetType {
   REVIEW
   POST // 帖子举报
   COMMENT // 评论举报
+  RECRUITMENT_CARD
 }
 
 enum ReportStatus {
@@ -183,6 +184,16 @@ enum AdmissionResult {
   REJECTED
   WAITLISTED
   DEFERRED
+}
+
+enum PredictionOutcomeLabel {
+  ADMITTED
+  REJECTED
+  WAITLISTED
+  DEFERRED
+  WITHDRAWN
+  UNKNOWN
+  CENSORED
 }
 
 enum TaskType {
@@ -292,6 +303,50 @@ enum TeamInvitationStatus {
   EXPIRED
 }
 
+enum CompetitionEditionStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum TeamRecruitmentPhase {
+  DRAFT
+  PUBLISHED
+}
+
+enum RecruitmentAvailabilityBand {
+  LESS_THAN_5_HOURS
+  FIVE_TO_TEN_HOURS
+  TEN_PLUS_HOURS
+  WEEKENDS_ONLY
+}
+
+enum CollaborationMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum RecruitmentIntentMode {
+  TEAM_UP
+  NETWORKING_ONLY
+}
+
+enum TeamRecruitmentSwipeAction {
+  LIKE
+  PASS
+}
+
+enum TeamMatchKind {
+  TEAM_UP
+  NETWORKING
+}
+
+enum ConversationKind {
+  DIRECT
+  MATCH_GROUP
+}
+
 // ============================================
 // User & Auth
 // ============================================
@@ -317,6 +372,8 @@ model User {
   blockedBy       Block[]                   @relation("Blocked")
   sentMessages    Message[]
   conversations   ConversationParticipant[]
+  recruitmentMemberProfiles TeamRecruitmentMemberProfile[]
+  recruitmentSwipesActed    TeamRecruitmentSwipe[]
   customRankings  CustomRanking[]
   reviewsGiven      Review[]                  @relation("Reviewer")
   reviewsReceived   Review[]                  @relation("ReviewedProfile")
@@ -366,6 +423,7 @@ model User {
 
   // Recommendations (选校推荐)
   schoolRecommendations SchoolRecommendation[]
+  schoolCommunityRatings SchoolCommunityRating[]
 
   // Case views (案例查看记录)
   caseViews CaseView[]
@@ -500,6 +558,7 @@ model Profile {
   education    Education[]
   essays       Essay[]
   predictions  PredictionResult[]
+  sourceObservations PredictionSourceObservation[]
   semesterGpas SemesterGpa[]
 
   createdAt DateTime @default(now())
@@ -633,11 +692,50 @@ model Competition {
   isActive      Boolean             @default(true)
 
   awards    Award[]
+  editions  CompetitionEdition[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category])
   @@index([tier])
+}
+
+model CompetitionEdition {
+  id                   String                   @id @default(cuid())
+  competitionId        String
+  competition          Competition              @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  seasonLabel          String
+  status               CompetitionEditionStatus @default(ACTIVE)
+  registrationOpenAt   DateTime?
+  registrationCloseAt  DateTime?
+  eventStartAt         DateTime?
+  eventEndAt           DateTime?
+  tracks               CompetitionTrack[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([competitionId, seasonLabel])
+  @@index([status])
+}
+
+model CompetitionTrack {
+  id                    String               @id @default(cuid())
+  competitionEditionId  String
+  competitionEdition    CompetitionEdition   @relation(fields: [competitionEditionId], references: [id], onDelete: Cascade)
+  name                  String
+  rolePresets           String[]
+  minTeamSize           Int
+  maxTeamSize           Int
+  languages             String[]
+  isActive              Boolean              @default(true)
+  recruitmentCards      TeamRecruitmentCard[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([competitionEditionId, name])
+  @@index([isActive])
 }
 
 model Education {
@@ -709,6 +807,8 @@ model HighSchool {
 
   educations Education[]
   cases      AdmissionCase[]
+  sourceObservations PredictionSourceObservation[]
+  relationshipSignals SchoolRelationshipSignal[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -869,6 +969,12 @@ model School {
   teams         Team[]
   calibration   SchoolCalibration?
   rankings      SchoolRanking[]
+  sourceObservations  PredictionSourceObservation[]
+  cohortRoundPriors   SchoolCohortRoundPrior[]
+  cohortRegimeSignals SchoolCohortRegimeSignal[]
+  relationshipSignals SchoolRelationshipSignal[]
+  communityRatings SchoolCommunityRating[]
+  policyEvidence   SchoolPolicyEvidence[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -916,6 +1022,30 @@ model SchoolMetric {
   @@index([schoolId])
 }
 
+model SchoolCommunityRating {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  safetyRating Int
+  lifeRating   Int
+  foodRating   Int
+
+  isHidden     Boolean   @default(false)
+  hiddenAt     DateTime?
+  hiddenBy     String?
+  hiddenReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, userId])
+  @@index([schoolId, isHidden, updatedAt])
+  @@index([userId, updatedAt])
+}
+
 model SchoolProgram {
   id       String @id @default(cuid())
   schoolId String
@@ -951,6 +1081,418 @@ model SchoolCalibration {
   updatedAt  DateTime @updatedAt
 }
 
+model PredictionPolicyVersion {
+  id                       String                 @id @default(cuid())
+  policyKey                String                 @default("default")
+  version                  String
+  name                     String?
+  status                   PredictionPolicyStatus @default(DRAFT)
+  description              String?
+  priorSetVersion          String?
+  driftSetVersion          String?
+  relationshipSetVersion   String?
+  calibrationVersion       String?
+  numericCoreVersion       String?
+  explanationSchemaVersion String?
+  thresholds               Json?
+  rolloutConfig            Json?
+  monitoringConfig         Json?
+  fairnessConfig           Json?
+  notes                    String?                @db.Text
+  effectiveFrom            DateTime?
+  activatedAt              DateTime?
+  activatedBy              String?
+  shadowStartedAt          DateTime?
+  promotedAt               DateTime?
+  archivedAt               DateTime?
+  retiredAt                DateTime?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+
+  predictionResults         PredictionResult[]
+  predictionSnapshots       PredictionSnapshot[]
+  sourceObservations        PredictionSourceObservation[]
+  cohortRoundPriors         SchoolCohortRoundPrior[]
+  cohortRegimeSignals       SchoolCohortRegimeSignal[]
+  schoolRelationshipSignals SchoolRelationshipSignal[]
+
+  @@unique([policyKey, version])
+  @@index([status, activatedAt])
+  @@index([policyKey, status])
+  @@index([effectiveFrom, promotedAt])
+}
+
+model SchoolPolicyEvidence {
+  id                String                   @id @default(cuid())
+  schoolId          String
+  school            School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  policyDimension   SchoolPolicyDimension
+  policyValue       String
+  sourceName        String
+  sourceUrl         String?
+  sourcePublishedAt DateTime?
+  sourceQuality     Int?
+  status            SchoolPolicyEvidenceStatus @default(DRAFT)
+  reviewedAt        DateTime?
+  reviewedBy        String?
+  expiresAt         DateTime?
+  notes             String?                  @db.Text
+  metadata          Json?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  @@index([schoolId, policyDimension, status])
+  @@index([status, updatedAt])
+  @@index([expiresAt])
+}
+
+model ApplicationAnalysisPolicyVersion {
+  id               String                           @id @default(cuid())
+  policyKey        String                           @default("default")
+  version          String
+  name             String?
+  description      String?
+  status           ApplicationAnalysisPolicyStatus  @default(DRAFT)
+  analysisVersion  String
+  promptVersion    String?
+  ruleBundleVersion String?
+  thresholds       Json?
+  rolloutConfig    Json?
+  monitoringConfig Json?
+  notes            String?                          @db.Text
+  effectiveFrom    DateTime?
+  shadowStartedAt  DateTime?
+  activatedAt      DateTime?
+  activatedBy      String?
+  retiredAt        DateTime?
+  createdAt        DateTime                         @default(now())
+  updatedAt        DateTime                         @updatedAt
+
+  evaluationRuns ApplicationAnalysisEvaluationRun[]
+  experiments    ApplicationAnalysisExperimentVersion[]
+
+  @@unique([policyKey, version])
+  @@index([status, activatedAt])
+  @@index([policyKey, status])
+}
+
+model ApplicationAnalysisEvaluationRun {
+  id              String                               @id @default(cuid())
+  policyVersionId String
+  policyVersion   ApplicationAnalysisPolicyVersion     @relation(fields: [policyVersionId], references: [id], onDelete: Cascade)
+  mode            ApplicationAnalysisEvaluationMode
+  status          ApplicationAnalysisEvaluationStatus  @default(PENDING)
+  scopeSummary    Json?
+  counts          Json?
+  metrics         Json?
+  failures        Json?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdBy       String?
+  createdAt       DateTime                             @default(now())
+  updatedAt       DateTime                             @updatedAt
+
+  @@index([policyVersionId, mode, createdAt])
+  @@index([status, createdAt])
+}
+
+model ApplicationAnalysisExperimentVersion {
+  id              String                               @id @default(cuid())
+  capability      ApplicationAnalysisExperimentCapability
+  version         String
+  policyVersionId String?
+  policyVersion   ApplicationAnalysisPolicyVersion?    @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  status          ApplicationAnalysisExperimentStatus  @default(DRAFT)
+  methodVersion   String
+  gateConfig      Json?
+  rolloutConfig   Json?
+  monitoringConfig Json?
+  notes           String?                              @db.Text
+  shadowStartedAt DateTime?
+  canaryStartedAt DateTime?
+  activatedAt     DateTime?
+  retiredAt       DateTime?
+  createdBy       String?
+  createdAt       DateTime                             @default(now())
+  updatedAt       DateTime                             @updatedAt
+
+  evaluationRuns ApplicationAnalysisExperimentEvaluationRun[]
+  incidents      ApplicationAnalysisExperimentIncident[]
+  exposures      ApplicationAnalysisExposureRecord[]
+
+  @@unique([capability, version])
+  @@index([capability, status])
+  @@index([status, activatedAt])
+}
+
+model ApplicationAnalysisExperimentEvaluationRun {
+  id                 String                                        @id @default(cuid())
+  experimentVersionId String
+  experimentVersion   ApplicationAnalysisExperimentVersion         @relation(fields: [experimentVersionId], references: [id], onDelete: Cascade)
+  mode               ApplicationAnalysisExperimentEvaluationMode
+  status             ApplicationAnalysisExperimentEvaluationStatus @default(PENDING)
+  scopeSummary       Json?
+  counts             Json?
+  metrics            Json?
+  failures           Json?
+  startedAt          DateTime?
+  finishedAt         DateTime?
+  createdBy          String?
+  createdAt          DateTime                                      @default(now())
+  updatedAt          DateTime                                      @updatedAt
+
+  @@index([experimentVersionId, mode, createdAt])
+  @@index([status, createdAt])
+}
+
+model ApplicationAnalysisExperimentSweepRun {
+  id         String                                 @id @default(cuid())
+  mode       ApplicationAnalysisExperimentSweepMode
+  status     ApplicationAnalysisExperimentSweepStatus @default(RUNNING)
+  actorId    String?
+  lockKey    String?
+  summary    Json?
+  failures   Json?
+  startedAt  DateTime                               @default(now())
+  finishedAt DateTime?
+  createdAt  DateTime                               @default(now())
+  updatedAt  DateTime                               @updatedAt
+
+  @@index([mode, createdAt])
+  @@index([status, createdAt])
+}
+
+model ApplicationAnalysisExperimentIncident {
+  id                 String                                    @id @default(cuid())
+  experimentVersionId String?
+  experimentVersion   ApplicationAnalysisExperimentVersion?    @relation(fields: [experimentVersionId], references: [id], onDelete: SetNull)
+  capability         ApplicationAnalysisExperimentCapability?
+  type               String
+  severity           ApplicationAnalysisExperimentIncidentSeverity
+  status             ApplicationAnalysisExperimentIncidentStatus @default(OPEN)
+  title              String
+  message            String
+  details            Json?
+  acknowledgedAt     DateTime?
+  acknowledgedBy     String?
+  resolvedAt         DateTime?
+  createdAt          DateTime                                  @default(now())
+  updatedAt          DateTime                                  @updatedAt
+
+  @@index([experimentVersionId, createdAt])
+  @@index([capability, createdAt])
+  @@index([status, createdAt])
+}
+
+model ApplicationAnalysisExposureRecord {
+  id                 String                               @id @default(cuid())
+  exposureId         String
+  experimentVersionId String
+  experimentVersion   ApplicationAnalysisExperimentVersion @relation(fields: [experimentVersionId], references: [id], onDelete: Cascade)
+  capability         ApplicationAnalysisExperimentCapability
+  userId             String
+  profileId          String
+  schoolIds          String[]
+  locale             String
+  exposurePayload    Json?
+  generatedAt        DateTime                             @default(now())
+  createdAt          DateTime                             @default(now())
+  updatedAt          DateTime                             @updatedAt
+
+  feedbackRecords ApplicationAnalysisFeedbackRecord[]
+
+  @@index([exposureId, capability])
+  @@index([experimentVersionId, createdAt])
+  @@index([profileId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model ApplicationAnalysisFeedbackRecord {
+  id               String                               @id @default(cuid())
+  exposureRecordId String
+  exposureRecord   ApplicationAnalysisExposureRecord   @relation(fields: [exposureRecordId], references: [id], onDelete: Cascade)
+  exposureId       String
+  userId           String
+  capability       ApplicationAnalysisExperimentCapability
+  schoolId         String?
+  category         ApplicationAnalysisFeedbackCategory?
+  sentiment        ApplicationAnalysisFeedbackSentiment
+  notes            String?                              @db.Text
+  createdAt        DateTime                             @default(now())
+  updatedAt        DateTime                             @updatedAt
+
+  @@index([exposureRecordId, createdAt])
+  @@index([exposureId, createdAt])
+  @@index([capability, category, createdAt])
+  @@index([userId, createdAt])
+}
+
+model PredictionSourceObservation {
+  id              String                      @id @default(cuid())
+  profileId       String?
+  profile         Profile?                    @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  schoolId        String?
+  school          School?                     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  highSchoolId    String?
+  highSchool      HighSchool?                 @relation(fields: [highSchoolId], references: [id], onDelete: Cascade)
+  predictionResultId   String?
+  predictionResult     PredictionResult?      @relation("PredictionResultObservations", fields: [predictionResultId], references: [id], onDelete: Cascade)
+  predictionSnapshotId String?
+  predictionSnapshot   PredictionSnapshot?    @relation("PredictionSnapshotObservations", fields: [predictionSnapshotId], references: [id], onDelete: Cascade)
+  policyVersionId      String?
+  policyVersion        PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey       String?
+  round           String?
+  metricType      String
+  rate            Decimal?                    @db.Decimal(6, 4)
+  admitCount      Int?
+  applyCount      Int?
+  year            Int?
+  sourceType      PredictionObservationSourceType
+  sourceName      String
+  sourceVersion   String?
+  sourceUrl       String?
+  license         String?
+  qualityScore    Int?
+  status          PredictionObservationStatus @default(RAW)
+  observationStage        String              @default("SERVE")
+  observedProbability     Decimal?            @db.Decimal(5, 4)
+  observedProbabilityLow  Decimal?            @db.Decimal(5, 4)
+  observedProbabilityHigh Decimal?            @db.Decimal(5, 4)
+  observedWeight          Decimal?            @db.Decimal(5, 4)
+  confidenceLabel String?
+  sampleCount     Int?
+  selectivityBand String?
+  metadata        Json?
+  reviewAt        DateTime?
+  reviewedBy      String?
+  observedAt      DateTime                    @default(now())
+  effectiveFromCycle String?
+  expiresAt       DateTime?
+  notes           String?                     @db.Text
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  @@index([predictionResultId])
+  @@index([predictionSnapshotId])
+  @@index([profileId])
+  @@index([status, sourceType])
+  @@index([schoolId, cohortKey, round])
+  @@index([schoolId, sourceName, observedAt])
+  @@index([highSchoolId])
+  @@index([policyVersionId, observationStage])
+  @@index([cohortKey, round, year])
+}
+
+model SchoolCohortRoundPrior {
+  id                 String   @id @default(cuid())
+  schoolId           String
+  school             School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  policyVersionId    String?
+  policyVersion      PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey          String
+  round              String
+  applicationYear    Int?
+  setVersion         String?
+  priorRate          Decimal  @db.Decimal(6, 4)
+  lowerBound         Decimal? @db.Decimal(6, 5)
+  upperBound         Decimal? @db.Decimal(6, 5)
+  sampleCount        Int?
+  smoothingMethod    String?
+  confidence         String?
+  sourceSummary      Json?
+  sourceObservationIds String[] @default([])
+  effectiveFromCycle String?
+  metadata           Json?
+  reviewAt           DateTime?
+  expiresAt          DateTime?
+  owner              String?
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([schoolId, cohortKey, round, policyVersionId, setVersion])
+  @@index([setVersion, schoolId, cohortKey, round])
+  @@index([policyVersionId, applicationYear])
+}
+
+model SchoolCohortRegimeSignal {
+  id                 String   @id @default(cuid())
+  schoolId           String
+  school             School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  policyVersionId    String?
+  policyVersion      PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey          String?
+  round              String?
+  applicationYear    Int?
+  setVersion         String?
+  regimeKey          String?
+  signalType         String?
+  direction          String?
+  driftMultiplier    Decimal? @db.Decimal(6, 4)
+  strength           Decimal? @db.Decimal(6, 5)
+  confidence         String?
+  sourceSummary      Json?
+  sourceObservationIds String[] @default([])
+  sampleCount        Int?
+  effectiveFromCycle String?
+  effectiveFrom      DateTime?
+  effectiveTo        DateTime?
+  metadata           Json?
+  reviewAt           DateTime?
+  expiresAt          DateTime?
+  owner              String?
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([schoolId, cohortKey, round, regimeKey, policyVersionId, setVersion])
+  @@index([setVersion, schoolId, cohortKey, round])
+  @@index([schoolId, regimeKey])
+  @@index([cohortKey, round, applicationYear])
+  @@index([policyVersionId, effectiveFrom])
+}
+
+model SchoolRelationshipSignal {
+  id                    String                     @id @default(cuid())
+  sourceHighSchoolId    String?
+  sourceHighSchool      HighSchool?               @relation(fields: [sourceHighSchoolId], references: [id], onDelete: Cascade)
+  sourceInstitutionName String?
+  targetSchoolId        String
+  targetSchool          School                    @relation(fields: [targetSchoolId], references: [id], onDelete: Cascade)
+  policyVersionId       String?
+  policyVersion         PredictionPolicyVersion?  @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey             String?
+  round                 String?
+  applicationYear       Int?
+  setVersion            String?
+  relationshipType      PredictionRelationshipType
+  relationshipKey       String?
+  admitRate             Decimal?                  @db.Decimal(6, 5)
+  baselineRate          Decimal?                  @db.Decimal(6, 5)
+  strength              Decimal?                  @db.Decimal(6, 4)
+  signalStrength        Decimal?                  @db.Decimal(6, 5)
+  maxImpactCap          Decimal?                  @db.Decimal(6, 4)
+  sampleCount           Int?
+  confidence            String?
+  sourceSummary         Json?
+  sourceObservationIds  String[]                  @default([])
+  effectiveFromCycle    String?
+  metadata              Json?
+  reviewAt              DateTime?
+  expiresAt             DateTime?
+  owner                 String?
+  notes                 String?                   @db.Text
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  @@unique([sourceHighSchoolId, targetSchoolId, cohortKey, round, relationshipType, policyVersionId, setVersion])
+  @@index([setVersion, targetSchoolId, cohortKey, round])
+  @@index([targetSchoolId, relationshipType])
+  @@index([sourceHighSchoolId, applicationYear])
+  @@index([policyVersionId, cohortKey])
+}
+
 // ============================================
 // Standalone 组队 (first-class teams)
 // ============================================
@@ -970,6 +1512,7 @@ model Team {
 
   members     TeamMembership[]
   invitations TeamInvitation[]
+  recruitmentCards TeamRecruitmentCard[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1014,6 +1557,102 @@ model TeamInvitation {
   @@index([inviteeId])
   @@index([token])
   @@index([status])
+}
+
+model TeamRecruitmentCard {
+  id                  String                      @id @default(cuid())
+  teamId              String
+  team                Team                        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  competitionTrackId  String
+  competitionTrack    CompetitionTrack            @relation(fields: [competitionTrackId], references: [id], onDelete: Cascade)
+  phase               TeamRecruitmentPhase        @default(DRAFT)
+  headline            String
+  detailNote          String?                     @db.Text
+  highlightTitle      String?
+  offerRoles          String[]
+  needRoles           String[]
+  skillTags           String[]
+  availabilityBand    RecruitmentAvailabilityBand?
+  collaborationMode   CollaborationMode?
+  timezone            String?
+  city                String?
+  languages           String[]
+  intentMode          RecruitmentIntentMode      @default(TEAM_UP)
+  publishedAt         DateTime?
+  expiresAt           DateTime?
+  isClosed            Boolean                     @default(false)
+  version             Int                         @default(1)
+
+  memberProfiles TeamRecruitmentMemberProfile[]
+  sourceSwipes   TeamRecruitmentSwipe[]           @relation("RecruitmentSwipeSource")
+  targetSwipes   TeamRecruitmentSwipe[]           @relation("RecruitmentSwipeTarget")
+  leftMatches    TeamMatch[]                      @relation("TeamMatchLeft")
+  rightMatches   TeamMatch[]                      @relation("TeamMatchRight")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, competitionTrackId])
+  @@index([phase, isClosed])
+  @@index([teamId, updatedAt])
+}
+
+model TeamRecruitmentMemberProfile {
+  id                    String               @id @default(cuid())
+  teamRecruitmentCardId String
+  teamRecruitmentCard   TeamRecruitmentCard  @relation(fields: [teamRecruitmentCardId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  selectedResumeId      String?
+  selectedResume        Resume?              @relation("RecruitmentSelectedResume", fields: [selectedResumeId], references: [id], onDelete: SetNull)
+  introLine             String?
+  showSchool            Boolean              @default(false)
+  showGrade             Boolean              @default(false)
+  showAwards            Boolean              @default(false)
+  consentConfirmedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamRecruitmentCardId, userId])
+  @@index([userId])
+}
+
+model TeamRecruitmentSwipe {
+  id            String                    @id @default(cuid())
+  sourceCardId  String
+  sourceCard    TeamRecruitmentCard       @relation("RecruitmentSwipeSource", fields: [sourceCardId], references: [id], onDelete: Cascade)
+  targetCardId  String
+  targetCard    TeamRecruitmentCard       @relation("RecruitmentSwipeTarget", fields: [targetCardId], references: [id], onDelete: Cascade)
+  actedById     String
+  actedBy       User                      @relation(fields: [actedById], references: [id], onDelete: Cascade)
+  action        TeamRecruitmentSwipeAction
+  sourceVersion Int
+  targetVersion Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([sourceCardId, targetCardId, sourceVersion, targetVersion])
+  @@index([actedById])
+  @@index([targetCardId, targetVersion])
+}
+
+model TeamMatch {
+  id             String               @id @default(cuid())
+  leftCardId     String
+  leftCard       TeamRecruitmentCard  @relation("TeamMatchLeft", fields: [leftCardId], references: [id], onDelete: Cascade)
+  rightCardId    String
+  rightCard      TeamRecruitmentCard  @relation("TeamMatchRight", fields: [rightCardId], references: [id], onDelete: Cascade)
+  matchKind      TeamMatchKind
+  conversationId String?              @unique
+  conversation   Conversation?        @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  closedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leftCardId, closedAt])
+  @@index([rightCardId, closedAt])
 }
 
 model ProfileTargetSchool {
@@ -1108,10 +1747,27 @@ model PredictionResult {
 
   // 数据来源
   source         String? // prediction | recommendation | ai-recommend | quick-match
+  policyVersionId String?
+  policyVersion   PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  predictionModelId String?
+  predictionModel   PredictionModel? @relation(fields: [predictionModelId], references: [id], onDelete: SetNull)
+  servedTrace      Json?
+  sourceSummary    Json?
+  uncertaintyReasons Json?
+  confidenceReason String?
+  applicationRound  String? // normalized round bucket: ED / EA / RD / ROLLING / TRANSFER / etc.
+  applicationYear   Int?
+  cohortKey         String? // e.g. intl:CN:IB or domestic:public_us
+  selectivityBand   String?
 
   // 准确率追踪
   actualResult   String? // ADMITTED / REJECTED / WAITLISTED / UNKNOWN
   reportedAt     DateTime? // 用户报告实际结果的时间
+  outcomeLabel   PredictionOutcomeLabel?
+  outcomeLabeledAt DateTime?
+  outcomeLabelRecords PredictionOutcomeLabelRecord[]
+
+  sourceObservations PredictionSourceObservation[] @relation("PredictionResultObservations")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -1121,6 +1777,11 @@ model PredictionResult {
   @@index([schoolId])
   @@index([modelVersion])
   @@index([actualResult])
+  @@index([policyVersionId])
+  @@index([predictionModelId])
+  @@index([outcomeLabel])
+  @@index([applicationRound, applicationYear])
+  @@index([cohortKey])
 }
 
 /// 预测历史快照 — 记录每次预测的概率用于趋势追踪
@@ -1135,11 +1796,51 @@ model PredictionSnapshot {
   confidence      String?
   source          String   @default("prediction") // prediction | recommendation | ai-recommend | quick-match
   modelVersion    String   @default("v2")
+  policyVersionId String?
+  policyVersion   PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  predictionModelId String?
+  predictionModel   PredictionModel? @relation(fields: [predictionModelId], references: [id], onDelete: SetNull)
+  servedTrace      Json?
+  sourceSummary    Json?
+  uncertaintyReasons Json?
+  confidenceReason String?
+  applicationRound  String?
+  applicationYear   Int?
+  cohortKey         String?
+  selectivityBand   String?
+  outcomeLabel      PredictionOutcomeLabel?
+  outcomeLabeledAt  DateTime?
+  sourceObservations PredictionSourceObservation[] @relation("PredictionSnapshotObservations")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([profileId, schoolId, createdAt])
   @@index([profileId, createdAt])
+  @@index([policyVersionId])
+  @@index([predictionModelId])
+  @@index([outcomeLabel])
+  @@index([applicationRound, applicationYear])
+  @@index([cohortKey])
+}
+
+model PredictionOutcomeLabelRecord {
+  id                 String                       @id @default(cuid())
+  predictionResultId String
+  predictionResult   PredictionResult             @relation(fields: [predictionResultId], references: [id], onDelete: Cascade)
+  result             PredictionOutcomeLabel
+  status             PredictionOutcomeLabelStatus @default(SELF_REPORTED)
+  notes              String?                      @db.Text
+  evidenceUrl        String?
+  round              String?
+  isFinal            Boolean                      @default(false)
+  reportedBy         String?
+  resolvedBy         String?
+  resolvedAt         DateTime?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  @@index([predictionResultId, createdAt])
+  @@index([status])
 }
 
 // ============================================
@@ -1305,8 +2006,12 @@ model Block {
 
 model Conversation {
   id           String                    @id @default(cuid())
+  kind         ConversationKind          @default(DIRECT)
+  title        String?
+  createdBySystem Boolean                @default(false)
   participants ConversationParticipant[]
   messages     Message[]
+  teamMatch    TeamMatch?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1339,6 +2044,7 @@ model Message {
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   content    String  @db.Text
+  isSystem   Boolean @default(false)
   isDeleted  Boolean @default(false)
   isRecalled Boolean @default(false)
   recalledAt DateTime?
@@ -2003,7 +2709,7 @@ model TeamApplication {
 
   message    String?       @db.Text
   resumeId   String?
-  resume     Resume?       @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  resume     Resume?       @relation("TeamApplicationResume", fields: [resumeId], references: [id], onDelete: SetNull)
   status     TeamAppStatus @default(PENDING)
   reviewedAt DateTime?
   reviewNote String?
@@ -2699,7 +3405,8 @@ model Resume {
   sections           ResumeSection[]
   snapshots          ResumeSnapshot[]
   aiReviews          ResumeAIReview[]
-  teamApplications   TeamApplication[]
+  teamApplications   TeamApplication[]          @relation("TeamApplicationResume")
+  recruitmentMemberProfiles TeamRecruitmentMemberProfile[] @relation("RecruitmentSelectedResume")
   version        Int          @default(1)
   lastImportedAt DateTime?
 
@@ -2767,6 +3474,154 @@ enum ModelStatus {
   RETIRED
 }
 
+enum PredictionObservationSourceType {
+  OFFICIAL_SCHOOL
+  OFFICIAL_FEDERAL
+  TRUSTED_THIRD_PARTY
+  INTERNAL_CASES
+  INTERNAL_OUTCOMES
+  MANUAL_RESEARCH
+  RELATIONSHIP_EVIDENCE
+}
+
+enum PredictionObservationStatus {
+  RAW
+  UNDER_REVIEW
+  APPROVED_FOR_SIGNAL
+  APPROVED_FOR_PRIOR
+  REJECTED
+  EXPIRED
+  SUPERSEDED
+  LICENSE_BLOCKED
+  CONFLICT_FLAGGED
+}
+
+enum PredictionPolicyStatus {
+  DRAFT
+  CANDIDATE
+  SHADOW
+  ACTIVE
+  RETIRED
+}
+
+enum SchoolPolicyDimension {
+  TESTING
+  INTL_AID
+  ROUND
+  OTHER
+}
+
+enum SchoolPolicyEvidenceStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum ApplicationAnalysisPolicyStatus {
+  DRAFT
+  CANDIDATE
+  SHADOW
+  ACTIVE
+  RETIRED
+}
+
+enum ApplicationAnalysisEvaluationMode {
+  GOLD_SET
+  SHADOW
+}
+
+enum ApplicationAnalysisEvaluationStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ApplicationAnalysisExperimentCapability {
+  RECOURSE
+  UNCERTAINTY
+  FAIRNESS
+}
+
+enum ApplicationAnalysisExperimentStatus {
+  DRAFT
+  SHADOW
+  CANARY
+  ACTIVE
+  RETIRED
+}
+
+enum ApplicationAnalysisExperimentEvaluationMode {
+  GOLD_SET
+  SHADOW
+  CANARY
+}
+
+enum ApplicationAnalysisExperimentEvaluationStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ApplicationAnalysisFeedbackCategory {
+  UNSAFE_RECOURSE
+  POLICY_MISMATCH
+  MISLEADING_UNCERTAINTY
+  FAIRNESS_CONCERN
+  LOW_ACTIONABILITY
+}
+
+enum ApplicationAnalysisFeedbackSentiment {
+  HELPFUL
+  NOT_HELPFUL
+}
+
+enum ApplicationAnalysisExperimentSweepMode {
+  HOURLY_ROLLOUT
+  NIGHTLY_SHADOW
+  MANUAL_FULL
+}
+
+enum ApplicationAnalysisExperimentSweepStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ApplicationAnalysisExperimentIncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ApplicationAnalysisExperimentIncidentStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum PredictionRelationshipType {
+  FORMAL_PARTNERSHIP
+  EXCHANGE_PIPELINE
+  SUMMER_PROGRAM_PIPELINE
+  LONG_TERM_FEEDER
+  COUNSELOR_CHANNEL
+  ARTICULATION_OR_MOU
+  OTHER_VERIFIED
+}
+
+enum PredictionOutcomeLabelStatus {
+  SELF_REPORTED
+  COUNSELOR_VERIFIED
+  DOCUMENT_VERIFIED
+  CONFLICTED
+  CENSORED
+}
+
 model PredictionModel {
   id              String      @id @default(cuid())
   version         Int         @unique
@@ -2795,6 +3650,8 @@ model PredictionModel {
 
   // Fairness
   fairnessMetrics Json?       // { demographicParity, equalizedOdds, bandFairness }
+  predictionResults   PredictionResult[]
+  predictionSnapshots PredictionSnapshot[]
 
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

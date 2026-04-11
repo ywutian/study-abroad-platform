@@ -45,6 +45,7 @@
 2. **测试工程** `test-engineer` — 运行测试、补充缺失测试、验证通过
 3. **用户旅程** `user-journey-auditor` — 涉及用户可见功能时，审查受影响旅程的完整性和体验（审计模板：`docs/templates/user-journey-audit.md`，记录：`docs/USER_JOURNEY_AUDIT_LOG.md`）
 4. **闭环检查**负责更新 CLAUDE.md / MEMORY.md 文档，并提醒在旅程注册表中登记新增的用户可见功能
+5. 如本轮是全产品面专项审计，闭环检查还必须更新 `docs/FULL_SURFACE_*` 文档、对应模板与复用手册
 
 ### 规则
 
@@ -186,6 +187,25 @@ All LLM calls go through `LLMService` (globally provided by `LLMProvidersModule.
 ### Tool System
 
 12 domain tool services implementing `IToolHandlerProvider`. See `memory/ai-system.md` for full list and how to add new tools.
+
+### Prediction × AI Agent Integration
+
+- prediction 相关能力归属 `school` agent，**不要新增独立 prediction agent**。
+- AI chat 协议允许可选 `context` + `agentHint`：
+  - `prediction-results`
+  - `selected-schools`
+- 这些结构化 context 目前由 prediction 页面、学校详情页个人预测 CTA、profile 选校清单 CTA 注入 `/ai-agent/chat`。
+- conversation metadata 会保存最近一次 prediction context 摘要，并写入一条 `prediction_ui_context` memory：
+  - 只用于后续对话理解
+  - **不能**当 calibration truth、训练真值或 policy 输入
+- 预测解释必须只基于公开安全字段：
+  - `sourceSummary`
+  - `uncertaintyReasons`
+  - `confidenceReason`
+  - `roundContext`
+  - `latestOutcomeLabel`
+- **不要**把 `servedTrace`、shadow/challenger 结果、内部 policy gate 直接暴露给普通用户。
+- `v5 ML-primary` 若仍处于 shadow，只能做内部对照；school agent 对用户继续回答真正 served 的结果。
 
 ### Memory System
 
@@ -337,6 +357,25 @@ Each module with AI prompts has a dedicated `*.prompts.ts` file exporting builde
 - `buildXxxUserPrompt(data, locale: string): string`
 
 Examples: `ai/profile-ai.prompts.ts`, `ai/resume-ai.prompts.ts`, `recommendation/recommendation.prompts.ts`, `prediction/prediction.prompts.ts`, `essay/essay-ai.prompts.ts`
+
+### Application Analysis Convention
+
+For school-aware application analysis:
+
+- Canonical API: `GET /profiles/me/ai-analysis`
+- Canonical backend orchestrator: `apps/api/src/modules/profile/profile-application-analysis.service.ts`
+- Canonical prompt file: `apps/api/src/modules/profile/profile-application-analysis.prompts.ts`
+- Canonical shared contract: `packages/shared/src/types/ai-agent.ts` → `AIAnalysisResult`
+
+Hard rules:
+
+- `SchoolListItem` is the only target-school source for application analysis.
+- Prediction is the only source of probability/tier. The LLM layer may explain strategy, but must not invent a second scoring engine.
+- Profile analysis consumers must render the structured contract directly. Do not use markdown parsing, regex extraction, or ad hoc text post-processing in `uncommon-app` or other clients.
+- Weak states must remain explicit: missing target schools, missing predictions, insufficient profile evidence, analysis failure.
+- Mobile is a required consumer whenever the shared application-analysis contract changes.
+- Canonical mobile application-analysis surfaces are `/profile`, `/profile/analysis`, and `/prediction`.
+- School policy must come from `targetSchoolInsights[].policyContext`; do not re-derive UC/test-optional/aid policy client-side.
 
 ## Database
 
@@ -722,26 +761,27 @@ When adding a new endpoint that accepts user-generated natural language:
 
 ## File Index
 
-| Category     | File                                                        | Purpose                                               |
-| ------------ | ----------------------------------------------------------- | ----------------------------------------------------- |
-| **Entry**    | `api/src/app.module.ts`                                     | Module imports, guard/interceptor/filter registration |
-| **Auth**     | `api/src/modules/auth/auth.service.ts`                      | JWT, refresh rotation, brute force                    |
-|              | `api/src/common/guards/jwt-auth.guard.ts`                   | Global JWT guard (`@Public()` to skip)                |
-|              | `api/src/common/guards/roles.guard.ts`                      | Role-based access control                             |
-| **Pipeline** | `api/src/tracing.ts`                                        | OTel SDK init (first import in main.ts)               |
-|              | `api/src/common/interceptors/transform.interceptor.ts`      | Response envelope wrapping                            |
-|              | `api/src/common/filters/http-exception.filter.ts`           | Global error handling                                 |
-|              | `api/src/common/feature-flags/`                             | Feature flag module, service, guard, decorator        |
-| **AI**       | `api/src/modules/ai-agent/core/llm.service.ts`              | Unified LLM service (chatSimple + call + callStream)  |
-|              | `api/src/modules/ai-agent/core/orchestrator.service.ts`     | Multi-agent orchestrator                              |
-|              | `api/src/modules/ai-agent/config/agents.config.ts`          | Agent definitions                                     |
-|              | `api/src/modules/ai-agent/config/tools.config.ts`           | Tool definitions                                      |
-|              | `api/src/modules/ai-agent/tools/helpers/llm-json.helper.ts` | JSON extraction helper                                |
-| **DB**       | `api/prisma/schema.prisma`                                  | Database schema (~2460 lines)                         |
-|              | `api/src/common/config/env.validation.ts`                   | Zod env var validation                                |
-| **Frontend** | `web/src/components/providers/index.tsx`                    | Provider chain + AuthInitializer                      |
-|              | `web/src/lib/api/client.ts`                                 | API client (auth, retry, unwrap)                      |
-|              | `web/src/proxy.ts`                                          | Route protection + i18n                               |
-|              | `web/src/stores/auth.ts`                                    | Auth state (Zustand)                                  |
-|              | `web/src/lib/constants.ts`                                  | AI timeouts, cache times                              |
-| **Shared**   | `packages/shared/src/types/index.ts`                        | Shared TypeScript types                               |
+| Category     | File                                                        | Purpose                                                               |
+| ------------ | ----------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Entry**    | `api/src/app.module.ts`                                     | Module imports, guard/interceptor/filter registration                 |
+| **Auth**     | `api/src/modules/auth/auth.service.ts`                      | JWT, refresh rotation, brute force                                    |
+|              | `api/src/common/guards/jwt-auth.guard.ts`                   | Global JWT guard (`@Public()` to skip)                                |
+|              | `api/src/common/guards/roles.guard.ts`                      | Role-based access control                                             |
+| **Pipeline** | `api/src/tracing.ts`                                        | OTel SDK init (first import in main.ts)                               |
+|              | `api/src/common/interceptors/transform.interceptor.ts`      | Response envelope wrapping                                            |
+|              | `api/src/common/filters/http-exception.filter.ts`           | Global error handling                                                 |
+|              | `api/src/common/feature-flags/`                             | Feature flag module, service, guard, decorator                        |
+| **AI**       | `api/src/modules/ai-agent/core/llm.service.ts`              | Unified LLM service (chatSimple + call + callStream)                  |
+|              | `api/src/modules/ai-agent/core/orchestrator.service.ts`     | Multi-agent orchestrator                                              |
+|              | `api/src/modules/ai-agent/config/agents.config.ts`          | Agent definitions                                                     |
+|              | `api/src/modules/ai-agent/config/tools.config.ts`           | Tool definitions                                                      |
+|              | `api/src/modules/ai-agent/tools/helpers/llm-json.helper.ts` | JSON extraction helper                                                |
+| **DB**       | `api/prisma/schema.prisma`                                  | Database schema (~2460 lines)                                         |
+|              | `api/src/common/config/env.validation.ts`                   | Zod env var validation                                                |
+| **Frontend** | `web/src/components/providers/index.tsx`                    | Provider chain + AuthInitializer                                      |
+|              | `web/src/lib/api/client.ts`                                 | API client (auth, retry, unwrap)                                      |
+|              | `web/src/proxy.ts`                                          | Route protection + i18n                                               |
+|              | `web/src/stores/auth.ts`                                    | Auth state (Zustand)                                                  |
+|              | `web/src/lib/constants.ts`                                  | AI timeouts, cache times                                              |
+| **Shared**   | `packages/shared/src/types/index.ts`                        | Shared TypeScript types                                               |
+| **Docs**     | `docs/visualizations/README.md`                             | Static viz: admission prediction model (open `prediction-model.html`) |

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SchoolListService } from './school-list.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import {
   NotFoundException,
   ConflictException,
@@ -24,6 +25,7 @@ jest.mock('../../common/utils/scoring', () => ({
 describe('SchoolListService', () => {
   let service: SchoolListService;
   let prisma: PrismaService;
+  let cacheInvalidation: CacheInvalidationService;
 
   const mockSchool = {
     id: 'school-1',
@@ -82,11 +84,20 @@ describe('SchoolListService', () => {
             },
           },
         },
+        {
+          provide: CacheInvalidationService,
+          useValue: {
+            onProfileChange: jest.fn().mockResolvedValue(undefined),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<SchoolListService>(SchoolListService);
     prisma = module.get<PrismaService>(PrismaService);
+    cacheInvalidation = module.get<CacheInvalidationService>(
+      CacheInvalidationService,
+    );
   });
 
   afterEach(() => {
@@ -159,6 +170,7 @@ describe('SchoolListService', () => {
 
       expect(result.schoolId).toBe('school-1');
       expect(prisma.schoolListItem.create).toHaveBeenCalled();
+      expect(cacheInvalidation.onProfileChange).toHaveBeenCalledWith('user-1');
     });
 
     it('should throw NotFoundException if school does not exist', async () => {
@@ -199,6 +211,7 @@ describe('SchoolListService', () => {
 
       const result = await service.updateItem('user-1', 'item-1', updateDto);
       expect(result).toBeDefined();
+      expect(cacheInvalidation.onProfileChange).toHaveBeenCalledWith('user-1');
     });
 
     it('should throw NotFoundException if item not found', async () => {
@@ -221,6 +234,7 @@ describe('SchoolListService', () => {
       expect(prisma.schoolListItem.delete).toHaveBeenCalledWith({
         where: { id: 'item-1' },
       });
+      expect(cacheInvalidation.onProfileChange).toHaveBeenCalledWith('user-1');
     });
 
     it('should throw NotFoundException if item not found', async () => {

@@ -1,6 +1,265 @@
 # 用户旅程审计记录
 
+## 2026-04-10 审计（School Library Filters + Teams Swipe/Invite 闭环）
+
+### 元数据
+
+| 项目     | 内容                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 日期     | 2026-04-10                                                                                                                                       |
+| 触发原因 | 按 `CLAUDE.md` 工作流补齐 School Library filters 与 Teams swipe/match/invite 用户可见闭环                                                        |
+| 审计范围 | Web + API；本轮不含 mobile 主 gate，不更新 `FULL_SURFACE_*` 资产                                                                                 |
+| 证据类型 | code inspection + targeted tests + typecheck + routes/integration/i18n gate                                                                      |
+| 正式结论 | `A10` 与新增子旅程 `SJ-5` 主链路已补齐；`invite-members` 现在可送达通知并提供 join fallback，School filters 的 badge / query / truncation 已对齐 |
+
+### 结果摘要
+
+| 旅程 | Persona | 评分 | 结果 | 关键结论                                                                                                                               |
+| ---- | ------- | ---- | ---- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| A10  | 申请者  | 4/5  | PASS | School Library 的 active filter badge 已改为与真实 query 同源，结果截断会显式提示，Advanced filter 的州名和 ranking preset 已收回 i18n |
+| SJ-5 | 申请者  | 4/5  | PASS | Teams 组队卡现在覆盖建卡、发布、互相右滑、match 群聊、逐人邀请入队、通知送达、copy join link fallback 与 token join 接受               |
+
+### 5 维矩阵
+
+| 维度     | A10                                                                                            | SJ-5                                                                                                                     |
+| -------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| API      | 继续复用 `GET /schools`，不新增分叉契约；前端显式展示前 100 条截断状态                         | `POST /teams/matches/:id/invite-members` 返回 `status / invitationId / token / inviteUrl / notificationSent`             |
+| 类型     | `SchoolFilters` 与 query serialization 保持单源；新增 `SCHOOL_BROWSE_PAGE_SIZE` 统一 page size | shared 新增 `TeamMatchInviteResultDto` / `InviteMatchMembersResponseDto`；member DTO 暴露 display settings 供编辑器回填  |
+| i18n     | `AdvancedSchoolFilter` 的州名、ranking preset 与 browse truncation 文案已进入 `en/zh` 资源     | join 页 loading 文案已进入 i18n；Teams 主页面仍有既存 hardcoded copy，当前为非 blocker warning                           |
+| 权限     | 仍由 `country + filters -> dto -> Prisma where` 单链路约束结果集                               | 仅 owner/admin 可邀请；invite deep link 通过通知元数据 `team_invitation` 暴露，join 仍受 team capacity / membership 检查 |
+| 错误处理 | browse 页会在结果被截断时明确提示用户缩小筛选范围                                              | 邀请结果支持 `SENT / EXISTING_PENDING / ALREADY_MEMBER`，通知失败时仍保留 copy link fallback                             |
+
+### 已验证
+
+- `pnpm --filter @study-abroad/shared build`
+- `pnpm --filter web exec tsc --noEmit`
+- `pnpm --filter api exec tsc --noEmit --project tsconfig.build.json`
+- `pnpm --filter web test -- --runInBand src/components/features/schools/school-filters.test.ts src/components/features/teams/team-recruitment-utils.test.ts`
+- `pnpm --filter api exec jest apps/api/src/modules/team/team.service.spec.ts apps/api/src/modules/team/team.controller.spec.ts apps/api/src/modules/team/team-recruitment.service.spec.ts --runInBand`
+- `pnpm lint:routes`
+- `pnpm lint:integration`
+- `pnpm --filter web lint:i18n`
+
+### 非 blocker 记录
+
+- `pnpm lint:integration` 已无 error，但仍存在全局历史 warning：hardcoded API routes、route protection coverage、cache invalidation、AI agent memory governance。
+- `pnpm --filter web lint:i18n` 仍报告 `TeamsPageClient.tsx` 的既存 hardcoded 文案；本轮已修复 join 页和 School Library filter 面板，但未做整页文案迁移。
+- `TeamRecruitmentService` 之前缺失专属 spec；本轮已新增并覆盖 reciprocal like / invite notification 两条关键链路。
+
+## 2026-04-10 审计（Prediction × AI Agent 闭环整合）
+
+### 元数据
+
+| 项目     | 内容                                                                     |
+| -------- | ------------------------------------------------------------------------ |
+| 日期     | 2026-04-10                                                               |
+| 触发原因 | prediction 系统升级后，补齐与 AI agent 的结构化上下文闭环                |
+| 审计范围 | prediction 页面、学校详情页、profile 选校清单、AI chat、outcome feedback |
+
+### 审计结果
+
+| 旅程 | Persona | 评分 | 结果 | 关键结论                                                                                                                          |
+| ---- | ------- | ---- | ---- | --------------------------------------------------------------------------------------------------------------------------------- |
+| A3   | 申请者  | 4/5  | PASS | prediction 页面发起 AI 分析后，后续追问不再需要重复粘贴结果；context 已进入 `/ai-agent/chat` 会话                                 |
+| A10  | 申请者  | 4/5  | PASS | 学校详情页个人预测 CTA、prediction 页分析、profile 选校 CTA 已统一归到 `school agent`，chat 内可消费 history/dashboard/list/trace |
+| SJ-1 | 申请者  | 4/5  | PASS | 学校详情页进入 AI 分析时保留当前学校和个人预测语境，支持继续问“为什么这样分层 / 为什么概率变了”                                   |
+
+### 本轮新增闭环能力
+
+- prediction 页面 AI actions 现在传结构化 `prediction-results` context，不再只靠 prompt 文本。
+- prediction 页面在 “Analyze selected schools” 动作下会显式传 `selected-schools` context，不再被已有 prediction batch 覆盖。
+- school detail 和 profile school list 已接入 `selected-schools` / 单校 prediction context。
+- school detail 的单校 prediction context 会带 `latestOutcomeLabel`，确保用户上报结果后再进入 AI chat 仍能感知最新 outcome。
+- chat 会话会持久化最近一次 prediction context 摘要，并写入 `prediction_ui_context` memory 供后续追问理解。
+- `get_prediction_trace_summary` 为用户侧提供安全解释字段；raw `servedTrace` 与 shadow 结果未暴露。
+- 用户上报实际结果后，后续相关 agent 对话可感知最新 outcome；只有 `ADMITTED / REJECTED` 进入 calibration 语义。
+
+### 审计备注
+
+- 本轮明确保持 `prediction` 归属 `school agent`，未新增独立 prediction agent。
+- `v5 ML-primary` 如仍处于 shadow，只保留在治理/监控层，不进入当前用户侧回答。
+
+## 2026-04-02 Governance Update
+
+- 新增 full-surface audit 框架，用于覆盖 `route + capability + journey overlay` 三层审计，不再仅依赖 active journeys。
+- 机器可读事实源：`scripts/release-gate/full-surface-registry.ts`
+- 复用资产入口：
+  - `docs/FULL_SURFACE_REGISTRY.md`
+  - `docs/FULL_SURFACE_REUSE_PLAYBOOK.md`
+  - `docs/FULL_SURFACE_GAP_CHECKLIST.md`
+  - `MEMORY.md`
+- 后续 full-surface 专项审计的 route/capability 明细不写入本文件；本文件只继续承载受影响 journey 的摘要结论。
+
 > 每次审计完成后追加一个 section。持续积累，用于趋势分析和防漏。
+> 自 2026-04-02 起，journey log 只保留 journey 级摘要；全产品面页面/能力明细请写入 `docs/FULL_SURFACE_AUDIT_LOG_<date>.md`。
+
+---
+
+## 2026-04-10 审计（申请分析补充闭环，targeted closure audit）
+
+### 元数据
+
+| 项目     | 内容                                                                                                     |
+| -------- | -------------------------------------------------------------------------------------------------------- |
+| 日期     | 2026-04-10                                                                                               |
+| 触发原因 | `GET /profiles/me/ai-analysis` canonical 化后补齐弱态、失效、消费回归与 workflow 闭环                    |
+| 审计范围 | Profile 页申请分析 + `uncommon-app` canonical 消费 + 申请分析缓存 freshness + 弱态展示                   |
+| 证据类型 | 定向 automated regression + contract/code inspection；本轮未重跑完整 live browser E2E                    |
+| 正式结论 | 学校级申请分析主链路已统一到 `/profiles/me/ai-analysis`，弱态与降级路径已补齐，旧 `/me/grade` 仅保留兼容 |
+
+### 结果摘要
+
+| ID   | 状态 | 评分 | 入口 / 介质                     | 结论                                                                                  |
+| ---- | ---- | ---- | ------------------------------- | ------------------------------------------------------------------------------------- |
+| AA-1 | PASS | 4/5  | Profile 页面 / web              | 完整档案 + 目标校 + prediction 时，会展示学校级难点、补偿优势、top gaps、action plan  |
+| AA-2 | PASS | 4/5  | Profile 页面 / web              | 无目标校时明确落到 `noTargetSchools`，不再伪造学校级 insight                          |
+| AA-3 | PASS | 4/5  | Profile 页面 / web              | 有目标校但无 prediction 时明确落到 `noPredictions`，学校卡片回退为 weak state         |
+| AA-4 | PASS | 4/5  | Profile 页面 / web              | synthesis 失败时返回 `analysisError` + `degraded`，页面保留基础判断但不展示伪造结论   |
+| AA-5 | PASS | 4/5  | `uncommon-app` / web            | profile analysis 已只走 `profileRoutes.aiAnalysis()`，不再调用 profile agent 文本分析 |
+| AA-6 | PASS | 4/5  | Profile + School List / backend | school round 变化、profile 变化、推荐信变化会失效申请分析缓存并触发重新判断           |
+
+### 本轮覆盖的关键场景
+
+- 完整档案 + 目标校 + prediction：学校级输出存在且结构化字段可消费
+- 无目标校：`noTargetSchools`
+- 有目标校但无 prediction：`noPredictions`
+- synthesis throw / JSON 失败：`analysisError` + `degraded`
+- 修改 school round 后重新分析：stale refresh 触发
+- recommendation letter 变更：申请分析缓存失效
+
+### 非 blocker 记录
+
+以下问题在本轮 `--staged` gate 中仍可见，但与申请分析闭环无直接关系，未纳入本批修复：
+
+- `ai-agent.controller` 参数签名 / spec 不一致
+- `persistent-memory.service` Prisma 类型错误
+- `school.controller.spec` 缺 `SchoolCommunityRatingService` provider
+
+---
+
+## 2026-04-10 审计（申请分析跨端闭环，mobile + docs closure）
+
+### 元数据
+
+| 项目     | 内容                                                                                                                                                      |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 日期     | 2026-04-10                                                                                                                                                |
+| 触发原因 | 按三版本闭环方案补齐 application analysis 的 mobile consumer、route registry 与 docs closure                                                              |
+| 审计范围 | Web Profile 申请分析 + mobile `/profile`、`/profile/analysis`、`/prediction` + canonical contract docs                                                    |
+| 证据类型 | targeted tests + mobile typecheck + i18n checks + docs/registry inspection                                                                                |
+| 正式结论 | `GET /profiles/me/ai-analysis` 已成为 web + mobile 的统一申请分析入口；A11 受影响路由核心 runtime 已补齐，Android remote push 条件 blocker 维持非阻塞追踪 |
+
+### 结果摘要
+
+| ID    | 状态 | 评分 | 入口 / 介质                | 结论                                                                                      |
+| ----- | ---- | ---- | -------------------------- | ----------------------------------------------------------------------------------------- |
+| AA-M1 | PASS | 4/5  | mobile `/profile`          | Profile 页新增申请分析摘要卡，可显示 freshness / state / data quality 并跳转详情页        |
+| AA-M2 | PASS | 4/5  | mobile `/profile/analysis` | 详情页消费 canonical `AIAnalysisResult`，可展示学校级 insight、policy badges、action plan |
+| AA-M3 | PASS | 4/5  | mobile `/prediction`       | Prediction 页面新增 canonical analysis CTA，跨端策略语义与 web 对齐                       |
+| AA-M4 | PASS | 4/5  | docs + registry            | API / Architecture / Research / SOP / Journey log / Full Surface Registry 已同步收口      |
+
+### 已验证
+
+- `pnpm --filter web test -- src/components/features/profile/ProfileAIAnalysis.test.tsx`
+- `pnpm --filter api test -- modules/profile/profile-application-analysis.service.spec.ts`
+- `pnpm --filter study-abroad-mobile typecheck`
+- `pnpm --filter study-abroad-mobile test -- src/__tests__/screens/profile.test.tsx src/__tests__/screens/profile-analysis.test.tsx src/__tests__/screens/prediction.test.tsx src/__tests__/lib/ai-service.test.ts src/__tests__/lib/i18n.test.ts`
+- `pnpm --filter web lint:i18n`
+
+### 审计备注
+
+- 本轮把 mobile `/profile`、`/profile/analysis`、`/prediction` 视为 A11 受影响路由并单独补证据，但不把 Android remote push 条件能力 blocker 混写成 application analysis runtime blocker。
+- 文档闭环范围包括 API、架构、研究文档、prediction SOP、journey log、docs index、memory 和 full-surface registry。
+
+### 非 blocker 记录
+
+- `A11 / SJ-3` 的 Android remote push 依然受 Firebase / FCM 原生配置约束，继续按 conditional capability gate 跟踪；本轮申请分析不依赖 push，因此不构成 release blocker。
+
+---
+
+## 2026-04-10 审计（申请分析 V2 governance 骨架）
+
+### 元数据
+
+| 项目     | 内容                                                                                                                                      |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 日期     | 2026-04-10                                                                                                                                |
+| 触发原因 | 按 application analysis 全面执行计划补齐 `V2` 数据模型、admin workflow、runtime active-policy 接线与实验框架                              |
+| 审计范围 | `/admin/application-analysis-workflow`、`ApplicationAnalysisPolicyVersion`、`SchoolPolicyEvidence`、`ApplicationAnalysisEvaluationRun`    |
+| 证据类型 | API build + web/mobile typecheck + focused workflow tests + docs / SOP / registry 更新                                                    |
+| 正式结论 | 申请分析已具备独立的 `evidence → candidate → shadow → gates → activate / rollback` 治理骨架；applicant runtime 继续只消费 `ACTIVE` policy |
+
+### 结果摘要
+
+| ID    | 状态 | 评分 | 入口 / 介质                              | 结论                                                                                          |
+| ----- | ---- | ---- | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| AA-G1 | PASS | 4/5  | admin `/application-analysis-workflow`   | Evidence / Policies / Evaluations / Gates / Activate-Rollback 五个 tab 可运行                 |
+| AA-G2 | PASS | 4/5  | API workflow endpoints                   | 已补齐 evidence、policy、evaluation、gate、activate、rollback、experiment preview             |
+| AA-G3 | PASS | 4/5  | applicant runtime                        | `/profiles/me/ai-analysis` 开始读取 `ACTIVE` policy 和 approved evidence；无 active 时回退 V1 |
+| AA-G4 | PASS | 4/5  | docs / SOP / memory / API / architecture | V2 workflow 与 V3 experimental 边界已写实，不再只停留在 research 计划层                       |
+
+### 已验证
+
+- `pnpm --filter api build`
+- `pnpm --filter web exec tsc --noEmit`
+- `pnpm --filter study-abroad-mobile typecheck`
+- `pnpm --filter api test -- src/modules/profile/application-analysis-workflow.service.spec.ts`
+
+### 审计备注
+
+- 这批把 application analysis 的治理链正式从 prediction SOP 中拆分出来，独立成 `APPLICATION_ANALYSIS_WORKFLOW_SOP.md` 与 `APPLICATION_ANALYSIS_EXPERIMENTAL_SOP.md`。
+- runtime 继续保持 applicant-facing contract 稳定，不引入第二个公开 application-analysis API。
+
+### 非 blocker 记录
+
+- `prisma migrate dev --create-only` 仍被仓库既有 shadow DB 历史问题阻塞：`20260322130000_sync_schema_changes` 在 shadow database 回放失败；本批已补手写 migration 文件，不把该历史问题误记为本批 schema blocker。
+
+---
+
+## 2026-04-10 审计（申请分析 V3 capability-gated runtime）
+
+### 元数据
+
+| 项目     | 内容                                                                                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 日期     | 2026-04-10                                                                                                                                                                    |
+| 触发原因 | 按 V3 成熟闭环方案，将 recourse / strategy uncertainty / fairness disclosure 从 admin preview 升级为 capability-gated applicant runtime                                       |
+| 审计范围 | `/profiles/me/ai-analysis` additive contract、`/admin/application-analysis-workflow/experiments`、web/mobile 结构化渲染与 capability 回退                                     |
+| 证据类型 | focused API/web/mobile tests + typecheck + i18n + `verify-gate --staged` + docs / registry inspection                                                                         |
+| 正式结论 | V3 已具备 capability-scoped `DRAFT → SHADOW → CANARY → ACTIVE → RETIRED` 治理链；applicant runtime 仅在 `ACTIVE/CANARY + flag` 条件满足时输出加法字段，关闭时静默回退到 V2/V1 |
+
+### 结果摘要
+
+| ID     | 状态 | 评分 | 入口 / 介质                                  | 结论                                                                                               |
+| ------ | ---- | ---- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| AA-V31 | PASS | 4/5  | admin `/application-analysis-workflow`       | Experiments tab 可创建 capability version，并触发 shadow / canary / evaluate / activate / retire   |
+| AA-V32 | PASS | 4/5  | applicant `/profiles/me/ai-analysis` runtime | `recourseGuidance`、`strategyUncertainty`、`fairnessDisclosure` 只在 runtime experiment 启用时出现 |
+| AA-V33 | PASS | 4/5  | web Profile analysis                         | 学校卡片和顶层公平披露可渲染 V3 字段；字段缺失时自动回退，无占位失败文案                           |
+| AA-V34 | PASS | 4/5  | mobile `/profile/analysis`                   | 与 web 同义渲染 recourse / uncertainty / fairness disclosure，不引入单端语义漂移                   |
+| AA-V35 | PASS | 4/5  | feature flags + cache invalidation           | capability 进入 `CANARY/ACTIVE` 会同步 flag；`retire` 会关闭能力并失效 applicant cache             |
+| AA-V36 | PASS | 4/5  | automated sweep / admin manual trigger       | `SHADOW -> CANARY -> ACTIVE -> RETIRED` 已具备 nightly sweep 与手动 `experiments/sweep` 双路径     |
+
+### 已验证
+
+- `pnpm --filter api exec prisma generate`
+- `pnpm --filter api test -- src/modules/profile/profile-application-analysis.service.spec.ts src/modules/profile/application-analysis-workflow.service.spec.ts`
+- `pnpm --filter web test -- src/components/features/profile/ProfileAIAnalysis.test.tsx`
+- `pnpm --filter study-abroad-mobile test -- src/__tests__/screens/profile-analysis.test.tsx`
+- `pnpm --filter web exec tsc --noEmit`
+- `pnpm --filter study-abroad-mobile typecheck`
+- `pnpm --filter web lint:i18n`
+- `npx tsx scripts/verify-gate.ts --staged --verbose`
+
+### 审计备注
+
+- 本轮没有新增第二个 applicant-facing endpoint，仍然统一走 `/profiles/me/ai-analysis`。
+- `prediction` 仍是唯一概率事实源；V3 只增加 strategy layer 字段，不新增第三套概率 contract。
+- `CANARY` 通过 capability feature flag 的 percentage rollout 生效；nightly sweep 会自动刷新评估、推进 ready capability，并对 regressions 执行 auto-retire。
+- admin 仍可手动调用 `experiments/sweep` 复跑同一套编排逻辑，以便在证据或 gate 更新后立即推进。
+
+### 非 blocker 记录
+
+- 当前自动化是 nightly cron + admin manual sweep，尚未扩展到多阶段 hourly canary train 或跨实例 leader election；如果后续要做更细粒度的 release train，需要单独补编排与分布式互斥。
 
 ---
 
@@ -343,3 +602,145 @@
 - `e2e-report/releases/live-2026-04-01-gate/journeys/C4/record.json`
 - `e2e-report/releases/live-2026-04-01-gate/journeys/C5/record.json`
 - `/tmp/live-2026-04-01-gate/release-gate-master.md`
+
+## 2026-04-02 Follow-up（Full-Surface Batch 1 Applicant Web/Auth）
+
+### 范围
+
+- 这是 full-surface 专项审计下的 Batch 1，不等同于 release gate。
+- 本轮 fresh 重跑并回填了 applicant web/auth 相关的 journey overlay：
+  - `A1`
+  - `A2`
+  - `SJ-2`
+
+### 结果
+
+- `A1`：`PASS`
+- `A2`：`PASS`
+- `SJ-2`：`PASS`
+
+### 说明
+
+- 本轮同时修掉了 full-surface runner 的两类误导性问题：
+  - delegated journey force rerun 会误吃旧 `_journeys/<id>/record.json`
+  - summary 会把 supporting route records 误算进 selected surface totals
+- 后续收口又补了三类 runner/sample 修复：
+  - guest/auth 页面匿名 `auth bootstrap` 噪音已被隔离，不再把 public/auth route 误记成 `401 / 429`
+  - `ranking / register` 的 React-Radix hydration warning 已按 dev-only 窄模式降噪
+  - `resumeId / teamId` 会在 sample catalog 缺失时自动最小创建
+- 因此以上 3 条结论现在都基于 fresh full-surface evidence，不是沿用旧 gate 记录；对应的 Batch 1 aggregate 也已收口为 `43/43 PASS`。
+- 随后的 canonical reconciliation 又补掉了 3 个 applicant web 真实 hydration 问题：
+  - profile completeness 首屏 `0 -> 100`
+  - settings theme/toggle 首屏 mismatch
+  - applicant 根入口 `/:locale` 实际落到 dashboard 后的欢迎语 / 统计区 mismatch
+- 这些问题不改变 `A1 / A2 / SJ-2` 的最终旅程结论，但已作为 Batch 1 产品修复正式收口，不再留在审计噪音里。
+
+### 证据
+
+- `e2e-report/full-surface-2026-04-02/JOURNEY__A1/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__A2/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__SJ-2/record.json`
+
+## 2026-04-02 Follow-up（Full-Surface Batch 2 Applicant AI / 留学业务）
+
+### 范围
+
+- 这是 full-surface 专项审计下的 Batch 2，不等同于 release gate。
+- 本轮 fresh 重跑并回填了 applicant AI / business 相关 journey overlay：
+  - `A3`
+  - `A4`
+  - `A5`
+  - `A6`
+  - `A7`
+  - `A8`
+  - `A9`
+  - `A10`
+  - `SJ-1`
+
+### 结果
+
+- `A3`：full-surface canonical rerun confirmed `PASS`
+- `A10`：full-surface canonical rerun confirmed `PASS`
+- `SJ-1`：保持 `PASS`
+- Batch 2 aggregate：`26/26 PASS`
+
+### 说明
+
+- 本轮先前最像产品回归的 recommendation 抖动，已确认不是新的 applicant 推荐链路故障。
+- 真正的根因是审计 harness：
+  - web 长耗时 AI 请求默认穿 Next rewrite proxy，在 dev 环境下不稳；
+  - delegated journey `record.json` 写出晚于 full-surface 父进程默认 `90s` 窗口；
+  - 对同一 delegated journey 高频 `force-rerun` 会放大 auth throttling / Redis lock / stale evidence 污染。
+- 因此 `A3` 当前应视为 fresh runtime 已通过；如果后续再出现类似 `BLOCKED`，应先按 harness suspicion 排查，而不是直接判成推荐产品回归。
+
+### 证据
+
+- `e2e-report/full-surface-2026-04-02/JOURNEY__A3/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__A10/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__SJ-1/record.json`
+- `e2e-report/full-surface-2026-04-02/CAPABILITY__RECOMMENDATION_GENERATE/record.json`
+- `e2e-report/full-surface-2026-04-02/CAPABILITY__PREDICTION_RUN/record.json`
+
+## 2026-04-02 Follow-up（Full-Surface Batch 4 Admin / MCP）
+
+### 范围
+
+- 这是 full-surface 专项审计下的 Batch 4，不等同于 release gate。
+- 本轮 fresh 重跑并回填了 admin / MCP 相关 journey overlay：
+  - `C1`
+  - `C2`
+  - `C3`
+  - `C4`
+  - `C5`
+  - `SJ-4`
+
+### 结果
+
+- `C1-C5`：full-surface canonical rerun confirmed `PASS`
+- `SJ-4`：full-surface canonical rerun confirmed `PASS`
+- Batch 4 aggregate：`28/28 PASS`
+
+### 说明
+
+- 本批真正修掉了两个 admin 页面级问题：
+  - `admin/ai-operations` 的 detailed health 调用路径和鉴权方式错误
+  - `admin/high-schools` 的 `JP / KR` 国家翻译缺失
+- `SJ-4` 当前执行口径仍然是“admin API 创建 MCP key + 外部 stdio client 验证工具调用”；这条链路已通过，但“专门的 admin MCP 管理页”仍不在当前 active surface 内。
+
+### 证据
+
+- `e2e-report/full-surface-2026-04-02/JOURNEY__C1/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__C2/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__C3/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__C4/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__C5/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__SJ-4/record.json`
+
+## 2026-04-03 Follow-up（Full-Surface Batch 3 Mobile）
+
+### 范围
+
+- 这是 full-surface 专项审计下的 Batch 3，不等同于 release gate。
+- 本轮 fresh 重跑并回填了 mobile 相关 journey overlay：
+  - `A11`
+  - `SJ-3`
+
+### 结果
+
+- `A11`：`BLOCKED`
+- `SJ-3`：`BLOCKED`
+- Batch 3 aggregate：`47 PASS / 3 BLOCKED`
+
+### 说明
+
+- 当前 mobile core route 已在 canonical full-surface root 下 fresh 通过，不再只有旧 mobile 审计旁证。
+- `A11 / SJ-3` 现在都已确认不是启动崩溃、页面不可达或通知页行为坏掉；它们只剩同一个 Android remote push 条件 blocker。
+- 当前 blocker 仍是：
+  - 缺失 `apps/mobile/android/app/google-services.json`
+  - 因而 Expo / FCM push token 无法完成，真机 remote push 到达与 notification-open 无法 fresh 验证
+
+### 证据
+
+- `e2e-report/full-surface-2026-04-02/JOURNEY__A11/record.json`
+- `e2e-report/full-surface-2026-04-02/JOURNEY__SJ-3/record.json`
+- `e2e-report/full-surface-2026-04-02/CAPABILITY__NOTIFICATION_MOBILE_SYNC/record.json`

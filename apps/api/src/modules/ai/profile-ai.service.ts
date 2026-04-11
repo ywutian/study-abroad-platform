@@ -22,6 +22,9 @@ export class ProfileAiService {
   ) {}
 
   /**
+   * Legacy profile-only analysis helper.
+   * New school-aware application analysis must use /profiles/me/ai-analysis.
+   *
    * P0: 详细档案分析 - 红黄绿评分系统
    *
    * 评分标准:

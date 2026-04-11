@@ -84,9 +84,14 @@ const PROFILE_DEFAULT_VALUES: ProfileFormValues = {
 export default function ProfilePage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState('basic');
+  const [isHydrated, setIsHydrated] = useState(false);
   const { isInitialized, accessToken } = useAuthStore();
   const [showCelebration, setShowCelebration] = useState(false);
   const [previousCompleteness, setPreviousCompleteness] = useState<number | null>(null);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // react-hook-form with Zod validation
   const schema = useMemo(() => createProfileSchema(t), [t]);
@@ -164,8 +169,11 @@ export default function ProfilePage() {
     enabled: isInitialized && !!accessToken,
   });
   const calculateCompleteness = useCallback(() => {
+    if (!isHydrated) {
+      return 0;
+    }
     return dashboardData?.profile?.completeness ?? 0;
-  }, [dashboardData?.profile?.completeness]);
+  }, [dashboardData?.profile?.completeness, isHydrated]);
 
   const m = useProfileMutations();
 

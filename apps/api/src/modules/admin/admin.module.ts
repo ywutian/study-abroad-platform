@@ -12,12 +12,15 @@ import { AdminHighSchoolController } from './admin-high-school.controller';
 import { AdminProgressGateway } from './admin-progress.gateway';
 import { PermissionGuard } from '../../common/guards/permission.guard';
 import { AdminFeatureFlagController } from './admin-feature-flag.controller';
+import { AdminPredictionWorkflowController } from './admin-prediction-workflow.controller';
+import { AdminApplicationAnalysisWorkflowController } from './admin-application-analysis-workflow.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
 import { SchoolModule } from '../school/school.module';
 import { PredictionModule } from '../prediction/prediction.module';
 import { AuthModule } from '../auth/auth.module';
+import { ProfileModule } from '../profile/profile.module';
 
 @Module({
   imports: [
@@ -26,6 +29,7 @@ import { AuthModule } from '../auth/auth.module';
     NotificationModule,
     SchoolModule,
     PredictionModule,
+    ProfileModule,
     AuthModule, // Provides JwtService for AdminProgressGateway
   ],
   controllers: [
@@ -35,6 +39,8 @@ import { AuthModule } from '../auth/auth.module';
     AdminDataPipelineController,
     AdminHighSchoolController,
     AdminFeatureFlagController,
+    AdminPredictionWorkflowController,
+    AdminApplicationAnalysisWorkflowController,
   ],
   providers: [
     AdminService,

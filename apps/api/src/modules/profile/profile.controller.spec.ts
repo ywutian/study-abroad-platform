@@ -1,14 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
-import { ProfileAiService } from '../ai/profile-ai.service';
 import { SchoolListService } from '../school-list/school-list.service';
-import { RedisService } from '../../common/redis/redis.service';
+import { ProfileApplicationAnalysisService } from './profile-application-analysis.service';
 
 describe('ProfileController', () => {
   let controller: ProfileController;
   let profileService: ProfileService;
-  let profileAiService: ProfileAiService;
+  let profileApplicationAnalysisService: ProfileApplicationAnalysisService;
   let schoolListService: SchoolListService;
 
   const mockUser = {
@@ -86,11 +85,27 @@ describe('ProfileController', () => {
           },
         },
         {
-          provide: ProfileAiService,
+          provide: ProfileApplicationAnalysisService,
           useValue: {
-            analyzeProfileDetailed: jest
-              .fn()
-              .mockResolvedValue({ overall: 'GREEN' }),
+            getAnalysisForUser: jest.fn().mockResolvedValue({
+              overallScore: 86,
+              tier: 'top30',
+              summary: 'Strong profile',
+              sections: {
+                academic: { status: 'green', score: 8, feedback: 'Good' },
+                testScores: { status: 'yellow', score: 6, feedback: 'Okay' },
+                activities: { status: 'green', score: 8, feedback: 'Strong' },
+                awards: { status: 'yellow', score: 5, feedback: 'Needs more' },
+              },
+              suggestions: {
+                majors: [],
+                competitions: [],
+                activities: [],
+                summerPrograms: [],
+                timeline: [],
+              },
+              status: 'fresh',
+            }),
           },
         },
         {
@@ -103,20 +118,15 @@ describe('ProfileController', () => {
             removeItem: jest.fn().mockResolvedValue(undefined),
           },
         },
-        {
-          provide: RedisService,
-          useValue: {
-            getJSON: jest.fn().mockResolvedValue(null),
-            setJSON: jest.fn().mockResolvedValue(undefined),
-            del: jest.fn().mockResolvedValue(undefined),
-          },
-        },
       ],
     }).compile();
 
     controller = module.get<ProfileController>(ProfileController);
     profileService = module.get<ProfileService>(ProfileService);
-    profileAiService = module.get<ProfileAiService>(ProfileAiService);
+    profileApplicationAnalysisService =
+      module.get<ProfileApplicationAnalysisService>(
+        ProfileApplicationAnalysisService,
+      );
     schoolListService = module.get<SchoolListService>(SchoolListService);
   });
 
@@ -171,19 +181,15 @@ describe('ProfileController', () => {
     it('should return AI analysis for the user profile', async () => {
       const result = await controller.getAIAnalysis(mockUser as any);
 
-      expect(profileService.findByUserId).toHaveBeenCalledWith('user-1');
-      expect(profileAiService.analyzeProfileDetailed).toHaveBeenCalled();
-      expect(result).toEqual({ overall: 'GREEN', status: 'fresh' });
-    });
-
-    it('should call analyzeProfileDetailed with empty object when no profile', async () => {
-      (profileService.findByUserId as jest.Mock).mockResolvedValue(null);
-
-      await controller.getAIAnalysis(mockUser as any);
-
-      expect(profileAiService.analyzeProfileDetailed).toHaveBeenCalledWith(
-        {},
-        'zh',
+      expect(
+        profileApplicationAnalysisService.getAnalysisForUser,
+      ).toHaveBeenCalledWith('user-1', 'zh');
+      expect(result).toEqual(
+        expect.objectContaining({
+          overallScore: 86,
+          tier: 'top30',
+          status: 'fresh',
+        }),
       );
     });
   });
