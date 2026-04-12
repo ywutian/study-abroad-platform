@@ -92,3 +92,8 @@ Rules JSON: `{ "roles": ["ADMIN"], "userIds": ["uuid"], "percentage": 50 }`. Eva
 | `no-missing-test` | warning | Service without `.spec.ts` |
 | `no-duplicated-select` | warning | Same select block repeated 2+ times |
 | `no-select-mapping-drift` | warning | SELECT field not in mapper |
+
+## Deep Dive
+
+- Architecture overview: `docs/ARCHITECTURE.md`
+- Engineering standards: `docs/ENGINEERING_STANDARDS.md`

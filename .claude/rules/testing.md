@@ -22,6 +22,10 @@ globs: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.tsx", "**/*.e2e-spec.ts"]
 - API route renames/deletes: sync `apps/api/test/*.e2e-spec.ts`
 - Uses `pgvector/pgvector:pg16` + `redis:7-alpine` service containers
 
+## Deep Dive
+
+- Full testing checklist & patterns: `docs/TESTING_CHECKLIST.md`
+
 ## Verification Gate
 
 ```bash

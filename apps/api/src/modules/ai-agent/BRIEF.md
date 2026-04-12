@@ -25,6 +25,10 @@ Conversation, Message, Memory (pgvector), TokenUsage. Tool results in message me
 - WebSocket auth via JWT in handshake token
 - All NL endpoints must be registered in `nl-endpoints.json` for governance
 
+## Deep Dive
+
+- Memory system spec: `docs/AI_AGENT_MEMORY_SYSTEM_SPEC.md`
+
 ## Gotchas
 
 - `LLMProvidersModule.forRoot()` is `global: true` — LLMService available everywhere without import
