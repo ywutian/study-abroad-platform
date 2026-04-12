@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api';
-import { adminRoutes } from '@study-abroad/shared';
+import { adminRoutes, schoolRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 import { DeadlineFormDialog } from './deadline-form-dialog';
@@ -72,7 +72,7 @@ export function DeadlinesTab() {
   const { data: schoolOptions } = useQuery({
     queryKey: ['schoolSearch', schoolQuery],
     queryFn: () =>
-      apiClient.get<{ items: SchoolOption[] }>('/schools', {
+      apiClient.get<{ items: SchoolOption[] }>(schoolRoutes.list(), {
         params: { search: schoolQuery, pageSize: '10' },
       }),
     enabled: schoolQuery.length >= 2,

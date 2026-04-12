@@ -65,6 +65,7 @@ export type ApiRoutePrefix = (typeof API_ROUTES)[keyof typeof API_ROUTES];
 
 export const profileRoutes = {
   me: () => `${API_ROUTES.PROFILES}/me`,
+  onboarding: () => `${API_ROUTES.PROFILES}/onboarding`,
   aiAnalysis: () => `${API_ROUTES.PROFILES}/me/ai-analysis`,
   aiAnalysisFeedback: () => `${API_ROUTES.PROFILES}/me/ai-analysis/feedback`,
   testScores: () => `${API_ROUTES.PROFILES}/me/test-scores`,
@@ -93,6 +94,8 @@ export const hallRoutes = {
   reviewReact: (id: string) => `${API_ROUTES.HALLS}/reviews/${id}/react`,
   verifiedRanking: () => `${API_ROUTES.HALLS}/verified-ranking`,
   swipe: () => `${API_ROUTES.HALLS}/swipe`,
+  profile: (userId: string) => `${API_ROUTES.HALLS}/profiles/${userId}`,
+  publicProfiles: () => `${API_ROUTES.HALLS}/public-profiles`,
 };
 
 export const chatRoutes = {
@@ -101,10 +104,16 @@ export const chatRoutes = {
   conversationMessages: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/messages`,
   conversationRead: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/read`,
   conversationPin: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/pin`,
+  conversationUpload: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/upload`,
   message: (messageId: string) => `${API_ROUTES.CHATS}/messages/${messageId}`,
   follow: (userId: string) => `${API_ROUTES.CHATS}/follow/${userId}`,
   block: (userId: string) => `${API_ROUTES.CHATS}/block/${userId}`,
   report: () => `${API_ROUTES.CHATS}/report`,
+  followers: () => `${API_ROUTES.CHATS}/followers`,
+  following: () => `${API_ROUTES.CHATS}/following`,
+  blocked: () => `${API_ROUTES.CHATS}/blocked`,
+  unreadCount: () => `${API_ROUTES.CHATS}/unread-count`,
+  recommendations: () => `${API_ROUTES.CHATS}/recommendations`,
 };
 
 export const predictionRoutes = {
@@ -140,6 +149,7 @@ export const timelineRoutes = {
   global: () => `${API_ROUTES.TIMELINES}/global`,
   tasks: () => `${API_ROUTES.TIMELINES}/tasks`,
   taskToggle: (id: string) => `${API_ROUTES.TIMELINES}/tasks/${id}/toggle`,
+  overview: () => `${API_ROUTES.TIMELINES}/overview`,
 };
 
 export const authRoutes = {
@@ -163,6 +173,8 @@ export const essayAiRoutes = {
   rewriteParagraph: () => `${API_ROUTES.ESSAY_AI}/rewrite-paragraph`,
   activityDescription: () => `${API_ROUTES.ESSAY_AI}/activity-description`,
   gallery: () => `${API_ROUTES.ESSAY_AI}/gallery`,
+  galleryItem: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}`,
+  galleryAnalyze: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/analyze`,
 };
 
 export const resumeRoutes = {
@@ -184,6 +196,10 @@ export const schoolRoutes = {
   byId: (id: string) => `${API_ROUTES.SCHOOLS}/${id}`,
   communityRatingSummary: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/community-ratings/summary`,
   communityRatingMe: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/community-ratings/me`,
+  logoSuggestion: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/logo-suggestion`,
+  scrapeAll: () => `${API_ROUTES.SCHOOLS}/scrape/all`,
+  ucIds: () => `${API_ROUTES.SCHOOLS}/uc-ids`,
+  aiRecommend: () => `${API_ROUTES.SCHOOLS}/ai/recommend`,
 };
 
 export const highSchoolRoutes = {
@@ -217,6 +233,9 @@ export const verificationRoutes = {
   my: () => `${API_ROUTES.VERIFICATIONS}/my`,
   history: () => `${API_ROUTES.VERIFICATIONS}/history`,
   status: () => `${API_ROUTES.VERIFICATIONS}/status`,
+  stats: () => `${API_ROUTES.VERIFICATIONS}/stats`,
+  pending: () => `${API_ROUTES.VERIFICATIONS}/pending`,
+  byId: (id: string) => `${API_ROUTES.VERIFICATIONS}/${id}`,
   review: (id: string) => `${API_ROUTES.VERIFICATIONS}/${id}/review`,
 };
 
@@ -228,6 +247,7 @@ export const peerReviewRoutes = {
 export const teamRoutes = {
   list: () => API_ROUTES.TEAMS,
   byId: (id: string) => `${API_ROUTES.TEAMS}/${id}`,
+  invite: (id: string) => `${API_ROUTES.TEAMS}/${id}/invite`,
   joinByToken: () => `${API_ROUTES.TEAMS}/join`,
   join: (id: string) => `${API_ROUTES.TEAMS}/${id}/join`,
   leave: (id: string) => `${API_ROUTES.TEAMS}/${id}/leave`,
@@ -246,6 +266,9 @@ export const teamRoutes = {
 
 export const userRoutes = {
   me: () => `${API_ROUTES.USERS}/me`,
+  dashboard: () => `${API_ROUTES.USERS}/me/dashboard`,
+  referral: () => `${API_ROUTES.USERS}/me/referral`,
+  referrals: () => `${API_ROUTES.USERS}/me/referrals`,
 };
 
 export const essayPromptRoutes = {
@@ -255,10 +278,24 @@ export const essayPromptRoutes = {
 export const settingsRoutes = {
   list: () => API_ROUTES.SETTINGS,
   byKey: (key: string) => `${API_ROUTES.SETTINGS}/${key}`,
+  byCategory: (category: string) => `${API_ROUTES.SETTINGS}/category/${category}`,
 };
 
 export const rankingRoutes = {
   list: () => API_ROUTES.RANKINGS,
+};
+
+export const healthRoutes = {
+  check: () => API_ROUTES.HEALTH,
+  detailed: () => `${API_ROUTES.HEALTH}/detailed`,
+  live: () => `${API_ROUTES.HEALTH}/live`,
+  ready: () => `${API_ROUTES.HEALTH}/ready`,
+};
+
+export const pointsRoutes = {
+  summary: () => `${API_ROUTES.USERS}/me/points/summary`,
+  history: () => `${API_ROUTES.USERS}/me/points/history`,
+  rules: () => `${API_ROUTES.USERS}/me/points/rules`,
 };
 
 export const adminFeatureFlagRoutes = {

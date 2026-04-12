@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { apiClient } from '@/lib/api';
+import { pointsRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import {
   Coins,
@@ -70,7 +71,7 @@ export function PointsOverview({ compact = false, className }: PointsOverviewPro
   }
   const { data: summary, isLoading } = useQuery({
     queryKey: ['points-summary'],
-    queryFn: () => apiClient.get<PointsSummary>('/users/me/points/summary'),
+    queryFn: () => apiClient.get<PointsSummary>(pointsRoutes.summary()),
   });
 
   if (isLoading) {

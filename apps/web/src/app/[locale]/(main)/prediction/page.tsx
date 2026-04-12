@@ -12,6 +12,7 @@ import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
 import { PageContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api/client';
+import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
 import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { usePredictionDashboard, useRunPrediction } from '@/hooks/use-prediction';
 import {
@@ -51,7 +52,7 @@ export default function PredictionPage() {
   const [hasPreFilled, setHasPreFilled] = useState(false);
   const { data: schoolListData } = useQuery({
     queryKey: ['school-lists'],
-    queryFn: () => apiClient.get<SchoolListItemApi[]>('/school-lists'),
+    queryFn: () => apiClient.get<SchoolListItemApi[]>(schoolListRoutes.list()),
   });
   useEffect(() => {
     if (hasPreFilled || !schoolListData?.length) return;
@@ -87,12 +88,12 @@ export default function PredictionPage() {
   const predictMutation = useRunPrediction();
   const { data: ucIdsData } = useQuery({
     queryKey: ['schools', 'uc-ids'],
-    queryFn: () => apiClient.get<{ schoolIds: string[] }>('/schools/uc-ids'),
+    queryFn: () => apiClient.get<{ schoolIds: string[] }>(schoolRoutes.ucIds()),
   });
 
   const { data: profileData } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<any>('/profiles/me'),
+    queryFn: () => apiClient.get<any>(profileRoutes.me()),
   });
 
   const isInternational = useMemo(() => {

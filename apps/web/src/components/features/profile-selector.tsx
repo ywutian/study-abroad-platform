@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { apiClient } from '@/lib/api';
+import { hallRoutes } from '@study-abroad/shared';
 import { Search, User, GraduationCap, Award, BookOpen, Loader2, ChevronRight } from 'lucide-react';
 
 interface PublicProfile {
@@ -50,7 +51,7 @@ export function ProfileSelector({ onSelect, selectedProfileId }: ProfileSelector
   const { data: profilesResponse, isLoading } = useQuery({
     queryKey: ['publicProfiles', search],
     queryFn: () =>
-      apiClient.get<{ data: PublicProfile[] }>('/halls/public-profiles', {
+      apiClient.get<{ data: PublicProfile[] }>(hallRoutes.publicProfiles(), {
         params: search ? { search } : undefined,
       }),
   });

@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { essayAiRoutes } from '@study-abroad/shared';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import type {
   EssayReview,
@@ -17,7 +18,7 @@ export const essayAiKeys = {
 export function useEssayReview(onSuccess?: (data: EssayReview) => void) {
   return useMutation({
     mutationFn: (data: { essayId: string; schoolName?: string; major?: string }) =>
-      apiClient.post<EssayReview>('/essay-ai/review', data, {
+      apiClient.post<EssayReview>(essayAiRoutes.review(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),
@@ -32,7 +33,7 @@ export function useEssayPolish(onSuccess?: (data: PolishResult) => void) {
       content?: string;
       style?: 'formal' | 'vivid' | 'concise';
     }) =>
-      apiClient.post<PolishResult>('/essay-ai/polish', data, {
+      apiClient.post<PolishResult>(essayAiRoutes.polish(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),
@@ -43,7 +44,7 @@ export function useEssayPolish(onSuccess?: (data: PolishResult) => void) {
 export function useEssayRewrite(onSuccess?: (data: RewriteResult) => void) {
   return useMutation({
     mutationFn: (data: { paragraph: string; instruction?: string }) =>
-      apiClient.post<RewriteResult>('/essay-ai/rewrite-paragraph', data, {
+      apiClient.post<RewriteResult>(essayAiRoutes.rewriteParagraph(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),
@@ -54,7 +55,7 @@ export function useEssayRewrite(onSuccess?: (data: RewriteResult) => void) {
 export function useEssayContinue(onSuccess?: (data: ContinueResult) => void) {
   return useMutation({
     mutationFn: (data: { content: string; prompt?: string; direction?: string }) =>
-      apiClient.post<ContinueResult>('/essay-ai/continue-writing', data, {
+      apiClient.post<ContinueResult>(essayAiRoutes.continueWriting(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),
@@ -65,7 +66,7 @@ export function useEssayContinue(onSuccess?: (data: ContinueResult) => void) {
 export function useEssayOpening(onSuccess?: (data: OpeningResult) => void) {
   return useMutation({
     mutationFn: (data: { prompt: string; background?: string }) =>
-      apiClient.post<OpeningResult>('/essay-ai/generate-opening', data, {
+      apiClient.post<OpeningResult>(essayAiRoutes.generateOpening(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),

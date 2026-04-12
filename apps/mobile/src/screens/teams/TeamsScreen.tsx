@@ -8,6 +8,7 @@ import type {
   TeamMatchDto,
   TeamRecruitmentCardFrontDto,
 } from '@study-abroad/shared';
+import { resumeRoutes } from '@study-abroad/shared';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { EmptyState, Loading, Segment, Select } from '@/components/ui';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -74,7 +75,7 @@ export default function TeamsScreen() {
 
   const { data: resumes } = useQuery({
     queryKey: ['mobile-teams', 'resumes'],
-    queryFn: () => apiClient.get<ResumeOption[]>('/resumes'),
+    queryFn: () => apiClient.get<ResumeOption[]>(resumeRoutes.list()),
   });
 
   const currentEntry = useMemo(() => {

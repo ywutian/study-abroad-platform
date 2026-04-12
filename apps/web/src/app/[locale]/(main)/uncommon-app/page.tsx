@@ -8,6 +8,7 @@ import { PageContainer } from '@/components/layout';
 import { PageHeader } from '@/components/layout/page-header';
 import { apiClient } from '@/lib/api';
 import { profileRoutes, schoolListRoutes } from '@study-abroad/shared';
+
 import { toast } from 'sonner';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 
@@ -41,7 +42,7 @@ export default function UncommonAppPage() {
   // Fetch profile
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', 'me'],
-    queryFn: () => apiClient.get<Profile>('/profiles/me'),
+    queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   // Delete from list mutation

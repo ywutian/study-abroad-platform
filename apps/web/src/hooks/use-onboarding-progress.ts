@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { userRoutes } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores';
 
 interface DashboardProfile {
@@ -29,7 +30,7 @@ export function useOnboardingProgress() {
 
   const { data } = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () => apiClient.get<DashboardData>('/users/me/dashboard'),
+    queryFn: () => apiClient.get<DashboardData>(userRoutes.dashboard()),
     enabled: isInitialized && !!accessToken,
     staleTime: STALE_TIME.MODERATE,
   });

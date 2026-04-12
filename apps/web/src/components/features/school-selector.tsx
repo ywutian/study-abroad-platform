@@ -19,6 +19,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { apiClient } from '@/lib/api';
+import { schoolRoutes } from '@study-abroad/shared';
 import { Search, GraduationCap, X, Loader2, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
@@ -65,7 +66,7 @@ export function SchoolSelector({
   const { data: schoolsResponse, isLoading } = useQuery({
     queryKey: ['schools', search],
     queryFn: () =>
-      apiClient.get<{ items: School[]; total: number }>('/schools', {
+      apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: { search, pageSize: '100' },
       }),
     enabled: open,

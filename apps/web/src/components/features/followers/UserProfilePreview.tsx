@@ -12,7 +12,7 @@ import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { chatRoutes } from '@study-abroad/shared';
+import { chatRoutes, hallRoutes } from '@study-abroad/shared';
 import {
   UserPlus,
   UserMinus,
@@ -73,9 +73,9 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
     queryKey: ['user-preview', userId],
     queryFn: async () => {
       const [userData, following, followers] = await Promise.all([
-        apiClient.get<UserProfile>(`/halls/profiles/${userId}`),
-        apiClient.get<any[]>('/chats/following'),
-        apiClient.get<any[]>('/chats/followers'),
+        apiClient.get<UserProfile>(hallRoutes.profile(userId!)),
+        apiClient.get<any[]>(chatRoutes.following()),
+        apiClient.get<any[]>(chatRoutes.followers()),
       ]);
 
       return {
@@ -131,7 +131,9 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
 
   const handleStartChat = async () => {
     try {
-      const conversation = await apiClient.post<{ id: string }>('/chats/conversations', { userId });
+      const conversation = await apiClient.post<{ id: string }>(chatRoutes.conversations(), {
+        userId,
+      });
       onOpenChange(false);
       router.push(`/chat?conversation=${conversation.id}`);
     } catch (error: unknown) {

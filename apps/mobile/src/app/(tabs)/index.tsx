@@ -22,6 +22,13 @@ import {
 } from '@/components/ui';
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { apiClient } from '@/lib/api/client';
+import {
+  caseRoutes,
+  schoolRoutes,
+  profileRoutes,
+  schoolListRoutes,
+  timelineRoutes,
+} from '@study-abroad/shared';
 import { useAuthStore } from '@/stores';
 import {
   useColors,
@@ -101,7 +108,7 @@ export default function HomeScreen() {
   } = useQuery({
     queryKey: ['recentCases'],
     queryFn: () =>
-      apiClient.get<PaginatedResponse<Case>>('/cases', {
+      apiClient.get<PaginatedResponse<Case>>(caseRoutes.list(), {
         params: { page: 1, pageSize: 5 },
       }),
     refetchOnMount: 'always',
@@ -116,7 +123,7 @@ export default function HomeScreen() {
   } = useQuery({
     queryKey: ['topSchools'],
     queryFn: () =>
-      apiClient.get<PaginatedResponse<School>>('/schools', {
+      apiClient.get<PaginatedResponse<School>>(schoolRoutes.list(), {
         params: { page: 1, pageSize: 5 },
       }),
     refetchOnMount: 'always',
@@ -126,7 +133,7 @@ export default function HomeScreen() {
   // Fetch profile for grade card
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ['profile', 'me'],
-    queryFn: () => apiClient.get<HomeProfile>('/profiles/me'),
+    queryFn: () => apiClient.get<HomeProfile>(profileRoutes.me()),
     enabled: isAuthenticated,
     refetchOnMount: 'always',
     refetchOnReconnect: 'always',
@@ -135,7 +142,7 @@ export default function HomeScreen() {
   // Fetch school list for tier breakdown
   const { data: schoolList, refetch: refetchSchoolList } = useQuery({
     queryKey: ['schoolList'],
-    queryFn: () => apiClient.get<SchoolListItem[]>('/school-lists'),
+    queryFn: () => apiClient.get<SchoolListItem[]>(schoolListRoutes.list()),
     enabled: isAuthenticated,
     refetchOnMount: 'always',
     refetchOnReconnect: 'always',
@@ -144,7 +151,7 @@ export default function HomeScreen() {
   // Fetch upcoming deadlines
   const { data: deadlines, refetch: refetchDeadlines } = useQuery({
     queryKey: ['deadlines', 'upcoming'],
-    queryFn: () => apiClient.get<TimelineOverview>('/timelines/overview'),
+    queryFn: () => apiClient.get<TimelineOverview>(timelineRoutes.overview()),
     enabled: isAuthenticated,
     refetchOnMount: 'always',
     refetchOnReconnect: 'always',

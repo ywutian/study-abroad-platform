@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { caseRoutes } from '@study-abroad/shared';
 import { CaseCard, SubmitCaseDialog } from '@/components/features';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -85,7 +86,7 @@ export function CasesTab() {
     refetch,
   } = useQuery({
     queryKey: ['cases', filters],
-    queryFn: () => apiClient.get<any>('/cases', { params: filters as any }),
+    queryFn: () => apiClient.get<any>(caseRoutes.list(), { params: filters as any }),
     retry: 2,
     staleTime: STALE_TIME.DYNAMIC,
     refetchOnWindowFocus: false,

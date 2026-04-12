@@ -18,7 +18,7 @@ import {
 import { PageHeader } from '@/components/layout';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES } from '@study-abroad/shared';
+import { settingsRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { Settings, Save, Loader2 } from 'lucide-react';
 
@@ -77,17 +77,17 @@ export default function AdminSettingsPage() {
 
   const { data: subscriptionSettings, isLoading: subLoading } = useQuery({
     queryKey: ['adminSettings', 'subscription'],
-    queryFn: () => apiClient.get<SystemSetting[]>('/settings/category/subscription'),
+    queryFn: () => apiClient.get<SystemSetting[]>(settingsRoutes.byCategory('subscription')),
   });
 
   const { data: aiSettings, isLoading: aiLoading } = useQuery({
     queryKey: ['adminSettings', 'ai_quota'],
-    queryFn: () => apiClient.get<SystemSetting[]>('/settings/category/ai_quota'),
+    queryFn: () => apiClient.get<SystemSetting[]>(settingsRoutes.byCategory('ai_quota')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ key, value }: { key: string; value: string }) =>
-      apiClient.put(`${API_ROUTES.SETTINGS}/${key}`, { value }),
+      apiClient.put(settingsRoutes.byKey(key), { value }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
       toast.success(t('settings.saved'));
@@ -96,7 +96,7 @@ export default function AdminSettingsPage() {
 
   const batchUpdateMutation = useMutation({
     mutationFn: (settings: { key: string; value: string }[]) =>
-      apiClient.put(API_ROUTES.SETTINGS, settings),
+      apiClient.put(settingsRoutes.list(), settings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSettings'] });
       setEditedValues({});

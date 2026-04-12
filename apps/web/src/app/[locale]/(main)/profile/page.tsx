@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { apiClient } from '@/lib/api';
+import { profileRoutes, schoolListRoutes, userRoutes } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { toast } from 'sonner';
@@ -103,7 +104,7 @@ export default function ProfilePage() {
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => apiClient.get<ProfileData>('/profiles/me'),
+    queryFn: () => apiClient.get<ProfileData>(profileRoutes.me()),
     enabled: isInitialized && !!accessToken,
   });
 
@@ -144,7 +145,7 @@ export default function ProfilePage() {
           }>;
           prediction?: { tier?: string; probability: number };
         }>
-      >('/school-lists'),
+      >(schoolListRoutes.list()),
     enabled: isInitialized && !!accessToken,
   });
 
@@ -164,7 +165,7 @@ export default function ProfilePage() {
     queryKey: ['dashboard'],
     queryFn: () =>
       apiClient.get<{ profile: { completeness: number }; pendingTasks: { profileGaps: string[] } }>(
-        '/users/me/dashboard'
+        userRoutes.dashboard()
       ),
     enabled: isInitialized && !!accessToken,
   });

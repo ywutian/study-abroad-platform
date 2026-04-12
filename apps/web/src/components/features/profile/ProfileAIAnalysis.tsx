@@ -84,7 +84,7 @@ export function ProfileAIAnalysis({
   const query = useQuery({
     queryKey: ['profile-ai-analysis'],
     queryFn: () =>
-      apiClient.get<AIAnalysisResult>('/profiles/me/ai-analysis', {
+      apiClient.get<AIAnalysisResult>(profileRoutes.aiAnalysis(), {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),

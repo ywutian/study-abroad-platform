@@ -33,6 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CompactScore } from '@/components/ui/score-item';
 import { apiClient } from '@/lib/api/client';
+import { essayAiRoutes } from '@study-abroad/shared';
 import { type SchoolRanking } from '@/lib/utils/ranking';
 import { cn, getSchoolName } from '@/lib/utils';
 import { getResultBadgeClass, getResultLabel, VERIFIED_BADGE_CLASS } from '@/lib/utils/admission';
@@ -124,13 +125,13 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
   // 获取文书详情
   const { data: essay, isLoading } = useQuery({
     queryKey: ['essay-gallery-detail', essayId],
-    queryFn: () => apiClient.get<EssayDetail>(`/essay-ai/gallery/${essayId}`),
+    queryFn: () => apiClient.get<EssayDetail>(essayAiRoutes.galleryItem(essayId)),
   });
 
   // AI分析mutation
   const analyzeMutation = useMutation({
     mutationFn: () =>
-      apiClient.post<AnalysisResult>(`/essay-ai/gallery/${essayId}/analyze`, {
+      apiClient.post<AnalysisResult>(essayAiRoutes.galleryAnalyze(essayId), {
         schoolName: essay?.school?.name,
       }),
     onSuccess: () => {

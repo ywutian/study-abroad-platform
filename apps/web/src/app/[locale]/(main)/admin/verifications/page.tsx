@@ -22,6 +22,7 @@ import { VerificationDetailDialog } from './_components/verification-detail-dial
 import { VerificationConfirmDialog } from './_components/verification-confirm-dialog';
 import { apiClient } from '@/lib/api';
 import { verificationRoutes } from '@study-abroad/shared';
+
 import { toast } from 'sonner';
 import {
   ShieldCheck,
@@ -113,14 +114,14 @@ export default function AdminVerificationsPage() {
   // Stats
   const { data: stats } = useQuery<VerificationStats>({
     queryKey: ['adminVerificationStats'],
-    queryFn: () => apiClient.get<VerificationStats>('/verifications/stats'),
+    queryFn: () => apiClient.get<VerificationStats>(verificationRoutes.stats()),
   });
 
   // List
   const { data: listData, isLoading } = useQuery<PaginatedResponse>({
     queryKey: ['adminVerifications', statusFilter, page],
     queryFn: () =>
-      apiClient.get<PaginatedResponse>('/verifications/pending', {
+      apiClient.get<PaginatedResponse>(verificationRoutes.pending(), {
         params: {
           page,
           pageSize: PAGE_SIZE,
@@ -132,7 +133,7 @@ export default function AdminVerificationsPage() {
   // Detail
   const { data: detail, isLoading: detailLoading } = useQuery<VerificationDetail>({
     queryKey: ['adminVerificationDetail', selectedId],
-    queryFn: () => apiClient.get<VerificationDetail>(`/verifications/${selectedId}`),
+    queryFn: () => apiClient.get<VerificationDetail>(verificationRoutes.byId(selectedId!)),
     enabled: !!selectedId,
   });
 

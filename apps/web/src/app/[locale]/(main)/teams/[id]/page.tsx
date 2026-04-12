@@ -60,7 +60,7 @@ export default function TeamDetailPage() {
     error,
   } = useQuery({
     queryKey: ['teams', id],
-    queryFn: () => apiClient.get<TeamDetail>(`/teams/${id}`),
+    queryFn: () => apiClient.get<TeamDetail>(teamRoutes.byId(id)),
     enabled: !!id,
   });
 
@@ -96,7 +96,7 @@ export default function TeamDetailPage() {
   });
 
   const inviteLinkMutation = useMutation({
-    mutationFn: () => apiClient.post<{ token: string }>(`/teams/${id}/invite`, {}),
+    mutationFn: () => apiClient.post<{ token: string }>(teamRoutes.invite(id), {}),
     onSuccess: (data) => {
       const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/teams/join?token=${data.token}`;
       void navigator.clipboard.writeText(url);
