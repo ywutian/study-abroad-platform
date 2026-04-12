@@ -79,12 +79,10 @@ describe('ChatService', () => {
             },
             conversation: {
               findFirst: jest.fn(),
-              findUnique: jest
-                .fn()
-                .mockResolvedValue({
-                  kind: 'DIRECT',
-                  participants: [{ userId: 'other-user' }],
-                }),
+              findUnique: jest.fn().mockResolvedValue({
+                kind: 'DIRECT',
+                participants: [{ userId: 'other-user' }],
+              }),
               findMany: jest.fn().mockResolvedValue([]),
               create: jest.fn(),
               update: jest.fn(),

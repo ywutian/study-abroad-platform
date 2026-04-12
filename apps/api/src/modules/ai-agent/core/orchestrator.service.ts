@@ -580,7 +580,7 @@ export class OrchestratorService {
       );
       conversation.metadata = {
         ...(conversation.metadata || {}),
-        ...((conv.metadata as Record<string, unknown> | undefined) || {}),
+        ...(conv.metadata || {}),
       };
 
       // Backfill enterprise memory history into in-memory state so the

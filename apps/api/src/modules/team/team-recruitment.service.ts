@@ -306,14 +306,14 @@ export class TeamRecruitmentService {
     const created = await this.prisma.$transaction(async (tx) => {
       if (team.maxMembers !== targetTeamSize) {
         await tx.team.update({
-          where: { id: teamId! },
+          where: { id: teamId },
           data: { maxMembers: targetTeamSize },
         });
       }
 
       const card = await tx.teamRecruitmentCard.create({
         data: {
-          teamId: teamId!,
+          teamId: teamId,
           competitionTrackId: dto.competitionTrackId,
           headline: dto.headline.trim(),
           detailNote: dto.detailNote?.trim() || null,
@@ -1066,7 +1066,7 @@ export class TeamRecruitmentService {
         const existingMembership = await tx.teamMembership.findUnique({
           where: {
             teamId_userId: {
-              teamId: inviterTeam!.id,
+              teamId: inviterTeam.id,
               userId: inviteeId,
             },
           },
@@ -1084,7 +1084,7 @@ export class TeamRecruitmentService {
 
         const existingInvite = await tx.teamInvitation.findFirst({
           where: {
-            teamId: inviterTeam!.id,
+            teamId: inviterTeam.id,
             inviteeId,
             status: 'PENDING',
             expiresAt: { gt: new Date() },
@@ -1111,7 +1111,7 @@ export class TeamRecruitmentService {
         const token = randomBytes(24).toString('hex');
         const invitation = await tx.teamInvitation.create({
           data: {
-            teamId: inviterTeam!.id,
+            teamId: inviterTeam.id,
             inviterId: userId,
             inviteeId,
             token,
@@ -1200,7 +1200,7 @@ export class TeamRecruitmentService {
     if (!card) {
       throw new NotFoundException('Recruitment card not found');
     }
-    return card as LoadedRecruitmentCard;
+    return card;
   }
 
   private async ensureTeamMember(teamId: string, userId: string) {

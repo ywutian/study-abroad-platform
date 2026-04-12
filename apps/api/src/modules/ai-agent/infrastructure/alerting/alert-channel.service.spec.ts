@@ -33,8 +33,8 @@ describe('AlertChannelService', () => {
     service = module.get(AlertChannelService);
   });
 
-  afterEach(async () => {
-    await service.onModuleDestroy();
+  afterEach(() => {
+    service.onModuleDestroy();
   });
 
   it('should be defined', () => {
