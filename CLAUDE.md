@@ -129,6 +129,47 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 - shared changes: build before mobile verification
 - Metro: `unstable_enablePackageExports = true`
 
+## Context Routing
+
+修改代码前，**先读对应文档**：
+
+| 代码路径匹配                                      | 必读文档                                            |
+| ------------------------------------------------- | --------------------------------------------------- |
+| `modules/prediction/`                             | `docs/PREDICTION_SYSTEM.md` + 模块 `BRIEF.md`       |
+| `modules/ai-agent/`                               | `.claude/memory/ai-system.md` + 模块 `BRIEF.md`     |
+| `modules/auth/`, guards/                          | `.claude/rules/security.md` + `docs/adr/0010-*.md`  |
+| `apps/web/src/app/*/admin/`                       | `apps/web/CLAUDE.md` Admin Panel 段                 |
+| `prisma/schema.prisma`                            | `apps/api/CLAUDE.md` Schema Change Rules            |
+| `.github/`, `.husky/`, `scripts/`                 | `.claude/rules/ci-cd.md`                            |
+| `packages/shared/`                                | `packages/shared/CLAUDE.md`                         |
+| `apps/mobile/`                                    | `apps/mobile/CLAUDE.md` + `.claude/rules/mobile.md` |
+| 留学业务逻辑 (school, prediction, recommendation) | `docs/DATA_SOURCES.md`                              |
+| 部署/运维                                         | `docs/DEPLOYMENT_STRATEGY.md` + `docs/RUNBOOK.md`   |
+
+## Hooks (自动强制执行)
+
+以下规则由 `.husky/` + `lint-staged` 自动执行，Claude 需知悉以避免触发失败：
+
+| Hook                        | 触发                      | 效果                                             |
+| --------------------------- | ------------------------- | ------------------------------------------------ |
+| **pre-commit: lint**        | 提交 `.ts/.tsx`           | Prettier + ESLint 自动修复                       |
+| **pre-commit: i18n**        | 修改 `apps/web/src/`      | 阻断：missing keys / wrong language / key 不一致 |
+| **pre-commit: quality**     | 修改前端代码              | 阻断：动态 Tailwind、缺 dark:、缺 loading.tsx    |
+| **pre-commit: api-quality** | 修改后端代码              | 阻断：inline @Body、缺 @ThrottleAI               |
+| **pre-push: verify-gate**   | `git push`                | 阻断：typecheck + test + lint:routes + lint:i18n |
+| **pre-push: migration**     | 修改 `prisma/migrations/` | 阻断：NOT NULL without DEFAULT、DROP TABLE       |
+| **pre-push: audit**         | `git push`                | 警告：high-severity CVE                          |
+
+## Documentation Governance (防膨胀)
+
+| 规则                        | 门禁值              | 超限动作                                   |
+| --------------------------- | ------------------- | ------------------------------------------ |
+| 根 `CLAUDE.md` 行数         | ≤ 200 行            | 拆分到 `.claude/rules/` 或子目录 CLAUDE.md |
+| `.claude/rules/*.md` 单文件 | ≤ 150 行            | 拆分为多个 rule 文件                       |
+| 子目录 `CLAUDE.md`          | ≤ 80 行             | 精简或移到 BRIEF.md                        |
+| CLAUDE.md vs docs/ 重复     | 0（>10 行视为重复） | 替换为链接引用                             |
+| BRIEF.md 单文件             | ≤ 40 行             | 只保留"不知道会犯错"的内容                 |
+
 ## Rules Index
 
 Detailed rules load automatically based on file path:
