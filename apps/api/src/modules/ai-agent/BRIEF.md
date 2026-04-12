@@ -6,25 +6,17 @@ Enterprise multi-agent LLM orchestrator: SSE/WebSocket chat, tool execution, mem
 
 ## Key Files
 
-- `ai-agent.controller.ts` — HTTP endpoints: POST /ai-agent/chat (SSE streaming), usage stats
-- `ai-agent.gateway.ts` — WebSocket gateway at `/ai-assistant` namespace for real-time chat
+- `ai-agent.controller.ts` — POST /ai-agent/chat (SSE streaming), usage stats
+- `ai-agent.gateway.ts` — WebSocket gateway `/ai-assistant` for real-time chat
 - `core/orchestrator.service.ts` — Multi-agent routing and execution loop
 - `core/llm.service.ts` — Unified LLM service (chatSimple, call, callStream) — globally provided
-- `core/rate-limiter.service.ts` — Per-user rate limiting and quota checks
-- `core/token-tracker.service.ts` — Token usage tracking
 - `memory/memory-manager.service.ts` — Redis (hot) + PostgreSQL (cold) + pgvector semantic search
 - `security/prompt-guard.service.ts` — Prompt injection detection
-- `config/agents.config.ts` — Agent definitions
-- `config/tools.config.ts` — 12 domain tool definitions
-- `guards/` — AgentThrottleGuard for unified rate/quota enforcement
+- `config/agents.config.ts` + `tools.config.ts` — Agent/tool definitions (12 tools)
 
 ## Data Model
 
-Conversation, Message (agent chat history), Memory (pgvector embeddings), TokenUsage. Tool results stored in message metadata.
-
-## Dependencies
-
-OrchestratorService, LLMService, MemoryManagerService, PromptGuardService, JwtService, ConfigService, external domain modules (Prediction, Assessment, Forum, Hall) for tool DI | AI/LLM: Yes (core)
+Conversation, Message, Memory (pgvector), TokenUsage. Tool results in message metadata.
 
 ## Business Rules
 

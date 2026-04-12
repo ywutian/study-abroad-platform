@@ -19,7 +19,9 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint:quality": "tsx scripts/check-mobile-quality.ts",
+    "lint:i18n": "tsx scripts/check-mobile-i18n.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",

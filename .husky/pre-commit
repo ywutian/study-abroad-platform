@@ -87,3 +87,31 @@ if [ "$API_SRC_CHANGED" -gt "0" ]; then
     exit 1
   fi
 fi
+
+# ── Mobile quality + i18n checks ───────────────────────────
+# Check for hardcoded colors, dynamic styles, console.log, i18n consistency
+MOBILE_SRC_CHANGED=$(echo "$STAGED_FILES" | grep -c "^apps/mobile/src/" || true)
+
+if [ "$MOBILE_SRC_CHANGED" -gt "0" ]; then
+  echo ""
+  echo "📱 Running mobile quality checks..."
+  echo ""
+
+  if ! pnpm --filter study-abroad-mobile exec tsx scripts/check-mobile-quality.ts --staged; then
+    echo ""
+    echo "❌ Mobile quality check failed. See issues above."
+    echo ""
+    exit 1
+  fi
+
+  echo ""
+  echo "🌐 Running mobile i18n checks..."
+  echo ""
+
+  if ! pnpm --filter study-abroad-mobile exec tsx scripts/check-mobile-i18n.ts; then
+    echo ""
+    echo "❌ Mobile i18n check failed. See issues above."
+    echo ""
+    exit 1
+  fi
+fi
