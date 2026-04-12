@@ -35,5 +35,5 @@ Generated: 2026-04-12
 
 | Metric            | Value |
 | ----------------- | ----- |
-| docs/ files (.md) | 102   |
+| docs/ files (.md) | 104   |
 | ADR count         | 16    |
