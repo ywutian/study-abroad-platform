@@ -133,18 +133,18 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 修改代码前，**先读对应文档**：
 
-| 代码路径匹配                                      | 必读文档                                            |
-| ------------------------------------------------- | --------------------------------------------------- |
-| `modules/prediction/`                             | `docs/PREDICTION_SYSTEM.md` + 模块 `BRIEF.md`       |
-| `modules/ai-agent/`                               | `.claude/memory/ai-system.md` + 模块 `BRIEF.md`     |
-| `modules/auth/`, guards/                          | `.claude/rules/security.md` + `docs/adr/0010-*.md`  |
-| `apps/web/src/app/*/admin/`                       | `apps/web/CLAUDE.md` Admin Panel 段                 |
-| `prisma/schema.prisma`                            | `apps/api/CLAUDE.md` Schema Change Rules            |
-| `.github/`, `.husky/`, `scripts/`                 | `.claude/rules/ci-cd.md`                            |
-| `packages/shared/`                                | `packages/shared/CLAUDE.md`                         |
-| `apps/mobile/`                                    | `apps/mobile/CLAUDE.md` + `.claude/rules/mobile.md` |
-| 留学业务逻辑 (school, prediction, recommendation) | `docs/DATA_SOURCES.md`                              |
-| 部署/运维                                         | `docs/DEPLOYMENT_STRATEGY.md` + `docs/RUNBOOK.md`   |
+| 代码路径匹配                                      | 必读文档                                                    |
+| ------------------------------------------------- | ----------------------------------------------------------- |
+| 编辑 `apps/api/src/modules/*/`                    | 自动加载该模块 `BRIEF.md`（懒加载）                         |
+| 编辑 `apps/web/src/components/features/*/`        | 自动加载该 feature `BRIEF.md`                               |
+| 编辑 `apps/api/` 任意文件                         | 自动加载 `apps/api/CLAUDE.md` + `.claude/rules/backend.md`  |
+| 编辑 `apps/web/` 任意文件                         | 自动加载 `apps/web/CLAUDE.md` + `.claude/rules/frontend.md` |
+| `modules/prediction/`                             | `docs/PREDICTION_SYSTEM.md`                                 |
+| `modules/ai-agent/`                               | `.claude/memory/ai-system.md`                               |
+| `modules/auth/`, guards/                          | `.claude/rules/security.md` + `docs/adr/0010-*.md`          |
+| `prisma/schema.prisma`                            | `apps/api/CLAUDE.md` Schema Change Rules                    |
+| 留学业务逻辑 (school, prediction, recommendation) | `docs/DATA_SOURCES.md`                                      |
+| 部署/运维                                         | `docs/DEPLOYMENT_STRATEGY.md` + `docs/RUNBOOK.md`           |
 
 ## Hooks (自动强制执行)
 
@@ -162,27 +162,26 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 ## Documentation Governance (防膨胀)
 
-| 规则                        | 门禁值              | 超限动作                                   |
-| --------------------------- | ------------------- | ------------------------------------------ |
-| 根 `CLAUDE.md` 行数         | ≤ 200 行            | 拆分到 `.claude/rules/` 或子目录 CLAUDE.md |
-| `.claude/rules/*.md` 单文件 | ≤ 150 行            | 拆分为多个 rule 文件                       |
-| 子目录 `CLAUDE.md`          | ≤ 80 行             | 精简或移到 BRIEF.md                        |
-| CLAUDE.md vs docs/ 重复     | 0（>10 行视为重复） | 替换为链接引用                             |
-| BRIEF.md 单文件             | ≤ 40 行             | 只保留"不知道会犯错"的内容                 |
+| 规则                        | 门禁值                                   | 超限动作                                   |
+| --------------------------- | ---------------------------------------- | ------------------------------------------ |
+| 根 `CLAUDE.md` 行数         | ≤ 190 行                                 | 拆分到 `.claude/rules/` 或子目录 CLAUDE.md |
+| `.claude/rules/*.md` 单文件 | ≤ 150 行                                 | 拆分为多个 rule 文件                       |
+| 子目录 `CLAUDE.md`          | ≤ 80 行                                  | 精简或移到 BRIEF.md                        |
+| BRIEF.md 单文件             | ≤ 40 行                                  | 只保留"不知道会犯错"的内容                 |
+| CLAUDE.md vs docs/ 重复     | 0（>10 行→链接引用）                     | 替换为链接引用                             |
+| Agent 清单一致性            | `.claude/agents/` 文件数 == Agent 表行数 | 同步增删                                   |
+| Context Routing 有效性      | 100% 路径可达                            | 新建/删除 docs 时同步更新                  |
 
 ## Rules Index
 
-Detailed rules load automatically based on file path:
+7 rule files in `.claude/rules/` auto-load by glob match:
 
-| Rule File                    | Activates When Editing                     |
-| ---------------------------- | ------------------------------------------ |
-| `.claude/rules/backend.md`   | `apps/api/**`                              |
-| `.claude/rules/frontend.md`  | `apps/web/**`                              |
-| `.claude/rules/mobile.md`    | `apps/mobile/**`                           |
-| `.claude/rules/ai-system.md` | AI/prediction/essay/recommendation modules |
-| `.claude/rules/security.md`  | auth/guards/vault code                     |
-| `.claude/rules/testing.md`   | `*.spec.ts`, `*.test.ts` files             |
-| `.claude/rules/ci-cd.md`     | `.github/**`, scripts, hooks               |
-
-Subdirectory docs (lazy-loaded): `apps/api/CLAUDE.md`, `apps/web/CLAUDE.md`, `apps/mobile/CLAUDE.md`, `packages/shared/CLAUDE.md`
-Module briefings: `apps/api/src/modules/*/BRIEF.md`, `apps/web/src/components/features/*/BRIEF.md`
+| Rule File      | Globs                                               |
+| -------------- | --------------------------------------------------- |
+| `backend.md`   | `apps/api/**`                                       |
+| `frontend.md`  | `apps/web/**`                                       |
+| `mobile.md`    | `apps/mobile/**`                                    |
+| `ai-system.md` | `**/ai-agent/**`, `**/prediction/**`, `**/essay/**` |
+| `security.md`  | `**/auth/**`, `**/guards/**`, `**/vault/**`         |
+| `testing.md`   | `**/*.spec.ts`, `**/*.test.ts`                      |
+| `ci-cd.md`     | `.github/**`, `*.sh`, `.husky/**`                   |
