@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { apiClient } from '@/lib/api';
+import { pointsRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
@@ -60,7 +61,7 @@ export function PointsHistory({ limit = 20, className }: PointsHistoryProps) {
   const dateLocale = locale === 'zh' ? zhCN : enUS;
   const { data: history, isLoading } = useQuery({
     queryKey: ['points-history', limit],
-    queryFn: () => apiClient.get<PointHistoryItem[]>(`/users/me/points/history?limit=${limit}`),
+    queryFn: () => apiClient.get<PointHistoryItem[]>(`${pointsRoutes.history()}?limit=${limit}`),
   });
 
   if (isLoading) {

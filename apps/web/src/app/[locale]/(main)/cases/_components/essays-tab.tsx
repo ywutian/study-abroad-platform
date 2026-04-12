@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { apiClient } from '@/lib/api/client';
 import { STALE_TIME } from '@/lib/api';
+import { essayAiRoutes } from '@study-abroad/shared';
 import { AdvancedEssayFilter, EssayFilters } from '@/components/features/essay-gallery';
 import { SubmitCaseDialog } from '@/components/features';
 import {
@@ -117,7 +118,7 @@ export function EssaysTab() {
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['essay-gallery', queryParams],
-    queryFn: () => apiClient.get<GalleryResponse>('/essay-ai/gallery', { params: queryParams }),
+    queryFn: () => apiClient.get<GalleryResponse>(essayAiRoutes.gallery(), { params: queryParams }),
     staleTime: STALE_TIME.MODERATE,
   });
 

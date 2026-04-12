@@ -27,6 +27,7 @@ import { RecommendedUsers, UserProfilePreview } from '@/components/features';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 import { chatRoutes } from '@study-abroad/shared';
+
 import { Users, Search, Shield, Loader2, UserCheck, Heart, X } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 import { UserCard, type User } from './_components/user-card';
@@ -62,19 +63,19 @@ export default function FollowersPage() {
   // ---- Data fetching ----
   const { data: followers = [], isLoading: followersLoading } = useQuery({
     queryKey: ['followers'],
-    queryFn: () => apiClient.get<FollowRelation[]>('/chats/followers'),
+    queryFn: () => apiClient.get<FollowRelation[]>(chatRoutes.followers()),
     enabled: !!user,
   });
 
   const { data: following = [], isLoading: followingLoading } = useQuery({
     queryKey: ['following'],
-    queryFn: () => apiClient.get<FollowRelation[]>('/chats/following'),
+    queryFn: () => apiClient.get<FollowRelation[]>(chatRoutes.following()),
     enabled: !!user,
   });
 
   const { data: blocked = [], isLoading: blockedLoading } = useQuery({
     queryKey: ['blocked'],
-    queryFn: () => apiClient.get<BlockRelation[]>('/chats/blocked'),
+    queryFn: () => apiClient.get<BlockRelation[]>(chatRoutes.blocked()),
     enabled: !!user,
   });
 
@@ -118,7 +119,9 @@ export default function FollowersPage() {
 
   const startConversation = async (userId: string) => {
     try {
-      const conversation = await apiClient.post<{ id: string }>('/chats/conversations', { userId });
+      const conversation = await apiClient.post<{ id: string }>(chatRoutes.conversations(), {
+        userId,
+      });
       router.push(`/chat?conversation=${conversation.id}`);
     } catch (error: unknown) {
       toast.error(

@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { schoolRoutes } from '@study-abroad/shared';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { GC_TIME } from '@/lib/constants';
 import {
@@ -78,7 +79,7 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
   const { data, isLoading, refetch, isFetching, error } = useQuery({
     queryKey: ['school-ai-recommendations'],
     queryFn: () =>
-      apiClient.get<RecommendationResponse>('/schools/ai/recommend', {
+      apiClient.get<RecommendationResponse>(schoolRoutes.aiRecommend(), {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),

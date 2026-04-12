@@ -11,274 +11,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { SchoolSelector } from '@/components/features/school-selector';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { schoolRoutes } from '@study-abroad/shared';
 import { useRouter } from '@/lib/i18n/navigation';
-import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
+import { getSchoolName } from '@/lib/utils';
 import { Scale, Plus, X, GraduationCap, ArrowLeft } from 'lucide-react';
 
 import type { SchoolDetail } from '../[id]/_components/types';
-
-// ── Types ────────────────────────────────────────────────────────────
-
-type CompareDirection = 'lower' | 'higher';
-
-interface CompareField {
-  key: string;
-  labelKey: string;
-  getValue: (s: SchoolDetail) => string | number | null | undefined;
-  format: (
-    v: number | string | null | undefined,
-    formatter: ReturnType<typeof useFormatter>
-  ) => string;
-  best: CompareDirection;
-}
-
-// ── Field definitions ────────────────────────────────────────────────
-
-function buildFields(t: ReturnType<typeof useTranslations>): CompareField[] {
-  const pct = (_v: number | string | null | undefined) => {
-    if (_v == null) return '-';
-    const n = typeof _v === 'string' ? parseFloat(_v) : _v;
-    if (Number.isNaN(n)) return '-';
-    return `${(n * 100).toFixed(1)}%`;
-  };
-
-  const rawPct = (_v: number | string | null | undefined) => {
-    if (_v == null) return '-';
-    const n = typeof _v === 'string' ? parseFloat(_v) : _v;
-    if (Number.isNaN(n)) return '-';
-    return `${n.toFixed(1)}%`;
-  };
-
-  const rank = (_v: number | string | null | undefined) => {
-    if (_v == null) return '-';
-    return `#${_v}`;
-  };
-
-  const num = (_v: number | string | null | undefined, f: ReturnType<typeof useFormatter>) => {
-    if (_v == null) return '-';
-    const n = typeof _v === 'string' ? parseFloat(_v) : _v;
-    if (Number.isNaN(n)) return '-';
-    return f.number(n, 'standard');
-  };
-
-  const currency = (_v: number | string | null | undefined, f: ReturnType<typeof useFormatter>) => {
-    if (_v == null) return '-';
-    const n = typeof _v === 'string' ? parseFloat(_v) : _v;
-    if (Number.isNaN(n)) return '-';
-    return f.number(n, 'currency');
-  };
-
-  const bool = (_v: number | string | null | undefined) => {
-    if (_v == null) return '-';
-    return _v ? t('yes') : t('no');
-  };
-
-  const ratio = (_v: number | string | null | undefined) => {
-    if (_v == null) return '-';
-    return `${_v}:1`;
-  };
-
-  return [
-    // Rankings
-    {
-      key: 'usNewsRank',
-      labelKey: 'fields.usNewsRank',
-      getValue: (s) => s.usNewsRank,
-      format: rank,
-      best: 'lower',
-    },
-    {
-      key: 'qsRank',
-      labelKey: 'fields.qsRank',
-      getValue: (s) => s.qsRank,
-      format: rank,
-      best: 'lower',
-    },
-    // Admissions
-    {
-      key: 'acceptanceRate',
-      labelKey: 'fields.acceptanceRate',
-      getValue: (s) => s.acceptanceRate,
-      format: (_v) => formatAcceptanceRate(_v as number | null),
-      best: 'lower',
-    },
-    {
-      key: 'intlAcceptanceRate',
-      labelKey: 'fields.intlAcceptanceRate',
-      getValue: (s) => s.intlAcceptanceRate,
-      format: (_v) => formatAcceptanceRate(_v as number | null),
-      best: 'lower',
-    },
-    {
-      key: 'hasEarlyDecision',
-      labelKey: 'fields.hasEarlyDecision',
-      getValue: (s) => s.hasEarlyDecision as unknown as number,
-      format: bool,
-      best: 'higher',
-    },
-    {
-      key: 'testOptional',
-      labelKey: 'fields.testOptional',
-      getValue: (s) => s.testOptional as unknown as number,
-      format: bool,
-      best: 'higher',
-    },
-    // Test Scores
-    {
-      key: 'satAvg',
-      labelKey: 'fields.satAvg',
-      getValue: (s) => s.satAvg,
-      format: num,
-      best: 'higher',
-    },
-    {
-      key: 'satRange',
-      labelKey: 'fields.satRange',
-      getValue: (s) => (s.sat25 != null && s.sat75 != null ? `${s.sat25}-${s.sat75}` : null),
-      format: (_v) => (_v == null ? '-' : String(_v)),
-      best: 'higher',
-    },
-    {
-      key: 'actAvg',
-      labelKey: 'fields.actAvg',
-      getValue: (s) => s.actAvg,
-      format: num,
-      best: 'higher',
-    },
-    {
-      key: 'toeflMin',
-      labelKey: 'fields.toeflMin',
-      getValue: (s) => s.metadata?.requirements?.toeflMin,
-      format: num,
-      best: 'lower',
-    },
-    // Cost
-    {
-      key: 'tuition',
-      labelKey: 'fields.tuition',
-      getValue: (s) => s.tuition,
-      format: currency,
-      best: 'lower',
-    },
-    {
-      key: 'averageNetPrice',
-      labelKey: 'fields.averageNetPrice',
-      getValue: (s) => s.averageNetPrice,
-      format: currency,
-      best: 'lower',
-    },
-    {
-      key: 'averageAidPackage',
-      labelKey: 'fields.averageAidPackage',
-      getValue: (s) => s.averageAidPackage,
-      format: currency,
-      best: 'higher',
-    },
-    {
-      key: 'percentNeedMet',
-      labelKey: 'fields.percentNeedMet',
-      getValue: (s) => s.percentNeedMet,
-      format: rawPct,
-      best: 'higher',
-    },
-    {
-      key: 'needBlindInternational',
-      labelKey: 'fields.needBlindInternational',
-      getValue: (s) => s.needBlindInternational as unknown as number,
-      format: bool,
-      best: 'higher',
-    },
-    // Outcomes
-    {
-      key: 'avgSalary',
-      labelKey: 'fields.avgSalary',
-      getValue: (s) => s.avgSalary,
-      format: currency,
-      best: 'higher',
-    },
-    {
-      key: 'graduationRate',
-      labelKey: 'fields.graduationRate',
-      getValue: (s) => s.graduationRate,
-      format: pct,
-      best: 'higher',
-    },
-    {
-      key: 'retentionRate',
-      labelKey: 'fields.retentionRate',
-      getValue: (s) => s.retentionRate,
-      format: pct,
-      best: 'higher',
-    },
-    // Campus
-    {
-      key: 'studentCount',
-      labelKey: 'fields.studentCount',
-      getValue: (s) => s.studentCount,
-      format: num,
-      best: 'higher',
-    },
-    {
-      key: 'studentFacultyRatio',
-      labelKey: 'fields.studentFacultyRatio',
-      getValue: (s) => s.studentFacultyRatio,
-      format: ratio,
-      best: 'lower',
-    },
-    {
-      key: 'intlStudentPct',
-      labelKey: 'fields.intlStudentPct',
-      getValue: (s) => s.intlStudentPct,
-      format: rawPct,
-      best: 'higher',
-    },
-  ];
-}
-
-// Field grouping for category headers
-const CATEGORY_FIELDS: Record<string, string[]> = {
-  rankings: ['usNewsRank', 'qsRank'],
-  admissions: ['acceptanceRate', 'intlAcceptanceRate', 'hasEarlyDecision', 'testOptional'],
-  testScores: ['satAvg', 'satRange', 'actAvg', 'toeflMin'],
-  cost: [
-    'tuition',
-    'averageNetPrice',
-    'averageAidPackage',
-    'percentNeedMet',
-    'needBlindInternational',
-  ],
-  outcomes: ['avgSalary', 'graduationRate', 'retentionRate'],
-  campus: ['studentCount', 'studentFacultyRatio', 'intlStudentPct'],
-};
-
-// ── Helpers ──────────────────────────────────────────────────────────
-
-function getBestIndex(schools: SchoolDetail[], field: CompareField): number | null {
-  const values = schools.map((s) => {
-    const raw = field.getValue(s);
-    if (raw == null) return null;
-    if (typeof raw === 'boolean') return raw ? 1 : 0;
-    if (typeof raw === 'string') {
-      const n = parseFloat(raw);
-      return Number.isNaN(n) ? null : n;
-    }
-    return raw;
-  });
-
-  const validValues = values.filter((v): v is number => v != null);
-  if (validValues.length < 2) return null;
-
-  const target = field.best === 'lower' ? Math.min(...validValues) : Math.max(...validValues);
-  const idx = values.indexOf(target);
-  // Only highlight if not all values are equal
-  const allSame = validValues.every((v) => v === validValues[0]);
-  if (allSame) return null;
-  return idx;
-}
-
-// ── Component ────────────────────────────────────────────────────────
-
-const MAX_SCHOOLS = 3;
+import { buildFields } from './_components/compare-fields';
+import { MAX_SCHOOLS } from './_components/compare-utils';
+import { CompareTable } from './_components/compare-table';
 
 export default function SchoolComparePage() {
   const searchParams = useSearchParams();
@@ -307,7 +48,7 @@ export default function SchoolComparePage() {
   const schoolQueries = useQueries({
     queries: schoolIds.map((id) => ({
       queryKey: ['school', id],
-      queryFn: () => apiClient.get<SchoolDetail>(`/schools/${id}`),
+      queryFn: () => apiClient.get<SchoolDetail>(schoolRoutes.byId(id)),
       staleTime: STALE_TIME.STATIC,
       enabled: !!id,
     })),
@@ -377,53 +118,6 @@ export default function SchoolComparePage() {
       })),
     [schools]
   );
-
-  const renderCategoryRows = (categoryKey: string) => {
-    const fieldKeys = CATEGORY_FIELDS[categoryKey];
-    if (!fieldKeys) return null;
-    const categoryFields = fields.filter((f) => fieldKeys.includes(f.key));
-
-    return (
-      <>
-        {/* Category header row */}
-        <tr>
-          <td
-            colSpan={schools.length + 1}
-            className="bg-muted/50 px-4 py-2.5 text-sm font-semibold text-foreground border-t border-border"
-          >
-            {t(`categories.${categoryKey}`)}
-          </td>
-        </tr>
-        {/* Field rows */}
-        {categoryFields.map((field) => {
-          const bestIdx = getBestIndex(schools, field);
-          return (
-            <tr key={field.key} className="border-t border-border">
-              <td className="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                {t(field.labelKey)}
-              </td>
-              {schools.map((school, idx) => {
-                const raw = field.getValue(school);
-                const formatted = field.format(raw, format);
-                const isBest = bestIdx === idx;
-                return (
-                  <td
-                    key={school.id}
-                    className={cn(
-                      'px-4 py-3 text-sm text-center',
-                      isBest ? 'text-primary font-bold' : 'text-foreground'
-                    )}
-                  >
-                    {formatted}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </>
-    );
-  };
 
   return (
     <PageContainer maxWidth="default">
@@ -506,37 +200,7 @@ export default function SchoolComparePage() {
 
       {/* Comparison table */}
       {!isLoading && schools.length >= 2 && (
-        <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-[180px]">
-                    {t('field')}
-                  </th>
-                  {schools.map((school) => (
-                    <th
-                      key={school.id}
-                      className="px-4 py-3 text-center text-sm font-semibold text-foreground"
-                    >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="truncate max-w-[180px]">
-                          {getSchoolName(school, locale)}
-                        </span>
-                        {school.usNewsRank && (
-                          <span className="text-xs font-normal text-muted-foreground">
-                            #{school.usNewsRank} US News
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>{Object.keys(CATEGORY_FIELDS).map((cat) => renderCategoryRows(cat))}</tbody>
-            </table>
-          </div>
-        </Card>
+        <CompareTable schools={schools} fields={fields} locale={locale} format={format} t={t} />
       )}
 
       {/* Single school - prompt to add more */}

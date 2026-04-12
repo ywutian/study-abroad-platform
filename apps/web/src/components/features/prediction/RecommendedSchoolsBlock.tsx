@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/lib/i18n/navigation';
 import { apiClient, STALE_TIME } from '@/lib/api';
+import { schoolRoutes } from '@study-abroad/shared';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { getSchoolName } from '@/lib/utils';
 import { School, Loader2 } from 'lucide-react';
@@ -20,7 +21,7 @@ export function RecommendedSchoolsBlock() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['school-ai-recommendations'],
     queryFn: () =>
-      apiClient.get<RecommendationResponse>('/schools/ai/recommend', {
+      apiClient.get<RecommendationResponse>(schoolRoutes.aiRecommend(), {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),

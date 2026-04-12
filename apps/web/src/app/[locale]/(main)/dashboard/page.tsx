@@ -9,6 +9,7 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { userRoutes } from '@study-abroad/shared';
 import { LayoutDashboard, User, ArrowRight } from 'lucide-react';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { Progress } from '@/components/ui/progress';
@@ -104,7 +105,7 @@ export default function DashboardPage() {
 
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () => apiClient.get<DashboardData>('/users/me/dashboard'),
+    queryFn: () => apiClient.get<DashboardData>(userRoutes.dashboard()),
   });
 
   // Consume pendingOnboarding from sessionStorage (fallback from registration)

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { profileRoutes } from '@study-abroad/shared';
 import { ApiError } from '@/lib/api/api-error';
 import { setAuthFromLogin } from '@/stores/auth';
 import { cn } from '@/lib/utils';
@@ -332,7 +333,7 @@ export default function RegisterPage() {
 
       // POST onboarding data directly (auth token already in memory from setAuthFromLogin)
       try {
-        await apiClient.post('/profiles/onboarding', onboardingData, {
+        await apiClient.post(profileRoutes.onboarding(), onboardingData, {
           headers: {
             Authorization: `Bearer ${res.accessToken}`,
           },

@@ -55,6 +55,7 @@ import { useRouter } from '@/lib/i18n/navigation';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
+import { chatRoutes } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -438,7 +439,7 @@ export function Header() {
   // Unread message count (for "More" mega-menu badge)
   const { data: unreadData } = useQuery({
     queryKey: ['unread-count'],
-    queryFn: () => apiClient.get<{ count: number }>('/chats/unread-count'),
+    queryFn: () => apiClient.get<{ count: number }>(chatRoutes.unreadCount()),
     enabled: !!user,
     refetchInterval: 30000,
   });

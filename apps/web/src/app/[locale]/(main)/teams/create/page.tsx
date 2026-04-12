@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Users, GraduationCap, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { teamRoutes } from '@study-abroad/shared';
 import { toast } from 'sonner';
 import { useState, useCallback } from 'react';
 import { SchoolSelector } from '@/components/features/school-selector';
@@ -50,7 +51,7 @@ export default function CreateTeamPage() {
       joinPolicy: string;
       schoolId?: string;
       tags?: string[];
-    }) => apiClient.post<{ id: string }>('/teams', body),
+    }) => apiClient.post<{ id: string }>(teamRoutes.list(), body),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       toast.success(t('toast.created'));

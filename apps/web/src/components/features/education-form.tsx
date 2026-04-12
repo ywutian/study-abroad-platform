@@ -106,7 +106,7 @@ function useHighSchoolSearch(enabled: boolean) {
     }
     setLoading(true);
     try {
-      const data = await apiClient.get<HighSchool[]>('/high-schools', {
+      const data = await apiClient.get<HighSchool[]>(highSchoolRoutes.list(), {
         params: { search: term, pageSize: '20' },
       });
       setResults(Array.isArray(data) ? data : []);

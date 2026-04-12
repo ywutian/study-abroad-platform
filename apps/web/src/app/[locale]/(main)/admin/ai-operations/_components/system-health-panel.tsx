@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CardSkeleton } from '@/components/ui/loading-state';
 import { apiClient } from '@/lib/api';
+import { healthRoutes } from '@study-abroad/shared';
 import { Database, Server, Cpu, HardDrive, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,7 +64,7 @@ export function SystemHealthPanel() {
   const { data: health, isLoading } = useQuery<DetailedHealthStatus>({
     queryKey: ['adminHealthDetailed'],
     queryFn: () =>
-      apiClient.get<DetailedHealthStatus>('/health/detailed', {
+      apiClient.get<DetailedHealthStatus>(healthRoutes.detailed(), {
         directApi: true,
         skipApiVersion: true,
       }),

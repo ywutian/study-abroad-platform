@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { apiClient } from '@/lib/api/client';
+import { caseRoutes } from '@study-abroad/shared';
 import { PageContainer } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,7 +51,7 @@ export default function CaseDetailPage() {
     error,
   } = useQuery({
     queryKey: ['case', caseId],
-    queryFn: () => apiClient.get<any>(`/cases/${caseId}`),
+    queryFn: () => apiClient.get<any>(caseRoutes.byId(caseId)),
     enabled: !!caseId,
   });
 
@@ -58,7 +59,7 @@ export default function CaseDetailPage() {
   const { data: relatedData } = useQuery({
     queryKey: ['related-cases', caseData?.schoolId, caseId],
     queryFn: () =>
-      apiClient.get<any>('/cases', {
+      apiClient.get<any>(caseRoutes.list(), {
         params: { schoolId: caseData.schoolId, pageSize: '6' },
       }),
     enabled: !!caseData?.schoolId,

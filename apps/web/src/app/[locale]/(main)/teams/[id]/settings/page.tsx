@@ -46,7 +46,7 @@ export default function TeamSettingsPage() {
     error,
   } = useQuery({
     queryKey: ['teams', id],
-    queryFn: () => apiClient.get<TeamDetail>(`/teams/${id}`),
+    queryFn: () => apiClient.get<TeamDetail>(teamRoutes.byId(id)),
     enabled: !!id,
   });
 

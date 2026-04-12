@@ -12,6 +12,7 @@ import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { chatRoutes } from '@study-abroad/shared';
+
 import {
   UserPlus,
   Sparkles,
@@ -58,7 +59,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
     isRefetching,
   } = useQuery({
     queryKey: ['recommended-users'],
-    queryFn: () => apiClient.get<RecommendedUser[]>('/chats/recommendations?limit=8'),
+    queryFn: () => apiClient.get<RecommendedUser[]>(`${chatRoutes.recommendations()}?limit=8`),
   });
 
   const followMutation = useMutation({

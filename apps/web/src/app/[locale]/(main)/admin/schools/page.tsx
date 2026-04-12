@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/layout';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { adminRoutes, schoolRoutes } from '@study-abroad/shared';
+
 import { toast } from 'sonner';
 import {
   GraduationCap,
@@ -122,7 +123,7 @@ export default function AdminSchoolsPage() {
   const { data: schoolsData, isLoading } = useQuery({
     queryKey: ['adminSchools', schoolSearch, page],
     queryFn: () =>
-      apiClient.get<{ items: School[]; total: number }>('/schools', {
+      apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: { search: schoolSearch ?? '', pageSize: String(pageSize), page: String(page) },
       }),
   });
@@ -146,7 +147,7 @@ export default function AdminSchoolsPage() {
   const scrapeSchoolsMutation = useMutation({
     mutationFn: () =>
       apiClient.post<{ success: string[]; failed: { school: string; error: string }[] }>(
-        '/schools/scrape/all'
+        schoolRoutes.scrapeAll()
       ),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['adminSchools'] });
@@ -187,7 +188,7 @@ export default function AdminSchoolsPage() {
 
   const fetchLogoSuggestionMutation = useMutation({
     mutationFn: (schoolId: string) =>
-      apiClient.get<{ suggestedLogoUrl: string }>(`/schools/${schoolId}/logo-suggestion`),
+      apiClient.get<{ suggestedLogoUrl: string }>(schoolRoutes.logoSuggestion(schoolId)),
     onSuccess: (data) => {
       toast.success(t('schools.generateFromDomainDone'));
       setEditingSchool((prev) => (prev ? { ...prev, logoUrl: data.suggestedLogoUrl } : prev));

@@ -18,7 +18,7 @@ import { MessageInput } from '@/components/features';
 import { useChatSocket } from '@/hooks/use-chat-socket';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { API_ROUTES, chatRoutes } from '@study-abroad/shared';
+import { chatRoutes } from '@study-abroad/shared';
 import { MessageSquare, Wifi, WifiOff } from 'lucide-react';
 import { useAuthStore } from '@/stores';
 
@@ -155,7 +155,7 @@ export default function ChatPage() {
 
   const reportMutation = useMutation({
     mutationFn: (data: { targetType: string; targetId: string; reason: string; detail?: string }) =>
-      apiClient.post(`${API_ROUTES.CHATS}/report`, data),
+      apiClient.post(chatRoutes.report(), data),
     onSuccess: () => {
       toast.success(t('chat.reportSuccess'));
       setReportDialogOpen(false);
@@ -205,7 +205,7 @@ export default function ChatPage() {
 
   const pinMutation = useMutation({
     mutationFn: (conversationId: string) =>
-      apiClient.post<{ isPinned: boolean }>(`/chats/conversations/${conversationId}/pin`),
+      apiClient.post<{ isPinned: boolean }>(chatRoutes.conversationPin(conversationId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
@@ -276,7 +276,7 @@ export default function ChatPage() {
       if (!selectedConversation) return;
       const formData = new FormData();
       formData.append('file', file);
-      await apiClient.upload(`/chats/conversations/${selectedConversation}/upload`, formData);
+      await apiClient.upload(chatRoutes.conversationUpload(selectedConversation), formData);
       scrollToBottom();
     },
     [selectedConversation, scrollToBottom]
