@@ -33,5 +33,5 @@ HallRankingService, HallReviewService, HallListService, HallVerifiedService, Swi
 ## Gotchas
 
 - HallService is a pure facade — all logic in sub-services
-- Swipe DTOs are in separate `swipe-dto.ts` file
+- Swipe DTOs are in separate `swipe-dto/` directory
 - Ranking analysis may call AI but through separate service path
