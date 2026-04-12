@@ -58,3 +58,8 @@ pnpm lint:dead-code        # Knip unused files/exports/deps
 npx tsx scripts/verify-gate.ts --staged  # Per-commit verification
 npx tsx scripts/check-migration-safety.ts --new-only  # Migration check
 ```
+
+## Deep Dive
+
+- Troubleshooting guide: `docs/TROUBLESHOOTING.md`
+- Deployment strategy: `docs/DEPLOYMENT_STRATEGY.md`
