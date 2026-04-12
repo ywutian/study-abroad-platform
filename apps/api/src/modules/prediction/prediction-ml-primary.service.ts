@@ -189,7 +189,9 @@ export class PredictionMlPrimaryService {
       .filter((h) => Math.abs(h.logOddsShift) > 0.05)
       .map((h) => ({
         name: this.humanizeHookType(h.hookType),
-        impact: h.logOddsShift > 0 ? 'positive' : 'negative',
+        impact: (h.logOddsShift > 0 ? 'positive' : 'negative') as
+          | 'positive'
+          | 'negative',
         weight: Math.min(1, Math.abs(h.logOddsShift) / 3),
         detail: `${h.source} (${h.logOddsShift > 0 ? '+' : ''}${h.logOddsShift.toFixed(2)} log-odds)`,
       }));
