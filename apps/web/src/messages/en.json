@@ -5243,7 +5243,13 @@
         "title": "Swipe Deck",
         "description": "Deck only includes compatible cards from the same competition track.",
         "pass": "Pass",
-        "like": "Like"
+        "like": "Like",
+        "emptyPool": "No cards available",
+        "emptyPoolDesc": "There are no other cards on this track yet. Check back later!",
+        "allSwiped": "All caught up!",
+        "allSwipedDesc": "You've seen all available cards. Refresh to check for new ones.",
+        "restart": "Refresh deck",
+        "keyboardHint": "← Pass · Like →"
       },
       "currentCard": "Current Card",
       "currentCardOverview": "Current Card Overview",
@@ -5294,6 +5300,12 @@
       "intentMode": {
         "teamUp": "Team up",
         "networkingOnly": "Networking only"
+      },
+      "availability": {
+        "LESS_THAN_5_HOURS": "<5h/wk",
+        "FIVE_TO_TEN_HOURS": "5-10h/wk",
+        "TEN_PLUS_HOURS": "10h+/wk",
+        "WEEKENDS_ONLY": "Weekends"
       },
       "option": {
         "unset": "Unset",

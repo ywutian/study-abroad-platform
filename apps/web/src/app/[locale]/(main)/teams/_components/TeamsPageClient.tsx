@@ -48,6 +48,7 @@ import {
   getCurrentMemberDisplaySettings,
   getInviteDeliveryState,
 } from '@/components/features/teams/team-recruitment-utils';
+import { RecruitmentSwipeDeck } from '@/components/features/teams/RecruitmentSwipeDeck';
 
 type MyRecruitmentsResponse = {
   items: Array<{
@@ -117,6 +118,7 @@ export function TeamsPageClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const authUserId = useAuthStore((state) => state.user?.id ?? null);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   const [tab, setTab] = useState<'match' | 'matches' | 'my-team'>('match');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('new-solo');
@@ -134,16 +136,19 @@ export function TeamsPageClient() {
   const { data: contextsData, isLoading: contextsLoading } = useQuery({
     queryKey: ['teams', 'recruitment-contexts'],
     queryFn: () => apiClient.get<RecruitmentContextDto>(teamRoutes.recruitmentContexts()),
+    enabled: !!accessToken,
   });
 
   const { data: myRecruitments, isLoading: myRecruitmentsLoading } = useQuery({
     queryKey: ['teams', 'recruitments', 'my'],
     queryFn: () => apiClient.get<MyRecruitmentsResponse>(teamRoutes.myRecruitments()),
+    enabled: !!accessToken,
   });
 
   const { data: resumesData } = useQuery({
     queryKey: ['resumes', 'options'],
     queryFn: () => apiClient.get<ResumeOption[]>(resumeRoutes.list()),
+    enabled: !!accessToken,
   });
 
   const currentTeamEntry = useMemo(() => {
@@ -226,12 +231,13 @@ export function TeamsPageClient() {
       apiClient.get<RecruitmentDeckResponse>(teamRoutes.recruitmentDeck(), {
         params: currentTeamEntry?.team.id ? { teamId: currentTeamEntry.team.id } : undefined,
       }),
-    enabled: !!currentTeamEntry?.team.id,
+    enabled: !!accessToken && !!currentTeamEntry?.team.id,
   });
 
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
     queryKey: ['teams', 'matches'],
     queryFn: () => apiClient.get<{ items: TeamMatchDto[] }>(teamRoutes.matches()),
+    enabled: !!accessToken,
   });
 
   const invalidateRecruitmentQueries = () => {
@@ -411,70 +417,28 @@ export function TeamsPageClient() {
               }}
             />
           ) : (
-            <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-              <Card className="overflow-hidden">
-                <div className="h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-                <CardHeader>
-                  <CardTitle>{t('recruitment.swipeDeck.title')}</CardTitle>
-                  <CardDescription>{t('recruitment.swipeDeck.description')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {deckLoading ? (
-                    <Skeleton className="h-[420px] w-full rounded-xl" />
-                  ) : activeDeckCard ? (
-                    <div className="space-y-4">
-                      <RecruitmentCardPreview card={activeDeckCard} />
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          className="flex-1 gap-2"
-                          disabled={swipeMutation.isPending}
-                          onClick={() =>
-                            swipeMutation.mutate({
-                              sourceCardId: currentCard.id,
-                              targetCardId: activeDeckCard.id,
-                              action: 'PASS',
-                            })
-                          }
-                        >
-                          <X className="h-4 w-4" />
-                          {t('recruitment.swipeDeck.pass')}
-                        </Button>
-                        <Button
-                          className="flex-1 gap-2 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600"
-                          disabled={swipeMutation.isPending}
-                          onClick={() =>
-                            swipeMutation.mutate({
-                              sourceCardId: currentCard.id,
-                              targetCardId: activeDeckCard.id,
-                              action: 'LIKE',
-                            })
-                          }
-                        >
-                          <Heart className="h-4 w-4" />
-                          {t('recruitment.swipeDeck.like')}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <EmptyState
-                      type="teams"
-                      title={t('recruitment.empty.deckEmpty')}
-                      action={{
-                        label: t('recruitment.refresh'),
-                        onClick: () =>
-                          queryClient.invalidateQueries({
-                            queryKey: ['teams', 'recruitments', 'deck'],
-                          }),
-                      }}
-                    />
-                  )}
-                </CardContent>
-              </Card>
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] items-start">
+              <RecruitmentSwipeDeck
+                cards={deckCards}
+                onSwipe={(cardId, action) =>
+                  swipeMutation.mutate({
+                    sourceCardId: currentCard.id,
+                    targetCardId: cardId,
+                    action,
+                  })
+                }
+                onEmpty={() =>
+                  queryClient.invalidateQueries({
+                    queryKey: ['teams', 'recruitments', 'deck'],
+                  })
+                }
+                isLoading={deckLoading}
+                isPending={swipeMutation.isPending}
+              />
 
-              <Card>
+              <Card className="hidden lg:block sticky top-24">
                 <CardHeader>
-                  <CardTitle>{t('recruitment.currentCard')}</CardTitle>
+                  <CardTitle className="text-base">{t('recruitment.currentCard')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RecruitmentCardPreview card={currentCard} compact />
