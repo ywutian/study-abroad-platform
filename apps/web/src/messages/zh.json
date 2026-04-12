@@ -5237,8 +5237,14 @@
       "swipeDeck": {
         "title": "划卡匹配",
         "description": "只会发同比赛同赛道且人数兼容的卡。",
-        "pass": "左滑",
-        "like": "右滑"
+        "pass": "跳过",
+        "like": "喜欢",
+        "emptyPool": "暂无卡片",
+        "emptyPoolDesc": "当前赛道还没有其他卡片，稍后再来看看！",
+        "allSwiped": "全部看完了！",
+        "allSwipedDesc": "你已经看完了所有卡片，刷新查看新卡。",
+        "restart": "刷新牌堆",
+        "keyboardHint": "← 跳过 · 喜欢 →"
       },
       "currentCard": "当前我的卡",
       "currentCardOverview": "当前卡片概览",
@@ -5289,6 +5295,12 @@
       "intentMode": {
         "teamUp": "正式组队",
         "networkingOnly": "仅交流"
+      },
+      "availability": {
+        "LESS_THAN_5_HOURS": "<5小时/周",
+        "FIVE_TO_TEN_HOURS": "5-10小时/周",
+        "TEN_PLUS_HOURS": "10小时+/周",
+        "WEEKENDS_ONLY": "仅周末"
       },
       "option": {
         "unset": "未设置",
