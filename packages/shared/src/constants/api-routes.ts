@@ -65,6 +65,7 @@ export type ApiRoutePrefix = (typeof API_ROUTES)[keyof typeof API_ROUTES];
 
 export const profileRoutes = {
   me: () => `${API_ROUTES.PROFILES}/me`,
+  byId: (id: string) => `${API_ROUTES.PROFILES}/${id}`,
   onboarding: () => `${API_ROUTES.PROFILES}/onboarding`,
   aiAnalysis: () => `${API_ROUTES.PROFILES}/me/ai-analysis`,
   aiAnalysisFeedback: () => `${API_ROUTES.PROFILES}/me/ai-analysis/feedback`,
@@ -94,7 +95,6 @@ export const hallRoutes = {
   reviewReact: (id: string) => `${API_ROUTES.HALLS}/reviews/${id}/react`,
   verifiedRanking: () => `${API_ROUTES.HALLS}/verified-ranking`,
   swipe: () => `${API_ROUTES.HALLS}/swipe`,
-  profile: (userId: string) => `${API_ROUTES.HALLS}/profiles/${userId}`,
   publicProfiles: () => `${API_ROUTES.HALLS}/public-profiles`,
 };
 
