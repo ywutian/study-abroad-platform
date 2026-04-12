@@ -22,7 +22,8 @@ pnpm dev                  # Turbo parallel dev (all apps)
 pnpm api / pnpm web       # Individual app dev
 pnpm docker:up / down     # PostgreSQL 16 (pgvector) + Redis 7
 pnpm build                # Production build
-pnpm lint:all             # ESLint + quality + i18n + routes + integration
+pnpm lint:all             # ESLint + quality + i18n + routes + integration + drift
+pnpm lint:drift           # Documentation & architecture drift check
 pnpm test                 # Unit tests (API: Jest, Web: Vitest)
 pnpm test:e2e             # E2E tests (requires Docker)
 pnpm prepush              # Typecheck + tests (same as pre-push hook)
@@ -118,16 +119,8 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 ## Lessons Learned
 
-- Prisma schema change -> `db:generate` before typecheck
-- DTO fields: use Prisma enums, not `string`
-- nodenext: static `import` only, no `await import()`
-- Test mocks: new Prisma model -> add model mock everywhere
-- Zustand mock: `jest.fn((sel) => sel ? sel(state) : state)`
-- Coverage: start low (3-5%), increase gradually
-- CVE fixes: `pnpm.overrides` in root package.json
-- E2E: sync route renames to `test/*.e2e-spec.ts`
-- shared changes: build before mobile verification
-- Metro: `unstable_enablePackageExports = true`
+- Prisma: `db:generate` before typecheck; DTO: Prisma enums, not `string`; shared: build before mobile; Metro: `unstable_enablePackageExports`
+- Mocks: new Prisma model -> add mock everywhere; Zustand: `jest.fn((sel) => sel ? sel(state) : state)`; CVE: `pnpm.overrides`
 
 ## Context Routing
 
@@ -171,6 +164,16 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 | CLAUDE.md vs docs/ 重复     | 0（>10 行→链接引用）                     | 替换为链接引用                             |
 | Agent 清单一致性            | `.claude/agents/` 文件数 == Agent 表行数 | 同步增删                                   |
 | Context Routing 有效性      | 100% 路径可达                            | 新建/删除 docs 时同步更新                  |
+
+## Skills (`.claude/skills/`)
+
+| Skill              | Purpose                                                                       |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `/review`          | Post-generation sensor — runs relevant agents on changed files                |
+| `/create-module`   | Scaffold NestJS module (controller + service + dto + BRIEF.md)                |
+| `/add-endpoint`    | Add REST endpoint (DTO, throttle, swagger, tests)                             |
+| `/feedback-triage` | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release) |
+| `/audit-drift`     | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                 |
 
 ## Rules Index
 

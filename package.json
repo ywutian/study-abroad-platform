@@ -43,8 +43,9 @@
     "prediction:accuracy": "tsx scripts/prediction-accuracy-report.ts",
     "prediction:smoke": "tsx scripts/prediction-stability-smoke.ts",
     "prediction:gate": "tsx scripts/prediction-gate.ts",
+    "lint:drift": "tsx scripts/check-drift.ts",
     "lint:dead-code": "knip",
-    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter api lint:quality && pnpm --filter web lint:i18n && pnpm lint:routes && pnpm lint:integration",
+    "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter api lint:quality && pnpm --filter web lint:i18n && pnpm lint:routes && pnpm lint:integration && pnpm lint:drift",
     "check": "pnpm lint:all && pnpm test",
     "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit && pnpm test"
   },
