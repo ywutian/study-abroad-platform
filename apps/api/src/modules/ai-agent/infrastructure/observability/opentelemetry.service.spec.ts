@@ -30,8 +30,8 @@ describe('OpenTelemetryService', () => {
     service = module.get(OpenTelemetryService);
   });
 
-  afterEach(async () => {
-    await service.onModuleDestroy();
+  afterEach(() => {
+    service.onModuleDestroy();
   });
 
   it('should be defined', () => {

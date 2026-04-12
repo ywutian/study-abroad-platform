@@ -235,7 +235,7 @@ describe('PredictionWorkflowService', () => {
 
     // Reset tx mocks each test
     Object.values(mockTx).forEach((model) =>
-      Object.values(model).forEach((fn) => (fn as jest.Mock).mockClear()),
+      Object.values(model).forEach((fn) => fn.mockClear()),
     );
   });
 

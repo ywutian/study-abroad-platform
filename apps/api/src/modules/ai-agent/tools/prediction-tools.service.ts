@@ -117,7 +117,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
       updatedAt: prediction.updatedAt,
       latestOutcomeLabel:
         prediction.outcomeLabelRecords != null
-          ? this.mapLatestOutcome(prediction.outcomeLabelRecords as any)
+          ? this.mapLatestOutcome(prediction.outcomeLabelRecords)
           : undefined,
     };
   }
