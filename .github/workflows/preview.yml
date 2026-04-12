@@ -22,9 +22,9 @@ permissions:
 
 jobs:
   deploy-preview:
-    # Disabled: staging service not configured yet (missing env vars)
-    # Re-enable when study-abroad-api-staging is set up in GCP
-    if: false
+    # Requires: GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_PROJECT_ID, GCP_REGION secrets
+    # Skip gracefully if secrets are not configured
+    if: ${{ secrets.GCP_PROJECT_ID != '' }}
     runs-on: ubuntu-latest
     environment: staging
     steps:
