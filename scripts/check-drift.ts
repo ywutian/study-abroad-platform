@@ -43,10 +43,11 @@ type RuleName =
   | 'claude-md-consistency'
   | 'rules-glob-coverage'
   | 'module-boundary'
-  | 'coverage-trend';
+  | 'coverage-trend'
+  | 'manifest-consistency';
 
 const DOMAINS: Record<string, RuleName[]> = {
-  docs: ['brief-accuracy', 'claude-md-consistency'],
+  docs: ['brief-accuracy', 'claude-md-consistency', 'manifest-consistency'],
   rules: ['rules-glob-coverage'],
   arch: ['module-boundary', 'coverage-trend'],
 };
@@ -468,6 +469,83 @@ function checkCoverageTrend(): Issue[] {
   return issues;
 }
 
+// ── Rule 6: manifest-consistency ───────────────────────────
+// Verify .claude/manifests/agent-workflow.yml is in sync with actual agent files
+
+function checkManifestConsistency(): Issue[] {
+  const issues: Issue[] = [];
+  const manifestPath = path.resolve(ROOT, '.claude/manifests/agent-workflow.yml');
+
+  if (!fs.existsSync(manifestPath)) {
+    issues.push({
+      rule: 'manifest-consistency',
+      severity: 'error',
+      file: '.claude/manifests/agent-workflow.yml',
+      message: 'Manifest file missing — required by CLAUDE.md and skills',
+    });
+    return issues;
+  }
+
+  const manifest = readFile(manifestPath);
+
+  // Extract agent IDs from manifest (`  - id: name`)
+  const manifestAgentIds = new Set<string>();
+  const idMatches = manifest.match(/^\s*-\s*id:\s*([a-z0-9-]+)/gm) || [];
+  for (const m of idMatches) {
+    const id = m.replace(/.*id:\s*/, '').trim();
+    manifestAgentIds.add(id);
+  }
+
+  // Get actual agent file names (without .md extension)
+  const actualAgentIds = new Set<string>();
+  if (fs.existsSync(AGENTS_DIR)) {
+    for (const f of getFiles(AGENTS_DIR)) {
+      if (f.endsWith('.md')) {
+        actualAgentIds.add(f.replace('.md', ''));
+      }
+    }
+  }
+
+  // Find agents in manifest but not on disk
+  for (const id of manifestAgentIds) {
+    if (!actualAgentIds.has(id)) {
+      issues.push({
+        rule: 'manifest-consistency',
+        severity: 'error',
+        file: '.claude/manifests/agent-workflow.yml',
+        message: `Manifest references agent \`${id}\` but \`.claude/agents/${id}.md\` does not exist`,
+      });
+    }
+  }
+
+  // Find agents on disk but not in manifest
+  for (const id of actualAgentIds) {
+    if (!manifestAgentIds.has(id)) {
+      issues.push({
+        rule: 'manifest-consistency',
+        severity: 'warning',
+        file: `.claude/agents/${id}.md`,
+        message: `Agent file exists but not declared in manifest \`.claude/manifests/agent-workflow.yml\``,
+      });
+    }
+  }
+
+  // Verify key sections exist
+  const requiredSections = ['severity:', 'agents:', 'selection:', 'acceptance:'];
+  for (const section of requiredSections) {
+    if (!manifest.includes(section)) {
+      issues.push({
+        rule: 'manifest-consistency',
+        severity: 'error',
+        file: '.claude/manifests/agent-workflow.yml',
+        message: `Missing required section: \`${section}\``,
+      });
+    }
+  }
+
+  return issues;
+}
+
 // ── Runner ──────────────────────────────────────────────────
 
 const RULE_RUNNERS: Record<RuleName, () => Issue[]> = {
@@ -476,6 +554,7 @@ const RULE_RUNNERS: Record<RuleName, () => Issue[]> = {
   'rules-glob-coverage': checkRulesGlobCoverage,
   'module-boundary': checkModuleBoundary,
   'coverage-trend': checkCoverageTrend,
+  'manifest-consistency': checkManifestConsistency,
 };
 
 function main() {

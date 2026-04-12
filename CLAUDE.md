@@ -34,7 +34,7 @@ URLs: Web :4100 | API :4101 | Swagger :4101/api/docs | Prisma Studio :5555
 
 ## Database Rules
 
-- Schema: `apps/api/prisma/schema.prisma` (~2460 lines, 28 enums, 50+ models, pgvector)
+- Schema: `apps/api/prisma/schema.prisma` (~3725 lines, 76 enums, 117 models, pgvector) <!-- Exact stats: see docs/REPO_SNAPSHOT.md (auto-generated) -->
 - Every schema change **MUST** create a migration: `pnpm --filter api db:migrate -- --name <name>`
 - **Never** `db:push` in production/staging
 - New columns must be **nullable** or have **default** (avoid downtime)
@@ -70,38 +70,13 @@ URLs: Web :4100 | API :4101 | Swagger :4101/api/docs | Prisma Studio :5555
 | 12  | Feedback Processor   | `.claude/agents/feedback-processor.md`   | Feedback triage, root cause   |
 | 13  | User Journey Auditor | `.claude/agents/user-journey-auditor.md` | E2E journey completeness      |
 
-### Phase 1: Plan Review (by change type)
+### Phase 1 (Plan) + Phase 2 (Acceptance)
 
-| Change Type  | Launch Agents                                       | Add If Needed                            |
-| ------------ | --------------------------------------------------- | ---------------------------------------- |
-| Backend      | Architect, Data Model, Security, Test               | AI Prompt (if LLM)                       |
-| Frontend     | Design, i18n, Applicant Sim, Test                   | —                                        |
-| Mobile       | Mobile, i18n, Applicant Sim, Test                   | —                                        |
-| AI Feature   | AI Prompt, Study Abroad, Security, Test             | —                                        |
-| Full-Stack   | Architect, Data Model, Design, i18n, Security, Test | +Study Abroad/AI Prompt/Mobile as needed |
-| DB Change    | Data Model, Architect, Security                     | —                                        |
-| Large Change | **All 13 in parallel**                              | —                                        |
-
-### Phase 2: Acceptance (MANDATORY)
-
-1. **Integration Checker** — frontend-backend alignment, types, i18n, permissions
-2. **Test Engineer** — run tests, fill gaps, verify pass
-3. **User Journey Auditor** — feature completeness (when user-visible)
-
-### Rules
+**Single source of truth**: `.claude/manifests/agent-workflow.yml` — contains agent selection matrix (by change type + cross-cutting rules), mandatory acceptance agents, and unified severity levels (`BLOCK`/`WARN`/`INFO`/`N_A`).
 
 - Parallel agents **MUST** run in parallel
 - **Prisma Model changes**: grep all consumers, mark "needs update" or "N/A (reason)"
 - **Nullable field frontend**: Never `|| 'SomeEnum'` as default — show "unknown/unset" state
-
-### Cross-Cutting Rules
-
-- Prisma field in frontend UI -> add **Design Reviewer**
-- LLM output structure change -> add **Data Model Reviewer**
-- API error code change -> add **Integration Checker**
-- `packages/shared` type change -> add **Mobile Specialist** (if mobile uses it)
-- Nullable field with frontend display -> add **Applicant Simulator**
-- Prompt output for business decisions -> add **Study Abroad Expert**
 
 ## Feedback Processing
 
@@ -167,13 +142,14 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 ## Skills (`.claude/skills/`)
 
-| Skill              | Purpose                                                                       |
-| ------------------ | ----------------------------------------------------------------------------- |
-| `/review`          | Post-generation sensor — runs relevant agents on changed files                |
-| `/create-module`   | Scaffold NestJS module (controller + service + dto + BRIEF.md)                |
-| `/add-endpoint`    | Add REST endpoint (DTO, throttle, swagger, tests)                             |
-| `/feedback-triage` | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release) |
-| `/audit-drift`     | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                 |
+| Skill               | Purpose                                                                       |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `/review`           | Post-generation sensor — runs relevant agents on changed files                |
+| `/create-module`    | Scaffold NestJS module (controller + service + dto + BRIEF.md)                |
+| `/add-endpoint`     | Add REST endpoint (DTO, throttle, swagger, tests)                             |
+| `/feedback-triage`  | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release) |
+| `/audit-drift`      | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                 |
+| `/workflow-receipt` | Generate structured audit receipt after agent workflow                        |
 
 ## Rules Index
 
