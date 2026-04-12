@@ -133,7 +133,7 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 | 编辑 `apps/api/` 任意文件                         | 自动加载 `apps/api/CLAUDE.md` + `.claude/rules/backend.md`  |
 | 编辑 `apps/web/` 任意文件                         | 自动加载 `apps/web/CLAUDE.md` + `.claude/rules/frontend.md` |
 | `modules/prediction/`                             | `docs/PREDICTION_SYSTEM.md`                                 |
-| `modules/ai-agent/`                               | `.claude/memory/ai-system.md`                               |
+| `modules/ai-agent/`                               | `.claude/rules/ai-system.md`                                |
 | `modules/auth/`, guards/                          | `.claude/rules/security.md` + `docs/adr/0010-*.md`          |
 | `prisma/schema.prisma`                            | `apps/api/CLAUDE.md` Schema Change Rules                    |
 | 留学业务逻辑 (school, prediction, recommendation) | `docs/DATA_SOURCES.md`                                      |
