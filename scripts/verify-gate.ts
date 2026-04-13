@@ -1,14 +1,22 @@
 /**
- * Per-commit verification gate.
+ * Verification gate — runs affected-app checks before commit / push.
  *
- * Detects which apps are affected by changed files and runs only the relevant
- * checks (typecheck, test, lint:routes, lint:i18n). Designed for use during
- * incremental development — run before each commit to catch issues early.
+ * Three modes:
+ *   1. Default   (`npx tsx scripts/verify-gate.ts`)
+ *      Compares working tree to HEAD. Use during active editing.
+ *   2. --staged  (pre-commit)
+ *      Compares staged files to HEAD. Used after `git add`.
+ *   3. --pre-push (pre-push hook)
+ *      Compares committed changes to upstream (`@{u}...HEAD` or
+ *      `origin/main...HEAD`). This is the **mode that actually matches
+ *      what CI will see**. Runs full eslint + integration + drift in
+ *      addition to typecheck + test, so CI failures surface locally.
  *
  * Usage:
- *   npx tsx scripts/verify-gate.ts            # Check all uncommitted changes
- *   npx tsx scripts/verify-gate.ts --staged   # Check only staged files
- *   npx tsx scripts/verify-gate.ts --verbose  # Show which checks are skipped and why
+ *   npx tsx scripts/verify-gate.ts              # uncommitted changes
+ *   npx tsx scripts/verify-gate.ts --staged     # staged files (pre-commit)
+ *   npx tsx scripts/verify-gate.ts --pre-push   # pushing changes (pre-push)
+ *   npx tsx scripts/verify-gate.ts --verbose    # include skip reasons
  */
 
 import { execSync } from 'child_process';
@@ -18,6 +26,7 @@ import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
 const stagedOnly = process.argv.includes('--staged');
+const prePush = process.argv.includes('--pre-push');
 const verbose = process.argv.includes('--verbose');
 
 type App = 'api' | 'web' | 'mobile' | 'shared';
@@ -33,9 +42,26 @@ interface CheckResult {
 
 function getChangedFiles(): string[] {
   try {
-    const cmd = stagedOnly
-      ? 'git diff --cached --name-only --diff-filter=ACM'
-      : 'git diff --name-only HEAD';
+    let cmd: string;
+    if (prePush) {
+      // Pre-push: compare committed commits against the upstream branch.
+      // This matches what CI actually receives (the pushed commits).
+      // Uses `@{u}` (configured upstream) → falls back to `origin/main`.
+      try {
+        execSync('git rev-parse --abbrev-ref @{u}', {
+          cwd: ROOT,
+          stdio: 'pipe',
+        });
+        cmd = 'git diff --name-only @{u}...HEAD';
+      } catch {
+        // No upstream tracking yet — compare against origin/main
+        cmd = 'git diff --name-only origin/main...HEAD';
+      }
+    } else if (stagedOnly) {
+      cmd = 'git diff --cached --name-only --diff-filter=ACM';
+    } else {
+      cmd = 'git diff --name-only HEAD';
+    }
     const output = execSync(cmd, { encoding: 'utf8', cwd: ROOT });
     return output.split('\n').filter(Boolean);
   } catch {
@@ -113,7 +139,7 @@ function hasRouteChanges(files: string[]): boolean {
 // ── Main ────────────────────────────────────────────────────
 
 function main() {
-  const mode = stagedOnly ? 'staged' : 'uncommitted';
+  const mode = prePush ? 'pre-push' : stagedOnly ? 'staged' : 'uncommitted';
   console.log(`\n🔍 Verify Gate — checking ${mode} changes...\n`);
 
   const files = getChangedFiles();
@@ -126,7 +152,10 @@ function main() {
   console.log(`📂 Changed files: ${files.length}`);
   console.log(`📦 Affected apps: ${[...affected].join(', ') || 'none'}\n`);
 
-  if (affected.size === 0) {
+  // In pre-push mode, repo-wide checks (drift, integration) always run even
+  // for config-only changes — a CLAUDE.md or manifest edit can still break
+  // drift rules, and route helper changes can break integration rules.
+  if (affected.size === 0 && !prePush) {
     console.log('No app-level changes detected (config/docs only). Skipping checks.');
     process.exit(0);
   }
@@ -155,7 +184,27 @@ function main() {
     results.push(runCheck('typecheck:mobile', 'pnpm --filter mobile exec tsc --noEmit'));
   }
 
-  // 2. Tests for affected apps
+  // 2. Lint affected apps — **pre-push only** (catches eslint errors like
+  //    `await void` that CI lint job would fail on). Skipped in pre-commit
+  //    to keep commits fast; lint-staged already runs on staged files.
+  if (prePush) {
+    if (affected.has('api')) {
+      console.log('🧹 Lint: api...');
+      results.push(runCheck('lint:api', 'pnpm --filter api lint'));
+    }
+    if (affected.has('web')) {
+      console.log('🧹 Lint: web...');
+      results.push(runCheck('lint:web', 'pnpm --filter web lint'));
+    }
+    if (affected.has('mobile')) {
+      console.log('🧹 Lint: mobile...');
+      results.push(runCheck('lint:mobile', 'pnpm --filter study-abroad-mobile lint'));
+    }
+  } else if (verbose) {
+    console.log('   ⏭️  lint — skipped (not in --pre-push mode)');
+  }
+
+  // 3. Tests for affected apps
   if (affected.has('api')) {
     console.log('🧪 Test: api...');
     results.push(runCheck('test:api', 'pnpm --filter api test --passWithNoTests'));
@@ -166,10 +215,12 @@ function main() {
   }
   if (affected.has('mobile')) {
     console.log('🧪 Test: mobile...');
-    results.push(runCheck('test:mobile', 'pnpm --filter mobile test --passWithNoTests'));
+    results.push(
+      runCheck('test:mobile', 'pnpm --filter study-abroad-mobile test --passWithNoTests')
+    );
   }
 
-  // 3. Conditional checks
+  // 4. Conditional targeted checks
   if (hasRouteChanges(files)) {
     console.log('🔗 Checking API route consistency...');
     results.push(runCheck('lint:routes', 'pnpm lint:routes'));
@@ -182,6 +233,19 @@ function main() {
     results.push(runCheck('lint:i18n', 'pnpm --filter web lint:i18n'));
   } else if (verbose) {
     console.log('   ⏭️  lint:i18n — skipped (no i18n file changes)');
+  }
+
+  // 5. Full integration + drift checks — **pre-push only** (expensive, ~30s).
+  //    Catches route-helper-sync, governance rules, BRIEF.md drift, etc.
+  //    These are the same checks CI runs but scoped to commits being pushed.
+  if (prePush) {
+    console.log('🔎 Integration check (21 rules)...');
+    results.push(runCheck('lint:integration', 'pnpm lint:integration'));
+
+    console.log('📋 Drift check (6 rules)...');
+    results.push(runCheck('lint:drift', 'pnpm lint:drift'));
+  } else if (verbose) {
+    console.log('   ⏭️  lint:integration / lint:drift — skipped (not in --pre-push mode)');
   }
 
   // ── Report ──────────────────────────────────────────────────
@@ -213,11 +277,16 @@ function main() {
       }
       console.log('');
     }
-    console.log('Fix the issues above before committing.');
+    console.log(
+      prePush ? 'Fix the issues above before pushing.' : 'Fix the issues above before committing.'
+    );
     process.exit(1);
   }
 
-  console.log(`✅ All ${passed.length} check(s) passed! Safe to commit.\n`);
+  const successMsg = prePush
+    ? `✅ All ${passed.length} check(s) passed! Safe to push.\n`
+    : `✅ All ${passed.length} check(s) passed! Safe to commit.\n`;
+  console.log(successMsg);
   process.exit(0);
 }
 
