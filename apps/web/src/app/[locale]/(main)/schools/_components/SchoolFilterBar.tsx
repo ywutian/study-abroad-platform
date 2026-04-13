@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 import { Search, ChevronRight, SlidersHorizontal, Filter, Globe, X } from 'lucide-react';
+import { schoolRoutes } from '@study-abroad/shared';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -24,17 +27,25 @@ import {
   type TuitionPresetValue,
   type SchoolFilters,
 } from '@/components/features/schools/school-filters';
+import { apiClient } from '@/lib/api';
 import { Link } from '@/lib/i18n/navigation';
 
-const countries = [
-  { value: 'ALL', labelKey: 'all' },
-  { value: 'US', labelKey: 'us' },
-  { value: 'UK', labelKey: 'uk' },
-  { value: 'CA', labelKey: 'canada' },
-  { value: 'AU', labelKey: 'australia' },
-  { value: 'DE', labelKey: 'germany' },
-  { value: 'JP', labelKey: 'japan' },
-];
+// Country code → i18n label key (matches messages/{en,zh}.json `schools.countries.*`)
+const COUNTRY_LABEL_KEYS: Record<string, string> = {
+  US: 'us',
+  USA: 'us',
+  UK: 'uk',
+  GB: 'uk',
+  CA: 'canada',
+  AU: 'australia',
+  DE: 'germany',
+  JP: 'japan',
+};
+
+interface AvailableCountry {
+  code: string;
+  count: number;
+}
 
 const tuitionRanges = [
   { value: 'ALL', labelKey: 'all' },
@@ -82,6 +93,33 @@ export function SchoolFilterBar({
   const tc = useTranslations('common');
   const quickTuitionRange = getTuitionPresetValue(advancedFilters);
 
+  // Fetch countries that actually have schools — avoids the UX bug where
+  // users select "UK" from a hardcoded list only to get zero results.
+  const { data: availableCountries } = useQuery<AvailableCountry[]>({
+    queryKey: ['schools', 'countries'],
+    queryFn: () => apiClient.get(schoolRoutes.countries()),
+    staleTime: 5 * 60 * 1000, // 5 min — matches backend cache
+  });
+
+  const countries = useMemo(() => {
+    const items = availableCountries ?? [];
+    // Fallback while loading: show nothing. Component hides filter when empty.
+    if (items.length === 0) return [];
+
+    // Build [ALL, ...actual countries] — sorted by count desc (backend already sorts)
+    return [
+      { value: 'ALL', labelKey: 'all', count: null as number | null },
+      ...items.map((c) => ({
+        value: c.code,
+        labelKey: COUNTRY_LABEL_KEYS[c.code] ?? c.code.toLowerCase(),
+        count: c.count,
+      })),
+    ];
+  }, [availableCountries]);
+
+  // Hide country filter entirely when only 1 country has data (no meaningful choice)
+  const showCountryFilter = countries.length > 2; // ALL + 1 country = hidden
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -97,20 +135,25 @@ export function SchoolFilterBar({
             />
           </div>
 
-          {/* Country Filter */}
-          <Select value={country} onValueChange={onCountryChange}>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder={t('country')} />
-            </SelectTrigger>
-            <SelectContent>
-              {countries.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {t(`countries.${c.labelKey}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Country Filter — only shown when 2+ countries have schools */}
+          {showCountryFilter && (
+            <Select value={country} onValueChange={onCountryChange}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder={t('country')} />
+              </SelectTrigger>
+              <SelectContent>
+                {countries.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {t(`countries.${c.labelKey}`)}
+                    {c.count !== null && (
+                      <span className="ml-1 text-xs text-muted-foreground">({c.count})</span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {/* Sort */}
           <Select value={sortBy} onValueChange={onSortByChange}>
@@ -223,7 +266,7 @@ export function SchoolFilterBar({
         </div>
 
         {/* Active Filters */}
-        {(search || country !== 'ALL') && (
+        {(search || (showCountryFilter && country !== 'ALL')) && (
           <div className="flex flex-wrap gap-2 mt-4">
             {search && (
               <Badge variant="secondary" className="gap-1 pr-1">
@@ -237,10 +280,13 @@ export function SchoolFilterBar({
                 </button>
               </Badge>
             )}
-            {country !== 'ALL' && (
+            {showCountryFilter && country !== 'ALL' && (
               <Badge variant="secondary" className="gap-1 pr-1">
                 <Globe className="h-3 w-3" />
-                {t(`countries.${countries.find((c) => c.value === country)?.labelKey}`)}
+                {(() => {
+                  const match = countries.find((c) => c.value === country);
+                  return match ? t(`countries.${match.labelKey}`) : country;
+                })()}
                 <button
                   onClick={() => onCountryChange('ALL')}
                   className="ml-1 rounded-full hover:bg-muted p-0.5"

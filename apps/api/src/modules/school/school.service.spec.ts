@@ -99,6 +99,7 @@ describe('SchoolService', () => {
               create: jest.fn(),
               update: jest.fn(),
               count: jest.fn(),
+              groupBy: jest.fn(),
             },
           },
         },
@@ -438,6 +439,35 @@ describe('SchoolService', () => {
         where: { usNewsRank: { not: null } },
         orderBy: { usNewsRank: 'asc' },
       });
+    });
+  });
+
+  describe('getAvailableCountries', () => {
+    it('returns countries that have at least one school, sorted by count', async () => {
+      (prismaService.school.groupBy as jest.Mock).mockResolvedValue([
+        { country: 'US', _count: { _all: 137 } },
+        { country: 'UK', _count: { _all: 5 } },
+      ]);
+
+      const result = await service.getAvailableCountries();
+
+      expect(result).toEqual([
+        { code: 'US', count: 137 },
+        { code: 'UK', count: 5 },
+      ]);
+      expect(prismaService.school.groupBy).toHaveBeenCalledWith({
+        by: ['country'],
+        _count: { _all: true },
+        orderBy: { _count: { country: 'desc' } },
+      });
+    });
+
+    it('returns empty array when no schools exist', async () => {
+      (prismaService.school.groupBy as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getAvailableCountries();
+
+      expect(result).toEqual([]);
     });
   });
 });
