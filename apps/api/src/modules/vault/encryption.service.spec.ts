@@ -79,8 +79,13 @@ describe('EncryptionService', () => {
       const plainText = 'original data';
       const encrypted = service.encrypt(plainText, userId);
 
-      // Tamper with the encrypted data
-      const tamperedData = 'aa' + encrypted.encryptedData.slice(2);
+      // Deterministically flip the first hex character so the tamper
+      // is guaranteed to change the bytes (avoid probabilistic 'aa' prefix
+      // collision: if encryptedData already started with 'aa', the old
+      // tamper was a no-op and the test would flake ~0.4% of CI runs).
+      const firstChar = encrypted.encryptedData[0];
+      const flippedFirst = firstChar === '0' ? '1' : '0';
+      const tamperedData = flippedFirst + encrypted.encryptedData.slice(1);
 
       expect(() => {
         service.decrypt(tamperedData, encrypted.iv, userId);
