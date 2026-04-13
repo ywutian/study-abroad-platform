@@ -194,6 +194,7 @@ export const resumeRoutes = {
 export const schoolRoutes = {
   list: () => API_ROUTES.SCHOOLS,
   byId: (id: string) => `${API_ROUTES.SCHOOLS}/${id}`,
+  countries: () => `${API_ROUTES.SCHOOLS}/countries`,
   communityRatingSummary: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/community-ratings/summary`,
   communityRatingMe: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/community-ratings/me`,
   logoSuggestion: (id: string) => `${API_ROUTES.SCHOOLS}/${id}/logo-suggestion`,

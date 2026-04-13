@@ -785,4 +785,36 @@ export class SchoolService {
     await this.redis.setJSON(cacheKey, ids, 86400); // 24h
     return ids;
   }
+
+  /**
+   * Returns countries with at least one school in the database,
+   * sorted by school count descending. Used by the frontend filter to
+   * only show countries that actually have data — preventing the UX bug
+   * where users select "UK" and get zero results.
+   */
+  async getAvailableCountries(): Promise<
+    Array<{ code: string; count: number }>
+  > {
+    const cacheKey = 'schools:available-countries';
+    const cached =
+      await this.redis.getJSON<Array<{ code: string; count: number }>>(
+        cacheKey,
+      );
+    if (cached?.length) return cached;
+
+    const grouped = await this.prisma.school.groupBy({
+      by: ['country'],
+      _count: { _all: true },
+      orderBy: { _count: { country: 'desc' } },
+    });
+
+    const result = grouped.map((g) => ({
+      code: g.country,
+      count: g._count._all,
+    }));
+
+    // Cache for 5 minutes — school additions happen infrequently
+    await this.redis.setJSON(cacheKey, result, 300);
+    return result;
+  }
 }

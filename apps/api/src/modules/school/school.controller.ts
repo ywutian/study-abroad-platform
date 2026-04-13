@@ -107,6 +107,19 @@ export class SchoolController {
       .then((schoolIds) => ({ schoolIds }));
   }
 
+  @Get('countries')
+  @Public()
+  @Header(
+    'Cache-Control',
+    'public, max-age=300, s-maxage=600, stale-while-revalidate=300',
+  )
+  @ApiOperation({
+    summary: 'Get countries with at least one school (for dynamic filter UI)',
+  })
+  async getAvailableCountries() {
+    return this.schoolService.getAvailableCountries();
+  }
+
   @Get()
   @Public()
   @Header(

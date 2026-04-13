@@ -185,16 +185,20 @@ export class PredictionMlPrimaryService {
       this.calculateConfidenceInterval(probability, confidence, tierConfig);
 
     // Generate deterministic factors from hook shifts (Fix 7: no empty factors)
+    // Note: explicit `let impact: 'positive' | 'negative'` narrows the literal type,
+    // surviving eslint --fix passes that strip inline `as` casts.
     const factors = hookShifts
       .filter((h) => Math.abs(h.logOddsShift) > 0.05)
-      .map((h) => ({
-        name: this.humanizeHookType(h.hookType),
-        impact: (h.logOddsShift > 0 ? 'positive' : 'negative') as
-          | 'positive'
-          | 'negative',
-        weight: Math.min(1, Math.abs(h.logOddsShift) / 3),
-        detail: `${h.source} (${h.logOddsShift > 0 ? '+' : ''}${h.logOddsShift.toFixed(2)} log-odds)`,
-      }));
+      .map((h) => {
+        const impact: 'positive' | 'negative' =
+          h.logOddsShift > 0 ? 'positive' : 'negative';
+        return {
+          name: this.humanizeHookType(h.hookType),
+          impact,
+          weight: Math.min(1, Math.abs(h.logOddsShift) / 3),
+          detail: `${h.source} (${h.logOddsShift > 0 ? '+' : ''}${h.logOddsShift.toFixed(2)} log-odds)`,
+        };
+      });
 
     // Redact hookShifts for public API (Fix 8: no model coefficient leakage)
     const redactedHookShifts = hookShifts.map((h) => ({
