@@ -63,3 +63,4 @@ We use a simplified [MADR](https://adr.github.io/madr/) (Markdown Any Decision R
 | [0007](0007-api-response-metadata-injection.md)          | API Response Metadata Injection                 | accepted | 2026-02-07 |
 | [0008](0008-prediction-multi-engine-ensemble.md)         | Prediction Multi-Engine Ensemble Architecture   | accepted | 2026-02-09 |
 | [0009](0009-hall-swipe-ui-overhaul.md)                   | Hall Swipe Game UI/UX Overhaul                  | accepted | 2026-02-09 |
+| [0017](0017-school-data-provenance.md)                   | School Data Provenance Tiering                  | proposed | 2026-04-13 |

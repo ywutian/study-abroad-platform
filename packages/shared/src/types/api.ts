@@ -2,6 +2,12 @@
 
 import type { User } from './auth';
 import type { AuthTokens } from './auth';
+import type {
+  FieldProvenance,
+  SchoolFieldSource,
+  SchoolFieldSources,
+  SchoolProvenance,
+} from './school-provenance';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -51,22 +57,7 @@ export interface HealthStatus {
 }
 
 // Data Provenance
-export interface FieldProvenance {
-  source: string;
-  at: string;
-}
-
-export type ProvenanceRecord = Record<string, FieldProvenance>;
-
-export type SchoolDataSourceTier = 'verified' | 'supplemental';
-
-export interface SchoolFieldSource {
-  tier: SchoolDataSourceTier;
-  source: string;
-  updatedAt: string;
-}
-
-export type SchoolFieldSources = Record<string, SchoolFieldSource>;
+export type ProvenanceRecord = SchoolProvenance;
 
 export interface SchoolCommunityRatingSummary {
   count: number;

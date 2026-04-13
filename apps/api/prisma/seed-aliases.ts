@@ -10,14 +10,12 @@
 import { PrismaClient } from '@prisma/client';
 import { normalizeSchoolName } from '../src/common/utils/school-name.util';
 
-const prisma = new PrismaClient();
-
 /**
  * 学校别名映射表
  * key: 学校全称 (name 字段)
  * value: 别名数组 (包括英文缩写、中文简称、昵称等)
  */
-const SCHOOL_ALIASES: Record<string, string[]> = {
+export const SCHOOL_ALIASES: Record<string, string[]> = {
   // ==========================================
   // Top 20 National Universities
   // ==========================================
@@ -350,7 +348,16 @@ const SCHOOL_ALIASES: Record<string, string[]> = {
   'The Juilliard School': ['Juilliard', '茱莉亚', '朱莉亚', '茱莉亚音乐学院'],
 };
 
-async function seedAliases() {
+const prisma = new PrismaClient();
+
+export async function seedAliases(
+  prismaClient: PrismaClient = prisma,
+): Promise<{
+  updated: number;
+  skipped: number;
+  notFound: number;
+  total: number;
+}> {
   console.log('🏫 Starting school aliases seed...\n');
 
   let updated = 0;
@@ -358,7 +365,7 @@ async function seedAliases() {
   let notFound = 0;
 
   for (const [schoolName, aliases] of Object.entries(SCHOOL_ALIASES)) {
-    const school = await prisma.school.findUnique({
+    const school = await prismaClient.school.findUnique({
       where: { nameNorm: normalizeSchoolName(schoolName) },
       select: { id: true, name: true, aliases: true },
     });
@@ -379,7 +386,7 @@ async function seedAliases() {
       continue;
     }
 
-    await prisma.school.update({
+    await prismaClient.school.update({
       where: { id: school.id },
       data: { aliases: mergedAliases },
     });
@@ -393,17 +400,26 @@ async function seedAliases() {
   console.log(`  Skipped (no change): ${skipped}`);
   console.log(`  Not found: ${notFound}`);
   console.log(`  Total aliases entries: ${Object.keys(SCHOOL_ALIASES).length}`);
+
+  return {
+    updated,
+    skipped,
+    notFound,
+    total: Object.keys(SCHOOL_ALIASES).length,
+  };
 }
 
-seedAliases()
-  .then(() => {
-    console.log('\n✅ Aliases seed completed!');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('❌ Seed failed:', error);
-    process.exit(1);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });
+if (require.main === module) {
+  seedAliases()
+    .then(() => {
+      console.log('\n✅ Aliases seed completed!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('❌ Seed failed:', error);
+      process.exit(1);
+    })
+    .finally(() => {
+      prisma.$disconnect();
+    });
+}

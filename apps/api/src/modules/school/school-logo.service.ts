@@ -6,8 +6,14 @@ import {
   AuditLogService,
   AuditAction,
 } from '../../common/services/audit-log.service';
-
-const LOGO_DEV_BASE = 'https://img.logo.dev';
+import {
+  extractSchoolLogoDomain,
+  getSchoolFaviconUrl,
+  getSchoolLogoDevUrl,
+  isValidSchoolLogoUrl,
+} from '../../common/utils/school-logo.util';
+import { buildFieldProvenanceRecord } from './school-provenance.helpers';
+import { SchoolWriteService } from './school-write.service';
 
 /**
  * Extract hostname from school website for Logo.dev.
@@ -16,19 +22,7 @@ const LOGO_DEV_BASE = 'https://img.logo.dev';
 export function extractDomainForLogo(
   website: string | null | undefined,
 ): string | null {
-  if (!website || typeof website !== 'string') return null;
-  const trimmed = website.trim();
-  if (!trimmed) return null;
-  let url: URL;
-  try {
-    url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
-  } catch {
-    return null;
-  }
-  const host = url.hostname.toLowerCase();
-  if (!host || host === 'localhost' || host.endsWith('.localhost')) return null;
-  if (host.startsWith('www.')) return host.slice(4);
-  return host;
+  return extractSchoolLogoDomain(website);
 }
 
 @Injectable()
@@ -40,6 +34,7 @@ export class SchoolLogoService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly schoolService: SchoolService,
+    private readonly schoolWriteService: SchoolWriteService,
     private readonly auditLogService: AuditLogService,
   ) {
     this.token = this.configService.get<string>('LOGO_DEV_TOKEN');
@@ -53,22 +48,22 @@ export class SchoolLogoService {
    * Build Logo.dev image URL for a domain. Returns null if token not configured.
    */
   getLogoUrlForDomain(domain: string): string | null {
-    if (!this.isConfigured()) return null;
-    return `${LOGO_DEV_BASE}/${domain}?token=${this.token}&size=256`;
+    return getSchoolLogoDevUrl(domain, this.token);
   }
 
   /**
-   * Get suggested logo URL for a school with website. Returns null if no website or not configured.
+   * Get suggested logo URL for a school with website.
+   * Falls back to Google favicon when Logo.dev is unavailable.
    */
   getSuggestedLogoUrl(website: string | null | undefined): string | null {
     const domain = extractDomainForLogo(website);
     if (!domain) return null;
-    return this.getLogoUrlForDomain(domain);
+    return this.getLogoUrlForDomain(domain) ?? getSchoolFaviconUrl(website);
   }
 
   /**
-   * Fill logoUrl for schools that have website but no logoUrl, using Logo.dev.
-   * Rate limit ~300ms per school. Returns counts and writes audit log.
+   * Fill logoUrl for schools that have website but no valid logoUrl.
+   * Uses Logo.dev when token is configured, otherwise falls back to Google favicon.
    */
   async fillLogosByDomain(
     limit: number,
@@ -79,43 +74,35 @@ export class SchoolLogoService {
     skipped: number;
     message?: string;
   }> {
-    if (!this.isConfigured()) {
-      return {
-        filled: 0,
-        failed: 0,
-        skipped: 0,
-        message: 'LOGO_DEV_TOKEN is not configured',
-      };
-    }
-
     const cap = Math.min(Math.max(1, limit), 500);
-    const schools = await this.prisma.school.findMany({
-      where: {
-        website: { not: null },
-        logoUrl: null,
-      },
-      select: { id: true, name: true, website: true },
-      take: cap,
-    });
+    const schools = (
+      await this.prisma.school.findMany({
+        where: {
+          website: { not: null },
+        },
+        select: { id: true, name: true, website: true, logoUrl: true },
+        take: cap * 2,
+      })
+    )
+      .filter((school) => !isValidSchoolLogoUrl(school.logoUrl))
+      .slice(0, cap);
 
     let filled = 0;
     let failed = 0;
 
     for (const school of schools) {
-      const domain = extractDomainForLogo(school.website);
-      if (!domain) {
-        failed++;
-        continue;
-      }
-      const logoUrl = this.getLogoUrlForDomain(domain);
+      const logoUrl = this.getSuggestedLogoUrl(school.website);
       if (!logoUrl) {
         failed++;
         continue;
       }
       try {
-        await this.prisma.school.update({
-          where: { id: school.id },
-          data: { logoUrl },
+        await this.schoolWriteService.update(school.id, {
+          fields: { logoUrl },
+          provenance: buildFieldProvenanceRecord(['logoUrl'], {
+            source: 'SCRAPER',
+            fetchedAt: new Date().toISOString(),
+          }),
         });
         await this.schoolService.invalidateSchoolCache(school.id);
         filled++;

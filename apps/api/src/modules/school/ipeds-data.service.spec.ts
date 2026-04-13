@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IpedsDataService } from './ipeds-data.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SchoolWriteService } from './school-write.service';
 
 describe('IpedsDataService', () => {
   let service: IpedsDataService;
@@ -15,12 +16,18 @@ describe('IpedsDataService', () => {
       upsert: jest.fn(),
     },
   };
+  const mockSchoolWriteService = {
+    create: jest.fn(),
+    update: jest.fn(),
+    invalidateSchoolCaches: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IpedsDataService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: SchoolWriteService, useValue: mockSchoolWriteService },
       ],
     }).compile();
 

@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
+import { buildFieldProvenanceRecord } from './school-provenance.helpers';
+import { SchoolWriteService } from './school-write.service';
 
 /**
  * IPEDS 数据服务
@@ -18,7 +20,10 @@ import { normalizeSchoolName } from '../../common/utils/school-name.util';
 export class IpedsDataService {
   private readonly logger = new Logger(IpedsDataService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private schoolWriteService: SchoolWriteService,
+  ) {}
 
   /**
    * IPEDS 数据需要下载 CSV 后导入
@@ -88,17 +93,32 @@ export class IpedsDataService {
         }));
 
       if (school) {
-        await this.prisma.school.update({
-          where: { id: school.id },
-          data: {
-            metadata: {
-              ...((school.metadata as object) || {}),
-              ipedsId: item.unitId,
-              rdDeadline: item.regularDeadline,
-              edDeadline: item.earlyDeadline,
-              applicationFee: item.applicationFee,
+        const fetchedAt = new Date().toISOString();
+        const provenanceFields = [
+          'ipedsId',
+          ...(item.regularDeadline ? ['deadlines.rd'] : []),
+          ...(item.earlyDeadline ? ['deadlines.ed'] : []),
+          ...(item.applicationFee != null ? ['applicationFee'] : []),
+        ];
+
+        await this.schoolWriteService.update(school.id, {
+          fields: {
+            ipedsId: item.unitId,
+            ...(item.applicationFee != null
+              ? { applicationFee: item.applicationFee }
+              : {}),
+          },
+          metadataPatch: {
+            deadlines: {
+              ...(item.regularDeadline ? { rd: item.regularDeadline } : {}),
+              ...(item.earlyDeadline ? { ed: item.earlyDeadline } : {}),
             },
           },
+          provenance: buildFieldProvenanceRecord(provenanceFields, {
+            source: 'IPEDS',
+            fetchedAt,
+          }),
+          existingMetadata: school.metadata,
         });
       }
     }

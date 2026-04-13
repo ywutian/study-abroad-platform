@@ -1,17 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useTranslations, useLocale } from 'next-intl';
-import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { FileText, Sparkles, CheckCircle, Clock, PenLine, ExternalLink } from 'lucide-react';
+import { FileText, Sparkles, CheckCircle, Clock, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
+import { TrustBadge } from '@/components/features/schools/TrustBadge';
+import { getSchoolFieldSource } from '@/components/features/schools/school-display-utils';
 
 import type { SchoolDetail, EssayPrompt } from './types';
 import { getSourceUrl } from './source-utils';
@@ -27,34 +28,8 @@ export function SchoolAcademicsTab({
 }: SchoolAcademicsTabProps) {
   const t = useTranslations();
   const tc = useTranslations('common');
-  const locale = useLocale();
 
   const requirements = school.metadata?.requirements || {};
-  const provenance = school.metadata?.provenance as
-    | Record<string, { source: string; at: string }>
-    | undefined;
-  const localeKey = locale === 'zh' ? 'zh' : 'en';
-  const getSource = (field: string) =>
-    provenance?.[field] ? DATA_SOURCE_LABELS[provenance[field].source]?.[localeKey] : undefined;
-
-  const renderSourceLabel = (field: string) => {
-    const label = getSource(field);
-    if (!label) return null;
-    const url = getSourceUrl(provenance?.[field]?.source || '', school);
-    return url ? (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-xs text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-0.5"
-      >
-        {label}
-        <ExternalLink className="h-2.5 w-2.5" />
-      </a>
-    ) : (
-      <div className="text-xs text-muted-foreground">{label}</div>
-    );
-  };
 
   const getCompetitionLevel = (rate: number | undefined) => {
     if (!rate) return t('school.difficulty.medium');
@@ -91,22 +66,63 @@ export function SchoolAcademicsTab({
               <span className="font-semibold">
                 {school.metadata?.essayCount || tc('notAvailable')}
               </span>
-              {renderSourceLabel('essayCount')}
+              <div className="mt-1">
+                <TrustBadge
+                  source={getSchoolFieldSource(school, 'essayCount')}
+                  sourceUrl={
+                    getSchoolFieldSource(school, 'essayCount')
+                      ? getSourceUrl(getSchoolFieldSource(school, 'essayCount')!.source, school)
+                      : null
+                  }
+                />
+              </div>
             </div>
           </div>
           <Separator />
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">{t('school.requirements.applicationFee')}</span>
-            <span className="font-semibold">
-              {requirements.applicationFee ? `$${requirements.applicationFee}` : 'N/A'}
-            </span>
+            <div className="text-right">
+              <span className="font-semibold">
+                {requirements.applicationFee ? `$${requirements.applicationFee}` : 'N/A'}
+              </span>
+              <div className="mt-1">
+                <TrustBadge
+                  source={getSchoolFieldSource(
+                    school,
+                    'requirements.applicationFee',
+                    'applicationFee'
+                  )}
+                  sourceUrl={
+                    getSchoolFieldSource(school, 'requirements.applicationFee', 'applicationFee')
+                      ? getSourceUrl(
+                          getSchoolFieldSource(
+                            school,
+                            'requirements.applicationFee',
+                            'applicationFee'
+                          )!.source,
+                          school
+                        )
+                      : null
+                  }
+                />
+              </div>
+            </div>
           </div>
           <Separator />
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">{t('school.requirements.toeflMin')}</span>
             <div className="text-right">
               <span className="font-semibold">{requirements.toeflMin || tc('notAvailable')}</span>
-              {renderSourceLabel('toeflMin')}
+              <div className="mt-1">
+                <TrustBadge
+                  source={getSchoolFieldSource(school, 'toeflMin')}
+                  sourceUrl={
+                    getSchoolFieldSource(school, 'toeflMin')
+                      ? getSourceUrl(getSchoolFieldSource(school, 'toeflMin')!.source, school)
+                      : null
+                  }
+                />
+              </div>
             </div>
           </div>
           <Separator />
@@ -114,7 +130,16 @@ export function SchoolAcademicsTab({
             <span className="text-muted-foreground">{t('school.requirements.ieltsMin')}</span>
             <div className="text-right">
               <span className="font-semibold">{requirements.ieltsMin || tc('notAvailable')}</span>
-              {renderSourceLabel('ieltsMin')}
+              <div className="mt-1">
+                <TrustBadge
+                  source={getSchoolFieldSource(school, 'ieltsMin')}
+                  sourceUrl={
+                    getSchoolFieldSource(school, 'ieltsMin')
+                      ? getSourceUrl(getSchoolFieldSource(school, 'ieltsMin')!.source, school)
+                      : null
+                  }
+                />
+              </div>
             </div>
           </div>
         </CardContent>

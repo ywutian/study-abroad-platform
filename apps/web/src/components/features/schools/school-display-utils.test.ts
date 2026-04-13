@@ -13,28 +13,37 @@ describe('school-display-utils', () => {
     expect(getSchoolEnrollmentCount({ studentCount: 9000 })).toBe(9000);
   });
 
-  it('reads verified and supplemental field sources', () => {
+  it('reads trust-tier field sources', () => {
     const school = {
       fieldSources: {
         acceptanceRate: {
-          tier: 'verified' as const,
+          tier: 'OFFICIAL' as const,
           source: 'COLLEGE_SCORECARD',
-          updatedAt: '2026-04-01T00:00:00.000Z',
+          fetchedAt: '2026-04-01T00:00:00.000Z',
+          staleness: 'FRESH' as const,
+          isVerified: true,
+          predictionEligible: true,
         },
         usNewsRank: {
-          tier: 'supplemental' as const,
+          tier: 'SEED' as const,
           source: 'SEED',
-          updatedAt: '2026-04-01T00:00:00.000Z',
+          fetchedAt: '2026-04-01T00:00:00.000Z',
+          staleness: 'FRESH' as const,
+          isVerified: false,
+          predictionEligible: true,
         },
       },
     };
 
     expect(hasVerifiedFieldSource(school, 'acceptanceRate')).toBe(true);
-    expect(hasVerifiedFieldSource(school, 'usNewsRank')).toBe(false);
+    expect(hasVerifiedFieldSource(school, 'usNewsRank')).toBe(true);
     expect(getSchoolFieldSource(school, 'usNewsRank')).toEqual({
-      tier: 'supplemental',
+      tier: 'SEED',
       source: 'SEED',
-      updatedAt: '2026-04-01T00:00:00.000Z',
+      fetchedAt: '2026-04-01T00:00:00.000Z',
+      staleness: 'FRESH',
+      isVerified: false,
+      predictionEligible: true,
     });
   });
 
@@ -47,14 +56,20 @@ describe('school-display-utils', () => {
         nicheFoodGrade: 'A-',
         fieldSources: {
           nicheOverallGrade: {
-            tier: 'supplemental',
+            tier: 'SCRAPED',
             source: 'APPILY',
-            updatedAt: '2026-04-02T00:00:00.000Z',
+            fetchedAt: '2026-04-02T00:00:00.000Z',
+            staleness: 'FRESH' as const,
+            isVerified: false,
+            predictionEligible: true,
           },
           nicheSafetyGrade: {
-            tier: 'supplemental',
+            tier: 'SCRAPED',
             source: 'APPILY',
-            updatedAt: '2026-04-02T00:00:00.000Z',
+            fetchedAt: '2026-04-02T00:00:00.000Z',
+            staleness: 'FRESH' as const,
+            isVerified: false,
+            predictionEligible: true,
           },
         },
       })

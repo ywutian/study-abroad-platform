@@ -2,27 +2,18 @@
 
 import type { ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
+import type { SchoolFieldSource } from '@study-abroad/shared';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  Calendar,
-  ClipboardList,
-  ExternalLink,
-  Globe2,
-  GraduationCap,
-  Info,
-  Shield,
-  TrendingUp,
-} from 'lucide-react';
+import { Calendar, ClipboardList, Globe2, GraduationCap, Shield, TrendingUp } from 'lucide-react';
 import {
   getSchoolFieldSource,
   getSupplementalCampusLifeGrades,
-  hasVerifiedFieldSource,
+  isOfficialFieldSource,
+  isSupplementalFieldSource,
 } from '@/components/features/schools/school-display-utils';
+import { TrustBadge } from '@/components/features/schools/TrustBadge';
 import { SchoolCommunityRatingCard } from './school-community-rating-card';
 import type { SchoolDetail } from './types';
 import { getSourceUrl } from './source-utils';
@@ -42,97 +33,18 @@ function PercentBar({ value }: { value: number }) {
   );
 }
 
-function ProvenanceBadge({
-  field,
-  provenance,
-  scorecardId,
-  ipedsId,
-}: {
-  field: string;
-  provenance?: Record<string, { source: string; at: string }>;
-  scorecardId?: string;
-  ipedsId?: string;
-}) {
-  const t = useTranslations();
-  const locale = useLocale();
-  const prov = provenance?.[field];
-  if (!prov) return null;
-
-  const label = DATA_SOURCE_LABELS[prov.source]?.[locale === 'zh' ? 'zh' : 'en'] ?? prov.source;
-  const freshness = new Date(prov.at).toLocaleDateString(locale, {
-    month: 'short',
-    year: 'numeric',
-  });
-  const sourceUrl = getSourceUrl(prov.source, { scorecardId, ipedsId });
-
-  if (sourceUrl) {
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className="ml-1 inline-flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            aria-label={t('school.dataSource', { source: label })}
-          >
-            <Info className="h-3 w-3 text-muted-foreground/60" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent side="top" className="w-auto max-w-xs p-3">
-          <p className="text-xs font-medium">{t('school.dataSource', { source: label })}</p>
-          <p className="text-xs text-muted-foreground">
-            {t('school.updatedAt', { date: freshness })}
-          </p>
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
-          >
-            {t('school.viewSource')}
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        </PopoverContent>
-      </Popover>
-    );
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className="ml-1 inline-flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          aria-label={t('school.dataSource', { source: label })}
-        >
-          <Info className="h-3 w-3 text-muted-foreground/60" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="text-xs">{t('school.dataSource', { source: label })}</p>
-        <p className="text-xs text-muted-foreground">
-          {t('school.updatedAt', { date: freshness })}
-        </p>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
 function StatRow({
   label,
   value,
   bar,
-  provenanceField,
-  provenance,
-  scorecardId,
-  ipedsId,
+  source,
+  sourceUrl,
 }: {
   label: string;
   value: ReactNode;
   bar?: number;
-  provenanceField?: string;
-  provenance?: Record<string, { source: string; at: string }>;
-  scorecardId?: string;
-  ipedsId?: string;
+  source?: SchoolFieldSource;
+  sourceUrl?: string | null;
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -140,14 +52,7 @@ function StatRow({
       <div className="flex items-center gap-2 text-right">
         {bar != null && <PercentBar value={bar} />}
         <span className="font-semibold">{value}</span>
-        {provenanceField && provenance && (
-          <ProvenanceBadge
-            field={provenanceField}
-            provenance={provenance}
-            scorecardId={scorecardId}
-            ipedsId={ipedsId}
-          />
-        )}
+        {source && <TrustBadge source={source} sourceUrl={sourceUrl} />}
       </div>
     </div>
   );
@@ -163,223 +68,239 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
   const locale = useLocale();
 
   const deadlines = school.metadata?.deadlines || {};
-  const requirements = school.metadata?.requirements || {};
-  const provenance = school.metadata?.provenance;
   const supplementalCampusLife = getSupplementalCampusLifeGrades(school);
 
   const fmtCurrency = (value?: number | null) =>
     value != null ? `$${value.toLocaleString()}` : tc('notAvailable');
 
   const verifiedAcademicRows = [
-    hasVerifiedFieldSource(school, 'satAvg', 'sat25', 'sat75') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'satAvg', 'sat25', 'sat75')) && {
       label: t('school.satAvg'),
       value:
         school.sat25 && school.sat75
           ? `${school.sat25}-${school.sat75}${school.satAvg ? ` (avg ${school.satAvg})` : ''}`
-          : school.satAvg || requirements.satRange || tc('notAvailable'),
-      provenanceField: getSchoolFieldSource(school, 'satAvg') ? 'satAvg' : undefined,
+          : school.satAvg || tc('notAvailable'),
+      source: getSchoolFieldSource(school, 'satAvg', 'sat25', 'sat75'),
     },
-    hasVerifiedFieldSource(school, 'actAvg', 'act25', 'act75') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'actAvg', 'act25', 'act75')) && {
       label: t('school.actAvg'),
       value:
         school.act25 && school.act75
           ? `${school.act25}-${school.act75}${school.actAvg ? ` (avg ${school.actAvg})` : ''}`
-          : school.actAvg || requirements.actRange || tc('notAvailable'),
-      provenanceField: getSchoolFieldSource(school, 'actAvg') ? 'actAvg' : undefined,
+          : school.actAvg || tc('notAvailable'),
+      source: getSchoolFieldSource(school, 'actAvg', 'act25', 'act75'),
     },
-    hasVerifiedFieldSource(school, 'graduationRate') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'graduationRate')) && {
       label: t('school.graduationRate'),
       value:
         school.graduationRate != null
           ? `${Number(school.graduationRate).toFixed(0)}%`
           : tc('notAvailable'),
       bar: school.graduationRate != null ? Number(school.graduationRate) : undefined,
-      provenanceField: 'graduationRate',
+      source: getSchoolFieldSource(school, 'graduationRate'),
     },
   ].filter(Boolean) as Array<{
     label: string;
     value: ReactNode;
     bar?: number;
-    provenanceField?: string;
+    source?: SchoolFieldSource;
   }>;
 
   const verifiedCampusLifeRows = [
-    hasVerifiedFieldSource(school, 'nicheOverallGrade') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheOverallGrade')) && {
       label: t('school.campusLife.overall'),
       value: school.nicheOverallGrade,
-      provenanceField: 'nicheOverallGrade',
+      source: getSchoolFieldSource(school, 'nicheOverallGrade'),
     },
-    hasVerifiedFieldSource(school, 'nicheSafetyGrade') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheSafetyGrade')) && {
       label: t('school.campusLife.safety'),
       value: school.nicheSafetyGrade,
-      provenanceField: 'nicheSafetyGrade',
+      source: getSchoolFieldSource(school, 'nicheSafetyGrade'),
     },
-    hasVerifiedFieldSource(school, 'nicheLifeGrade') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheLifeGrade')) && {
       label: t('school.campusLife.life'),
       value: school.nicheLifeGrade,
-      provenanceField: 'nicheLifeGrade',
+      source: getSchoolFieldSource(school, 'nicheLifeGrade'),
     },
-    hasVerifiedFieldSource(school, 'nicheFoodGrade') && {
+    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheFoodGrade')) && {
       label: t('school.campusLife.food'),
       value: school.nicheFoodGrade,
-      provenanceField: 'nicheFoodGrade',
+      source: getSchoolFieldSource(school, 'nicheFoodGrade'),
     },
   ].filter(Boolean) as Array<{
     label: string;
     value: ReactNode;
-    provenanceField: string;
+    source: SchoolFieldSource;
   }>;
 
   const supplementalMetricRows = [
-    getSchoolFieldSource(school, 'retentionRate')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'retentionRate')) &&
     school.retentionRate != null
       ? {
           label: t('school.retentionRate'),
           value: `${Number(school.retentionRate).toFixed(0)}%`,
           bar: Number(school.retentionRate),
-          provenanceField: 'retentionRate',
+          source: getSchoolFieldSource(school, 'retentionRate'),
         }
       : null,
-    getSchoolFieldSource(school, 'studentFacultyRatio')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'studentFacultyRatio')) &&
     school.studentFacultyRatio != null
       ? {
           label: t('school.studentFacultyRatio'),
           value: `${school.studentFacultyRatio}:1`,
-          provenanceField: 'studentFacultyRatio',
+          source: getSchoolFieldSource(school, 'studentFacultyRatio'),
         }
       : null,
-    getSchoolFieldSource(school, 'averageNetPrice')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'averageNetPrice')) &&
     school.averageNetPrice != null
       ? {
           label: t('school.financialAid.netPrice'),
           value: fmtCurrency(school.averageNetPrice),
-          provenanceField: 'averageNetPrice',
+          source: getSchoolFieldSource(school, 'averageNetPrice'),
         }
       : null,
-    getSchoolFieldSource(school, 'averageAidPackage')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'averageAidPackage')) &&
     school.averageAidPackage != null
       ? {
           label: t('school.financialAid.aidPackage'),
           value: fmtCurrency(school.averageAidPackage),
-          provenanceField: 'averageAidPackage',
+          source: getSchoolFieldSource(school, 'averageAidPackage'),
         }
       : null,
-    getSchoolFieldSource(school, 'percentNeedMet')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'percentNeedMet')) &&
     school.percentNeedMet != null
       ? {
           label: t('school.financialAid.needMet'),
           value: `${Number(school.percentNeedMet).toFixed(0)}%`,
           bar: Number(school.percentNeedMet),
-          provenanceField: 'percentNeedMet',
+          source: getSchoolFieldSource(school, 'percentNeedMet'),
         }
       : null,
-    getSchoolFieldSource(school, 'applicationFee')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'applicationFee')) &&
     school.applicationFee != null
       ? {
           label: t('school.financialAid.applicationFee'),
           value: fmtCurrency(school.applicationFee),
-          provenanceField: 'applicationFee',
+          source: getSchoolFieldSource(school, 'applicationFee'),
         }
       : null,
-    getSchoolFieldSource(school, 'roomAndBoard')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'roomAndBoard')) &&
     school.roomAndBoard != null
       ? {
           label: t('school.financialAid.roomAndBoard'),
           value: fmtCurrency(school.roomAndBoard),
-          provenanceField: 'roomAndBoard',
+          source: getSchoolFieldSource(school, 'roomAndBoard'),
         }
       : null,
-    getSchoolFieldSource(school, 'intlStudentPct')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'intlStudentPct')) &&
     school.intlStudentPct != null
       ? {
           label: t('school.international.studentPct'),
           value: `${Number(school.intlStudentPct).toFixed(1)}%`,
           bar: Number(school.intlStudentPct),
-          provenanceField: 'intlStudentPct',
+          source: getSchoolFieldSource(school, 'intlStudentPct'),
         }
       : null,
-    getSchoolFieldSource(school, 'intlAcceptanceRate')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'intlAcceptanceRate')) &&
     school.intlAcceptanceRate != null
       ? {
           label: t('school.international.acceptanceRate'),
           value: `${Number(school.intlAcceptanceRate).toFixed(1)}%`,
           bar: Number(school.intlAcceptanceRate),
-          provenanceField: 'intlAcceptanceRate',
+          source: getSchoolFieldSource(school, 'intlAcceptanceRate'),
         }
       : null,
-    getSchoolFieldSource(school, 'countriesRepresented')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'countriesRepresented')) &&
     school.countriesRepresented != null
       ? {
           label: t('school.international.countries'),
           value: school.countriesRepresented.toLocaleString(),
-          provenanceField: 'countriesRepresented',
+          source: getSchoolFieldSource(school, 'countriesRepresented'),
         }
       : null,
-    getSchoolFieldSource(school, 'salary6YrPostGrad')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'salary6YrPostGrad')) &&
     school.salary6YrPostGrad != null
       ? {
           label: t('school.postGrad.salary'),
           value: fmtCurrency(school.salary6YrPostGrad),
-          provenanceField: 'salary6YrPostGrad',
+          source: getSchoolFieldSource(school, 'salary6YrPostGrad'),
         }
       : null,
-    getSchoolFieldSource(school, 'loanDefaultRate')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'loanDefaultRate')) &&
     school.loanDefaultRate != null
       ? {
           label: t('school.postGrad.loanDefault'),
           value: `${Number(school.loanDefaultRate).toFixed(1)}%`,
           bar: Number(school.loanDefaultRate),
-          provenanceField: 'loanDefaultRate',
+          source: getSchoolFieldSource(school, 'loanDefaultRate'),
         }
       : null,
-    getSchoolFieldSource(school, 'monthlyLoanPayment')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'monthlyLoanPayment')) &&
     school.monthlyLoanPayment != null
       ? {
           label: t('school.postGrad.monthlyLoan'),
           value: fmtCurrency(school.monthlyLoanPayment),
-          provenanceField: 'monthlyLoanPayment',
+          source: getSchoolFieldSource(school, 'monthlyLoanPayment'),
         }
       : null,
-    getSchoolFieldSource(school, 'studentOrgsCount')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'studentOrgsCount')) &&
     school.studentOrgsCount != null
       ? {
           label: t('school.campusLife.studentOrgs'),
           value: school.studentOrgsCount.toLocaleString(),
-          provenanceField: 'studentOrgsCount',
+          source: getSchoolFieldSource(school, 'studentOrgsCount'),
         }
       : null,
   ].filter(Boolean) as Array<{
     label: string;
     value: ReactNode;
     bar?: number;
-    provenanceField: string;
+    source: SchoolFieldSource;
   }>;
 
   const supplementalBadges = [
-    getSchoolFieldSource(school, 'acceptsCommonApp')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'acceptsCommonApp')) &&
     school.acceptsCommonApp
-      ? t('school.applicationInfo.commonApp')
+      ? {
+          label: t('school.applicationInfo.commonApp'),
+          source: getSchoolFieldSource(school, 'acceptsCommonApp'),
+        }
       : null,
-    getSchoolFieldSource(school, 'acceptsCoalition')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'acceptsCoalition')) &&
     school.acceptsCoalition
-      ? t('school.applicationInfo.coalition')
+      ? {
+          label: t('school.applicationInfo.coalition'),
+          source: getSchoolFieldSource(school, 'acceptsCoalition'),
+        }
       : null,
-    getSchoolFieldSource(school, 'testOptional')?.tier === 'supplemental' && school.testOptional
-      ? t('school.applicationInfo.testOptional')
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'testOptional')) && school.testOptional
+      ? {
+          label: t('school.applicationInfo.testOptional'),
+          source: getSchoolFieldSource(school, 'testOptional'),
+        }
       : null,
-    getSchoolFieldSource(school, 'needBlindInternational')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'needBlindInternational')) &&
     school.needBlindInternational
-      ? t('school.applicationInfo.needBlind')
+      ? {
+          label: t('school.applicationInfo.needBlind'),
+          source: getSchoolFieldSource(school, 'needBlindInternational'),
+        }
       : null,
-    getSchoolFieldSource(school, 'hasEarlyDecision')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'hasEarlyDecision')) &&
     school.hasEarlyDecision
-      ? t('school.applicationInfo.earlyDecision')
+      ? {
+          label: t('school.applicationInfo.earlyDecision'),
+          source: getSchoolFieldSource(school, 'hasEarlyDecision'),
+        }
       : null,
-    getSchoolFieldSource(school, 'feeWaiverAvailable')?.tier === 'supplemental' &&
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'feeWaiverAvailable')) &&
     school.feeWaiverAvailable
-      ? t('school.financialAid.feeWaiver')
+      ? {
+          label: t('school.financialAid.feeWaiver'),
+          source: getSchoolFieldSource(school, 'feeWaiverAvailable'),
+        }
       : null,
-  ].filter(Boolean) as string[];
+  ].filter(Boolean) as Array<{ label: string; source?: SchoolFieldSource }>;
 
   const hasSupplementalSection =
     Boolean(school.usNewsRank || school.qsRank) ||
@@ -388,316 +309,321 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
     supplementalBadges.length > 0;
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <GraduationCap className="h-5 w-5" />
-                {t('school.officialData.title')}
-              </CardTitle>
-              <CardDescription>{t('school.officialData.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {verifiedAcademicRows.length > 0 ? (
-                verifiedAcademicRows.map((row, index) => (
-                  <div key={row.label}>
-                    {index > 0 && <Separator className="mb-4" />}
-                    <StatRow
-                      label={row.label}
-                      value={row.value}
-                      bar={row.bar}
-                      provenanceField={row.provenanceField}
-                      provenance={provenance}
-                      scorecardId={school.scorecardId}
-                      ipedsId={school.ipedsId}
-                    />
-                  </div>
-                ))
-              ) : (
-                <EmptyCardState message={t('school.officialData.empty')} />
-              )}
-            </CardContent>
-          </Card>
+    <div className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <GraduationCap className="h-5 w-5" />
+              {t('school.officialData.title')}
+            </CardTitle>
+            <CardDescription>{t('school.officialData.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {verifiedAcademicRows.length > 0 ? (
+              verifiedAcademicRows.map((row, index) => (
+                <div key={row.label}>
+                  {index > 0 && <Separator className="mb-4" />}
+                  <StatRow
+                    label={row.label}
+                    value={row.value}
+                    bar={row.bar}
+                    source={row.source}
+                    sourceUrl={row.source ? getSourceUrl(row.source.source, school) : null}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyCardState message={t('school.officialData.empty')} />
+            )}
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Calendar className="h-5 w-5" />
-                {t('school.deadlines.title')}
-              </CardTitle>
-              <CardDescription>
-                {school.metadata?.applicationCycle || '2025-2026'} {t('school.deadlines.cycle')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {deadlines.rea && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="destructive">REA</Badge>
-                      <span>{t('school.deadlines.rea')}</span>
-                    </div>
-                    <span className="font-semibold">{deadlines.rea}</span>
-                  </div>
-                  <Separator />
-                </>
-              )}
-              {deadlines.ea && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">EA</Badge>
-                      <span>{t('school.deadlines.ea')}</span>
-                    </div>
-                    <span className="font-semibold">{deadlines.ea}</span>
-                  </div>
-                  <Separator />
-                </>
-              )}
-              {deadlines.ed && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge>ED</Badge>
-                      <span>{t('school.deadlines.ed')}</span>
-                    </div>
-                    <span className="font-semibold">{deadlines.ed}</span>
-                  </div>
-                  <Separator />
-                </>
-              )}
-              {deadlines.ed2 && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">ED II</Badge>
-                      <span>{t('school.deadlines.ed2')}</span>
-                    </div>
-                    <span className="font-semibold">{deadlines.ed2}</span>
-                  </div>
-                  <Separator />
-                </>
-              )}
-              {deadlines.rd && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="h-5 w-5" />
+              {t('school.deadlines.title')}
+            </CardTitle>
+            <CardDescription>
+              {school.metadata?.applicationCycle || '2025-2026'} {t('school.deadlines.cycle')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {deadlines.rea && (
+              <>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">RD</Badge>
-                    <span>{t('school.deadlines.rd')}</span>
+                    <Badge variant="destructive">REA</Badge>
+                    <span>{t('school.deadlines.rea')}</span>
                   </div>
-                  <span className="font-semibold">{deadlines.rd}</span>
+                  <span className="font-semibold">{deadlines.rea}</span>
                 </div>
-              )}
-              {Object.keys(deadlines).length === 0 && (
-                <EmptyCardState message={t('school.deadlines.noData')} />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Shield className="h-5 w-5" />
-                {t('school.campusLifeOfficial.title')}
-              </CardTitle>
-              <CardDescription>{t('school.campusLifeOfficial.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {verifiedCampusLifeRows.length > 0 ? (
-                verifiedCampusLifeRows.map((row, index) => (
-                  <div key={row.label}>
-                    {index > 0 && <Separator className="mb-4" />}
-                    <StatRow
-                      label={row.label}
-                      value={row.value}
-                      provenanceField={row.provenanceField}
-                      provenance={provenance}
-                      scorecardId={school.scorecardId}
-                      ipedsId={school.ipedsId}
-                    />
+                <Separator />
+              </>
+            )}
+            {deadlines.ea && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">EA</Badge>
+                    <span>{t('school.deadlines.ea')}</span>
                   </div>
-                ))
-              ) : (
-                <EmptyCardState message={t('school.campusLifeOfficial.empty')} />
-              )}
-            </CardContent>
-          </Card>
+                  <span className="font-semibold">{deadlines.ea}</span>
+                </div>
+                <Separator />
+              </>
+            )}
+            {deadlines.ed && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge>ED</Badge>
+                    <span>{t('school.deadlines.ed')}</span>
+                  </div>
+                  <span className="font-semibold">{deadlines.ed}</span>
+                </div>
+                <Separator />
+              </>
+            )}
+            {deadlines.ed2 && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">ED II</Badge>
+                    <span>{t('school.deadlines.ed2')}</span>
+                  </div>
+                  <span className="font-semibold">{deadlines.ed2}</span>
+                </div>
+                <Separator />
+              </>
+            )}
+            {deadlines.rd && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">RD</Badge>
+                  <span>{t('school.deadlines.rd')}</span>
+                </div>
+                <span className="font-semibold">{deadlines.rd}</span>
+              </div>
+            )}
+            {Object.keys(deadlines).length === 0 && (
+              <EmptyCardState message={t('school.deadlines.noData')} />
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-          <SchoolCommunityRatingCard
-            schoolId={school.id}
-            summary={
-              school.communityRatingSummary ?? {
-                count: 0,
-                safetyAvg: null,
-                lifeAvg: null,
-                foodAvg: null,
-                isPublic: false,
-              }
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Shield className="h-5 w-5" />
+              {t('school.campusLifeOfficial.title')}
+            </CardTitle>
+            <CardDescription>{t('school.campusLifeOfficial.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {verifiedCampusLifeRows.length > 0 ? (
+              verifiedCampusLifeRows.map((row, index) => (
+                <div key={row.label}>
+                  {index > 0 && <Separator className="mb-4" />}
+                  <StatRow
+                    label={row.label}
+                    value={row.value}
+                    source={row.source}
+                    sourceUrl={row.source ? getSourceUrl(row.source.source, school) : null}
+                  />
+                </div>
+              ))
+            ) : (
+              <EmptyCardState message={t('school.campusLifeOfficial.empty')} />
+            )}
+          </CardContent>
+        </Card>
+
+        <SchoolCommunityRatingCard
+          schoolId={school.id}
+          summary={
+            school.communityRatingSummary ?? {
+              count: 0,
+              safetyAvg: null,
+              lifeAvg: null,
+              foodAvg: null,
+              isPublic: false,
             }
-          />
-        </div>
+          }
+        />
+      </div>
 
-        {hasSupplementalSection && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <ClipboardList className="h-5 w-5" />
-                {t('school.supplemental.title')}
-              </CardTitle>
-              <CardDescription>{t('school.supplemental.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              {(school.usNewsRank || school.qsRank) && (
+      {hasSupplementalSection && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <ClipboardList className="h-5 w-5" />
+              {t('school.supplemental.title')}
+            </CardTitle>
+            <CardDescription>{t('school.supplemental.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {(school.usNewsRank || school.qsRank) && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{t('school.supplementalRanking')}</Badge>
+                </div>
+                {school.usNewsRank != null && (
+                  <StatRow
+                    label={t('school.usNewsRank')}
+                    value={`#${school.usNewsRank}`}
+                    source={getSchoolFieldSource(school, 'usNewsRank')}
+                    sourceUrl={
+                      getSchoolFieldSource(school, 'usNewsRank')
+                        ? getSourceUrl(getSchoolFieldSource(school, 'usNewsRank')!.source, school)
+                        : null
+                    }
+                  />
+                )}
+                {school.qsRank != null && (
+                  <StatRow
+                    label={t('school.qsRank')}
+                    value={`#${school.qsRank}`}
+                    source={getSchoolFieldSource(school, 'qsRank')}
+                    sourceUrl={
+                      getSchoolFieldSource(school, 'qsRank')
+                        ? getSourceUrl(getSchoolFieldSource(school, 'qsRank')!.source, school)
+                        : null
+                    }
+                  />
+                )}
+              </div>
+            )}
+
+            {supplementalCampusLife.hasGrades && (
+              <>
+                {(school.usNewsRank || school.qsRank) && <Separator />}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{t('school.supplementalRanking')}</Badge>
+                    <Badge variant="secondary">{t('school.supplementalCampusLife')}</Badge>
                   </div>
-                  {school.usNewsRank != null && (
-                    <StatRow
-                      label={t('school.usNewsRank')}
-                      value={`#${school.usNewsRank}`}
-                      provenanceField="usNewsRank"
-                      provenance={provenance}
-                      scorecardId={school.scorecardId}
-                      ipedsId={school.ipedsId}
-                    />
-                  )}
-                  {school.qsRank != null && (
-                    <StatRow
-                      label={t('school.qsRank')}
-                      value={`#${school.qsRank}`}
-                      provenanceField="qsRank"
-                      provenance={provenance}
-                      scorecardId={school.scorecardId}
-                      ipedsId={school.ipedsId}
-                    />
-                  )}
+                  <div className="flex flex-wrap gap-3">
+                    {supplementalCampusLife.overallGrade && (
+                      <div className="text-center">
+                        <Badge variant="outline" className="px-3 py-1 text-lg">
+                          {supplementalCampusLife.overallGrade}
+                        </Badge>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t('school.campusLife.overall')}
+                        </p>
+                      </div>
+                    )}
+                    {supplementalCampusLife.safetyGrade && (
+                      <div className="text-center">
+                        <Badge variant="outline" className="px-3 py-1 text-lg">
+                          {supplementalCampusLife.safetyGrade}
+                        </Badge>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t('school.campusLife.safety')}
+                        </p>
+                      </div>
+                    )}
+                    {supplementalCampusLife.lifeGrade && (
+                      <div className="text-center">
+                        <Badge variant="outline" className="px-3 py-1 text-lg">
+                          {supplementalCampusLife.lifeGrade}
+                        </Badge>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t('school.campusLife.life')}
+                        </p>
+                      </div>
+                    )}
+                    {supplementalCampusLife.foodGrade && (
+                      <div className="text-center">
+                        <Badge variant="outline" className="px-3 py-1 text-lg">
+                          {supplementalCampusLife.foodGrade}
+                        </Badge>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t('school.campusLife.food')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </>
+            )}
 
-              {supplementalCampusLife.hasGrades && (
-                <>
-                  {(school.usNewsRank || school.qsRank) && <Separator />}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{t('school.supplementalCampusLife')}</Badge>
+            {supplementalMetricRows.length > 0 && (
+              <>
+                {(school.usNewsRank || school.qsRank || supplementalCampusLife.hasGrades) && (
+                  <Separator />
+                )}
+                <div className="space-y-4">
+                  {supplementalMetricRows.map((row, index) => (
+                    <div key={row.label}>
+                      {index > 0 && <Separator className="mb-4" />}
+                      <StatRow
+                        label={row.label}
+                        value={row.value}
+                        bar={row.bar}
+                        source={row.source}
+                        sourceUrl={row.source ? getSourceUrl(row.source.source, school) : null}
+                      />
                     </div>
-                    <div className="flex flex-wrap gap-3">
-                      {supplementalCampusLife.overallGrade && (
-                        <div className="text-center">
-                          <Badge variant="outline" className="px-3 py-1 text-lg">
-                            {supplementalCampusLife.overallGrade}
-                          </Badge>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {t('school.campusLife.overall')}
-                          </p>
-                        </div>
-                      )}
-                      {supplementalCampusLife.safetyGrade && (
-                        <div className="text-center">
-                          <Badge variant="outline" className="px-3 py-1 text-lg">
-                            {supplementalCampusLife.safetyGrade}
-                          </Badge>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {t('school.campusLife.safety')}
-                          </p>
-                        </div>
-                      )}
-                      {supplementalCampusLife.lifeGrade && (
-                        <div className="text-center">
-                          <Badge variant="outline" className="px-3 py-1 text-lg">
-                            {supplementalCampusLife.lifeGrade}
-                          </Badge>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {t('school.campusLife.life')}
-                          </p>
-                        </div>
-                      )}
-                      {supplementalCampusLife.foodGrade && (
-                        <div className="text-center">
-                          <Badge variant="outline" className="px-3 py-1 text-lg">
-                            {supplementalCampusLife.foodGrade}
-                          </Badge>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {t('school.campusLife.food')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {supplementalBadges.length > 0 && (
+              <>
+                {(school.usNewsRank ||
+                  school.qsRank ||
+                  supplementalCampusLife.hasGrades ||
+                  supplementalMetricRows.length > 0) && <Separator />}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Globe2 className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">{t('school.supplementalBadges')}</span>
                   </div>
-                </>
-              )}
-
-              {supplementalMetricRows.length > 0 && (
-                <>
-                  {(school.usNewsRank || school.qsRank || supplementalCampusLife.hasGrades) && (
-                    <Separator />
-                  )}
-                  <div className="space-y-4">
-                    {supplementalMetricRows.map((row, index) => (
-                      <div key={row.label}>
-                        {index > 0 && <Separator className="mb-4" />}
-                        <StatRow
-                          label={row.label}
-                          value={row.value}
-                          bar={row.bar}
-                          provenanceField={row.provenanceField}
-                          provenance={provenance}
-                          scorecardId={school.scorecardId}
-                          ipedsId={school.ipedsId}
+                  <div className="flex flex-wrap gap-2">
+                    {supplementalBadges.map((badge) => (
+                      <div
+                        key={badge.label}
+                        className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5"
+                      >
+                        <Badge variant="outline">{badge.label}</Badge>
+                        <TrustBadge
+                          source={badge.source}
+                          sourceUrl={
+                            badge.source ? getSourceUrl(badge.source.source, school) : null
+                          }
                         />
                       </div>
                     ))}
                   </div>
-                </>
-              )}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-              {supplementalBadges.length > 0 && (
-                <>
-                  {(school.usNewsRank ||
-                    school.qsRank ||
-                    supplementalCampusLife.hasGrades ||
-                    supplementalMetricRows.length > 0) && <Separator />}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Globe2 className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">{t('school.supplementalBadges')}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {supplementalBadges.map((badge) => (
-                        <Badge key={badge} variant="outline">
-                          {badge}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {(school.description || school.descriptionZh) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <TrendingUp className="h-5 w-5" />
-                {t('school.about')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="leading-relaxed text-muted-foreground">
-                {locale === 'zh'
-                  ? school.descriptionZh || school.description
-                  : school.description || school.descriptionZh}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </TooltipProvider>
+      {(school.description || school.descriptionZh) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <TrendingUp className="h-5 w-5" />
+              {t('school.about')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="leading-relaxed text-muted-foreground">
+              {locale === 'zh'
+                ? school.descriptionZh || school.description
+                : school.description || school.descriptionZh}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

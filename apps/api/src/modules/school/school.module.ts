@@ -8,6 +8,8 @@ import { SchoolDataMerger } from './school-data-merger';
 import { SchoolLogoService } from './school-logo.service';
 import { SchoolScraperScheduler } from './school-scraper.scheduler';
 import { DataSyncScheduler } from './data-sync.scheduler';
+import { SchoolProvenanceScheduler } from './school-provenance.scheduler';
+import { SchoolWriteService } from './school-write.service';
 import { HighSchoolService } from './high-school.service';
 import { HighSchoolController } from './high-school.controller';
 import { HsCalibrationScheduler } from './hs-calibration.scheduler';
@@ -30,8 +32,10 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolScraperService,
     SchoolDataMerger,
     SchoolLogoService,
+    SchoolWriteService,
     SchoolScraperScheduler,
     DataSyncScheduler,
+    SchoolProvenanceScheduler,
     HighSchoolService,
     HsCalibrationScheduler,
     HighSchoolEventListener,
@@ -46,6 +50,8 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolDataService,
     SchoolScraperService,
     SchoolDataMerger,
+    SchoolWriteService,
+    SchoolProvenanceScheduler,
     HighSchoolService,
     IpedsDataService,
     UrbanInstituteDataService,

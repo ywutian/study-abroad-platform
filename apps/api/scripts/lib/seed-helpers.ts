@@ -6,7 +6,21 @@
  */
 
 import { PrismaClient } from '@prisma/client';
+import type { SchoolProvenance } from '@study-abroad/shared';
+import {
+  normalizeSchoolProvenance,
+  serializeSchoolProvenance,
+} from '@study-abroad/shared/utils';
 import { normalizeSchoolName } from '../../src/common/utils/school-name.util';
+import {
+  createFieldProvenance,
+  deepMergeRecords,
+  toRecord,
+} from '../../src/modules/school/school-provenance.helpers';
+import {
+  writeSchoolCreate,
+  writeSchoolUpdate,
+} from '../../src/modules/school/school-write.service';
 
 export { normalizeSchoolName };
 
@@ -37,6 +51,9 @@ export interface SeedSchoolData {
   description?: string;
   descriptionZh?: string;
   aliases?: string[];
+  needBlindInternational?: boolean;
+  intlStudentPct?: number;
+  intlAcceptanceRate?: number;
   /** External data source IDs */
   scorecardId?: string;
   ipedsId?: string;
@@ -56,6 +73,96 @@ export interface SeedSchoolData {
   metadata?: Record<string, unknown>;
 }
 
+type SeedDataSource = 'SEED' | 'COLLEGE_SCORECARD' | 'IPEDS';
+
+const DEFAULT_FIELD_PROVENANCE: Partial<
+  Record<
+    Exclude<keyof SeedSchoolData, 'name' | 'country' | 'metadata'>,
+    SeedDataSource
+  >
+> = {
+  acceptanceRate: 'COLLEGE_SCORECARD',
+  satAvg: 'COLLEGE_SCORECARD',
+  sat25: 'COLLEGE_SCORECARD',
+  sat75: 'COLLEGE_SCORECARD',
+  satMath25: 'COLLEGE_SCORECARD',
+  satMath75: 'COLLEGE_SCORECARD',
+  satReading25: 'COLLEGE_SCORECARD',
+  satReading75: 'COLLEGE_SCORECARD',
+  actAvg: 'COLLEGE_SCORECARD',
+  act25: 'COLLEGE_SCORECARD',
+  act75: 'COLLEGE_SCORECARD',
+  studentCount: 'COLLEGE_SCORECARD',
+  totalEnrollment: 'COLLEGE_SCORECARD',
+  avgSalary: 'COLLEGE_SCORECARD',
+  retentionRate: 'COLLEGE_SCORECARD',
+  tuition: 'IPEDS',
+  graduationRate: 'IPEDS',
+  studentFacultyRatio: 'IPEDS',
+  usNewsRank: 'SEED',
+  qsRank: 'SEED',
+  description: 'SEED',
+  descriptionZh: 'SEED',
+  needBlindInternational: 'SEED',
+  intlStudentPct: 'SEED',
+  intlAcceptanceRate: 'SEED',
+};
+
+const DEFAULT_METADATA_PROVENANCE: Record<string, SeedDataSource> = {
+  deadlines: 'SEED',
+  essayCount: 'SEED',
+  applicationType: 'SEED',
+  applicationCycle: 'SEED',
+  dataUpdated: 'SEED',
+  lastRankingUpdate: 'SEED',
+};
+
+export function withDefaultSeedMetadata(
+  data: SeedSchoolData,
+  at = new Date().toISOString(),
+): Record<string, unknown> | undefined {
+  const metadata = toRecord(data.metadata);
+  const explicitProvenance = normalizeSchoolProvenance(metadata.provenance);
+  const defaultProvenance: SchoolProvenance = {};
+
+  for (const [field, source] of Object.entries(DEFAULT_FIELD_PROVENANCE)) {
+    const value = data[field as keyof SeedSchoolData];
+    if (value == null || explicitProvenance[field]) continue;
+    defaultProvenance[field] = createFieldProvenance({
+      source,
+      fetchedAt: at,
+    });
+  }
+
+  for (const [field, source] of Object.entries(DEFAULT_METADATA_PROVENANCE)) {
+    const value = metadata[field];
+    if (value == null || explicitProvenance[field]) continue;
+    defaultProvenance[field] = createFieldProvenance({
+      source,
+      fetchedAt: at,
+    });
+  }
+
+  if (
+    Object.keys(metadata).length === 0 &&
+    Object.keys(defaultProvenance).length === 0
+  ) {
+    return undefined;
+  }
+
+  const mergedProvenance = serializeSchoolProvenance({
+    ...defaultProvenance,
+    ...explicitProvenance,
+  });
+
+  const nextMetadata = { ...metadata };
+  if (Object.keys(mergedProvenance).length > 0) {
+    nextMetadata.provenance = mergedProvenance;
+  }
+
+  return nextMetadata;
+}
+
 /**
  * 统一的种子脚本 upsert 逻辑
  *
@@ -69,9 +176,14 @@ export async function upsertSchoolFromSeed(
   data: SeedSchoolData,
 ): Promise<'created' | 'updated'> {
   const nameNorm = normalizeSchoolName(data.name);
+  const metadata = withDefaultSeedMetadata(data);
+  const metadataRecord = toRecord(metadata);
+  const provenance = normalizeSchoolProvenance(metadataRecord.provenance);
+  const { provenance: _ignoredProvenance, ...metadataPatch } = metadataRecord;
 
   const existing = await prisma.school.findUnique({
     where: { nameNorm },
+    select: { id: true, metadata: true },
   });
 
   // 构建字段映射（create 和 update 共用）
@@ -100,6 +212,15 @@ export async function upsertSchoolFromSeed(
   if (data.descriptionZh !== undefined)
     fields.descriptionZh = data.descriptionZh;
   if (data.aliases !== undefined) fields.aliases = data.aliases;
+  if (data.needBlindInternational !== undefined) {
+    fields.needBlindInternational = data.needBlindInternational;
+  }
+  if (data.intlStudentPct !== undefined) {
+    fields.intlStudentPct = data.intlStudentPct;
+  }
+  if (data.intlAcceptanceRate !== undefined) {
+    fields.intlAcceptanceRate = data.intlAcceptanceRate;
+  }
   if (data.scorecardId !== undefined) fields.scorecardId = data.scorecardId;
   if (data.ipedsId !== undefined) fields.ipedsId = data.ipedsId;
   if (data.retentionRate !== undefined)
@@ -118,30 +239,24 @@ export async function upsertSchoolFromSeed(
   if (data.logoUrl !== undefined) fields.logoUrl = data.logoUrl;
 
   if (existing) {
-    // 合并 metadata：保留 DB 已有的 metadata，用种子的覆盖/补充
-    const updateData: Record<string, unknown> = { ...fields };
-    if (data.metadata) {
-      const existingMeta = (existing.metadata as Record<string, unknown>) || {};
-      updateData.metadata = { ...existingMeta, ...data.metadata };
-    }
-
-    await prisma.school.update({
-      where: { id: existing.id },
-      data: updateData,
+    await writeSchoolUpdate(prisma as any, existing.id, {
+      fields,
+      metadataPatch,
+      provenance,
+      existingMetadata: existing.metadata,
     });
     return 'updated';
   } else {
-    const createData: Record<string, unknown> = {
-      name: data.name,
-      nameNorm,
-      country: data.country || 'US',
-      ...fields,
-    };
-    if (data.metadata) {
-      createData.metadata = data.metadata;
-    }
-
-    await prisma.school.create({ data: createData as any });
+    await writeSchoolCreate(prisma as any, {
+      fields: {
+        name: data.name,
+        nameNorm,
+        country: data.country || 'US',
+        ...fields,
+      },
+      metadataPatch,
+      provenance,
+    });
     return 'created';
   }
 }

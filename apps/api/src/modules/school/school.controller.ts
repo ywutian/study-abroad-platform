@@ -47,27 +47,25 @@ import { SchoolListService } from '../school-list/school-list.service';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { DataSource, isMergeableSchoolField } from './school-data-merger';
 import { SchoolCommunityRatingService } from './school-community-rating.service';
-
-function toRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return {};
-  }
-  return value as Record<string, unknown>;
-}
+import { createFieldProvenance, toRecord } from './school-provenance.helpers';
+import { normalizeSchoolProvenance } from '@study-abroad/shared/utils';
 
 function buildManualProvenance(
   fields: Record<string, unknown>,
   existing: Record<string, unknown>,
   at: string,
+  verifiedBy?: string,
 ) {
-  const provenance = { ...existing };
+  const provenance = { ...normalizeSchoolProvenance(existing) };
 
   for (const [field, value] of Object.entries(fields)) {
     if (value !== undefined && isMergeableSchoolField(field)) {
-      provenance[field] = {
+      provenance[field] = createFieldProvenance({
         source: DataSource.MANUAL_ADMIN,
-        at,
-      };
+        fetchedAt: at,
+        verifiedAt: at,
+        verifiedBy,
+      });
     }
   }
 
@@ -387,12 +385,16 @@ export class SchoolController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create school (admin only)' })
-  async create(@Body() data: CreateSchoolDto) {
+  async create(
+    @Body() data: CreateSchoolDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
     const now = new Date().toISOString();
     const provenance = buildManualProvenance(
       data as unknown as Record<string, unknown>,
       {},
       now,
+      user.id,
     );
 
     return this.schoolService.create({
@@ -434,6 +436,7 @@ export class SchoolController {
       schemaFields as Record<string, unknown>,
       existingProv,
       now,
+      user.id,
     );
 
     if (
@@ -443,14 +446,29 @@ export class SchoolController {
     ) {
       if (toeflMin !== undefined) {
         updatedReqs.toeflMin = toeflMin;
-        updatedProv.toeflMin = { source: 'MANUAL_ADMIN', at: now };
+        updatedProv.toeflMin = createFieldProvenance({
+          source: DataSource.MANUAL_ADMIN,
+          fetchedAt: now,
+          verifiedAt: now,
+          verifiedBy: user.id,
+        });
       }
       if (ieltsMin !== undefined) {
         updatedReqs.ieltsMin = ieltsMin;
-        updatedProv.ieltsMin = { source: 'MANUAL_ADMIN', at: now };
+        updatedProv.ieltsMin = createFieldProvenance({
+          source: DataSource.MANUAL_ADMIN,
+          fetchedAt: now,
+          verifiedAt: now,
+          verifiedBy: user.id,
+        });
       }
       if (essayCount !== undefined) {
-        updatedProv.essayCount = { source: 'MANUAL_ADMIN', at: now };
+        updatedProv.essayCount = createFieldProvenance({
+          source: DataSource.MANUAL_ADMIN,
+          fetchedAt: now,
+          verifiedAt: now,
+          verifiedBy: user.id,
+        });
       }
     }
 

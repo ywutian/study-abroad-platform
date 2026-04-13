@@ -11,7 +11,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 /** Known intlStudentPct from Common Data Set reports (approximate) */
-const INTL_STUDENT_PCT: Record<string, number> = {
+export const INTL_STUDENT_PCT: Record<string, number> = {
   'massachusetts institute of technology': 11.0,
   'stanford university': 12.0,
   'harvard university': 12.0,
@@ -37,14 +37,16 @@ const INTL_STUDENT_PCT: Record<string, number> = {
   'university of illinois urbana-champaign': 23.0,
   'purdue university': 20.0,
   'georgia institute of technology': 12.0,
-  'university of michigan-ann arbor': 7.0,
+  'university of michigan, ann arbor': 7.0,
   'university of california, berkeley': 14.0,
   'university of california, los angeles': 13.0,
   'university of california, san diego': 22.0,
   'university of washington': 16.0,
 };
 
-export async function seedIntlRates(): Promise<{
+export async function seedIntlRates(
+  prismaClient: PrismaClient = prisma,
+): Promise<{
   migratedFromMetadata: number;
   seededIntlPct: number;
   backfilledFromMetric: number;
@@ -54,7 +56,7 @@ export async function seedIntlRates(): Promise<{
   let backfilledFromMetric = 0;
 
   // Step 1: Migrate metadata.intlAcceptanceRate → School.intlAcceptanceRate
-  const schools = await prisma.school.findMany({
+  const schools = await prismaClient.school.findMany({
     where: { metadata: { not: undefined } },
     select: {
       id: true,
@@ -70,7 +72,7 @@ export async function seedIntlRates(): Promise<{
 
     const intlRate = meta.intlAcceptanceRate;
     if (intlRate != null && school.intlAcceptanceRate == null) {
-      await prisma.school.update({
+      await prismaClient.school.update({
         where: { id: school.id },
         data: { intlAcceptanceRate: Number(intlRate) },
       });
@@ -80,7 +82,7 @@ export async function seedIntlRates(): Promise<{
 
   // Step 2: Seed intlStudentPct from known CDS data
   for (const [nameNorm, pct] of Object.entries(INTL_STUDENT_PCT)) {
-    const result = await prisma.school.updateMany({
+    const result = await prismaClient.school.updateMany({
       where: {
         nameNorm,
         intlStudentPct: null,
@@ -91,7 +93,7 @@ export async function seedIntlRates(): Promise<{
   }
 
   // Step 3: Backfill from SchoolMetric (intl_student_pct) where School.intlStudentPct is null
-  const metrics = await prisma.schoolMetric.findMany({
+  const metrics = await prismaClient.schoolMetric.findMany({
     where: { metricKey: 'intl_student_pct' },
     orderBy: { year: 'desc' },
     distinct: ['schoolId'],
@@ -99,7 +101,7 @@ export async function seedIntlRates(): Promise<{
   });
 
   for (const m of metrics) {
-    const result = await prisma.school.updateMany({
+    const result = await prismaClient.school.updateMany({
       where: { id: m.schoolId, intlStudentPct: null },
       data: { intlStudentPct: Number(m.value) },
     });

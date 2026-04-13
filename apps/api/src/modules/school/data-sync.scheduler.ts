@@ -5,6 +5,8 @@ import { UrbanInstituteDataService } from './urban-institute-data.service';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
 import { AppilyScrapeService } from './scrapers/appily.scraper';
 import { PrismaService } from '../../prisma/prisma.service';
+import { buildFieldProvenanceRecord } from './school-provenance.helpers';
+import { SchoolWriteService } from './school-write.service';
 
 /**
  * 数据自动同步调度器
@@ -24,6 +26,7 @@ export class DataSyncScheduler {
     private bigFutureService: BigFutureScrapeService,
     private appilyService: AppilyScrapeService,
     private prisma: PrismaService,
+    private schoolWriteService: SchoolWriteService,
   ) {}
 
   /**
@@ -200,6 +203,7 @@ export class ManualSyncService {
   constructor(
     private schoolDataService: SchoolDataService,
     private prisma: PrismaService,
+    private schoolWriteService: SchoolWriteService,
   ) {}
 
   /**
@@ -419,18 +423,30 @@ export class ManualSyncService {
     });
     if (!school) return;
 
-    const metadata = (school.metadata as Record<string, unknown>) || {};
+    const fetchedAt = new Date().toISOString();
+    const fields: Record<string, unknown> = {};
+    const provenanceFields: string[] = [];
 
     if (row['APPLFEEU']) {
-      metadata.applicationFee = parseInt(row['APPLFEEU']);
+      fields.applicationFee = parseInt(row['APPLFEEU']);
+      provenanceFields.push('applicationFee');
     }
     if (row['ROOM'] && row['BOARD']) {
-      metadata.roomAndBoard = parseInt(row['ROOM']) + parseInt(row['BOARD']);
+      fields.roomAndBoard = parseInt(row['ROOM']) + parseInt(row['BOARD']);
+      provenanceFields.push('roomAndBoard');
     }
 
-    await this.prisma.school.update({
-      where: { id: schoolId },
-      data: { metadata: metadata as any },
+    if (provenanceFields.length === 0) {
+      return;
+    }
+
+    await this.schoolWriteService.update(schoolId, {
+      fields,
+      provenance: buildFieldProvenanceRecord(provenanceFields, {
+        source: 'IPEDS',
+        fetchedAt,
+      }),
+      existingMetadata: school.metadata,
     });
   }
 }

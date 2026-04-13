@@ -18,8 +18,9 @@ import { useSchoolPrediction } from '@/hooks/use-prediction';
 import {
   getSchoolEnrollmentCount,
   getSchoolFieldSource,
-  hasVerifiedFieldSource,
+  getTrustedValue,
 } from '@/components/features/schools/school-display-utils';
+import { TrustBadge } from '@/components/features/schools/TrustBadge';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import {
@@ -188,31 +189,27 @@ export default function SchoolDetailPage() {
       {/* Key Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {(() => {
-          const localeKey = locale === 'zh' ? 'zh' : 'en';
           const enrollmentCount = getSchoolEnrollmentCount(school);
-          const verifiedAcceptanceRate = hasVerifiedFieldSource(school, 'acceptanceRate')
-            ? school.acceptanceRate
-            : undefined;
-          const verifiedTuition = hasVerifiedFieldSource(school, 'tuition')
-            ? school.tuition
-            : undefined;
-          const verifiedAvgSalary = hasVerifiedFieldSource(school, 'avgSalary')
-            ? school.avgSalary
-            : undefined;
-          const verifiedEnrollmentCount = hasVerifiedFieldSource(
+          const trustedAcceptanceRate = getTrustedValue(
             school,
+            school.acceptanceRate,
+            'acceptanceRate'
+          );
+          const trustedTuition = getTrustedValue(school, school.tuition, 'tuition');
+          const trustedAvgSalary = getTrustedValue(school, school.avgSalary, 'avgSalary');
+          const trustedEnrollmentCount = getTrustedValue(
+            school,
+            enrollmentCount,
             'totalEnrollment',
             'studentCount'
-          )
-            ? enrollmentCount
-            : undefined;
+          );
           return [
             {
               icon: Target,
               label: t('school.stats.acceptanceRate'),
               value:
-                verifiedAcceptanceRate != null
-                  ? formatAcceptanceRate(verifiedAcceptanceRate)
+                trustedAcceptanceRate != null
+                  ? formatAcceptanceRate(trustedAcceptanceRate)
                   : tc('notAvailable'),
               color: 'rose',
               source: getSchoolFieldSource(school, 'acceptanceRate'),
@@ -221,8 +218,8 @@ export default function SchoolDetailPage() {
               icon: DollarSign,
               label: t('school.stats.tuition'),
               value:
-                verifiedTuition != null
-                  ? format.number(verifiedTuition, 'currency')
+                trustedTuition != null
+                  ? format.number(trustedTuition, 'currency')
                   : tc('notAvailable'),
               color: 'emerald',
               source: getSchoolFieldSource(school, 'tuition'),
@@ -231,8 +228,8 @@ export default function SchoolDetailPage() {
               icon: TrendingUp,
               label: t('school.stats.avgSalary'),
               value:
-                verifiedAvgSalary != null
-                  ? format.number(verifiedAvgSalary, 'currency')
+                trustedAvgSalary != null
+                  ? format.number(trustedAvgSalary, 'currency')
                   : tc('notAvailable'),
               color: 'blue',
               source: getSchoolFieldSource(school, 'avgSalary'),
@@ -241,18 +238,14 @@ export default function SchoolDetailPage() {
               icon: Users,
               label: t('school.stats.studentCount'),
               value:
-                verifiedEnrollmentCount != null
-                  ? format.number(verifiedEnrollmentCount, 'standard')
+                trustedEnrollmentCount != null
+                  ? format.number(trustedEnrollmentCount, 'standard')
                   : tc('notAvailable'),
               color: 'violet',
               source: getSchoolFieldSource(school, 'totalEnrollment', 'studentCount'),
             },
           ].map((stat, index) => {
             const StatIcon = stat.icon;
-            const sourceLabel =
-              stat.source?.tier === 'verified'
-                ? DATA_SOURCE_LABELS[stat.source.source]?.[localeKey]
-                : undefined;
             return (
               <motion.div
                 key={stat.label}
@@ -293,26 +286,12 @@ export default function SchoolDetailPage() {
                     >
                       {stat.value}
                     </div>
-                    {sourceLabel &&
-                      (() => {
-                        const url =
-                          stat.source?.tier === 'verified'
-                            ? getSourceUrl(stat.source.source, school)
-                            : null;
-                        return url ? (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-muted-foreground mt-1 hover:text-primary hover:underline inline-flex items-center gap-0.5"
-                          >
-                            {sourceLabel}
-                            <ExternalLink className="h-2.5 w-2.5" />
-                          </a>
-                        ) : (
-                          <div className="text-xs text-muted-foreground mt-1">{sourceLabel}</div>
-                        );
-                      })()}
+                    <div className="mt-2">
+                      <TrustBadge
+                        source={stat.source}
+                        sourceUrl={stat.source ? getSourceUrl(stat.source.source, school) : null}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

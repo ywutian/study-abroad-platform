@@ -14,7 +14,26 @@ import {
   detectInternationalStatus,
   getBestEnglishProficiency,
 } from '@study-abroad/shared/scoring';
+import {
+  TRUST_TIER_PREDICTION_WEIGHT,
+  isPredictionEligibleTrustTier,
+} from '@study-abroad/shared/utils';
 import type { ProfileWithRelations } from './prediction.types';
+import { getNormalizedFieldProvenance } from '../school/school-provenance.helpers';
+
+type ConfidenceLevel = 'low' | 'medium' | 'high';
+
+const SCHOOL_CONFIDENCE_LOW_WEIGHT = 0.6;
+const SCHOOL_CONFIDENCE_DOWNGRADE_WEIGHT = 0.85;
+
+function toNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string' && value) return Number(value);
+  if (value && typeof value === 'object' && 'toNumber' in value) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  return undefined;
+}
 
 /**
  * Pure data transformation service for prediction engines.
@@ -25,6 +44,81 @@ import type { ProfileWithRelations } from './prediction.types';
 @Injectable()
 export class PredictionTransformerService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private resolveTrustedSchoolField<T, R = T>(
+    school: School,
+    field: string,
+    value: T | null | undefined,
+    transform?: (value: T) => R | undefined,
+  ): { value: R | undefined; weight?: number } {
+    if (value == null) {
+      return { value: undefined };
+    }
+
+    const provenance = getNormalizedFieldProvenance(
+      school as Record<string, unknown>,
+      field,
+    );
+    if (!provenance) {
+      return { value: transform ? transform(value) : (value as unknown as R) };
+    }
+
+    const weight = TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];
+    if (!isPredictionEligibleTrustTier(provenance.tier)) {
+      return { value: undefined, weight };
+    }
+
+    return {
+      value: transform ? transform(value) : (value as unknown as R),
+      weight,
+    };
+  }
+
+  private getFeatureWeight(school: SchoolInput, fields: string[]): number {
+    const weights = fields
+      .map((field) => school.fieldTrustWeights?.[field])
+      .filter((weight): weight is number => typeof weight === 'number');
+
+    if (weights.length === 0) {
+      return 1;
+    }
+
+    return weights.reduce((sum, weight) => sum + weight, 0) / weights.length;
+  }
+
+  getAveragePredictionWeight(school: SchoolInput): number {
+    if (typeof school.averagePredictionWeight === 'number') {
+      return school.averagePredictionWeight;
+    }
+
+    const weights = Object.values(school.fieldTrustWeights ?? {}).filter(
+      (weight): weight is number => typeof weight === 'number',
+    );
+
+    if (weights.length === 0) {
+      return 1;
+    }
+
+    return weights.reduce((sum, weight) => sum + weight, 0) / weights.length;
+  }
+
+  adjustConfidenceForSchoolTrust(
+    confidence: ConfidenceLevel,
+    school: SchoolInput,
+  ): ConfidenceLevel {
+    const averageWeight = this.getAveragePredictionWeight(school);
+
+    if (averageWeight < SCHOOL_CONFIDENCE_LOW_WEIGHT) {
+      return 'low';
+    }
+
+    if (averageWeight < SCHOOL_CONFIDENCE_DOWNGRADE_WEIGHT) {
+      if (confidence === 'high') return 'medium';
+      if (confidence === 'medium') return 'low';
+    }
+
+    return confidence;
+  }
 
   /**
    * Convert a Prisma profile (with relations) to the internal ProfileInput format
@@ -117,31 +211,90 @@ export class PredictionTransformerService {
    * @returns Normalized SchoolInput for prediction calculations
    */
   schoolToInput(school: School): SchoolInput {
+    const fieldTrustWeights: Record<string, number> = {};
+    const captureField = <T, R = T>(
+      field: string,
+      value: T | null | undefined,
+      transform?: (raw: T) => R | undefined,
+    ): R | undefined => {
+      const resolved = this.resolveTrustedSchoolField(
+        school,
+        field,
+        value,
+        transform,
+      );
+      if (resolved.value !== undefined && typeof resolved.weight === 'number') {
+        fieldTrustWeights[field] = resolved.weight;
+      }
+      return resolved.value;
+    };
+
     return {
       id: school.id,
       name: school.name,
       nameZh: school.nameZh ?? undefined,
-      acceptanceRate: clampPercentRate(school.acceptanceRate),
-      intlAcceptanceRate: clampPercentRate((school as any).intlAcceptanceRate),
-      intlStudentPct: (school as any).intlStudentPct
-        ? Number((school as any).intlStudentPct)
-        : undefined,
-      needBlindInternational:
-        (school as any).needBlindInternational || undefined,
-      satAvg: school.satAvg ?? undefined,
-      sat25: school.sat25 ?? undefined,
-      sat75: school.sat75 ?? undefined,
-      actAvg: school.actAvg ?? undefined,
-      act25: school.act25 ?? undefined,
-      act75: school.act75 ?? undefined,
-      usNewsRank: school.usNewsRank ?? undefined,
-      graduationRate: clampPercentRate(school.graduationRate),
-      retentionRate: clampPercentRate((school as any).retentionRate),
-      studentFacultyRatio: (school as any).studentFacultyRatio ?? undefined,
-      percentNeedMet: clampPercentRate((school as any).percentNeedMet),
-      averageNetPrice: (school as any).averageNetPrice ?? undefined,
-      testOptional: (school as any).testOptional ?? undefined,
-      hasEarlyDecision: (school as any).hasEarlyDecision ?? undefined,
+      acceptanceRate: captureField(
+        'acceptanceRate',
+        school.acceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      intlAcceptanceRate: captureField(
+        'intlAcceptanceRate',
+        (school as any).intlAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      intlStudentPct: captureField(
+        'intlStudentPct',
+        (school as any).intlStudentPct,
+        (value) => Number(value) as any,
+      ),
+      needBlindInternational: captureField(
+        'needBlindInternational',
+        (school as any).needBlindInternational,
+      ),
+      satAvg: captureField('satAvg', school.satAvg),
+      sat25: captureField('sat25', school.sat25),
+      sat75: captureField('sat75', school.sat75),
+      actAvg: captureField('actAvg', school.actAvg),
+      act25: captureField('act25', school.act25),
+      act75: captureField('act75', school.act75),
+      usNewsRank: captureField('usNewsRank', school.usNewsRank),
+      graduationRate: captureField(
+        'graduationRate',
+        school.graduationRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      retentionRate: captureField(
+        'retentionRate',
+        (school as any).retentionRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      studentFacultyRatio: captureField(
+        'studentFacultyRatio',
+        (school as any).studentFacultyRatio,
+      ),
+      percentNeedMet: captureField(
+        'percentNeedMet',
+        (school as any).percentNeedMet,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      averageNetPrice: captureField(
+        'averageNetPrice',
+        (school as any).averageNetPrice,
+      ),
+      testOptional: captureField('testOptional', (school as any).testOptional),
+      hasEarlyDecision: captureField(
+        'hasEarlyDecision',
+        (school as any).hasEarlyDecision,
+      ),
+      fieldTrustWeights,
+      averagePredictionWeight:
+        Object.keys(fieldTrustWeights).length > 0
+          ? Object.values(fieldTrustWeights).reduce(
+              (sum, weight) => sum + weight,
+              0,
+            ) / Object.values(fieldTrustWeights).length
+          : 1,
     };
   }
 
@@ -263,10 +416,34 @@ export class PredictionTransformerService {
     if (profile.highSchoolTier || profile.highSchoolName) score += 5;
 
     // School 数据 (40 分)
-    if (school.acceptanceRate) score += 10;
-    if (school.graduationRate) score += 10;
-    if (school.satAvg || (school.sat25 && school.sat75)) score += 10;
-    if (school.actAvg || (school.act25 && school.act75)) score += 10;
+    if (school.acceptanceRate != null) {
+      score += 10 * this.getFeatureWeight(school, ['acceptanceRate']);
+    }
+    if (school.graduationRate != null) {
+      score += 10 * this.getFeatureWeight(school, ['graduationRate']);
+    }
+    if (
+      school.satAvg != null ||
+      (school.sat25 != null && school.sat75 != null)
+    ) {
+      score +=
+        10 *
+        this.getFeatureWeight(
+          school,
+          school.satAvg != null ? ['satAvg'] : ['sat25', 'sat75'],
+        );
+    }
+    if (
+      school.actAvg != null ||
+      (school.act25 != null && school.act75 != null)
+    ) {
+      score +=
+        10 *
+        this.getFeatureWeight(
+          school,
+          school.actAvg != null ? ['actAvg'] : ['act25', 'act75'],
+        );
+    }
 
     return Math.min(100, Math.round((score / maxScore) * 100));
   }

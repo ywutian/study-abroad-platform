@@ -7,7 +7,7 @@ import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
-const MORE_US_SCHOOLS = [
+export const MORE_US_SCHOOLS: SeedSchoolData[] = [
   // 101-120
   {
     name: 'Auburn University',
@@ -641,6 +641,8 @@ async function main() {
   await batchUpsertSchools(prisma, schools, '美国大学 101-150 名');
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  main()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

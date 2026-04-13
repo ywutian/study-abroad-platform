@@ -13,6 +13,12 @@ global.fetch = mockFetch;
 describe('SchoolDataService', () => {
   let service: SchoolDataService;
 
+  async function runSyncWithTimers(limit: number) {
+    const promise = service.syncSchoolsFromScorecard(limit);
+    await jest.runAllTimersAsync();
+    return promise;
+  }
+
   const mockPrisma: any = {
     school: {
       findUnique: jest.fn(),
@@ -22,7 +28,6 @@ describe('SchoolDataService', () => {
     schoolMetric: {
       upsert: jest.fn(),
     },
-    $transaction: jest.fn(),
   };
 
   const mockConfigService = {
@@ -41,6 +46,7 @@ describe('SchoolDataService', () => {
 
   beforeEach(async () => {
     mockConfigService.get.mockReturnValue('test-api-key');
+    mockFetch.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -57,6 +63,7 @@ describe('SchoolDataService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
   });
 
   describe('syncSchoolsFromScorecard', () => {
@@ -90,29 +97,46 @@ describe('SchoolDataService', () => {
         json: () => Promise.resolve({ results: [] }),
       });
 
-      // Mock $transaction to execute the callback
-      mockPrisma.$transaction.mockImplementation(
-        async (fn: (tx: any) => Promise<any>) => {
-          const tx = {
-            school: {
-              findUnique: jest.fn().mockResolvedValue(null),
-              create: jest
-                .fn()
-                .mockResolvedValue({ id: 'school-new', name: 'MIT' }),
-            },
-            schoolMetric: {
-              upsert: jest.fn().mockResolvedValue({}),
-            },
-          };
-          return fn(tx);
-        },
-      );
+      mockPrisma.school.findUnique.mockResolvedValue(null);
+      mockPrisma.school.create.mockResolvedValue({
+        id: 'school-new',
+        name: 'MIT',
+      });
+      mockPrisma.schoolMetric.upsert.mockResolvedValue({});
 
-      const result = await service.syncSchoolsFromScorecard(1);
+      jest.useFakeTimers();
+      const result = await runSyncWithTimers(1);
 
       expect(result.synced).toBe(1);
       expect(result.errors).toBe(0);
       expect(mockFetch).toHaveBeenCalled();
+      expect(mockPrisma.school.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: 'MIT',
+            country: 'US',
+            scorecardId: '12345',
+            metadata: expect.objectContaining({
+              scorecardId: '12345',
+              provenance: expect.objectContaining({
+                scorecardId: expect.objectContaining({
+                  source: 'COLLEGE_SCORECARD',
+                }),
+              }),
+            }),
+          }),
+        }),
+      );
+      expect(mockPrisma.schoolMetric.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            schoolId_year_metricKey: expect.objectContaining({
+              schoolId: 'school-new',
+              metricKey: 'avg_sat',
+            }),
+          },
+        }),
+      );
       expect(mockSchoolDataMerger.merge).toHaveBeenCalledWith(
         'school-new',
         expect.objectContaining({
@@ -160,6 +184,7 @@ describe('SchoolDataService', () => {
     });
 
     it('should stop syncing when limit is reached', async () => {
+      jest.useFakeTimers();
       const apiResponse = {
         results: Array.from({ length: 100 }, (_, i) => ({
           id: String(i),
@@ -171,28 +196,21 @@ describe('SchoolDataService', () => {
         ok: true,
         json: () => Promise.resolve(apiResponse),
       });
+      mockPrisma.school.findUnique.mockResolvedValue(null);
+      mockPrisma.school.create.mockImplementation(async ({ data }: any) => ({
+        id: `school-${data.scorecardId}`,
+        name: data.name,
+      }));
+      mockPrisma.schoolMetric.upsert.mockResolvedValue({});
 
-      mockPrisma.$transaction.mockImplementation(
-        async (fn: (tx: any) => Promise<any>) => {
-          const tx = {
-            school: {
-              findUnique: jest.fn().mockResolvedValue(null),
-              create: jest
-                .fn()
-                .mockResolvedValue({ id: 'new-id', name: 'School' }),
-            },
-            schoolMetric: { upsert: jest.fn().mockResolvedValue({}) },
-          };
-          return fn(tx);
-        },
-      );
-
-      const result = await service.syncSchoolsFromScorecard(5);
+      const result = await runSyncWithTimers(5);
 
       expect(result.synced).toBe(5);
+      expect(mockPrisma.school.create).toHaveBeenCalledTimes(5);
     });
 
     it('should count errors but continue processing', async () => {
+      jest.useFakeTimers();
       const apiResponse = {
         results: [
           { id: '1', 'school.name': 'Good School' },
@@ -209,27 +227,13 @@ describe('SchoolDataService', () => {
         json: () => Promise.resolve({ results: [] }),
       });
 
-      let callCount = 0;
-      mockPrisma.$transaction.mockImplementation(
-        async (fn: (tx: any) => Promise<any>) => {
-          callCount++;
-          if (callCount === 2) {
-            throw new Error('DB constraint violation');
-          }
-          const tx = {
-            school: {
-              findUnique: jest.fn().mockResolvedValue(null),
-              create: jest
-                .fn()
-                .mockResolvedValue({ id: 'id-1', name: 'Good School' }),
-            },
-            schoolMetric: { upsert: jest.fn().mockResolvedValue({}) },
-          };
-          return fn(tx);
-        },
-      );
+      mockPrisma.school.findUnique.mockResolvedValue(null);
+      mockPrisma.school.create
+        .mockResolvedValueOnce({ id: 'id-1', name: 'Good School' })
+        .mockRejectedValueOnce(new Error('DB constraint violation'));
+      mockPrisma.schoolMetric.upsert.mockResolvedValue({});
 
-      const result = await service.syncSchoolsFromScorecard(10);
+      const result = await runSyncWithTimers(10);
 
       expect(result.synced).toBe(1);
       expect(result.errors).toBe(1);

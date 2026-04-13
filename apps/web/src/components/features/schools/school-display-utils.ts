@@ -2,6 +2,7 @@ import type {
   SchoolCommunityRatingSummary,
   SchoolFieldSource,
   SchoolFieldSources,
+  TrustTier,
 } from '@study-abroad/shared';
 
 function normalizeGrade(grade?: string | null): string | undefined {
@@ -29,11 +30,41 @@ export function getSchoolFieldSource(
   return undefined;
 }
 
+export function getFieldTrust(
+  school: { fieldSources?: SchoolFieldSources | null },
+  ...fields: string[]
+): { tier: TrustTier; badge: TrustTier; source: SchoolFieldSource } | undefined {
+  const source = getSchoolFieldSource(school, ...fields);
+  if (!source) return undefined;
+
+  return {
+    tier: source.tier,
+    badge: source.tier,
+    source,
+  };
+}
+
 export function hasVerifiedFieldSource(
   school: { fieldSources?: SchoolFieldSources | null },
   ...fields: string[]
 ): boolean {
-  return fields.some((field) => school.fieldSources?.[field]?.tier === 'verified');
+  return fields.some((field) => Boolean(school.fieldSources?.[field]));
+}
+
+export function getTrustedValue<T>(
+  school: { fieldSources?: SchoolFieldSources | null },
+  value: T | null | undefined,
+  ...fields: string[]
+): T | undefined {
+  return getSchoolFieldSource(school, ...fields) && value != null ? value : undefined;
+}
+
+export function isOfficialFieldSource(source?: SchoolFieldSource): boolean {
+  return source?.tier === 'OFFICIAL' || source?.tier === 'PARTNER';
+}
+
+export function isSupplementalFieldSource(source?: SchoolFieldSource): boolean {
+  return Boolean(source) && !isOfficialFieldSource(source);
 }
 
 export function getSupplementalCampusLifeGrades(school: {

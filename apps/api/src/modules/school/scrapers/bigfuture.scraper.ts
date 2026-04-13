@@ -9,6 +9,7 @@ import {
   AuditLogService,
   AuditAction,
 } from '../../../common/services/audit-log.service';
+import { SchoolWriteService } from '../school-write.service';
 
 /**
  * College Board BigFuture 爬虫
@@ -181,6 +182,7 @@ export class BigFutureScrapeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly merger: SchoolDataMerger,
+    private readonly schoolWriteService: SchoolWriteService,
     private readonly auditLogService: AuditLogService,
   ) {
     this.scraper = new BigFutureParser('BigFutureScraper');
@@ -245,20 +247,16 @@ export class BigFutureScrapeService {
           where: { id: result.schoolId },
           select: { metadata: true },
         });
-        const existingMeta =
-          (school?.metadata as Record<string, unknown>) || {};
-        await this.prisma.school.update({
-          where: { id: result.schoolId },
-          data: {
-            metadata: {
-              ...existingMeta,
-              bigfuture: {
-                ...result.metadata,
-                lastScrapedAt: new Date().toISOString(),
-                sourceUrl: result.url,
-              },
-            } as any,
+        await this.schoolWriteService.update(result.schoolId, {
+          metadataPatch: {
+            bigfuture: {
+              ...result.metadata,
+              lastScrapedAt: new Date().toISOString(),
+              sourceUrl: result.url,
+            },
           },
+          provenance: {},
+          existingMetadata: school?.metadata,
         });
       }
     };

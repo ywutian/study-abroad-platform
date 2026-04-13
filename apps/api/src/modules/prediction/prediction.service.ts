@@ -1156,7 +1156,10 @@ export class PredictionService {
       memoryContext.memoryAdjustments.get(school.id) || 0;
 
     // 计算置信度
-    const confidenceLevel = calculateConfidence(profileMetrics, schoolMetrics);
+    const confidenceLevel = this.transformer.adjustConfidenceForSchoolTrust(
+      calculateConfidence(profileMetrics, schoolMetrics),
+      schoolInput,
+    );
 
     // === 融合 ===
     const fusedResult = this.fusePredictions(

@@ -88,6 +88,43 @@ describe('PredictionTransformerService', () => {
     });
   });
 
+  describe('schoolToInput', () => {
+    it('should include trust weights for prediction-eligible provenance fields', () => {
+      const input = service.schoolToInput({
+        id: 'school-1',
+        name: 'MIT',
+        acceptanceRate: 4,
+        satAvg: 1540,
+        metadata: {
+          provenance: {
+            acceptanceRate: {
+              tier: 'OFFICIAL',
+              source: 'COLLEGE_SCORECARD',
+              fetchedAt: '2026-04-01T00:00:00.000Z',
+            },
+            satAvg: {
+              tier: 'OFFICIAL',
+              source: 'COLLEGE_SCORECARD',
+              fetchedAt: '2026-04-01T00:00:00.000Z',
+            },
+          },
+        },
+      } as any);
+
+      expect(input.fieldTrustWeights).toEqual(
+        expect.objectContaining({
+          acceptanceRate: expect.any(Number),
+          satAvg: expect.any(Number),
+        }),
+      );
+      expect(input.averagePredictionWeight).toBeCloseTo(
+        (input.fieldTrustWeights!.acceptanceRate +
+          input.fieldTrustWeights!.satAvg) /
+          2,
+      );
+    });
+  });
+
   describe('evaluateDataCompleteness', () => {
     it('should return low score for empty profile', () => {
       const profile = { testScores: [], activities: [], awards: [] } as any;
@@ -143,6 +180,32 @@ describe('PredictionTransformerService', () => {
       const result = await service.enrichWithEssayQuality(profile, 'prof-1');
 
       expect(result.essayQualityScore).toBeUndefined();
+    });
+  });
+
+  describe('adjustConfidenceForSchoolTrust', () => {
+    it('should downgrade to low when average prediction weight is below the low threshold', () => {
+      const result = service.adjustConfidenceForSchoolTrust('high', {
+        averagePredictionWeight: 0.5,
+      } as any);
+
+      expect(result).toBe('low');
+    });
+
+    it('should downgrade one level when average prediction weight is in the middle band', () => {
+      const result = service.adjustConfidenceForSchoolTrust('high', {
+        averagePredictionWeight: 0.7,
+      } as any);
+
+      expect(result).toBe('medium');
+    });
+
+    it('should keep confidence unchanged when trust is high', () => {
+      const result = service.adjustConfidenceForSchoolTrust('medium', {
+        averagePredictionWeight: 0.95,
+      } as any);
+
+      expect(result).toBe('medium');
     });
   });
 });
