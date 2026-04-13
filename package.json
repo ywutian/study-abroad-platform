@@ -49,7 +49,8 @@
     "lint:dead-code": "knip",
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys",
     "check": "pnpm lint:all && pnpm test",
-    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter mobile exec tsc --noEmit && pnpm test"
+    "preflight": "pnpm --filter api db:generate && pnpm lint:all && pnpm test",
+    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
