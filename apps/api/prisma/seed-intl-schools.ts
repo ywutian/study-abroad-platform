@@ -14,7 +14,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 /** nameNorm values (lowercase trimmed) for need-blind-for-internationals schools */
-const NEED_BLIND_INTL_NAME_NORMS = [
+export const NEED_BLIND_INTL_NAME_NORMS = [
   'harvard university',
   'massachusetts institute of technology',
   'yale university',
@@ -22,8 +22,10 @@ const NEED_BLIND_INTL_NAME_NORMS = [
   'amherst college',
 ] as const;
 
-export async function seedIntlSchools(): Promise<{ count: number }> {
-  const result = await prisma.school.updateMany({
+export async function seedIntlSchools(
+  prismaClient: PrismaClient = prisma,
+): Promise<{ count: number }> {
+  const result = await prismaClient.school.updateMany({
     where: { nameNorm: { in: [...NEED_BLIND_INTL_NAME_NORMS] } },
     data: { needBlindInternational: true },
   });

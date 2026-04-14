@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolService } from './school.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
+import { SchoolWriteService } from './school-write.service';
 
 describe('SchoolLogoService', () => {
   let service: SchoolLogoService;
@@ -15,7 +16,6 @@ describe('SchoolLogoService', () => {
   const mockPrisma = {
     school: {
       findMany: jest.fn(),
-      update: jest.fn(),
     },
   };
 
@@ -26,6 +26,11 @@ describe('SchoolLogoService', () => {
   const mockAuditLog = {
     log: jest.fn().mockResolvedValue(undefined),
   };
+  const mockSchoolWriteService = {
+    create: jest.fn(),
+    update: jest.fn().mockResolvedValue({}),
+    invalidateSchoolCaches: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -34,6 +39,7 @@ describe('SchoolLogoService', () => {
         { provide: ConfigService, useValue: mockConfig },
         { provide: PrismaService, useValue: mockPrisma },
         { provide: SchoolService, useValue: mockSchoolService },
+        { provide: SchoolWriteService, useValue: mockSchoolWriteService },
         { provide: AuditLogService, useValue: mockAuditLog },
       ],
     }).compile();
@@ -97,6 +103,15 @@ describe('SchoolLogoService', () => {
       expect(url).toContain('mit.edu');
     });
 
+    it('should fall back to Google favicon when Logo.dev is unavailable', () => {
+      (service as unknown as { token?: string }).token = undefined;
+
+      const url = service.getSuggestedLogoUrl('https://www.mit.edu');
+
+      expect(url).toContain('www.google.com/s2/favicons');
+      expect(url).toContain('mit.edu');
+    });
+
     it('should return null for invalid website', () => {
       expect(service.getSuggestedLogoUrl(null)).toBeNull();
     });
@@ -105,13 +120,29 @@ describe('SchoolLogoService', () => {
   describe('fillLogosByDomain', () => {
     it('should update schools with logos', async () => {
       mockPrisma.school.findMany.mockResolvedValue([
-        { id: 's1', name: 'MIT', website: 'https://www.mit.edu' },
+        {
+          id: 's1',
+          name: 'MIT',
+          website: 'https://www.mit.edu',
+          logoUrl: null,
+        },
       ]);
-      mockPrisma.school.update.mockResolvedValue({});
-
       const result = await service.fillLogosByDomain(10, 'admin-1');
 
       expect(result.filled).toBe(1);
+      expect(mockSchoolWriteService.update).toHaveBeenCalledWith(
+        's1',
+        expect.objectContaining({
+          fields: {
+            logoUrl: expect.stringContaining('logo.dev'),
+          },
+          provenance: expect.objectContaining({
+            logoUrl: expect.objectContaining({
+              source: 'SCRAPER',
+            }),
+          }),
+        }),
+      );
       expect(mockAuditLog.log).toHaveBeenCalled();
     });
 
@@ -122,6 +153,29 @@ describe('SchoolLogoService', () => {
 
       expect(result.filled).toBe(0);
       expect(result.message).toContain('No schools');
+    });
+
+    it('should still fill logos with favicon when token is missing', async () => {
+      (service as unknown as { token?: string }).token = undefined;
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 's1',
+          name: 'MIT',
+          website: 'https://www.mit.edu',
+          logoUrl: null,
+        },
+      ]);
+      const result = await service.fillLogosByDomain(10, 'admin-1');
+
+      expect(result.filled).toBe(1);
+      expect(mockSchoolWriteService.update).toHaveBeenCalledWith(
+        's1',
+        expect.objectContaining({
+          fields: {
+            logoUrl: expect.stringContaining('www.google.com/s2/favicons'),
+          },
+        }),
+      );
     });
   });
 });

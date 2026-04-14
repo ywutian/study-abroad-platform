@@ -91,6 +91,7 @@ const mockProfileInput = {
 };
 
 const mockSchoolInput = {
+  id: 'school-1',
   name: 'MIT',
   acceptanceRate: 4,
   satAvg: 1540,
@@ -273,6 +274,9 @@ describe('PredictionService', () => {
               .mockReturnValue(mockProfileMetrics),
             extractSchoolMetrics: jest.fn().mockReturnValue(mockSchoolMetrics),
             evaluateDataCompleteness: jest.fn().mockReturnValue(0.75),
+            adjustConfidenceForSchoolTrust: jest
+              .fn()
+              .mockImplementation((confidence) => confidence),
             enrichWithEssayQuality: jest
               .fn()
               .mockImplementation((input) => Promise.resolve(input)),
@@ -322,6 +326,8 @@ describe('PredictionService', () => {
           useValue: {
             getSchoolDistribution: jest.fn().mockResolvedValue(null),
             getHistoricalProbability: jest.fn().mockResolvedValue(null),
+            getNationalityStats: jest.fn().mockResolvedValue(null),
+            getFeederSignal: jest.fn().mockResolvedValue(null),
           },
         },
         {

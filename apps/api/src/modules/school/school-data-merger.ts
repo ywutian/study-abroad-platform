@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataReviewStatus } from '@prisma/client';
+import type { SchoolProvenance } from '@study-abroad/shared';
+import { normalizeSchoolProvenance } from '@study-abroad/shared/utils';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
+import { createFieldProvenance, toRecord } from './school-provenance.helpers';
+import { SchoolWriteService } from './school-write.service';
 
 /**
  * 数据来源定义
@@ -36,18 +39,7 @@ export const VERIFIED_SCHOOL_DATA_SOURCES = new Set<DataSource>([
   DataSource.IPEDS,
 ]);
 
-/**
- * 单个字段的来源记录
- */
-interface FieldProvenance {
-  source: DataSource;
-  at: string; // ISO date
-}
-
-/**
- * 完整的来源追踪记录（存储在 metadata.provenance 中）
- */
-export type ProvenanceRecord = Record<string, FieldProvenance>;
+export type ProvenanceRecord = SchoolProvenance;
 
 /**
  * 可合并的学校数据字段
@@ -119,7 +111,7 @@ export class SchoolDataMerger {
 
   constructor(
     private prisma: PrismaService,
-    private redis: RedisService,
+    private schoolWriteService: SchoolWriteService,
   ) {}
 
   /**
@@ -149,9 +141,8 @@ export class SchoolDataMerger {
       return { updatedFields: [], skippedFields: [] };
     }
 
-    const metadata = (school.metadata as Record<string, unknown>) || {};
-    const provenance: ProvenanceRecord =
-      (metadata.provenance as ProvenanceRecord) || {};
+    const metadata = toRecord(school.metadata);
+    const provenance = normalizeSchoolProvenance(metadata.provenance);
     const now = new Date().toISOString();
 
     const updateData: Record<string, unknown> = {};
@@ -171,13 +162,15 @@ export class SchoolDataMerger {
       if (currentValue != null && currentValue !== '') {
         // Field already has a value — check provenance priority
         if (fieldProv) {
-          const existingPriority = SOURCE_PRIORITY[fieldProv.source] ?? 99;
+          const existingPriority =
+            SOURCE_PRIORITY[fieldProv.source as DataSource] ?? 99;
           const incomingPriority = SOURCE_PRIORITY[source];
 
           // Lower-priority source cannot overwrite higher-priority source...
           if (incomingPriority > existingPriority) {
             // ...unless the existing value is stale (> 1 year old)
-            const existingAge = Date.now() - new Date(fieldProv.at).getTime();
+            const existingAge =
+              Date.now() - new Date(fieldProv.fetchedAt).getTime();
             if (existingAge < STALE_THRESHOLD_MS) {
               skippedFields.push(field);
               continue;
@@ -191,29 +184,22 @@ export class SchoolDataMerger {
       // Write the field
       updateData[field] = incomingValue;
       updatedFields.push(field);
-      provenance[field] = { source, at: now };
+      provenance[field] = createFieldProvenance({
+        source,
+        fetchedAt: now,
+      });
     }
 
     // Only update if there's something to write
     if (updatedFields.length > 0) {
-      // If name changed, update nameNorm too
-      if (updateData.name) {
-        updateData.nameNorm = normalizeSchoolName(updateData.name as string);
-      }
-
-      await this.prisma.school.update({
-        where: { id: schoolId },
-        data: {
-          ...updateData,
-          metadata: { ...metadata, provenance } as any,
-          dataReviewStatus: DataReviewStatus.AUTO_APPROVED,
-          lastDataReviewAt: new Date(),
-        },
+      await this.schoolWriteService.update(schoolId, {
+        fields: updateData,
+        metadataPatch: metadata,
+        provenance,
+        reviewStatus: DataReviewStatus.AUTO_APPROVED,
+        touchReviewTimestamp: true,
+        existingMetadata: metadata,
       });
-
-      // Invalidate caches
-      await this.redis.del(`school:detail:${schoolId}`);
-      await this.redis.del('school:data-quality');
     }
 
     return { updatedFields, skippedFields };
@@ -251,8 +237,8 @@ export class SchoolDataMerger {
 
     if (!school) return null;
 
-    const metadata = (school.metadata as Record<string, unknown>) || {};
-    return (metadata.provenance as ProvenanceRecord) || null;
+    const metadata = toRecord(school.metadata);
+    return normalizeSchoolProvenance(metadata.provenance);
   }
 
   /**

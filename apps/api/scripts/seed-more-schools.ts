@@ -8,7 +8,7 @@ import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 const prisma = new PrismaClient();
 
 // US News 2025 排名 52-100 + 部分缺失简介的学校
-const ADDITIONAL_SCHOOLS = [
+export const ADDITIONAL_SCHOOLS: SeedSchoolData[] = [
   // 缺失简介的学校
   {
     name: 'California Institute of Technology',
@@ -899,6 +899,8 @@ async function main() {
   await batchUpsertSchools(prisma, schools, '补充学校数据 (US News 52-100+)');
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  main()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

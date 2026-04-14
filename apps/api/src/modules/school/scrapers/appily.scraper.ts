@@ -9,6 +9,7 @@ import {
   AuditLogService,
   AuditAction,
 } from '../../../common/services/audit-log.service';
+import { SchoolWriteService } from '../school-write.service';
 
 /**
  * Appily (原 Cappex) 爬虫
@@ -245,6 +246,7 @@ export class AppilyScrapeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly merger: SchoolDataMerger,
+    private readonly schoolWriteService: SchoolWriteService,
     private readonly auditLogService: AuditLogService,
   ) {
     this.scraper = new AppilyParser('AppilyScraper');
@@ -309,20 +311,16 @@ export class AppilyScrapeService {
           where: { id: result.schoolId },
           select: { metadata: true },
         });
-        const existingMeta =
-          (school?.metadata as Record<string, unknown>) || {};
-        await this.prisma.school.update({
-          where: { id: result.schoolId },
-          data: {
-            metadata: {
-              ...existingMeta,
-              appily: {
-                ...result.metadata,
-                lastScrapedAt: new Date().toISOString(),
-                sourceUrl: result.url,
-              },
-            } as any,
+        await this.schoolWriteService.update(result.schoolId, {
+          metadataPatch: {
+            appily: {
+              ...result.metadata,
+              lastScrapedAt: new Date().toISOString(),
+              sourceUrl: result.url,
+            },
           },
+          provenance: {},
+          existingMetadata: school?.metadata,
         });
       }
     };

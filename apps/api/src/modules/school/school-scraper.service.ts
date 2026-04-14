@@ -6,6 +6,8 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import * as cheerio from 'cheerio';
+import { buildFieldProvenanceRecord } from './school-provenance.helpers';
+import { SchoolWriteService } from './school-write.service';
 
 /**
  * 学校官网数据爬虫服务
@@ -27,7 +29,10 @@ export class SchoolScraperService {
   // 请求间隔 (毫秒)
   private readonly REQUEST_DELAY = 2000;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private schoolWriteService: SchoolWriteService,
+  ) {}
 
   /**
    * 学校招生页面 URL 配置
@@ -395,20 +400,33 @@ export class SchoolScraperService {
       return;
     }
 
-    const currentMetadata = (school.metadata as Record<string, unknown>) || {};
+    const scrapedAt = new Date().toISOString();
+    const provenanceFields = [
+      ...(data.essays.length > 0 ? ['essayPrompts', 'essayCount'] : []),
+      ...(data.requirements.toeflMin != null ? ['toeflMin'] : []),
+      ...(data.requirements.ieltsMin != null ? ['ieltsMin'] : []),
+      ...(data.requirements.applicationFee != null
+        ? ['requirements.applicationFee']
+        : []),
+      ...Object.entries(data.deadlines)
+        .filter(([, value]) => value)
+        .map(([key]) => `deadlines.${key}`),
+    ];
 
     // 1. 写入 metadata JSON（兼容）
-    await this.prisma.school.update({
-      where: { id: school.id },
-      data: {
-        metadata: {
-          ...currentMetadata,
-          deadlines: data.deadlines,
-          essayPrompts: data.essays,
-          requirements: data.requirements,
-          lastScraped: new Date().toISOString(),
-        } as any,
+    await this.schoolWriteService.update(school.id, {
+      metadataPatch: {
+        deadlines: data.deadlines,
+        essayPrompts: data.essays,
+        essayCount: data.essays.length || undefined,
+        requirements: data.requirements,
+        lastScraped: scrapedAt,
       },
+      provenance: buildFieldProvenanceRecord(provenanceFields, {
+        source: 'SCRAPER',
+        fetchedAt: scrapedAt,
+      }),
+      existingMetadata: school.metadata,
     });
 
     // 2. 同步写入 SchoolDeadline 结构化表

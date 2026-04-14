@@ -82,6 +82,16 @@ jest.mock('@study-abroad/shared', () => ({
   API_ROUTES: {
     SCHOOL_LISTS: '/school-lists',
   },
+  getSchoolLogoSources: ({
+    logoUrl,
+    website,
+  }: {
+    logoUrl?: string | null;
+    website?: string | null;
+  }) => ({
+    source: logoUrl ?? null,
+    fallbackSource: website ? 'https://www.google.com/s2/favicons?domain=example.edu&sz=256' : null,
+  }),
   schoolListRoutes: {
     list: () => '/school-lists',
     byId: (id: string) => `/school-lists/${id}`,

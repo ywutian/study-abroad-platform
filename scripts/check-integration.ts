@@ -21,6 +21,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { Node, Project, SyntaxKind } from 'ts-morph';
 
 // ── Config ──────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ type RuleName =
   | 'stub-service-audit'
   | 'cache-invalidation-audit'
   | 'llm-json-import-check'
+  | 'school-write-must-have-provenance'
   | 'governance-optional-security'
   | 'governance-nl-endpoint-coverage'
   | 'governance-config-consistency'
@@ -84,6 +86,7 @@ const DOMAINS: Record<string, RuleName[]> = {
     'stub-service-audit',
     'cache-invalidation-audit',
     'llm-json-import-check',
+    'school-write-must-have-provenance',
   ],
   governance: [
     'governance-optional-security',
@@ -1292,6 +1295,93 @@ function checkLlmJsonImport(): Issue[] {
   return issues;
 }
 
+// ── Rule 17: school-write-must-have-provenance ─────────────
+
+const SCHOOL_WRITE_SCAN_PATHS = [
+  path.resolve(ROOT, 'apps/api/src/**/*.ts'),
+  path.resolve(ROOT, 'apps/api/scripts/lib/**/*.ts'),
+];
+
+const SCHOOL_WRITE_ALLOWLIST = new Set([
+  path.resolve(ROOT, 'apps/api/src/modules/school/school-write.service.ts'),
+  path.resolve(ROOT, 'scripts/backfill-school-provenance.ts'),
+]);
+
+function checkSchoolWriteMustHaveProvenance(): Issue[] {
+  const issues: Issue[] = [];
+  const project = new Project({
+    skipAddingFilesFromTsConfig: true,
+    compilerOptions: {
+      allowJs: false,
+    },
+  });
+  const sourceFiles = project.addSourceFilesAtPaths(SCHOOL_WRITE_SCAN_PATHS);
+
+  const hasProvenanceArgument = (callExpr: import('ts-morph').CallExpression): boolean => {
+    const objectArg = [...callExpr.getArguments()]
+      .reverse()
+      .find((arg) => Node.isObjectLiteralExpression(arg));
+
+    return Boolean(objectArg?.getProperty('provenance'));
+  };
+
+  for (const sourceFile of sourceFiles) {
+    const filePath = sourceFile.getFilePath();
+    if (isTestFile(filePath) || SCHOOL_WRITE_ALLOWLIST.has(filePath)) {
+      continue;
+    }
+
+    for (const callExpr of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+      const expr = callExpr.getExpression();
+
+      if (Node.isPropertyAccessExpression(expr)) {
+        const method = expr.getName();
+        const targetText = expr.getExpression().getText();
+
+        if (['create', 'update', 'upsert'].includes(method) && targetText.endsWith('.school')) {
+          issues.push({
+            rule: 'school-write-must-have-provenance',
+            severity: 'error',
+            file: rel(filePath),
+            line: callExpr.getStartLineNumber(),
+            message: `Direct ${targetText}.${method}() is forbidden. Route school writes through SchoolWriteService.`,
+          });
+        }
+
+        if (
+          ['create', 'update'].includes(method) &&
+          targetText.endsWith('schoolWriteService') &&
+          !hasProvenanceArgument(callExpr)
+        ) {
+          issues.push({
+            rule: 'school-write-must-have-provenance',
+            severity: 'error',
+            file: rel(filePath),
+            line: callExpr.getStartLineNumber(),
+            message: `SchoolWriteService.${method}() must receive a provenance property, even when empty.`,
+          });
+        }
+      }
+
+      if (
+        Node.isIdentifier(expr) &&
+        ['writeSchoolCreate', 'writeSchoolUpdate'].includes(expr.getText()) &&
+        !hasProvenanceArgument(callExpr)
+      ) {
+        issues.push({
+          rule: 'school-write-must-have-provenance',
+          severity: 'error',
+          file: rel(filePath),
+          line: callExpr.getStartLineNumber(),
+          message: `${expr.getText()}() must receive a provenance property, even when empty.`,
+        });
+      }
+    }
+  }
+
+  return issues;
+}
+
 // ── Output ──────────────────────────────────────────────────
 
 const COLORS = {
@@ -1430,6 +1520,7 @@ const RULE_MAP: Record<RuleName, () => Issue[]> = {
   'stub-service-audit': checkStubServiceAudit,
   'cache-invalidation-audit': checkCacheInvalidation,
   'llm-json-import-check': checkLlmJsonImport,
+  'school-write-must-have-provenance': checkSchoolWriteMustHaveProvenance,
   'governance-optional-security': () => runGovernanceRule('optional-security'),
   'governance-nl-endpoint-coverage': () => runGovernanceRule('nl-endpoint-coverage'),
   'governance-config-consistency': () => runGovernanceRule('config-consistency'),

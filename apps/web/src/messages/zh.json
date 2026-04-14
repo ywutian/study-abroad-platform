@@ -4399,6 +4399,33 @@
     "dataSource": "来源：{source}",
     "updatedAt": "更新于 {date}",
     "viewSource": "查看官方数据源",
+    "trust": {
+      "badges": {
+        "OFFICIAL": "官方",
+        "PARTNER": "合作",
+        "SCRAPED": "抓取",
+        "SEED": "初始",
+        "COMMUNITY": "社区",
+        "INFERRED": "AI"
+      },
+      "tiers": {
+        "OFFICIAL": "官方来源",
+        "PARTNER": "合作数据源",
+        "SCRAPED": "公开抓取",
+        "SEED": "初始数据",
+        "COMMUNITY": "社区提供",
+        "INFERRED": "AI 推断"
+      },
+      "staleness": {
+        "FRESH": "新鲜",
+        "AGING": "老化中",
+        "STALE": "过期"
+      },
+      "stalenessLabel": "新鲜度：{staleness}",
+      "predictionEligible": "用于预测",
+      "notUsedForPrediction": "不用于预测",
+      "verifiedBy": "审核人：{reviewer}"
+    },
     "deadlines": {
       "title": "申请截止日期",
       "cycle": "申请季",
@@ -7586,14 +7613,26 @@
       "fullyComplete": "完整数据",
       "missingCritical": "缺少关键字段",
       "avgCompleteness": "平均完整度",
+      "top200OfficialCoverage": "Top 200 官方覆盖率",
+      "top200OfficialCoverageDesc": "面向预测关键字段的 Top 200 学校官方覆盖情况",
+      "threshold": "阈值 {value}%",
+      "tierDistribution": "Tier 分布",
+      "predictionEligibleCoverage": "可用于预测的覆盖率",
+      "predictionEligibleCoverageDesc": "经过 trust 过滤后，仍可进入预测的字段覆盖情况",
       "fieldCoverage": "字段覆盖率",
       "filled": "已填",
       "missing": "缺失",
       "coverage": "覆盖率",
       "worstSchools": "待完善学校",
       "worstSchoolsDesc": "缺失字段最多的学校",
+      "staleFields": "过期字段",
+      "staleFieldsDesc": "最近抓取时间已经超过 freshness 目标的字段",
+      "noStaleFields": "未发现过期字段",
       "missingFields": "缺失字段",
       "completeness": "完整度",
+      "field": "字段",
+      "source": "来源",
+      "staleness": "时效",
       "noIssues": "所有学校数据均已完整",
       "refreshing": "刷新中...",
       "refresh": "刷新"

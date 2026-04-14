@@ -932,8 +932,8 @@ const TOP_100_SCHOOLS = [
   },
 ];
 
-async function main() {
-  const schools: SeedSchoolData[] = TOP_100_SCHOOLS.map((s) => ({
+export const TOP_100_APPLICATION_DATA: SeedSchoolData[] = TOP_100_SCHOOLS.map(
+  (s) => ({
     name: s.name,
     nameZh: s.nameZh,
     country: 'US',
@@ -946,11 +946,17 @@ async function main() {
       applicationCycle: '2025-2026',
       dataUpdated: new Date().toISOString().split('T')[0],
     },
-  }));
+  }),
+);
+
+async function main() {
+  const schools: SeedSchoolData[] = TOP_100_APPLICATION_DATA;
 
   await batchUpsertSchools(prisma, schools, 'US News 2025 Top 100');
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  main()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

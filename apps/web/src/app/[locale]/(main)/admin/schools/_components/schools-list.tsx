@@ -130,6 +130,7 @@ export function SchoolsList({
                       <TableCell>
                         <SchoolLogo
                           logoUrl={school.logoUrl}
+                          website={school.website}
                           name={getSchoolName(school, locale)}
                           size="sm"
                           className="rounded-md"

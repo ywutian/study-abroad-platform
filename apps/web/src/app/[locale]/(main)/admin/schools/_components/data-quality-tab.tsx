@@ -35,6 +35,26 @@ interface DataQualityReport {
     averageCompleteness: number;
   };
   fieldCoverage: Record<string, { filled: number; missing: number; percent: number }>;
+  tierDistribution: Record<string, { count: number; percent: number }>;
+  predictionEligibleCoverage: Record<string, { eligible: number; total: number; percent: number }>;
+  top200OfficialCoverage: {
+    schools: number;
+    covered: number;
+    totalSlots: number;
+    percent: number;
+    threshold: number;
+  };
+  staleFields: Array<{
+    schoolId: string;
+    schoolName: string;
+    schoolNameZh?: string;
+    field: string;
+    tier: string;
+    source: string;
+    fetchedAt: string;
+    staleness: string;
+    usNewsRank?: number;
+  }>;
   worstSchools: Array<{
     id: string;
     name: string;
@@ -170,6 +190,64 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
             </Card>
           </div>
 
+          <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t('dataQuality.top200OfficialCoverage')}
+                </CardTitle>
+                <CardDescription>{t('dataQuality.top200OfficialCoverageDesc')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <div className="text-3xl font-bold">
+                      {qualityData.top200OfficialCoverage.percent}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {qualityData.top200OfficialCoverage.covered}/
+                      {qualityData.top200OfficialCoverage.totalSlots}
+                    </div>
+                  </div>
+                  <Badge
+                    variant={
+                      qualityData.top200OfficialCoverage.percent >=
+                      qualityData.top200OfficialCoverage.threshold
+                        ? 'secondary'
+                        : 'destructive'
+                    }
+                  >
+                    {t('dataQuality.threshold', {
+                      value: qualityData.top200OfficialCoverage.threshold,
+                    })}
+                  </Badge>
+                </div>
+                <Progress
+                  value={qualityData.top200OfficialCoverage.percent}
+                  className={cn(
+                    'h-2',
+                    getProgressColor(qualityData.top200OfficialCoverage.percent)
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t('dataQuality.tierDistribution')}</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-2">
+                {Object.entries(qualityData.tierDistribution).map(([tier, stats]) => (
+                  <div key={tier} className="rounded-lg border p-3">
+                    <div className="text-xs text-muted-foreground">{tier}</div>
+                    <div className="mt-1 text-xl font-semibold">{stats.count}</div>
+                    <div className="text-sm text-muted-foreground">{stats.percent}%</div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Field Coverage */}
           <Card>
             <CardHeader>
@@ -186,6 +264,46 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
                         <div className="flex items-center gap-3">
                           <span className="text-muted-foreground text-xs">
                             {stats.filled}/{stats.filled + stats.missing}
+                          </span>
+                          <span
+                            className={cn(
+                              'font-semibold tabular-nums w-14 text-right',
+                              getCoverageColor(stats.percent)
+                            )}
+                          >
+                            {stats.percent}%
+                          </span>
+                        </div>
+                      </div>
+                      <Progress
+                        value={stats.percent}
+                        className={cn('h-2', getProgressColor(stats.percent))}
+                      />
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">
+                {t('dataQuality.predictionEligibleCoverage')}
+              </CardTitle>
+              <CardDescription>{t('dataQuality.predictionEligibleCoverageDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Object.entries(qualityData.predictionEligibleCoverage)
+                  .sort(([, a], [, b]) => a.percent - b.percent)
+                  .slice(0, 12)
+                  .map(([field, stats]) => (
+                    <div key={field} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{getFieldLabel(field)}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground text-xs">
+                            {stats.eligible}/{stats.total}
                           </span>
                           <span
                             className={cn(
@@ -282,6 +400,68 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
                                   +{school.missingFields.length - 5}
                                 </Badge>
                               )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t('dataQuality.staleFields')}</CardTitle>
+              <CardDescription>{t('dataQuality.staleFieldsDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {qualityData.staleFields.length === 0 ? (
+                <EmptyState
+                  icon={<CheckCircle2 className="h-10 w-10 text-green-500" />}
+                  title={t('dataQuality.noStaleFields')}
+                />
+              ) : (
+                <ScrollArea className="h-[320px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[80px]">{t('data.rank')}</TableHead>
+                        <TableHead>{t('data.schoolName')}</TableHead>
+                        <TableHead>{t('dataQuality.field')}</TableHead>
+                        <TableHead>{t('dataQuality.source')}</TableHead>
+                        <TableHead>{t('dataQuality.staleness')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {qualityData.staleFields.map((field) => (
+                        <TableRow key={`${field.schoolId}:${field.field}`}>
+                          <TableCell>
+                            {field.usNewsRank ? (
+                              <Badge variant="outline">US News #{field.usNewsRank}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {locale === 'zh' && field.schoolNameZh
+                              ? field.schoolNameZh
+                              : field.schoolName}
+                          </TableCell>
+                          <TableCell>{getFieldLabel(field.field)}</TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div>{field.source}</div>
+                              <Badge variant="outline">{field.tier}</Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <Badge variant="destructive">{field.staleness}</Badge>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(field.fetchedAt).toLocaleDateString(locale)}
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>

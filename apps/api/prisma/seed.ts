@@ -3,6 +3,8 @@ import {
   batchUpsertSchools,
   SeedSchoolData,
 } from '../scripts/lib/seed-helpers';
+import { buildUnifiedCollegeCatalog } from '../scripts/lib/college-catalog';
+import { backfillSchoolLogos } from '../scripts/lib/school-logo-backfill';
 import {
   LEGACY_PREDICTION_POLICY_DESCRIPTION,
   LEGACY_PREDICTION_POLICY_KEY,
@@ -1916,7 +1918,7 @@ const requirementsData: Record<
 };
 
 // Merge requirements into each school's metadata (with provenance tracking)
-const enrichedSchools = schools.map((s) => {
+const baseCollegeSchools = schools.map((s) => {
   const reqs = requirementsData[s.name];
   if (!reqs) return s;
   const existingMeta = (s.metadata ?? {}) as Record<string, unknown>;
@@ -1947,16 +1949,29 @@ const enrichedSchools = schools.map((s) => {
   };
 });
 
-async function main() {
+export async function main() {
   console.log('🌱 Starting database seed...');
   await ensureLegacyPredictionPolicyVersion();
   console.log('  ✅ Ensured legacy prediction policy lineage');
 
+  const unifiedCollegeCatalog = buildUnifiedCollegeCatalog(
+    baseCollegeSchools as SeedSchoolData[],
+  );
+
   // Upsert schools using shared helper (idempotent)
   await batchUpsertSchools(
     prisma,
-    enrichedSchools as SeedSchoolData[],
-    'Top 50 US Universities',
+    unifiedCollegeCatalog,
+    'Unified college catalog',
+  );
+
+  const logoBackfillResult = await backfillSchoolLogos({
+    prisma,
+    limit: Math.max(unifiedCollegeCatalog.length, 500),
+    logoDevToken: process.env.LOGO_DEV_TOKEN,
+  });
+  console.log(
+    `  ✅ Logo backfill complete (${logoBackfillResult.filled} filled, ${logoBackfillResult.failed} failed, ${logoBackfillResult.skipped} skipped, source=${logoBackfillResult.source})`,
   );
 
   // Create demo user (optional)
@@ -2475,11 +2490,13 @@ async function seedChatTestData() {
   console.log('  All test user password: Test123!');
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (require.main === module) {
+  main()
+    .catch((e) => {
+      console.error('❌ Seed failed:', e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

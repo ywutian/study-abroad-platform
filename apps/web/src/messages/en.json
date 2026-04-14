@@ -4404,6 +4404,33 @@
     "dataSource": "Source: {source}",
     "updatedAt": "Updated {date}",
     "viewSource": "View official source",
+    "trust": {
+      "badges": {
+        "OFFICIAL": "Official",
+        "PARTNER": "Partner",
+        "SCRAPED": "Scraped",
+        "SEED": "Seed",
+        "COMMUNITY": "Community",
+        "INFERRED": "AI"
+      },
+      "tiers": {
+        "OFFICIAL": "Official source",
+        "PARTNER": "Partner source",
+        "SCRAPED": "Publicly scraped",
+        "SEED": "Seeded data",
+        "COMMUNITY": "Community provided",
+        "INFERRED": "AI inferred"
+      },
+      "staleness": {
+        "FRESH": "Fresh",
+        "AGING": "Aging",
+        "STALE": "Stale"
+      },
+      "stalenessLabel": "Freshness: {staleness}",
+      "predictionEligible": "Used in prediction",
+      "notUsedForPrediction": "Not used in prediction",
+      "verifiedBy": "Reviewed by {reviewer}"
+    },
     "deadlines": {
       "title": "Application Deadlines",
       "cycle": "Cycle",
@@ -7591,14 +7618,26 @@
       "fullyComplete": "Fully Complete",
       "missingCritical": "Missing Critical",
       "avgCompleteness": "Avg Completeness",
+      "top200OfficialCoverage": "Top 200 Official Coverage",
+      "top200OfficialCoverageDesc": "Coverage across prediction-critical fields for top-ranked schools",
+      "threshold": "Threshold {value}%",
+      "tierDistribution": "Tier Distribution",
+      "predictionEligibleCoverage": "Prediction-Eligible Coverage",
+      "predictionEligibleCoverageDesc": "How much field coverage remains eligible after trust filtering",
       "fieldCoverage": "Field Coverage",
       "filled": "Filled",
       "missing": "Missing",
       "coverage": "Coverage",
       "worstSchools": "Schools Needing Data",
       "worstSchoolsDesc": "Schools with the most missing fields",
+      "staleFields": "Stale Fields",
+      "staleFieldsDesc": "Fields whose last fetch date has aged out of freshness targets",
+      "noStaleFields": "No stale fields detected",
       "missingFields": "Missing Fields",
       "completeness": "Completeness",
+      "field": "Field",
+      "source": "Source",
+      "staleness": "Staleness",
       "noIssues": "All schools have complete data",
       "refreshing": "Refreshing...",
       "refresh": "Refresh"

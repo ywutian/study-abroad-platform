@@ -8,7 +8,7 @@ import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 const prisma = new PrismaClient();
 
 // UC 系列学校完整数据（手动整理）
-const UC_SCHOOLS = [
+export const UC_SCHOOLS: SeedSchoolData[] = [
   {
     name: 'University of California, Berkeley',
     nameZh: '加州大学伯克利分校',
@@ -419,24 +419,27 @@ const SCHOOL_DESCRIPTIONS: Record<
   },
 };
 
-async function main() {
-  // UC 系列学校数据
-  const ucSchools: SeedSchoolData[] = UC_SCHOOLS;
-  await batchUpsertSchools(prisma, ucSchools, 'UC 系统学校数据');
-
-  // 其他热门学校简介
-  const descriptionSchools: SeedSchoolData[] = Object.entries(
-    SCHOOL_DESCRIPTIONS,
-  ).map(([name, info]) => ({
+export const SUPPLEMENTAL_DESCRIPTION_SCHOOLS: SeedSchoolData[] =
+  Object.entries(SCHOOL_DESCRIPTIONS).map(([name, info]) => ({
     name,
     description: info.description,
     descriptionZh: info.descriptionZh,
     website: info.website,
     city: info.city,
   }));
+
+async function main() {
+  // UC 系列学校数据
+  const ucSchools: SeedSchoolData[] = UC_SCHOOLS;
+  await batchUpsertSchools(prisma, ucSchools, 'UC 系统学校数据');
+
+  // 其他热门学校简介
+  const descriptionSchools: SeedSchoolData[] = SUPPLEMENTAL_DESCRIPTION_SCHOOLS;
   await batchUpsertSchools(prisma, descriptionSchools, '热门学校简介补充');
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  main()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

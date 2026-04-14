@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import { getSchoolLogoSources } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
 
 const SIZE_CLASSES = {
@@ -29,6 +30,8 @@ function canOptimize(url: string): boolean {
 export interface SchoolLogoProps {
   /** Logo image URL. When missing or failed to load, fallback to initial. */
   logoUrl?: string | null;
+  /** School website used for favicon fallback. */
+  website?: string | null;
   /** School name (or display name) for initial fallback. */
   name: string;
   /** Size variant. */
@@ -49,6 +52,7 @@ export interface SchoolLogoProps {
  */
 export function SchoolLogo({
   logoUrl,
+  website,
   name,
   size = 'md',
   onError,
@@ -56,12 +60,38 @@ export function SchoolLogo({
   rounded = 'xl',
   variant = 'default',
 }: SchoolLogoProps) {
-  const [failed, setFailed] = useState(false);
-  const showImage = !!logoUrl && !failed;
+  const { source, fallbackSource } = useMemo(
+    () => getSchoolLogoSources({ logoUrl, website }),
+    [logoUrl, website]
+  );
+  const [useFallback, setUseFallback] = useState(false);
+  const [hideImage, setHideImage] = useState(false);
   const initial = name.trim().charAt(0) || '?';
 
+  const secondarySource = useMemo(() => {
+    if (!fallbackSource || fallbackSource === source) return null;
+    return fallbackSource;
+  }, [fallbackSource, source]);
+
+  useEffect(() => {
+    setUseFallback(false);
+    setHideImage(false);
+  }, [source, secondarySource]);
+
+  const imageSource = hideImage
+    ? null
+    : useFallback
+      ? secondarySource
+      : (source ?? secondarySource);
+  const showImage = !!imageSource;
+
   const handleError = () => {
-    setFailed(true);
+    if (!useFallback && source && secondarySource) {
+      setUseFallback(true);
+      return;
+    }
+
+    setHideImage(true);
     onError?.();
   };
 
@@ -84,13 +114,13 @@ export function SchoolLogo({
     >
       {showImage ? (
         <Image
-          src={logoUrl}
+          src={imageSource}
           alt=""
           width={px}
           height={px}
           quality={90}
           className="w-full h-full object-cover"
-          unoptimized={!canOptimize(logoUrl)}
+          unoptimized={!canOptimize(imageSource)}
           onError={handleError}
         />
       ) : (

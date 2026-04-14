@@ -20,8 +20,11 @@ import { SchoolLogo } from '@/components/features';
 import {
   getSchoolCommunityRatingSummary,
   getSchoolEnrollmentCount,
+  getSchoolFieldSource,
+  getTrustedValue,
   hasVerifiedFieldSource,
 } from '@/components/features/schools/school-display-utils';
+import { TrustBadge } from '@/components/features/schools/TrustBadge';
 import { FloatingAddButton, SelectedSchool } from '@/components/features/schools/FloatingAddButton';
 import { Link } from '@/lib/i18n/navigation';
 import { RankingBadge } from '@/components/ui/ranking-badge';
@@ -141,6 +144,12 @@ export function SchoolGrid({
             const isSelected = isSchoolSelected(school.id);
             const isAdded = addedSchools.has(school.id);
             const communityRatingSummary = getSchoolCommunityRatingSummary(school);
+            const enrollmentSource = getSchoolFieldSource(
+              school,
+              'totalEnrollment',
+              'studentCount'
+            );
+            const acceptanceSource = getSchoolFieldSource(school, 'acceptanceRate');
             const enrollmentCount = hasVerifiedFieldSource(
               school,
               'totalEnrollment',
@@ -148,9 +157,17 @@ export function SchoolGrid({
             )
               ? getSchoolEnrollmentCount(school)
               : undefined;
-            const verifiedAcceptanceRate = hasVerifiedFieldSource(school, 'acceptanceRate')
-              ? school.acceptanceRate
-              : undefined;
+            const trustedEnrollmentCount = getTrustedValue(
+              school,
+              enrollmentCount,
+              'totalEnrollment',
+              'studentCount'
+            );
+            const trustedAcceptanceRate = getTrustedValue(
+              school,
+              school.acceptanceRate,
+              'acceptanceRate'
+            );
             const hasSupplementalRanking = Boolean(
               school.usNewsRank || school.qsRank || school.rankings?.length
             );
@@ -188,6 +205,7 @@ export function SchoolGrid({
                       <div className="flex items-start gap-3 mb-3">
                         <SchoolLogo
                           logoUrl={school.logoUrl}
+                          website={school.website}
                           name={getSchoolName(school, locale)}
                           size="md"
                           className="border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all"
@@ -252,16 +270,19 @@ export function SchoolGrid({
                           <div
                             className={cn(
                               'font-semibold text-sm',
-                              verifiedAcceptanceRate && verifiedAcceptanceRate < 15
+                              trustedAcceptanceRate && trustedAcceptanceRate < 15
                                 ? 'text-rose-500'
-                                : verifiedAcceptanceRate && verifiedAcceptanceRate < 30
+                                : trustedAcceptanceRate && trustedAcceptanceRate < 30
                                   ? 'text-amber-500'
                                   : ''
                             )}
                           >
-                            {verifiedAcceptanceRate != null
-                              ? formatAcceptanceRate(verifiedAcceptanceRate)
+                            {trustedAcceptanceRate != null
+                              ? formatAcceptanceRate(trustedAcceptanceRate)
                               : tc('notAvailable')}
+                          </div>
+                          <div className="mt-1 flex justify-center">
+                            <TrustBadge source={acceptanceSource} />
                           </div>
                         </div>
                         <div className="text-center border-l border-border">
@@ -270,9 +291,12 @@ export function SchoolGrid({
                             {t('students')}
                           </div>
                           <div className="font-semibold text-sm">
-                            {enrollmentCount
-                              ? format.number(enrollmentCount, 'standard')
+                            {trustedEnrollmentCount
+                              ? format.number(trustedEnrollmentCount, 'standard')
                               : tc('notAvailable')}
+                          </div>
+                          <div className="mt-1 flex justify-center">
+                            <TrustBadge source={enrollmentSource} />
                           </div>
                         </div>
                       </div>

@@ -9,7 +9,7 @@ import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
-const EXPANDED_SCHOOLS = [
+export const EXPANDED_SCHOOLS: SeedSchoolData[] = [
   // ============ 顶尖文理学院 (Liberal Arts Colleges) ============
   {
     name: 'Williams College',
@@ -834,6 +834,8 @@ async function main() {
   );
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  main()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

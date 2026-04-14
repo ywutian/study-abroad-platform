@@ -9,7 +9,7 @@ import { batchUpsertSchools, SeedSchoolData } from './lib/seed-helpers';
 
 const prisma = new PrismaClient();
 
-const US_SCHOOLS_141_200 = [
+export const US_SCHOOLS_141_200: SeedSchoolData[] = [
   // 141-150
   {
     name: 'University of Maine',
@@ -1010,6 +1010,8 @@ async function main() {
   console.log(`\n🏫 学校总数: ${totalSchools}`);
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  main()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

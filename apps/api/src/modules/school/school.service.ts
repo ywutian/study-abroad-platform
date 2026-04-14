@@ -4,10 +4,14 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import type {
-  FieldProvenance,
   SchoolCommunityRatingSummary,
   SchoolFieldSources,
+  TrustTier,
 } from '@study-abroad/shared';
+import {
+  normalizeSchoolProvenance,
+  toSchoolFieldSource,
+} from '@study-abroad/shared/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { School, Prisma } from '@prisma/client';
@@ -16,11 +20,16 @@ import {
   createPaginatedResponse,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
-import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { createHash } from 'crypto';
 import { SchoolCommunityRatingService } from './school-community-rating.service';
-import { VERIFIED_SCHOOL_DATA_SOURCES } from './school-data-merger';
+import {
+  buildNormalizedSchoolProvenance,
+  collectPresentSchoolFacts,
+  PREDICTION_CRITICAL_FIELDS,
+  toRecord,
+} from './school-provenance.helpers';
+import { SchoolWriteService } from './school-write.service';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -50,30 +59,6 @@ type SchoolWithPresentation<T> = T & {
 type SchoolWithAliases = Pick<School, 'name' | 'nameZh' | 'usNewsRank'> & {
   aliases?: string[];
 };
-
-function toRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return {};
-  }
-  return value as Record<string, unknown>;
-}
-
-function parseProvenance(metadata: unknown): Record<string, FieldProvenance> {
-  const raw = toRecord(toRecord(metadata).provenance);
-  const provenance: Record<string, FieldProvenance> = {};
-
-  for (const [field, value] of Object.entries(raw)) {
-    const entry = toRecord(value);
-    if (typeof entry.source === 'string' && typeof entry.at === 'string') {
-      provenance[field] = {
-        source: entry.source,
-        at: entry.at,
-      };
-    }
-  }
-
-  return provenance;
-}
 
 /**
  * 高级学校筛选接口
@@ -155,6 +140,7 @@ export class SchoolService {
     private prisma: PrismaService,
     private redis: RedisService,
     private schoolCommunityRatingService: SchoolCommunityRatingService,
+    private schoolWriteService: SchoolWriteService,
   ) {}
 
   async findAll(
@@ -428,10 +414,7 @@ export class SchoolService {
    * Invalidate school cache when data is updated
    */
   async invalidateSchoolCache(id: string) {
-    await Promise.all([
-      this.redis.del(`school:detail:${id}`),
-      this.redis.delByPrefix('school:list:'),
-    ]);
+    await this.schoolWriteService.invalidateSchoolCaches(id);
   }
 
   private buildListCacheKey(
@@ -448,11 +431,15 @@ export class SchoolService {
     data: Omit<Prisma.SchoolCreateInput, 'nameNorm'>,
   ): Promise<School> {
     try {
-      return await this.prisma.school.create({
-        data: {
-          ...data,
-          nameNorm: normalizeSchoolName(data.name),
-        },
+      const payload = data as Record<string, unknown>;
+      const metadata = toRecord(payload.metadata);
+
+      return await this.schoolWriteService.create({
+        fields: Object.fromEntries(
+          Object.entries(payload).filter(([key]) => key !== 'metadata'),
+        ),
+        metadataPatch: metadata,
+        provenance: normalizeSchoolProvenance(metadata.provenance),
       });
     } catch (error) {
       if (
@@ -468,15 +455,15 @@ export class SchoolService {
   }
 
   async update(id: string, data: Prisma.SchoolUpdateInput): Promise<School> {
-    const nextData = { ...data };
+    const payload = data as Record<string, unknown>;
+    const metadata = toRecord(payload.metadata);
 
-    if (typeof nextData.name === 'string') {
-      nextData.nameNorm = normalizeSchoolName(nextData.name);
-    }
-
-    return this.prisma.school.update({
-      where: { id },
-      data: nextData,
+    return this.schoolWriteService.update(id, {
+      fields: Object.fromEntries(
+        Object.entries(payload).filter(([key]) => key !== 'metadata'),
+      ),
+      metadataPatch: metadata,
+      provenance: normalizeSchoolProvenance(metadata.provenance),
     });
   }
 
@@ -567,20 +554,15 @@ export class SchoolService {
     };
   }
 
-  private buildFieldSources(metadata: unknown): SchoolFieldSources {
-    const provenance = parseProvenance(metadata);
+  private buildFieldSources<T extends Record<string, unknown>>(
+    school: T,
+  ): SchoolFieldSources {
+    const provenance = buildNormalizedSchoolProvenance(school);
 
     return Object.fromEntries(
-      Object.entries(provenance).map(([field, entry]) => [
-        field,
-        {
-          tier: VERIFIED_SCHOOL_DATA_SOURCES.has(entry.source as any)
-            ? 'verified'
-            : 'supplemental',
-          source: entry.source,
-          updatedAt: entry.at,
-        },
-      ]),
+      Object.entries(provenance)
+        .filter(([, entry]) => Boolean(entry))
+        .map(([field, entry]) => [field, toSchoolFieldSource(entry!)]),
     );
   }
 
@@ -588,32 +570,26 @@ export class SchoolService {
     school: T,
     communityRatingSummary: SchoolCommunityRatingSummary,
   ): SchoolWithPresentation<T> {
-    const fieldSources = this.buildFieldSources(school.metadata);
+    const metadata = {
+      ...toRecord(school.metadata),
+      provenance: buildNormalizedSchoolProvenance(school),
+    };
+    const fieldSources = this.buildFieldSources({
+      ...school,
+      metadata,
+    });
+
     const nextSchool = {
       ...school,
       acceptanceRate:
         clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
       graduationRate:
         clampPercentRate(school.graduationRate) ?? school.graduationRate,
+      metadata,
       fieldSources,
       communityRatingSummary,
     } as SchoolWithPresentation<T>;
-    const sanitizedSchool = {
-      ...nextSchool,
-    } as Record<string, unknown>;
-
-    for (const field of [
-      'nicheSafetyGrade',
-      'nicheLifeGrade',
-      'nicheFoodGrade',
-      'nicheOverallGrade',
-    ] as const) {
-      if (!fieldSources[field]) {
-        sanitizedSchool[field] = null;
-      }
-    }
-
-    return sanitizedSchool as SchoolWithPresentation<T>;
+    return nextSchool;
   }
 
   // For calculating custom rankings
@@ -629,10 +605,12 @@ export class SchoolService {
   /**
    * 数据质量报告 — 分析学校库各字段的完整度
    */
-  async getDataQualityReport() {
+  async getDataQualityReport(options?: { bypassCache?: boolean }) {
     const cacheKey = 'school:data-quality';
-    const cached = await this.redis.getJSON<any>(cacheKey);
-    if (cached) return cached;
+    if (!options?.bypassCache) {
+      const cached = await this.redis.getJSON<any>(cacheKey);
+      if (cached) return cached;
+    }
 
     const KEY_FIELDS = [
       'acceptanceRate',
@@ -684,9 +662,38 @@ export class SchoolService {
         acceptsCommonApp: true,
         testOptional: true,
         percentNeedMet: true,
+        totalEnrollment: true,
+        metadata: true,
+        updatedAt: true,
+        scorecardId: true,
+        ipedsId: true,
       },
       orderBy: { usNewsRank: 'asc' },
     });
+
+    const tierCounts: Record<TrustTier, number> = {
+      OFFICIAL: 0,
+      PARTNER: 0,
+      SCRAPED: 0,
+      SEED: 0,
+      COMMUNITY: 0,
+      INFERRED: 0,
+    };
+    const predictionEligibleCoverage: Record<
+      string,
+      { eligible: number; total: number; percent: number }
+    > = {};
+    const staleFields: Array<{
+      schoolId: string;
+      schoolName: string;
+      schoolNameZh?: string;
+      field: string;
+      tier: TrustTier;
+      source: string;
+      fetchedAt: string;
+      staleness: string;
+      usNewsRank?: number;
+    }> = [];
 
     // Field coverage stats
     const fieldCoverage: Record<
@@ -706,6 +713,64 @@ export class SchoolService {
             ? Math.round((filled / allSchools.length) * 1000) / 10
             : 0,
       };
+    }
+
+    for (const school of allSchools) {
+      const facts = collectPresentSchoolFacts(
+        school as Record<string, unknown> & {
+          metadata?: unknown;
+          updatedAt?: Date | string | null;
+          scorecardId?: string | null;
+          ipedsId?: string | null;
+        },
+      );
+      const provenance = buildNormalizedSchoolProvenance(
+        school as Record<string, unknown> & {
+          metadata?: unknown;
+          updatedAt?: Date | string | null;
+          scorecardId?: string | null;
+          ipedsId?: string | null;
+        },
+      );
+
+      for (const [field, entry] of Object.entries(provenance)) {
+        if (!(field in facts) || !entry) continue;
+
+        const fieldSource = toSchoolFieldSource(entry);
+        tierCounts[fieldSource.tier]++;
+
+        const coverage = predictionEligibleCoverage[field] ?? {
+          eligible: 0,
+          total: 0,
+          percent: 0,
+        };
+        coverage.total += 1;
+        if (fieldSource.predictionEligible) {
+          coverage.eligible += 1;
+        }
+        predictionEligibleCoverage[field] = coverage;
+
+        if (fieldSource.staleness === 'STALE') {
+          staleFields.push({
+            schoolId: school.id,
+            schoolName: school.name,
+            schoolNameZh: school.nameZh ?? undefined,
+            field,
+            tier: fieldSource.tier,
+            source: fieldSource.source,
+            fetchedAt: fieldSource.fetchedAt,
+            staleness: fieldSource.staleness,
+            usNewsRank: school.usNewsRank ?? undefined,
+          });
+        }
+      }
+    }
+
+    for (const coverage of Object.values(predictionEligibleCoverage)) {
+      coverage.percent =
+        coverage.total > 0
+          ? Math.round((coverage.eligible / coverage.total) * 1000) / 10
+          : 0;
     }
 
     // Per-school completeness
@@ -745,6 +810,47 @@ export class SchoolService {
       })
       .slice(0, 50);
 
+    const top200 = allSchools
+      .filter((school) => school.usNewsRank != null)
+      .slice(0, 200);
+    let top200OfficialCovered = 0;
+    const top200Slots = top200.length * 6;
+
+    for (const school of top200) {
+      const fieldSources = this.buildFieldSources(
+        school as Record<string, unknown> & { metadata?: unknown },
+      );
+
+      for (const field of PREDICTION_CRITICAL_FIELDS) {
+        if (field === 'totalEnrollment' || field === 'studentCount') continue;
+        if (fieldSources[field]?.tier === 'OFFICIAL') {
+          top200OfficialCovered++;
+        }
+      }
+
+      if (
+        fieldSources.totalEnrollment?.tier === 'OFFICIAL' ||
+        fieldSources.studentCount?.tier === 'OFFICIAL'
+      ) {
+        top200OfficialCovered++;
+      }
+    }
+
+    const tierTotal = Object.values(tierCounts).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+    const tierDistribution = Object.fromEntries(
+      Object.entries(tierCounts).map(([tier, count]) => [
+        tier,
+        {
+          count,
+          percent:
+            tierTotal > 0 ? Math.round((count / tierTotal) * 1000) / 10 : 0,
+        },
+      ]),
+    );
+
     const report = {
       summary: {
         total: allSchools.length,
@@ -759,6 +865,25 @@ export class SchoolService {
             : 0,
       },
       fieldCoverage,
+      tierDistribution,
+      predictionEligibleCoverage,
+      top200OfficialCoverage: {
+        schools: top200.length,
+        covered: top200OfficialCovered,
+        totalSlots: top200Slots,
+        percent:
+          top200Slots > 0
+            ? Math.round((top200OfficialCovered / top200Slots) * 1000) / 10
+            : 0,
+        threshold: 90,
+      },
+      staleFields: staleFields
+        .sort((a, b) => {
+          const rankDelta = (a.usNewsRank ?? 9999) - (b.usNewsRank ?? 9999);
+          if (rankDelta !== 0) return rankDelta;
+          return a.fetchedAt.localeCompare(b.fetchedAt);
+        })
+        .slice(0, 100),
       worstSchools,
     };
 

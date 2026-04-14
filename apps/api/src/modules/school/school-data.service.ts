@@ -9,6 +9,8 @@ import { SchoolService } from './school.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { normalizePercentRate } from '../../common/utils/percent.util';
 import { DataSource, SchoolDataMerger } from './school-data-merger';
+import { buildFieldProvenanceRecord } from './school-provenance.helpers';
+import { writeSchoolCreate, writeSchoolUpdate } from './school-write.service';
 
 /**
  * College Scorecard API 数据同步服务
@@ -230,80 +232,77 @@ export class SchoolDataService {
 
     const nameNorm = normalizeSchoolName(name);
 
+    const existing =
+      (await this.prisma.school.findUnique({ where: { scorecardId } })) ??
+      (await this.prisma.school.findUnique({ where: { nameNorm } }));
+
+    const fetchedAt = new Date().toISOString();
+    const scorecardIdProvenance = buildFieldProvenanceRecord(['scorecardId'], {
+      source: 'COLLEGE_SCORECARD',
+      fetchedAt,
+    });
+
     let schoolIdOut: string | null = null;
-    // Wrap all DB writes in a transaction for atomicity
-    await this.prisma.$transaction(async (tx) => {
-      // Look up by scorecardId (indexed column) first, then by nameNorm (unique)
-      const existing =
-        (await tx.school.findUnique({ where: { scorecardId } })) ??
-        (await tx.school.findUnique({ where: { nameNorm } }));
 
-      let schoolId: string;
-
-      if (existing) {
-        const existingMetadata =
-          (existing.metadata as Record<string, unknown>) || {};
-        await tx.school.update({
-          where: { id: existing.id },
-          data: {
-            scorecardId,
-            metadata: { ...existingMetadata, scorecardId },
-          },
-        });
-        schoolId = existing.id;
-      } else {
-        const created = await tx.school.create({
-          data: {
-            name,
-            nameNorm,
-            country: 'US',
-            scorecardId,
-            metadata: { scorecardId },
-          },
-        });
-        schoolId = created.id;
-      }
-      schoolIdOut = schoolId;
-
-      // Write yearly snapshots to SchoolMetric
-      const year = new Date().getFullYear();
-      const metricEntries: { key: string; value: number | null }[] = [
-        { key: 'avg_sat', value: schoolData.satAvg },
-        { key: 'sat_25', value: schoolData.sat25 },
-        { key: 'sat_75', value: schoolData.sat75 },
-        { key: 'avg_act', value: schoolData.actAvg },
-        { key: 'act_25', value: schoolData.act25 },
-        { key: 'act_75', value: schoolData.act75 },
-        {
-          key: 'acceptance_rate',
-          value: schoolData.acceptanceRate
-            ? Number(schoolData.acceptanceRate)
-            : null,
+    if (existing) {
+      await writeSchoolUpdate(this.prisma, existing.id, {
+        fields: { scorecardId },
+        metadataPatch: { scorecardId },
+        provenance: scorecardIdProvenance,
+        existingMetadata: existing.metadata,
+      });
+      schoolIdOut = existing.id;
+    } else {
+      const created = await writeSchoolCreate(this.prisma, {
+        fields: {
+          name,
+          country: 'US',
+          scorecardId,
         },
-      ];
+        metadataPatch: { scorecardId },
+        provenance: scorecardIdProvenance,
+      });
+      schoolIdOut = created.id;
+    }
 
-      for (const entry of metricEntries) {
-        if (entry.value == null) continue;
-        await tx.schoolMetric.upsert({
-          where: {
-            schoolId_year_metricKey: {
-              schoolId,
-              year,
-              metricKey: entry.key,
-            },
-          },
-          create: {
-            schoolId,
+    // Write yearly snapshots to SchoolMetric
+    const year = new Date().getFullYear();
+    const metricEntries: { key: string; value: number | null }[] = [
+      { key: 'avg_sat', value: schoolData.satAvg },
+      { key: 'sat_25', value: schoolData.sat25 },
+      { key: 'sat_75', value: schoolData.sat75 },
+      { key: 'avg_act', value: schoolData.actAvg },
+      { key: 'act_25', value: schoolData.act25 },
+      { key: 'act_75', value: schoolData.act75 },
+      {
+        key: 'acceptance_rate',
+        value: schoolData.acceptanceRate
+          ? Number(schoolData.acceptanceRate)
+          : null,
+      },
+    ];
+
+    for (const entry of metricEntries) {
+      if (entry.value == null || !schoolIdOut) continue;
+      await this.prisma.schoolMetric.upsert({
+        where: {
+          schoolId_year_metricKey: {
+            schoolId: schoolIdOut,
             year,
             metricKey: entry.key,
-            value: entry.value,
           },
-          update: {
-            value: entry.value,
-          },
-        });
-      }
-    });
+        },
+        create: {
+          schoolId: schoolIdOut,
+          year,
+          metricKey: entry.key,
+          value: entry.value,
+        },
+        update: {
+          value: entry.value,
+        },
+      });
+    }
 
     if (schoolIdOut && Object.keys(scorecardMergeData).length > 0) {
       await this.merger.merge(

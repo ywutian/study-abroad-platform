@@ -5,6 +5,7 @@ import { RedisService } from '../../common/redis/redis.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { SchoolCommunityRatingService } from './school-community-rating.service';
+import { SchoolWriteService } from './school-write.service';
 
 describe('SchoolService', () => {
   let service: SchoolService;
@@ -85,6 +86,11 @@ describe('SchoolService', () => {
       isPublic: true,
     }),
   };
+  const mockSchoolWriteService = {
+    create: jest.fn(),
+    update: jest.fn(),
+    invalidateSchoolCaches: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -118,6 +124,10 @@ describe('SchoolService', () => {
           provide: SchoolCommunityRatingService,
           useValue: mockSchoolCommunityRatingService,
         },
+        {
+          provide: SchoolWriteService,
+          useValue: mockSchoolWriteService,
+        },
       ],
     }).compile();
 
@@ -142,14 +152,20 @@ describe('SchoolService', () => {
       expect(result.total).toBe(3);
       expect(result.page).toBe(1);
       expect(result.items[0].fieldSources.acceptanceRate).toEqual({
-        tier: 'verified',
+        tier: 'OFFICIAL',
         source: 'COLLEGE_SCORECARD',
-        updatedAt: '2026-04-01T00:00:00.000Z',
+        fetchedAt: '2026-04-01T00:00:00.000Z',
+        staleness: expect.any(String),
+        isVerified: true,
+        predictionEligible: true,
       });
       expect(result.items[0].fieldSources.usNewsRank).toEqual({
-        tier: 'supplemental',
+        tier: 'SEED',
         source: 'SEED',
-        updatedAt: '2026-04-01T00:00:00.000Z',
+        fetchedAt: '2026-04-01T00:00:00.000Z',
+        staleness: expect.any(String),
+        isVerified: false,
+        predictionEligible: true,
       });
       expect(result.items[0].communityRatingSummary).toEqual({
         count: 5,
@@ -300,8 +316,8 @@ describe('SchoolService', () => {
         foodAvg: 3.9,
         isPublic: true,
       });
-      expect(result.nicheSafetyGrade).toBeNull();
-      expect(result.fieldSources.acceptanceRate?.tier).toBe('verified');
+      expect(result.nicheSafetyGrade).toBe('A');
+      expect(result.fieldSources.acceptanceRate?.tier).toBe('OFFICIAL');
       expect(prismaService.school.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'school-123' },
@@ -333,9 +349,12 @@ describe('SchoolService', () => {
 
       expect(result.nicheSafetyGrade).toBe('A');
       expect(result.fieldSources.nicheSafetyGrade).toEqual({
-        tier: 'supplemental',
+        tier: 'SCRAPED',
         source: 'APPILY',
-        updatedAt: '2026-04-02T00:00:00.000Z',
+        fetchedAt: '2026-04-02T00:00:00.000Z',
+        staleness: expect.any(String),
+        isVerified: false,
+        predictionEligible: true,
       });
     });
 
@@ -355,7 +374,7 @@ describe('SchoolService', () => {
         nameZh: '新大学',
         country: 'USA',
       };
-      (prismaService.school.create as jest.Mock).mockResolvedValue({
+      mockSchoolWriteService.create.mockResolvedValue({
         id: 'new-school',
         ...createData,
         nameNorm: 'new university',
@@ -364,11 +383,14 @@ describe('SchoolService', () => {
       const result = await service.create(createData);
 
       expect(result.name).toBe('New University');
-      expect(prismaService.school.create).toHaveBeenCalledWith({
-        data: {
-          ...createData,
-          nameNorm: 'new university',
+      expect(mockSchoolWriteService.create).toHaveBeenCalledWith({
+        fields: {
+          name: 'New University',
+          nameZh: '新大学',
+          country: 'USA',
         },
+        metadataPatch: {},
+        provenance: {},
       });
     });
 
@@ -377,7 +399,7 @@ describe('SchoolService', () => {
         name: 'Harvard University',
         country: 'USA',
       };
-      (prismaService.school.create as jest.Mock).mockRejectedValue(
+      mockSchoolWriteService.create.mockRejectedValue(
         new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
           code: 'P2002',
           clientVersion: '5.0.0',
@@ -394,7 +416,7 @@ describe('SchoolService', () => {
   describe('update', () => {
     it('should update school data', async () => {
       const updateData = { usNewsRank: 5 };
-      (prismaService.school.update as jest.Mock).mockResolvedValue({
+      mockSchoolWriteService.update.mockResolvedValue({
         ...mockSchool,
         usNewsRank: 5,
       });
@@ -402,26 +424,27 @@ describe('SchoolService', () => {
       const result = await service.update('school-123', updateData);
 
       expect(result.usNewsRank).toBe(5);
-      expect(prismaService.school.update).toHaveBeenCalledWith({
-        where: { id: 'school-123' },
-        data: updateData,
+      expect(mockSchoolWriteService.update).toHaveBeenCalledWith('school-123', {
+        fields: updateData,
+        metadataPatch: {},
+        provenance: {},
       });
     });
 
     it('should keep nameNorm in sync when updating name', async () => {
-      (prismaService.school.update as jest.Mock).mockResolvedValue({
+      mockSchoolWriteService.update.mockResolvedValue({
         ...mockSchool,
         name: 'Renamed University',
       });
 
       await service.update('school-123', { name: 'Renamed University' });
 
-      expect(prismaService.school.update).toHaveBeenCalledWith({
-        where: { id: 'school-123' },
-        data: {
+      expect(mockSchoolWriteService.update).toHaveBeenCalledWith('school-123', {
+        fields: {
           name: 'Renamed University',
-          nameNorm: 'renamed university',
         },
+        metadataPatch: {},
+        provenance: {},
       });
     });
   });

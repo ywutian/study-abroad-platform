@@ -78,6 +78,26 @@ interface DataQualityReport {
     averageCompleteness: number;
   };
   fieldCoverage: Record<string, { filled: number; missing: number; percent: number }>;
+  tierDistribution: Record<string, { count: number; percent: number }>;
+  predictionEligibleCoverage: Record<string, { eligible: number; total: number; percent: number }>;
+  top200OfficialCoverage: {
+    schools: number;
+    covered: number;
+    totalSlots: number;
+    percent: number;
+    threshold: number;
+  };
+  staleFields: Array<{
+    schoolId: string;
+    schoolName: string;
+    schoolNameZh?: string;
+    field: string;
+    tier: string;
+    source: string;
+    fetchedAt: string;
+    staleness: string;
+    usNewsRank?: number;
+  }>;
   worstSchools: Array<{
     id: string;
     name: string;

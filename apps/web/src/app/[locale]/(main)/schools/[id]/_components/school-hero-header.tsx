@@ -40,6 +40,7 @@ export function SchoolHeroHeader({
         <div className="flex items-start gap-4">
           <SchoolLogo
             logoUrl={school.logoUrl}
+            website={school.website}
             name={getSchoolName(school, locale)}
             size="lg"
             variant="hero"

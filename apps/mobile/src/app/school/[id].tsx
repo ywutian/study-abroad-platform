@@ -25,6 +25,7 @@ import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/
 import { getResultBadgeVariant } from '@/utils/case-helpers';
 import { formatAcceptanceRate } from '@/utils/format';
 import { DATA_SOURCE_LABELS } from '@study-abroad/shared';
+import type { SchoolProvenance } from '@study-abroad/shared';
 import { isSafeUrl } from '@study-abroad/shared/utils';
 import type { School, Case, PaginatedResponse } from '@/types';
 
@@ -35,7 +36,7 @@ function DataSourceLabel({
   colors,
 }: {
   field: string;
-  provenance?: Record<string, { source: string; at: string }>;
+  provenance?: SchoolProvenance;
   locale: string;
   colors: ReturnType<typeof useColors>;
 }) {
@@ -43,7 +44,7 @@ function DataSourceLabel({
   const prov = provenance?.[field];
   if (!prov) return null;
   const label = DATA_SOURCE_LABELS[prov.source]?.[locale === 'zh' ? 'zh' : 'en'] ?? prov.source;
-  const date = new Date(prov.at);
+  const date = new Date(prov.fetchedAt);
   const freshness = date.toLocaleDateString(locale, { month: 'short', year: 'numeric' });
   return (
     <Text

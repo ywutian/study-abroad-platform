@@ -87,6 +87,8 @@ export interface SchoolInput {
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   applicationRound?: string;
+  fieldTrustWeights?: Record<string, number>;
+  averagePredictionWeight?: number;
 }
 
 /**

@@ -309,7 +309,7 @@ describe('SchoolController', () => {
     it('should call schoolService.create with the dto', async () => {
       const dto = { name: 'MIT', country: 'US' } as any;
 
-      const result = await controller.create(dto);
+      const result = await controller.create(dto, mockUser as any);
 
       expect(schoolService.create).toHaveBeenCalledWith(
         expect.objectContaining({

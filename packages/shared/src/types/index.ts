@@ -13,6 +13,7 @@ export * from './essay';
 export * from './ai-agent';
 export * from './competition';
 export * from './api';
+export * from './school-provenance';
 export * from './resume';
 export * from './team-recruitment';
 export * from './application-analysis-workflow';
