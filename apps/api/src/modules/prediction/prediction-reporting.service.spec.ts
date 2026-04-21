@@ -30,35 +30,40 @@ describe('PredictionReportingService', () => {
   });
 
   beforeEach(async () => {
+    const prismaMock = {
+      predictionResult: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
+        update: jest.fn().mockResolvedValue({ id: 'pred-1' }),
+        findFirst: jest.fn().mockResolvedValue(null),
+        findUnique: jest.fn().mockResolvedValue(null),
+      },
+      predictionOutcomeLabelRecord: {
+        create: jest.fn().mockResolvedValue({ id: 'label-1' }),
+        update: jest.fn().mockResolvedValue({ id: 'label-1' }),
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      school: {
+        findUnique: jest.fn().mockResolvedValue(null),
+      },
+      profile: {
+        findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
+      },
+      $transaction: jest.fn().mockImplementation((input: unknown) => {
+        if (typeof input === 'function') {
+          return (input as (tx: typeof prismaMock) => unknown)(prismaMock);
+        }
+        return Promise.all(input as Array<Promise<unknown>>);
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PredictionReportingService,
         {
           provide: PrismaService,
-          useValue: {
-            predictionResult: {
-              findMany: jest.fn().mockResolvedValue([]),
-              count: jest.fn().mockResolvedValue(0),
-              update: jest.fn().mockResolvedValue({ id: 'pred-1' }),
-              findFirst: jest.fn().mockResolvedValue(null),
-              findUnique: jest.fn().mockResolvedValue(null),
-            },
-            predictionOutcomeLabelRecord: {
-              create: jest.fn().mockResolvedValue({ id: 'label-1' }),
-              findFirst: jest.fn().mockResolvedValue(null), // No existing self-report (dedup check)
-            },
-            school: {
-              findUnique: jest.fn().mockResolvedValue(null),
-            },
-            profile: {
-              findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
-            },
-            $transaction: jest
-              .fn()
-              .mockImplementation((operations: Array<Promise<unknown>>) =>
-                Promise.all(operations),
-              ),
-          },
+          useValue: prismaMock,
         },
         {
           provide: MemoryManagerService,
@@ -251,18 +256,21 @@ describe('PredictionReportingService', () => {
   });
 
   describe('reportActualResult', () => {
-    it('should update prediction with actual result and reportedAt', async () => {
+    it('should store self-reported outcomes without treating them as verified truth', async () => {
       (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
+      (
+        prisma.predictionOutcomeLabelRecord.findMany as jest.Mock
+      ).mockResolvedValue([createOutcomeRecord('ADMITTED', 'SELF_REPORTED')]);
 
       await service.reportActualResult('profile-1', 'school-1', 'ADMITTED');
 
       expect(prisma.predictionResult.update).toHaveBeenCalledWith({
         where: { id: 'pred-1' },
         data: {
-          actualResult: 'ADMITTED',
+          actualResult: null,
           reportedAt: expect.any(Date),
           outcomeLabel: 'ADMITTED',
           outcomeLabeledAt: expect.any(Date),
@@ -282,12 +290,15 @@ describe('PredictionReportingService', () => {
         id: 'pred-1',
         probability: 0.7,
       });
+      (
+        prisma.predictionOutcomeLabelRecord.findMany as jest.Mock
+      ).mockResolvedValue([createOutcomeRecord('REJECTED', 'SELF_REPORTED')]);
 
       await service.reportActualResult('profile-1', 'school-1', 'REJECTED');
 
       expect(prisma.predictionResult.update).toHaveBeenCalledWith({
         where: { id: 'pred-1' },
-        data: expect.objectContaining({ actualResult: 'REJECTED' }),
+        data: expect.objectContaining({ actualResult: null }),
       });
     });
 
@@ -296,14 +307,43 @@ describe('PredictionReportingService', () => {
         id: 'pred-1',
         probability: 0.7,
       });
+      (
+        prisma.predictionOutcomeLabelRecord.findMany as jest.Mock
+      ).mockResolvedValue([createOutcomeRecord('WAITLISTED', 'SELF_REPORTED')]);
 
       await service.reportActualResult('profile-1', 'school-1', 'WAITLISTED');
 
       expect(prisma.predictionResult.update).toHaveBeenCalledWith({
         where: { id: 'pred-1' },
         data: expect.objectContaining({
-          actualResult: 'WAITLISTED',
+          actualResult: null,
           outcomeLabel: 'CENSORED',
+        }),
+      });
+    });
+
+    it('should preserve verified canonical truth when self-reported labels conflict', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.7,
+      });
+      (
+        prisma.predictionOutcomeLabelRecord.findMany as jest.Mock
+      ).mockResolvedValue([
+        createOutcomeRecord('ADMITTED', 'SELF_REPORTED'),
+        createOutcomeRecord('REJECTED', 'DOCUMENT_VERIFIED', {
+          id: 'label-verified',
+          isFinal: true,
+        }),
+      ]);
+
+      await service.reportActualResult('profile-1', 'school-1', 'ADMITTED');
+
+      expect(prisma.predictionResult.update).toHaveBeenCalledWith({
+        where: { id: 'pred-1' },
+        data: expect.objectContaining({
+          actualResult: 'REJECTED',
+          outcomeLabel: 'REJECTED',
         }),
       });
     });
@@ -475,41 +515,50 @@ describe('PredictionReportingService', () => {
     let serviceWithoutMemory: PredictionReportingService;
 
     beforeEach(async () => {
+      const prismaMock = {
+        predictionResult: {
+          findMany: jest.fn().mockResolvedValue([]),
+          count: jest.fn().mockResolvedValue(0),
+          update: jest.fn().mockResolvedValue({ id: 'pred-1' }),
+          findFirst: jest.fn().mockResolvedValue({
+            id: 'pred-1',
+            probability: 0.5,
+          }),
+          findUnique: jest.fn().mockResolvedValue({
+            id: 'pred-1',
+            probability: 0.5,
+          }),
+        },
+        predictionOutcomeLabelRecord: {
+          create: jest.fn().mockResolvedValue({ id: 'label-1' }),
+          update: jest.fn().mockResolvedValue({ id: 'label-1' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+          findMany: jest
+            .fn()
+            .mockResolvedValue([
+              createOutcomeRecord('ADMITTED', 'SELF_REPORTED'),
+            ]),
+        },
+        school: {
+          findUnique: jest.fn().mockResolvedValue({ name: 'MIT' }),
+        },
+        profile: {
+          findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
+        },
+        $transaction: jest.fn().mockImplementation((input: unknown) => {
+          if (typeof input === 'function') {
+            return (input as (tx: typeof prismaMock) => unknown)(prismaMock);
+          }
+          return Promise.all(input as Array<Promise<unknown>>);
+        }),
+      };
+
       const module: TestingModule = await Test.createTestingModule({
         providers: [
           PredictionReportingService,
           {
             provide: PrismaService,
-            useValue: {
-              predictionResult: {
-                findMany: jest.fn().mockResolvedValue([]),
-                count: jest.fn().mockResolvedValue(0),
-                update: jest.fn().mockResolvedValue({ id: 'pred-1' }),
-                findFirst: jest.fn().mockResolvedValue({
-                  id: 'pred-1',
-                  probability: 0.5,
-                }),
-                findUnique: jest.fn().mockResolvedValue({
-                  id: 'pred-1',
-                  probability: 0.5,
-                }),
-              },
-              predictionOutcomeLabelRecord: {
-                create: jest.fn().mockResolvedValue({ id: 'label-1' }),
-                findFirst: jest.fn().mockResolvedValue(null),
-              },
-              school: {
-                findUnique: jest.fn().mockResolvedValue({ name: 'MIT' }),
-              },
-              profile: {
-                findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
-              },
-              $transaction: jest
-                .fn()
-                .mockImplementation((operations: Array<Promise<unknown>>) =>
-                  Promise.all(operations),
-                ),
-            },
+            useValue: prismaMock,
           },
           // MemoryManagerService is @Optional, so we don't provide it
         ],
@@ -537,6 +586,7 @@ describe('PredictionReportingService', () => {
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
         Array.from({ length: 20 }, (_, index) => ({
           probability: 0.5,
+          source: 'prediction',
           outcomeLabelRecords: [
             createOutcomeRecord(index % 2 === 0 ? 'ADMITTED' : 'REJECTED'),
           ],
@@ -547,6 +597,9 @@ describe('PredictionReportingService', () => {
 
       expect(result.totalPredictions).toBe(100);
       expect(result.withActualResults).toBe(20);
+      expect(result.verifiedSampleCount).toBe(20);
+      expect(result.brierScore).not.toBeNull();
+      expect(result.ece).not.toBeNull();
     });
 
     it('should return 5 calibration buckets', async () => {
@@ -569,30 +622,37 @@ describe('PredictionReportingService', () => {
       const mockResults = [
         {
           probability: 0.1,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
         {
           probability: 0.15,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
         },
         {
           probability: 0.15,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
         },
         {
           probability: 0.5,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
         {
           probability: 0.5,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
         {
           probability: 0.55,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
         },
         {
           probability: 0.85,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
       ];
@@ -643,10 +703,12 @@ describe('PredictionReportingService', () => {
       const mockResults = [
         {
           probability: { valueOf: () => 0.3 },
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
         {
           probability: '0.3',
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
         },
       ];
@@ -669,10 +731,12 @@ describe('PredictionReportingService', () => {
       const mockResults = [
         {
           probability: 0.5,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('WAITLISTED')],
         },
         {
           probability: 0.55,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
       ];
@@ -698,8 +762,12 @@ describe('PredictionReportingService', () => {
       await service.getCalibrationData();
 
       expect(prisma.predictionResult.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [{ source: null }, { source: { notIn: ['quick-match'] } }],
+        },
         select: {
           probability: true,
+          source: true,
           outcomeLabelRecords: {
             orderBy: { createdAt: 'desc' },
           },
@@ -712,6 +780,7 @@ describe('PredictionReportingService', () => {
       const mockResults = [
         {
           probability: 0.2,
+          source: 'prediction',
           outcomeLabelRecords: [createOutcomeRecord('ADMITTED')],
         },
       ];

@@ -7,6 +7,21 @@ describe('PredictionCalibrationService', () => {
   let service: PredictionCalibrationService;
   let prisma: PrismaService;
   let redis: RedisService;
+  const createOutcomeRecord = (
+    result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED',
+    status:
+      | 'SELF_REPORTED'
+      | 'COUNSELOR_VERIFIED'
+      | 'DOCUMENT_VERIFIED'
+      | 'CONFLICTED'
+      | 'CENSORED' = 'COUNSELOR_VERIFIED',
+  ) => ({
+    result,
+    status,
+    isFinal: true,
+    createdAt: new Date('2026-04-09T00:00:00.000Z'),
+    resolvedAt: new Date('2026-04-09T00:00:00.000Z'),
+  });
 
   const mockPrisma = {
     schoolCalibration: {
@@ -93,6 +108,49 @@ describe('PredictionCalibrationService', () => {
     });
   });
 
+  describe('getPlattCalibration', () => {
+    it('should query verified headline outcomes only', async () => {
+      mockPrisma.predictionResult.findMany.mockResolvedValue(
+        Array.from({ length: 50 }, (_, index) => ({
+          schoolId: `school-${index}`,
+          probability: 0.2 + (index % 5) * 0.1,
+          outcomeLabelRecords: [
+            createOutcomeRecord(index % 2 === 0 ? 'ADMITTED' : 'REJECTED'),
+          ],
+        })),
+      );
+
+      const result = await service.getPlattCalibration();
+
+      expect(result).not.toBeNull();
+      expect(mockPrisma.predictionResult.findMany).toHaveBeenCalledWith({
+        where: {
+          OR: [{ source: null }, { source: { notIn: ['quick-match'] } }],
+          outcomeLabelRecords: {
+            some: {
+              status: { in: ['COUNSELOR_VERIFIED', 'DOCUMENT_VERIFIED'] },
+              result: { in: ['ADMITTED', 'REJECTED'] },
+            },
+          },
+        },
+        select: {
+          schoolId: true,
+          probability: true,
+          outcomeLabelRecords: {
+            select: {
+              result: true,
+              status: true,
+              isFinal: true,
+              createdAt: true,
+              resolvedAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      });
+    });
+  });
+
   describe('getCalibrationStats', () => {
     it('should return empty stats when no calibrations exist', async () => {
       mockPrisma.schoolCalibration.findMany.mockResolvedValue([]);
@@ -116,6 +174,57 @@ describe('PredictionCalibrationService', () => {
       expect(result.boostedCount).toBe(1);
       expect(result.reducedCount).toBe(1);
       expect(result.distribution).toBeDefined();
+    });
+  });
+
+  describe('getSchoolsNeedingCalibration', () => {
+    it('should build drift suggestions from verified headline outcomes only', async () => {
+      mockPrisma.schoolCalibration.findMany.mockResolvedValue([]);
+      mockPrisma.predictionResult.findMany.mockResolvedValue([
+        {
+          schoolId: 'school-1',
+          probability: 0.85,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          schoolId: 'school-1',
+          probability: 0.82,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          schoolId: 'school-1',
+          probability: 0.88,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          schoolId: 'school-1',
+          probability: 0.81,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+        {
+          schoolId: 'school-1',
+          probability: 0.84,
+          outcomeLabelRecords: [createOutcomeRecord('REJECTED')],
+        },
+      ]);
+      mockPrisma.school.findMany.mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'MIT',
+          nameZh: '麻省理工',
+          usNewsRank: 2,
+        },
+      ]);
+
+      const result = await service.getSchoolsNeedingCalibration();
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          schoolId: 'school-1',
+          schoolName: 'MIT',
+          predictionCount: 5,
+        }),
+      ]);
     });
   });
 });

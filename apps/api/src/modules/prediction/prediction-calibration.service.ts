@@ -1,4 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  resolveCanonicalPredictionOutcome,
+  VERIFIED_OUTCOME_STATUSES,
+} from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 
@@ -7,6 +11,7 @@ const DISTRIBUTION_CACHE_TTL = 86400; // 24 hours
 
 const SCHOOL_CALIBRATION_CACHE_KEY = 'prediction:school-calibrations';
 const SCHOOL_CALIBRATION_CACHE_TTL = 3600; // 1 hour
+const CALIBRATION_EXCLUDED_SOURCES = ['quick-match'] as const;
 
 /**
  * Calibration service for prediction probability correction.
@@ -24,6 +29,70 @@ export class PredictionCalibrationService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
   ) {}
+
+  private async getVerifiedOutcomeSamples(): Promise<
+    Array<{
+      schoolId: string;
+      probability: number;
+      actualResult: 'ADMITTED' | 'REJECTED';
+    }>
+  > {
+    const records = await this.prisma.predictionResult.findMany({
+      where: {
+        OR: [
+          { source: null },
+          { source: { notIn: [...CALIBRATION_EXCLUDED_SOURCES] } },
+        ],
+        outcomeLabelRecords: {
+          some: {
+            status: { in: VERIFIED_OUTCOME_STATUSES },
+            result: { in: ['ADMITTED', 'REJECTED'] },
+          },
+        },
+      },
+      select: {
+        schoolId: true,
+        probability: true,
+        outcomeLabelRecords: {
+          select: {
+            result: true,
+            status: true,
+            isFinal: true,
+            createdAt: true,
+            resolvedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    return records
+      .map((record) => {
+        const canonical = resolveCanonicalPredictionOutcome(
+          record.outcomeLabelRecords,
+        );
+        if (!canonical.eligibleForCalibration || !canonical.canonicalRecord) {
+          return null;
+        }
+
+        return {
+          schoolId: record.schoolId,
+          probability: Number(record.probability),
+          actualResult: canonical.canonicalRecord.result as
+            | 'ADMITTED'
+            | 'REJECTED',
+        };
+      })
+      .filter(
+        (
+          record,
+        ): record is {
+          schoolId: string;
+          probability: number;
+          actualResult: 'ADMITTED' | 'REJECTED';
+        } => Boolean(record),
+      );
+  }
 
   /**
    * Load school calibrations from DB (cached in Redis + in-memory).
@@ -80,7 +149,10 @@ export class PredictionCalibrationService {
   async invalidateCalibrationCache(): Promise<void> {
     this.schoolCalibrationMap = null;
     try {
-      await this.redis.del(SCHOOL_CALIBRATION_CACHE_KEY);
+      await Promise.all([
+        this.redis.del(SCHOOL_CALIBRATION_CACHE_KEY),
+        this.redis.del(`${CALIBRATION_CACHE_PREFIX}platt`),
+      ]);
     } catch {
       /* soft-fail: TTL will expire naturally */
     }
@@ -108,10 +180,7 @@ export class PredictionCalibrationService {
       // ignore cache miss
     }
 
-    const records = await this.prisma.predictionResult.findMany({
-      where: { actualResult: { not: null } },
-      select: { probability: true, actualResult: true },
-    });
+    const records = await this.getVerifiedOutcomeSamples();
 
     if (records.length < 50) return null;
 
@@ -246,14 +315,7 @@ export class PredictionCalibrationService {
     const calibratedIds = new Set(existingCalibrations.map((c) => c.schoolId));
 
     // Get all predictions with actual outcomes
-    const results = await this.prisma.predictionResult.findMany({
-      where: { actualResult: { not: null } },
-      select: {
-        schoolId: true,
-        probability: true,
-        actualResult: true,
-      },
-    });
+    const results = await this.getVerifiedOutcomeSamples();
 
     // Group by school
     const schoolMap = new Map<
@@ -341,9 +403,7 @@ export class PredictionCalibrationService {
     trainingDataCount: number;
     minRequired: number;
   }> {
-    const trainingDataCount = await this.prisma.predictionResult.count({
-      where: { actualResult: { not: null } },
-    });
+    const trainingDataCount = (await this.getVerifiedOutcomeSamples()).length;
 
     const params = await this.getPlattCalibration();
 

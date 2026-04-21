@@ -54,7 +54,7 @@ describe('PredictionMlPrimaryService', () => {
 
   const mockPrisma = {
     predictionResult: {
-      count: jest.fn().mockResolvedValue(0), // Tier 0 by default
+      findMany: jest.fn().mockResolvedValue([]), // Tier 0 by default
     },
     schoolProgram: {
       findFirst: jest.fn().mockResolvedValue(null),
@@ -131,7 +131,7 @@ describe('PredictionMlPrimaryService', () => {
     mockModelRegistry.getChampionModel.mockResolvedValue(null);
     mockCalibration.getPlattCalibration.mockResolvedValue(null);
     mockCalibration.getSchoolCalibrations.mockResolvedValue({});
-    mockPrisma.predictionResult.count.mockResolvedValue(0);
+    mockPrisma.predictionResult.findMany.mockResolvedValue([]);
     mockPrisma.schoolProgram.findFirst.mockResolvedValue(null);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -187,7 +187,7 @@ describe('PredictionMlPrimaryService', () => {
 
   describe('Tier 0 — heuristic fusion', () => {
     it('should use Tier 0 when labeledCount is 0 (cold start)', async () => {
-      mockPrisma.predictionResult.count.mockResolvedValue(0);
+      mockPrisma.predictionResult.findMany.mockResolvedValue([]);
 
       const result = await service.predictForSchool(
         'profile-1',
@@ -722,7 +722,7 @@ describe('PredictionMlPrimaryService', () => {
     });
 
     it('should widen confidence interval for Tier 0 (heuristic)', async () => {
-      mockPrisma.predictionResult.count.mockResolvedValue(0); // Tier 0
+      mockPrisma.predictionResult.findMany.mockResolvedValue([]); // Tier 0
 
       const result = await service.predictForSchool(
         'profile-1',

@@ -11,23 +11,26 @@ import { MemoryType } from '@prisma/client';
 import { fireAndForget } from '../../common/utils/async.util';
 import { createPaginatedResponse } from '../../common/dto/pagination.dto';
 import {
+  computeBrierScore,
+  computeECE,
   type CanonicalOutcomeLabel,
   type OutcomeLabelRecordShape,
-  type OutcomeLabelStatus,
   isCalibrationEligibleOutcomeRecord,
   resolveCanonicalPredictionOutcome,
-  toCanonicalOutcomeLabel,
 } from '@study-abroad/shared/scoring';
 import type {
   PredictionOutcomeQueryDto,
   ReviewPredictionOutcomeDto,
 } from '../admin/dto';
+import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
 
 type ReportedOutcomeResult =
   | 'ADMITTED'
   | 'REJECTED'
   | 'WAITLISTED'
   | 'DEFERRED';
+
+const CALIBRATION_EXCLUDED_SOURCES = ['quick-match'] as const;
 
 /**
  * Reporting and calibration data service for predictions.
@@ -44,6 +47,7 @@ export class PredictionReportingService {
     @Optional() private readonly memoryManager?: MemoryManagerService,
     @Optional()
     private readonly calibrationService?: PredictionCalibrationService,
+    @Optional() private readonly shadowEvaluator?: ShadowEvaluatorService,
   ) {}
 
   public mapLatestOutcomeLabel(record?: OutcomeLabelRecordShape | null) {
@@ -60,12 +64,6 @@ export class PredictionReportingService {
     };
   }
 
-  private toCanonicalOutcomeLabel(
-    actualResult: ReportedOutcomeResult,
-  ): CanonicalOutcomeLabel {
-    return toCanonicalOutcomeLabel(actualResult);
-  }
-
   public isCalibrationEligible(
     record?: OutcomeLabelRecordShape | null,
   ): boolean {
@@ -79,6 +77,20 @@ export class PredictionReportingService {
     eligibleForCalibration: boolean;
   } {
     return resolveCanonicalPredictionOutcome(records);
+  }
+
+  private getStoredActualResult(
+    canonical: ReturnType<
+      PredictionReportingService['resolveCanonicalOutcome']
+    >,
+  ): ReportedOutcomeResult | null {
+    if (!canonical.eligibleForCalibration || !canonical.canonicalRecord) {
+      return null;
+    }
+    return canonical.canonicalRecord.result as Extract<
+      ReportedOutcomeResult,
+      'ADMITTED' | 'REJECTED'
+    >;
   }
 
   /**
@@ -142,7 +154,6 @@ export class PredictionReportingService {
   ): Promise<void> {
     try {
       const now = new Date();
-      const canonicalOutcomeLabel = this.toCanonicalOutcomeLabel(actualResult);
       const prediction = await this.prisma.predictionResult.findUnique({
         where: { profileId_schoolId: { profileId, schoolId } },
         select: {
@@ -169,17 +180,8 @@ export class PredictionReportingService {
 
       if (existingSelfReport) {
         // Update existing record instead of creating duplicate
-        await this.prisma.$transaction([
-          this.prisma.predictionResult.update({
-            where: { id: prediction.id },
-            data: {
-              actualResult,
-              reportedAt: now,
-              outcomeLabel: canonicalOutcomeLabel,
-              outcomeLabeledAt: now,
-            },
-          }),
-          this.prisma.predictionOutcomeLabelRecord.update({
+        await this.prisma.$transaction(async (tx) => {
+          await tx.predictionOutcomeLabelRecord.update({
             where: { id: existingSelfReport.id },
             data: {
               result: actualResult,
@@ -188,20 +190,27 @@ export class PredictionReportingService {
               round: options?.round,
               isFinal: options?.isFinal ?? false,
             },
-          }),
-        ]);
-      } else {
-        await this.prisma.$transaction([
-          this.prisma.predictionResult.update({
+          });
+
+          const allLabels = await tx.predictionOutcomeLabelRecord.findMany({
+            where: { predictionResultId: prediction.id },
+            orderBy: { createdAt: 'desc' },
+          });
+          const canonical = this.resolveCanonicalOutcome(allLabels);
+
+          await tx.predictionResult.update({
             where: { id: prediction.id },
             data: {
-              actualResult,
+              actualResult: this.getStoredActualResult(canonical),
               reportedAt: now,
-              outcomeLabel: canonicalOutcomeLabel,
+              outcomeLabel: canonical.canonicalOutcomeLabel,
               outcomeLabeledAt: now,
             },
-          }),
-          this.prisma.predictionOutcomeLabelRecord.create({
+          });
+        });
+      } else {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.predictionOutcomeLabelRecord.create({
             data: {
               predictionResultId: prediction.id,
               result: actualResult,
@@ -212,8 +221,24 @@ export class PredictionReportingService {
               isFinal: options?.isFinal ?? false,
               reportedBy: profileId,
             },
-          }),
-        ]);
+          });
+
+          const allLabels = await tx.predictionOutcomeLabelRecord.findMany({
+            where: { predictionResultId: prediction.id },
+            orderBy: { createdAt: 'desc' },
+          });
+          const canonical = this.resolveCanonicalOutcome(allLabels);
+
+          await tx.predictionResult.update({
+            where: { id: prediction.id },
+            data: {
+              actualResult: this.getStoredActualResult(canonical),
+              reportedAt: now,
+              outcomeLabel: canonical.canonicalOutcomeLabel,
+              outcomeLabeledAt: now,
+            },
+          });
+        });
       }
 
       this.logger.log(
@@ -386,7 +411,8 @@ export class PredictionReportingService {
         predictionResult: {
           select: {
             id: true,
-            actualResult: true,
+            probability: true,
+            selectivityBand: true,
           },
         },
       },
@@ -396,7 +422,7 @@ export class PredictionReportingService {
       throw new NotFoundException('Prediction outcome label not found');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const reviewed = await this.prisma.$transaction(async (tx) => {
       const updated = await tx.predictionOutcomeLabelRecord.update({
         where: { id },
         data: {
@@ -425,9 +451,7 @@ export class PredictionReportingService {
       await tx.predictionResult.update({
         where: { id: existing.predictionResultId },
         data: {
-          actualResult:
-            canonical.canonicalRecord?.result ??
-            existing.predictionResult.actualResult,
+          actualResult: this.getStoredActualResult(canonical),
           outcomeLabel: canonical.canonicalOutcomeLabel,
           outcomeLabeledAt: new Date(),
         },
@@ -437,8 +461,41 @@ export class PredictionReportingService {
         ...updated,
         latestOutcomeLabel: this.mapLatestOutcomeLabel(canonical.displayRecord),
         calibrationEligible: canonical.eligibleForCalibration,
+        canonicalRecord: canonical.canonicalRecord,
       };
     });
+
+    if (this.calibrationService) {
+      fireAndForget(
+        this.calibrationService.invalidateCalibrationCache(),
+        this.logger,
+        'Failed to invalidate calibration cache after outcome review',
+      );
+    }
+
+    if (
+      this.shadowEvaluator &&
+      reviewed.calibrationEligible &&
+      reviewed.canonicalRecord &&
+      ['ADMITTED', 'REJECTED'].includes(reviewed.canonicalRecord.result)
+    ) {
+      const predictedProb = Number(existing.predictionResult.probability);
+      const actualResult = reviewed.canonicalRecord.result === 'ADMITTED';
+      fireAndForget(
+        this.shadowEvaluator.onOutcomeReported(
+          existing.predictionResult.selectivityBand ?? null,
+          predictedProb,
+          actualResult,
+        ),
+        this.logger,
+        'Failed to record shadow outcome feedback',
+      );
+    }
+
+    return {
+      ...reviewed,
+      canonicalRecord: undefined,
+    };
   }
 
   /**
@@ -454,6 +511,10 @@ export class PredictionReportingService {
   async getCalibrationData(): Promise<{
     totalPredictions: number;
     withActualResults: number;
+    verifiedSampleCount: number;
+    brierScore: number | null;
+    ece: number | null;
+    sourceBreakdown: Record<string, number>;
     calibrationBuckets: Array<{
       predictedRange: string;
       actualAdmitRate: number;
@@ -462,8 +523,15 @@ export class PredictionReportingService {
   }> {
     const total = await this.prisma.predictionResult.count();
     const results = await this.prisma.predictionResult.findMany({
+      where: {
+        OR: [
+          { source: null },
+          { source: { notIn: [...CALIBRATION_EXCLUDED_SOURCES] } },
+        ],
+      },
       select: {
         probability: true,
+        source: true,
         outcomeLabelRecords: {
           orderBy: { createdAt: 'desc' },
         },
@@ -479,12 +547,28 @@ export class PredictionReportingService {
           ? {
               probability: Number(result.probability),
               result: canonical.canonicalRecord.result,
+              source: result.source ?? 'prediction',
             }
           : null;
       })
-      .filter(Boolean) as Array<{ probability: number; result: string }>;
+      .filter(Boolean) as Array<{
+      probability: number;
+      result: string;
+      source: string;
+    }>;
 
     const withResults = eligibleResults.length;
+    const probabilities = eligibleResults.map((item) => item.probability);
+    const labels = eligibleResults.map((item) =>
+      item.result === 'ADMITTED' ? 1 : 0,
+    );
+    const sourceBreakdown = eligibleResults.reduce<Record<string, number>>(
+      (acc, item) => {
+        acc[item.source] = (acc[item.source] ?? 0) + 1;
+        return acc;
+      },
+      {},
+    );
 
     const buckets = [
       { min: 0, max: 0.2, label: '0-20%' },
@@ -512,6 +596,16 @@ export class PredictionReportingService {
     return {
       totalPredictions: total,
       withActualResults: withResults,
+      verifiedSampleCount: withResults,
+      brierScore:
+        withResults > 0
+          ? Number(computeBrierScore(probabilities, labels).toFixed(6))
+          : null,
+      ece:
+        withResults > 0
+          ? Number(computeECE(probabilities, labels, 10).toFixed(6))
+          : null,
+      sourceBreakdown,
       calibrationBuckets,
     };
   }

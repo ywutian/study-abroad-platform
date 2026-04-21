@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock react-i18next
@@ -99,6 +99,9 @@ describe('PredictionScreen', () => {
       if (url.includes('/predictions/dashboard')) {
         return Promise.resolve({ totalSchools: 0, avgProbability: 0, predictions: [] });
       }
+      if (url.includes('/profiles/me/ai-analysis')) {
+        return Promise.resolve(null);
+      }
       if (url.includes('/profiles/me/completeness')) {
         return Promise.resolve({ score: 50 });
       }
@@ -108,11 +111,11 @@ describe('PredictionScreen', () => {
       return Promise.resolve({});
     });
 
-    const { getByText } = renderWithProviders(<PredictionScreen />);
+    renderWithProviders(<PredictionScreen />);
 
     await waitFor(() => {
-      expect(getByText('prediction.empty.title')).toBeTruthy();
-      expect(getByText('prediction.empty.description')).toBeTruthy();
+      expect(screen.getByText('prediction.empty.title')).toBeTruthy();
+      expect(screen.getByText('prediction.empty.description')).toBeTruthy();
     });
   });
 
@@ -147,6 +150,9 @@ describe('PredictionScreen', () => {
       if (url.includes('/predictions/dashboard')) {
         return Promise.resolve(mockDashboard);
       }
+      if (url.includes('/profiles/me/ai-analysis')) {
+        return Promise.resolve(null);
+      }
       if (url.includes('/profiles/me/completeness')) {
         return Promise.resolve({ score: 85 });
       }
@@ -156,11 +162,11 @@ describe('PredictionScreen', () => {
       return Promise.resolve({});
     });
 
-    const { getByText } = renderWithProviders(<PredictionScreen />);
+    renderWithProviders(<PredictionScreen />);
 
     await waitFor(() => {
-      expect(getByText('MIT')).toBeTruthy();
-      expect(getByText('UC Berkeley')).toBeTruthy();
+      expect(screen.getByText('MIT')).toBeTruthy();
+      expect(screen.getByText('UC Berkeley')).toBeTruthy();
     });
   });
 
@@ -194,6 +200,9 @@ describe('PredictionScreen', () => {
       if (url.includes('/predictions/dashboard')) {
         return Promise.resolve(mockDashboard);
       }
+      if (url.includes('/profiles/me/ai-analysis')) {
+        return Promise.resolve(null);
+      }
       if (url.includes('/profiles/me/completeness')) {
         return Promise.resolve({ score: 85 });
       }
@@ -203,15 +212,15 @@ describe('PredictionScreen', () => {
       return Promise.resolve({});
     });
 
-    const { getByText } = renderWithProviders(<PredictionScreen />);
+    renderWithProviders(<PredictionScreen />);
 
     await waitFor(() => {
-      expect(getByText('USC')).toBeTruthy();
-      expect(getByText('prediction.contextualBaselineWithRound')).toBeTruthy();
-      expect(getByText('prediction.baselineInternational')).toBeTruthy();
-      expect(getByText('prediction.roundAdjusted')).toBeTruthy();
-      expect(getByText('prediction.needBlind')).toBeTruthy();
-      expect(getByText('prediction.deltaAbove')).toBeTruthy();
+      expect(screen.getByText('USC')).toBeTruthy();
+      expect(screen.getByText('prediction.contextualBaselineWithRound')).toBeTruthy();
+      expect(screen.getByText('prediction.baselineInternational')).toBeTruthy();
+      expect(screen.getByText('prediction.roundAdjusted')).toBeTruthy();
+      expect(screen.getByText('prediction.needBlind')).toBeTruthy();
+      expect(screen.getByText('prediction.deltaAbove')).toBeTruthy();
     });
   });
 
@@ -278,28 +287,9 @@ describe('PredictionScreen', () => {
       if (url.includes('/profiles/me/ai-analysis')) {
         return Promise.resolve({
           status: 'fresh',
-          overallScore: 85,
-          summary: 'Strong candidacy with one visible leadership gap.',
-          sections: {
-            academic: { status: 'green', score: 8, feedback: 'Academic baseline is strong.' },
-            testScores: { status: 'yellow', score: 6, feedback: 'Testing is usable.' },
-            activities: {
-              status: 'yellow',
-              score: 6,
-              feedback: 'Activities need one stronger flagship.',
-            },
-            awards: { status: 'green', score: 8, feedback: 'Awards provide validation.' },
-          },
-          tier: 'top30',
-          suggestions: {
-            majors: [],
-            competitions: [],
-            activities: [],
-            summerPrograms: [],
-            timeline: [],
-          },
           meta: {
-            analysisVersion: 'application-analysis-v1',
+            traceId: 'trace-prediction-1',
+            analysisVersion: 'application-analysis-v2',
             state: 'ready',
             dataQuality: 'high',
             targetSchoolCount: 2,
@@ -307,16 +297,58 @@ describe('PredictionScreen', () => {
             schoolsWithPredictions: 1,
             generatedAt: '2026-04-10T12:00:00.000Z',
           },
-          portfolioAnalysis: {
-            strategyStatus: 'ready',
+          profileSummary: {
+            applicantType: 'international',
+            intendedMajors: ['Computer Science'],
+            testStrategy: 'submit',
+            contextFlags: ['needAid'],
+            constraints: ['International aid need remains the hardest structural constraint.'],
+          },
+          portfolioSummary: {
             balance: 'balanced',
             verdict: 'The current list is ambitious but still defensible.',
-            reasons: [],
-            riskBoundaries: [],
-            missingPredictionSchoolNames: [],
-            missingRoundSchoolNames: [],
+            keyReasons: ['One focus school already has usable prediction coverage.'],
+            riskBoundaries: ['International aid need narrows the margin.'],
           },
-          targetSchoolInsights: [],
+          schools: [
+            {
+              schoolId: 'school-1',
+              schoolName: 'Example University',
+              tier: 'REACH',
+              round: 'ED',
+              prediction: {
+                probability: 0.28,
+                confidence: 'medium',
+                updatedAt: '2026-04-10T12:00:00.000Z',
+              },
+              policyCard: {
+                testingPolicy: 'OPTIONAL',
+                intlAidPolicy: 'NEED_AWARE',
+                roundContext: 'ED',
+                policySourceQuality: 'REVIEWED',
+                evidenceIds: ['evidence-1'],
+                sources: [],
+                unknowns: [],
+              },
+              assessment: {
+                summary: 'This remains a high-variance reach school.',
+                whyThisIsHard: ['This remains a reach school even with a strong transcript.'],
+                compensatingStrengths: ['Academic baseline clears the first screen.'],
+                topGaps: ['Leadership signal still needs sharper differentiation.'],
+                nextActions: ['Turn one flagship activity into a measurable story.'],
+                historicalSignals: ['Historical sample is thin, so the case signal is limited.'],
+                hardStopRisks: ['International aid need narrows the margin.'],
+              },
+              evidenceIds: ['evidence-1'],
+              unknowns: [],
+            },
+          ],
+          actionPlan: {
+            now: ['Tighten the flagship activity narrative.'],
+            next90Days: ['Build one measurable leadership deliverable.'],
+            beforeSubmission: ['Align essays to school-specific constraints.'],
+          },
+          unknowns: [],
         });
       }
       if (url.includes('/profiles/me')) {

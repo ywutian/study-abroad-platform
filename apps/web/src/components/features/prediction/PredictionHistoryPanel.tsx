@@ -23,7 +23,7 @@ interface HistoryPoint {
 }
 
 /** Mini SVG sparkline for probability trend */
-function Sparkline({ data }: { data: number[] }) {
+function Sparkline({ data, ariaLabel }: { data: number[]; ariaLabel: string }) {
   if (data.length < 2) return null;
 
   const width = 200;
@@ -49,7 +49,7 @@ function Sparkline({ data }: { data: number[] }) {
       viewBox={`0 0 ${width} ${height}`}
       className="w-full h-12"
       role="img"
-      aria-label="Probability trend"
+      aria-label={ariaLabel}
     >
       {/* Gradient fill */}
       <defs>
@@ -91,6 +91,7 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
   schoolId,
 }: PredictionHistoryPanelProps) {
   const t = useTranslations('prediction');
+  const tAria = useTranslations('common.aria');
   const { data, isLoading } = useSchoolPrediction(schoolId);
 
   const history: HistoryPoint[] = useMemo(
@@ -121,11 +122,11 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
       </p>
 
       {/* Sparkline */}
-      <Sparkline data={probabilities} />
+      <Sparkline data={probabilities} ariaLabel={tAria('probabilityTrend')} />
 
       {/* Compact snapshot list (max 5 shown) */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground uppercase tracking-wide pb-0.5 border-b border-dashed">
+        <div className="flex items-center justify-between text-2xs text-muted-foreground uppercase tracking-wide pb-0.5 border-b border-dashed">
           <span> </span>
           <span>{t('estimatedProbabilityLabel')}</span>
         </div>
@@ -143,7 +144,7 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
                 <span className="text-muted-foreground">{formatDate(h.createdAt)}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{(h.probability * 100).toFixed(0)}%</span>
-                  <Badge variant="outline" className={cn('text-[10px] py-0 px-1.5', config.badge)}>
+                  <Badge variant="outline" className={cn('text-2xs py-0 px-1.5', config.badge)}>
                     {t(`tier.${tier}`)}
                   </Badge>
                 </div>

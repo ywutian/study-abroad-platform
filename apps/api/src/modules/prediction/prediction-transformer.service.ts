@@ -17,6 +17,8 @@ import {
 import {
   TRUST_TIER_PREDICTION_WEIGHT,
   isPredictionEligibleTrustTier,
+  resolveSchoolTestingPolicyValue,
+  toLegacyTestOptionalFlag,
 } from '@study-abroad/shared/utils';
 import type { ProfileWithRelations } from './prediction.types';
 import { getNormalizedFieldProvenance } from '../school/school-provenance.helpers';
@@ -229,6 +231,13 @@ export class PredictionTransformerService {
       return resolved.value;
     };
 
+    const testingPolicy =
+      captureField('testingPolicy', (school as any).testingPolicy as any) ??
+      resolveSchoolTestingPolicyValue({
+        testingPolicy: (school as any).testingPolicy,
+        testOptional: (school as any).testOptional,
+      });
+
     return {
       id: school.id,
       name: school.name,
@@ -282,7 +291,14 @@ export class PredictionTransformerService {
         'averageNetPrice',
         (school as any).averageNetPrice,
       ),
-      testOptional: captureField('testOptional', (school as any).testOptional),
+      testingPolicy,
+      testOptional: toLegacyTestOptionalFlag({
+        testingPolicy,
+        testOptional: captureField(
+          'testOptional',
+          (school as any).testOptional,
+        ),
+      }),
       hasEarlyDecision: captureField(
         'hasEarlyDecision',
         (school as any).hasEarlyDecision,

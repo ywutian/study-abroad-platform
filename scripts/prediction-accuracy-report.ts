@@ -27,6 +27,7 @@ type EvaluationRow = {
   confidence: string | null;
   applicationRound: string | null;
   cohortKey: string | null;
+  source: string;
   modelVersion: string;
   label: 0 | 1;
   createdAt: string;
@@ -42,6 +43,8 @@ type BaselineChoice = {
   rate: number;
   source: 'school_round_cohort' | 'school_round' | 'school' | 'global';
 };
+
+const HEADLINE_EXCLUDED_SOURCES = new Set(['quick-match']);
 
 function loadApiEnv() {
   const envPath = path.join(process.cwd(), 'apps/api/.env');
@@ -202,6 +205,8 @@ export type AccuracyReport =
         result: string;
         count: number;
       }>;
+      sourceBreakdown?: Record<string, number>;
+      excludedSourceBreakdown?: Record<string, number>;
     }
   | {
       windowDays: number;
@@ -233,6 +238,8 @@ export type AccuracyReport =
         count: number;
         admitRate: number | null;
       }>;
+      sourceBreakdown: Record<string, number>;
+      excludedSourceBreakdown: Record<string, number>;
       baselineSourceMix: Record<string, number>;
       modelVersions: Record<string, number>;
       calibrationBins: Array<{
@@ -285,6 +292,7 @@ export async function runPredictionAccuracyReport(
         confidence: true,
         applicationRound: true,
         cohortKey: true,
+        source: true,
         modelVersion: true,
         createdAt: true,
         outcomeLabelRecords: {
@@ -328,6 +336,7 @@ export async function runPredictionAccuracyReport(
           confidence: prediction.confidence,
           applicationRound: prediction.applicationRound,
           cohortKey: prediction.cohortKey,
+          source: prediction.source ?? 'prediction',
           modelVersion: prediction.modelVersion,
           label: canonical.canonicalRecord.result === 'ADMITTED' ? 1 : 0,
           createdAt: prediction.createdAt.toISOString(),
@@ -336,17 +345,34 @@ export async function runPredictionAccuracyReport(
       })
       .filter((row): row is EvaluationRow => Boolean(row));
 
-    if (rows.length === 0) {
+    const sourceBreakdown = rows.reduce<Record<string, number>>((acc, row) => {
+      acc[row.source] = (acc[row.source] ?? 0) + 1;
+      return acc;
+    }, {});
+    const headlineRows = rows.filter((row) => !HEADLINE_EXCLUDED_SOURCES.has(row.source));
+    const excludedSourceBreakdown = rows
+      .filter((row) => HEADLINE_EXCLUDED_SOURCES.has(row.source))
+      .reduce<Record<string, number>>((acc, row) => {
+        acc[row.source] = (acc[row.source] ?? 0) + 1;
+        return acc;
+      }, {});
+
+    if (headlineRows.length === 0) {
       return {
         windowDays: options.days,
         sampleCount: 0,
         verdict: 'insufficient_verified_outcomes',
-        message: 'No verified ADMITTED/REJECTED outcomes were found in the selected window.',
+        message:
+          rows.length === 0
+            ? 'No verified ADMITTED/REJECTED outcomes were found in the selected window.'
+            : 'Verified outcomes exist, but all belong to excluded non-headline sources.',
         outcomeInventory: outcomeInventory.map((item) => ({
           status: item.status,
           result: item.result,
           count: item._count._all,
         })),
+        sourceBreakdown,
+        excludedSourceBreakdown,
       };
     }
 
@@ -355,7 +381,7 @@ export async function runPredictionAccuracyReport(
     const bySchoolRound = new Map<string, Aggregate>();
     const bySchoolRoundCohort = new Map<string, Aggregate>();
 
-    for (const row of rows) {
+    for (const row of headlineRows) {
       globalAggregate.total += 1;
       globalAggregate.admits += row.label;
       increment(bySchool, row.schoolId, row.label);
@@ -369,9 +395,9 @@ export async function runPredictionAccuracyReport(
       }
     }
 
-    const modelPredictions = rows.map((row) => row.probability);
-    const labels = rows.map((row) => row.label);
-    const baselinePredictions = rows.map((row) =>
+    const modelPredictions = headlineRows.map((row) => row.probability);
+    const labels = headlineRows.map((row) => row.label);
+    const baselinePredictions = headlineRows.map((row) =>
       selectBaseline(
         row,
         globalAggregate,
@@ -396,7 +422,7 @@ export async function runPredictionAccuracyReport(
     );
 
     const tierSummary = ['reach', 'match', 'safety'].map((tier) => {
-      const subset = rows.filter((row) => row.tier === tier);
+      const subset = headlineRows.filter((row) => row.tier === tier);
       const admits = subset.reduce((sum, row) => sum + row.label, 0);
       return {
         tier,
@@ -411,7 +437,7 @@ export async function runPredictionAccuracyReport(
       (tierSummary[1].admitRate ?? 0) < (tierSummary[2].admitRate ?? 0);
 
     const confidenceSummary = ['low', 'medium', 'high'].map((confidence) => {
-      const subset = rows.filter((row) => row.confidence === confidence);
+      const subset = headlineRows.filter((row) => row.confidence === confidence);
       const admits = subset.reduce((sum, row) => sum + row.label, 0);
       return {
         confidence,
@@ -425,7 +451,7 @@ export async function runPredictionAccuracyReport(
       return acc;
     }, {});
 
-    const modelVersions = rows.reduce<Record<string, number>>((acc, row) => {
+    const modelVersions = headlineRows.reduce<Record<string, number>>((acc, row) => {
       acc[row.modelVersion] = (acc[row.modelVersion] ?? 0) + 1;
       return acc;
     }, {});
@@ -438,9 +464,9 @@ export async function runPredictionAccuracyReport(
 
     return {
       windowDays: options.days,
-      sampleCount: rows.length,
+      sampleCount: headlineRows.length,
       admittedCount: labels.reduce((sum, label) => sum + label, 0),
-      rejectedCount: rows.length - labels.reduce((sum, label) => sum + label, 0),
+      rejectedCount: headlineRows.length - labels.reduce((sum, label) => sum + label, 0),
       modelMetrics: {
         brier: Number(modelBrier.toFixed(6)),
         ece: Number(modelEce.toFixed(6)),
@@ -464,6 +490,8 @@ export async function runPredictionAccuracyReport(
         ...item,
         admitRate: item.admitRate == null ? null : Number(item.admitRate.toFixed(4)),
       })),
+      sourceBreakdown,
+      excludedSourceBreakdown,
       baselineSourceMix,
       modelVersions,
       calibrationBins,
@@ -485,6 +513,13 @@ export function renderPredictionAccuracyReport(report: AccuracyReport): string {
       lines.push('Outcome inventory');
       for (const item of report.outcomeInventory) {
         lines.push(`- ${item.status} / ${item.result}: ${item.count}`);
+      }
+    }
+    if (report.sourceBreakdown && Object.keys(report.sourceBreakdown).length > 0) {
+      lines.push('');
+      lines.push('Verified source mix');
+      for (const [source, count] of Object.entries(report.sourceBreakdown)) {
+        lines.push(`- ${source}: ${count}`);
       }
     }
     return lines.join('\n');
@@ -517,6 +552,18 @@ export function renderPredictionAccuracyReport(report: AccuracyReport): string {
         item.admitRate == null ? 'n/a' : formatPct(item.admitRate)
       }`
     );
+  }
+  lines.push('');
+  lines.push('Verified source mix');
+  for (const [source, count] of Object.entries(report.sourceBreakdown)) {
+    lines.push(`- ${source}: ${count}`);
+  }
+  if (Object.keys(report.excludedSourceBreakdown).length > 0) {
+    lines.push('');
+    lines.push('Excluded non-headline sources');
+    for (const [source, count] of Object.entries(report.excludedSourceBreakdown)) {
+      lines.push(`- ${source}: ${count}`);
+    }
   }
   lines.push('');
   lines.push('Baseline source mix');

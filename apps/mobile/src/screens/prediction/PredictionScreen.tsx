@@ -419,11 +419,13 @@ export default function PredictionScreen() {
               </Badge>
             </View>
             <Text style={[styles.analysisCardVerdict, { color: colors.foreground }]}>
-              {applicationAnalysis.portfolioAnalysis?.verdict || applicationAnalysis.summary}
+              {applicationAnalysis.portfolioSummary.verdict}
             </Text>
-            <Text style={[styles.analysisCardBody, { color: colors.foregroundMuted }]}>
-              {applicationAnalysis.summary}
-            </Text>
+            {applicationAnalysis.meta?.degradedReason ? (
+              <Text style={[styles.analysisCardBody, { color: colors.foregroundMuted }]}>
+                {applicationAnalysis.meta.degradedReason}
+              </Text>
+            ) : null}
           </>
         ) : (
           <Text style={[styles.analysisCardBody, { color: colors.foregroundMuted }]}>

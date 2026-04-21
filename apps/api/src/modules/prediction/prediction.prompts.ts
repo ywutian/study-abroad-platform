@@ -2,6 +2,7 @@
  * 预测 Prompt 构建器 (i18n-aware)
  */
 
+import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
 
 export interface ProfileInput {
@@ -84,11 +85,33 @@ export interface SchoolInput {
   studentFacultyRatio?: number;
   percentNeedMet?: number;
   averageNetPrice?: number;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   applicationRound?: string;
   fieldTrustWeights?: Record<string, number>;
   averagePredictionWeight?: number;
+}
+
+function formatTestingPolicy(
+  school: Pick<SchoolInput, 'testingPolicy' | 'testOptional'>,
+  isZh: boolean,
+): string | null {
+  const policy = resolveSchoolTestingPolicyValue({
+    testingPolicy: school.testingPolicy,
+    testOptional: school.testOptional,
+  });
+
+  switch (policy) {
+    case 'REQUIRED':
+      return isZh ? '标化政策: 必须提交标化' : 'Test Policy: Test required';
+    case 'OPTIONAL':
+      return isZh ? '标化政策: 可选提交标化' : 'Test Policy: Test optional';
+    case 'BLIND':
+      return isZh ? '标化政策: 标化盲审' : 'Test Policy: Test blind';
+    default:
+      return null;
+  }
 }
 
 /**
@@ -440,6 +463,7 @@ export function buildPredictionPrompt(
     ? school.nameZh || school.name
     : school.name || school.nameZh;
   const unknown = isZh ? '未知' : 'Unknown';
+  const testingPolicyLine = formatTestingPolicy(school, isZh);
 
   if (isZh) {
     return `你是一位资深的美国大学招生顾问，拥有20年经验，对各大学录取标准有深入了解。请根据以下学生档案和目标学校数据，进行专业的录取概率预测。请用中文回复所有文本字段（factors的name、detail、improvement，suggestions等）。
@@ -459,7 +483,7 @@ ${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? 
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- 标化政策: Test Optional' : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}
+- 平均 ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- 新生留存率: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- 师生比: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- 助学金满足率: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- 平均净费用: $${school.averageNetPrice.toLocaleString()}` : ''}${testingPolicyLine ? `\n- ${testingPolicyLine}` : ''}${school.hasEarlyDecision ? '\n- 提前决定: 有ED轮次' : ''}
 - 申请轮次: ${school.applicationRound || '未指定（默认按RD评估）'}${nationalityStats && profile.isInternational ? `\n\n## 国籍维度历史数据\n- 该校来自${nationalityStats.nationality}的历史申请者录取率: ${nationalityStats.admitRate.toFixed(1)}% (基于${nationalityStats.totalCases}个案例)\n- 请将此数据作为国际生录取概率评估的重要参考` : ''}${buildMissingDataGuidance(profile, true)}
 
 ## 分析要求
@@ -542,7 +566,7 @@ ${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ?
 - Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
-- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${school.testOptional === true ? '\n- Test Policy: Test Optional' : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}
+- Average ACT: ${school.actAvg || unknown}${school.act25 && school.act75 ? ` (25th-75th: ${school.act25}-${school.act75})` : ''}${school.retentionRate ? `\n- Retention Rate: ${school.retentionRate}%` : ''}${school.studentFacultyRatio ? `\n- Student-Faculty Ratio: ${school.studentFacultyRatio}:1` : ''}${school.percentNeedMet ? `\n- % Need Met: ${school.percentNeedMet}%` : ''}${school.averageNetPrice ? `\n- Avg Net Price: $${school.averageNetPrice.toLocaleString()}` : ''}${testingPolicyLine ? `\n- ${testingPolicyLine}` : ''}${school.hasEarlyDecision ? '\n- Early Decision: Available' : ''}
 - Application Round: ${school.applicationRound || 'Not specified (assume RD)'}${nationalityStats && profile.isInternational ? `\n\n## Nationality-Specific Historical Data\n- Historical admission rate for ${nationalityStats.nationality} applicants at this school: ${nationalityStats.admitRate.toFixed(1)}% (based on ${nationalityStats.totalCases} cases)\n- Use this data as an important reference for international student probability estimation` : ''}${buildMissingDataGuidance(profile, false)}
 
 ## Analysis Requirements
