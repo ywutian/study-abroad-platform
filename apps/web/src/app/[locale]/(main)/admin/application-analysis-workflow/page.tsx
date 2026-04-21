@@ -20,6 +20,7 @@ import { GatesTab } from './_components/gates-tab';
 import { IncidentsTab } from './_components/incidents-tab';
 import { LiveSignalsTab } from './_components/live-signals-tab';
 import { PoliciesTab } from './_components/policies-tab';
+import { ReplaysTab } from './_components/replays-tab';
 
 export default function AdminApplicationAnalysisWorkflowPage() {
   const t = useTranslations('admin.applicationAnalysisWorkflow');
@@ -55,6 +56,7 @@ export default function AdminApplicationAnalysisWorkflowPage() {
             <TabsTrigger value="evidence">{t('tabs.evidence')}</TabsTrigger>
             <TabsTrigger value="policies">{t('tabs.policies')}</TabsTrigger>
             <TabsTrigger value="evaluations">{t('tabs.evaluations')}</TabsTrigger>
+            <TabsTrigger value="replays">{t('tabs.replays')}</TabsTrigger>
             <TabsTrigger value="gates">{t('tabs.gates')}</TabsTrigger>
             <TabsTrigger value="activate">{t('tabs.activate')}</TabsTrigger>
             <TabsTrigger value="experiments">{t('tabs.experiments')}</TabsTrigger>
@@ -71,6 +73,9 @@ export default function AdminApplicationAnalysisWorkflowPage() {
           </TabsContent>
           <TabsContent value="evaluations" className="mt-4">
             <EvaluationsTab />
+          </TabsContent>
+          <TabsContent value="replays" className="mt-4">
+            <ReplaysTab />
           </TabsContent>
           <TabsContent value="gates" className="mt-4">
             <GatesTab policies={policies} />

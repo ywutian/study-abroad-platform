@@ -1,0 +1,118 @@
+{
+  "id": "050-insufficient-unknown-tech",
+  "description": "Insufficient-profile state should never fabricate school-level certainty.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-050",
+      "userId": "gold-runner",
+      "gpa": null,
+      "gpaScale": 4,
+      "targetMajor": "Undecided",
+      "intendedMajor": "Undecided",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "US",
+      "nationality": "United States",
+      "countryOfResidence": "US",
+      "citizenship": "US",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [],
+      "activities": [],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-050-edu",
+          "schoolName": "Regional High School",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-050-hs",
+          "highSchool": {
+            "name": "Regional High School",
+            "tier": 3,
+            "type": "US_PUBLIC",
+            "country": "US",
+            "state": "CA"
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-50-unknown-tech",
+        "schoolId": "unknown-tech",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "unknown-tech",
+          "name": "Unknown Policy Institute",
+          "nameZh": "未知政策理工学院",
+          "usNewsRank": 28,
+          "acceptanceRate": 18,
+          "sat25": 1410,
+          "sat75": 1510,
+          "satAvg": 1460,
+          "testingPolicy": "UNKNOWN",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 10.4,
+          "metadata": {
+            "standardDeadline": "January 10"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-50-unknown-tech",
+        "schoolId": "unknown-tech",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "unknown-tech",
+          "name": "Unknown Policy Institute",
+          "nameZh": "未知政策理工学院",
+          "usNewsRank": 28,
+          "acceptanceRate": 18,
+          "sat25": 1410,
+          "sat75": 1510,
+          "satAvg": 1460,
+          "testingPolicy": "UNKNOWN",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 10.4,
+          "metadata": {
+            "standardDeadline": "January 10"
+          }
+        }
+      }
+    ],
+    "predictions": [],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "unknown-tech": null
+    }
+  },
+  "expected": {
+    "state": "insufficientProfileData",
+    "schoolCards": [],
+    "meta": {
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "insufficient-profile"],
+  "ownerEmail": "governance@study-abroad.local"
+}

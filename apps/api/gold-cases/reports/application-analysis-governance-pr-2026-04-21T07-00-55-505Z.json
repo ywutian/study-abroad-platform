@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-04-21T07:00:55.505Z",
+  "mode": "pr",
+  "commitSha": "local",
+  "workflowRunUrl": null,
+  "deterministicReplayId": "cmo89y9k10000gpvccb2vh2m8",
+  "liveReplayId": null,
+  "deterministicMetrics": {
+    "goldPassRate": 1,
+    "webRenderPass": true,
+    "journeyPassRate": null,
+    "mobileRenderPass": true,
+    "actionabilityMean": 1,
+    "unknownPolicyRate": 0,
+    "contractParityPass": true,
+    "policyCorrectnessRate": 1,
+    "fabricatedInsightCount": 0,
+    "weakStateCorrectnessRate": 1,
+    "webVisualPass": null,
+    "liveGoldPassRate": null
+  },
+  "liveMetrics": {},
+  "suites": [
+    {
+      "name": "deterministic-replay",
+      "command": "pnpm",
+      "args": ["--filter", "api", "gold:replay", "--", "--mode=deterministic"],
+      "exitCode": 0,
+      "success": true,
+      "durationMs": 1257
+    },
+    {
+      "name": "web-dom-parity",
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "playwright",
+        "test",
+        "e2e/application-analysis-render.spec.ts",
+        "--reporter=list"
+      ],
+      "exitCode": 0,
+      "success": true,
+      "durationMs": 21127
+    },
+    {
+      "name": "mobile-rn-parity",
+      "command": "pnpm",
+      "args": [
+        "--filter",
+        "study-abroad-mobile",
+        "test",
+        "--",
+        "src/__tests__/screens/profile-analysis.test.tsx",
+        "--runInBand"
+      ],
+      "exitCode": 0,
+      "success": true,
+      "durationMs": 2527
+    },
+    {
+      "name": "governance-evaluation-record",
+      "command": "pnpm",
+      "args": [
+        "--filter",
+        "api",
+        "exec",
+        "ts-node",
+        "--transpile-only",
+        "scripts/run-application-analysis-governance-evaluation.ts",
+        "--analysis-version",
+        "application-analysis-v2",
+        "--actor-id",
+        "governance-runner"
+      ],
+      "exitCode": 0,
+      "success": true,
+      "durationMs": 975
+    }
+  ]
+}

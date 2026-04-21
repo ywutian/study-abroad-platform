@@ -1,0 +1,85 @@
+{
+  "id": "039-no-target-1",
+  "description": "No target-school state should remain deterministic across replay variants.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-039",
+      "userId": "gold-runner",
+      "gpa": 3.8,
+      "gpaScale": 4,
+      "targetMajor": "Computer Science",
+      "intendedMajor": "Computer Science",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "AP",
+      "nationality": "China",
+      "countryOfResidence": "China",
+      "citizenship": "China",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": true,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1490
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-039-activity",
+          "name": "Robotics Lab",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-039-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-039-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "China",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [],
+    "focusSchools": [],
+    "predictions": [],
+    "approvedEvidence": [],
+    "historyBySchool": {}
+  },
+  "expected": {
+    "state": "noTargetSchools",
+    "schoolCards": [],
+    "meta": {
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "no-target-schools"],
+  "ownerEmail": "governance@study-abroad.local"
+}

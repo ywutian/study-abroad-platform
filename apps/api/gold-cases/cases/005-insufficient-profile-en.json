@@ -1,0 +1,118 @@
+{
+  "id": "005-insufficient-profile-en",
+  "description": "Thin profiles should degrade to insufficientProfileData without pretending school-level confidence.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "en"
+  },
+  "analysisSnapshot": {
+    "locale": "en",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-005",
+      "userId": "gold-runner",
+      "gpa": null,
+      "gpaScale": 4,
+      "targetMajor": "Undecided",
+      "intendedMajor": "Undecided",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "US",
+      "nationality": "United States",
+      "countryOfResidence": "US",
+      "citizenship": "US",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [],
+      "activities": [],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-005-edu",
+          "schoolName": "Regional High School",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-005-hs",
+          "highSchool": {
+            "name": "Regional High School",
+            "tier": 3,
+            "type": "US_PUBLIC",
+            "country": "US",
+            "state": "CA"
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-5-mit",
+        "schoolId": "mit",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "mit",
+          "name": "Massachusetts Institute of Technology",
+          "nameZh": "麻省理工学院",
+          "usNewsRank": 2,
+          "acceptanceRate": 4,
+          "sat25": 1530,
+          "sat75": 1580,
+          "satAvg": 1560,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5,
+          "metadata": {
+            "standardDeadline": "January 1"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-5-mit",
+        "schoolId": "mit",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "mit",
+          "name": "Massachusetts Institute of Technology",
+          "nameZh": "麻省理工学院",
+          "usNewsRank": 2,
+          "acceptanceRate": 4,
+          "sat25": 1530,
+          "sat75": 1580,
+          "satAvg": 1560,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5,
+          "metadata": {
+            "standardDeadline": "January 1"
+          }
+        }
+      }
+    ],
+    "predictions": [],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "mit": null
+    }
+  },
+  "expected": {
+    "state": "insufficientProfileData",
+    "schoolCards": [],
+    "meta": {
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "insufficient-profile", "render-smoke"],
+  "ownerEmail": "governance@study-abroad.local"
+}

@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsObject,
   IsOptional,
@@ -51,6 +52,7 @@ const EXPERIMENT_SWEEP_STATUSES = Object.values(
 const INCIDENT_STATUSES = Object.values(
   ApplicationAnalysisExperimentIncidentStatus,
 );
+const GOVERNANCE_EVIDENCE_MODES = ['fixture', 'real'] as const;
 
 export class ApplicationAnalysisEvidenceQueryDto extends PaginationDto {
   @ApiPropertyOptional({ enum: EVIDENCE_STATUSES })
@@ -68,6 +70,11 @@ export class ApplicationAnalysisEvidenceQueryDto extends PaginationDto {
   @IsString()
   @MaxLength(200)
   schoolId?: string;
+
+  @ApiPropertyOptional({ enum: GOVERNANCE_EVIDENCE_MODES })
+  @IsOptional()
+  @IsIn(GOVERNANCE_EVIDENCE_MODES)
+  evidenceMode?: (typeof GOVERNANCE_EVIDENCE_MODES)[number];
 }
 
 export class CreateSchoolPolicyEvidenceDto {
@@ -247,6 +254,53 @@ export class ApplicationAnalysisEvaluationQueryDto extends PaginationDto {
   @IsString()
   @MaxLength(200)
   policyVersionId?: string;
+}
+
+export class ApplicationAnalysisRunQueryDto extends PaginationDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  userId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  status?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  analysisVersion?: string;
+}
+
+export class ApplicationAnalysisReplayRunQueryDto extends PaginationDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  dataset?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  status?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  analysisVersion?: string;
+}
+
+export class ReplayApplicationAnalysisRunDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  debug?: boolean;
 }
 
 export class ApplicationAnalysisRecoursePreviewDto {

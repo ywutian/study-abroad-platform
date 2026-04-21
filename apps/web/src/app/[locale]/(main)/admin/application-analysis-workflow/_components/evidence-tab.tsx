@@ -37,6 +37,7 @@ export function EvidenceTab({ policiesReady }: { policiesReady: boolean }) {
   const t = useTranslations('admin.applicationAnalysisWorkflow');
   const locale = useLocale();
   const queryClient = useQueryClient();
+  const [evidenceMode, setEvidenceMode] = useState<'all' | 'fixture' | 'real'>('all');
   const [schoolId, setSchoolId] = useState('');
   const [dimension, setDimension] = useState<(typeof EVIDENCE_DIMENSIONS)[number]>('TESTING');
   const [policyValue, setPolicyValue] = useState('');
@@ -45,10 +46,14 @@ export function EvidenceTab({ policiesReady }: { policiesReady: boolean }) {
   const [notes, setNotes] = useState('');
 
   const { data, isLoading } = useQuery<PaginatedApplicationAnalysisEvidenceResponse>({
-    queryKey: ['applicationAnalysisEvidence'],
+    queryKey: ['applicationAnalysisEvidence', evidenceMode],
     queryFn: () =>
       apiClient.get(adminRoutes.applicationAnalysisWorkflowEvidence(), {
-        params: { page: 1, pageSize: 20 },
+        params: {
+          page: 1,
+          pageSize: 20,
+          evidenceMode: evidenceMode === 'all' ? undefined : evidenceMode,
+        },
       }),
   });
 
@@ -144,6 +149,25 @@ export function EvidenceTab({ policiesReady }: { policiesReady: boolean }) {
           <CardTitle>{t('evidence.queueTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm text-muted-foreground">{t('evidence.fixtureHint')}</div>
+            <div className="flex items-center gap-2">
+              <Label className="text-xs text-muted-foreground">{t('evidence.modeFilter')}</Label>
+              <Select
+                value={evidenceMode}
+                onValueChange={(value) => setEvidenceMode(value as typeof evidenceMode)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('evidence.modeAll')}</SelectItem>
+                  <SelectItem value="fixture">{t('evidence.modeFixture')}</SelectItem>
+                  <SelectItem value="real">{t('evidence.modeReal')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {!policiesReady ? (
             <div className="text-sm text-muted-foreground">{t('evidence.policyHint')}</div>
           ) : null}
@@ -167,7 +191,14 @@ export function EvidenceTab({ policiesReady }: { policiesReady: boolean }) {
                         {item.sourceName}
                       </div>
                     </div>
-                    <Badge variant="outline">{humanizeEnum(item.status)}</Badge>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">{humanizeEnum(item.status)}</Badge>
+                      <Badge variant="secondary">
+                        {item.evidenceMode === 'fixture'
+                          ? t('evidence.modeFixture')
+                          : t('evidence.modeReal')}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span>

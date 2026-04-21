@@ -1,0 +1,157 @@
+{
+  "id": "007-unknown-policy-zh",
+  "description": "Unknown school policy should remain explicit instead of being inferred into a false optional/required label.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-007",
+      "userId": "gold-runner",
+      "gpa": 3.78,
+      "gpaScale": 4,
+      "targetMajor": "Design",
+      "intendedMajor": "Design",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "AP",
+      "nationality": "China",
+      "countryOfResidence": "China",
+      "citizenship": "China",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [],
+      "activities": [
+        {
+          "id": "profile-gold-007-activity",
+          "name": "Community Initiative",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-007-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-007-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "China",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-7-unknown-tech",
+        "schoolId": "unknown-tech",
+        "tier": "TARGET",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "unknown-tech",
+          "name": "Unknown Policy Institute",
+          "nameZh": "未知政策理工学院",
+          "usNewsRank": 28,
+          "acceptanceRate": 18,
+          "sat25": 1410,
+          "sat75": 1510,
+          "satAvg": 1460,
+          "testingPolicy": "UNKNOWN",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 10.4,
+          "metadata": {
+            "standardDeadline": "January 10"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-7-unknown-tech",
+        "schoolId": "unknown-tech",
+        "tier": "TARGET",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "unknown-tech",
+          "name": "Unknown Policy Institute",
+          "nameZh": "未知政策理工学院",
+          "usNewsRank": 28,
+          "acceptanceRate": 18,
+          "sat25": 1410,
+          "sat75": 1510,
+          "satAvg": 1460,
+          "testingPolicy": "UNKNOWN",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 10.4,
+          "metadata": {
+            "standardDeadline": "January 10"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "unknown-tech",
+        "probability": 0.48,
+        "probabilityLow": 0.4,
+        "probabilityHigh": 0.56,
+        "tier": "match",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": [
+          "Keep the RD plan aligned with Unknown Policy Institute."
+        ],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "RD",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "unknown-tech": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "unknown-tech",
+        "schoolName": "Unknown Policy Institute",
+        "tier": "TARGET",
+        "testingPolicy": "UNKNOWN",
+        "probabilityRange": [0.39, 0.5700000000000001]
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "policy-unknown", "render-smoke"],
+  "ownerEmail": "governance@study-abroad.local"
+}

@@ -1,0 +1,160 @@
+{
+  "id": "033-columbia-4",
+  "description": "Optional-policy output should remain stable for domestic applicants. Variant 4.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "en"
+  },
+  "analysisSnapshot": {
+    "locale": "en",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-033",
+      "userId": "gold-runner",
+      "gpa": 3.9,
+      "gpaScale": 4,
+      "targetMajor": "Political Science",
+      "intendedMajor": "Political Science",
+      "secondMajor": null,
+      "grade": "SENIOR",
+      "educationSystem": "US",
+      "nationality": "United States",
+      "countryOfResidence": "US",
+      "citizenship": "US",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "ED",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1510
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-033-activity",
+          "name": "Student Newspaper",
+          "category": "LEADERSHIP",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-033-edu",
+          "schoolName": "Regional High School",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-033-hs",
+          "highSchool": {
+            "name": "Regional High School",
+            "tier": 3,
+            "type": "US_PUBLIC",
+            "country": "US",
+            "state": "CA"
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-33-columbia",
+        "schoolId": "columbia",
+        "tier": "TARGET",
+        "round": "ED",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "columbia",
+          "name": "Columbia University",
+          "nameZh": "哥伦比亚大学",
+          "usNewsRank": 12,
+          "acceptanceRate": 3.9,
+          "sat25": 1500,
+          "sat75": 1570,
+          "satAvg": 1540,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.1,
+          "metadata": {
+            "standardDeadline": "November 1"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-33-columbia",
+        "schoolId": "columbia",
+        "tier": "TARGET",
+        "round": "ED",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "columbia",
+          "name": "Columbia University",
+          "nameZh": "哥伦比亚大学",
+          "usNewsRank": 12,
+          "acceptanceRate": 3.9,
+          "sat25": 1500,
+          "sat75": 1570,
+          "satAvg": 1540,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.1,
+          "metadata": {
+            "standardDeadline": "November 1"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "columbia",
+        "probability": 0.2,
+        "probabilityLow": 0.15,
+        "probabilityHigh": 0.27,
+        "tier": "match",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": ["Keep the ED plan aligned with Columbia University."],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "ED",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "columbia": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "columbia",
+        "schoolName": "Columbia University",
+        "tier": "TARGET",
+        "testingPolicy": "OPTIONAL",
+        "probabilityRange": [0.13999999999999999, 0.28]
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "policy-optional"],
+  "ownerEmail": "governance@study-abroad.local"
+}

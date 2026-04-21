@@ -1,0 +1,118 @@
+{
+  "id": "048-insufficient-columbia",
+  "description": "Insufficient-profile state should never fabricate school-level certainty.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-048",
+      "userId": "gold-runner",
+      "gpa": null,
+      "gpaScale": 4,
+      "targetMajor": "Undecided",
+      "intendedMajor": "Undecided",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "US",
+      "nationality": "United States",
+      "countryOfResidence": "US",
+      "citizenship": "US",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [],
+      "activities": [],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-048-edu",
+          "schoolName": "Regional High School",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-048-hs",
+          "highSchool": {
+            "name": "Regional High School",
+            "tier": 3,
+            "type": "US_PUBLIC",
+            "country": "US",
+            "state": "CA"
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-48-columbia",
+        "schoolId": "columbia",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "columbia",
+          "name": "Columbia University",
+          "nameZh": "哥伦比亚大学",
+          "usNewsRank": 12,
+          "acceptanceRate": 3.9,
+          "sat25": 1500,
+          "sat75": 1570,
+          "satAvg": 1540,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.1,
+          "metadata": {
+            "standardDeadline": "November 1"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-48-columbia",
+        "schoolId": "columbia",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "columbia",
+          "name": "Columbia University",
+          "nameZh": "哥伦比亚大学",
+          "usNewsRank": 12,
+          "acceptanceRate": 3.9,
+          "sat25": 1500,
+          "sat75": 1570,
+          "satAvg": 1540,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.1,
+          "metadata": {
+            "standardDeadline": "November 1"
+          }
+        }
+      }
+    ],
+    "predictions": [],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "columbia": null
+    }
+  },
+  "expected": {
+    "state": "insufficientProfileData",
+    "schoolCards": [],
+    "meta": {
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "insufficient-profile"],
+  "ownerEmail": "governance@study-abroad.local"
+}

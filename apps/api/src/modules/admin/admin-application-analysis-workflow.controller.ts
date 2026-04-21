@@ -18,6 +18,8 @@ import {
 } from '../../common/decorators/throttle.decorator';
 import {
   ApplicationAnalysisEvaluationQueryDto,
+  ApplicationAnalysisReplayRunQueryDto,
+  ApplicationAnalysisRunQueryDto,
   ApplicationAnalysisExperimentEvaluationQueryDto,
   ApplicationAnalysisExperimentFeedbackQueryDto,
   ApplicationAnalysisExperimentIncidentQueryDto,
@@ -28,6 +30,7 @@ import {
   AcknowledgeApplicationAnalysisExperimentIncidentDto,
   CreateApplicationAnalysisExperimentVersionDto,
   RefreshApplicationAnalysisExperimentEvaluationDto,
+  ReplayApplicationAnalysisRunDto,
   RetireApplicationAnalysisExperimentDto,
   ApplicationAnalysisUncertaintyPreviewDto,
   ApplicationAnalysisEvidenceQueryDto,
@@ -39,6 +42,7 @@ import {
   UpdateApplicationAnalysisExperimentConfigDto,
 } from './dto';
 import { ApplicationAnalysisWorkflowService } from '../profile/application-analysis-workflow.service';
+import { ProfileApplicationAnalysisV2Service } from '../profile/profile-application-analysis-v2.service';
 
 @ApiTags('Admin - Application Analysis Workflow')
 @ApiBearerAuth()
@@ -48,6 +52,7 @@ import { ApplicationAnalysisWorkflowService } from '../profile/application-analy
 export class AdminApplicationAnalysisWorkflowController {
   constructor(
     private readonly applicationAnalysisWorkflowService: ApplicationAnalysisWorkflowService,
+    private readonly profileApplicationAnalysisV2Service: ProfileApplicationAnalysisV2Service,
   ) {}
 
   @Get('evidence')
@@ -199,6 +204,32 @@ export class AdminApplicationAnalysisWorkflowController {
   @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async listEvaluations(@Query() query: ApplicationAnalysisEvaluationQueryDto) {
     return this.applicationAnalysisWorkflowService.listEvaluations(query);
+  }
+
+  @Get('runs')
+  @ApiOperation({ summary: 'List application-analysis v2 runtime runs' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async listRuns(@Query() query: ApplicationAnalysisRunQueryDto) {
+    return this.profileApplicationAnalysisV2Service.listRuns(query);
+  }
+
+  @Get('replays')
+  @ApiOperation({ summary: 'List application-analysis replay runs' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async listReplays(@Query() query: ApplicationAnalysisReplayRunQueryDto) {
+    return this.profileApplicationAnalysisV2Service.listReplayRuns(query);
+  }
+
+  @Post('runs/:id/replay')
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Replay one stored application-analysis v2 run' })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async replayRun(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() dto: ReplayApplicationAnalysisRunDto,
+  ) {
+    return this.profileApplicationAnalysisV2Service.replayRun(id, user.id, dto);
   }
 
   @Get('experiments')

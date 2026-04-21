@@ -1,9 +1,9 @@
 {
   "meta": {
     "home": {
-      "title": "留学申请平台 - 智能选校与录取预测",
-      "description": "基于 AI 的智能留学申请平台，提供选校推荐、录取预测、案例库等一站式服务",
-      "keywords": "留学申请,选校推荐,录取预测,AI留学,出国留学,美国留学,大学申请,留学规划"
+      "title": "StudyAI 首页｜AI 留学申请工作台",
+      "description": "StudyAI 用 AI 选校、文书协作、时间线管理与真实录取数据，帮助家庭把复杂留学申请变成清晰流程。",
+      "keywords": "StudyAI,AI留学,留学申请,选校矩阵,录取预测,文书工作台,留学规划,申请社区"
     }
   },
   "common": {
@@ -91,7 +91,42 @@
       "business": "商科"
     },
     "rankingTooltip": "{source} {year} 排名",
-    "rankingTooltipOverall": "US News 全美大学综合排名"
+    "rankingTooltipOverall": "US News 全美大学综合排名",
+    "aria": {
+      "moreOptions": "更多操作",
+      "close": "关闭",
+      "copy": "复制",
+      "copyReferralCode": "复制邀请码",
+      "deleteSection": "删除段落",
+      "deleteItem": "删除",
+      "viewItem": "查看",
+      "viewConversation": "查看对话",
+      "viewMemory": "查看记忆",
+      "deleteMemory": "删除记忆",
+      "attachFile": "附加文件",
+      "attachImage": "附加图片",
+      "voiceInput": "语音输入",
+      "stopGenerating": "停止生成",
+      "sendMessage": "发送消息",
+      "probabilityTrend": "概率趋势",
+      "preview": "预览",
+      "proofDocument": "证明文件",
+      "removeTag": "移除标签",
+      "breadcrumb": "面包屑导航",
+      "editDeadline": "编辑截止日期",
+      "deleteDeadline": "删除截止日期",
+      "editEvent": "编辑事件",
+      "deleteEvent": "删除事件"
+    },
+    "tryAgain": "再试一次",
+    "invalidJson": "无效的 JSON",
+    "unsupportedFileFormat": "不支持的文件格式，请使用 .txt、.docx 或 .pdf",
+    "failedToReadFile": "文件读取失败，请尝试直接粘贴内容。",
+    "errorBoundary": {
+      "title": "出了点问题",
+      "defaultMessage": "发生了意外错误，请稍后重试。",
+      "tryAgain": "再试一次"
+    }
   },
   "dashboard": {
     "welcome": "欢迎回来，{name}",
@@ -170,227 +205,449 @@
     }
   },
   "home": {
+    "brand": "StudyAI",
     "nav": {
-      "features": "功能",
-      "howItWorks": "工作原理",
-      "testimonials": "用户评价",
-      "getStarted": "开始使用"
+      "product": "产品",
+      "cases": "学员案例",
+      "pricing": "定价",
+      "community": "社区",
+      "about": "关于我们",
+      "signIn": "登录",
+      "getStarted": "免费开始"
     },
-    "badge": "AI 驱动的智能留学平台",
-    "heroTitle": "梦校录取，触手可及",
-    "heroSubtitle": "AI 智能选校、录取预测、文书辅导 —— 从申请到拿 Offer，一站搞定",
-    "scrollDown": "向下滚动",
-    "heroLeft": {
-      "top100": "覆盖美国 Top 100 院校",
-      "aiAnalysis": "AI 智能分析",
-      "realTimeData": "实时数据更新"
-    },
-    "heroRight": {
-      "dataSecurity": "数据安全加密",
-      "fastPrediction": "秒级预测响应",
-      "onlineSupport": "7×24 在线支持"
-    },
-    "usp": {
-      "gpt4": "GPT-4 智能分析",
-      "accuracy": "95% 预测准确率",
-      "cases": "10000+ 真实案例"
-    },
-    "stats": {
-      "cases": "真实案例",
-      "schools": "覆盖院校",
-      "accuracy": "预测准确率",
-      "aiAssistant": "AI 助手在线"
-    },
-    "coreFeatures": "核心功能",
-    "coreFeaturesSubtitle": "一站式解决留学申请的所有需求",
-    "whyChooseUs": {
-      "title": "为什么选择我们？",
-      "subtitle": "我们提供最专业的留学申请服务",
-      "realData": "真实案例数据",
-      "realDataDesc": "所有数据来自真实申请案例，确保参考价值",
-      "smartAlgorithm": "智能匹配算法",
-      "smartAlgorithmDesc": "基于 AI 的智能分析，精准预测录取概率",
-      "globalCoverage": "全球院校覆盖",
-      "globalCoverageDesc": "覆盖美国、英国、加拿大等热门留学目的地",
-      "admissionRate": "录取率"
-    },
-    "stories": {
-      "title": "成功案例",
-      "subtitle": "看看我们的用户是如何成功申请到梦校的",
-      "viewMore": "查看更多案例",
-      "story1": {
-        "name": "李同学",
-        "avatar": "李",
-        "background": "普高 | GPA 3.8",
-        "result": "成功录取",
-        "quote": "平台的录取预测非常准确，帮助我找到了最适合的选校策略。"
+    "hero": {
+      "eyebrow": "GPT-5 驱动 · 全球 3,000+ 院校数据",
+      "headline": ["用 AI 重建", "你的留学申请流程"],
+      "subtitle": "专业 AI 能力 × 真实录取数据 × 同行组队社区。把原本漫长而混乱的留学申请，压缩成一个更清晰、更可执行的工作流。",
+      "features": [
+        "2 分钟生成首版选校矩阵",
+        "文书、时间线与任务同步推进",
+        "关键节点由真人顾问把关"
+      ],
+      "trustLine": "已服务 12,400+ 学生家庭 · 累计 Top30 录取 2,100+ 封",
+      "primaryCta": "免费开始",
+      "secondaryCta": "查看学员案例",
+      "statLabel": "Top30 录取 · 2026 校准",
+      "floatingQuote": {
+        "quote": "我终于知道下一步该做什么了。",
+        "meta": "林同学 · UCLA '28"
       },
-      "story2": {
-        "name": "王同学",
-        "avatar": "王",
-        "background": "美高 | GPA 3.9",
-        "result": "全奖录取",
-        "quote": "案例库让我了解到很多申请技巧，最终拿到了梦校的全额奖学金。"
+      "aiDisclosure": {
+        "trigger": "查看模型依据",
+        "inputs": ["学术档案强度", "学校历史录取结果", "文书与材料完成度", "时间线与截止日期压力"],
+        "confidence": "中等",
+        "limitations": [
+          "学校当年的临时招生偏好无法被直接观测。",
+          "院系容量变化可能快于公开数据更新。",
+          "真人审阅质量只能被近似推断。"
+        ]
       },
-      "story3": {
-        "name": "张同学",
-        "avatar": "张",
-        "background": "国际学校 | GPA 4.0",
-        "result": "成功录取",
-        "quote": "AI 助手全程指导我的申请，从选校到文书，每一步都很清晰。"
+      "console": {
+        "workspace": "工作台",
+        "profileLabel": "Amy Z. · Senior",
+        "profileMeta": "GPA 3.92 · SAT 1540 · CS",
+        "termLabel": "2026 秋季 · CS",
+        "sections": ["总览", "选校 · 6", "文书 · 14", "时间线", "组队"],
+        "title": "我的申请矩阵",
+        "assistantBadge": "AI 助理",
+        "assistantMessages": [
+          "CMU 文书与 MIT 的第二段论证重合偏高，建议压缩重复案例。",
+          "Georgia Tech 的 Why Major 更新后，匹配度上升了 14%。",
+          "Purdue 的申请材料已齐套，今晚是最稳妥的提交窗口。"
+        ],
+        "tasksLabel": "今日 · 3 个任务",
+        "tasks": ["完成 GT Why-Essay v2", "提醒 Ms. Chen 上传推荐信", "确认 Purdue 提交窗口"],
+        "askAnything": "继续问 AI",
+        "statusReady": "分析就绪",
+        "statusLive": "实时录取信号 · 已同步",
+        "rows": [
+          {
+            "name": "MIT EECS",
+            "probability": 14,
+            "status": "文书中",
+            "tone": "reach"
+          },
+          {
+            "name": "CMU CS",
+            "probability": 22,
+            "status": "重写第 2 稿",
+            "tone": "reach"
+          },
+          {
+            "name": "Georgia Tech",
+            "probability": 47,
+            "status": "推荐信待收",
+            "tone": "target"
+          },
+          {
+            "name": "UIUC CS+X",
+            "probability": 62,
+            "status": "信息齐全",
+            "tone": "target"
+          },
+          {
+            "name": "Purdue ECE",
+            "probability": 81,
+            "status": "待提交",
+            "tone": "safety"
+          }
+        ]
       }
     },
-    "ctaBadge": "已有 1,200+ 申请者加入",
-    "ctaTitle": "梦校，比你想的更近",
-    "ctaSubtitle": "2 分钟内获取你的个性化录取预测 —— 完全免费",
-    "ctaButton": "获取我的预测",
-    "ctaFeature1": "100% 免费",
-    "ctaFeature2": "无需绑定信用卡",
-    "ctaFeature3": "2 分钟出结果",
-    "viewCases": "浏览案例",
-    "copyright": "© 2026 留学申请平台 保留所有权利",
-    "aboutUs": "关于我们",
-    "privacy": "隐私政策",
-    "terms": "服务条款",
-    "features": {
-      "profile": "创建和管理您的申请档案，一键导出专业简历",
-      "ranking": "根据个人偏好自定义学校排名榜单",
-      "prediction": "基于您的背景预测各院校录取概率",
-      "cases": "浏览真实申请案例，参考成功经验",
-      "chat": "与认证用户交流，获取第一手信息",
-      "hall": "招生官打分、排名对比、创建榜单"
-    },
-    "modules": {
-      "title": "四大核心模块",
-      "subtitle": "从选校到申请，一站式解决",
-      "schools": {
-        "title": "学校库",
-        "desc": "浏览、筛选，找到最适合你的学校"
-      },
-      "prediction": {
-        "title": "AI 录取预测",
-        "desc": "AI 驱动的录取概率分析"
-      },
-      "cases": {
-        "title": "案例库",
-        "desc": "真实录取案例与成功故事"
-      },
-      "forum": {
-        "title": "社交论坛",
-        "desc": "与申请者交流，获取真实经验分享"
-      }
-    },
-    "bento": {
-      "chatUser": "帮我优化一下 MIT 的文书？",
-      "chatAi": "我已分析了你的文书，以下是 3 条关键建议..."
-    },
-    "demo": {
-      "step1": {
-        "title": "选校",
-        "desc": "根据你的背景和偏好，筛选最适合的学校"
-      },
-      "step2": {
-        "title": "预测",
-        "desc": "智能评估你的申请档案，预测录取概率"
-      },
-      "step3": {
-        "title": "追踪",
-        "desc": "获取个性化的时间表和任务清单"
-      },
-      "step4": {
-        "title": "社区",
-        "desc": "与其他申请者交流，获取真实的申请经验"
-      }
-    },
-    "demoFlow": {
-      "badge": "使用体验展示",
-      "title": "简单四步，开启申请之旅",
-      "subtitle": "从选校到录取，我们全程陪伴",
-      "stepIndicator": "第 {current} 步"
-    },
-    "demoUI": {
-      "step1": {
-        "searchPlaceholder": "搜索学校名称...",
-        "filterUS": "美国",
-        "filterTop50": "Top 50",
-        "filterPrivate": "私立",
-        "filterHighRanking": "高排名",
-        "filterCSMajor": "CS 专业",
-        "acceptance": "录取率 {rate}%",
-        "viewAllSchools": "查看全部学校"
-      },
-      "step2": {
-        "yourProfile": "你的档案",
-        "profileDetail": "GPA 3.8 / SAT 1480 / 3个竞赛奖项",
-        "score": "匹配度",
-        "reach": "冲刺",
-        "target": "目标",
-        "safety": "保底",
-        "aiSuggestion": "AI 建议",
-        "suggestionText": "根据你的背景，建议增加 1-2 所保底学校",
-        "fullAnalysis": "查看完整分析"
-      },
-      "step3": {
-        "applicationProgress": "申请进度",
-        "tasksCompleted": "已完成任务",
-        "completeProfile": "完善个人档案",
-        "submitScores": "提交标化成绩",
-        "requestRecs": "请求推荐信",
-        "writeEssay": "撰写文书",
-        "viewTimeline": "查看完整时间线",
-        "dateOct15": "10月15日",
-        "dateOct20": "10月20日",
-        "dateNov1": "11月1日",
-        "dateNov15": "11月15日"
-      },
-      "step4": {
-        "trendingTopics": "热门话题",
-        "post1Title": "ED 选校策略分享",
-        "post1Tag": "选校",
-        "post2Title": "CS 专业申请经验",
-        "post2Tag": "经验",
-        "post3Title": "文书修改互助",
-        "post3Tag": "文书",
-        "joinCommunity": "加入社区",
-        "viewAll": "查看全部",
-        "connectMessage": "与同期申请者交流"
-      }
-    },
-    "scoreCard": {
-      "title": "我的标化成绩",
-      "subtitle": "管理你的语言和学术考试成绩",
-      "notAvailable": "暂无",
-      "editScores": "编辑成绩"
+    "trust": {
+      "label": "合作院校 · 往届录取",
+      "stats": [
+        {
+          "value": "12,400+",
+          "label": "在读家庭"
+        },
+        {
+          "value": "2,100+",
+          "label": "Top30 录取"
+        },
+        {
+          "value": "87%",
+          "label": "预测校准"
+        },
+        {
+          "value": "3,000+",
+          "label": "院校数据库"
+        }
+      ],
+      "schools": [
+        "MIT",
+        "Stanford",
+        "Harvard",
+        "Princeton",
+        "Yale",
+        "Columbia",
+        "Caltech",
+        "UChicago",
+        "UPenn",
+        "Cornell",
+        "Brown",
+        "Duke",
+        "JHU",
+        "Northwestern",
+        "UCLA"
+      ]
     },
     "problem": {
-      "title": "留学申请，不该这么难。",
-      "subtitle": "每年数百万学生都面临同样的困扰",
-      "pain1Title": "信息过载",
-      "pain1Desc": "成千上万的学校、无数的排名、相互矛盾的建议——你该从何开始？",
-      "pain2Title": "截止日期混乱",
-      "pain2Desc": "不同学校、不同截止日期、不同要求——错过一个可能失去一切。",
-      "pain3Title": "录取机会不确定",
-      "pain3Desc": "我能录取吗？是目标太高还是太保守？这种未知的焦虑令人窒息。"
+      "eyebrow": "为什么 90% 的家庭都走过弯路",
+      "title": "留学申请不该继续是一场信息战",
+      "subtitle": "不是信息越多越安全，而是判断越晚越昂贵。真正的问题，从来不是资料少，而是没有一套可靠的决策系统。",
+      "items": [
+        {
+          "number": "01",
+          "title": "信息不对称",
+          "description": "论坛、中介、社媒和排名表各说各话。家庭看到的是碎片，真正需要的是能被验证、能被比较的判断依据。"
+        },
+        {
+          "number": "02",
+          "title": "选校靠感觉",
+          "description": "只看排名，不看匹配度、专业适配和录取波动。最后清单看起来很努力，结果却没有策略。"
+        },
+        {
+          "number": "03",
+          "title": "文书失去本人",
+          "description": "模版化、翻译腔、重复表达让申请者的声音被抹平。真正高质量的文书，应该被放大而不是被代替。"
+        },
+        {
+          "number": "04",
+          "title": "申请节奏失控",
+          "description": "截止日期、推荐信、活动补强和文书修改交错堆叠。没有统一工作台，焦虑会在最后一百天集中爆发。"
+        }
+      ],
+      "visuals": {
+        "signalNoise": {
+          "label": "碎片化信息流",
+          "tabs": ["小红书", "College Confidential", "Reddit", "一亩三分地", "US News", "官网 FAQ"],
+          "notes": [
+            "MIT 还看 AP Physics C 吗？",
+            "夏校值不值得花 8 万？",
+            "1520 和 1570 差别大吗？",
+            "文书首段能不能用对话开头？",
+            "推荐信 3 封够不够？"
+          ],
+          "footer": "问题越来越多，但答案没有统一坐标"
+        },
+        "decisionQuestions": {
+          "eyebrow": "哈佛学院 · 常规申请",
+          "excerpt": "“经过慎重评估，我们目前无法为你提供录取名额……”",
+          "stamp": "结果 · 03.27",
+          "questions": [
+            "为什么 1570 还是会落空？",
+            "是文书不够锋利？",
+            "还是活动清单缺了说服力？",
+            "又或者本质上只是高波动结果？"
+          ]
+        }
+      }
     },
-    "howItWorks": {
-      "title": "三步开始你的申请之旅",
-      "subtitle": "从建立档案到收到录取，我们全程陪伴",
-      "step1Title": "建立档案",
-      "step1Desc": "输入你的成绩、标化、活动和偏好——只需 5 分钟。",
-      "step2Title": "AI 智能匹配",
-      "step2Desc": "我们的 AI 基于 10,000+ 真实案例分析你的档案，为你推荐最匹配的学校。",
-      "step3Title": "自信申请",
-      "step3Desc": "获取个性化时间表、文书指导和实时录取预测。"
+    "features": {
+      "eyebrow": "一站式 AI 留学工作台",
+      "title": "六块核心能力，串起完整申请链路",
+      "subtitle": "不是把功能堆在一起，而是让每一步都知道下一步是什么。选校、文书、规划、预测、组队和专家判断，在一个系统里协同工作。",
+      "items": [
+        {
+          "number": "01",
+          "tag": "AI · 选校",
+          "title": "智能选校引擎",
+          "description": "结合你的档案、真实录取数据与招生偏好模型，输出冲刺、匹配、保底三档学校矩阵。"
+        },
+        {
+          "number": "02",
+          "tag": "AI · 文书",
+          "title": "文书共创工作台",
+          "description": "从脑暴到成稿，AI 像合作者一样推动结构和表达，而不是代写。"
+        },
+        {
+          "number": "03",
+          "tag": "规划",
+          "title": "三年时间线",
+          "description": "把标化、科研、活动、推荐信和申请窗口拆成可执行的长期节奏。"
+        },
+        {
+          "number": "04",
+          "tag": "数据",
+          "title": "录取概率预测",
+          "description": "用持续校准的模型给出更可信的概率判断，而不是情绪化的乐观或悲观。"
+        },
+        {
+          "number": "05",
+          "tag": "社区",
+          "title": "学生组队广场",
+          "description": "找到同校、同专业或同赛道申请者，共享信息、互改文书、彼此维持节奏。"
+        },
+        {
+          "number": "06",
+          "tag": "顾问",
+          "title": "真人专家陪跑",
+          "description": "关键节点交给前招生官或 Top30 学长学姐把关，AI 负责提速，真人负责判断。"
+        }
+      ],
+      "visuals": {
+        "openModule": "打开模块",
+        "matching": {
+          "label": "录取分层",
+          "schools": [
+            {
+              "name": "MIT",
+              "odds": 14,
+              "tier": "reach"
+            },
+            {
+              "name": "CMU",
+              "odds": 47,
+              "tier": "target"
+            },
+            {
+              "name": "UIUC",
+              "odds": 62,
+              "tier": "target"
+            },
+            {
+              "name": "Purdue",
+              "odds": 81,
+              "tier": "safety"
+            }
+          ]
+        },
+        "essay": {
+          "kicker": "Common App · Prompt 1",
+          "lines": [
+            "Growing up in my grandmother’s kitchen, I learned that",
+            "patience is a virtue",
+            "recipes are really stories told in flavors"
+          ],
+          "chips": ["声音更真", "节奏更紧", "结尾偏弱"]
+        },
+        "timeline": {
+          "label": "申请节奏",
+          "items": [
+            {
+              "month": "Sep",
+              "label": "标化 · SAT"
+            },
+            {
+              "month": "Nov",
+              "label": "夏校申请"
+            },
+            {
+              "month": "Feb",
+              "label": "科研项目"
+            },
+            {
+              "month": "Jun",
+              "label": "推荐信"
+            }
+          ]
+        },
+        "probability": {
+          "label": "校准后的区间",
+          "ranges": [
+            {
+              "tier": "reach",
+              "text": "MIT · 12–18%"
+            },
+            {
+              "tier": "target",
+              "text": "GT · 43–51%"
+            },
+            {
+              "tier": "safety",
+              "text": "Purdue · 78–86%"
+            }
+          ],
+          "note": "模型显示方向，不替代最后的判断。"
+        },
+        "team": {
+          "label": "组队推进",
+          "members": [
+            {
+              "name": "Amy",
+              "task": "CMU 互改中",
+              "status": "success"
+            },
+            {
+              "name": "Leo",
+              "task": "MIT 补案例",
+              "status": "ai"
+            },
+            {
+              "name": "Jing",
+              "task": "Purdue 提交检查",
+              "status": "warning"
+            }
+          ]
+        },
+        "mentor": {
+          "label": "专家把关",
+          "quote": "AI 负责拉齐全局节奏，真人只在不可逆的判断点出手。",
+          "points": ["选校结构复核", "最终文书方向确认", "提交前风险检查"]
+        }
+      }
     },
-    "ctaSubtext": "免费使用，无需信用卡",
-    "socialProofRating": "已帮助 2,000+ 学生",
+    "how": {
+      "eyebrow": "四步走完全流程",
+      "title": "从“我要出国”到“我被录取”",
+      "subtitle": "先建立判断，再推进动作。每一步都带着清晰的优先级，而不是到最后再补漏洞。",
+      "steps": [
+        {
+          "number": "01",
+          "title": "建立你的档案",
+          "description": "十分钟录入成绩、活动、兴趣与目标，让系统先看清你现在的位置。"
+        },
+        {
+          "number": "02",
+          "title": "生成申请矩阵",
+          "description": "把学校、概率、文书难度和时间成本放在一张桌面上统一比较。"
+        },
+        {
+          "number": "03",
+          "title": "推进文书与协作",
+          "description": "AI 负责结构建议与风险提示，组队和导师负责把反馈落到真实版本里。"
+        },
+        {
+          "number": "04",
+          "title": "跟踪递交与结果",
+          "description": "系统持续同步进度、材料状态与关键提醒，直到 offer 真正落地。"
+        }
+      ],
+      "dashboard": {
+        "eyebrow": "StudyAI 工作台",
+        "title": "从资料到递交，一屏看清优先级",
+        "note": "申请矩阵 · 文书任务 · AI 追踪",
+        "cards": ["选校清单", "文书排期", "协作提醒"],
+        "assistantBadge": "AI 助理",
+        "tip": "AI 正在比对 MIT / CMU 文书重合度",
+        "tasksLabel": "今日推进",
+        "tasks": ["完善申请画像", "完成 GT Why Essay", "确认 Purdue 提交"],
+        "columns": ["学校", "档位", "进度"]
+      }
+    },
+    "social": {
+      "eyebrow": "真实学员 · 真实结果",
+      "title": "不是更会营销，而是更会交付结果",
+      "stats": [
+        {
+          "value": "12,400+",
+          "label": "在读学员"
+        },
+        {
+          "value": "2,100+",
+          "label": "Top30 录取"
+        },
+        {
+          "value": "87%",
+          "label": "预测校准"
+        },
+        {
+          "value": "3,000+",
+          "label": "院校追踪"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "我本来以为中介会更专业，用了一个月后才发现，AI 给出的选校组合比对方更有逻辑，最后 MIT EA 录了。",
+          "name": "林同学",
+          "meta": "MIT CS · 2028 届",
+          "tag": "MIT CS",
+          "monogram": "林"
+        },
+        {
+          "quote": "组队功能太有用了。四个同样申 Econ 的人一起互改文书，最后我们都拿到了远超预期的结果。",
+          "name": "王同学",
+          "meta": "UPenn Wharton · 2028 届",
+          "tag": "Wharton",
+          "monogram": "王"
+        },
+        {
+          "quote": "AI 没有替我写，而是逼我把真正重要的经历讲清楚。17 稿之后，我的 Common App Essay 终于像我自己。",
+          "name": "周同学",
+          "meta": "Stanford · 2028 届",
+          "tag": "Stanford",
+          "monogram": "周"
+        },
+        {
+          "quote": "作为家长，我第一次能清楚看到孩子的申请节奏。不是更焦虑了，而是真的知道每周该盯什么。",
+          "name": "张女士",
+          "meta": "学生家长",
+          "tag": "Parent POV",
+          "monogram": "张"
+        }
+      ]
+    },
+    "cta": {
+      "eyebrow": "现在开始 · 免费",
+      "title": ["别再把时间", "浪费在信息差上"],
+      "subtitle": "注册只要 30 秒。两分钟后，你就能看到属于自己的第一版申请矩阵和下一步优先级。",
+      "primary": "免费创建账号",
+      "secondary": "预约 1v1 咨询",
+      "trust": "无需信用卡 · 随时退出 · 隐私保护"
+    },
     "footer": {
-      "description": "智能留学申请平台，为您提供选校推荐、录取预测、案例库等一站式服务",
-      "products": "产品服务",
-      "resources": "资源",
-      "contact": "联系我们",
-      "helpCenter": "帮助中心",
-      "contactEmail": "contact@studyabroad.com"
+      "description": "StudyAI 把 AI 选校、文书协作、时间线管理和真实录取数据放进同一套申请工作台，让复杂留学流程变成可以被执行的系统。",
+      "columns": [
+        {
+          "title": "产品",
+          "links": ["AI 选校", "文书工作台", "三年时间线", "录取预测", "组队社区"]
+        },
+        {
+          "title": "资源",
+          "links": ["学员案例", "帮助中心", "关于我们", "免费开始", "服务条款"]
+        },
+        {
+          "title": "公司",
+          "links": ["关于团队", "学生社区", "联系支持", "隐私保护", "注册账号"]
+        },
+        {
+          "title": "法律",
+          "links": ["隐私政策", "服务条款", "帮助文档"]
+        }
+      ],
+      "copyright": "© 2026 StudyAI · Admissions, no longer a black box.",
+      "note": "以清晰构建"
     }
   },
   "auth": {
@@ -524,7 +781,7 @@
       "heroDesc": "智能选校、精准预测、案例分享\n让留学申请不再迷茫",
       "features": {
         "ai": "AI 智能选校推荐",
-        "accuracy": "95% 预测准确率",
+        "accuracy": "结果校准预测",
         "cases": "10,000+ 真实案例",
         "schools": "覆盖 500+ 院校"
       },
@@ -1287,7 +1544,8 @@
       },
       "empty": "暂无推荐信",
       "emptyHint": "添加推荐人以追踪推荐信状态"
-    }
+    },
+    "linkedToTemplate": "已关联模板"
   },
   "ranking": {
     "title": "自定义榜单",
@@ -1343,7 +1601,8 @@
     "tier": {
       "reach": "冲刺",
       "match": "匹配",
-      "safety": "保底"
+      "safety": "保底",
+      "unknown": "未知"
     },
     "ucOneClick": "UC 一键预测",
     "ucOneClickUnavailable": "暂无法获取 UC 学校列表",
@@ -1419,12 +1678,6 @@
       "medium": "数据参考一般",
       "low": "数据参考有限"
     },
-    "tier": {
-      "reach": "冲刺",
-      "match": "匹配",
-      "safety": "保底",
-      "unknown": "未知"
-    },
     "tooltip": {
       "ensemble": "把 AI、统计和历史信号合并成一个面向你的综合预估"
     },
@@ -1437,7 +1690,6 @@
     "detailedAnalysisPrompt": "请用留学顾问的口吻详细分析我申请{schoolName}的机会，明确区分学校整体录取率与我基于当前档案的个人预估，并给出提升建议。",
     "dataCompleteness": "档案完整度",
     "dataCompletenessLow": "完善档案以获得更准确的预测结果",
-    "completeProfile": "完善档案",
     "fromCache": "缓存",
     "expand": "展开详情",
     "collapse": "收起详情",
@@ -2196,6 +2448,22 @@
     }
   },
   "ui": {
+    "admissionTiers": {
+      "reach": "冲刺",
+      "target": "匹配",
+      "safety": "保底",
+      "likely": "有望"
+    },
+    "aiDisclosure": {
+      "inputs": "依据输入",
+      "confidence": "置信度",
+      "limitations": "局限说明",
+      "confidenceLevels": {
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      }
+    },
     "countBadge": {
       "unread": "{count} 条未读消息"
     },
@@ -2512,6 +2780,7 @@
       "acceptanceRate": "录取率",
       "intlAcceptanceRate": "国际生录取率",
       "hasEarlyDecision": "早申 (ED)",
+      "testingPolicy": "标化政策",
       "testOptional": "标化可选",
       "satAvg": "SAT 均分",
       "satRange": "SAT 区间 (25-75%)",
@@ -2745,6 +3014,11 @@
     "schoolListDiagnosis": "学校清单诊断",
     "foundationReview": "基础档案诊断",
     "riskBoundaries": "风险边界",
+    "topReasons": "核心依据",
+    "topRisks": "核心风险",
+    "evidenceSummary": "证据摘要",
+    "confidenceSummary": "置信摘要",
+    "freshnessSummary": "新鲜度摘要",
     "missingPredictions": "缺少预测的学校",
     "missingRounds": "尚未绑定轮次的学校",
     "highlights": "亮点",
@@ -2895,7 +3169,7 @@
       }
     },
     "feedback": {
-      "title": "这部分实验增强对你有帮助吗？",
+      "title": "这份结构化分析对你有帮助吗？",
       "helpful": "有帮助",
       "notHelpful": "没帮助",
       "chooseReason": "请选择原因",
@@ -3226,7 +3500,7 @@
       },
       "ai": {
         "title": "AI升级",
-        "desc": "引入GPT-4，预测准确率大幅提升"
+        "desc": "引入 GPT-4，提升解释质量与决策支持能力"
       },
       "expansion": {
         "title": "全球拓展",
@@ -3405,7 +3679,7 @@
       },
       "predictionAccuracy": {
         "question": "预测准确率如何？",
-        "answer": "基于大量真实案例数据，我们的预测准确率达到 95% 以上。"
+        "answer": "我们会基于已核验录取结果持续校准预测；在已核验样本量足够之前，不对外宣称固定准确率。"
       },
       "dataPrivacy": {
         "question": "我的数据安全吗？",
@@ -3678,7 +3952,28 @@
       "pageCount": "{count} 页",
       "pageWarning": "简历超出 {max} 页限制",
       "zoom": "缩放",
-      "sections": "板块"
+      "sections": "板块",
+      "placeholder": {
+        "awardLevel": "国家级 / 省级 / 校级",
+        "schoolName": "例如：哈佛大学",
+        "degree": "例如：文学学士",
+        "major": "例如：计算机科学",
+        "location": "例如：剑桥，马萨诸塞州",
+        "fullName": "例如：张三",
+        "cityState": "城市，省份",
+        "addTech": "添加技术栈…",
+        "authors": "姓, 名, 姓, 名, …",
+        "publicationStatus": "已发表 / 审稿中 / 已投稿",
+        "skillCategory": "类别（如：语言、框架）",
+        "addSkill": "添加技能…",
+        "testName": "如 SAT、TOEFL 等",
+        "name": "名称",
+        "ucCappedGpa": "UC 封顶加权 GPA",
+        "ucUncappedGpa": "UC 未封顶加权 GPA"
+      },
+      "chooseTemplate": "选择模板",
+      "searchTemplates": "搜索模板…",
+      "relevantCoursework": "相关课程："
     },
     "customize": {
       "title": "自定义",
@@ -5144,7 +5439,8 @@
       "schoolPlaceholder": "选择学校",
       "tags": "标签（选填）",
       "tagsPlaceholder": "输入后按回车添加（最多10个）",
-      "tagsHint": "最多 {max} 个标签"
+      "tagsHint": "最多 {max} 个标签",
+      "removeTag": "移除"
     },
     "join": "加入",
     "leave": "退出队伍",
@@ -5283,6 +5579,19 @@
         "teamUp": "可组队",
         "networking": "交流"
       },
+      "moderationStatus": {
+        "pendingReview": "待审核",
+        "approved": "已通过",
+        "rejected": "已拒绝"
+      },
+      "contextSourceType": {
+        "official": "官方",
+        "community": "社区"
+      },
+      "preview": {
+        "bannerTitle": "预览模式",
+        "bannerHint": "这里是其他队伍的公开卡片，先发一张自己的卡才能开始 like / 匹配。"
+      },
       "empty": {
         "noCard": "先创建并发布一张组队卡",
         "deckEmpty": "当前牌堆为空",
@@ -5317,7 +5626,9 @@
         "city": "城市",
         "cityPlaceholder": "北京 / 上海 / 远程",
         "languages": "语言",
-        "languagesPlaceholder": "中文、英文"
+        "languagesPlaceholder": "中文、英文",
+        "timezone": "时区",
+        "timezonePlaceholder": "如 UTC+8"
       },
       "intentMode": {
         "teamUp": "正式组队",
@@ -5360,7 +5671,9 @@
         "need": "我需要",
         "skills": "技能",
         "members": "成员摘要",
-        "confirmed": "已确认"
+        "confirmed": "已确认",
+        "detailExpand": "展开全文",
+        "detailCollapse": "收起"
       },
       "toast": {
         "cardCreated": "组队卡已创建",
@@ -5368,7 +5681,66 @@
         "cardPublished": "组队卡已发布",
         "cardClosed": "组队卡已关闭",
         "displayUpdated": "展示信息已更新",
-        "matched": "互相右滑，已创建群聊"
+        "matched": "互相右滑，已创建群聊",
+        "contextCreated": "社区活动已创建",
+        "contextUpdated": "社区活动已更新",
+        "contextPublished": "社区活动已发布"
+      },
+      "copy": {
+        "publicTab": "官方",
+        "privateTab": "社区",
+        "matchesTab": "已匹配",
+        "myTeamTab": "我的队伍",
+        "publicTitle": "官方比赛池",
+        "publicDescription": "先选赛事池，再选比赛，再选具体招募情境。",
+        "privateTitle": "社区自建活动",
+        "privateDescription": "先创建自己的活动情境，再绑定组队卡并发布。",
+        "pool": "赛事池",
+        "poolEntry": "比赛入口",
+        "context": "招募情境",
+        "myContexts": "我的社区活动",
+        "createContext": "创建活动",
+        "updateContext": "更新活动",
+        "publishContext": "发布活动",
+        "openInPublic": "打开官方",
+        "openInPrivate": "打开社区",
+        "currentSelection": "当前选择",
+        "noPoolEntries": "这个赛事池还没有入口。",
+        "noPublicContext": "这个比赛还没有可用的官方招募情境。",
+        "noPrivateContext": "先创建一个社区招募情境。",
+        "sourceUrl": "报名链接",
+        "registrationCloseAt": "报名截止",
+        "eventStartAt": "开始时间",
+        "eventEndAt": "结束时间",
+        "locationMode": "地点模式",
+        "locationText": "地点说明",
+        "rolePresets": "角色预设",
+        "selectContextFirst": "先选一个招募情境，再创建组队卡。",
+        "existingCards": "现有组队卡",
+        "loadCard": "加载到编辑器",
+        "moderationStatus": "审核状态",
+        "sourceType": "来源",
+        "communityBadge": "社区",
+        "officialBadge": "官方",
+        "noCards": "还没有组队卡。",
+        "openPublicDeck": "去官方池划卡"
+      },
+      "contextForm": {
+        "new": "新建社区招募情境",
+        "title": "活动标题",
+        "chineseTitle": "中文标题",
+        "rolePresetsPlaceholder": "队长、分析师、答辩手",
+        "description": "活动简介"
+      },
+      "trust": {
+        "adminTooltip": "平台管理员",
+        "adminAria": "已认证管理员",
+        "verifiedTooltip": "已认证用户 — 身份核实",
+        "verifiedAria": "已认证成员",
+        "emailTooltip": "已验证邮箱",
+        "emailAria": "已验证邮箱的成员",
+        "thinLabel": "信息较少",
+        "thinAria": "组队卡摘要偏短"
       }
     }
   },
@@ -5959,6 +6331,21 @@
         "rankings": "排名录取",
         "financial": "费用援助",
         "application": "申请方式"
+      },
+      "editDialog": {
+        "usNewsRank": "US News 排名",
+        "qsRank": "QS 排名",
+        "testingPolicy": "标化政策",
+        "testOptional": "可选提交标化",
+        "earlyDecision": "提前决定 (ED)",
+        "commonApp": "Common App",
+        "coalitionApp": "Coalition App",
+        "feeWaiver": "申请费减免",
+        "needBlindIntl": "国际生 Need Blind"
+      },
+      "dataQuality": {
+        "loadFailedTitle": "数据质量报告加载失败",
+        "loadFailedDescription": "请尝试刷新页面"
       }
     },
     "data": {
@@ -6051,8 +6438,9 @@
       },
       "stats": {
         "calibratedSchools": "已校准学校",
-        "predictionsWithOutcomes": "有录取结果的预测",
-        "overallAccuracy": "整体准确度",
+        "verifiedOutcomes": "已核验结果",
+        "brierScore": "Brier 分数",
+        "ece": "校准 ECE",
         "schoolsNeedingAttention": "需要关注的学校"
       },
       "charts": {
@@ -6220,7 +6608,8 @@
         "notesPlaceholder": "说明验证依据、冲突处理或 censor 原因",
         "markFinal": "标记为最终结果",
         "cancel": "取消",
-        "saveReview": "保存复核"
+        "saveReview": "保存复核",
+        "statusReady": "就绪"
       }
     },
     "applicationAnalysisWorkflow": {
@@ -6230,6 +6619,7 @@
         "evidence": "证据",
         "policies": "策略版本",
         "evaluations": "评估",
+        "replays": "回放",
         "gates": "门禁",
         "activate": "激活 / 回滚",
         "experiments": "实验",
@@ -6240,6 +6630,11 @@
       "evidence": {
         "createTitle": "创建学校政策证据",
         "queueTitle": "证据审核队列",
+        "fixtureHint": "Fixture evidence 只用于 CI/nightly 治理，不代表 production 可信度；生产仍然只认已审核真实证据。",
+        "modeFilter": "证据模式",
+        "modeAll": "全部",
+        "modeFixture": "Fixture",
+        "modeReal": "真实",
         "schoolId": "学校 ID",
         "dimension": "政策维度",
         "policyValue": "政策值",
@@ -6276,7 +6671,40 @@
         "policyCorrectnessRate": "政策正确率",
         "weakStateCorrectnessRate": "弱态正确率",
         "actionabilityMean": "可执行性",
+        "webVisualPass": "Web 视觉通过",
+        "liveGoldPassRate": "Live Gold 通过率",
+        "journeyPassRate": "Journey 通过率",
+        "caseCount": "Gold Case 数",
+        "workflowMode": "工作流模式",
+        "dataset": "数据集",
+        "replayMode": "回放模式",
+        "evidenceMode": "证据模式",
+        "fixtureEvidenceCount": "Fixture 证据数",
+        "realEvidenceCount": "真实证据数",
+        "commitSha": "提交",
+        "latestReplayId": "最近 Replay",
+        "reportPath": "报告",
+        "reportJsonPath": "报告 JSON",
+        "workflowRunUrl": "工作流",
+        "failures": "失败项",
         "empty": "还没有评估运行记录。"
+      },
+      "replays": {
+        "title": "回放运行",
+        "goldPassRate": "Gold 通过率",
+        "webRenderPass": "Web 渲染",
+        "mobileRenderPass": "移动端渲染",
+        "liveGoldPassRate": "Live Gold 通过率",
+        "caseCount": "Case 数",
+        "workflowMode": "工作流模式",
+        "commitSha": "提交",
+        "renderParityMode": "渲染模式",
+        "reportPath": "报告",
+        "reportJsonPath": "报告 JSON",
+        "workflowRunUrl": "工作流",
+        "liveReplayId": "Live Replay",
+        "failures": "失败项",
+        "empty": "还没有回放运行记录。"
       },
       "gates": {
         "title": "升级门禁",
@@ -6547,7 +6975,8 @@
       "agentMaxTokensDesc": "单次回复的最大 Token 数量，影响回复长度上限",
       "agentTools": "工具数",
       "cancel": "取消",
-      "save": "保存"
+      "save": "保存",
+      "traceId": "调用链 ID"
     },
     "memory": {
       "title": "记忆管理",
@@ -6628,7 +7057,10 @@
       "decayArchived": "归档数量",
       "decayDeleted": "删除数量",
       "decayErrors": "错误数量",
-      "decayDuration": "耗时"
+      "decayDuration": "耗时",
+      "titleLabel": "标题",
+      "summaryLabel": "摘要",
+      "allTypes": "全部类型"
     },
     "highSchools": {
       "title": "高中管理",
@@ -7164,7 +7596,8 @@
         "optional": "可选",
         "table": {
           "school": "学校"
-        }
+        },
+        "statusLabel": "状态"
       },
       "toast": {
         "approved": "已通过审核",
@@ -7356,7 +7789,8 @@
         "REFER_USER": "邀请用户",
         "SWIPE_CASE": "浏览案例",
         "REPORT_CONTENT": "举报内容"
-      }
+      },
+      "descriptionLabel": "描述"
     },
     "contentMod": {
       "title": "内容审核",
@@ -7436,7 +7870,9 @@
       "reason": "原因",
       "reasonPlaceholder": "输入原因（可选）...",
       "action": "操作",
-      "noEvents": "暂无安全事件"
+      "noEvents": "暂无安全事件",
+      "postsUpdated": "已更新 {count} 个帖子",
+      "titleLabel": "标题"
     },
     "payments": {
       "title": "支付管理",
@@ -7991,6 +8427,30 @@
         "autoApproved": "自动审批",
         "rejected": "已拒绝"
       }
+    },
+    "activityTemplates": {
+      "toast": {
+        "created": "活动模板已创建",
+        "updated": "活动模板已更新",
+        "deleted": "活动模板已删除"
+      },
+      "description": "管理活动模板（名称、类别、档位）",
+      "searchPlaceholder": "按名称、中文名或别名搜索…",
+      "tierPlaceholder": "档位",
+      "categoryPlaceholder": "类别",
+      "allTiers": "全部档位",
+      "allCategories": "全部类别",
+      "deleteTitle": "删除活动模板",
+      "chineseName": "中文名",
+      "name": "名称",
+      "category": "类别",
+      "tier": "档位",
+      "aliases": "别名",
+      "active": "已启用",
+      "descriptionLabel": "描述",
+      "optionalDescription": "可选描述",
+      "emptyTitle": "暂无活动模板",
+      "emptyDescription": "点击「创建」添加新的活动模板"
     }
   },
   "essayAdmin": {
@@ -8286,5 +8746,14 @@
       "share": "分享案例",
       "shareDesc": "贡献你的录取结果，帮助他人的同时赚取平台积分。"
     }
+  },
+  "layout": {
+    "description": "AI 驱动的留学规划平台"
+  },
+  "schoolDetail": {
+    "edII": "ED II"
+  },
+  "activityForm": {
+    "linkedToTemplate": "已关联模板"
   }
 }
