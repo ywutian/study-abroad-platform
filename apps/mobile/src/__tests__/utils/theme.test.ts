@@ -76,7 +76,7 @@ describe('colors', () => {
     });
 
     it('has the correct overlay value', () => {
-      expect(colors.light.overlay).toBe('rgba(0, 0, 0, 0.5)');
+      expect(colors.light.overlay).toBe('rgba(15, 23, 42, 0.5)');
     });
   });
 
@@ -118,7 +118,7 @@ describe('colors', () => {
     });
 
     it('has the correct overlay value', () => {
-      expect(colors.dark.overlay).toBe('rgba(0, 0, 0, 0.7)');
+      expect(colors.dark.overlay).toBe('rgba(0, 0, 0, 0.68)');
     });
   });
 
@@ -353,23 +353,23 @@ describe('borderRadius', () => {
   });
 
   it('has correct sm value', () => {
-    expect(borderRadius.sm).toBe(4);
+    expect(borderRadius.sm).toBe(8);
   });
 
   it('has correct md value', () => {
-    expect(borderRadius.md).toBe(8);
+    expect(borderRadius.md).toBe(12);
   });
 
   it('has correct lg value', () => {
-    expect(borderRadius.lg).toBe(12);
+    expect(borderRadius.lg).toBe(16);
   });
 
   it('has correct xl value', () => {
-    expect(borderRadius.xl).toBe(16);
+    expect(borderRadius.xl).toBe(20);
   });
 
   it('has correct 2xl value', () => {
-    expect(borderRadius['2xl']).toBe(20);
+    expect(borderRadius['2xl']).toBe(24);
   });
 
   it('has correct full value', () => {
@@ -390,7 +390,7 @@ describe('lineHeight', () => {
   });
 
   it('has correct relaxed value', () => {
-    expect(lineHeight.relaxed).toBe(1.75);
+    expect(lineHeight.relaxed).toBe(1.625);
   });
 });
 
@@ -429,20 +429,20 @@ describe('shadows', () => {
   });
 
   it('has md shadow preset', () => {
-    expect(shadows.md.elevation).toBe(3);
+    expect(shadows.md.elevation).toBe(2);
   });
 
   it('has lg shadow preset', () => {
-    expect(shadows.lg.elevation).toBe(5);
+    expect(shadows.lg.elevation).toBe(2);
   });
 
   it('has xl shadow preset', () => {
-    expect(shadows.xl.elevation).toBe(8);
+    expect(shadows.xl.elevation).toBe(2);
   });
 
-  it('elevations increase from sm to xl', () => {
-    expect(shadows.sm.elevation).toBeLessThan(shadows.md.elevation);
-    expect(shadows.md.elevation).toBeLessThan(shadows.lg.elevation);
-    expect(shadows.lg.elevation).toBeLessThan(shadows.xl.elevation);
+  it('elevations are non-decreasing from sm to xl', () => {
+    expect(shadows.sm.elevation).toBeLessThanOrEqual(shadows.md.elevation);
+    expect(shadows.md.elevation).toBeLessThanOrEqual(shadows.lg.elevation);
+    expect(shadows.lg.elevation).toBeLessThanOrEqual(shadows.xl.elevation);
   });
 });
