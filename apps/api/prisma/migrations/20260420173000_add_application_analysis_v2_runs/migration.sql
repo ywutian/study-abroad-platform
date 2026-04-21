@@ -123,7 +123,7 @@ CREATE INDEX IF NOT EXISTS "ApplicationAnalysisReplayRun_status_createdAt_idx" O
 CREATE INDEX IF NOT EXISTS "ApplicationAnalysisReplayCaseResult_replayRunId_createdAt_idx" ON "ApplicationAnalysisReplayCaseResult"("replayRunId", "createdAt");
 CREATE INDEX IF NOT EXISTS "ApplicationAnalysisReplayCaseResult_caseId_createdAt_idx" ON "ApplicationAnalysisReplayCaseResult"("caseId", "createdAt");
 CREATE INDEX IF NOT EXISTS "ApplicationAnalysisReplayCaseResult_runId_createdAt_idx" ON "ApplicationAnalysisReplayCaseResult"("runId", "createdAt");
-CREATE INDEX IF NOT EXISTS "ApplicationAnalysisFeedbackRecord_applicationAnalysisRunId_createdAt_idx" ON "ApplicationAnalysisFeedbackRecord"("applicationAnalysisRunId", "createdAt");
+CREATE INDEX IF NOT EXISTS "ApplicationAnalysisFeedbackRecord_applicationAnalysisRunId__idx" ON "ApplicationAnalysisFeedbackRecord"("applicationAnalysisRunId", "createdAt");
 
 -- AddForeignKey
 DO $$ BEGIN
