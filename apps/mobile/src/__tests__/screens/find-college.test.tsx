@@ -79,6 +79,7 @@ jest.mock('@/utils/format', () => ({
 
 // Mock shared routes
 jest.mock('@study-abroad/shared', () => ({
+  ...jest.requireActual('@study-abroad/shared'),
   API_ROUTES: {
     SCHOOL_LISTS: '/school-lists',
   },
