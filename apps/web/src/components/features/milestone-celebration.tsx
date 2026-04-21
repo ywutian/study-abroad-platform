@@ -100,6 +100,7 @@ export function MilestoneCelebration({
   autoCloseDelay = 5000,
 }: MilestoneCelebrationProps) {
   const t = useTranslations('milestone');
+  const tAria = useTranslations('common.aria');
   const config = milestoneConfigs[type] || milestoneConfigs.achievement;
   const Icon = config.icon;
   const displayTitle = title || t(config.titleKey);
@@ -184,7 +185,7 @@ export function MilestoneCelebration({
                 size="icon"
                 className="absolute right-3 top-5 h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={tAria('close')}
               >
                 <X className="h-4 w-4" />
               </Button>

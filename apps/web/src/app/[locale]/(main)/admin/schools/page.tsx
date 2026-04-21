@@ -46,6 +46,7 @@ interface School {
   averageNetPrice?: number;
   roomAndBoard?: number;
   percentNeedMet?: number;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;

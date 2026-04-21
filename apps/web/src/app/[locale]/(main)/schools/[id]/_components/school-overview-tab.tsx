@@ -65,6 +65,7 @@ function EmptyCardState({ message }: { message: string }) {
 export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
   const t = useTranslations();
   const tc = useTranslations('common');
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
 
   const deadlines = school.metadata?.deadlines || {};
@@ -273,10 +274,12 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           source: getSchoolFieldSource(school, 'acceptsCoalition'),
         }
       : null,
-    isSupplementalFieldSource(getSchoolFieldSource(school, 'testOptional')) && school.testOptional
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'testingPolicy')) &&
+    school.testingPolicy &&
+    school.testingPolicy !== 'UNKNOWN'
       ? {
-          label: t('school.applicationInfo.testOptional'),
-          source: getSchoolFieldSource(school, 'testOptional'),
+          label: testingPolicyT(school.testingPolicy as any),
+          source: getSchoolFieldSource(school, 'testingPolicy'),
         }
       : null,
     isSupplementalFieldSource(getSchoolFieldSource(school, 'needBlindInternational')) &&

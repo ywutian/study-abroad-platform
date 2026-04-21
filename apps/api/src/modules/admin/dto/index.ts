@@ -15,3 +15,4 @@ export * from './user-permission.dto';
 export * from './update-priority.dto';
 export * from './prediction-workflow.dto';
 export * from './application-analysis-workflow.dto';
+export * from './match-pool.dto';

@@ -2,8 +2,12 @@
 
 import type {
   ConfidenceLevel,
+  PolicySourceQuality,
   PredictionOutcomeLabel,
   SchoolPolicyContext,
+  SchoolIntlAidPolicy,
+  SchoolRoundContext,
+  SchoolTestingPolicy,
   PredictionSourceSummary,
   TierType,
 } from './prediction';
@@ -202,6 +206,7 @@ export interface AnalysisMeta {
   focusSchoolCount: number;
   schoolsWithPredictions: number;
   generatedAt: string;
+  runId?: string;
   exposureId?: string;
   experimentalVersions?: ExperimentalVersionSummary[];
 }
@@ -305,29 +310,130 @@ export interface AnalysisRecommendations {
   timeline: string[];
 }
 
-export interface AIAnalysisResult {
-  sections: {
-    academic: SectionAnalysis;
-    testScores: SectionAnalysis;
-    activities: SectionAnalysis;
-    awards: SectionAnalysis;
-  };
-  overallScore: number;
-  tier: 'top10' | 'top30' | 'top50' | 'top100' | 'other';
-  suggestions: {
-    majors: string[];
-    competitions: string[];
-    activities: string[];
-    summerPrograms: string[];
-    timeline: string[];
-  };
+export interface ApplicationAnalysisSourceRef {
+  evidenceId?: string;
+  dimension: 'TESTING' | 'INTL_AID' | 'ROUND' | 'DEADLINE' | 'OTHER';
+  label: string;
+  value: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  sourcePublishedAt?: string;
+}
+
+export interface ApplicationAnalysisPolicyCard {
+  testingPolicy: SchoolTestingPolicy;
+  intlAidPolicy: SchoolIntlAidPolicy;
+  roundContext: SchoolRoundContext;
+  policySourceQuality: PolicySourceQuality;
+  standardDeadline?: string;
+  earlyDeadlinePolicy?: string;
+  evidenceIds: string[];
+  sources: ApplicationAnalysisSourceRef[];
+  unknowns: string[];
+}
+
+export interface ApplicationAnalysisAssessment {
   summary: string;
+  whyThisIsHard: string[];
+  compensatingStrengths: string[];
+  topGaps: string[];
+  nextActions: string[];
+  historicalSignals: string[];
+  hardStopRisks: string[];
+}
+
+export interface ApplicationAnalysisProfileSummary {
+  applicantType: AnalysisApplicantType;
+  intendedMajors: string[];
+  testStrategy?: 'submit' | 'testOptional' | 'unknown';
+  contextFlags: AnalysisContextFlag[];
+  constraints: string[];
+  grade?: string;
+  educationSystem?: string;
+  nationality?: string;
+  citizenship?: string;
+  countryOfResidence?: string;
+  highSchoolContext?: string;
+}
+
+export interface ApplicationAnalysisPortfolioSummary {
+  verdict: string;
+  balance: PortfolioBalance;
+  keyReasons: string[];
+  riskBoundaries: string[];
+}
+
+export interface ApplicationAnalysisSchoolResult {
+  schoolId: string;
+  schoolName: string;
+  tier: 'REACH' | 'TARGET' | 'SAFETY';
+  round?: string;
+  prediction?: TargetSchoolPredictionSnapshot;
+  policyCard: ApplicationAnalysisPolicyCard;
+  assessment: ApplicationAnalysisAssessment;
+  recourse?: RecourseGuidance;
+  uncertainty?: StrategyUncertainty;
+  evidenceIds: string[];
+  unknowns: string[];
+}
+
+export interface ApplicationAnalysisDebugInfo {
+  stepIds: string[];
+  stepTimingsMs: Record<string, number>;
+  validationErrors: string[];
+  promptHashes: Record<string, string>;
+}
+
+export type ApplicationAnalysisEvidenceKind =
+  | 'PREDICTION_FACT'
+  | 'POLICY_EVIDENCE'
+  | 'DERIVED_JUDGMENT'
+  | 'UNKNOWN';
+
+export interface ApplicationAnalysisEvidenceSummaryItem {
+  type: ApplicationAnalysisEvidenceKind;
+  label: string;
+  detail: string;
+  schoolId?: string;
+  schoolName?: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  sourcePublishedAt?: string;
+}
+
+export interface ApplicationAnalysisConfidenceSummary {
+  level: 'low' | 'medium' | 'high';
+  summary: string;
+  signals: string[];
+}
+
+export interface ApplicationAnalysisFreshnessSummary {
+  status: ApplicationAnalysisStatus;
+  summary: string;
+  generatedAt: string;
+}
+
+export interface AIAnalysisResult {
   status?: ApplicationAnalysisStatus;
-  meta?: AnalysisMeta;
-  profileContext?: AnalysisProfileContext;
-  portfolioAnalysis?: PortfolioAnalysis;
-  targetSchoolInsights?: TargetSchoolInsight[];
-  actionPlan?: AnalysisActionPlan;
-  recommendedPrograms?: AnalysisRecommendations;
+  meta: AnalysisMeta & {
+    traceId: string;
+    degradedReason?: string;
+    debugEnabled?: boolean;
+    exposureId?: string;
+  };
+  profileSummary: ApplicationAnalysisProfileSummary;
+  portfolioSummary: ApplicationAnalysisPortfolioSummary;
+  overallVerdict: string;
+  schools: ApplicationAnalysisSchoolResult[];
+  schoolCards: ApplicationAnalysisSchoolResult[];
+  topReasons: string[];
+  topRisks: string[];
+  actionPlan: AnalysisActionPlan;
+  nextActions: string[];
+  unknowns: string[];
+  evidenceSummary: ApplicationAnalysisEvidenceSummaryItem[];
+  confidenceSummary: ApplicationAnalysisConfidenceSummary;
+  freshnessSummary: ApplicationAnalysisFreshnessSummary;
   fairnessDisclosure?: FairnessDisclosure;
+  debug?: ApplicationAnalysisDebugInfo;
 }

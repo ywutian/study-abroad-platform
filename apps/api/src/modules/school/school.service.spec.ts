@@ -21,6 +21,8 @@ describe('SchoolService', () => {
     usNewsRank: 1,
     qsRank: 5,
     acceptanceRate: 3.5,
+    testingPolicy: 'OPTIONAL',
+    testOptional: true,
     metadata: {
       provenance: {
         acceptanceRate: {
@@ -174,6 +176,8 @@ describe('SchoolService', () => {
         foodAvg: 3.9,
         isPublic: true,
       });
+      expect(result.items[0].testingPolicy).toBe('OPTIONAL');
+      expect(result.items[0].testOptional).toBe(true);
     });
 
     it('should filter by country', async () => {
@@ -228,7 +232,7 @@ describe('SchoolService', () => {
       expect(result.totalPages).toBe(10);
     });
 
-    it('should filter by school type and boolean flags', async () => {
+    it('should map legacy testOptional filter to testingPolicy-compatible where clauses', async () => {
       (prismaService.school.findMany as jest.Mock).mockResolvedValue([
         mockSchool,
       ]);
@@ -250,7 +254,10 @@ describe('SchoolService', () => {
             isPrivate: true,
             needBlindInternational: true,
             hasEarlyDecision: true,
-            testOptional: true,
+            OR: expect.arrayContaining([
+              { testingPolicy: 'OPTIONAL' },
+              { testingPolicy: 'UNKNOWN', testOptional: true },
+            ]),
           }),
         }),
       );

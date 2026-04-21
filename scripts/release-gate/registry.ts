@@ -231,6 +231,34 @@ export const JOURNEY_REGISTRY = [
     },
   },
   {
+    id: 'AA1',
+    title: '申请分析页 runtime parity',
+    registryStatus: 'active',
+    persona: 'applicant',
+    platform: 'web',
+    defaultExecutionOwner: 'codex',
+    validationType: 'objective',
+    baselineSmoke: false,
+    fullAuditDefault: false,
+    qualityDimensions: ['layout', 'consultancy-quality'],
+    humanTask: {
+      summary:
+        '确认 applicant 结构化申请分析页在真实 runtime 下可稳定打开、进入有效状态，并保留顾问式信息层级。',
+      entry: 'Profile / Application Analysis',
+      steps: [
+        '登录 applicant 账号并打开 Profile 页。',
+        '等待 `/profiles/me/ai-analysis` 返回后查看结构化分析卡片。',
+        '确认结果态或降级态可见，且页面没有错误横幅。',
+      ],
+      expectedResults: [
+        '结构化分析卡片可见。',
+        '页面进入有效结果态或预期降级态，而不是报错空白。',
+        '整体层级清楚，像顾问 Copilot，而不是调试面板。',
+      ],
+      observationPrompts: ['布局合理性', '专业留学中介感'],
+    },
+  },
+  {
     id: 'A11',
     title: '移动端一致性',
     registryStatus: 'active',

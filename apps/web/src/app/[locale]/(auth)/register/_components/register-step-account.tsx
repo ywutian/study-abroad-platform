@@ -144,6 +144,7 @@ export function RegisterStepAccount({
             render={({ field }) => (
               <FormItem className="pt-2">
                 <FormControl>
+                  {/* @i18n-skip referral code format example */}
                   <Input
                     placeholder="A1B2C3D4"
                     className="font-mono uppercase tracking-wider"

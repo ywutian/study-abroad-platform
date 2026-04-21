@@ -1,105 +1,62 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Building2, FileText, TrendingUp, Bot } from 'lucide-react';
-import { AnimatedNumber, StaggerContainer, StaggerItem } from '@/components/ui/motion';
-import { SchoolMarquee } from './school-marquee';
-import { cn } from '@/lib/utils';
-
-const stats = [
-  {
-    icon: Building2,
-    value: 3000,
-    suffix: '+',
-    labelKey: 'home.stats.schools',
-    color: 'text-blue-500',
-  },
-  {
-    icon: FileText,
-    value: 10000,
-    suffix: '+',
-    labelKey: 'home.stats.cases',
-    color: 'text-emerald-500',
-  },
-  {
-    icon: TrendingUp,
-    value: 95,
-    suffix: '%',
-    labelKey: 'home.stats.accuracy',
-    color: 'text-amber-500',
-  },
-] as const;
+import { PageContainer } from '@/components/layout/page-container';
+import { useHomeContent } from './home-content';
 
 export function TrustBar() {
-  const t = useTranslations();
+  const home = useHomeContent();
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="zone-tinted section-compact">
-      <div className="container mx-auto px-4">
-        {/* Stats row with staggered entrance */}
-        <StaggerContainer staggerDelay={0.1}>
-          <div className="grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-12 lg:gap-20">
-            {stats.map((stat, index) => (
-              <StaggerItem key={stat.labelKey} variant="fade">
-                <div className="flex items-center gap-3">
-                  <div className={cn('rounded-xl bg-primary/10 p-2.5 sm:p-3', stat.color)}>
-                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-baseline gap-0.5">
-                      <AnimatedNumber
-                        value={stat.value}
-                        className={cn(
-                          'text-2xl sm:text-3xl lg:text-4xl font-extrabold',
-                          stat.color
-                        )}
-                        duration={1.5 + index * 0.3}
-                      />
-                      <span className={cn('text-xl sm:text-2xl font-extrabold', stat.color)}>
-                        {stat.suffix}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{t(stat.labelKey)}</p>
-                  </div>
-                </div>
-              </StaggerItem>
-            ))}
-
-            {/* 24/7 AI - static with pulse dot */}
-            <StaggerItem variant="fade">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-primary/10 p-2.5 sm:p-3 text-violet-500">
-                  <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-violet-500">
-                      24/7
-                    </span>
-                    <motion.div
-                      className="h-2 w-2 rounded-full bg-emerald-500"
-                      animate={
-                        prefersReducedMotion ? {} : { scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }
-                      }
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t('home.stats.aiAssistant')}
-                  </p>
-                </div>
-              </div>
-            </StaggerItem>
+    <section className="relative border-y border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/58 py-10 sm:py-12">
+      <PageContainer variant="marketing">
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="text-center text-2xs uppercase tracking-[0.3em] text-[var(--landing-subtle)]">
+            {home.trust.label}
           </div>
-        </StaggerContainer>
 
-        {/* School marquee */}
-        <div className="mt-6 sm:mt-8 border-t border-border/50 pt-4 sm:pt-6">
-          <SchoolMarquee />
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {home.trust.stats.map((stat, index) => (
+              <motion.div
+                key={`${stat.value}-${stat.label}`}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/86 px-5 py-5 shadow-[var(--landing-shadow-card)]"
+              >
+                <div className="text-4xl font-semibold leading-none tracking-[-0.04em] text-[var(--landing-fg)] sm:text-5xl">
+                  {stat.value}
+                </div>
+                <div className="mt-3 text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        <div className="mt-8 border-t border-[color:var(--landing-border)] pt-6">
+          <div className="landing-marquee-mask overflow-hidden">
+            <div className="animate-marquee flex w-max gap-8 sm:gap-12">
+              {[...home.trust.schools, ...home.trust.schools].map((school, index) => (
+                <span
+                  key={`${school}-${index}`}
+                  className="text-xl font-medium tracking-[-0.02em] text-[var(--landing-muted)] sm:text-2xl"
+                >
+                  {school}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </PageContainer>
     </section>
   );
 }

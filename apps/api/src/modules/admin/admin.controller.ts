@@ -46,9 +46,16 @@ import {
   ActivityTemplateQueryDto,
   BroadcastNotificationDto,
   BroadcastAudience,
+  CommunityRecruitmentContextQueryDto,
   CreateSchoolCalibrationDto,
   UpdateSchoolCalibrationDto,
   BulkCreateCalibrationDto,
+  CreateMatchPoolDto,
+  UpdateMatchPoolDto,
+  CreateMatchPoolEntryDto,
+  UpdateMatchPoolEntryDto,
+  ReviewCommunityRecruitmentContextDto,
+  PromoteCommunityRecruitmentContextDto,
   UpdatePriorityDto,
 } from './dto';
 import { AdminDataSyncService } from './admin-data-sync.service';
@@ -424,6 +431,97 @@ export class AdminController {
   async deleteGlobalEvent(@Param('id') id: string) {
     await this.adminService.deleteGlobalEvent(id);
     return { message: 'Event deleted' };
+  }
+
+  @Get('match-pools')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Get match pools' })
+  async getMatchPools() {
+    return this.adminService.getMatchPools();
+  }
+
+  @Post('match-pools')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Create match pool' })
+  async createMatchPool(@Body() dto: CreateMatchPoolDto) {
+    return this.adminService.createMatchPool(dto);
+  }
+
+  @Patch('match-pools/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Update match pool' })
+  async updateMatchPool(
+    @Param('id') id: string,
+    @Body() dto: UpdateMatchPoolDto,
+  ) {
+    return this.adminService.updateMatchPool(id, dto);
+  }
+
+  @Delete('match-pools/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Delete match pool' })
+  async deleteMatchPool(@Param('id') id: string) {
+    await this.adminService.deleteMatchPool(id);
+    return { message: 'Match pool deleted' };
+  }
+
+  @Post('match-pools/:id/entries')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Create match pool entry' })
+  async createMatchPoolEntry(
+    @Param('id') id: string,
+    @Body() dto: CreateMatchPoolEntryDto,
+  ) {
+    return this.adminService.createMatchPoolEntry(id, dto);
+  }
+
+  @Patch('match-pools/entries/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Update match pool entry' })
+  async updateMatchPoolEntry(
+    @Param('id') id: string,
+    @Body() dto: UpdateMatchPoolEntryDto,
+  ) {
+    return this.adminService.updateMatchPoolEntry(id, dto);
+  }
+
+  @Delete('match-pools/entries/:id')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Delete match pool entry' })
+  async deleteMatchPoolEntry(@Param('id') id: string) {
+    await this.adminService.deleteMatchPoolEntry(id);
+    return { message: 'Match pool entry deleted' };
+  }
+
+  @Get('community-contexts')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Get community recruitment contexts' })
+  async getCommunityRecruitmentContexts(
+    @Query() query: CommunityRecruitmentContextQueryDto,
+  ) {
+    return this.adminService.getCommunityRecruitmentContexts(query.status);
+  }
+
+  @Post('community-contexts/:id/review')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({ summary: 'Review community recruitment context' })
+  async reviewCommunityRecruitmentContext(
+    @Param('id') id: string,
+    @Body() dto: ReviewCommunityRecruitmentContextDto,
+  ) {
+    return this.adminService.reviewCommunityRecruitmentContext(id, dto.status);
+  }
+
+  @Post('community-contexts/:id/promote')
+  @RequirePermission(Permission.CALENDAR_MANAGE)
+  @ApiOperation({
+    summary: 'Promote community recruitment context into a public pool',
+  })
+  async promoteCommunityRecruitmentContext(
+    @Param('id') id: string,
+    @Body() dto: PromoteCommunityRecruitmentContextDto,
+  ) {
+    return this.adminService.promoteCommunityRecruitmentContext(id, dto);
   }
 
   // ============ Broadcast Notifications ============

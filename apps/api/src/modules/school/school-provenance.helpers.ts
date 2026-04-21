@@ -48,6 +48,7 @@ export const SCHOOL_TOP_LEVEL_PROVENANCE_FIELDS = [
   'acceptsCommonApp',
   'acceptsCoalition',
   'testOptional',
+  'testingPolicy',
   'hasEarlyDecision',
   'salary6YrPostGrad',
   'loanDefaultRate',
@@ -258,6 +259,7 @@ function resolveFallbackSourceForField(
       'acceptsCommonApp',
       'acceptsCoalition',
       'testOptional',
+      'testingPolicy',
       'hasEarlyDecision',
     ].includes(field)
   ) {

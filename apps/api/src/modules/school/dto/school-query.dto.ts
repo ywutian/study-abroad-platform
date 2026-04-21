@@ -11,6 +11,7 @@ import {
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 import { Type, Transform } from 'class-transformer';
+import { TestingPolicy } from '@prisma/client';
 
 export enum SchoolType {
   PUBLIC = 'public',
@@ -109,6 +110,11 @@ export class SchoolQueryDto extends PaginationDto {
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   testOptional?: boolean;
+
+  @ApiPropertyOptional({ enum: TestingPolicy, description: 'Testing policy' })
+  @IsOptional()
+  @IsEnum(TestingPolicy)
+  testingPolicy?: TestingPolicy;
 
   @ApiPropertyOptional({ description: 'Whether need-blind' })
   @IsOptional()

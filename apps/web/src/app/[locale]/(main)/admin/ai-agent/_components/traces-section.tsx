@@ -49,7 +49,7 @@ export function TracesSection() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Trace ID</TableHead>
+                    <TableHead>{t('traceId')}</TableHead>
                     <TableHead>{t('duration')}</TableHead>
                     <TableHead>{t('traceStatus')}</TableHead>
                     <TableHead>{t('timestamp')}</TableHead>

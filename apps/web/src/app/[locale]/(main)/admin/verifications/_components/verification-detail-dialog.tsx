@@ -62,6 +62,7 @@ export function VerificationDetailDialog({
   isReviewPending,
 }: VerificationDetailDialogProps) {
   const t = useTranslations('admin');
+  const tAria = useTranslations('common.aria');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -128,7 +129,7 @@ export function VerificationDetailDialog({
                 <div className="relative w-full max-h-60 overflow-hidden rounded-lg border">
                   <Image
                     src={detail.proofUrl}
-                    alt="Proof document"
+                    alt={tAria('proofDocument')}
                     width={500}
                     height={300}
                     className="object-contain w-full"

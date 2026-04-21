@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { toLegacyTestOptionalFlag } from '@study-abroad/shared/utils';
 import { SCHOOL_BASIC_SELECT } from '../../common/constants/prisma-selects';
 import { clampPercentRate } from '../../common/utils/percent.util';
 
@@ -9,7 +10,6 @@ import { clampPercentRate } from '../../common/utils/percent.util';
 export const SCHOOL_LIST_SCHOOL_SELECT = {
   ...SCHOOL_BASIC_SELECT,
   satAvg: true,
-  testOptional: true,
   hasEarlyDecision: true,
   acceptsCommonApp: true,
   needBlindInternational: true,
@@ -39,7 +39,11 @@ export function mapSchoolForList(school: SchoolListSchoolResult) {
     tuition: school.tuition || undefined,
     city: school.city || undefined,
     state: school.state || undefined,
-    testOptional: school.testOptional ?? undefined,
+    testingPolicy: school.testingPolicy,
+    testOptional: toLegacyTestOptionalFlag({
+      testingPolicy: school.testingPolicy,
+      testOptional: school.testOptional,
+    }),
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
     acceptsCommonApp: school.acceptsCommonApp ?? undefined,
     needBlindInternational: school.needBlindInternational || false,

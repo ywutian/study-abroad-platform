@@ -28,6 +28,7 @@ import { DecayConfig, DecayStats, DecayResult } from './types';
 
 export function DecaySection() {
   const t = useTranslations('admin.memory');
+  const tc = useTranslations('common');
   const queryClient = useQueryClient();
 
   const { data: decayConfig } = useQuery({
@@ -216,7 +217,7 @@ export function DecaySection() {
                         style={{ width: `${decayStats.averageImportance * 100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-2xs text-muted-foreground">
                       {(decayStats.averageImportance * 100).toFixed(0)}%
                     </span>
                   </div>
@@ -228,7 +229,7 @@ export function DecaySection() {
                         style={{ width: `${decayStats.averageFreshness * 100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-2xs text-muted-foreground">
                       {(decayStats.averageFreshness * 100).toFixed(0)}%
                     </span>
                   </div>
@@ -239,7 +240,7 @@ export function DecaySection() {
                       const total = decayStats.totalMemories || 1;
                       return (
                         <div key={tier} className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] w-14">
+                          <span className="text-2xs w-14">
                             {t(`tier${tier.charAt(0)}${tier.slice(1).toLowerCase()}`)}
                           </span>
                           <div className="flex-1 bg-muted rounded-full h-1.5">
@@ -248,7 +249,7 @@ export function DecaySection() {
                               style={{ width: `${(count / total) * 100}%` }}
                             />
                           </div>
-                          <span className="text-[10px] w-6 text-right">{count}</span>
+                          <span className="text-2xs w-6 text-right">{count}</span>
                         </div>
                       );
                     })}
@@ -305,7 +306,7 @@ export function DecaySection() {
             <AlertDialogDescription>{t('triggerDecayConfirm')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={() => triggerDecayMutation.mutate()}>
               {triggerDecayMutation.isPending && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
               Confirm

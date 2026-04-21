@@ -1,4 +1,6 @@
 'use client';
+// @i18n-skip-file
+// Root error boundary renders outside next-intl provider — must stay in English.
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';

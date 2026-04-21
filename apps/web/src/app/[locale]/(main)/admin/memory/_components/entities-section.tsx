@@ -92,7 +92,7 @@ export function EntitiesSection() {
                 <SelectValue placeholder={t('entityDistribution')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">{t('allTypes')}</SelectItem>
                 {ENTITY_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
@@ -119,7 +119,7 @@ export function EntitiesSection() {
                   {entityData.data.map((entity) => (
                     <TableRow key={entity.id}>
                       <TableCell>
-                        <Badge className={cn('text-[10px]', entityTypeBadge[entity.type])}>
+                        <Badge className={cn('text-2xs', entityTypeBadge[entity.type])}>
                           {entity.type}
                         </Badge>
                       </TableCell>
@@ -188,7 +188,7 @@ export function EntitiesSection() {
                   <div className="space-y-1 mt-1">
                     {(viewEntity.relations as any[]).map((rel, i) => (
                       <div key={i} className="flex items-center gap-2 text-xs">
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-2xs">
                           {rel.type}
                         </Badge>
                         <span>{rel.targetName}</span>

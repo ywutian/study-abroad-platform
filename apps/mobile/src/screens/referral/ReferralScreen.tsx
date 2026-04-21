@@ -33,12 +33,12 @@ export default function ReferralScreen() {
   };
 
   return (
-    <PageContainer onRefresh={() => {}}>
+    <PageContainer onRefresh={() => {}} variant="tool">
       <PageHeader
         title={t('referral.title')}
         description={t('referral.description')}
         icon="gift-outline"
-        color="#f59e0b"
+        variant="tool"
       />
       {isLoading ? (
         <Loading />

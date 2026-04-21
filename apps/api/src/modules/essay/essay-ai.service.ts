@@ -26,6 +26,7 @@ import {
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
+import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 
 @Injectable()
 export class EssayAiService {
@@ -38,6 +39,23 @@ export class EssayAiService {
     @Optional()
     private memoryManager?: MemoryManagerService,
   ) {}
+
+  private formatTestingPolicyLabel(
+    testingPolicy: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN',
+    locale: string,
+  ): string | null {
+    const isZh = locale === 'zh';
+    switch (testingPolicy) {
+      case 'REQUIRED':
+        return isZh ? '必须提交标化' : 'Test required';
+      case 'OPTIONAL':
+        return isZh ? '可选提交标化' : 'Test optional';
+      case 'BLIND':
+        return isZh ? '标化盲审' : 'Test blind';
+      default:
+        return null;
+    }
+  }
 
   /**
    * 文书润色
@@ -161,6 +179,7 @@ export class EssayAiService {
           name: true,
           usNewsRank: true,
           acceptanceRate: true,
+          testingPolicy: true,
           testOptional: true,
         },
       });
@@ -169,9 +188,17 @@ export class EssayAiService {
           school.acceptanceRate != null
             ? `${Number(school.acceptanceRate)}%`
             : null;
+        const testingPolicy = resolveSchoolTestingPolicyValue({
+          testingPolicy: school.testingPolicy as any,
+          testOptional: school.testOptional,
+        });
+        const testingPolicyLabel = this.formatTestingPolicyLabel(
+          testingPolicy,
+          locale,
+        );
         schoolContext = isZh
-          ? `\n该校 US News 排名 #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${school.testOptional ? '（Test Optional）' : ''}`
-          : `\nSchool ranked #${school.usNewsRank ?? 'N/A'} (US News), ${rate ?? 'N/A'} acceptance rate${school.testOptional ? ' (Test Optional)' : ''}`;
+          ? `\n该校 US News 排名 #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${testingPolicyLabel ? `（${testingPolicyLabel}）` : ''}`
+          : `\nSchool ranked #${school.usNewsRank ?? 'N/A'} (US News), ${rate ?? 'N/A'} acceptance rate${testingPolicyLabel ? ` (${testingPolicyLabel})` : ''}`;
       }
     }
 
@@ -395,16 +422,29 @@ export class EssayAiService {
             { nameZh: dto.school },
           ],
         },
-        select: { usNewsRank: true, acceptanceRate: true, testOptional: true },
+        select: {
+          usNewsRank: true,
+          acceptanceRate: true,
+          testingPolicy: true,
+          testOptional: true,
+        },
       });
       if (school) {
         const rate =
           school.acceptanceRate != null
             ? `${Number(school.acceptanceRate)}%`
             : null;
+        const testingPolicy = resolveSchoolTestingPolicyValue({
+          testingPolicy: (school as any).testingPolicy,
+          testOptional: school.testOptional,
+        });
+        const testingPolicyLabel = this.formatTestingPolicyLabel(
+          testingPolicy,
+          locale,
+        );
         brainstormSchoolCtx = isZh
-          ? `（US News #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}）`
-          : ` (US News #${school.usNewsRank ?? 'N/A'}, ${rate ?? 'N/A'} acceptance rate)`;
+          ? `（US News #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${testingPolicyLabel ? `，${testingPolicyLabel}` : ''}）`
+          : ` (US News #${school.usNewsRank ?? 'N/A'}, ${rate ?? 'N/A'} acceptance rate${testingPolicyLabel ? `, ${testingPolicyLabel}` : ''})`;
       }
     }
 

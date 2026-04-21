@@ -109,7 +109,7 @@ export default function AdminActivityTemplatesPage() {
       queryClient.invalidateQueries({ queryKey: ['adminActivityTemplates'] });
       setDialogOpen(false);
       resetForm();
-      toast.success('Activity template created');
+      toast.success(t('activityTemplates.toast.created'));
     },
   });
 
@@ -132,7 +132,7 @@ export default function AdminActivityTemplatesPage() {
       queryClient.invalidateQueries({ queryKey: ['adminActivityTemplates'] });
       setDialogOpen(false);
       resetForm();
-      toast.success('Activity template updated');
+      toast.success(t('activityTemplates.toast.updated'));
     },
   });
 
@@ -141,7 +141,7 @@ export default function AdminActivityTemplatesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminActivityTemplates'] });
       setDeleteId(null);
-      toast.success('Activity template deleted');
+      toast.success(t('activityTemplates.toast.deleted'));
     },
   });
 
@@ -196,7 +196,7 @@ export default function AdminActivityTemplatesPage() {
     <>
       <PageHeader
         title={t('sidebar.activityTemplates')}
-        description="Manage activity templates (name, category, tier) for student profiles"
+        description={t('activityTemplates.description')}
         icon={Layers}
         color="violet"
       />
@@ -206,7 +206,7 @@ export default function AdminActivityTemplatesPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name, Chinese name, or aliases..."
+              placeholder={t('activityTemplates.searchPlaceholder')}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -223,10 +223,10 @@ export default function AdminActivityTemplatesPage() {
             }}
           >
             <SelectTrigger className="w-[130px]">
-              <SelectValue placeholder="Tier" />
+              <SelectValue placeholder={t('activityTemplates.tierPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Tiers</SelectItem>
+              <SelectItem value="ALL">{t('activityTemplates.allTiers')}</SelectItem>
               {[1, 2, 3, 4].map((tier) => (
                 <SelectItem key={tier} value={String(tier)}>
                   Tier {tier} ({TIER_LABELS[tier]})
@@ -242,10 +242,10 @@ export default function AdminActivityTemplatesPage() {
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={t('activityTemplates.categoryPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Categories</SelectItem>
+              <SelectItem value="ALL">{t('activityTemplates.allCategories')}</SelectItem>
               {CATEGORIES.map((cat) => (
                 <SelectItem key={cat} value={cat}>
                   {cat}
@@ -287,7 +287,7 @@ export default function AdminActivityTemplatesPage() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Activity Template</AlertDialogTitle>
+            <AlertDialogTitle>{t('activityTemplates.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
               This will soft-delete the template (set inactive). It will no longer appear in
               selection lists.

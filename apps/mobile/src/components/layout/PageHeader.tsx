@@ -1,9 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, StyleProp } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
+import { borderRadius, fontSize, fontWeight, spacing, useColors, withOpacity } from '@/utils/theme';
+
+type PageHeaderVariant = 'marketing' | 'entry' | 'tool' | 'ai' | 'community' | 'admin';
+type PageHeaderTone =
+  | 'default'
+  | 'neutral'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'ai'
+  | 'reach'
+  | 'target'
+  | 'safety'
+  | 'likely';
 
 interface PageHeaderAction {
   icon: ComponentProps<typeof Ionicons>['name'];
@@ -20,66 +33,139 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   icon?: ComponentProps<typeof Ionicons>['name'];
+  variant?: PageHeaderVariant;
+  tone?: PageHeaderTone;
   color?: string;
   stats?: PageHeaderStat[];
   actions?: PageHeaderAction[];
   style?: StyleProp<ViewStyle>;
 }
 
+const variantStyles: Record<PageHeaderVariant, { card: boolean; paddingTop: number }> = {
+  marketing: { card: false, paddingTop: spacing.xl },
+  entry: { card: false, paddingTop: spacing.lg },
+  tool: { card: false, paddingTop: spacing.lg },
+  ai: { card: true, paddingTop: spacing.lg },
+  community: { card: true, paddingTop: spacing.lg },
+  admin: { card: true, paddingTop: spacing.lg },
+};
+
+function resolveToneColor(
+  colors: ReturnType<typeof useColors>,
+  tone?: PageHeaderTone,
+  color?: string
+): string {
+  if (color) {
+    return color;
+  }
+
+  switch (tone) {
+    case 'neutral':
+      return colors.foregroundMuted;
+    case 'success':
+    case 'safety':
+      return colors.success;
+    case 'warning':
+    case 'target':
+      return colors.warning;
+    case 'danger':
+    case 'reach':
+      return colors.error;
+    case 'likely':
+      return colors.info;
+    case 'ai':
+    case 'info':
+    case 'default':
+    default:
+      return colors.primary;
+  }
+}
+
 export function PageHeader({
   title,
   description,
   icon,
+  variant = 'tool',
+  tone = 'default',
   color,
   stats,
   actions,
   style,
 }: PageHeaderProps) {
   const colors = useColors();
-  const accentColor = color ?? colors.primary;
+  const accentColor = resolveToneColor(colors, tone, color);
+  const isCard = variantStyles[variant].card;
 
   return (
-    <View style={[styles.container, style]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: variantStyles[variant].paddingTop,
+          backgroundColor: isCard ? colors.card : 'transparent',
+          borderColor: isCard ? colors.border : 'transparent',
+          borderWidth: isCard ? StyleSheet.hairlineWidth : 0,
+          borderRadius: isCard ? borderRadius.xl : 0,
+        },
+        style,
+      ]}
+    >
       <View style={styles.topRow}>
         <View style={styles.titleSection}>
-          {icon && (
+          {icon ? (
             <View
-              style={[styles.iconContainer, { backgroundColor: withOpacity(accentColor, 0.1) }]}
+              style={[styles.iconContainer, { backgroundColor: withOpacity(accentColor, 0.12) }]}
             >
               <Ionicons name={icon} size={24} color={accentColor} />
             </View>
-          )}
+          ) : null}
           <View style={styles.textSection}>
-            <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
-            {description && (
+            <Text numberOfLines={2} style={[styles.title, { color: colors.foreground }]}>
+              {title}
+            </Text>
+            {description ? (
               <Text style={[styles.description, { color: colors.foregroundMuted }]}>
                 {description}
               </Text>
-            )}
+            ) : null}
           </View>
         </View>
-        {actions && actions.length > 0 && (
+        {actions && actions.length > 0 ? (
           <View style={styles.actions}>
-            {actions.map((action, i) => (
-              <View key={i} style={[styles.actionButton, { backgroundColor: colors.muted }]}>
+            {actions.map((action, index) => (
+              <View
+                key={index}
+                style={[styles.actionButton, { backgroundColor: colors.muted }]}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+              >
                 <Ionicons
                   name={action.icon}
                   size={20}
                   color={colors.foreground}
                   onPress={action.onPress}
-                  accessibilityRole="button"
-                  accessibilityLabel={action.label}
                 />
               </View>
             ))}
           </View>
-        )}
+        ) : null}
       </View>
-      <View style={[styles.divider, { backgroundColor: withOpacity(accentColor, 0.2) }]} />
-      {stats && stats.length > 0 && (
+
+      <View style={[styles.divider, { backgroundColor: withOpacity(accentColor, 0.24) }]} />
+
+      {stats && stats.length > 0 ? (
         <View style={styles.statsRow}>
-          {stats.map((stat, i) => (
-            <View key={i} style={styles.stat}>
+          {stats.map((stat, index) => (
+            <View
+              key={index}
+              style={[
+                styles.stat,
+                {
+                  backgroundColor: colors.surfaceMuted,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
               <Text style={[styles.statValue, { color: colors.foreground }]}>{stat.value}</Text>
               <Text style={[styles.statLabel, { color: colors.foregroundMuted }]}>
                 {stat.label}
@@ -87,7 +173,7 @@ export function PageHeader({
             </View>
           ))}
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -95,11 +181,11 @@ export function PageHeader({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   titleSection: {
@@ -125,6 +211,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: fontSize.sm,
     marginTop: spacing.xs,
+    lineHeight: 20,
   },
   actions: {
     flexDirection: 'row',
@@ -139,16 +226,19 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 2,
-    borderRadius: 1,
+    borderRadius: 999,
     marginTop: spacing.md,
   },
   statsRow: {
     flexDirection: 'row',
     marginTop: spacing.md,
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   stat: {
     flex: 1,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
   },
   statValue: {
     fontSize: fontSize.lg,

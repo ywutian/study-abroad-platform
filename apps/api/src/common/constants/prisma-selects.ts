@@ -30,6 +30,8 @@ export const SCHOOL_BASIC_SELECT = {
   nameZh: true,
   usNewsRank: true,
   acceptanceRate: true,
+  testingPolicy: true,
+  testOptional: true,
   tuition: true,
   city: true,
   state: true,

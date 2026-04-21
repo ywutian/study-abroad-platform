@@ -1,8 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AdminService } from './admin.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { ReportStatus, Role } from '@prisma/client';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  MatchPoolEntryType,
+  RecruitmentContextModerationStatus,
+  RecruitmentContextSourceType,
+  ReportStatus,
+  Role,
+} from '@prisma/client';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -12,76 +22,109 @@ describe('AdminService', () => {
   const mockUserId = 'user-001';
 
   beforeEach(async () => {
+    const prismaMock: Record<string, any> = {
+      user: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
+        update: jest.fn(),
+      },
+      report: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      admissionCase: {
+        count: jest.fn(),
+        findMany: jest.fn(),
+      },
+      dataImportStaging: {
+        count: jest.fn(),
+      },
+      review: {
+        count: jest.fn(),
+      },
+      forumPost: {
+        count: jest.fn(),
+      },
+      conversation: {
+        count: jest.fn(),
+      },
+      message: {
+        count: jest.fn(),
+      },
+      verificationRequest: {
+        count: jest.fn(),
+      },
+      payment: {
+        aggregate: jest.fn(),
+        count: jest.fn(),
+      },
+      auditLog: {
+        create: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
+      },
+      schoolDeadline: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      school: {
+        findUnique: jest.fn(),
+      },
+      globalEvent: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        count: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      matchPool: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      matchPoolEntry: {
+        findUnique: jest.fn(),
+        findFirst: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+      },
+      competition: {
+        findUnique: jest.fn(),
+      },
+      recruitmentContext: {
+        findUnique: jest.fn(),
+        findMany: jest.fn(),
+        update: jest.fn(),
+      },
+      teamRecruitmentCard: {
+        updateMany: jest.fn(),
+      },
+      $transaction: jest.fn(async (arg: any) => {
+        if (typeof arg === 'function') {
+          return arg(prismaMock);
+        }
+        return Promise.all(arg);
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findUnique: jest.fn(),
-              findMany: jest.fn(),
-              count: jest.fn(),
-              update: jest.fn(),
-            },
-            report: {
-              findUnique: jest.fn(),
-              findMany: jest.fn(),
-              count: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-            admissionCase: {
-              count: jest.fn(),
-              findMany: jest.fn(),
-            },
-            dataImportStaging: {
-              count: jest.fn(),
-            },
-            review: {
-              count: jest.fn(),
-            },
-            forumPost: {
-              count: jest.fn(),
-            },
-            conversation: {
-              count: jest.fn(),
-            },
-            message: {
-              count: jest.fn(),
-            },
-            verificationRequest: {
-              count: jest.fn(),
-            },
-            payment: {
-              aggregate: jest.fn(),
-              count: jest.fn(),
-            },
-            auditLog: {
-              create: jest.fn(),
-              findMany: jest.fn(),
-              count: jest.fn(),
-            },
-            schoolDeadline: {
-              findUnique: jest.fn(),
-              findMany: jest.fn(),
-              count: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-            school: {
-              findUnique: jest.fn(),
-            },
-            globalEvent: {
-              findUnique: jest.fn(),
-              findMany: jest.fn(),
-              count: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-          },
+          useValue: prismaMock,
         },
       ],
     }).compile();
@@ -500,6 +543,177 @@ describe('AdminService', () => {
       await expect(service.deleteGlobalEvent('nonexistent')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  // ============================================
+  // Match Pools / Community Context Moderation
+  // ============================================
+
+  describe('createMatchPool', () => {
+    it('should trim optional fields and fill defaults', async () => {
+      (prisma.matchPool.create as jest.Mock).mockResolvedValue({
+        id: 'pool-1',
+      });
+
+      await service.createMatchPool({
+        name: ' Popular Main Competitions ',
+        nameZh: ' 热门主流比赛 ',
+        description: ' curated pool ',
+      });
+
+      expect(prisma.matchPool.create).toHaveBeenCalledWith({
+        data: {
+          name: 'Popular Main Competitions',
+          nameZh: '热门主流比赛',
+          description: 'curated pool',
+          sortOrder: 0,
+          isActive: true,
+        },
+      });
+    });
+  });
+
+  describe('createMatchPoolEntry', () => {
+    it('should create an official competition entry after validation', async () => {
+      (prisma.matchPool.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pool-1',
+      });
+      (prisma.competition.findUnique as jest.Mock).mockResolvedValue({
+        id: 'comp-1',
+      });
+      (prisma.matchPoolEntry.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.matchPoolEntry.create as jest.Mock).mockResolvedValue({
+        id: 'entry-1',
+      });
+
+      await service.createMatchPoolEntry('pool-1', {
+        entryType: MatchPoolEntryType.OFFICIAL_COMPETITION,
+        competitionId: 'comp-1',
+      });
+
+      expect(prisma.matchPoolEntry.create).toHaveBeenCalledWith({
+        data: {
+          matchPoolId: 'pool-1',
+          entryType: MatchPoolEntryType.OFFICIAL_COMPETITION,
+          competitionId: 'comp-1',
+          recruitmentContextId: null,
+          sortOrder: 0,
+          isActive: true,
+        },
+      });
+    });
+
+    it('should reject official entries that include recruitmentContextId', async () => {
+      (prisma.matchPool.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pool-1',
+      });
+
+      await expect(
+        service.createMatchPoolEntry('pool-1', {
+          entryType: MatchPoolEntryType.OFFICIAL_COMPETITION,
+          competitionId: 'comp-1',
+          recruitmentContextId: 'ctx-1',
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(prisma.matchPoolEntry.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reviewCommunityRecruitmentContext', () => {
+    it('should reject open cards when a community context is rejected', async () => {
+      (prisma.recruitmentContext.findUnique as jest.Mock).mockResolvedValue({
+        id: 'ctx-1',
+        sourceType: RecruitmentContextSourceType.COMMUNITY,
+        isActive: true,
+      });
+      (prisma.recruitmentContext.update as jest.Mock).mockResolvedValue({
+        id: 'ctx-1',
+        moderationStatus: RecruitmentContextModerationStatus.REJECTED,
+        isActive: false,
+      });
+      (prisma.teamRecruitmentCard.updateMany as jest.Mock).mockResolvedValue({
+        count: 2,
+      });
+
+      const result = await service.reviewCommunityRecruitmentContext(
+        'ctx-1',
+        RecruitmentContextModerationStatus.REJECTED,
+      );
+
+      expect(prisma.teamRecruitmentCard.updateMany).toHaveBeenCalledWith({
+        where: {
+          recruitmentContextId: 'ctx-1',
+          isClosed: false,
+        },
+        data: {
+          isClosed: true,
+        },
+      });
+      expect(result).toEqual({
+        id: 'ctx-1',
+        moderationStatus: RecruitmentContextModerationStatus.REJECTED,
+        isActive: false,
+      });
+    });
+  });
+
+  describe('promoteCommunityRecruitmentContext', () => {
+    it('should reject non-approved community contexts', async () => {
+      (prisma.recruitmentContext.findUnique as jest.Mock).mockResolvedValue({
+        id: 'ctx-1',
+        sourceType: RecruitmentContextSourceType.COMMUNITY,
+        moderationStatus: RecruitmentContextModerationStatus.PENDING_REVIEW,
+        isPublished: true,
+        isActive: true,
+      });
+
+      await expect(
+        service.promoteCommunityRecruitmentContext('ctx-1', {
+          matchPoolId: 'pool-1',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should create a promoted pool entry for approved community contexts', async () => {
+      (prisma.recruitmentContext.findUnique as jest.Mock)
+        .mockResolvedValueOnce({
+          id: 'ctx-1',
+          sourceType: RecruitmentContextSourceType.COMMUNITY,
+          moderationStatus: RecruitmentContextModerationStatus.APPROVED,
+          isPublished: true,
+          isActive: true,
+        })
+        .mockResolvedValueOnce({
+          id: 'ctx-1',
+          sourceType: RecruitmentContextSourceType.COMMUNITY,
+          moderationStatus: RecruitmentContextModerationStatus.APPROVED,
+          isPublished: true,
+          isActive: true,
+        });
+      (prisma.matchPool.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pool-1',
+      });
+      (prisma.matchPoolEntry.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.matchPoolEntry.create as jest.Mock).mockResolvedValue({
+        id: 'entry-2',
+      });
+
+      await service.promoteCommunityRecruitmentContext('ctx-1', {
+        matchPoolId: 'pool-1',
+        sortOrder: 3,
+      });
+
+      expect(prisma.matchPoolEntry.create).toHaveBeenCalledWith({
+        data: {
+          matchPoolId: 'pool-1',
+          entryType: MatchPoolEntryType.PROMOTED_COMMUNITY_CONTEXT,
+          recruitmentContextId: 'ctx-1',
+          sortOrder: 3,
+          isActive: true,
+        },
+      });
     });
   });
 });

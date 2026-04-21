@@ -1,20 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type {
   AIAnalysisResult,
   AnalysisContextFlag,
   AnalysisState,
-  ApplicationAnalysisExperimentCapability,
-  ApplicationAnalysisFeedbackCategory,
-  SchoolPolicyContext,
-  SubmitApplicationAnalysisFeedbackInput,
-  TargetSchoolInsight,
+  ApplicationAnalysisSchoolResult,
 } from '@study-abroad/shared';
 import {
   Badge,
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -45,19 +40,6 @@ function getStateCopy(
     label: t(`applicationAnalysis.states.${state}.label`),
     description: t(`applicationAnalysis.states.${state}.description`),
   };
-}
-
-function getPolicyBadgeVariant(policy: SchoolPolicyContext['testingPolicy']) {
-  switch (policy) {
-    case 'BLIND':
-      return 'warning' as const;
-    case 'REQUIRED':
-      return 'error' as const;
-    case 'OPTIONAL':
-      return 'secondary' as const;
-    default:
-      return 'outline' as const;
-  }
 }
 
 function formatDate(value?: string) {
@@ -114,11 +96,10 @@ export default function ProfileAnalysisScreen() {
   }
 
   const state = analysis.meta?.state ?? 'ready';
-  const focusSchools = analysis.targetSchoolInsights ?? [];
   const stateCopy = getStateCopy(t, state);
   const dataQuality = analysis.meta?.dataQuality ?? 'insufficient';
-  const applicantType = analysis.profileContext?.applicantType ?? 'unknown';
-  const testStrategy = analysis.profileContext?.testStrategy ?? 'unknown';
+  const applicantType = analysis.profileSummary.applicantType ?? 'unknown';
+  const testStrategy = analysis.profileSummary.testStrategy ?? 'unknown';
 
   return (
     <ScrollView
@@ -145,16 +126,16 @@ export default function ProfileAnalysisScreen() {
           <View style={styles.summaryBadges}>
             <Badge variant="outline">{stateCopy.label}</Badge>
             <Badge variant="secondary">{t(`applicationAnalysis.dataQuality.${dataQuality}`)}</Badge>
-            <Badge variant="secondary">
-              {analysis.meta?.analysisVersion ?? 'application-analysis-v1'}
-            </Badge>
+            <Badge variant="secondary">{analysis.meta?.analysisVersion}</Badge>
           </View>
           <Text style={[styles.summaryVerdict, { color: colors.foreground }]}>
-            {analysis.portfolioAnalysis?.verdict || analysis.summary}
+            {analysis.portfolioSummary.verdict}
           </Text>
-          <Text style={[styles.summaryBody, { color: colors.foregroundMuted }]}>
-            {analysis.summary}
-          </Text>
+          {analysis.meta?.degradedReason ? (
+            <Text style={[styles.summaryBody, { color: colors.foregroundMuted }]}>
+              {analysis.meta.degradedReason}
+            </Text>
+          ) : null}
 
           <View
             style={[
@@ -166,14 +147,11 @@ export default function ProfileAnalysisScreen() {
             ]}
           >
             <MetricBlock
-              label={t('applicationAnalysis.overallScore')}
-              value={String(analysis.overallScore)}
+              label={t('applicationAnalysis.focusSchools')}
+              value={String(analysis.schools.length)}
             />
             <View style={[styles.metricDivider, { backgroundColor: colors.border }]} />
-            <MetricBlock
-              label={t('applicationAnalysis.focusSchools')}
-              value={String(focusSchools.length)}
-            />
+            <MetricBlock label="Trace" value={analysis.meta.traceId.slice(0, 8)} />
           </View>
         </CardContent>
       </Card>
@@ -189,18 +167,34 @@ export default function ProfileAnalysisScreen() {
             value={t(`applicationAnalysis.testStrategy.${testStrategy}`)}
           />
         </View>
-        {analysis.profileContext?.contextFlags?.length ? (
+        {analysis.profileSummary.intendedMajors.length ? (
           <View style={styles.badgeWrap}>
-            {analysis.profileContext.contextFlags.map((flag) => (
+            {analysis.profileSummary.intendedMajors.map((major) => (
+              <Badge key={major} variant="outline">
+                {major}
+              </Badge>
+            ))}
+          </View>
+        ) : null}
+        {analysis.profileSummary.contextFlags.length ? (
+          <View style={styles.badgeWrap}>
+            {analysis.profileSummary.contextFlags.map((flag) => (
               <Badge key={flag} variant="secondary">
                 {t(`applicationAnalysis.contextFlags.${flag as AnalysisContextFlag}`)}
               </Badge>
             ))}
           </View>
         ) : null}
-        {analysis.profileContext?.highSchoolContext ? (
+        {analysis.profileSummary.constraints.length ? (
+          <ListBlock
+            title={t('applicationAnalysis.riskBoundaries')}
+            items={analysis.profileSummary.constraints}
+            compact
+          />
+        ) : null}
+        {analysis.profileSummary.highSchoolContext ? (
           <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
-            {analysis.profileContext.highSchoolContext}
+            {analysis.profileSummary.highSchoolContext}
           </Text>
         ) : null}
       </Section>
@@ -210,20 +204,18 @@ export default function ProfileAnalysisScreen() {
           <CardContent>
             <View style={styles.badgeWrap}>
               <Badge variant="outline">
-                {t(
-                  `applicationAnalysis.portfolioBalance.${analysis.portfolioAnalysis?.balance ?? 'insufficient'}`
-                )}
+                {t(`applicationAnalysis.portfolioBalance.${analysis.portfolioSummary.balance}`)}
               </Badge>
               <Badge variant="secondary">{stateCopy.label}</Badge>
             </View>
             <Text style={[styles.sectionBody, { color: colors.foregroundMuted }]}>
               {stateCopy.description}
             </Text>
-            <BulletList items={analysis.portfolioAnalysis?.reasons ?? []} />
-            {(analysis.portfolioAnalysis?.riskBoundaries?.length ?? 0) > 0 ? (
+            <BulletList items={analysis.portfolioSummary.keyReasons} />
+            {analysis.portfolioSummary.riskBoundaries.length ? (
               <ListBlock
                 title={t('applicationAnalysis.riskBoundaries')}
-                items={analysis.portfolioAnalysis?.riskBoundaries ?? []}
+                items={analysis.portfolioSummary.riskBoundaries}
                 compact
               />
             ) : null}
@@ -232,9 +224,9 @@ export default function ProfileAnalysisScreen() {
       </Section>
 
       <Section title={t('applicationAnalysis.focusSchools')}>
-        {focusSchools.length > 0 ? (
-          focusSchools.map((school) => (
-            <FocusSchoolCard key={school.schoolId} analysis={analysis} school={school} />
+        {analysis.schools.length ? (
+          analysis.schools.map((school) => (
+            <FocusSchoolCard key={school.schoolId} school={school} />
           ))
         ) : (
           <Card>
@@ -250,344 +242,147 @@ export default function ProfileAnalysisScreen() {
         )}
       </Section>
 
-      {analysis.fairnessDisclosure ? (
-        <Section title={t('applicationAnalysis.fairness.title')}>
-          <Card>
-            <CardContent>
-              <View style={styles.badgeWrap}>
-                <Badge variant="outline">
-                  {t(`applicationAnalysis.fairness.status.${analysis.fairnessDisclosure.status}`)}
-                </Badge>
-                {(analysis.meta?.experimentalVersions ?? []).map((item) => (
-                  <Badge key={`${item.capability}-${item.version}`} variant="secondary">
-                    {`${item.capability} · ${item.version}`}
-                  </Badge>
-                ))}
-              </View>
-              <View style={styles.columnStack}>
-                <ListBlock
-                  title={t('applicationAnalysis.fairness.notes')}
-                  items={analysis.fairnessDisclosure.notes}
-                  compact
-                />
-                <ListBlock
-                  title={t('applicationAnalysis.fairness.appliesTo')}
-                  items={analysis.fairnessDisclosure.appliesTo}
-                  compact
-                />
-              </View>
-              {analysis.meta?.exposureId ? (
-                <FeedbackBlock exposureId={analysis.meta.exposureId} capability="FAIRNESS" />
-              ) : null}
-            </CardContent>
-          </Card>
-        </Section>
-      ) : null}
-
       <Section title={t('applicationAnalysis.actionPlan.title')}>
         <View style={styles.columnStack}>
           <ListBlock
             title={t('applicationAnalysis.actionPlan.now')}
-            items={analysis.actionPlan?.now ?? []}
+            items={analysis.actionPlan.now}
           />
           <ListBlock
             title={t('applicationAnalysis.actionPlan.next90Days')}
-            items={analysis.actionPlan?.next90Days ?? []}
+            items={analysis.actionPlan.next90Days}
           />
           <ListBlock
             title={t('applicationAnalysis.actionPlan.beforeSubmission')}
-            items={analysis.actionPlan?.beforeSubmission ?? []}
+            items={analysis.actionPlan.beforeSubmission}
           />
         </View>
       </Section>
 
-      <Section title={t('applicationAnalysis.recommendations.title')}>
-        <View style={styles.columnStack}>
-          <ListBlock
-            title={t('applicationAnalysis.recommendations.majors')}
-            items={analysis.recommendedPrograms?.majors ?? analysis.suggestions.majors}
-          />
-          <ListBlock
-            title={t('applicationAnalysis.recommendations.competitions')}
-            items={analysis.recommendedPrograms?.competitions ?? analysis.suggestions.competitions}
-          />
-          <ListBlock
-            title={t('applicationAnalysis.recommendations.activities')}
-            items={analysis.recommendedPrograms?.activities ?? analysis.suggestions.activities}
-          />
-          <ListBlock
-            title={t('applicationAnalysis.recommendations.summerPrograms')}
-            items={
-              analysis.recommendedPrograms?.summerPrograms ?? analysis.suggestions.summerPrograms
-            }
-          />
-          <ListBlock
-            title={t('applicationAnalysis.recommendations.timeline')}
-            items={analysis.recommendedPrograms?.timeline ?? analysis.suggestions.timeline}
-          />
-        </View>
-      </Section>
+      {analysis.unknowns.length ? (
+        <Section title="Unknowns">
+          <ListBlock title="Unknowns" items={analysis.unknowns} />
+        </Section>
+      ) : null}
     </ScrollView>
   );
 }
 
-function FocusSchoolCard({
-  analysis,
-  school,
-}: {
-  analysis: AIAnalysisResult;
-  school: TargetSchoolInsight;
-}) {
+function FocusSchoolCard({ school }: { school: ApplicationAnalysisSchoolResult }) {
   const { t } = useTranslation();
   const colors = useColors();
-  const probability =
-    school.predictionSnapshot?.probability != null
-      ? `${Math.round(school.predictionSnapshot.probability * 100)}%`
+  const probabilityLabel =
+    school.prediction?.probability != null
+      ? `${Math.round(school.prediction.probability * 100)}%`
       : t('applicationAnalysis.schoolCards.probabilityUnavailable');
 
   return (
-    <Card style={styles.schoolCard}>
+    <Card>
       <CardContent>
         <View style={styles.schoolHeader}>
           <View style={styles.schoolTitleBlock}>
-            <Text style={[styles.schoolName, { color: colors.foreground }]}>
+            <Text style={[styles.schoolTitle, { color: colors.foreground }]}>
               {school.schoolName}
             </Text>
             <View style={styles.badgeWrap}>
               <Badge variant="outline">{t(`applicationAnalysis.schoolTier.${school.tier}`)}</Badge>
               {school.round ? <Badge variant="secondary">{school.round}</Badge> : null}
-              {school.policyContext ? (
-                <>
-                  <Badge variant={getPolicyBadgeVariant(school.policyContext.testingPolicy)}>
-                    {t(`applicationAnalysis.policy.testing.${school.policyContext.testingPolicy}`)}
-                  </Badge>
-                  <Badge variant="secondary">
-                    {t(`applicationAnalysis.policy.intlAid.${school.policyContext.intlAidPolicy}`)}
-                  </Badge>
-                </>
-              ) : null}
             </View>
           </View>
-          <Text style={[styles.schoolRate, { color: colors.primary }]}>{probability}</Text>
+          <Badge variant="secondary">{school.policyCard.roundContext}</Badge>
         </View>
 
-        <View style={styles.metaRow}>
-          {school.predictionSnapshot?.confidence ? (
-            <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-              {t('applicationAnalysis.schoolCards.confidence')}:{' '}
-              {t(`applicationAnalysis.confidence.${school.predictionSnapshot.confidence}`)}
-            </Text>
-          ) : null}
-          {school.predictionSnapshot?.updatedAt ? (
-            <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-              {t('applicationAnalysis.schoolCards.updated')}:{' '}
-              {formatDate(school.predictionSnapshot.updatedAt)}
-            </Text>
-          ) : null}
+        <Text style={[styles.sectionBody, { color: colors.foregroundMuted }]}>
+          {school.assessment.summary}
+        </Text>
+        <View style={styles.badgeWrap}>
+          <Badge variant="secondary">
+            {t(`applicationAnalysis.policy.testing.${school.policyCard.testingPolicy}`)}
+          </Badge>
+          <Badge variant="secondary">
+            {t(`applicationAnalysis.policy.intlAid.${school.policyCard.intlAidPolicy}`)}
+          </Badge>
         </View>
-
-        {school.predictionSnapshot?.confidenceReason ? (
-          <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
-            {school.predictionSnapshot.confidenceReason}
-          </Text>
-        ) : null}
+        <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
+          {t('applicationAnalysis.schoolCards.probability')}: {probabilityLabel}
+          {school.prediction?.confidence
+            ? `  •  ${t('applicationAnalysis.schoolCards.confidence')}: ${t(
+                `applicationAnalysis.confidence.${school.prediction.confidence}`
+              )}`
+            : ''}
+          {school.prediction?.updatedAt
+            ? `  •  ${t('applicationAnalysis.schoolCards.updated')}: ${formatDate(
+                school.prediction.updatedAt
+              )}`
+            : ''}
+        </Text>
 
         <View style={styles.columnStack}>
           <ListBlock
             title={t('applicationAnalysis.schoolCards.whyHard')}
-            items={school.whyThisIsHard}
+            items={school.assessment.whyThisIsHard}
             compact
           />
           <ListBlock
             title={t('applicationAnalysis.schoolCards.strengths')}
-            items={school.compensatingStrengths}
+            items={school.assessment.compensatingStrengths}
             compact
           />
           <ListBlock
             title={t('applicationAnalysis.schoolCards.gaps')}
-            items={school.topGaps}
+            items={school.assessment.topGaps}
             compact
           />
           <ListBlock
             title={t('applicationAnalysis.schoolCards.nextActions')}
-            items={school.nextActions}
+            items={school.assessment.nextActions}
             compact
           />
           <ListBlock
             title={t('applicationAnalysis.schoolCards.historical')}
-            items={school.historicalSignals}
+            items={school.assessment.historicalSignals}
             compact
           />
           <ListBlock
             title={t('applicationAnalysis.schoolCards.hardStops')}
-            items={school.hardStopRisks ?? []}
+            items={school.assessment.hardStopRisks}
             compact
           />
-          {school.recourseGuidance ? (
-            <View style={styles.columnStack}>
-              <ListBlock
-                title={t('applicationAnalysis.schoolCards.recourse')}
-                items={[
-                  school.recourseGuidance.goal,
-                  ...school.recourseGuidance.recommendedChanges.map(
-                    (item) => `${item.action}: ${item.rationale}`
-                  ),
-                  ...school.recourseGuidance.constraints,
-                  school.recourseGuidance.whyNotGuaranteed,
-                ]}
-                compact
-              />
-              {analysis.meta?.exposureId ? (
-                <FeedbackBlock
-                  exposureId={analysis.meta.exposureId}
-                  capability="RECOURSE"
-                  schoolId={school.schoolId}
-                />
-              ) : null}
-            </View>
+          {school.recourse ? (
+            <ListBlock
+              title={t('applicationAnalysis.schoolCards.recourse')}
+              items={[
+                school.recourse.goal,
+                ...school.recourse.recommendedChanges.map(
+                  (item) => `${item.action}: ${item.rationale}`
+                ),
+                ...school.recourse.constraints,
+                school.recourse.whyNotGuaranteed,
+              ]}
+              compact
+            />
           ) : null}
-          {school.strategyUncertainty ? (
-            <View style={styles.columnStack}>
-              <ListBlock
-                title={t('applicationAnalysis.schoolCards.uncertainty')}
-                items={[
-                  `${t('applicationAnalysis.schoolCards.uncertaintyRange')}: ${
-                    school.strategyUncertainty.probabilityLow != null
-                      ? `${Math.round(school.strategyUncertainty.probabilityLow * 100)}%`
-                      : '—'
-                  } - ${
-                    school.strategyUncertainty.probabilityHigh != null
-                      ? `${Math.round(school.strategyUncertainty.probabilityHigh * 100)}%`
-                      : '—'
-                  }`,
-                  ...school.strategyUncertainty.reasons,
-                ]}
-                compact
-              />
-              {analysis.meta?.exposureId ? (
-                <FeedbackBlock
-                  exposureId={analysis.meta.exposureId}
-                  capability="UNCERTAINTY"
-                  schoolId={school.schoolId}
-                />
-              ) : null}
-            </View>
+          {school.uncertainty ? (
+            <ListBlock
+              title={t('applicationAnalysis.schoolCards.uncertainty')}
+              items={[
+                `${t('applicationAnalysis.schoolCards.uncertaintyRange')}: ${
+                  school.uncertainty.probabilityLow != null
+                    ? `${Math.round(school.uncertainty.probabilityLow * 100)}%`
+                    : '—'
+                } - ${
+                  school.uncertainty.probabilityHigh != null
+                    ? `${Math.round(school.uncertainty.probabilityHigh * 100)}%`
+                    : '—'
+                }`,
+                ...school.uncertainty.reasons,
+              ]}
+              compact
+            />
           ) : null}
         </View>
       </CardContent>
     </Card>
-  );
-}
-
-const FEEDBACK_CATEGORY_KEYS: Record<
-  ApplicationAnalysisExperimentCapability,
-  ApplicationAnalysisFeedbackCategory[]
-> = {
-  RECOURSE: ['UNSAFE_RECOURSE', 'POLICY_MISMATCH', 'LOW_ACTIONABILITY'],
-  UNCERTAINTY: ['MISLEADING_UNCERTAINTY', 'POLICY_MISMATCH', 'LOW_ACTIONABILITY'],
-  FAIRNESS: ['FAIRNESS_CONCERN', 'POLICY_MISMATCH', 'LOW_ACTIONABILITY'],
-};
-
-function FeedbackBlock({
-  exposureId,
-  capability,
-  schoolId,
-}: {
-  exposureId: string;
-  capability: ApplicationAnalysisExperimentCapability;
-  schoolId?: string;
-}) {
-  const { t } = useTranslation();
-  const colors = useColors();
-  const [submitted, setSubmitted] = useState(false);
-  const [showReasons, setShowReasons] = useState(false);
-  const mutation = useMutation({
-    mutationFn: (payload: SubmitApplicationAnalysisFeedbackInput) =>
-      aiService.profileAnalysisFeedback(payload),
-    onSuccess: () => {
-      setSubmitted(true);
-      setShowReasons(false);
-    },
-  });
-
-  if (submitted) {
-    return (
-      <View
-        style={[
-          styles.feedbackBox,
-          {
-            borderColor: colors.border,
-            backgroundColor: colors.card,
-          },
-        ]}
-      >
-        <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
-          {t('applicationAnalysis.feedback.submitted')}
-        </Text>
-      </View>
-    );
-  }
-
-  return (
-    <View
-      style={[
-        styles.feedbackBox,
-        {
-          borderColor: colors.border,
-          backgroundColor: colors.card,
-        },
-      ]}
-    >
-      <Text style={[styles.listTitle, { color: colors.foreground }]}>
-        {t('applicationAnalysis.feedback.title')}
-      </Text>
-      <View style={styles.feedbackButtonRow}>
-        <Button
-          size="sm"
-          variant="outline"
-          onPress={() =>
-            mutation.mutate({
-              exposureId,
-              capability,
-              schoolId,
-              sentiment: 'HELPFUL',
-            })
-          }
-        >
-          {t('applicationAnalysis.feedback.helpful')}
-        </Button>
-        <Button size="sm" variant="outline" onPress={() => setShowReasons((value) => !value)}>
-          {t('applicationAnalysis.feedback.notHelpful')}
-        </Button>
-      </View>
-      {showReasons ? (
-        <View style={styles.feedbackReasonWrap}>
-          <Text style={[styles.infoLabel, { color: colors.foregroundMuted }]}>
-            {t('applicationAnalysis.feedback.chooseReason')}
-          </Text>
-          <View style={styles.badgeWrap}>
-            {FEEDBACK_CATEGORY_KEYS[capability].map((category) => (
-              <Button
-                key={category}
-                size="sm"
-                variant="secondary"
-                onPress={() =>
-                  mutation.mutate({
-                    exposureId,
-                    capability,
-                    schoolId,
-                    sentiment: 'NOT_HELPFUL',
-                    category,
-                  })
-                }
-              >
-                {t(`applicationAnalysis.feedback.categories.${category}`)}
-              </Button>
-            ))}
-          </View>
-        </View>
-      ) : null}
-    </View>
   );
 }
 
@@ -629,22 +424,6 @@ function MetricBlock({ label, value }: { label: string; value: string }) {
   );
 }
 
-function BulletList({ items }: { items: string[] }) {
-  const colors = useColors();
-  if (!items.length) return null;
-
-  return (
-    <View style={styles.list}>
-      {items.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.listRow}>
-          <Text style={[styles.bullet, { color: colors.foregroundMuted }]}>•</Text>
-          <Text style={[styles.listText, { color: colors.foreground }]}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
 function ListBlock({
   title,
   items,
@@ -654,13 +433,13 @@ function ListBlock({
   items: string[];
   compact?: boolean;
 }) {
-  const { t } = useTranslation();
   const colors = useColors();
+  const { t } = useTranslation();
 
   return (
     <View
       style={[
-        styles.listBlock,
+        styles.listCard,
         {
           backgroundColor: colors.card,
           borderColor: colors.border,
@@ -669,14 +448,15 @@ function ListBlock({
     >
       <Text style={[styles.listTitle, { color: colors.foreground }]}>{title}</Text>
       {items.length ? (
-        <View style={[styles.list, compact && styles.listCompact]}>
-          {items.map((item, index) => (
-            <View key={`${item}-${index}`} style={styles.listRow}>
-              <Text style={[styles.bullet, { color: colors.foregroundMuted }]}>•</Text>
-              <Text style={[styles.listText, { color: colors.foreground }]}>{item}</Text>
-            </View>
-          ))}
-        </View>
+        items.map((item, index) => (
+          <View
+            key={`${item}-${index}`}
+            style={[styles.listItem, compact && styles.listItemCompact]}
+          >
+            <Text style={[styles.listBullet, { color: colors.primary }]}>•</Text>
+            <Text style={[styles.listText, { color: colors.foregroundMuted }]}>{item}</Text>
+          </View>
+        ))
       ) : (
         <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
           {t('applicationAnalysis.emptyList')}
@@ -686,194 +466,93 @@ function ListBlock({
   );
 }
 
+function BulletList({ items }: { items: string[] }) {
+  const colors = useColors();
+  return (
+    <View style={styles.columnStack}>
+      {items.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.listItem}>
+          <Text style={[styles.listBullet, { color: colors.primary }]}>•</Text>
+          <Text style={[styles.listText, { color: colors.foregroundMuted }]}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  container: { flex: 1 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   contentContainer: {
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing['4xl'],
+    padding: spacing.md,
+    paddingBottom: spacing.xl * 2,
+    gap: spacing.lg,
   },
-  summaryCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
+  summaryCard: { gap: spacing.sm },
   summaryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     gap: spacing.md,
   },
-  summaryTitleBlock: {
-    flex: 1,
-  },
-  summarySubtitle: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-    lineHeight: 20,
-  },
+  summaryTitleBlock: { flex: 1, gap: spacing.xs },
+  summarySubtitle: { fontSize: fontSize.sm },
   summaryBadges: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   summaryVerdict: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
     marginBottom: spacing.xs,
   },
-  summaryBody: {
-    fontSize: fontSize.sm,
-    lineHeight: 20,
-  },
+  summaryBody: { fontSize: fontSize.sm, lineHeight: 20 },
   metricRow: {
     marginTop: spacing.md,
-    borderWidth: 1,
     borderRadius: borderRadius.lg,
+    borderWidth: 1,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  metricBlock: {
-    flex: 1,
-  },
-  metricDivider: {
-    width: 1,
-    alignSelf: 'stretch',
-    marginHorizontal: spacing.md,
-  },
-  metricLabel: {
-    fontSize: fontSize.xs,
-    textTransform: 'uppercase',
-    marginBottom: spacing.xs,
-  },
-  metricValue: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  section: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
+  metricBlock: { flex: 1, gap: spacing.xs },
+  metricLabel: { fontSize: fontSize.xs, textTransform: 'uppercase' },
+  metricValue: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  metricDivider: { width: 1, alignSelf: 'stretch', marginHorizontal: spacing.md },
+  section: { gap: spacing.sm },
   sectionTitle: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.md,
-    marginLeft: spacing.xs,
   },
-  columnStack: {
-    gap: spacing.md,
-  },
-  infoGrid: {
-    gap: spacing.md,
-  },
+  infoGrid: { flexDirection: 'row', gap: spacing.sm },
   infoCard: {
+    flex: 1,
     borderWidth: 1,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     gap: spacing.xs,
   },
-  infoLabel: {
-    fontSize: fontSize.xs,
-    textTransform: 'uppercase',
-  },
-  infoValue: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  helperText: {
-    fontSize: fontSize.xs,
-    lineHeight: 18,
-  },
-  sectionBody: {
-    fontSize: fontSize.sm,
-    lineHeight: 20,
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  badgeWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  schoolCard: {
-    marginBottom: spacing.md,
-  },
+  infoLabel: { fontSize: fontSize.xs, textTransform: 'uppercase' },
+  infoValue: { fontSize: fontSize.base, fontWeight: fontWeight.medium },
+  badgeWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  helperText: { fontSize: fontSize.sm, lineHeight: 20 },
+  sectionBody: { fontSize: fontSize.sm, lineHeight: 20 },
   schoolHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.md,
+    marginBottom: spacing.sm,
   },
-  schoolTitleBlock: {
-    flex: 1,
-    gap: spacing.sm,
-  },
-  schoolName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  schoolRate: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  metaText: {
-    fontSize: fontSize.xs,
-  },
-  listBlock: {
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-  },
-  feedbackBox: {
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  feedbackButtonRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  feedbackReasonWrap: {
-    gap: spacing.sm,
-  },
-  listTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  list: {
-    marginTop: spacing.sm,
-    gap: spacing.sm,
-  },
-  listCompact: {
-    gap: spacing.xs,
-  },
-  listRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  bullet: {
-    fontSize: fontSize.base,
-    lineHeight: 20,
-  },
-  listText: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    lineHeight: 20,
-  },
+  schoolTitleBlock: { flex: 1, gap: spacing.xs },
+  schoolTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  columnStack: { gap: spacing.sm },
+  listCard: { borderWidth: 1, borderRadius: borderRadius.lg, padding: spacing.md, gap: spacing.sm },
+  listTitle: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
+  listItem: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  listItemCompact: { gap: spacing.xs },
+  listBullet: { fontSize: fontSize.base, lineHeight: 20 },
+  listText: { flex: 1, fontSize: fontSize.sm, lineHeight: 20 },
 });

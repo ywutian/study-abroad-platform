@@ -6,7 +6,9 @@
     "input": "帮我查一下 MIT 的录取要求",
     "expectedToolCalls": ["get_school_details"],
     "forbiddenToolCalls": ["web_search"],
-    "severity": "critical"
+    "severity": "critical",
+    "mockToolCalls": [{ "name": "get_school_details", "arguments": { "school": "MIT" } }],
+    "mockAssistantOutput": "我先查学校详情工具，确认 MIT 的申请要求与标化政策。"
   },
   {
     "id": "route-002",
@@ -14,7 +16,9 @@
     "description": "文书请求应路由到文书工具",
     "input": "帮我看看我的 Common App 主文书写得怎么样",
     "expectedToolCalls": ["get_essays"],
-    "severity": "critical"
+    "severity": "critical",
+    "mockToolCalls": [{ "name": "get_essays", "arguments": { "scope": "common_app" } }],
+    "mockAssistantOutput": "我会先读取你的 Common App 文书内容，再给结构和表达建议。"
   },
   {
     "id": "route-003",
@@ -23,7 +27,9 @@
     "input": "我的 GPA 是多少？",
     "expectedToolCalls": ["get_profile"],
     "forbiddenToolCalls": ["web_search", "search_school_website"],
-    "severity": "critical"
+    "severity": "critical",
+    "mockToolCalls": [{ "name": "get_profile", "arguments": {} }],
+    "mockAssistantOutput": "我先读取你的档案数据，确认当前 GPA。"
   },
   {
     "id": "deadline-001",
@@ -33,7 +39,11 @@
     "expectedToolCalls": ["get_deadlines"],
     "expectedKeywords": ["11月1日", "November 1", "11/1"],
     "forbiddenContent": ["11月15日", "12月1日"],
-    "severity": "critical"
+    "severity": "critical",
+    "mockToolCalls": [
+      { "name": "get_deadlines", "arguments": { "school": "Stanford", "round": "REA" } }
+    ],
+    "mockAssistantOutput": "Stanford Restrictive Early Action 的标准申请截止日期是 11月1日，也就是 November 1（11/1）。"
   },
   {
     "id": "deadline-002",
@@ -42,7 +52,11 @@
     "input": "Harvard RD 什么时候截止？",
     "expectedToolCalls": ["get_deadlines"],
     "expectedKeywords": ["1月1日", "January 1", "1/1"],
-    "severity": "critical"
+    "severity": "critical",
+    "mockToolCalls": [
+      { "name": "get_deadlines", "arguments": { "school": "Harvard", "round": "RD" } }
+    ],
+    "mockAssistantOutput": "Harvard Regular Decision 的申请截止日期是 1月1日，也就是 January 1（1/1）。"
   },
   {
     "id": "school-001",
@@ -50,7 +64,12 @@
     "description": "选校推荐应基于用户档案",
     "input": "根据我的背景帮我推荐 5 所学校",
     "expectedToolCalls": ["get_profile", "recommend_schools"],
-    "severity": "major"
+    "severity": "major",
+    "mockToolCalls": [
+      { "name": "get_profile", "arguments": {} },
+      { "name": "recommend_schools", "arguments": { "count": 5 } }
+    ],
+    "mockAssistantOutput": "我先读取你的档案，再按你的 GPA、活动和专业方向推荐学校。"
   },
   {
     "id": "school-002",
@@ -59,7 +78,12 @@
     "input": "帮我做一个选校清单",
     "expectedToolCalls": ["get_profile", "recommend_schools"],
     "expectedKeywords": ["冲刺", "匹配", "保底"],
-    "severity": "major"
+    "severity": "major",
+    "mockToolCalls": [
+      { "name": "get_profile", "arguments": {} },
+      { "name": "recommend_schools", "arguments": { "count": 10 } }
+    ],
+    "mockAssistantOutput": "我会按冲刺、匹配、保底三个层级整理你的选校清单。"
   },
   {
     "id": "prob-001",
@@ -67,7 +91,9 @@
     "description": "录取概率查询应优先用已有预测",
     "input": "我被 Stanford 录取的概率有多大？",
     "expectedToolCalls": ["get_prediction_history"],
-    "severity": "major"
+    "severity": "major",
+    "mockToolCalls": [{ "name": "get_prediction_history", "arguments": { "school": "Stanford" } }],
+    "mockAssistantOutput": "我先读取你已有的 Stanford 预测记录，再解释概率和置信区间。"
   },
   {
     "id": "intl-001",
@@ -76,7 +102,8 @@
     "input": "哪些学校对国际生是 need-blind 的？",
     "expectedKeywords": ["Harvard", "MIT", "Yale", "Princeton", "Amherst"],
     "forbiddenContent": ["所有学校都是 need-blind"],
-    "severity": "major"
+    "severity": "major",
+    "mockAssistantOutput": "目前公开明确对国际生 need-blind 的学校包括 Harvard、MIT、Yale、Princeton 和 Amherst。"
   },
   {
     "id": "intl-002",
@@ -84,7 +111,12 @@
     "description": "国际生竞争力分析应调用专用工具",
     "input": "作为国际生，我申请 top 20 的竞争力如何？",
     "expectedToolCalls": ["get_profile", "analyze_intl_competitiveness"],
-    "severity": "major"
+    "severity": "major",
+    "mockToolCalls": [
+      { "name": "get_profile", "arguments": {} },
+      { "name": "analyze_intl_competitiveness", "arguments": { "scope": "top20" } }
+    ],
+    "mockAssistantOutput": "我先基于你的档案做国际生竞争力分析，再评估 top 20 的申请难度。"
   },
   {
     "id": "json-001",
@@ -100,7 +132,8 @@
     "mockToolResults": {
       "get_profile": "{\"gpa\": 3.8, \"sat\": 1500, \"major\": \"CS\"}",
       "recommend_schools": "[{\"schoolName\": \"MIT\", \"tier\": \"reach\", \"reason\": \"Strong CS program\"}, {\"schoolName\": \"UIUC\", \"tier\": \"match\", \"reason\": \"Good fit\"}]"
-    }
+    },
+    "mockAssistantOutput": "已返回包含 schoolName、tier、reason 的学校推荐结果。"
   },
   {
     "id": "json-002",
@@ -108,7 +141,12 @@
     "description": "录取预测结果应包含概率字段",
     "input": "预测我被 MIT 录取的概率",
     "expectedJsonFields": ["probability", "tier"],
-    "severity": "major"
+    "severity": "major",
+    "mockToolCalls": [{ "name": "get_prediction_history", "arguments": { "school": "MIT" } }],
+    "mockToolResults": {
+      "get_prediction_history": "{\"probability\": 0.18, \"tier\": \"reach\", \"confidence\": \"medium\"}"
+    },
+    "mockAssistantOutput": "当前预测概率为 18%，学校层级为 reach。"
   },
   {
     "id": "essay-001",
@@ -117,7 +155,11 @@
     "input": "Common App 主文书应该怎么写？有什么建议？",
     "expectedToolCalls": ["search_essay_prompts"],
     "severity": "minor",
-    "subjective": true
+    "subjective": true,
+    "mockToolCalls": [
+      { "name": "search_essay_prompts", "arguments": { "promptSet": "common_app" } }
+    ],
+    "mockAssistantOutput": "我会先确认 Common App prompt，再给更具体的写作建议。"
   },
   {
     "id": "term-001",
@@ -126,7 +168,8 @@
     "input": "EA 和 REA 有什么区别？SCEA 又是什么？",
     "expectedKeywords": ["Early Action", "Restrictive Early Action", "Single-Choice Early Action"],
     "forbiddenContent": ["EA 和 REA 是一样的"],
-    "severity": "critical"
+    "severity": "critical",
+    "mockAssistantOutput": "EA 是 Early Action，REA 是 Restrictive Early Action，SCEA 是 Single-Choice Early Action。"
   },
   {
     "id": "term-002",
@@ -134,6 +177,7 @@
     "description": "ED I 和 ED II 区分",
     "input": "ED1 和 ED2 有什么区别？",
     "expectedKeywords": ["binding", "约束力", "11月", "1月"],
-    "severity": "major"
+    "severity": "major",
+    "mockAssistantOutput": "ED I 和 ED II 都是 binding 的，也就是有约束力；通常 ED I 在 11月左右截止，ED II 在 1月左右截止。"
   }
 ]

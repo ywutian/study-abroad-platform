@@ -75,6 +75,7 @@ export function EventsTable({
   onDelete,
 }: EventsTableProps) {
   const t = useTranslations('admin');
+  const tAria = useTranslations('common.aria');
   const fmt = useFormatter();
   const locale = useLocale();
 
@@ -148,7 +149,7 @@ export function EventsTable({
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => onEdit(event)}
-                        aria-label="Edit event"
+                        aria-label={tAria('editEvent')}
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
@@ -157,7 +158,7 @@ export function EventsTable({
                         size="icon"
                         className="h-7 w-7 text-destructive"
                         onClick={() => onDelete(event.id)}
-                        aria-label="Delete event"
+                        aria-label={tAria('deleteEvent')}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

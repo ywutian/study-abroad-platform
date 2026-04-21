@@ -11,6 +11,8 @@ export interface School {
   acceptanceRate?: number;
   tuition?: number;
   avgSalary?: number;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
+  testOptional?: boolean;
 }
 
 export interface RankingWeights {

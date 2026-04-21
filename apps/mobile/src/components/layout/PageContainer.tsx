@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, ViewStyle, StyleProp, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useColors, spacing } from '@/utils/theme';
 import { responsiveSpacing } from '@/utils/responsive';
+import { spacing, useColors } from '@/utils/theme';
+
+type PageContainerVariant = 'marketing' | 'entry' | 'tool' | 'ai' | 'community' | 'admin';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -13,7 +15,17 @@ interface PageContainerProps {
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
+  variant?: PageContainerVariant;
 }
+
+const variantPadding: Record<PageContainerVariant, number> = {
+  marketing: responsiveSpacing.pageHorizontal,
+  entry: responsiveSpacing.pageHorizontal,
+  tool: responsiveSpacing.pageHorizontal,
+  ai: responsiveSpacing.pageHorizontal,
+  community: responsiveSpacing.pageHorizontal,
+  admin: spacing.lg,
+};
 
 export function PageContainer({
   children,
@@ -23,10 +35,12 @@ export function PageContainer({
   bottomPadding,
   style,
   contentContainerStyle,
+  variant = 'tool',
 }: PageContainerProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const paddingBottom = bottomPadding ?? insets.bottom + 80;
+  const paddingHorizontal = variantPadding[variant];
 
   if (!scrollable) {
     return (
@@ -35,7 +49,7 @@ export function PageContainer({
           styles.container,
           {
             backgroundColor: colors.background,
-            paddingHorizontal: responsiveSpacing.pageHorizontal,
+            paddingHorizontal,
           },
           style,
         ]}
@@ -50,7 +64,7 @@ export function PageContainer({
       style={[styles.container, { backgroundColor: colors.background }, style]}
       contentContainerStyle={[
         {
-          paddingHorizontal: responsiveSpacing.pageHorizontal,
+          paddingHorizontal,
           paddingBottom,
         },
         contentContainerStyle,

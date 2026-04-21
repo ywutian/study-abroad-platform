@@ -64,3 +64,4 @@ We use a simplified [MADR](https://adr.github.io/madr/) (Markdown Any Decision R
 | [0008](0008-prediction-multi-engine-ensemble.md)         | Prediction Multi-Engine Ensemble Architecture   | accepted | 2026-02-09 |
 | [0009](0009-hall-swipe-ui-overhaul.md)                   | Hall Swipe Game UI/UX Overhaul                  | accepted | 2026-02-09 |
 | [0017](0017-school-data-provenance.md)                   | School Data Provenance Tiering                  | proposed | 2026-04-13 |
+| [0018](0018-ds-token-namespace-source-of-truth.md)       | DS Token Namespace Source of Truth              | accepted | 2026-04-19 |

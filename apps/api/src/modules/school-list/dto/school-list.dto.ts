@@ -83,6 +83,7 @@ export class SchoolListItemResponseDto {
     tuition?: number;
     city?: string;
     state?: string;
+    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
     testOptional?: boolean;
     hasEarlyDecision?: boolean;
     acceptsCommonApp?: boolean;

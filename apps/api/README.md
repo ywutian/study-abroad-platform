@@ -61,6 +61,12 @@ prisma/
 # 在项目根目录启动数据库和 Redis
 pnpm docker:up    # 启动 db 和 redis 容器
 
+# （可选）整条后端用 Docker 跑 Nest，本机只跑 Next 热更新：
+#   根目录需有 .env，且含 compose 所需变量（如 JWT_SECRET，见根目录 docker-compose.yml）
+#   pnpm docker:backend   # 仅起 db + redis + api 容器
+#   或一键：pnpm dev:docker   # 同上 + 自动等健康检查后启动 turbo dev --filter=web
+# 注意：与 pnpm --filter api dev 不要同时占用 4101。
+
 # 安装依赖
 pnpm install
 

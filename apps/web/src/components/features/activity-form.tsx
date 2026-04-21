@@ -394,7 +394,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
                         <Sparkles className="mr-1 h-3 w-3" />
                         Tier {selectedTemplate.tier} — {TIER_CONFIG[selectedTemplate.tier]?.label}
                       </Badge>
-                      <span>Linked to template</span>
+                      <span>{t('linkedToTemplate')}</span>
                     </div>
                   )}
                   <FormMessage />

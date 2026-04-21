@@ -258,7 +258,7 @@ export function VerificationUploadDialog({
                             <div className="relative">
                               <Image
                                 src={previewUrl}
-                                alt="Preview"
+                                alt={t('common.aria.preview')}
                                 width={128}
                                 height={128}
                                 className={cn(

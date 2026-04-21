@@ -390,11 +390,13 @@ export default function ProfileScreen() {
                   </Badge>
                 </View>
                 <Text style={[styles.analysisVerdict, { color: colors.foreground }]}>
-                  {analysis.portfolioAnalysis?.verdict || analysis.summary}
+                  {analysis.portfolioSummary.verdict}
                 </Text>
-                <Text style={[styles.analysisBody, { color: colors.foregroundMuted }]}>
-                  {analysis.summary}
-                </Text>
+                {analysis.meta?.degradedReason ? (
+                  <Text style={[styles.analysisBody, { color: colors.foregroundMuted }]}>
+                    {analysis.meta.degradedReason}
+                  </Text>
+                ) : null}
                 <View
                   style={[
                     styles.analysisStats,
@@ -406,10 +408,10 @@ export default function ProfileScreen() {
                 >
                   <View style={styles.analysisStatBlock}>
                     <Text style={[styles.analysisStatLabel, { color: colors.foregroundMuted }]}>
-                      {t('applicationAnalysis.overallScore')}
+                      Trace
                     </Text>
                     <Text style={[styles.analysisStatValue, { color: colors.foreground }]}>
-                      {analysis.overallScore}
+                      {analysis.meta.traceId.slice(0, 8)}
                     </Text>
                   </View>
                   <View style={[styles.analysisStatDivider, { backgroundColor: colors.border }]} />
@@ -418,7 +420,7 @@ export default function ProfileScreen() {
                       {t('applicationAnalysis.focusSchools')}
                     </Text>
                     <Text style={[styles.analysisStatValue, { color: colors.foreground }]}>
-                      {analysis.targetSchoolInsights?.length ?? 0}
+                      {analysis.schools.length}
                     </Text>
                   </View>
                 </View>

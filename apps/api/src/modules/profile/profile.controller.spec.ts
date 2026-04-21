@@ -88,23 +88,39 @@ describe('ProfileController', () => {
           provide: ProfileApplicationAnalysisService,
           useValue: {
             getAnalysisForUser: jest.fn().mockResolvedValue({
-              overallScore: 86,
-              tier: 'top30',
-              summary: 'Strong profile',
-              sections: {
-                academic: { status: 'green', score: 8, feedback: 'Good' },
-                testScores: { status: 'yellow', score: 6, feedback: 'Okay' },
-                activities: { status: 'green', score: 8, feedback: 'Strong' },
-                awards: { status: 'yellow', score: 5, feedback: 'Needs more' },
-              },
-              suggestions: {
-                majors: [],
-                competitions: [],
-                activities: [],
-                summerPrograms: [],
-                timeline: [],
-              },
               status: 'fresh',
+              meta: {
+                traceId: 'trace-controller-1',
+                analysisVersion: 'application-analysis-v2',
+                state: 'ready',
+                dataQuality: 'high',
+                targetSchoolCount: 2,
+                focusSchoolCount: 1,
+                schoolsWithPredictions: 1,
+                generatedAt: '2026-04-20T12:00:00.000Z',
+              },
+              profileSummary: {
+                applicantType: 'international',
+                intendedMajors: ['Computer Science'],
+                testStrategy: 'submit',
+                contextFlags: ['needAid'],
+                constraints: ['Needs aid as an international applicant.'],
+              },
+              portfolioSummary: {
+                verdict: 'Strong profile with one structural constraint.',
+                balance: 'balanced',
+                keyReasons: ['Academic baseline is competitive.'],
+                riskBoundaries: [
+                  'International aid need remains a constraint.',
+                ],
+              },
+              schools: [],
+              actionPlan: {
+                now: ['Clarify one flagship activity outcome.'],
+                next90Days: [],
+                beforeSubmission: [],
+              },
+              unknowns: [],
             }),
           },
         },
@@ -183,12 +199,20 @@ describe('ProfileController', () => {
 
       expect(
         profileApplicationAnalysisService.getAnalysisForUser,
-      ).toHaveBeenCalledWith('user-1', 'zh');
+      ).toHaveBeenCalledWith('user-1', 'zh', {
+        debug: false,
+        role: 'USER',
+      });
       expect(result).toEqual(
         expect.objectContaining({
-          overallScore: 86,
-          tier: 'top30',
           status: 'fresh',
+          portfolioSummary: expect.objectContaining({
+            verdict: 'Strong profile with one structural constraint.',
+          }),
+          meta: expect.objectContaining({
+            traceId: 'trace-controller-1',
+            analysisVersion: 'application-analysis-v2',
+          }),
         }),
       );
     });

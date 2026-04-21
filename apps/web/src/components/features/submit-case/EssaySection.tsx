@@ -53,6 +53,7 @@ export function EssaySection({
   onFieldChange,
 }: EssaySectionProps) {
   const t = useTranslations('submitCase');
+  const tc = useTranslations('common');
   const essayFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -83,10 +84,10 @@ export function EssaySection({
           }
           onFieldChange('essayContent', pages.join('\n\n'));
         } else {
-          toast.error('Unsupported file format. Please use .txt, .docx, or .pdf');
+          toast.error(tc('unsupportedFileFormat'));
         }
       } catch {
-        toast.error('Failed to read file. Please try pasting the content instead.');
+        toast.error(tc('failedToReadFile'));
       }
     },
     [onFieldChange]
@@ -151,7 +152,7 @@ export function EssaySection({
             <div className="flex items-center justify-between">
               <Label>{t('essayContentLabel')}</Label>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-muted-foreground">.txt .docx .pdf</span>
+                <span className="text-2xs text-muted-foreground">.txt .docx .pdf</span>
                 <Button
                   type="button"
                   variant="outline"

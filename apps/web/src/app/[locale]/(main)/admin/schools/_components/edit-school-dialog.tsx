@@ -8,6 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -18,6 +25,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getSchoolName } from '@/lib/utils';
 import { Loader2, ImageIcon } from 'lucide-react';
+import {
+  resolveSchoolTestingPolicyValue,
+  toLegacyTestOptionalFlag,
+} from '@study-abroad/shared/utils';
+
+type TestingPolicyValue = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
 
 interface School {
   id: string;
@@ -37,6 +50,7 @@ interface School {
   averageNetPrice?: number;
   roomAndBoard?: number;
   percentNeedMet?: number;
+  testingPolicy?: TestingPolicyValue;
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;
@@ -77,7 +91,7 @@ interface FormState {
   averageNetPrice: string;
   roomAndBoard: string;
   percentNeedMet: string;
-  testOptional: boolean;
+  testingPolicy: TestingPolicyValue;
   hasEarlyDecision: boolean;
   acceptsCommonApp: boolean;
   acceptsCoalition: boolean;
@@ -91,6 +105,11 @@ interface FormState {
 }
 
 function schoolToForm(school: School | null): FormState {
+  const testingPolicy = resolveSchoolTestingPolicyValue({
+    testingPolicy: school?.testingPolicy,
+    testOptional: school?.testOptional,
+  });
+
   return {
     logoUrl: school?.logoUrl ?? '',
     website: school?.website ?? '',
@@ -106,7 +125,7 @@ function schoolToForm(school: School | null): FormState {
     averageNetPrice: school?.averageNetPrice?.toString() ?? '',
     roomAndBoard: school?.roomAndBoard?.toString() ?? '',
     percentNeedMet: school?.percentNeedMet?.toString() ?? '',
-    testOptional: school?.testOptional ?? false,
+    testingPolicy,
     hasEarlyDecision: school?.hasEarlyDecision ?? false,
     acceptsCommonApp: school?.acceptsCommonApp ?? false,
     acceptsCoalition: school?.acceptsCoalition ?? false,
@@ -185,6 +204,7 @@ export function EditSchoolDialog({
   isGenerating,
 }: EditSchoolDialogProps) {
   const t = useTranslations('admin');
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
 
   const [form, setForm] = useState<FormState>(schoolToForm(null));
@@ -265,12 +285,22 @@ export function EditSchoolDialog({
       const orig = school[key] ?? false;
       if (form[key] !== orig) payload[key] = form[key];
     };
-    boolDiff('testOptional');
     boolDiff('hasEarlyDecision');
     boolDiff('acceptsCommonApp');
     boolDiff('acceptsCoalition');
     boolDiff('feeWaiverAvailable');
     boolDiff('needBlindInternational');
+
+    const originalTestingPolicy = resolveSchoolTestingPolicyValue({
+      testingPolicy: school.testingPolicy,
+      testOptional: school.testOptional,
+    });
+    if (form.testingPolicy !== originalTestingPolicy) {
+      payload.testingPolicy = form.testingPolicy;
+      payload.testOptional = toLegacyTestOptionalFlag({
+        testingPolicy: form.testingPolicy,
+      });
+    }
 
     if (Object.keys(payload).length === 0) {
       onOpenChange(false);
@@ -376,14 +406,14 @@ export function EditSchoolDialog({
             <div className="grid grid-cols-2 gap-4">
               <NumberInput
                 id="edit-usNewsRank"
-                label="US News Rank"
+                label={t('schools.editDialog.usNewsRank')}
                 value={form.usNewsRank}
                 onChange={(v) => setField('usNewsRank', v)}
                 prefix="#"
               />
               <NumberInput
                 id="edit-qsRank"
-                label="QS Rank"
+                label={t('schools.editDialog.qsRank')}
                 value={form.qsRank}
                 onChange={(v) => setField('qsRank', v)}
                 prefix="#"
@@ -484,39 +514,50 @@ export function EditSchoolDialog({
           {/* Application Tab */}
           <TabsContent value="application" className="space-y-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
-              <BooleanField
-                id="edit-testOptional"
-                label="Test Optional"
-                checked={form.testOptional}
-                onChange={(v) => setField('testOptional', v)}
-              />
+              <div className="space-y-1">
+                <Label htmlFor="edit-testingPolicy">{t('schools.editDialog.testingPolicy')}</Label>
+                <Select
+                  value={form.testingPolicy}
+                  onValueChange={(value) => setField('testingPolicy', value as TestingPolicyValue)}
+                >
+                  <SelectTrigger id="edit-testingPolicy">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="REQUIRED">{testingPolicyT('REQUIRED')}</SelectItem>
+                    <SelectItem value="OPTIONAL">{testingPolicyT('OPTIONAL')}</SelectItem>
+                    <SelectItem value="BLIND">{testingPolicyT('BLIND')}</SelectItem>
+                    <SelectItem value="UNKNOWN">{testingPolicyT('UNKNOWN')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <BooleanField
                 id="edit-hasEarlyDecision"
-                label="Early Decision"
+                label={t('schools.editDialog.earlyDecision')}
                 checked={form.hasEarlyDecision}
                 onChange={(v) => setField('hasEarlyDecision', v)}
               />
               <BooleanField
                 id="edit-acceptsCommonApp"
-                label="Common App"
+                label={t('schools.editDialog.commonApp')}
                 checked={form.acceptsCommonApp}
                 onChange={(v) => setField('acceptsCommonApp', v)}
               />
               <BooleanField
                 id="edit-acceptsCoalition"
-                label="Coalition App"
+                label={t('schools.editDialog.coalitionApp')}
                 checked={form.acceptsCoalition}
                 onChange={(v) => setField('acceptsCoalition', v)}
               />
               <BooleanField
                 id="edit-feeWaiverAvailable"
-                label="Fee Waiver"
+                label={t('schools.editDialog.feeWaiver')}
                 checked={form.feeWaiverAvailable}
                 onChange={(v) => setField('feeWaiverAvailable', v)}
               />
               <BooleanField
                 id="edit-needBlindInternational"
-                label="Need Blind (Intl)"
+                label={t('schools.editDialog.needBlindIntl')}
                 checked={form.needBlindInternational}
                 onChange={(v) => setField('needBlindInternational', v)}
               />

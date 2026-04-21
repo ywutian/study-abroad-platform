@@ -6,6 +6,7 @@
  * 2. Hardcoded colors in StyleSheet.create (should use useColors() theme)
  * 3. console.log/error in production code (exclude test files)
  * 4. Component files exceeding 500 lines
+ * 5. Mobile theme adapter drifting from shared canonical tokens
  *
  * Usage:
  *   npx tsx scripts/check-mobile-quality.ts           # Check all
@@ -58,6 +59,22 @@ const HARDCODED_COLOR_EXEMPT_FILES = [
   'colors.ts',
   'constants.ts',
 ];
+
+const LINEAR_GRADIENT_PATTERNS = [
+  /<LinearGradient\b/,
+  /from ['"]expo-linear-gradient['"]/,
+  /from "expo-linear-gradient"/,
+];
+
+const LEGACY_GRADIENT_PATTERNS = [
+  /gradients\.(primary|primarySoft|primaryDark|hero|heroDark|success|warning|error|info|rose|violet|amber|emerald|meshPrimary|meshSuccess|meshWarm)/,
+];
+
+const LARGE_ELEVATION_PATTERN = /\belevation\s*:\s*(?:[3-9]|\d{2,})/;
+const HARDCODED_STATUS_PATTERN =
+  /(backgroundColor|borderColor|color)\s*:\s*colors\.(success|warning|error|info)/;
+const SHARED_THEME_DRIFT_PATTERN =
+  /\b(primary|primaryForeground|background|foreground|card|border|muted|accent|success|warning|error|info|surfaceMuted|surfaceSubtle|infoSurface)\s*:\s*['"][^'"]+['"]/;
 
 const CONSOLE_PATTERN = /\bconsole\.(log|error|warn)\b/;
 const CONSOLE_EXEMPT_FILES = ['.test.', '.spec.', '__tests__/', 'scripts/', '__mocks__/'];
@@ -201,6 +218,104 @@ function checkFileSize(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+function checkLinearGradientHero(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    LINEAR_GRADIENT_PATTERNS,
+    'no-linear-gradient-hero',
+    'Page-level LinearGradient detected. Use neutral surfaces unless the file is explicitly allowlisted.',
+    'warning'
+  );
+}
+
+function checkLegacyGradientPalette(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    LEGACY_GRADIENT_PATTERNS,
+    'no-legacy-gradient-palette',
+    'Legacy decorative gradient token detected. Use the restricted allowlist gradients only.',
+    'warning'
+  );
+}
+
+function checkLargeElevation(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    [LARGE_ELEVATION_PATTERN],
+    'no-large-elevation',
+    'Large elevation detected. Limit page chrome to DS card / elevated shadows.',
+    'warning'
+  );
+}
+
+function checkHardcodedStatusColor(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    [HARDCODED_STATUS_PATTERN],
+    'no-page-chrome-hardcoded-status-color',
+    'Direct status color usage detected. Route through shared semantic status primitives instead.',
+    'warning'
+  );
+}
+
+function checkSharedTokenDrift(filePath: string, lines: string[]): Issue[] {
+  if (!filePath.endsWith('src/utils/theme.ts')) return [];
+
+  return scanPatternRule(
+    filePath,
+    lines,
+    [SHARED_THEME_DRIFT_PATTERN],
+    'no-shared-token-drift',
+    'Mobile theme adapter is hand-writing a canonical DS color. Consume the shared token source instead.',
+    'error'
+  );
+}
+
+function isCommentLine(line: string): boolean {
+  const trimmed = line.trim();
+  return (
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('*') ||
+    trimmed.startsWith('/*') ||
+    trimmed.startsWith('{/*')
+  );
+}
+
+function isDesignSystemIgnored(lines: string[], index: number): boolean {
+  return index > 0 && lines[index - 1].includes('@design-system-ignore-next-line');
+}
+
+function scanPatternRule(
+  filePath: string,
+  lines: string[],
+  patterns: RegExp[],
+  rule: string,
+  message: string,
+  severity: Issue['severity']
+): Issue[] {
+  const issues: Issue[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isDesignSystemIgnored(lines, i)) continue;
+    if (patterns.some((pattern) => pattern.test(line))) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule,
+        message,
+        severity,
+      });
+    }
+  }
+
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
@@ -221,6 +336,11 @@ function main() {
     allIssues.push(
       ...checkDynamicStyles(filePath, lines),
       ...checkHardcodedColors(filePath, lines),
+      ...checkLinearGradientHero(filePath, lines),
+      ...checkLegacyGradientPalette(filePath, lines),
+      ...checkLargeElevation(filePath, lines),
+      ...checkHardcodedStatusColor(filePath, lines),
+      ...checkSharedTokenDrift(filePath, lines),
       ...checkConsole(filePath, lines),
       ...checkFileSize(filePath, lines)
     );

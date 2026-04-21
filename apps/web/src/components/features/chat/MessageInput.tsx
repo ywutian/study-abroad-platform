@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +26,7 @@ export function MessageInput({
   placeholder = '',
   className,
 }: MessageInputProps) {
+  const tAria = useTranslations('common.aria');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -179,7 +181,7 @@ export function MessageInput({
           className="shrink-0 h-10 w-10"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isSending}
-          aria-label="Attach file"
+          aria-label={tAria('attachFile')}
         >
           <Paperclip className="h-5 w-5 text-muted-foreground" />
         </Button>
@@ -189,7 +191,7 @@ export function MessageInput({
           variant="ghost"
           size="icon"
           className="shrink-0 h-10 w-10 hidden sm:flex"
-          aria-label="Attach image"
+          aria-label={tAria('attachImage')}
           onClick={() => {
             if (fileInputRef.current) {
               fileInputRef.current.accept = 'image/*';
@@ -224,7 +226,7 @@ export function MessageInput({
           onClick={handleSend}
           disabled={disabled || isSending || (!message.trim() && attachments.length === 0)}
           className="shrink-0 h-11 w-11 p-0 bg-primary hover:opacity-90"
-          aria-label="Send message"
+          aria-label={tAria('sendMessage')}
         >
           {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
         </Button>

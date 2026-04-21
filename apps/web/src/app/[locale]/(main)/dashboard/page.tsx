@@ -183,12 +183,12 @@ export default function DashboardPage() {
   }, [stableDashboard?.upcomingDeadlines, stableDashboard?.upcomingPersonalEvents, locale]);
 
   return (
-    <PageContainer>
+    <PageContainer variant="tool">
       <PageHeader
         title={t('dashboard.welcome', { name: displayName })}
         description={t('dashboard.subtitle')}
         icon={LayoutDashboard}
-        color="slate"
+        variant="tool"
       />
       <QuickExperience />
 

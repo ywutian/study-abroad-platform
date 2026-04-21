@@ -1,388 +1,368 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Target, BarChart3, BookOpen, MessageSquare, Globe2, Sparkles } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Clock3, FileText, Shield, Sparkles, Users } from 'lucide-react';
+import { AdmissionTierBadge, StatusDot } from '@/components/features/landing';
+import { PageContainer } from '@/components/layout/page-container';
 import { Link } from '@/lib/i18n/navigation';
-import { SectionHeader } from '@/components/features/landing';
-import { AnimatedNumber } from '@/components/ui/motion';
 import { cn } from '@/lib/utils';
-import { transitions } from '@/lib/motion';
+import { useHomeContent, type HomeContentItem } from './home-content';
+
+type MatchingVisualCopy = {
+  label: string;
+  schools: Array<{ name: string; odds: number; tier: 'reach' | 'target' | 'safety' }>;
+};
+
+type EssayVisualCopy = {
+  kicker: string;
+  lines: string[];
+  chips: string[];
+};
+
+type TimelineVisualCopy = {
+  label: string;
+  items: Array<{ month: string; label: string }>;
+};
+
+type ProbabilityVisualCopy = {
+  label: string;
+  ranges: Array<{ tier: 'reach' | 'target' | 'safety'; text: string }>;
+  note: string;
+};
+
+type TeamVisualCopy = {
+  label: string;
+  members: Array<{ name: string; task: string; status: 'success' | 'warning' | 'ai' }>;
+};
+
+type MentorVisualCopy = {
+  label: string;
+  quote: string;
+  points: string[];
+};
+
+const featureRoutes = [
+  '/schools',
+  '/essays',
+  '/timeline',
+  '/prediction',
+  '/teams',
+  '/help',
+] as const;
+const featureSpans = [
+  'lg:col-span-4',
+  'lg:col-span-2',
+  'lg:col-span-2',
+  'lg:col-span-2',
+  'lg:col-span-2',
+  'lg:col-span-6',
+] as const;
+const featureIcons = [BarChart3, FileText, Clock3, Sparkles, Users, Shield] as const;
 
 export function BentoFeatures() {
-  const t = useTranslations();
+  const home = useHomeContent();
   const prefersReducedMotion = useReducedMotion();
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.1 });
 
   return (
-    <section id="features" className="zone-tinted section-expansive">
-      <div className="container mx-auto px-4">
-        <SectionHeader
-          title={t('home.modules.title')}
-          subtitle={t('home.modules.subtitle')}
-          align="left"
-          size="display"
-          className="max-w-6xl"
-        />
-
-        <div
-          ref={ref}
-          className="mx-auto max-w-6xl grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+    <section id="features" className="landing-section relative">
+      <PageContainer variant="marketing" className="relative">
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-3xl"
         >
-          {/* Large card: School Finder (spans 2 cols, 2 rows on lg) */}
-          <BentoCard
-            index={0}
-            isInView={isInView}
-            reduced={!!prefersReducedMotion}
-            className="col-span-2 lg:col-span-2 lg:row-span-2"
-            gradient="from-violet-500/10 to-purple-600/10"
-            borderColor="hover:border-violet-500/30"
-            href="/schools"
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 p-2.5 shadow-lg">
-                <Target className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold">
-                  {t('home.modules.schools.title')}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('home.modules.schools.desc')}
-                </p>
-              </div>
-            </div>
-            {/* Mini search UI mockup */}
-            <div className="rounded-xl bg-muted/30 border border-border/40 p-3 sm:p-5">
-              <div className="h-9 bg-background/80 rounded-lg flex items-center px-3 gap-2 mb-4 shadow-sm">
-                <Target className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {t('home.demoUI.step1.searchPlaceholder')}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { name: 'MIT', rank: '#1', match: 92, color: 'bg-red-500' },
-                  { name: 'Stanford University', rank: '#3', match: 85, color: 'bg-red-600' },
-                  { name: 'Carnegie Mellon', rank: '#7', match: 78, color: 'bg-blue-500' },
-                ].map((school, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-background/50 hover:bg-background transition-colors"
-                  >
-                    <div
-                      className={cn(
-                        'w-8 h-8 rounded-md flex items-center justify-center text-white text-2xs font-bold shrink-0',
-                        school.color
-                      )}
-                    >
-                      {school.rank}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium">{school.name}</div>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <div className="h-1.5 w-12 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${school.match}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-semibold text-primary">{school.match}%</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </BentoCard>
+          <div className="landing-kicker">{home.features.eyebrow}</div>
+          <h2 className="mt-4 text-display-section text-[var(--landing-fg)]">
+            {home.features.title}
+          </h2>
+          {home.features.subtitle ? (
+            <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--landing-muted)] sm:text-lg">
+              {home.features.subtitle}
+            </p>
+          ) : null}
+        </motion.div>
 
-          {/* Medium card: AI Prediction */}
-          <BentoCard
-            index={1}
-            isInView={isInView}
-            reduced={!!prefersReducedMotion}
-            className="col-span-2 lg:col-span-1 lg:row-span-2"
-            gradient="from-blue-500/5 to-cyan-500/5"
-            borderColor="hover:border-blue-500/30"
-            href="/prediction"
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-2.5 shadow-lg">
-                <BarChart3 className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">{t('home.modules.prediction.title')}</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {t('home.modules.prediction.desc')}
-                </p>
-              </div>
-            </div>
-            {/* Animated gauge */}
-            <div className="flex flex-col items-center py-4">
-              <PredictionGauge value={85} isInView={isInView} reduced={!!prefersReducedMotion} />
-              <p className="text-sm text-muted-foreground mt-3">{t('home.demoUI.step2.score')}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {[
-                { label: t('home.demoUI.step2.safety'), value: 92, color: 'text-emerald-500' },
-                { label: t('home.demoUI.step2.target'), value: 68, color: 'text-blue-500' },
-                { label: t('home.demoUI.step2.reach'), value: 35, color: 'text-amber-500' },
-              ].map((item, i) => (
-                <div key={i} className="text-center p-2.5 rounded-lg bg-muted/30">
-                  <div className={cn('text-lg font-bold', item.color)}>{item.value}%</div>
-                  <div className="text-2xs text-muted-foreground mt-0.5">{item.label}</div>
-                </div>
-              ))}
-            </div>
-          </BentoCard>
-
-          {/* Small card: Data scale */}
-          <BentoCard
-            index={2}
-            isInView={isInView}
-            reduced={!!prefersReducedMotion}
-            gradient="from-emerald-500/5 to-teal-500/5"
-            borderColor="hover:border-emerald-500/30"
-            href="/schools"
-          >
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 p-2.5 shadow-lg">
-                <Globe2 className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <AnimatedNumber
-                    value={3000}
-                    className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400"
-                  />
-                  <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                    +
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">{t('home.stats.schools')}</p>
-              </div>
-            </div>
-          </BentoCard>
-
-          {/* Medium card: Cases */}
-          <BentoCard
-            index={3}
-            isInView={isInView}
-            reduced={!!prefersReducedMotion}
-            gradient="from-amber-500/5 to-orange-500/5"
-            borderColor="hover:border-amber-500/30"
-            href="/cases"
-          >
-            <div className="flex items-start gap-3 mb-3">
-              <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-2.5 shadow-lg">
-                <BookOpen className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold">{t('home.modules.cases.title')}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t('home.modules.cases.desc')}
-                </p>
-              </div>
-            </div>
-            {/* Mini case cards */}
-            <div className="space-y-2">
-              {[
-                { school: 'MIT', result: 'Admitted', color: 'bg-emerald-500' },
-                { school: 'Stanford', result: 'Waitlisted', color: 'bg-amber-500' },
-              ].map((c, i) => (
-                <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-background/50">
-                  <div className={cn('w-2 h-8 rounded-full shrink-0', c.color)} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">{c.school}</div>
-                    <div className="text-2xs text-muted-foreground">{c.result}</div>
-                  </div>
-                  <Sparkles className="w-3.5 h-3.5 text-primary/50 shrink-0" />
-                </div>
-              ))}
-            </div>
-          </BentoCard>
-
-          {/* Small card: Community */}
-          <BentoCard
-            index={4}
-            isInView={isInView}
-            reduced={!!prefersReducedMotion}
-            gradient="from-violet-500/5 to-indigo-500/5"
-            borderColor="hover:border-violet-500/30"
-            href="/forum"
-          >
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 p-2.5 shadow-lg">
-                <MessageSquare className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold">{t('home.modules.forum.title')}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t('home.modules.forum.desc')}
-                </p>
-              </div>
-            </div>
-            {/* Overlapping avatars */}
-            <div className="flex items-center gap-3 mt-3">
-              <div className="flex -space-x-2">
-                {['L', 'W', 'Z', 'C', 'H'].map((letter, i) => (
-                  <div
-                    key={i}
-                    className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-2xs font-bold text-white ring-2 ring-background"
-                    style={{ opacity: 1 - i * 0.1 }}
-                  >
-                    {letter}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-1">
-                <AnimatedNumber value={1200} className="text-sm font-bold" />
-                <span className="text-xs text-muted-foreground">+</span>
-              </div>
-            </div>
-          </BentoCard>
+        <div className="mt-10 grid gap-5 lg:grid-cols-6">
+          {home.features.items.map((item, index) => (
+            <FeatureCard
+              key={item.number}
+              item={item}
+              href={featureRoutes[index]}
+              index={index}
+              reduced={!!prefersReducedMotion}
+              className={featureSpans[index]}
+            />
+          ))}
         </div>
-      </div>
+      </PageContainer>
     </section>
   );
 }
 
-// Reusable bento card wrapper with cursor-following glow
-function BentoCard({
-  children,
+function FeatureCard({
+  item,
+  href,
   index,
-  isInView,
   reduced,
   className,
-  gradient,
-  borderColor,
-  href,
 }: {
-  children: React.ReactNode;
+  item: HomeContentItem;
+  href: string;
   index: number;
-  isInView: boolean;
   reduced: boolean;
-  className?: string;
-  gradient: string;
-  borderColor: string;
-  href?: string;
+  className: string;
 }) {
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (reduced) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-    e.currentTarget.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-  };
+  const t = useTranslations('home');
+  const visuals = [
+    <MatchingVisual key="matching" />,
+    <EssayVisual key="essay" />,
+    <TimelineVisual key="timeline" />,
+    <ProbabilityVisual key="probability" />,
+    <TeamVisual key="team" />,
+    <MentorVisual key="mentor" />,
+  ];
+
+  const Icon = featureIcons[index];
 
   return (
     <motion.div
-      onMouseMove={handleMouseMove}
-      initial={reduced ? {} : { opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      whileHover={
-        reduced ? {} : { y: -4, transition: { type: 'spring', stiffness: 300, damping: 20 } }
-      }
-      transition={{ delay: index * 0.08, ...transitions.springGentle }}
-      className={cn(
-        'group relative rounded-2xl border bg-card p-4 sm:p-6 lg:p-8 xl:p-10 shadow-lg transition-all duration-300 hover:shadow-xl overflow-hidden card-glow',
-        borderColor,
-        className
-      )}
+      initial={reduced ? false : { opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.22 }}
+      transition={{ duration: 0.55, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
     >
-      {/* Cursor-following glow — pointer devices only */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 hidden [@media(hover:hover)]:block [@media(hover:hover)]:group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background:
-            'radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), oklch(0.58 0.22 255 / 0.06), transparent 40%)',
-        }}
-      />
-      {/* Subtle gradient background */}
-      <div
-        className={cn(
-          'absolute inset-0 bg-gradient-to-br opacity-50 pointer-events-none',
-          gradient
-        )}
-      />
-      <div className="relative">{children}</div>
-      {href && (
-        <Link href={href} className="absolute inset-0 z-10" aria-hidden="true" tabIndex={-1} />
-      )}
+      <Link
+        href={href}
+        className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-card)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--landing-border-strong)] hover:shadow-[var(--landing-shadow-elevated)]"
+      >
+        <div className="flex h-full flex-col gap-6 p-6 lg:p-7">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-end gap-3">
+                <span className="text-5xl font-semibold leading-none tracking-[-0.04em] text-[var(--landing-subtle)]">
+                  {item.number}
+                </span>
+                {item.tag ? (
+                  <span className="mb-2 text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
+                    {item.tag}
+                  </span>
+                ) : null}
+              </div>
+              <h3 className="mt-5 text-2xl font-bold leading-8 tracking-tight text-balance text-[var(--landing-fg)]">
+                {item.title}
+              </h3>
+              <p className="mt-3 max-w-xl text-sm leading-8 text-balance text-[var(--landing-muted)] sm:text-base">
+                {item.description}
+              </p>
+            </div>
+            <span className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)] text-[var(--landing-muted)] transition group-hover:text-[var(--landing-fg)]">
+              <Icon className="h-4 w-4" />
+            </span>
+          </div>
+
+          <div className="mt-auto">{visuals[index]}</div>
+
+          <div className="inline-flex items-center gap-2 text-sm text-[var(--landing-muted)]">
+            <span>{t('features.visuals.openModule')}</span>
+            <ArrowUpRight className="h-4 w-4" />
+          </div>
+        </div>
+      </Link>
     </motion.div>
   );
 }
 
-// SVG circular gauge for prediction
-function PredictionGauge({
-  value,
-  isInView,
-  reduced,
-}: {
-  value: number;
-  isInView: boolean;
-  reduced: boolean;
-}) {
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
+function MatchingVisual() {
+  const t = useTranslations('home');
+  const copy = t.raw('features.visuals.matching') as MatchingVisualCopy;
 
   return (
-    <div className="relative w-32 h-32 sm:w-36 sm:h-36">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-        {/* Background circle */}
-        <circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="8"
-          className="text-muted"
-        />
-        {/* Animated progress circle */}
-        <motion.circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          stroke="url(#gaugeGradient)"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={isInView && !reduced ? { strokeDashoffset: offset } : {}}
-          transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
-        />
-        <defs>
-          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="oklch(0.58 0.22 255)">
-              <animate
-                attributeName="stop-color"
-                values="oklch(0.58 0.22 255); oklch(0.72 0.16 200); oklch(0.58 0.22 255)"
-                dur="4s"
-                repeatCount="indefinite"
+    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+      <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+        {copy.label}
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <AdmissionTierBadge tier="reach" showBand />
+        <AdmissionTierBadge tier="target" showBand />
+        <AdmissionTierBadge tier="safety" showBand />
+      </div>
+      <div className="mt-4 space-y-3">
+        {copy.schools.map((school) => (
+          <div key={school.name} className="flex items-center gap-3">
+            <div className="w-16 text-sm text-[var(--landing-fg)]">{school.name}</div>
+            <div className="h-2 flex-1 rounded-full bg-[var(--landing-border)]">
+              <div
+                className={cn(
+                  'h-2 rounded-full',
+                  school.tier === 'reach' && 'bg-[color:var(--ds-status-reach)]',
+                  school.tier === 'target' && 'bg-[color:var(--ds-status-target)]',
+                  school.tier === 'safety' && 'bg-[color:var(--ds-status-safety)]'
+                )}
+                style={{ width: `${school.odds}%` }}
               />
-            </stop>
-            <stop offset="100%" stopColor="oklch(0.72 0.16 200)">
-              <animate
-                attributeName="stop-color"
-                values="oklch(0.72 0.16 200); oklch(0.65 0.20 280); oklch(0.72 0.16 200)"
-                dur="4s"
-                repeatCount="indefinite"
-              />
-            </stop>
-          </linearGradient>
-        </defs>
-      </svg>
-      {/* Center text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <AnimatedNumber
-          value={value}
-          className="text-3xl sm:text-4xl font-bold text-foreground drop-shadow-[0_0_8px_oklch(0.58_0.22_255_/_0.3)]"
-        />
-        <span className="text-xs text-muted-foreground -mt-1">%</span>
+            </div>
+            <div className="w-10 text-right font-mono text-xs text-[var(--landing-muted)]">
+              {school.odds}%
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EssayVisual() {
+  const t = useTranslations('home');
+  const copy = t.raw('features.visuals.essay') as EssayVisualCopy;
+
+  return (
+    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+      <div className="flex items-center justify-between text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+        <span>{copy.kicker}</span>
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
+      </div>
+      <div className="mt-4 space-y-2 text-sm leading-7 text-[var(--landing-fg)]">
+        <div>{copy.lines[0]}</div>
+        <div className="inline-block rounded-lg border border-[color:var(--ds-status-reach)]/20 bg-[color:var(--ds-status-reach-bg)] px-2 py-1 text-[color:var(--ds-status-reach-fg)] line-through">
+          {copy.lines[1]}
+        </div>
+        <div className="inline-block rounded-lg border border-[color:var(--ds-status-safety)]/20 bg-[color:var(--ds-status-safety-bg)] px-2 py-1 text-[color:var(--ds-status-safety-fg)]">
+          {copy.lines[2]}
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {copy.chips.map((chip) => (
+          <span
+            key={chip}
+            className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3 py-1 text-2xs text-[var(--landing-muted)]"
+          >
+            {chip}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TimelineVisual() {
+  const t = useTranslations('home');
+  const copy = t.raw('features.visuals.timeline') as TimelineVisualCopy;
+
+  return (
+    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+      <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+        <Clock3 className="h-3.5 w-3.5 text-primary" />
+        <span>{copy.label}</span>
+      </div>
+      <div className="mt-4 space-y-4">
+        {copy.items.map((item, index) => (
+          <div key={item.month} className="flex items-start gap-3">
+            <div className="flex min-w-12 flex-col items-center">
+              <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+                {item.month}
+              </div>
+              {index < copy.items.length - 1 ? (
+                <div className="mt-2 h-10 w-px bg-[var(--landing-border)]" />
+              ) : null}
+            </div>
+            <div className="flex-1 rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 text-sm text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]">
+              {item.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProbabilityVisual() {
+  const t = useTranslations('home');
+  const copy = t.raw('features.visuals.probability') as ProbabilityVisualCopy;
+
+  return (
+    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+      <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+        <BarChart3 className="h-3.5 w-3.5 text-primary" />
+        <span>{copy.label}</span>
+      </div>
+      <div className="mt-4 space-y-3">
+        {copy.ranges.map((range) => (
+          <div
+            key={range.text}
+            className="flex items-center justify-between rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-card)]"
+          >
+            <span className="text-sm text-[var(--landing-fg)]">{range.text}</span>
+            <AdmissionTierBadge tier={range.tier} />
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 text-sm text-[var(--landing-muted)]">{copy.note}</div>
+    </div>
+  );
+}
+
+function TeamVisual() {
+  const t = useTranslations('home');
+  const copy = t.raw('features.visuals.team') as TeamVisualCopy;
+
+  return (
+    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+      <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+        <Users className="h-3.5 w-3.5 text-primary" />
+        <span>{copy.label}</span>
+      </div>
+      <div className="mt-4 space-y-3">
+        {copy.members.map((member) => (
+          <div
+            key={member.name}
+            className="flex items-center gap-3 rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-card)]"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)] text-sm font-semibold text-[var(--landing-fg)]">
+              {member.name.slice(0, 1)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-[var(--landing-fg)]">{member.name}</div>
+              <div className="truncate text-xs text-[var(--landing-muted)]">{member.task}</div>
+            </div>
+            <StatusDot status={member.status} pulse={member.status === 'ai'} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MentorVisual() {
+  const t = useTranslations('home');
+  const copy = t.raw('features.visuals.mentor') as MentorVisualCopy;
+
+  return (
+    <div className="grid gap-4 rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4 lg:grid-cols-[0.95fr_1.05fr]">
+      <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-5 py-5 shadow-[var(--landing-shadow-card)]">
+        <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
+          <Shield className="h-3.5 w-3.5 text-primary" />
+          <span>{copy.label}</span>
+        </div>
+        <div className="mt-4 text-xl italic leading-relaxed tracking-[-0.01em] text-[var(--landing-fg)]">
+          {copy.quote}
+        </div>
+      </div>
+      <div className="space-y-3">
+        {copy.points.map((point, index) => (
+          <div
+            key={point}
+            className="flex items-center gap-3 rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-4 shadow-[var(--landing-shadow-card)]"
+          >
+            <span className="text-sm font-semibold text-[var(--landing-subtle)]">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <span className="text-sm text-[var(--landing-fg)]">{point}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

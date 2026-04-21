@@ -11,6 +11,12 @@ export const teamService = {
   leave: (id: string) => apiClient.post(teamRoutes.leave(id)),
   getMyTeams: () => apiClient.get(`${API_ROUTES.TEAMS}/my`),
   getRecruitmentContexts: () => apiClient.get(teamRoutes.recruitmentContexts()),
+  getRecruitmentContextsBySourceTypeAndCompetitionId: (params: {
+    sourceType?: string;
+    competitionId?: string;
+  }) => apiClient.get(teamRoutes.recruitmentContextsBySourceTypeAndCompetitionId(params)),
+  getCommunityContexts: () => apiClient.get(teamRoutes.communityContexts()),
+  getMatchPools: () => apiClient.get(teamRoutes.matchPools()),
   getMyRecruitments: () => apiClient.get(teamRoutes.myRecruitments()),
   getRecruitmentDeck: (params?: Record<string, string | number | boolean | undefined>) =>
     apiClient.get(teamRoutes.recruitmentDeck(), { params }),

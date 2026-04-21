@@ -283,6 +283,7 @@ export interface SchoolStandardFormat {
   avgSalary?: number;
   salary6YrPostGrad?: number;
 
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   acceptsCommonApp?: boolean;
   hasEarlyDecision?: boolean;

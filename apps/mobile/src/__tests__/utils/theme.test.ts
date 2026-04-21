@@ -40,15 +40,15 @@ import {
 describe('colors', () => {
   describe('light theme', () => {
     it('has the correct primary color', () => {
-      expect(colors.light.primary).toBe('#6366f1');
+      expect(colors.light.primary).toBe('#5b66f6');
     });
 
     it('has the correct background color', () => {
-      expect(colors.light.background).toBe('#fafbfc');
+      expect(colors.light.background).toBe('#fafbfd');
     });
 
     it('has the correct foreground color', () => {
-      expect(colors.light.foreground).toBe('#0f172a');
+      expect(colors.light.foreground).toBe('#111827');
     });
 
     it('has the correct card color', () => {
@@ -56,23 +56,23 @@ describe('colors', () => {
     });
 
     it('has the correct border color', () => {
-      expect(colors.light.border).toBe('#e2e8f0');
+      expect(colors.light.border).toBe('#d9e2ec');
     });
 
     it('has the correct success color', () => {
-      expect(colors.light.success).toBe('#10b981');
+      expect(colors.light.success).toBe('#3a9564');
     });
 
     it('has the correct error color', () => {
-      expect(colors.light.error).toBe('#ef4444');
+      expect(colors.light.error).toBe('#bc4b45');
     });
 
     it('has the correct warning color', () => {
-      expect(colors.light.warning).toBe('#f59e0b');
+      expect(colors.light.warning).toBe('#b9852f');
     });
 
     it('has the correct info color', () => {
-      expect(colors.light.info).toBe('#3b82f6');
+      expect(colors.light.info).toBe('#4a81ae');
     });
 
     it('has the correct overlay value', () => {
@@ -82,39 +82,39 @@ describe('colors', () => {
 
   describe('dark theme', () => {
     it('has the correct primary color', () => {
-      expect(colors.dark.primary).toBe('#818cf8');
+      expect(colors.dark.primary).toBe('#8590ff');
     });
 
     it('has the correct background color', () => {
-      expect(colors.dark.background).toBe('#0f172a');
+      expect(colors.dark.background).toBe('#101726');
     });
 
     it('has the correct foreground color', () => {
-      expect(colors.dark.foreground).toBe('#f8fafc');
+      expect(colors.dark.foreground).toBe('#f5f7fb');
     });
 
     it('has the correct card color', () => {
-      expect(colors.dark.card).toBe('#1e293b');
+      expect(colors.dark.card).toBe('#161f2f');
     });
 
     it('has the correct border color', () => {
-      expect(colors.dark.border).toBe('#334155');
+      expect(colors.dark.border).toBe('#283142');
     });
 
     it('has the correct success color', () => {
-      expect(colors.dark.success).toBe('#34d399');
+      expect(colors.dark.success).toBe('#64bb84');
     });
 
     it('has the correct error color', () => {
-      expect(colors.dark.error).toBe('#f87171');
+      expect(colors.dark.error).toBe('#d96a63');
     });
 
     it('has the correct warning color', () => {
-      expect(colors.dark.warning).toBe('#fbbf24');
+      expect(colors.dark.warning).toBe('#d4aa59');
     });
 
     it('has the correct info color', () => {
-      expect(colors.dark.info).toBe('#60a5fa');
+      expect(colors.dark.info).toBe('#75abd2');
     });
 
     it('has the correct overlay value', () => {

@@ -32,6 +32,9 @@ interface CalibrationStats {
   reducedCount: number;
   totalPredictions: number;
   withActualResults: number;
+  verifiedSampleCount: number;
+  brierScore: number | null;
+  ece: number | null;
   calibrationBuckets: Array<{
     predictedRange: string;
     actualAdmitRate: number;
@@ -91,21 +94,6 @@ export function OverviewTab() {
     setDialogOpen(true);
   }
 
-  // Compute overall accuracy (average absolute error across buckets)
-  const overallAccuracy =
-    stats && stats.calibrationBuckets.length > 0
-      ? (() => {
-          const bucketsWithData = stats.calibrationBuckets.filter((b) => b.count > 0);
-          if (bucketsWithData.length === 0) return null;
-          const totalError = bucketsWithData.reduce((sum, b) => {
-            const midpoint = BUCKET_MIDPOINTS[b.predictedRange] ?? 0.5;
-            return sum + Math.abs(b.actualAdmitRate - midpoint);
-          }, 0);
-          const avgError = totalError / bucketsWithData.length;
-          return Math.max(0, Math.round((1 - avgError) * 100));
-        })()
-      : null;
-
   // Prepare chart data
   const chartData =
     stats?.calibrationBuckets.map((b) => ({
@@ -118,8 +106,8 @@ export function OverviewTab() {
   if (statsLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-24 rounded-lg" />
           ))}
         </div>
@@ -132,7 +120,7 @@ export function OverviewTab() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -154,10 +142,8 @@ export function OverviewTab() {
                 <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.withActualResults ?? 0}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('stats.predictionsWithOutcomes')}
-                </p>
+                <p className="text-2xl font-bold">{stats?.verifiedSampleCount ?? 0}</p>
+                <p className="text-sm text-muted-foreground">{t('stats.verifiedOutcomes')}</p>
               </div>
             </div>
           </CardContent>
@@ -171,9 +157,25 @@ export function OverviewTab() {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {overallAccuracy !== null ? `${overallAccuracy}%` : '—'}
+                  {stats?.brierScore != null ? stats.brierScore.toFixed(3) : '—'}
                 </p>
-                <p className="text-sm text-muted-foreground">{t('stats.overallAccuracy')}</p>
+                <p className="text-sm text-muted-foreground">{t('stats.brierScore')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-cyan-500/10 p-2">
+                <Zap className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">
+                  {stats?.ece != null ? stats.ece.toFixed(3) : '—'}
+                </p>
+                <p className="text-sm text-muted-foreground">{t('stats.ece')}</p>
               </div>
             </div>
           </CardContent>

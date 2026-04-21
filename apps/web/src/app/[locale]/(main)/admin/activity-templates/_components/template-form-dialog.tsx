@@ -108,7 +108,7 @@ export function TemplateFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Chinese Name</Label>
+            <Label>{t('activityTemplates.chineseName')}</Label>
             <Input
               value={form.nameZh}
               onChange={(e) => onFormChange({ ...form, nameZh: e.target.value })}
@@ -117,7 +117,7 @@ export function TemplateFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>{t('activityTemplates.category')}</Label>
               <Select
                 value={form.category}
                 onValueChange={(v) =>
@@ -164,11 +164,11 @@ export function TemplateFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t('activityTemplates.descriptionLabel')}</Label>
             <Textarea
               value={form.description}
               onChange={(e) => onFormChange({ ...form, description: e.target.value })}
-              placeholder="Optional description"
+              placeholder={t('activityTemplates.optionalDescription')}
               rows={3}
             />
           </div>

@@ -16,6 +16,9 @@ import {
   GlobalEventCategory,
   DataReviewStatus,
   StagingStatus,
+  MatchPoolEntryType,
+  RecruitmentContextModerationStatus,
+  RecruitmentContextSourceType,
 } from '@prisma/client';
 import {
   CreateSchoolDeadlineDto,
@@ -29,6 +32,13 @@ import {
   CreateSchoolCalibrationDto,
   UpdateSchoolCalibrationDto,
 } from './dto/school-calibration.dto';
+import {
+  CreateMatchPoolDto,
+  UpdateMatchPoolDto,
+  CreateMatchPoolEntryDto,
+  UpdateMatchPoolEntryDto,
+  PromoteCommunityRecruitmentContextDto,
+} from './dto/match-pool.dto';
 
 /**
  * 审计日志操作类型
@@ -1030,6 +1040,364 @@ export class AdminService {
     const event = await this.prisma.globalEvent.findUnique({ where: { id } });
     if (!event) throw new NotFoundException(ERR.NOT_FOUND.globalEvent());
     await this.prisma.globalEvent.delete({ where: { id } });
+  }
+
+  async getMatchPools() {
+    return this.prisma.matchPool.findMany({
+      include: {
+        entries: {
+          include: {
+            competition: {
+              select: {
+                id: true,
+                name: true,
+                abbreviation: true,
+                category: true,
+              },
+            },
+            recruitmentContext: {
+              select: {
+                id: true,
+                title: true,
+                sourceType: true,
+                moderationStatus: true,
+                isPublished: true,
+                isActive: true,
+              },
+            },
+          },
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        },
+      },
+      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
+    });
+  }
+
+  async createMatchPool(dto: CreateMatchPoolDto) {
+    return this.prisma.matchPool.create({
+      data: {
+        name: dto.name.trim(),
+        nameZh: dto.nameZh?.trim() || null,
+        description: dto.description?.trim() || null,
+        sortOrder: dto.sortOrder ?? 0,
+        isActive: dto.isActive ?? true,
+      },
+    });
+  }
+
+  async updateMatchPool(id: string, dto: UpdateMatchPoolDto) {
+    const pool = await this.prisma.matchPool.findUnique({ where: { id } });
+    if (!pool) {
+      throw new NotFoundException('Match pool not found');
+    }
+
+    return this.prisma.matchPool.update({
+      where: { id },
+      data: {
+        name: dto.name?.trim(),
+        nameZh:
+          dto.nameZh !== undefined ? dto.nameZh?.trim() || null : undefined,
+        description:
+          dto.description !== undefined
+            ? dto.description?.trim() || null
+            : undefined,
+        sortOrder: dto.sortOrder,
+        isActive: dto.isActive,
+      },
+    });
+  }
+
+  async deleteMatchPool(id: string) {
+    const pool = await this.prisma.matchPool.findUnique({ where: { id } });
+    if (!pool) {
+      throw new NotFoundException('Match pool not found');
+    }
+    await this.prisma.matchPool.delete({ where: { id } });
+  }
+
+  async createMatchPoolEntry(
+    matchPoolId: string,
+    dto: CreateMatchPoolEntryDto,
+  ) {
+    await this.ensureMatchPoolExists(matchPoolId);
+    await this.validateMatchPoolEntryPayload(matchPoolId, dto);
+
+    return this.prisma.matchPoolEntry.create({
+      data: {
+        matchPoolId,
+        entryType: dto.entryType,
+        competitionId: dto.competitionId ?? null,
+        recruitmentContextId: dto.recruitmentContextId ?? null,
+        sortOrder: dto.sortOrder ?? 0,
+        isActive: dto.isActive ?? true,
+      },
+    });
+  }
+
+  async updateMatchPoolEntry(id: string, dto: UpdateMatchPoolEntryDto) {
+    const entry = await this.prisma.matchPoolEntry.findUnique({
+      where: { id },
+    });
+    if (!entry) {
+      throw new NotFoundException('Match pool entry not found');
+    }
+
+    const nextPayload = {
+      entryType: dto.entryType ?? entry.entryType,
+      competitionId:
+        dto.competitionId !== undefined
+          ? dto.competitionId
+          : entry.competitionId,
+      recruitmentContextId:
+        dto.recruitmentContextId !== undefined
+          ? dto.recruitmentContextId
+          : entry.recruitmentContextId,
+    } as CreateMatchPoolEntryDto;
+
+    await this.validateMatchPoolEntryPayload(
+      entry.matchPoolId,
+      nextPayload,
+      id,
+    );
+
+    return this.prisma.matchPoolEntry.update({
+      where: { id },
+      data: {
+        entryType: dto.entryType,
+        competitionId:
+          dto.competitionId !== undefined
+            ? dto.competitionId || null
+            : undefined,
+        recruitmentContextId:
+          dto.recruitmentContextId !== undefined
+            ? dto.recruitmentContextId || null
+            : undefined,
+        sortOrder: dto.sortOrder,
+        isActive: dto.isActive,
+      },
+    });
+  }
+
+  async deleteMatchPoolEntry(id: string) {
+    const entry = await this.prisma.matchPoolEntry.findUnique({
+      where: { id },
+    });
+    if (!entry) {
+      throw new NotFoundException('Match pool entry not found');
+    }
+    await this.prisma.matchPoolEntry.delete({ where: { id } });
+  }
+
+  async getCommunityRecruitmentContexts(
+    status?: RecruitmentContextModerationStatus,
+  ) {
+    return this.prisma.recruitmentContext.findMany({
+      where: {
+        sourceType: RecruitmentContextSourceType.COMMUNITY,
+        ...(status ? { moderationStatus: status } : undefined),
+      },
+      orderBy: [{ updatedAt: 'desc' }],
+    });
+  }
+
+  async reviewCommunityRecruitmentContext(
+    id: string,
+    status: RecruitmentContextModerationStatus,
+  ) {
+    if (
+      status !== RecruitmentContextModerationStatus.APPROVED &&
+      status !== RecruitmentContextModerationStatus.REJECTED
+    ) {
+      throw new BadRequestException('Only APPROVED or REJECTED are supported');
+    }
+
+    const context = await this.prisma.recruitmentContext.findUnique({
+      where: { id },
+    });
+    if (
+      !context ||
+      context.sourceType !== RecruitmentContextSourceType.COMMUNITY
+    ) {
+      throw new NotFoundException('Community recruitment context not found');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.recruitmentContext.update({
+        where: { id },
+        data: {
+          moderationStatus: status,
+          isActive:
+            status === RecruitmentContextModerationStatus.REJECTED
+              ? false
+              : context.isActive,
+        },
+      });
+
+      if (status === RecruitmentContextModerationStatus.REJECTED) {
+        await tx.teamRecruitmentCard.updateMany({
+          where: {
+            recruitmentContextId: id,
+            isClosed: false,
+          },
+          data: {
+            isClosed: true,
+          },
+        });
+      }
+
+      return updated;
+    });
+  }
+
+  async promoteCommunityRecruitmentContext(
+    id: string,
+    dto: PromoteCommunityRecruitmentContextDto,
+  ) {
+    const context = await this.prisma.recruitmentContext.findUnique({
+      where: { id },
+    });
+    if (
+      !context ||
+      context.sourceType !== RecruitmentContextSourceType.COMMUNITY
+    ) {
+      throw new NotFoundException('Community recruitment context not found');
+    }
+    if (
+      context.moderationStatus !== RecruitmentContextModerationStatus.APPROVED
+    ) {
+      throw new BadRequestException(
+        'Only approved community contexts can be promoted',
+      );
+    }
+
+    await this.ensureMatchPoolExists(dto.matchPoolId);
+    await this.validateMatchPoolEntryPayload(dto.matchPoolId, {
+      entryType: MatchPoolEntryType.PROMOTED_COMMUNITY_CONTEXT,
+      recruitmentContextId: id,
+    });
+
+    return this.prisma.matchPoolEntry.create({
+      data: {
+        matchPoolId: dto.matchPoolId,
+        entryType: MatchPoolEntryType.PROMOTED_COMMUNITY_CONTEXT,
+        recruitmentContextId: id,
+        sortOrder: dto.sortOrder ?? 0,
+        isActive: true,
+      },
+    });
+  }
+
+  private async ensureMatchPoolExists(matchPoolId: string) {
+    const pool = await this.prisma.matchPool.findUnique({
+      where: { id: matchPoolId },
+      select: { id: true },
+    });
+    if (!pool) {
+      throw new NotFoundException('Match pool not found');
+    }
+    return pool;
+  }
+
+  private async validateMatchPoolEntryPayload(
+    matchPoolId: string,
+    dto: Pick<
+      CreateMatchPoolEntryDto,
+      'entryType' | 'competitionId' | 'recruitmentContextId'
+    >,
+    currentEntryId?: string,
+  ) {
+    if (dto.entryType === MatchPoolEntryType.OFFICIAL_COMPETITION) {
+      if (!dto.competitionId) {
+        throw new BadRequestException(
+          'competitionId is required for OFFICIAL_COMPETITION entries',
+        );
+      }
+      if (dto.recruitmentContextId) {
+        throw new BadRequestException(
+          'recruitmentContextId is not allowed for OFFICIAL_COMPETITION entries',
+        );
+      }
+
+      const competition = await this.prisma.competition.findUnique({
+        where: { id: dto.competitionId },
+        select: { id: true },
+      });
+      if (!competition) {
+        throw new NotFoundException('Competition not found');
+      }
+
+      const duplicateEntry = await this.prisma.matchPoolEntry.findFirst({
+        where: {
+          matchPoolId,
+          competitionId: dto.competitionId,
+          ...(currentEntryId ? { id: { not: currentEntryId } } : undefined),
+        },
+        select: { id: true },
+      });
+      if (duplicateEntry) {
+        throw new ConflictException(
+          'This competition is already in the selected match pool',
+        );
+      }
+
+      return;
+    }
+
+    if (!dto.recruitmentContextId) {
+      throw new BadRequestException(
+        'recruitmentContextId is required for PROMOTED_COMMUNITY_CONTEXT entries',
+      );
+    }
+    if (dto.competitionId) {
+      throw new BadRequestException(
+        'competitionId is not allowed for PROMOTED_COMMUNITY_CONTEXT entries',
+      );
+    }
+
+    const context = await this.prisma.recruitmentContext.findUnique({
+      where: { id: dto.recruitmentContextId },
+      select: {
+        id: true,
+        sourceType: true,
+        moderationStatus: true,
+        isPublished: true,
+        isActive: true,
+      },
+    });
+    if (!context) {
+      throw new NotFoundException('Recruitment context not found');
+    }
+    if (context.sourceType !== RecruitmentContextSourceType.COMMUNITY) {
+      throw new BadRequestException(
+        'Only community recruitment contexts can be promoted into match pools',
+      );
+    }
+    if (
+      context.moderationStatus !== RecruitmentContextModerationStatus.APPROVED
+    ) {
+      throw new BadRequestException(
+        'Only approved community recruitment contexts can be promoted',
+      );
+    }
+    if (!context.isPublished || !context.isActive) {
+      throw new BadRequestException(
+        'Only active published community recruitment contexts can be promoted',
+      );
+    }
+
+    const duplicateEntry = await this.prisma.matchPoolEntry.findFirst({
+      where: {
+        matchPoolId,
+        recruitmentContextId: dto.recruitmentContextId,
+        ...(currentEntryId ? { id: { not: currentEntryId } } : undefined),
+      },
+      select: { id: true },
+    });
+    if (duplicateEntry) {
+      throw new ConflictException(
+        'This community recruitment context is already in the selected match pool',
+      );
+    }
   }
 
   // ============================================

@@ -114,6 +114,26 @@ describe('AdminController', () => {
             createGlobalEvent: jest.fn().mockResolvedValue({ id: 'event-1' }),
             updateGlobalEvent: jest.fn().mockResolvedValue({ id: 'event-1' }),
             deleteGlobalEvent: jest.fn().mockResolvedValue(undefined),
+            getMatchPools: jest.fn().mockResolvedValue([]),
+            createMatchPool: jest.fn().mockResolvedValue({ id: 'pool-1' }),
+            updateMatchPool: jest.fn().mockResolvedValue({ id: 'pool-1' }),
+            deleteMatchPool: jest.fn().mockResolvedValue(undefined),
+            createMatchPoolEntry: jest
+              .fn()
+              .mockResolvedValue({ id: 'entry-1' }),
+            updateMatchPoolEntry: jest
+              .fn()
+              .mockResolvedValue({ id: 'entry-1' }),
+            deleteMatchPoolEntry: jest.fn().mockResolvedValue(undefined),
+            getCommunityRecruitmentContexts: jest
+              .fn()
+              .mockResolvedValue([{ id: 'ctx-1' }]),
+            reviewCommunityRecruitmentContext: jest
+              .fn()
+              .mockResolvedValue({ id: 'ctx-1', moderationStatus: 'APPROVED' }),
+            promoteCommunityRecruitmentContext: jest
+              .fn()
+              .mockResolvedValue({ id: 'entry-2' }),
           },
         },
       ],
@@ -469,6 +489,125 @@ describe('AdminController', () => {
 
       expect(adminService.deleteGlobalEvent).toHaveBeenCalledWith('event-1');
       expect(result).toEqual({ message: 'Event deleted' });
+    });
+  });
+
+  // ========== Match Pools / Community Context Moderation ==========
+
+  describe('getMatchPools', () => {
+    it('should return match pools from adminService', async () => {
+      await controller.getMatchPools();
+
+      expect(adminService.getMatchPools).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('createMatchPool', () => {
+    it('should call createMatchPool with the dto', async () => {
+      const dto = { name: 'Popular Main Competitions', sortOrder: 0 } as any;
+      const result = await controller.createMatchPool(dto);
+
+      expect(adminService.createMatchPool).toHaveBeenCalledWith(dto);
+      expect(result).toEqual({ id: 'pool-1' });
+    });
+  });
+
+  describe('updateMatchPool', () => {
+    it('should call updateMatchPool with id and dto', async () => {
+      const dto = { name: 'Updated Pool' } as any;
+      const result = await controller.updateMatchPool('pool-1', dto);
+
+      expect(adminService.updateMatchPool).toHaveBeenCalledWith('pool-1', dto);
+      expect(result).toEqual({ id: 'pool-1' });
+    });
+  });
+
+  describe('deleteMatchPool', () => {
+    it('should delete the pool and return a confirmation message', async () => {
+      const result = await controller.deleteMatchPool('pool-1');
+
+      expect(adminService.deleteMatchPool).toHaveBeenCalledWith('pool-1');
+      expect(result).toEqual({ message: 'Match pool deleted' });
+    });
+  });
+
+  describe('createMatchPoolEntry', () => {
+    it('should create a match pool entry within the selected pool', async () => {
+      const dto = {
+        entryType: 'OFFICIAL_COMPETITION',
+        competitionId: 'comp-1',
+      } as any;
+      const result = await controller.createMatchPoolEntry('pool-1', dto);
+
+      expect(adminService.createMatchPoolEntry).toHaveBeenCalledWith(
+        'pool-1',
+        dto,
+      );
+      expect(result).toEqual({ id: 'entry-1' });
+    });
+  });
+
+  describe('updateMatchPoolEntry', () => {
+    it('should update a specific match pool entry', async () => {
+      const dto = { sortOrder: 2 } as any;
+      const result = await controller.updateMatchPoolEntry('entry-1', dto);
+
+      expect(adminService.updateMatchPoolEntry).toHaveBeenCalledWith(
+        'entry-1',
+        dto,
+      );
+      expect(result).toEqual({ id: 'entry-1' });
+    });
+  });
+
+  describe('deleteMatchPoolEntry', () => {
+    it('should delete a match pool entry and return a confirmation message', async () => {
+      const result = await controller.deleteMatchPoolEntry('entry-1');
+
+      expect(adminService.deleteMatchPoolEntry).toHaveBeenCalledWith('entry-1');
+      expect(result).toEqual({ message: 'Match pool entry deleted' });
+    });
+  });
+
+  describe('getCommunityRecruitmentContexts', () => {
+    it('should pass the moderation status filter to adminService', async () => {
+      await controller.getCommunityRecruitmentContexts({
+        status: 'PENDING_REVIEW',
+      } as any);
+
+      expect(adminService.getCommunityRecruitmentContexts).toHaveBeenCalledWith(
+        'PENDING_REVIEW',
+      );
+    });
+  });
+
+  describe('reviewCommunityRecruitmentContext', () => {
+    it('should review the selected community recruitment context', async () => {
+      const dto = { status: 'APPROVED' } as any;
+      const result = await controller.reviewCommunityRecruitmentContext(
+        'ctx-1',
+        dto,
+      );
+
+      expect(
+        adminService.reviewCommunityRecruitmentContext,
+      ).toHaveBeenCalledWith('ctx-1', 'APPROVED');
+      expect(result).toEqual({ id: 'ctx-1', moderationStatus: 'APPROVED' });
+    });
+  });
+
+  describe('promoteCommunityRecruitmentContext', () => {
+    it('should promote an approved community context into the selected public pool', async () => {
+      const dto = { matchPoolId: 'pool-1', sortOrder: 1 } as any;
+      const result = await controller.promoteCommunityRecruitmentContext(
+        'ctx-1',
+        dto,
+      );
+
+      expect(
+        adminService.promoteCommunityRecruitmentContext,
+      ).toHaveBeenCalledWith('ctx-1', dto);
+      expect(result).toEqual({ id: 'entry-2' });
     });
   });
 });

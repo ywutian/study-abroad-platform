@@ -135,7 +135,10 @@ interface McpResponse<T = unknown> {
 }
 
 const ACCOUNTS = {
-  applicant: { email: 'alice.zhang@demo.studyabroad.com', password: 'Demo123!' },
+  applicant: {
+    email: process.env.RUNTIME_AUDIT_APPLICANT_EMAIL ?? 'alice.zhang@demo.studyabroad.com',
+    password: process.env.RUNTIME_AUDIT_APPLICANT_PASSWORD ?? 'Demo123!',
+  },
   demo: { email: 'demo@example.com', password: 'Demo123!' },
   admin: { email: 'admin@example.com', password: 'Admin123!' },
 } satisfies Record<string, Account>;
@@ -2836,6 +2839,69 @@ async function applicantA10(page: Page, session: ApiSession) {
   });
 }
 
+async function applicantAA1(page: Page, session: ApiSession) {
+  const id = 'AA1';
+  const evidence: string[] = [];
+  const analysisResponsePromise = page
+    .waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/profiles/me/ai-analysis') &&
+        response.request().method() === 'GET',
+      { timeout: 60000 }
+    )
+    .catch(() => null);
+
+  await loginUi(page, ACCOUNTS.applicant, '/profile');
+  const analysisResponse = await analysisResponsePromise;
+  if (!analysisResponse || !analysisResponse.ok()) {
+    throw new Error('Structured application-analysis response did not complete successfully.');
+  }
+
+  const analysisPayload = await analysisResponse.text().catch(() => '');
+  const analysisPayloadPath = path.join(journeyDir(id), 'application-analysis-response.json');
+  await writeText(
+    analysisPayloadPath,
+    JSON.stringify(
+      {
+        status: analysisResponse.status(),
+        ok: analysisResponse.ok(),
+        body: analysisPayload,
+      },
+      null,
+      2
+    )
+  );
+  evidence.push(rel(analysisPayloadPath));
+
+  await page.getByTestId('analysis-root').waitFor({ timeout: 60000 });
+  await page.getByTestId('analysis-state-badge').waitFor({ timeout: 60000 });
+  const errorBanner = page.getByText(/error description|analysis unavailable/i).first();
+  if (await errorBanner.isVisible().catch(() => false)) {
+    throw new Error('Application-analysis rendered an error banner in the live runtime.');
+  }
+  evidence.push(await screenshot(page, id, '01-application-analysis', true));
+
+  await addRecord({
+    id,
+    title: '申请分析页 runtime parity',
+    account: session.user.email,
+    prerequisites: [
+      'Applicant account can sign in locally',
+      'Profile page can fetch `/profiles/me/ai-analysis` successfully',
+    ],
+    steps: [
+      'Opened `/en/profile` with the seeded applicant account.',
+      'Waited for the structured analysis GET request to complete successfully.',
+      'Verified the analysis card rendered a visible state badge without an error banner.',
+    ],
+    userVisibleResult:
+      'The applicant profile page rendered the structured application-analysis card in a valid runtime state and captured the live API payload.',
+    score: 4,
+    status: 'PASS',
+    evidence,
+  });
+}
+
 async function applicantSJ1(page: Page, session: ApiSession) {
   const id = 'SJ-1';
   const evidence: string[] = [];
@@ -3721,6 +3787,21 @@ async function main() {
       ],
       initialPath: '/prediction',
       fn: (page) => applicantA10(page, applicantSession),
+    });
+    await runApplicantJourney({
+      id: 'AA1',
+      title: '申请分析页 runtime parity',
+      prerequisites: [
+        'Applicant account can sign in locally',
+        'Profile page can fetch `/profiles/me/ai-analysis` successfully',
+      ],
+      steps: [
+        'Open `/en/profile` with the applicant session.',
+        'Wait for the structured analysis GET request to complete.',
+        'Confirm the structured analysis card renders a valid state badge without an error banner.',
+      ],
+      initialPath: '/profile',
+      fn: (page) => applicantAA1(page, applicantSession),
     });
     const selectedAiJourneys = selectedJourneyGroup(['A4', 'A5', 'A6', 'A7', 'A8', 'A9']);
     if (selectedAiJourneys.length > 0) {

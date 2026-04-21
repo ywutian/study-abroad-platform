@@ -3008,6 +3008,8 @@
       "description": "运行申请分析后，这里会显示学校级策略建议。"
     },
     "emptyList": "暂无内容",
+    "trace": "追踪",
+    "unknowns": "未知项",
     "overallScore": "综合评分",
     "focusSchools": "重点学校",
     "profileContext": "申请语境",

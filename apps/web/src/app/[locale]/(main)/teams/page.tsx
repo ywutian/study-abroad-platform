@@ -5,7 +5,7 @@ import { TeamsPageClient } from './_components/TeamsPageClient';
 
 function TeamsPageSkeleton() {
   return (
-    <PageContainer maxWidth="7xl">
+    <PageContainer maxWidth="7xl" variant="community">
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
         <Skeleton className="h-10 w-48" />

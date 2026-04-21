@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 
 export function AdminBreadcrumb() {
   const t = useTranslations('admin');
+  const tAria = useTranslations('common.aria');
   const pathname = usePathname();
 
   // Only show breadcrumb when deeper than /admin (i.e. has sub-path)
@@ -52,7 +53,7 @@ export function AdminBreadcrumb() {
 
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={tAria('breadcrumb')}
       className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2"
     >
       {crumbs.map((crumb, i) => {

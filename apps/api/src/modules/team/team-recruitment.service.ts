@@ -7,13 +7,15 @@ import {
 } from '@nestjs/common';
 import {
   Prisma,
+  RecruitmentContextModerationStatus,
+  RecruitmentContextSourceType,
   RecruitmentIntentMode,
+  TeamJoinPolicy,
+  TeamMatchKind,
   TeamMemberRole,
   TeamRecruitmentPhase,
   TeamRecruitmentSwipeAction,
   TeamVisibility,
-  TeamJoinPolicy,
-  TeamMatchKind,
 } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -23,11 +25,15 @@ import {
   NotificationType,
 } from '../notification/notification.service';
 import {
+  CreateCommunityContextDto,
   CreateRecruitmentDto,
   CreateRecruitmentSwipeDto,
   InviteMatchMembersDto,
   MatchQueryDto,
+  RecruitmentContextQueryDto,
+  RecruitmentDeckPreviewQueryDto,
   RecruitmentDeckQueryDto,
+  UpdateCommunityContextDto,
   UpdateRecruitmentDto,
   UpdateRecruitmentMemberProfileDto,
 } from './dto/recruitment.dto';
@@ -38,6 +44,7 @@ const RECRUITMENT_USER_SELECT = {
   id: true,
   email: true,
   role: true,
+  emailVerified: true,
   profile: {
     select: {
       nickname: true,
@@ -50,8 +57,8 @@ const RECRUITMENT_USER_SELECT = {
   },
 } as const;
 
-const RECRUITMENT_CARD_INCLUDE =
-  Prisma.validator<Prisma.TeamRecruitmentCardInclude>()({
+const RECRUITMENT_CONTEXT_INCLUDE =
+  Prisma.validator<Prisma.RecruitmentContextInclude>()({
     competitionTrack: {
       include: {
         competitionEdition: {
@@ -60,6 +67,13 @@ const RECRUITMENT_CARD_INCLUDE =
           },
         },
       },
+    },
+  });
+
+const RECRUITMENT_CARD_INCLUDE =
+  Prisma.validator<Prisma.TeamRecruitmentCardInclude>()({
+    recruitmentContext: {
+      include: RECRUITMENT_CONTEXT_INCLUDE,
     },
     team: {
       include: {
@@ -101,6 +115,10 @@ const RECRUITMENT_CARD_INCLUDE =
     },
   });
 
+type LoadedRecruitmentContext = Prisma.RecruitmentContextGetPayload<{
+  include: typeof RECRUITMENT_CONTEXT_INCLUDE;
+}>;
+
 type LoadedRecruitmentCard = Prisma.TeamRecruitmentCardGetPayload<{
   include: typeof RECRUITMENT_CARD_INCLUDE;
 }>;
@@ -113,56 +131,266 @@ export class TeamRecruitmentService {
     private readonly notificationService: NotificationService,
   ) {}
 
-  async getRecruitmentContexts() {
-    const tracks = await this.prisma.competitionTrack.findMany({
-      where: {
-        isActive: true,
-        competitionEdition: {
-          is: {
-            status: 'ACTIVE',
-          },
-        },
-      },
-      include: {
-        competitionEdition: {
-          include: {
-            competition: true,
-          },
-        },
-      },
-      orderBy: [
-        { competitionEdition: { competition: { tier: 'desc' } } },
-        { competitionEdition: { seasonLabel: 'desc' } },
-        { name: 'asc' },
-      ],
+  async getMatchPools() {
+    const pools = await this.prisma.matchPool.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
     });
 
     return {
-      items: tracks.map((track) => ({
-        id: track.id,
-        name: track.name,
-        rolePresets: track.rolePresets,
-        minTeamSize: track.minTeamSize,
-        maxTeamSize: track.maxTeamSize,
-        languages: track.languages,
-        isActive: track.isActive,
-        edition: {
-          id: track.competitionEdition.id,
-          seasonLabel: track.competitionEdition.seasonLabel,
-          status: track.competitionEdition.status,
-          registrationOpenAt: track.competitionEdition.registrationOpenAt,
-          registrationCloseAt: track.competitionEdition.registrationCloseAt,
-          eventStartAt: track.competitionEdition.eventStartAt,
-          eventEndAt: track.competitionEdition.eventEndAt,
-        },
-        competition: {
-          id: track.competitionEdition.competition.id,
-          name: track.competitionEdition.competition.name,
-          abbreviation: track.competitionEdition.competition.abbreviation,
-          category: track.competitionEdition.competition.category,
-        },
+      items: pools.map((pool) => ({
+        id: pool.id,
+        name: pool.name,
+        nameZh: pool.nameZh,
+        description: pool.description,
+        createdAt: pool.createdAt,
+        updatedAt: pool.updatedAt,
       })),
     };
+  }
+
+  async getMatchPoolById(poolId: string) {
+    const pool = await this.prisma.matchPool.findUnique({
+      where: { id: poolId },
+      include: {
+        entries: {
+          where: { isActive: true },
+          include: {
+            competition: true,
+            recruitmentContext: {
+              include: RECRUITMENT_CONTEXT_INCLUDE,
+            },
+          },
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        },
+      },
+    });
+    if (!pool || !pool.isActive) {
+      throw new NotFoundException('Match pool not found');
+    }
+
+    return {
+      id: pool.id,
+      name: pool.name,
+      nameZh: pool.nameZh,
+      description: pool.description,
+      createdAt: pool.createdAt,
+      updatedAt: pool.updatedAt,
+      entries: pool.entries.map((entry) => ({
+        id: entry.id,
+        entryType: entry.entryType,
+        sortOrder: entry.sortOrder,
+        competition:
+          entry.competition != null
+            ? {
+                id: entry.competition.id,
+                name: entry.competition.name,
+                nameZh: entry.competition.nameZh,
+                abbreviation: entry.competition.abbreviation,
+                category: entry.competition.category,
+                tier: entry.competition.tier,
+              }
+            : null,
+        recruitmentContext:
+          entry.recruitmentContext != null
+            ? this.serializeRecruitmentContext(entry.recruitmentContext)
+            : null,
+      })),
+    };
+  }
+
+  async getRecruitmentContexts(query: RecruitmentContextQueryDto) {
+    const where: Prisma.RecruitmentContextWhereInput = {
+      isActive: true,
+      ...(query.sourceType ? { sourceType: query.sourceType } : undefined),
+    };
+
+    if (query.sourceType === RecruitmentContextSourceType.COMMUNITY) {
+      where.isPublished = true;
+      where.moderationStatus = {
+        not: RecruitmentContextModerationStatus.REJECTED,
+      };
+    } else {
+      where.sourceType = RecruitmentContextSourceType.OFFICIAL;
+      where.isPublished = true;
+      where.competitionTrack = {
+        is: {
+          isActive: true,
+          competitionEdition: {
+            is: {
+              status: 'ACTIVE',
+              ...(query.competitionId
+                ? { competitionId: query.competitionId }
+                : undefined),
+            },
+          },
+        },
+      };
+    }
+
+    const contexts = await this.prisma.recruitmentContext.findMany({
+      where,
+      include: RECRUITMENT_CONTEXT_INCLUDE,
+      orderBy: [{ updatedAt: 'desc' }],
+    });
+
+    const items = contexts
+      .map((context) => this.serializeRecruitmentContext(context))
+      .sort((left, right) => {
+        const leftTier = left.competition
+          ? Number(left.competition.tier ?? 0)
+          : 0;
+        const rightTier = right.competition
+          ? Number(right.competition.tier ?? 0)
+          : 0;
+        if (leftTier !== rightTier) return rightTier - leftTier;
+        return left.name.localeCompare(right.name);
+      });
+
+    return { items };
+  }
+
+  async getMyCommunityContexts(userId: string) {
+    const contexts = await this.prisma.recruitmentContext.findMany({
+      where: {
+        sourceType: RecruitmentContextSourceType.COMMUNITY,
+        createdById: userId,
+      },
+      include: RECRUITMENT_CONTEXT_INCLUDE,
+      orderBy: [{ updatedAt: 'desc' }],
+    });
+
+    return {
+      items: contexts.map((context) =>
+        this.serializeRecruitmentContext(context),
+      ),
+    };
+  }
+
+  async createCommunityContext(userId: string, dto: CreateCommunityContextDto) {
+    this.assertTargetTeamSize(
+      dto.maxTeamSize,
+      dto.minTeamSize,
+      dto.maxTeamSize,
+    );
+
+    const context = await this.prisma.recruitmentContext.create({
+      data: {
+        sourceType: RecruitmentContextSourceType.COMMUNITY,
+        title: dto.title.trim(),
+        titleZh: dto.titleZh?.trim() || null,
+        subtitle: this.buildCommunitySubtitle(dto),
+        description: dto.description?.trim() || null,
+        sourceUrl: dto.sourceUrl?.trim() || null,
+        registrationCloseAt: dto.registrationCloseAt
+          ? new Date(dto.registrationCloseAt)
+          : null,
+        eventStartAt: dto.eventStartAt ? new Date(dto.eventStartAt) : null,
+        eventEndAt: dto.eventEndAt ? new Date(dto.eventEndAt) : null,
+        locationMode: dto.locationMode,
+        locationText: dto.locationText?.trim() || null,
+        rolePresets: dto.rolePresets ?? [],
+        minTeamSize: dto.minTeamSize,
+        maxTeamSize: dto.maxTeamSize,
+        languages: dto.languages ?? [],
+        moderationStatus: RecruitmentContextModerationStatus.PENDING_REVIEW,
+        isPublished: false,
+        createdById: userId,
+      },
+      include: RECRUITMENT_CONTEXT_INCLUDE,
+    });
+
+    return this.serializeRecruitmentContext(context);
+  }
+
+  async updateCommunityContext(
+    contextId: string,
+    userId: string,
+    dto: UpdateCommunityContextDto,
+  ) {
+    const context = await this.getCommunityContextOrThrow(contextId);
+    this.ensureCommunityContextOwner(context, userId);
+
+    const nextMinTeamSize = dto.minTeamSize ?? context.minTeamSize;
+    const nextMaxTeamSize = dto.maxTeamSize ?? context.maxTeamSize;
+    this.assertTargetTeamSize(
+      nextMaxTeamSize,
+      nextMinTeamSize,
+      nextMaxTeamSize,
+    );
+
+    const updated = await this.prisma.recruitmentContext.update({
+      where: { id: contextId },
+      data: {
+        title: dto.title?.trim(),
+        titleZh: dto.titleZh?.trim() || null,
+        subtitle:
+          dto.title !== undefined ||
+          dto.locationMode !== undefined ||
+          dto.locationText !== undefined
+            ? this.buildCommunitySubtitle({
+                title: dto.title ?? context.title,
+                locationMode:
+                  dto.locationMode ?? context.locationMode ?? undefined,
+                locationText:
+                  dto.locationText ?? context.locationText ?? undefined,
+              })
+            : undefined,
+        description: dto.description?.trim() || null,
+        sourceUrl: dto.sourceUrl?.trim() || null,
+        registrationCloseAt:
+          dto.registrationCloseAt !== undefined
+            ? dto.registrationCloseAt
+              ? new Date(dto.registrationCloseAt)
+              : null
+            : undefined,
+        eventStartAt:
+          dto.eventStartAt !== undefined
+            ? dto.eventStartAt
+              ? new Date(dto.eventStartAt)
+              : null
+            : undefined,
+        eventEndAt:
+          dto.eventEndAt !== undefined
+            ? dto.eventEndAt
+              ? new Date(dto.eventEndAt)
+              : null
+            : undefined,
+        locationMode: dto.locationMode,
+        locationText: dto.locationText?.trim() || null,
+        rolePresets: dto.rolePresets,
+        minTeamSize: dto.minTeamSize,
+        maxTeamSize: dto.maxTeamSize,
+        languages: dto.languages,
+      },
+      include: RECRUITMENT_CONTEXT_INCLUDE,
+    });
+
+    return this.serializeRecruitmentContext(updated);
+  }
+
+  async publishCommunityContext(contextId: string, userId: string) {
+    const context = await this.getCommunityContextOrThrow(contextId);
+    this.ensureCommunityContextOwner(context, userId);
+
+    if (
+      context.moderationStatus === RecruitmentContextModerationStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        'Rejected community contexts cannot be published',
+      );
+    }
+
+    const updated = await this.prisma.recruitmentContext.update({
+      where: { id: contextId },
+      data: {
+        isPublished: true,
+        publishedAt: context.publishedAt ?? new Date(),
+      },
+      include: RECRUITMENT_CONTEXT_INCLUDE,
+    });
+
+    return this.serializeRecruitmentContext(updated);
   }
 
   async getMyRecruitments(userId: string) {
@@ -204,23 +432,7 @@ export class TeamRecruitmentService {
   }
 
   async create(userId: string, dto: CreateRecruitmentDto) {
-    const track = await this.prisma.competitionTrack.findUnique({
-      where: { id: dto.competitionTrackId },
-      include: {
-        competitionEdition: {
-          include: {
-            competition: true,
-          },
-        },
-      },
-    });
-    if (
-      !track ||
-      !track.isActive ||
-      track.competitionEdition.status !== 'ACTIVE'
-    ) {
-      throw new NotFoundException('Competition track not found');
-    }
+    const recruitmentContext = await this.resolveRecruitmentContextFromDto(dto);
 
     let teamId = dto.teamId;
     if (teamId) {
@@ -233,7 +445,7 @@ export class TeamRecruitmentService {
       const teamName =
         dto.teamName?.trim() ||
         profile?.nickname?.trim() ||
-        `${track.competitionEdition.competition.abbreviation} Solo Team`;
+        `${recruitmentContext.title} Solo Team`;
       const createdTeam = await this.prisma.team.create({
         data: {
           creatorId: userId,
@@ -241,7 +453,7 @@ export class TeamRecruitmentService {
           description: dto.headline,
           visibility: TeamVisibility.PRIVATE,
           joinPolicy: TeamJoinPolicy.INVITE_ONLY,
-          maxMembers: dto.targetTeamSize ?? track.maxTeamSize,
+          maxMembers: dto.targetTeamSize ?? recruitmentContext.maxTeamSize,
           members: {
             create: {
               userId,
@@ -277,11 +489,11 @@ export class TeamRecruitmentService {
     }
 
     const targetTeamSize =
-      dto.targetTeamSize ?? team.maxMembers ?? track.maxTeamSize;
+      dto.targetTeamSize ?? team.maxMembers ?? recruitmentContext.maxTeamSize;
     this.assertTargetTeamSize(
       targetTeamSize,
-      track.minTeamSize,
-      track.maxTeamSize,
+      recruitmentContext.minTeamSize,
+      recruitmentContext.maxTeamSize,
     );
     if (team.members.length > targetTeamSize) {
       throw new BadRequestException(
@@ -291,30 +503,30 @@ export class TeamRecruitmentService {
 
     const existingCard = await this.prisma.teamRecruitmentCard.findUnique({
       where: {
-        teamId_competitionTrackId: {
+        teamId_recruitmentContextId: {
           teamId,
-          competitionTrackId: dto.competitionTrackId,
+          recruitmentContextId: recruitmentContext.id,
         },
       },
     });
     if (existingCard) {
       throw new ConflictException(
-        'Recruitment card already exists for this track',
+        'Recruitment card already exists for this recruitment context',
       );
     }
 
     const created = await this.prisma.$transaction(async (tx) => {
       if (team.maxMembers !== targetTeamSize) {
         await tx.team.update({
-          where: { id: teamId },
+          where: { id: teamId! },
           data: { maxMembers: targetTeamSize },
         });
       }
 
       const card = await tx.teamRecruitmentCard.create({
         data: {
-          teamId: teamId,
-          competitionTrackId: dto.competitionTrackId,
+          teamId: teamId!,
+          recruitmentContextId: recruitmentContext.id,
           headline: dto.headline.trim(),
           detailNote: dto.detailNote?.trim() || null,
           highlightTitle: dto.highlightTitle?.trim() || null,
@@ -357,24 +569,19 @@ export class TeamRecruitmentService {
 
     const updateData: Prisma.TeamRecruitmentCardUpdateInput = {};
 
+    const requestedContextId =
+      dto.recruitmentContextId ??
+      (dto.competitionTrackId
+        ? await this.resolveOfficialRecruitmentContextId(dto.competitionTrackId)
+        : undefined);
+
+    let nextContext = card.recruitmentContext;
     if (
-      dto.competitionTrackId &&
-      dto.competitionTrackId !== card.competitionTrackId
+      requestedContextId &&
+      requestedContextId !== card.recruitmentContextId
     ) {
-      const nextTrack = await this.prisma.competitionTrack.findUnique({
-        where: { id: dto.competitionTrackId },
-      });
-      if (!nextTrack || !nextTrack.isActive) {
-        throw new NotFoundException('Competition track not found');
-      }
-      const targetTeamSize =
-        dto.targetTeamSize ?? card.team.maxMembers ?? nextTrack.maxTeamSize;
-      this.assertTargetTeamSize(
-        targetTeamSize,
-        nextTrack.minTeamSize,
-        nextTrack.maxTeamSize,
-      );
-      updateData.competitionTrack = { connect: { id: dto.competitionTrackId } };
+      nextContext = await this.getRecruitmentContextOrThrow(requestedContextId);
+      updateData.recruitmentContext = { connect: { id: requestedContextId } };
       updateData.phase = TeamRecruitmentPhase.DRAFT;
     }
 
@@ -403,24 +610,12 @@ export class TeamRecruitmentService {
     }
     if (dto.isClosed !== undefined) updateData.isClosed = dto.isClosed;
 
-    const nextTrack =
-      dto.competitionTrackId &&
-      dto.competitionTrackId !== card.competitionTrackId
-        ? await this.prisma.competitionTrack.findUnique({
-            where: { id: dto.competitionTrackId },
-          })
-        : card.competitionTrack;
-
-    if (!nextTrack) {
-      throw new NotFoundException('Competition track not found');
-    }
-
     const targetTeamSize =
-      dto.targetTeamSize ?? card.team.maxMembers ?? nextTrack.maxTeamSize;
+      dto.targetTeamSize ?? card.team.maxMembers ?? nextContext.maxTeamSize;
     this.assertTargetTeamSize(
       targetTeamSize,
-      nextTrack.minTeamSize,
-      nextTrack.maxTeamSize,
+      nextContext.minTeamSize,
+      nextContext.maxTeamSize,
     );
     if (card.team.members.length > targetTeamSize) {
       throw new BadRequestException(
@@ -429,7 +624,9 @@ export class TeamRecruitmentService {
     }
 
     await this.prisma.$transaction(async (tx) => {
-      if (targetTeamSize !== (card.team.maxMembers ?? nextTrack.maxTeamSize)) {
+      if (
+        targetTeamSize !== (card.team.maxMembers ?? nextContext.maxTeamSize)
+      ) {
         await tx.team.update({
           where: { id: card.teamId },
           data: { maxMembers: targetTeamSize },
@@ -533,10 +730,11 @@ export class TeamRecruitmentService {
     const card = await this.getCardOrThrow(cardId);
     await this.ensureTeamRole(card.teamId, userId, ['OWNER', 'ADMIN']);
 
+    this.assertContextIsPublishable(card.recruitmentContext);
     this.assertTargetTeamSize(
-      card.team.maxMembers ?? card.competitionTrack.maxTeamSize,
-      card.competitionTrack.minTeamSize,
-      card.competitionTrack.maxTeamSize,
+      card.team.maxMembers ?? card.recruitmentContext.maxTeamSize,
+      card.recruitmentContext.minTeamSize,
+      card.recruitmentContext.maxTeamSize,
     );
 
     const currentMemberIds = new Set(
@@ -650,12 +848,58 @@ export class TeamRecruitmentService {
     return this.serializeCard(card, isOwnCard || !!match, match ?? undefined);
   }
 
+  /**
+   * Public preview deck — returns PUBLISHED recruitment cards for guest browsing.
+   * No sourceCard requirement, no swipe history tracking, no match triggering.
+   * Used on first visit so users can see the marketplace before publishing their own card.
+   */
+  async getDeckPreview(query: RecruitmentDeckPreviewQueryDto) {
+    const where: Prisma.TeamRecruitmentCardWhereInput = {
+      phase: 'PUBLISHED',
+      isClosed: false,
+    };
+
+    if (query.recruitmentContextId) {
+      where.recruitmentContextId = query.recruitmentContextId;
+    } else {
+      // Cross-context sample: only OFFICIAL published contexts
+      where.recruitmentContext = {
+        is: {
+          sourceType: RecruitmentContextSourceType.OFFICIAL,
+          isPublished: true,
+          isActive: true,
+        },
+      };
+    }
+
+    const cards = await this.prisma.teamRecruitmentCard.findMany({
+      where,
+      include: RECRUITMENT_CARD_INCLUDE,
+      take: query.limit ?? 20,
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    return {
+      sourceCard: null,
+      isPreview: true,
+      items: cards.map((card) => this.serializeCard(card, false)),
+    };
+  }
+
   async getDeck(userId: string, query: RecruitmentDeckQueryDto) {
-    const sourceCard = await this.resolveSourceCard(userId, query.teamId);
+    const sourceCard = await this.resolveSourceCard(
+      userId,
+      query.cardId,
+      query.teamId,
+    );
     if (!sourceCard) {
       return { sourceCard: null, items: [] };
     }
-    if (sourceCard.phase !== 'PUBLISHED' || sourceCard.isClosed) {
+    if (
+      sourceCard.phase !== 'PUBLISHED' ||
+      sourceCard.isClosed ||
+      !this.isContextMatchable(sourceCard.recruitmentContext)
+    ) {
       return {
         sourceCard: this.serializeCard(sourceCard, true),
         items: [],
@@ -678,11 +922,20 @@ export class TeamRecruitmentService {
 
     const candidates = await this.prisma.teamRecruitmentCard.findMany({
       where: {
-        competitionTrackId: sourceCard.competitionTrackId,
+        recruitmentContextId: sourceCard.recruitmentContextId,
         phase: 'PUBLISHED',
         isClosed: false,
         id: { not: sourceCard.id },
         teamId: { not: sourceCard.teamId },
+        recruitmentContext: {
+          is: {
+            isActive: true,
+            isPublished: true,
+            moderationStatus: {
+              not: RecruitmentContextModerationStatus.REJECTED,
+            },
+          },
+        },
       },
       include: RECRUITMENT_CARD_INCLUDE,
       take: 100,
@@ -748,8 +1001,18 @@ export class TeamRecruitmentService {
     ) {
       throw new BadRequestException('Cannot swipe your own card');
     }
-    if (sourceCard.competitionTrackId !== targetCard.competitionTrackId) {
-      throw new BadRequestException('Cards must belong to the same track');
+    if (sourceCard.recruitmentContextId !== targetCard.recruitmentContextId) {
+      throw new BadRequestException(
+        'Cards must belong to the same recruitment context',
+      );
+    }
+    if (
+      !this.isContextMatchable(sourceCard.recruitmentContext) ||
+      !this.isContextMatchable(targetCard.recruitmentContext)
+    ) {
+      throw new BadRequestException(
+        'Cards are no longer compatible for matching',
+      );
     }
     if (!this.isDeckCompatible(sourceCard, targetCard)) {
       throw new BadRequestException(
@@ -1169,7 +1432,17 @@ export class TeamRecruitmentService {
     };
   }
 
-  private async resolveSourceCard(userId: string, teamId?: string) {
+  private async resolveSourceCard(
+    userId: string,
+    cardId?: string,
+    teamId?: string,
+  ) {
+    if (cardId) {
+      const card = await this.getCardOrThrow(cardId);
+      await this.ensureTeamMember(card.teamId, userId);
+      return card;
+    }
+
     if (teamId) {
       await this.ensureTeamMember(teamId, userId);
       return this.prisma.teamRecruitmentCard.findFirst({
@@ -1201,6 +1474,65 @@ export class TeamRecruitmentService {
       throw new NotFoundException('Recruitment card not found');
     }
     return card;
+  }
+
+  private async getRecruitmentContextOrThrow(contextId: string) {
+    const context = await this.prisma.recruitmentContext.findUnique({
+      where: { id: contextId },
+      include: RECRUITMENT_CONTEXT_INCLUDE,
+    });
+    if (!context) {
+      throw new NotFoundException('Recruitment context not found');
+    }
+    return context;
+  }
+
+  private async getCommunityContextOrThrow(contextId: string) {
+    const context = await this.getRecruitmentContextOrThrow(contextId);
+    if (context.sourceType !== RecruitmentContextSourceType.COMMUNITY) {
+      throw new BadRequestException('Only community contexts are supported');
+    }
+    return context;
+  }
+
+  private async resolveRecruitmentContextFromDto(dto: {
+    recruitmentContextId?: string;
+    competitionTrackId?: string;
+  }) {
+    if (dto.recruitmentContextId) {
+      return this.getRecruitmentContextOrThrow(dto.recruitmentContextId);
+    }
+    if (dto.competitionTrackId) {
+      const contextId = await this.resolveOfficialRecruitmentContextId(
+        dto.competitionTrackId,
+      );
+      return this.getRecruitmentContextOrThrow(contextId);
+    }
+    throw new BadRequestException('recruitmentContextId is required');
+  }
+
+  private async resolveOfficialRecruitmentContextId(
+    competitionTrackId: string,
+  ) {
+    const context = await this.prisma.recruitmentContext.findUnique({
+      where: { competitionTrackId },
+      select: { id: true },
+    });
+    if (!context) {
+      throw new NotFoundException('Recruitment context not found');
+    }
+    return context.id;
+  }
+
+  private ensureCommunityContextOwner(
+    context: LoadedRecruitmentContext,
+    userId: string,
+  ) {
+    if (context.createdById !== userId) {
+      throw new ForbiddenException(
+        'Only the creator can update this community context',
+      );
+    }
   }
 
   private async ensureTeamMember(teamId: string, userId: string) {
@@ -1243,8 +1575,37 @@ export class TeamRecruitmentService {
     }
   }
 
+  private assertContextIsPublishable(context: LoadedRecruitmentContext) {
+    if (!context.isActive) {
+      throw new BadRequestException('Recruitment context is inactive');
+    }
+    if (context.sourceType === RecruitmentContextSourceType.COMMUNITY) {
+      if (!context.isPublished) {
+        throw new BadRequestException(
+          'Community recruitment context must be published first',
+        );
+      }
+      if (
+        context.moderationStatus === RecruitmentContextModerationStatus.REJECTED
+      ) {
+        throw new BadRequestException(
+          'Rejected community recruitment contexts cannot publish cards',
+        );
+      }
+    }
+  }
+
   private getEffectiveTeamSize(card: LoadedRecruitmentCard) {
-    return card.team.maxMembers ?? card.competitionTrack.maxTeamSize;
+    return card.team.maxMembers ?? card.recruitmentContext.maxTeamSize;
+  }
+
+  private isContextMatchable(context: LoadedRecruitmentContext) {
+    if (!context.isActive || !context.isPublished) {
+      return false;
+    }
+    return (
+      context.moderationStatus !== RecruitmentContextModerationStatus.REJECTED
+    );
   }
 
   private getCardStatus(card: LoadedRecruitmentCard) {
@@ -1262,6 +1623,68 @@ export class TeamRecruitmentService {
     return 'LOOKING';
   }
 
+  private serializeRecruitmentContext(context: LoadedRecruitmentContext) {
+    const competition =
+      context.competitionTrack?.competitionEdition.competition;
+    const edition = context.competitionTrack?.competitionEdition;
+    const track = context.competitionTrack;
+    const competitionCategory = competition?.category;
+    const displayName = track?.name ?? context.title;
+
+    return {
+      id: context.id,
+      name: displayName,
+      title: context.title,
+      titleZh: context.titleZh,
+      subtitle: context.subtitle,
+      sourceType: context.sourceType,
+      moderationStatus: context.moderationStatus,
+      rolePresets: context.rolePresets,
+      minTeamSize: context.minTeamSize,
+      maxTeamSize: context.maxTeamSize,
+      languages: context.languages,
+      isActive: context.isActive,
+      isPublished: context.isPublished,
+      sourceUrl: context.sourceUrl,
+      competitionId: competition?.id ?? null,
+      competition: competition
+        ? {
+            id: competition.id,
+            name: competition.name,
+            abbreviation: competition.abbreviation,
+            category: competition.category,
+            tier: competition.tier,
+          }
+        : null,
+      edition: edition
+        ? {
+            id: edition.id,
+            seasonLabel: edition.seasonLabel,
+            status: edition.status,
+            registrationOpenAt: edition.registrationOpenAt,
+            registrationCloseAt: edition.registrationCloseAt,
+            eventStartAt: edition.eventStartAt,
+            eventEndAt: edition.eventEndAt,
+          }
+        : null,
+      trackId: track?.id ?? null,
+      trackName: track?.name ?? null,
+      legacyCompetitionTrackId: track?.id ?? null,
+      legacyCompetitionTrackName: track?.name ?? null,
+      seasonLabel: edition?.seasonLabel ?? null,
+      category: competitionCategory ?? null,
+      locationMode: context.locationMode,
+      locationText: context.locationText,
+      registrationCloseAt: context.registrationCloseAt,
+      eventStartAt: context.eventStartAt,
+      eventEndAt: context.eventEndAt,
+      createdById: context.createdById,
+      publishedAt: context.publishedAt,
+      createdAt: context.createdAt,
+      updatedAt: context.updatedAt,
+    };
+  }
+
   private serializeCard(
     card: LoadedRecruitmentCard,
     fullAccess: boolean,
@@ -1274,13 +1697,18 @@ export class TeamRecruitmentService {
     const memberProfiles = new Map(
       card.memberProfiles.map((profile) => [profile.userId, profile]),
     );
+    const recruitmentContext = this.serializeRecruitmentContext(
+      card.recruitmentContext,
+    );
 
     return {
       id: card.id,
+      recruitmentContextId: card.recruitmentContextId,
       phase: card.phase,
       status: this.getCardStatus(card),
       version: card.version,
       headline: card.headline,
+      qualitySignal: deriveCardQuality(card.headline, card.detailNote),
       detailNote: card.detailNote,
       highlightTitle: card.highlightTitle,
       offerRoles: card.offerRoles,
@@ -1295,22 +1723,9 @@ export class TeamRecruitmentService {
       publishedAt: card.publishedAt,
       expiresAt: card.expiresAt,
       updatedAt: card.updatedAt,
-      context: {
-        trackId: card.competitionTrack.id,
-        trackName: card.competitionTrack.name,
-        rolePresets: card.competitionTrack.rolePresets,
-        minTeamSize: card.competitionTrack.minTeamSize,
-        maxTeamSize: card.competitionTrack.maxTeamSize,
-        seasonLabel: card.competitionTrack.competitionEdition.seasonLabel,
-        competition: {
-          id: card.competitionTrack.competitionEdition.competition.id,
-          name: card.competitionTrack.competitionEdition.competition.name,
-          abbreviation:
-            card.competitionTrack.competitionEdition.competition.abbreviation,
-          category:
-            card.competitionTrack.competitionEdition.competition.category,
-        },
-      },
+      moderationStatus: card.recruitmentContext.moderationStatus,
+      recruitmentContext,
+      context: recruitmentContext,
       team: {
         id: card.team.id,
         name: card.team.name,
@@ -1345,6 +1760,10 @@ export class TeamRecruitmentService {
           displayName,
           avatarUrl: member.user.profile?.avatarUrl,
           verificationRole: member.user.role,
+          verificationLevel: deriveVerificationLevel(
+            member.user.role,
+            member.user.emailVerified,
+          ),
           introLine: memberProfile?.introLine ?? null,
           showSchool: memberProfile?.showSchool ?? false,
           showGrade: memberProfile?.showGrade ?? false,
@@ -1524,7 +1943,7 @@ export class TeamRecruitmentService {
     sourceCard: LoadedRecruitmentCard,
     targetCard: LoadedRecruitmentCard,
   ) {
-    return `${sourceCard.competitionTrack.competitionEdition.competition.abbreviation} · ${sourceCard.competitionTrack.name} · ${sourceCard.team.name} × ${targetCard.team.name}`;
+    return `${this.getContextLabel(sourceCard.recruitmentContext)} · ${sourceCard.team.name} × ${targetCard.team.name}`;
   }
 
   private buildInitialMatchMessage(
@@ -1534,10 +1953,65 @@ export class TeamRecruitmentService {
     const sourceOffer = sourceCard.offerRoles.join(', ') || 'General support';
     const targetOffer = targetCard.offerRoles.join(', ') || 'General support';
     return [
-      `Matched on ${sourceCard.competitionTrack.competitionEdition.competition.abbreviation} / ${sourceCard.competitionTrack.name}.`,
+      `Matched on ${this.getContextLabel(sourceCard.recruitmentContext)}.`,
       `${sourceCard.team.name} offers: ${sourceOffer}.`,
       `${targetCard.team.name} offers: ${targetOffer}.`,
       'Icebreakers: What scope are you aiming for, what timeline are you working with, and who should own next steps?',
     ].join('\n');
   }
+
+  private getContextLabel(context: LoadedRecruitmentContext) {
+    if (context.sourceType === RecruitmentContextSourceType.OFFICIAL) {
+      const competition =
+        context.competitionTrack?.competitionEdition.competition;
+      const abbreviation = competition?.abbreviation ?? context.title;
+      const trackName = context.competitionTrack?.name;
+      return trackName ? `${abbreviation} / ${trackName}` : abbreviation;
+    }
+
+    return context.title;
+  }
+
+  private buildCommunitySubtitle(input: {
+    title: string;
+    locationMode?: string;
+    locationText?: string;
+  }) {
+    const locationParts = [input.locationMode, input.locationText]
+      .filter(Boolean)
+      .join(' · ');
+    return locationParts || input.title;
+  }
+}
+
+// ── Trust + quality helpers ────────────────────────────────
+// Module-local pure functions — easy to unit-test in isolation.
+
+type VerificationLevel = 'admin' | 'verified' | 'email' | 'unverified';
+
+function deriveVerificationLevel(
+  role: string,
+  emailVerified: boolean,
+): VerificationLevel {
+  if (role === 'ADMIN') return 'admin';
+  if (role === 'VERIFIED') return 'verified';
+  if (emailVerified) return 'email';
+  return 'unverified';
+}
+
+type CardQualitySignal = 'rich' | 'standard' | 'thin';
+
+function deriveCardQuality(
+  headline: string | null | undefined,
+  detailNote: string | null | undefined,
+): CardQualitySignal {
+  const h = headline?.trim() ?? '';
+  const d = detailNote?.trim() ?? '';
+  if (h.length < 20) return 'thin';
+  const hasSpecifics =
+    /\b(tier|finalist|gold|silver|bronze|AIME|AMC|USACO|ISEF|HMMT|USABO|medal|varsity|national|regional|international|semi|qualif)\b/i.test(
+      h + ' ' + d,
+    ) || /\d/.test(h);
+  if (h.length >= 40 && hasSpecifics && d.length >= 60) return 'rich';
+  return 'standard';
 }

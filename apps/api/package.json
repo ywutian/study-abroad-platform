@@ -24,6 +24,13 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "ts-node prisma/seed.ts",
+    "db:seed:competitions": "ts-node prisma/seed-competitions.ts",
+    "db:seed:teams": "ts-node prisma/seed-teams.ts",
+    "db:verify:seed": "tsx scripts/verify-seed.ts",
+    "verify:school-facts": "ts-node --transpile-only scripts/verify-school-facts.ts",
+    "gold:generate": "ts-node --transpile-only scripts/generate-application-analysis-gold-cases.ts",
+    "gold:fixtures": "ts-node --transpile-only scripts/export-analysis-render-fixtures.ts",
+    "gold:replay": "ts-node --transpile-only scripts/replay-analysis-gold.ts",
     "db:seed-calibrations": "ts-node prisma/seed-calibrations.ts",
     "scripts:fill-logos": "ts-node -r tsconfig-paths/register scripts/fill-school-logos.ts",
     "lint:quality": "tsx scripts/check-api-quality.ts"

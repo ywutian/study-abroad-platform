@@ -54,6 +54,7 @@ export interface SchoolDetail {
   feeWaiverAvailable?: boolean;
   acceptsCommonApp?: boolean;
   acceptsCoalition?: boolean;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
 

@@ -234,7 +234,7 @@ export function VerificationDialog({
                   {previewUrl ? (
                     <Image
                       src={previewUrl}
-                      alt="Preview"
+                      alt={t('common.aria.preview')}
                       width={64}
                       height={64}
                       className="w-16 h-16 object-cover rounded-lg"

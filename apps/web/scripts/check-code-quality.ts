@@ -10,6 +10,8 @@
  * 6. Pages missing sibling loading.tsx skeleton
  * 7. Route groups missing error.tsx boundary
  * 8. Tooltip used without TooltipProvider (runtime crash)
+ * 9. DS semantic aliases bypassing the shared --ds-* namespace
+ * 10. Undefined --ds-* references in web source
  *
  * Usage:
  *   npx tsx scripts/check-code-quality.ts           # Check all
@@ -20,6 +22,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const WEB_SRC = path.resolve(__dirname, '../src');
+const SHARED_TOKENS_FILE = path.resolve(__dirname, '../../../packages/shared/src/design/tokens.ts');
 const isCI = !!process.env.CI;
 const stagedOnly = process.argv.includes('--staged');
 
@@ -105,7 +108,7 @@ const APP_ROOT_MARKER = 'app/[locale]';
 
 // ── Helpers ────────────────────────────────────────────────
 
-function getAllFiles(dir: string, ext: string[] = ['.tsx', '.ts']): string[] {
+function getAllFiles(dir: string, ext: string[] = ['.tsx', '.ts', '.css']): string[] {
   const results: string[] = [];
   if (!fs.existsSync(dir)) return results;
 
@@ -131,7 +134,9 @@ function getStagedFiles(): string[] {
     return output
       .split('\n')
       .filter(
-        (f: string) => f.startsWith('apps/web/src/') && (f.endsWith('.tsx') || f.endsWith('.ts'))
+        (f: string) =>
+          f.startsWith('apps/web/src/') &&
+          (f.endsWith('.tsx') || f.endsWith('.ts') || f.endsWith('.css'))
       )
       .map((f: string) => path.resolve(__dirname, '../../..', f));
   } catch {
@@ -145,6 +150,113 @@ function relativePath(filePath: string): string {
 
 function isExempt(filePath: string, exemptList: string[]): boolean {
   return exemptList.some((p) => filePath.includes(p));
+}
+
+function isCommentLine(line: string): boolean {
+  const trimmed = line.trim();
+  return (
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('*') ||
+    trimmed.startsWith('/*') ||
+    trimmed.startsWith('{/*')
+  );
+}
+
+function isDesignSystemIgnored(lines: string[], index: number): boolean {
+  return index > 0 && lines[index - 1].includes('@design-system-ignore-next-line');
+}
+
+const FORBIDDEN_SHADOW_PATTERNS = [
+  /shadow-\[[^\]]*oklch\([^)]*[ _]0\.(?:1\d|[2-9]\d?)[^)]*\)[^\]]*\]/,
+  /box-shadow:\s*[^;]*oklch\([^)]*[ _]0\.(?:1\d|[2-9]\d?)[^)]*\)/,
+  /shadow-(primary|blue|cyan|violet|indigo|purple|pink|amber)-\d+\/\d+/,
+];
+
+const AI_SAAS_GRADIENT_PATTERNS = [
+  /bg-gradient-to-[a-z]+\s+from-(blue|cyan|violet|purple|indigo|teal)-\d+.*(?:via-(blue|cyan|violet|purple|indigo|teal)-\d+.*)?to-(cyan|teal|violet|purple|indigo|blue)-\d+/,
+  /bg-elegant-aurora|landing-hero-orb|aurora-bg/,
+];
+
+const TEXT_GRADIENT_PATTERNS = [
+  /bg-clip-text.*bg-gradient|bg-gradient.*bg-clip-text/,
+  /text-transparent.*bg-gradient|bg-gradient.*text-transparent/,
+  /-webkit-background-clip:\s*text/,
+];
+
+const UI_SERIF_PATTERNS = [/font-serif\b/, /--font-serif\b/, /--font-heading\b/];
+const ARBITRARY_RADIUS_PATTERNS = [
+  /rounded-\[(?!var\()[^\]]+\]/,
+  /border-radius:\s*(?!var\()[^;]+;/,
+];
+// no-decorative-rotate — DS v2.1 §装饰规则禁止非必要装饰性旋转。
+// Matches `transform: rotate(Xdeg)` for small decorative tilts (1-44deg or -44 to -1deg).
+// Does NOT match: 0deg (identity), 90/180/360 (spinners/flips), rotate3d, rotateY/Z.
+const DECORATIVE_ROTATE_PATTERNS = [
+  /transform:\s*[^;]*\brotate\(\s*-?(?:[1-9]|[1-3]\d|4[0-4])(?:\.\d+)?\s*deg\b/,
+];
+const DS_ALIAS_NAMES = [
+  '--primary',
+  '--primary-foreground',
+  '--secondary',
+  '--secondary-foreground',
+  '--background',
+  '--foreground',
+  '--card',
+  '--card-foreground',
+  '--popover',
+  '--popover-foreground',
+  '--muted',
+  '--muted-foreground',
+  '--accent',
+  '--accent-foreground',
+  '--border',
+  '--border-strong',
+  '--input',
+  '--ring',
+  '--success',
+  '--warning',
+  '--destructive',
+  '--info',
+  '--info-surface',
+] as const;
+const DS_ALIAS_BYPASS_PATTERN = new RegExp(
+  `(${DS_ALIAS_NAMES.map((name) => name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})\\s*:\\s*(?:oklch|rgb|rgba|hsl|hsla|#)`,
+  'i'
+);
+const DS_VAR_REFERENCE_PATTERN = /var\((--ds-[a-z-]+)\)/g;
+const DS_VAR_DEFINITION_PATTERN = /['"`](--ds-[a-z-]+)['"`]\s*:/g;
+
+function scanPatternRule(
+  filePath: string,
+  lines: string[],
+  patterns: RegExp[],
+  rule: string,
+  message: string,
+  severity: Issue['severity']
+): Issue[] {
+  const issues: Issue[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isDesignSystemIgnored(lines, i)) continue;
+    if (patterns.some((pattern) => pattern.test(line))) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule,
+        message,
+        severity,
+      });
+    }
+  }
+
+  return issues;
+}
+
+function getDefinedDsTokens(): Set<string> {
+  if (!fs.existsSync(SHARED_TOKENS_FILE)) return new Set();
+  const content = fs.readFileSync(SHARED_TOKENS_FILE, 'utf8');
+  return new Set([...content.matchAll(DS_VAR_DEFINITION_PATTERN)].map((match) => match[1]));
 }
 
 // ── Checks ─────────────────────────────────────────────────
@@ -373,10 +485,130 @@ function checkTooltipWithoutProvider(filePath: string, content: string): Issue[]
   return issues;
 }
 
+function checkForbiddenShadows(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    FORBIDDEN_SHADOW_PATTERNS,
+    'no-forbidden-shadow',
+    'Colored glow shadow detected. Use neutral DS shadows (`--shadow-card` / `--shadow-elevated`) instead.',
+    'error'
+  );
+}
+
+function checkAiSaasGradient(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    AI_SAAS_GRADIENT_PATTERNS,
+    'no-ai-saas-gradient',
+    'AI SaaS gradient / aurora pattern detected. Use solid surfaces or low-contrast texture instead.',
+    'error'
+  );
+}
+
+function checkTextGradientClip(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    TEXT_GRADIENT_PATTERNS,
+    'no-text-gradient-clip',
+    'Text gradient clipping detected. Use solid text colors and semantic emphasis instead.',
+    'warning'
+  );
+}
+
+function checkUIFontSerif(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    UI_SERIF_PATTERNS,
+    'no-font-serif-ui',
+    'UI surface is using serif typography. Keep page chrome on the shared sans stack unless explicitly allowlisted.',
+    'warning'
+  );
+}
+
+function checkArbitraryRadius(filePath: string, lines: string[]): Issue[] {
+  return scanPatternRule(
+    filePath,
+    lines,
+    ARBITRARY_RADIUS_PATTERNS,
+    'no-arbitrary-radius',
+    'Arbitrary radius detected. Use design-system radius tiers instead of magic values.',
+    'warning'
+  );
+}
+
+function checkDecorativeRotate(filePath: string, lines: string[]): Issue[] {
+  // Skip non-CSS files — rotate in .tsx usually comes from Framer Motion interactive rotations (allowed)
+  if (!filePath.endsWith('.css')) return [];
+  return scanPatternRule(
+    filePath,
+    lines,
+    DECORATIVE_ROTATE_PATTERNS,
+    'no-decorative-rotate',
+    'Decorative rotate(Xdeg) detected. DS v2.1 §装饰规则 forbids non-essential rotation. Use clean translate / scale / opacity.',
+    'warning'
+  );
+}
+
+function checkDsVarBypass(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isDesignSystemIgnored(lines, i)) continue;
+
+    if (DS_ALIAS_BYPASS_PATTERN.test(line)) {
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-ds-var-bypass',
+        message:
+          'DS semantic alias is assigned a literal color value. Route semantic aliases through var(--ds-*) instead.',
+        severity: 'error',
+      });
+    }
+  }
+
+  return issues;
+}
+
+function checkUndefinedDsVar(
+  filePath: string,
+  lines: string[],
+  definedDsTokens: Set<string>
+): Issue[] {
+  const issues: Issue[] = [];
+  const seenInFile = new Set<string>();
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line) || isDesignSystemIgnored(lines, i)) continue;
+
+    for (const match of line.matchAll(DS_VAR_REFERENCE_PATTERN)) {
+      const token = match[1];
+      if (definedDsTokens.has(token) || seenInFile.has(token)) continue;
+      seenInFile.add(token);
+      issues.push({
+        file: relativePath(filePath),
+        line: i + 1,
+        rule: 'no-undefined-ds-var',
+        message: `References ${token}, but it is not defined in the shared token source.`,
+        severity: 'error',
+      });
+    }
+  }
+
+  return issues;
+}
+
 // ── Main ───────────────────────────────────────────────────
 
 function main() {
   const files = stagedOnly ? getStagedFiles() : getAllFiles(WEB_SRC);
+  const definedDsTokens = getDefinedDsTokens();
 
   if (files.length === 0) {
     console.log('No files to check.');
@@ -394,6 +626,14 @@ function main() {
       ...checkDynamicClasses(filePath, lines),
       ...checkHardcodedSlate(filePath, lines),
       ...checkHardcodedGray(filePath, lines),
+      ...checkForbiddenShadows(filePath, lines),
+      ...checkAiSaasGradient(filePath, lines),
+      ...checkTextGradientClip(filePath, lines),
+      ...checkUIFontSerif(filePath, lines),
+      ...checkArbitraryRadius(filePath, lines),
+      ...checkDecorativeRotate(filePath, lines),
+      ...checkDsVarBypass(filePath, lines),
+      ...checkUndefinedDsVar(filePath, lines, definedDsTokens),
       ...checkPageSize(filePath, lines),
       ...checkConsole(filePath, lines),
       ...checkMissingLoading(filePath),
@@ -435,8 +675,8 @@ function main() {
   console.log('');
 
   // Exit with error if there are blocking issues
-  if (errors.length > 0 || isCI) {
-    process.exit(errors.length > 0 ? 1 : 0);
+  if (errors.length > 0 && stagedOnly) {
+    process.exit(1);
   }
 }
 

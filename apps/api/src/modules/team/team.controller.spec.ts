@@ -5,7 +5,8 @@ import { TeamRecruitmentService } from './team-recruitment.service';
 
 describe('TeamController', () => {
   let controller: TeamController;
-  let teamService: TeamService;
+  let teamService: jest.Mocked<TeamService>;
+  let recruitmentService: jest.Mocked<TeamRecruitmentService>;
 
   const mockUser = {
     id: 'user-1',
@@ -77,13 +78,28 @@ describe('TeamController', () => {
             swipe: jest.fn().mockResolvedValue({}),
             getMatches: jest.fn().mockResolvedValue([]),
             inviteMembers: jest.fn().mockResolvedValue({}),
+            getMatchPools: jest.fn().mockResolvedValue({ items: [] }),
+            getMatchPoolById: jest.fn().mockResolvedValue({ id: 'pool-1' }),
+            getMyCommunityContexts: jest.fn().mockResolvedValue({ items: [] }),
+            createCommunityContext: jest
+              .fn()
+              .mockResolvedValue({ id: 'ctx-1' }),
+            updateCommunityContext: jest
+              .fn()
+              .mockResolvedValue({ id: 'ctx-1' }),
+            publishCommunityContext: jest
+              .fn()
+              .mockResolvedValue({ id: 'ctx-1' }),
           },
         },
       ],
     }).compile();
 
     controller = module.get<TeamController>(TeamController);
-    teamService = module.get<TeamService>(TeamService);
+    teamService = module.get(TeamService) as jest.Mocked<TeamService>;
+    recruitmentService = module.get(
+      TeamRecruitmentService,
+    ) as jest.Mocked<TeamRecruitmentService>;
   });
 
   it('should be defined', () => {
@@ -137,6 +153,122 @@ describe('TeamController', () => {
         'team-1',
         mockUser.id,
         'user-2',
+      );
+    });
+  });
+
+  describe('getRecruitmentContexts', () => {
+    it('should call recruitmentService.getRecruitmentContexts with the query', async () => {
+      const query = { sourceType: 'OFFICIAL', competitionId: 'comp-1' };
+
+      await controller.getRecruitmentContexts(query as any);
+
+      expect(recruitmentService.getRecruitmentContexts).toHaveBeenCalledWith(
+        query,
+      );
+    });
+  });
+
+  describe('getMatchPools', () => {
+    it('should return active match pools from the recruitment service', async () => {
+      await controller.getMatchPools();
+
+      expect(recruitmentService.getMatchPools).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getMatchPoolById', () => {
+    it('should call recruitmentService.getMatchPoolById with the pool id', async () => {
+      await controller.getMatchPoolById('pool-1');
+
+      expect(recruitmentService.getMatchPoolById).toHaveBeenCalledWith(
+        'pool-1',
+      );
+    });
+  });
+
+  describe('getCommunityContexts', () => {
+    it('should only load the current user community contexts', async () => {
+      await controller.getCommunityContexts(mockUser);
+
+      expect(recruitmentService.getMyCommunityContexts).toHaveBeenCalledWith(
+        mockUser.id,
+      );
+    });
+  });
+
+  describe('createCommunityContext', () => {
+    it('should call recruitmentService.createCommunityContext with the current user id', async () => {
+      const dto = {
+        title: 'Startup Weekend SF',
+        minTeamSize: 2,
+        maxTeamSize: 4,
+        languages: ['English'],
+      };
+
+      await controller.createCommunityContext(mockUser, dto as any);
+
+      expect(recruitmentService.createCommunityContext).toHaveBeenCalledWith(
+        mockUser.id,
+        dto,
+      );
+    });
+  });
+
+  describe('updateCommunityContext', () => {
+    it('should call recruitmentService.updateCommunityContext with id, user id and dto', async () => {
+      const dto = {
+        title: 'Updated Startup Weekend SF',
+      };
+
+      await controller.updateCommunityContext('ctx-1', mockUser, dto as any);
+
+      expect(recruitmentService.updateCommunityContext).toHaveBeenCalledWith(
+        'ctx-1',
+        mockUser.id,
+        dto,
+      );
+    });
+  });
+
+  describe('publishCommunityContext', () => {
+    it('should publish the selected community context for the current user', async () => {
+      await controller.publishCommunityContext('ctx-1', mockUser);
+
+      expect(recruitmentService.publishCommunityContext).toHaveBeenCalledWith(
+        'ctx-1',
+        mockUser.id,
+      );
+    });
+  });
+
+  describe('createRecruitment', () => {
+    it('should forward recruitmentContextId-based card creation to the recruitment service', async () => {
+      const dto = {
+        teamId: 'team-1',
+        recruitmentContextId: 'ctx-1',
+        headline: 'Need a strong presenter',
+      };
+
+      await controller.createRecruitment(mockUser, dto as any);
+
+      expect(recruitmentService.create).toHaveBeenCalledWith(mockUser.id, dto);
+    });
+  });
+
+  describe('updateRecruitment', () => {
+    it('should forward recruitment card updates with the current user id', async () => {
+      const dto = {
+        recruitmentContextId: 'ctx-2',
+        headline: 'Updated headline',
+      };
+
+      await controller.updateRecruitment('card-1', mockUser, dto as any);
+
+      expect(recruitmentService.update).toHaveBeenCalledWith(
+        'card-1',
+        mockUser.id,
+        dto,
       );
     });
   });

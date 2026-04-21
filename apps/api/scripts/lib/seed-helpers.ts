@@ -6,10 +6,15 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import type { SchoolProvenance } from '@study-abroad/shared';
+import type {
+  SchoolProvenance,
+  SchoolTestingPolicy,
+} from '@study-abroad/shared';
 import {
+  resolveSchoolTestingPolicyValue,
   normalizeSchoolProvenance,
   serializeSchoolProvenance,
+  toLegacyTestOptionalFlag,
 } from '@study-abroad/shared/utils';
 import { normalizeSchoolName } from '../../src/common/utils/school-name.util';
 import {
@@ -61,6 +66,7 @@ export interface SeedSchoolData {
   retentionRate?: number;
   studentFacultyRatio?: number;
   testOptional?: boolean;
+  testingPolicy?: SchoolTestingPolicy;
   hasEarlyDecision?: boolean;
   totalEnrollment?: number;
   satMath25?: number;
@@ -227,7 +233,19 @@ export async function upsertSchoolFromSeed(
     fields.retentionRate = data.retentionRate;
   if (data.studentFacultyRatio !== undefined)
     fields.studentFacultyRatio = data.studentFacultyRatio;
-  if (data.testOptional !== undefined) fields.testOptional = data.testOptional;
+  if (data.testingPolicy !== undefined) {
+    fields.testingPolicy = data.testingPolicy;
+    fields.testOptional = toLegacyTestOptionalFlag({
+      testingPolicy: data.testingPolicy,
+      testOptional: data.testOptional,
+    });
+  } else {
+    if (data.testOptional !== undefined)
+      fields.testOptional = data.testOptional;
+    fields.testingPolicy = resolveSchoolTestingPolicyValue({
+      testOptional: data.testOptional,
+    });
+  }
   if (data.hasEarlyDecision !== undefined)
     fields.hasEarlyDecision = data.hasEarlyDecision;
   if (data.totalEnrollment !== undefined)

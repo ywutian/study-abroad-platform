@@ -105,14 +105,15 @@
 
 ### 入职与指南
 
-| 文档                                       | 说明                                   |
-| ------------------------------------------ | -------------------------------------- |
-| [ONBOARDING.md](ONBOARDING.md)             | 新人入职指南 (3 天上手)                |
-| [QUICK_REFERENCE.md](QUICK_REFERENCE.md)   | 一页速查手册（命令、端口、目录结构等） |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)   | 开发环境常见问题排障指南               |
-| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)       | 设计系统规范                           |
-| [I18N_GUIDE.md](I18N_GUIDE.md)             | 国际化 (i18n) 开发指南                 |
-| [TYPOGRAPHY_GUIDE.md](TYPOGRAPHY_GUIDE.md) | 排版规范指南                           |
+| 文档                                                                   | 说明                                                          |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [ONBOARDING.md](ONBOARDING.md)                                         | 新人入职指南 (3 天上手)                                       |
+| [QUICK_REFERENCE.md](QUICK_REFERENCE.md)                               | 一页速查手册（命令、端口、目录结构等）                        |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                               | 开发环境常见问题排障指南                                      |
+| [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)                                   | 设计系统规范                                                  |
+| [UI_LANGUAGE_RESEARCH_FRAMEWORK.md](UI_LANGUAGE_RESEARCH_FRAMEWORK.md) | 多端 UI 语言研究框架（与 DS v2.1 对齐的分层规范与阶段交付物） |
+| [I18N_GUIDE.md](I18N_GUIDE.md)                                         | 国际化 (i18n) 开发指南                                        |
+| [TYPOGRAPHY_GUIDE.md](TYPOGRAPHY_GUIDE.md)                             | 排版规范指南                                                  |
 
 ### 技术备忘
 

@@ -413,7 +413,7 @@ export function BulkImportTab() {
                               <TableCell>
                                 <Badge
                                   variant={spec.required ? 'default' : 'secondary'}
-                                  className="text-[10px] px-1.5"
+                                  className="text-2xs px-1.5"
                                 >
                                   {spec.required ? t('required') : t('optional')}
                                 </Badge>
@@ -488,7 +488,7 @@ export function BulkImportTab() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-16">{t('rowNumber')}</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('statusLabel')}</TableHead>
                     <TableHead>{t('field')}</TableHead>
                     <TableHead>{t('issue')}</TableHead>
                   </TableRow>

@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataReviewStatus, Prisma, School } from '@prisma/client';
-import { serializeSchoolProvenance } from '@study-abroad/shared/utils';
+import {
+  resolveSchoolTestingPolicyValue,
+  serializeSchoolProvenance,
+  toLegacyTestOptionalFlag,
+} from '@study-abroad/shared/utils';
 import type { SchoolProvenance } from '@study-abroad/shared';
 import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -28,6 +32,27 @@ function buildSchoolWriteData(
 
   if (typeof nextData.name === 'string' && !nextData.nameNorm) {
     nextData.nameNorm = normalizeSchoolName(nextData.name);
+  }
+
+  const nextTestingPolicy = resolveSchoolTestingPolicyValue({
+    testingPolicy: nextData.testingPolicy as any,
+    testOptional:
+      typeof nextData.testOptional === 'boolean'
+        ? nextData.testOptional
+        : undefined,
+  });
+  if (
+    nextData.testingPolicy !== undefined ||
+    nextData.testOptional !== undefined
+  ) {
+    nextData.testingPolicy = nextTestingPolicy;
+    nextData.testOptional = toLegacyTestOptionalFlag({
+      testingPolicy: nextTestingPolicy,
+      testOptional:
+        typeof nextData.testOptional === 'boolean'
+          ? nextData.testOptional
+          : undefined,
+    });
   }
 
   const metadataPatch = params.metadataPatch ?? {};

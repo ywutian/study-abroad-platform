@@ -103,13 +103,17 @@ export class ProfileController {
     return this.profileApplicationAnalysisService.getAnalysisForUser(
       user.id,
       user.locale,
+      {
+        debug: false,
+        role: user.role as Role,
+      },
     );
   }
 
   @Post('me/ai-analysis/feedback')
   @ApiOperation({
     summary:
-      'Submit applicant feedback for experimental application-analysis guidance',
+      'Submit applicant feedback for the main structured application analysis or an experiment exposure',
   })
   async submitAIAnalysisFeedback(
     @CurrentUser() user: CurrentUserPayload,

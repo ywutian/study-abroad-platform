@@ -1,99 +1,81 @@
 /**
- * Enterprise Typography System
- *
- * Responsive scaling based on 390px (iPhone 14) baseline.
- * Negative letter-spacing for headings creates premium brand feel.
- * Body line-height 1.625x matches web design system.
+ * Mobile typography adapter backed by the shared semantic typography scale.
  */
+import { typography as sharedTypography } from '@study-abroad/shared';
 import { Dimensions, PixelRatio, TextStyle } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-/**
- * Scale font sizes proportionally to screen width.
- * Base: 390px (iPhone 14).
- */
 const scale = (size: number): number =>
   Math.round(PixelRatio.roundToNearestPixel(size * (SCREEN_WIDTH / 390)));
 
 export const typography = {
-  /** Hero display — splash, onboarding, celebrations */
   displayHero: {
-    fontSize: scale(36),
-    fontWeight: '700' as const,
-    lineHeight: scale(40),
-    letterSpacing: -0.72,
+    fontSize: scale(sharedTypography.displayHero.fontSize),
+    fontWeight: sharedTypography.displayHero.fontWeight,
+    lineHeight: scale(sharedTypography.displayHero.lineHeight),
+    letterSpacing: sharedTypography.displayHero.letterSpacing,
   },
-  /** Section display — page heroes, major sections */
   displaySection: {
-    fontSize: scale(30),
-    fontWeight: '700' as const,
-    lineHeight: scale(36),
-    letterSpacing: -0.51,
+    fontSize: scale(sharedTypography.displaySection.fontSize),
+    fontWeight: sharedTypography.displaySection.fontWeight,
+    lineHeight: scale(sharedTypography.displaySection.lineHeight),
+    letterSpacing: sharedTypography.displaySection.letterSpacing,
   },
-  /** Page title */
   title: {
-    fontSize: scale(24),
-    fontWeight: '600' as const,
-    lineHeight: scale(30),
-    letterSpacing: -0.41,
+    fontSize: scale(sharedTypography.title.fontSize),
+    fontWeight: sharedTypography.title.fontWeight,
+    lineHeight: scale(sharedTypography.title.lineHeight),
+    letterSpacing: sharedTypography.title.letterSpacing,
   },
-  /** Section subtitle */
   subtitle: {
-    fontSize: scale(20),
-    fontWeight: '600' as const,
-    lineHeight: scale(27),
-    letterSpacing: -0.34,
+    fontSize: scale(sharedTypography.subtitle.fontSize),
+    fontWeight: sharedTypography.subtitle.fontWeight,
+    lineHeight: scale(sharedTypography.subtitle.lineHeight),
+    letterSpacing: sharedTypography.subtitle.letterSpacing,
   },
-  /** Large body text — featured paragraphs */
   bodyLg: {
-    fontSize: scale(18),
-    fontWeight: '400' as const,
-    lineHeight: scale(29),
-    letterSpacing: -0.2,
+    fontSize: scale(sharedTypography.bodyLg.fontSize),
+    fontWeight: sharedTypography.bodyLg.fontWeight,
+    lineHeight: scale(sharedTypography.bodyLg.lineHeight),
+    letterSpacing: sharedTypography.bodyLg.letterSpacing,
   },
-  /** Standard body text */
   body: {
-    fontSize: scale(16),
-    fontWeight: '400' as const,
-    lineHeight: scale(26),
-    letterSpacing: -0.18,
+    fontSize: scale(sharedTypography.body.fontSize),
+    fontWeight: sharedTypography.body.fontWeight,
+    lineHeight: scale(sharedTypography.body.lineHeight),
+    letterSpacing: sharedTypography.body.letterSpacing,
   },
-  /** Small body text */
   bodySm: {
-    fontSize: scale(14),
-    fontWeight: '400' as const,
-    lineHeight: scale(22),
-    letterSpacing: -0.08,
+    fontSize: scale(sharedTypography.bodySm.fontSize),
+    fontWeight: sharedTypography.bodySm.fontWeight,
+    lineHeight: scale(sharedTypography.bodySm.lineHeight),
+    letterSpacing: sharedTypography.bodySm.letterSpacing,
   },
-  /** Captions, timestamps, hints */
   caption: {
     fontSize: scale(12),
     fontWeight: '400' as const,
     lineHeight: scale(20),
     letterSpacing: 0,
   },
-  /** Form labels, navigation items */
   label: {
-    fontSize: scale(14),
-    fontWeight: '500' as const,
-    lineHeight: scale(22),
-    letterSpacing: -0.08,
+    fontSize: scale(sharedTypography.label.fontSize),
+    fontWeight: sharedTypography.label.fontWeight,
+    lineHeight: scale(sharedTypography.label.lineHeight),
+    letterSpacing: sharedTypography.label.letterSpacing,
   },
-  /** Overline text — section markers, categories */
   overline: {
-    fontSize: scale(11),
-    fontWeight: '600' as const,
-    lineHeight: scale(16),
-    letterSpacing: 0.66,
-    textTransform: 'uppercase' as const,
+    fontSize: scale(sharedTypography.overline.fontSize),
+    fontWeight: sharedTypography.overline.fontWeight,
+    lineHeight: scale(sharedTypography.overline.lineHeight),
+    letterSpacing: sharedTypography.overline.letterSpacing,
+    textTransform: sharedTypography.overline.textTransform,
   },
-  /** Metric numbers — stats, counters, scores */
   metric: {
-    fontSize: scale(32),
-    fontWeight: '700' as const,
-    lineHeight: scale(38),
-    letterSpacing: -0.64,
+    fontSize: scale(sharedTypography.metric.fontSize),
+    fontWeight: sharedTypography.metric.fontWeight,
+    lineHeight: scale(sharedTypography.metric.lineHeight),
+    letterSpacing: sharedTypography.metric.letterSpacing,
     fontVariant: ['tabular-nums'] as const,
   },
 } as const;
@@ -101,9 +83,6 @@ export const typography = {
 export type TypographyKey = keyof typeof typography;
 export type TypographyStyle = (typeof typography)[TypographyKey];
 
-/**
- * Get a typography style by key. Useful for dynamic typography selection.
- */
 export function getTypography(key: TypographyKey): TextStyle {
   return typography[key] as TextStyle;
 }

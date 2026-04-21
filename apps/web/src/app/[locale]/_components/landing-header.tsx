@@ -1,224 +1,240 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/lib/i18n/navigation';
+import { useReducedMotion } from 'framer-motion';
+import { ArrowUpRight, Globe, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/logo';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { type Locale } from '@/lib/i18n/config';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Globe, Menu, X, ArrowRight } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { PageContainer } from '@/components/layout/page-container';
+import { type Locale } from '@/lib/i18n/config';
+import { Link, useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useAuthStore } from '@/stores';
+import { useHomeContent } from './home-content';
 
 const localeCodes: Record<Locale, string> = {
   en: 'EN',
   zh: 'ZH',
 };
 
-type ScrollState = 'top' | 'scrolling' | 'scrolled';
-
-const NAV_LINKS = [
-  { key: 'schools', href: '/schools' },
-  { key: 'prediction', href: '/prediction' },
-  { key: 'cases', href: '/cases' },
-  { key: 'forum', href: '/forum' },
-] as const;
+type NavItem = {
+  label: string;
+  href: string;
+  anchor?: boolean;
+};
 
 export function LandingHeader() {
-  const t = useTranslations();
+  const { user } = useAuthStore();
+  const home = useHomeContent();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as Locale;
-  const { user } = useAuthStore();
   const prefersReducedMotion = useReducedMotion();
-  const [scrollState, setScrollState] = useState<ScrollState>('top');
+  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const navItems: NavItem[] = [
+    { label: home.nav.product, href: '#features', anchor: true },
+    { label: home.nav.cases, href: '/cases' },
+    { label: home.nav.pricing, href: '#cta', anchor: true },
+    { label: home.nav.community, href: '/teams' },
+    { label: home.nav.about, href: '/about' },
+  ];
+
   useEffect(() => {
-    const getScrollState = (y: number): ScrollState => {
-      if (y <= 20) return 'top';
-      if (y <= 200) return 'scrolling';
-      return 'scrolled';
-    };
-
-    setScrollState(getScrollState(window.scrollY));
-
-    const handleScroll = () => {
-      setScrollState(getScrollState(window.scrollY));
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 12);
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on resize to desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) setMobileMenuOpen(false);
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+      }
     };
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleLocaleChange = (newLocale: Locale) => {
-    router.replace('/', { locale: newLocale });
+  const handleLocaleChange = (nextLocale: Locale) => {
+    router.replace('/', { locale: nextLocale });
   };
 
   return (
     <>
       <header
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999 }}
         className={cn(
-          'px-4 py-3 sm:py-4 border-b border-transparent',
-          'transition-all duration-500 ease-out',
-          scrollState === 'top' && 'bg-transparent',
-          scrollState === 'scrolling' && 'glass border-border/5',
-          scrollState === 'scrolled' && 'glass-premium border-border/10 header-border-gradient'
+          'fixed inset-x-0 top-0 z-50 transition-all duration-300',
+          scrolled
+            ? 'border-b border-[color:var(--landing-border-strong)] bg-[color:var(--landing-glass)]/92 backdrop-blur-xl'
+            : 'border-b border-transparent bg-transparent'
         )}
       >
-        <div className="container mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <motion.div
-            whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-          >
-            <Link href={user ? '/dashboard' : '/'} className="flex items-center gap-2">
-              <Logo size="sm" />
+        <PageContainer variant="marketing" className="flex h-[74px] items-center justify-between">
+          <div className="flex items-center gap-5 lg:gap-8">
+            <Link
+              href={user ? '/dashboard' : '/'}
+              className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] text-sm font-semibold tracking-[0.18em] text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]">
+                  S
+                </span>
+                <span className="hidden sm:flex sm:flex-col">
+                  <span className="text-lg font-semibold leading-none tracking-[-0.02em] text-[var(--landing-fg)]">
+                    {home.brand}
+                  </span>
+                  <span className="mt-1 text-2xs uppercase tracking-[0.24em] text-[var(--landing-subtle)]">
+                    AI Admissions Workbench
+                  </span>
+                </span>
+              </div>
             </Link>
-          </motion.div>
 
-          {/* Desktop nav links — md+ */}
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(({ key, href }) => (
-              <Link
-                key={key}
-                href={href}
-                className={cn(
-                  'px-3 py-1.5 text-sm font-medium rounded-lg',
-                  'text-muted-foreground hover:text-foreground',
-                  'hover:bg-accent/50 transition-colors duration-200'
-                )}
-              >
-                {t(`nav.${key}`)}
-              </Link>
-            ))}
-          </nav>
+            <nav className="hidden items-center gap-1 lg:flex">
+              {navItems.map((item) =>
+                item.anchor ? (
+                  <a key={item.label} href={item.href} className="landing-nav-link">
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link key={item.label} href={item.href} className="landing-nav-link">
+                    {item.label}
+                  </Link>
+                )
+              )}
+            </nav>
+          </div>
 
-          {/* Right actions */}
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* Auth buttons - desktop */}
-            <div className="hidden sm:flex items-center gap-2 mr-1">
+            <div className="hidden items-center gap-2 lg:flex">
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="text-sm">
-                  {t('common.login')}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full px-4 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
+                >
+                  {home.nav.signIn}
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="sm" className="text-sm gap-1.5">
-                  {t('common.register')}
-                  <ArrowRight className="h-3.5 w-3.5" />
+                <Button
+                  size="sm"
+                  className="rounded-full border border-primary/10 bg-[var(--landing-fg)] px-4 text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)] hover:bg-[var(--landing-fg)]/92 hover:shadow-[var(--landing-shadow-elevated)]"
+                >
+                  {home.nav.getStarted}
+                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </div>
 
-            <ThemeToggle />
+            <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
 
-            {/* Language switcher — compact locale code */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-1 sm:gap-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/50 px-2"
+                  className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
                   suppressHydrationWarning
                 >
-                  <Globe className="h-4 w-4" />
-                  <span className="text-xs font-medium" suppressHydrationWarning>
-                    {localeCodes[locale]}
-                  </span>
+                  <Globe className="h-3.5 w-3.5" />
+                  <span className="text-xs font-medium">{localeCodes[locale]}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="bg-dropdown border-dropdown min-w-[120px]"
+                className="min-w-[132px] border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)]"
               >
                 {(Object.entries(localeCodes) as [Locale, string][]).map(([loc, code]) => (
                   <DropdownMenuItem
                     key={loc}
                     onClick={() => handleLocaleChange(loc)}
                     className={cn(
-                      'text-dropdown-muted hover:text-dropdown hover:bg-accent cursor-pointer',
-                      locale === loc && 'bg-accent text-dropdown'
+                      'cursor-pointer text-[var(--landing-muted)] focus:bg-[color:var(--landing-surface-muted)] focus:text-[var(--landing-fg)]',
+                      locale === loc &&
+                        'bg-[color:var(--landing-surface-muted)] text-[var(--landing-fg)]'
                     )}
                   >
-                    {code} — {loc === 'en' ? 'English' : '中文'}
+                    {code} · {loc === 'en' ? 'English' : 'Chinese'}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Mobile hamburger — below md */}
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden px-2"
-              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)] lg:hidden"
+              onClick={() => setMobileMenuOpen((open) => !open)}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
           </div>
-        </div>
+        </PageContainer>
       </header>
 
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            style={{ position: 'fixed', top: '3.5rem', left: 0, right: 0, zIndex: 9998 }}
-            className="md:hidden glass-premium border-b border-border/10 shadow-lg"
-          >
-            <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
-              {NAV_LINKS.map(({ key, href }) => (
-                <Link
-                  key={key}
-                  href={href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-left px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
-                >
-                  {t(`nav.${key}`)}
-                </Link>
-              ))}
-              <div className="mt-2 pt-3 border-t border-border/10 flex flex-col gap-2">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" size="sm" className="w-full justify-center text-sm">
-                    {t('common.login')}
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                  <Button size="sm" className="w-full justify-center text-sm gap-1.5">
-                    {t('common.register')}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-              </div>
-            </nav>
-          </motion.div>
+      <div
+        className={cn(
+          /* §7 Tooling 层:导航覆盖层降级圆角 rounded-3xl → rounded-lg (marketing 层才使用 xl/3xl) */
+          'fixed inset-x-4 top-[78px] z-40 origin-top rounded-lg border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/95 px-4 py-4 shadow-[var(--landing-shadow-elevated)] backdrop-blur-xl transition duration-300 lg:hidden',
+          mobileMenuOpen
+            ? 'pointer-events-auto translate-y-0 opacity-100'
+            : 'pointer-events-none -translate-y-2 opacity-0',
+          prefersReducedMotion && 'transition-none'
         )}
-      </AnimatePresence>
+      >
+        <nav className="flex flex-col gap-1">
+          {navItems.map((item) =>
+            item.anchor ? (
+              <a
+                key={item.label}
+                href={item.href}
+                className="rounded-lg px-4 py-3 text-sm text-[var(--landing-muted)] transition hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="rounded-lg px-4 py-3 text-sm text-[var(--landing-muted)] transition hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            )
+          )}
+        </nav>
+
+        <div className="mt-4 grid gap-2 border-t border-[color:var(--landing-border)] pt-4 sm:grid-cols-2">
+          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+            <Button
+              variant="outline"
+              className="w-full rounded-full border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)]"
+            >
+              {home.nav.signIn}
+            </Button>
+          </Link>
+          <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+            <Button className="w-full rounded-full bg-[var(--landing-fg)] text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)]">
+              {home.nav.getStarted}
+            </Button>
+          </Link>
+        </div>
+      </div>
     </>
   );
 }

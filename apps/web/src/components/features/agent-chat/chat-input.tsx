@@ -32,6 +32,7 @@ export function ChatInput({
   showExtras = false,
 }: ChatInputProps) {
   const t = useTranslations('agentChat');
+  const tAria = useTranslations('common.aria');
   const finalPlaceholder = placeholder ?? t('placeholder');
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -135,7 +136,7 @@ export function ChatInput({
               variant="ghost"
               className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
               disabled={disabled || isLoading}
-              aria-label="Attach file"
+              aria-label={tAria('attachFile')}
             >
               <Paperclip className="h-4 w-4" />
             </Button>
@@ -144,7 +145,7 @@ export function ChatInput({
               variant="ghost"
               className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
               disabled={disabled || isLoading}
-              aria-label="Voice input"
+              aria-label={tAria('voiceInput')}
             >
               <Mic className="h-4 w-4" />
             </Button>
@@ -212,7 +213,7 @@ export function ChatInput({
                   size="icon"
                   variant="ghost"
                   onClick={onStop}
-                  aria-label="Stop generating"
+                  aria-label={tAria('stopGenerating')}
                   className={cn(
                     'h-10 w-10 rounded-full',
                     'bg-destructive/10 hover:bg-destructive/20 text-destructive',
