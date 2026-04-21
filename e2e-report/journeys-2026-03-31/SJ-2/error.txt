@@ -1,8 +1,0 @@
-page.waitForURL: Timeout 10000ms exceeded.
-=========================== logs ===========================
-waiting for navigation until "load"
-  navigated to "http://localhost:4100/en/timeline"
-============================================================
-    at applicantSJ2 (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1272:14)
-    at async runSingleJourney (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1830:9)
-    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1923:7)

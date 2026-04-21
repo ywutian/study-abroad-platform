@@ -1,1 +1,0 @@
-The first /ai-agent/chat request was intentionally returned as HTTP 500 to test recovery.
