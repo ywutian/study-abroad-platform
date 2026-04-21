@@ -18,7 +18,7 @@ export function PredictionHeader({ dataCompleteness }: PredictionHeaderProps) {
       title={t('prediction.title')}
       description={t('prediction.selectSchoolsDesc')}
       icon={Target}
-      color="blue"
+      variant="ai"
     >
       <div className="mt-3 flex items-center gap-2">
         <Badge variant="secondary" className="text-xs">

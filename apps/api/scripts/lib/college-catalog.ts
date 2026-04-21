@@ -16,6 +16,20 @@ import { US_SCHOOLS_141_200 } from '../seed-us-schools-141-200';
 import { deepMergeRecords } from '../../src/modules/school/school-provenance.helpers';
 import { SeedSchoolData, normalizeSchoolName } from './seed-helpers';
 
+const UC_TEST_BLIND_NAMES = new Set(
+  [
+    'University of California, Berkeley',
+    'University of California, Los Angeles',
+    'University of California, San Diego',
+    'University of California, Davis',
+    'University of California, Irvine',
+    'University of California, Santa Barbara',
+    'University of California, Santa Cruz',
+    'University of California, Riverside',
+    'University of California, Merced',
+  ].map((name) => normalizeSchoolName(name)),
+);
+
 function pickFirst<T>(
   current: T | undefined,
   incoming: T | undefined,
@@ -94,6 +108,14 @@ function applyCuratedCollegeEnrichment(school: SeedSchoolData): SeedSchoolData {
 
   return {
     ...school,
+    testingPolicy: UC_TEST_BLIND_NAMES.has(nameNorm)
+      ? 'BLIND'
+      : (school.testingPolicy ??
+        (school.testOptional === true
+          ? 'OPTIONAL'
+          : school.testOptional === false
+            ? 'REQUIRED'
+            : 'UNKNOWN')),
     aliases: mergeAliases(school.aliases, CURATED_ALIAS_MAP.get(nameNorm)),
     needBlindInternational:
       school.needBlindInternational === true ||
@@ -156,6 +178,7 @@ export function mergeSeedSchoolData(
       current.studentFacultyRatio,
       incoming.studentFacultyRatio,
     ),
+    testingPolicy: pickFirst(current.testingPolicy, incoming.testingPolicy),
     testOptional: pickFirst(current.testOptional, incoming.testOptional),
     hasEarlyDecision: pickFirst(
       current.hasEarlyDecision,

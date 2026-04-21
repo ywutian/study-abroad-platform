@@ -70,6 +70,7 @@ jest.mock('@/components/ui/ConfirmDialog', () => ({
 
 // Mock shared routes
 jest.mock('@study-abroad/shared', () => ({
+  ...jest.requireActual('@study-abroad/shared'),
   API_ROUTES: {
     TIMELINES: '/timelines',
   },

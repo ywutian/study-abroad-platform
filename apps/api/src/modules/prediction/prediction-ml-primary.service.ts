@@ -39,7 +39,9 @@ import {
   featureVectorToArray,
   predict as mlPredict,
   predictGBDT,
+  resolveCanonicalPredictionOutcome,
   resolveMajorToCip,
+  VERIFIED_OUTCOME_STATUSES,
 } from '@study-abroad/shared/scoring';
 import type { TrainedModel, GBDTModel } from '@study-abroad/shared/scoring';
 
@@ -247,6 +249,7 @@ export class PredictionMlPrimaryService {
       modelVersion: MODEL_VERSION,
       policyVersionId: MODEL_VERSION,
       applicationRound: round,
+      selectivityBand,
       servedTrace: servedTrace as any,
       pipelineTier: tierConfig.tier,
       calibrationMethod,
@@ -409,12 +412,38 @@ export class PredictionMlPrimaryService {
    * Used to determine which ML tier is appropriate.
    */
   private async countLabeledData(schoolId: string): Promise<number> {
-    return this.prisma.predictionResult.count({
+    const records = await this.prisma.predictionResult.findMany({
       where: {
         schoolId,
-        actualResult: { not: null },
+        outcomeLabelRecords: {
+          some: {
+            status: { in: VERIFIED_OUTCOME_STATUSES },
+            result: { in: ['ADMITTED', 'REJECTED'] },
+          },
+        },
+      },
+      select: {
+        outcomeLabelRecords: {
+          select: {
+            result: true,
+            status: true,
+            isFinal: true,
+            createdAt: true,
+            resolvedAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
+
+    return records.reduce((count, record) => {
+      const canonical = resolveCanonicalPredictionOutcome(
+        record.outcomeLabelRecords,
+      );
+      return canonical.eligibleForCalibration && canonical.canonicalRecord
+        ? count + 1
+        : count;
+    }, 0);
   }
 
   /**

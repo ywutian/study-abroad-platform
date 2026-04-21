@@ -10,6 +10,7 @@ import { ProfileAnalysisService } from './profile-analysis.service';
 import { ProfileMemoryService } from './profile-memory.service';
 import { ProfileEnrichmentService } from './profile-enrichment.service';
 import { ProfileApplicationAnalysisService } from './profile-application-analysis.service';
+import { ProfileApplicationAnalysisV2Service } from './profile-application-analysis-v2.service';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
 import { ApplicationAnalysisExperimentScheduler } from './application-analysis-experiment.scheduler';
 import { FeatureFlagModule } from '../../common/feature-flags';
@@ -38,6 +39,7 @@ import { PredictionModule } from '../prediction/prediction.module';
     ProfileAnalysisService,
     ProfileMemoryService,
     ProfileEnrichmentService,
+    ProfileApplicationAnalysisV2Service,
     ApplicationAnalysisWorkflowService,
     ApplicationAnalysisExperimentScheduler,
     ProfileApplicationAnalysisService,
@@ -47,6 +49,7 @@ import { PredictionModule } from '../prediction/prediction.module';
     ProfileService,
     ProfileEnrichmentService,
     ApplicationAnalysisWorkflowService,
+    ProfileApplicationAnalysisV2Service,
   ],
 })
 export class ProfileModule {}

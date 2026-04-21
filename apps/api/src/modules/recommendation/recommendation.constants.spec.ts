@@ -14,6 +14,7 @@ function buildMockSchool(overrides: Record<string, unknown> = {}) {
     state: 'MA',
     tuition: 55000,
     isPrivate: true,
+    testingPolicy: 'OPTIONAL',
     testOptional: true,
     hasEarlyDecision: true,
     retentionRate: new Prisma.Decimal(98.5),
@@ -38,6 +39,7 @@ describe('mapSchoolMeta', () => {
     expect(result.state).toBe('MA');
     expect(result.tuition).toBe(55000);
     expect(result.isPrivate).toBe(true);
+    expect(result.testingPolicy).toBe('OPTIONAL');
     expect(result.testOptional).toBe(true);
     expect(result.hasEarlyDecision).toBe(true);
     expect(result.retentionRate).toBe(98.5);
@@ -56,9 +58,14 @@ describe('mapSchoolMeta', () => {
 
   it('should return undefined for null testOptional and hasEarlyDecision', () => {
     const result = mapSchoolMeta(
-      buildMockSchool({ testOptional: null, hasEarlyDecision: null }),
+      buildMockSchool({
+        testingPolicy: undefined,
+        testOptional: null,
+        hasEarlyDecision: null,
+      }),
     );
 
+    expect(result.testingPolicy).toBeUndefined();
     expect(result.testOptional).toBeUndefined();
     expect(result.hasEarlyDecision).toBeUndefined();
   });

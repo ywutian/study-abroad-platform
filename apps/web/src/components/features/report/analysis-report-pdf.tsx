@@ -280,32 +280,33 @@ export function AnalysisReportPDF({ data, locale }: AnalysisReportPDFProps) {
   });
 
   const overviewText = stripMarkdown(
-    [data.portfolioAnalysis?.verdict, data.summary].filter(Boolean).join('\n\n')
+    [data.portfolioSummary.verdict, ...data.portfolioSummary.keyReasons]
+      .filter(Boolean)
+      .join('\n\n')
   );
   const strengths =
-    data.targetSchoolInsights?.flatMap((school) => school.compensatingStrengths).slice(0, 6) ?? [];
+    data.schools.flatMap((school) => school.assessment.compensatingStrengths).slice(0, 6) ?? [];
   const weaknesses =
-    data.targetSchoolInsights
-      ?.flatMap((school) => [...school.topGaps, ...(school.hardStopRisks ?? [])])
+    data.schools
+      .flatMap((school) => [...school.assessment.topGaps, ...school.assessment.hardStopRisks])
       .slice(0, 6) ?? [];
-  const improvements = data.actionPlan?.now ?? [];
+  const improvements = data.actionPlan.now ?? [];
   const recommendedActivities = [
-    ...(data.recommendedPrograms?.activities ?? data.suggestions.activities),
-    ...(data.recommendedPrograms?.summerPrograms ?? data.suggestions.summerPrograms),
-    ...(data.recommendedPrograms?.competitions ?? data.suggestions.competitions),
+    ...data.schools.flatMap((school) => school.assessment.nextActions),
+    ...data.unknowns,
   ].slice(0, 8);
   const timeline = [
     {
       date: locale === 'zh' ? '现在' : 'Now',
-      tasks: data.actionPlan?.now ?? [],
+      tasks: data.actionPlan.now ?? [],
     },
     {
       date: locale === 'zh' ? '未来 90 天' : 'Next 90 days',
-      tasks: data.actionPlan?.next90Days ?? [],
+      tasks: data.actionPlan.next90Days ?? [],
     },
     {
       date: locale === 'zh' ? '提交前' : 'Before submission',
-      tasks: data.actionPlan?.beforeSubmission ?? [],
+      tasks: data.actionPlan.beforeSubmission ?? [],
     },
   ].filter((group) => group.tasks.length > 0);
 
@@ -326,8 +327,8 @@ export function AnalysisReportPDF({ data, locale }: AnalysisReportPDFProps) {
           <View>
             <Text style={styles.scoreLabel}>{t.overallScore}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-              <Text style={styles.scoreValue}>{data.overallScore}</Text>
-              <Text style={styles.scoreMax}> /100</Text>
+              <Text style={styles.scoreValue}>{data.schools.length}</Text>
+              <Text style={styles.scoreMax}> schools</Text>
             </View>
           </View>
           <View style={styles.potentialBadge}>

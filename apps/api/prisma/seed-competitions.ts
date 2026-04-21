@@ -143,6 +143,17 @@ const competitions: CompetitionSeed[] = [
     description: 'Annual team math competition between US regional teams.',
   },
   {
+    name: 'High School Mathematical Contest in Modeling',
+    abbreviation: 'HiMCM',
+    nameZh: '国际高中生数学建模挑战',
+    category: 'MATH',
+    level: 'INTERNATIONAL',
+    tier: 3,
+    description:
+      'International mathematical modeling competition for high school teams.',
+    website: 'https://www.contest.comap.com/highschool/contests/himcm/',
+  },
+  {
     name: 'Mandelbrot Competition',
     abbreviation: 'Mandelbrot',
     nameZh: '曼德布洛特数学竞赛',
@@ -413,6 +424,17 @@ const competitions: CompetitionSeed[] = [
     tier: 2,
     description: 'US congressional competition for student-created apps.',
   },
+  {
+    name: 'Technovation Challenge',
+    abbreviation: 'Technovation',
+    nameZh: 'Technovation科技创业挑战',
+    category: 'COMPUTER_SCIENCE',
+    level: 'INTERNATIONAL',
+    tier: 2,
+    description:
+      'Technology entrepreneurship challenge for student teams building apps or AI solutions.',
+    website: 'https://technovationchallenge.org',
+  },
 
   // ============================================
   // ENGINEERING & RESEARCH — Tier 5
@@ -492,6 +514,17 @@ const competitions: CompetitionSeed[] = [
     tier: 2,
     description:
       'International robotics competition with multiple age divisions.',
+  },
+  {
+    name: 'International Genetically Engineered Machine Competition',
+    abbreviation: 'iGEM',
+    nameZh: '国际基因工程机器大赛',
+    category: 'ENGINEERING_RESEARCH',
+    level: 'INTERNATIONAL',
+    tier: 4,
+    description:
+      'International synthetic biology competition for student research teams.',
+    website: 'https://igem.org',
   },
   {
     name: 'Google Science Fair',
@@ -723,6 +756,17 @@ const competitions: CompetitionSeed[] = [
     description: 'Student opinion writing competition by The New York Times.',
   },
   {
+    name: 'Ayn Rand Essay Contest',
+    abbreviation: 'Ayn Rand Essay',
+    nameZh: '安兰德论文竞赛',
+    category: 'WRITING_ESSAY',
+    level: 'NATIONAL',
+    tier: 2,
+    description:
+      'Essay competition centered on Ayn Rand novels and philosophical themes.',
+    website: 'https://aynrand.org/students/essay-contests/',
+  },
+  {
     name: 'Princeton Ten-Minute Play Contest',
     abbreviation: 'Princeton Play',
     nameZh: '普林斯顿十分钟戏剧赛',
@@ -748,6 +792,17 @@ const competitions: CompetitionSeed[] = [
     level: 'NATIONAL',
     tier: 2,
     description: 'National history research and presentation competition.',
+  },
+  {
+    name: 'Scholastic Writing Awards',
+    abbreviation: 'Scholastic Writing',
+    nameZh: 'Scholastic写作奖',
+    category: 'WRITING_ESSAY',
+    level: 'NATIONAL',
+    tier: 4,
+    description:
+      'Creative writing categories within the Scholastic Art & Writing Awards.',
+    website: 'https://www.artandwriting.org',
   },
 
   // ============================================
@@ -862,6 +917,17 @@ const competitions: CompetitionSeed[] = [
     level: 'NATIONAL',
     tier: 4,
     description: 'National recognition program for student visual art.',
+  },
+  {
+    name: 'Breakthrough Junior Challenge',
+    abbreviation: 'Breakthrough Junior',
+    nameZh: '突破青少年挑战赛',
+    category: 'ARTS_MUSIC',
+    level: 'INTERNATIONAL',
+    tier: 3,
+    description:
+      'Global video competition explaining big ideas in science and mathematics.',
+    website: 'https://breakthroughjuniorchallenge.org',
   },
   {
     name: 'All-State Orchestra/Band',
@@ -1112,8 +1178,16 @@ const competitions: CompetitionSeed[] = [
   },
 ];
 
-async function main() {
+export async function seedCompetitions(client: PrismaClient = prisma) {
   console.log('🏆 Seeding competition database...\n');
+
+  const existingAbbreviations = new Set(
+    (
+      await client.competition.findMany({
+        select: { abbreviation: true },
+      })
+    ).map((competition) => competition.abbreviation),
+  );
 
   let created = 0;
   let updated = 0;
@@ -1121,7 +1195,9 @@ async function main() {
 
   for (const comp of competitions) {
     try {
-      await prisma.competition.upsert({
+      const existed = existingAbbreviations.has(comp.abbreviation);
+
+      await client.competition.upsert({
         where: { abbreviation: comp.abbreviation },
         create: {
           name: comp.name,
@@ -1144,10 +1220,7 @@ async function main() {
         },
       });
 
-      const existing = await prisma.competition.findUnique({
-        where: { abbreviation: comp.abbreviation },
-      });
-      if (existing) {
+      if (existed) {
         updated++;
       } else {
         created++;
@@ -1159,9 +1232,18 @@ async function main() {
   }
 
   console.log(`\n✅ Done: ${competitions.length} competitions processed`);
-  console.log(`   Created/Updated: ${created + updated}, Errors: ${errors}`);
+  console.log(`   Created: ${created}, Updated: ${updated}, Errors: ${errors}`);
+
+  return {
+    processed: competitions.length,
+    created,
+    updated,
+    errors,
+  };
 }
 
-main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  seedCompetitions()
+    .catch(console.error)
+    .finally(() => prisma.$disconnect());
+}

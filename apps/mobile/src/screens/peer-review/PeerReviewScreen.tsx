@@ -19,12 +19,12 @@ export default function PeerReviewScreen() {
   });
 
   return (
-    <PageContainer onRefresh={() => {}}>
+    <PageContainer onRefresh={() => {}} variant="tool">
       <PageHeader
         title={t('peerReview.title')}
         description={t('peerReview.description')}
         icon="star-outline"
-        color="#8b5cf6"
+        variant="tool"
       />
       {isLoading ? (
         <Loading />

@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { toLegacyTestOptionalFlag } from '@study-abroad/shared/utils';
 import { SCHOOL_BASIC_SELECT } from '../../common/constants/prisma-selects';
 import { clampPercentRate } from '../../common/utils/percent.util';
 
@@ -10,7 +11,6 @@ export const RECOMMENDATION_SCHOOL_SELECT = {
   ...SCHOOL_BASIC_SELECT,
   aliases: true,
   isPrivate: true,
-  testOptional: true,
   hasEarlyDecision: true,
   retentionRate: true,
 } as const satisfies Prisma.SchoolSelect;
@@ -34,7 +34,11 @@ export function mapSchoolMeta(school: RecommendationSchoolResult) {
     state: school.state,
     tuition: school.tuition,
     isPrivate: school.isPrivate,
-    testOptional: school.testOptional ?? undefined,
+    testingPolicy: school.testingPolicy,
+    testOptional: toLegacyTestOptionalFlag({
+      testingPolicy: school.testingPolicy,
+      testOptional: school.testOptional,
+    }),
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
     retentionRate:
       school.retentionRate != null ? Number(school.retentionRate) : undefined,

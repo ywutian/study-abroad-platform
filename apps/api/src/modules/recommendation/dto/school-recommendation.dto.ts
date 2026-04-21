@@ -114,6 +114,7 @@ export class RecommendedSchoolDto {
     state?: string;
     tuition?: number;
     isPrivate?: boolean;
+    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
     testOptional?: boolean;
     hasEarlyDecision?: boolean;
     retentionRate?: number;

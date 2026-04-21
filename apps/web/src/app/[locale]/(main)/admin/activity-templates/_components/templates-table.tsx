@@ -66,7 +66,7 @@ export function TemplatesTable({
   onEdit,
   onDelete,
 }: TemplatesTableProps) {
-  const _t = useTranslations('admin');
+  const t = useTranslations('admin');
 
   if (isLoading) {
     return <ListSkeleton count={5} />;
@@ -76,8 +76,8 @@ export function TemplatesTable({
     return (
       <EmptyState
         icon={<Layers className="h-12 w-12" />}
-        title="No Activity Templates"
-        description="Click Create to add a new activity template"
+        title={t('activityTemplates.emptyTitle')}
+        description={t('activityTemplates.emptyDescription')}
       />
     );
   }
@@ -89,12 +89,12 @@ export function TemplatesTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Chinese Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Tier</TableHead>
-                <TableHead>Aliases</TableHead>
-                <TableHead>Active</TableHead>
+                <TableHead>{t('activityTemplates.name')}</TableHead>
+                <TableHead>{t('activityTemplates.chineseName')}</TableHead>
+                <TableHead>{t('activityTemplates.category')}</TableHead>
+                <TableHead>{t('activityTemplates.tier')}</TableHead>
+                <TableHead>{t('activityTemplates.aliases')}</TableHead>
+                <TableHead>{t('activityTemplates.active')}</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>

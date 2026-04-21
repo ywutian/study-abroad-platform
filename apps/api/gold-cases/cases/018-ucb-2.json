@@ -1,0 +1,160 @@
+{
+  "id": "018-ucb-2",
+  "description": "UC blind policy should stay stable for repeat deterministic replays. Variant 2.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "en"
+  },
+  "analysisSnapshot": {
+    "locale": "en",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-018",
+      "userId": "gold-runner",
+      "gpa": 3.75,
+      "gpaScale": 4,
+      "targetMajor": "Computer Science",
+      "intendedMajor": "Computer Science",
+      "secondMajor": null,
+      "grade": "SENIOR",
+      "educationSystem": "AP",
+      "nationality": "China",
+      "countryOfResidence": "China",
+      "citizenship": "China",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": true,
+      "applicationRound": "UC",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [],
+      "activities": [
+        {
+          "id": "profile-gold-018-activity",
+          "name": "Robotics Lab",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-018-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-018-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "China",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-18-ucb",
+        "schoolId": "ucb",
+        "tier": "REACH",
+        "round": "UC",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "ucb",
+          "name": "University of California, Berkeley",
+          "nameZh": "加州大学伯克利分校",
+          "usNewsRank": 1,
+          "acceptanceRate": 11,
+          "sat25": 1490,
+          "sat75": 1560,
+          "satAvg": 1530,
+          "testingPolicy": "BLIND",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 7,
+          "metadata": {
+            "standardDeadline": "November 30"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-18-ucb",
+        "schoolId": "ucb",
+        "tier": "REACH",
+        "round": "UC",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "ucb",
+          "name": "University of California, Berkeley",
+          "nameZh": "加州大学伯克利分校",
+          "usNewsRank": 1,
+          "acceptanceRate": 11,
+          "sat25": 1490,
+          "sat75": 1560,
+          "satAvg": 1530,
+          "testingPolicy": "BLIND",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 7,
+          "metadata": {
+            "standardDeadline": "November 30"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "ucb",
+        "probability": 0.26,
+        "probabilityLow": 0.21,
+        "probabilityHigh": 0.33,
+        "tier": "reach",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": [
+          "Keep the UC plan aligned with University of California, Berkeley."
+        ],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "UC",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "ucb": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "ucb",
+        "schoolName": "University of California, Berkeley",
+        "tier": "REACH",
+        "testingPolicy": "BLIND",
+        "probabilityRange": [0.19999999999999998, 0.34],
+        "forbidden": {
+          "invalidActionKeywords": ["SAT", "ACT"]
+        }
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "uc-test-blind"],
+  "ownerEmail": "governance@study-abroad.local"
+}

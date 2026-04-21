@@ -26,6 +26,8 @@ export interface InternalPredictionResult extends PredictionResultDto {
   policyVersionId?: string;
   /** Maps to DB column `applicationRound` (public API uses `roundContext`) */
   applicationRound?: string;
+  /** Maps to DB column `selectivityBand` for calibration / shadow analysis */
+  selectivityBand?: string;
   /** Full audit trace envelope for DB storage */
   servedTrace?: unknown;
 }
@@ -134,6 +136,7 @@ export class PredictionPersistenceService {
           sourceSummary: result.sourceSummary as any,
           uncertaintyReasons: result.uncertaintyReasons as any,
           confidenceReason: result.confidenceReason,
+          selectivityBand: result.selectivityBand,
           source: 'prediction',
         },
         create: {
@@ -156,6 +159,7 @@ export class PredictionPersistenceService {
           sourceSummary: result.sourceSummary as any,
           uncertaintyReasons: result.uncertaintyReasons as any,
           confidenceReason: result.confidenceReason,
+          selectivityBand: result.selectivityBand,
           source: 'prediction',
         },
       });
@@ -179,6 +183,7 @@ export class PredictionPersistenceService {
           sourceSummary: result.sourceSummary as any,
           uncertaintyReasons: result.uncertaintyReasons as any,
           confidenceReason: result.confidenceReason,
+          selectivityBand: result.selectivityBand,
         },
       });
     } catch (error) {

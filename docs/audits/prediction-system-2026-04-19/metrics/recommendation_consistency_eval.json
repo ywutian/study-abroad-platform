@@ -1,0 +1,38 @@
+{
+  "anchorClamp": {
+    "scenarios": 80,
+    "maxDeviationPctPoints": 15.36,
+    "violations": 0
+  },
+  "quickMatchVsPrediction": {
+    "comparedRows": 16,
+    "avgAbsDeltaPctPoints": 2.62,
+    "tierDisagreements": 1,
+    "sampleDiffs": [
+      {
+        "profile": "Elite applicant",
+        "school": "Selective",
+        "quickMatchProbability": 24.2,
+        "predictionProbability": 32.7,
+        "quickMatchTier": "reach",
+        "predictionTier": "reach"
+      },
+      {
+        "profile": "Elite applicant",
+        "school": "Broad access",
+        "quickMatchProbability": 54.9,
+        "predictionProbability": 74.1,
+        "quickMatchTier": "match",
+        "predictionTier": "safety"
+      }
+    ]
+  },
+  "rankingBoundary": {
+    "isProbabilityEngine": false,
+    "rationale": "RankingService calculates weighted school scores from school attributes and returns rank/score, with no profile-conditioned admit probability.",
+    "evidence": [
+      "apps/api/src/modules/ranking/ranking.service.ts:27",
+      "apps/api/src/modules/ranking/ranking.service.ts:122"
+    ]
+  }
+}

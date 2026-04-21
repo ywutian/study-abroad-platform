@@ -54,7 +54,7 @@ interface SchoolGridProps {
 
 function CommunityMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-[11px] font-medium">
+    <div className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-2xs font-medium">
       <span className="text-muted-foreground">{label}</span>{' '}
       <span className="text-foreground">{value.toFixed(1)}</span>
     </div>
@@ -82,6 +82,7 @@ export function SchoolGrid({
   isBatchAdding,
 }: SchoolGridProps) {
   const t = useTranslations('schools');
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const tc = useTranslations('common');
   const locale = useLocale();
   const format = useFormatter();
@@ -217,7 +218,7 @@ export function SchoolGrid({
                                 {getSchoolName(school, locale)}
                               </h3>
                               {hasSupplementalRanking && (
-                                <Badge variant="secondary" className="mt-1 text-[10px]">
+                                <Badge variant="secondary" className="mt-1 text-2xs">
                                   {t('supplementalRanking')}
                                 </Badge>
                               )}
@@ -236,11 +237,12 @@ export function SchoolGrid({
                         </div>
                       </div>
 
-                      {(school.testOptional || school.hasEarlyDecision) && (
+                      {((school.testingPolicy && school.testingPolicy !== 'UNKNOWN') ||
+                        school.hasEarlyDecision) && (
                         <div className="flex flex-wrap gap-1 mb-2">
-                          {school.testOptional && (
+                          {school.testingPolicy && school.testingPolicy !== 'UNKNOWN' && (
                             <Badge variant="outline" className="text-xs">
-                              {t('specialConditions.testOptional')}
+                              {testingPolicyT(school.testingPolicy as any)}
                             </Badge>
                           )}
                           {school.hasEarlyDecision && (
@@ -324,7 +326,7 @@ export function SchoolGrid({
                                 value={communityRatingSummary.foodAvg}
                               />
                             )}
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-2xs text-muted-foreground">
                               {t('community.count', { count: communityRatingSummary.count })}
                             </span>
                           </div>

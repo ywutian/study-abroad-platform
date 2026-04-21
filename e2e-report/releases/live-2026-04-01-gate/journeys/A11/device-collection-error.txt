@@ -1,9 +1,0 @@
-Error: Command failed: adb -s 5ENDU19409002997 shell am start -W -n com.studyabroad.mobile/.MainActivity
-
-    at genericNodeError (node:internal/errors:984:15)
-    at wrappedFn (node:internal/errors:538:14)
-    at ChildProcess.exithandler (node:child_process:422:12)
-    at ChildProcess.emit (node:events:524:28)
-    at maybeClose (node:internal/child_process:1104:16)
-    at ChildProcess._handle.onexit (node:internal/child_process:304:5)
-    at Process.callbackTrampoline (node:internal/async_hooks:130:17)

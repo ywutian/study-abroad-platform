@@ -1,4 +1,0 @@
-browserContext.addCookies: Cookie should have either url or path
-    at openAuthenticatedPage (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit.ts:526:17)
-    at async runApplicantJourney (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit.ts:2689:33)
-    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit.ts:2705:5)

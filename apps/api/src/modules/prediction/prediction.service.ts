@@ -1053,12 +1053,12 @@ export class PredictionService {
         direction: 'positive' | 'negative';
       }>;
     } | null = null;
+    const selectivityBand = getSelectivityBand(
+      calculateSelectivityIndex(schoolMetrics),
+    );
 
     if (this.modelRegistry) {
       try {
-        const selectivityBand = getSelectivityBand(
-          calculateSelectivityIndex(schoolMetrics),
-        );
         // Try band-specific model first, fall back to global
         const championModel =
           (await this.modelRegistry.getChampionModel(selectivityBand)) ??
@@ -1171,26 +1171,6 @@ export class PredictionService {
       mlResult?.probability ?? null,
     );
 
-    // Platt scaling 校准（当有足够历史数据时）
-    // Skip Platt when ML champion is active — ML logistic output is already calibrated
-    if (plattParams && !mlResult) {
-      fusedResult.probability = this.applyPlattCalibration(
-        fusedResult.probability,
-        plattParams,
-      );
-      // 重新计算置信区间 — preserve consistency widening
-      let intervalWidth = CONFIDENCE_INTERVAL_WIDTH[confidenceLevel];
-      intervalWidth *= 1 + (1 - fusedResult.crossEngineConsistency) * 0.5;
-      fusedResult.probabilityLow = Math.max(
-        0.01,
-        fusedResult.probability - intervalWidth / 2,
-      );
-      fusedResult.probabilityHigh = Math.min(
-        0.99,
-        fusedResult.probability + intervalWidth / 2,
-      );
-    }
-
     // Apply major competitiveness modifier (softened — intl selectivity already accounts
     // for competition; aggressive modifiers double-penalize international applicants)
     const MAJOR_MODIFIERS: Record<number, number> = {
@@ -1274,6 +1254,27 @@ export class PredictionService {
       fusedResult.probabilityHigh = Math.max(
         fusedResult.probability,
         Math.min(0.99, fusedResult.probabilityHigh * roundMultiplier),
+      );
+    }
+
+    // Platt scaling 校准（当有足够历史数据时）
+    // Apply after deterministic modifiers so calibration operates on the
+    // final served score instead of being overwritten by later adjustments.
+    // Skip Platt when ML champion is active — ML logistic output is already calibrated.
+    if (plattParams && !mlResult) {
+      fusedResult.probability = this.applyPlattCalibration(
+        fusedResult.probability,
+        plattParams,
+      );
+      let intervalWidth = CONFIDENCE_INTERVAL_WIDTH[confidenceLevel];
+      intervalWidth *= 1 + (1 - fusedResult.crossEngineConsistency) * 0.5;
+      fusedResult.probabilityLow = Math.max(
+        0.01,
+        fusedResult.probability - intervalWidth / 2,
+      );
+      fusedResult.probabilityHigh = Math.min(
+        0.99,
+        fusedResult.probability + intervalWidth / 2,
       );
     }
 
@@ -1380,6 +1381,7 @@ export class PredictionService {
       // Internal fields for DB persistence (not in public DTO)
       policyVersionId: resolvedPolicyVersionId,
       applicationRound: resolvedApplicationRound,
+      selectivityBand,
       servedTrace: servedTrace ?? undefined,
     };
 

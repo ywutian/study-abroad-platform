@@ -57,6 +57,35 @@ function createExperiment(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function createReplayRun(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'replay-1',
+    analysisVersion: 'application-analysis-v2',
+    dataset: 'gold:deterministic:v1',
+    status: 'COMPLETED',
+    metrics: {
+      policyCorrectnessRate: 1,
+      weakStateCorrectnessRate: 1,
+      fabricatedInsightCount: 0,
+      actionabilityMean: 1,
+      contractParityPass: true,
+      goldPassRate: 1,
+    },
+    summary: {
+      totalCases: 50,
+      dataset: 'gold:deterministic:v1',
+      mode: 'deterministic',
+      commitSha: 'abc123',
+      reportPath: 'gold-cases/reports/test.md',
+      reportJsonPath: 'gold-cases/reports/test.json',
+    },
+    failures: [],
+    createdAt: new Date('2026-04-10T00:00:00Z'),
+    finishedAt: new Date('2026-04-10T00:10:00Z'),
+    ...overrides,
+  };
+}
+
 describe('ApplicationAnalysisWorkflowService', () => {
   let service: ApplicationAnalysisWorkflowService;
   let prisma: PrismaService;
@@ -159,6 +188,53 @@ describe('ApplicationAnalysisWorkflowService', () => {
               findMany: jest.fn().mockResolvedValue([]),
               findFirst: jest.fn().mockResolvedValue(null),
               count: jest.fn().mockResolvedValue(0),
+            },
+            applicationAnalysisRun: {
+              findMany: jest.fn().mockResolvedValue([]),
+              findFirst: jest.fn().mockResolvedValue(null),
+              findUnique: jest.fn().mockResolvedValue(null),
+              update: jest.fn().mockImplementation((args) => ({
+                id: args.where.id,
+                ...args.data,
+              })),
+            },
+            applicationAnalysisReplayRun: {
+              findMany: jest.fn().mockResolvedValue([]),
+              findFirst: jest.fn().mockResolvedValue(null),
+            },
+            applicationAnalysisExposureRecord: {
+              findMany: jest.fn().mockResolvedValue([]),
+              findFirst: jest.fn().mockResolvedValue(null),
+              create: jest.fn().mockImplementation((args) => ({
+                id: 'exposure-1',
+                createdAt: new Date('2026-04-10T00:00:00Z'),
+                updatedAt: new Date('2026-04-10T00:00:00Z'),
+                generatedAt: new Date('2026-04-10T00:00:00Z'),
+                ...args.data,
+              })),
+            },
+            applicationAnalysisFeedbackRecord: {
+              findMany: jest.fn().mockResolvedValue([]),
+              count: jest.fn().mockResolvedValue(0),
+              create: jest.fn().mockImplementation((args) => ({
+                id: 'feedback-1',
+                createdAt: new Date('2026-04-10T00:00:00Z'),
+                updatedAt: new Date('2026-04-10T00:00:00Z'),
+                ...args.data,
+              })),
+            },
+            applicationAnalysisExperimentIncident: {
+              findMany: jest.fn().mockResolvedValue([]),
+              create: jest.fn().mockImplementation((args) => ({
+                id: 'incident-1',
+                createdAt: new Date('2026-04-10T00:00:00Z'),
+                updatedAt: new Date('2026-04-10T00:00:00Z'),
+                ...args.data,
+              })),
+              update: jest.fn().mockImplementation((args) => ({
+                id: args.where.id,
+                ...args.data,
+              })),
             },
             featureFlag: {
               findUnique: jest.fn().mockResolvedValue(null),
@@ -339,6 +415,58 @@ describe('ApplicationAnalysisWorkflowService', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
+  it('records applicant feedback directly against an analysis run and syncs run metrics', async () => {
+    (prisma.applicationAnalysisRun.findFirst as jest.Mock).mockResolvedValue({
+      id: 'run-1',
+      analysisVersion: 'application-analysis-v2',
+    });
+    (prisma.applicationAnalysisRun.findUnique as jest.Mock).mockResolvedValue({
+      id: 'run-1',
+      metrics: {
+        actionabilityMean: 4.2,
+      },
+    });
+    (
+      prisma.applicationAnalysisFeedbackRecord.findMany as jest.Mock
+    ).mockResolvedValue([
+      {
+        applicationAnalysisRunId: 'run-1',
+        sentiment: 'HELPFUL',
+        category: null,
+      },
+    ]);
+
+    const result = await service.submitApplicantFeedback('user-1', {
+      runId: 'run-1',
+      sentiment: 'HELPFUL',
+      notes: 'This card was actionable.',
+    });
+
+    expect(result.applicationAnalysisRunId).toBe('run-1');
+    expect(
+      prisma.applicationAnalysisFeedbackRecord.create,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          applicationAnalysisRunId: 'run-1',
+          exposureId: 'run-1',
+          sentiment: 'HELPFUL',
+        }),
+      }),
+    );
+    expect(prisma.applicationAnalysisRun.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'run-1' },
+        data: expect.objectContaining({
+          metrics: expect.objectContaining({
+            applicantFeedbackCount: 1,
+            helpfulFeedbackRate: 1,
+          }),
+        }),
+      }),
+    );
+  });
+
   it('creates an experiment draft and records audit', async () => {
     const result = await service.createExperimentVersion(ACTOR_ID, {
       capability: 'RECOURSE',
@@ -472,5 +600,116 @@ describe('ApplicationAnalysisWorkflowService', () => {
       'Evaluation failed.',
     );
     expect(summary.retired).toEqual(['experiment-canary']);
+  });
+
+  it('allows governance evaluation to complete with fixture evidence in governance mode', async () => {
+    (
+      prisma.applicationAnalysisPolicyVersion.findMany as jest.Mock
+    ).mockResolvedValue([createPolicy()]);
+    (
+      prisma.applicationAnalysisPolicyVersion.findUnique as jest.Mock
+    ).mockResolvedValue(createPolicy());
+    (prisma.schoolPolicyEvidence.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'evidence-fixture-1',
+        metadata: {
+          governanceSourceMode: 'fixture',
+        },
+      },
+    ]);
+    (
+      prisma.applicationAnalysisReplayRun.findFirst as jest.Mock
+    ).mockResolvedValue(createReplayRun());
+
+    const result = await service.runGovernanceEvaluationForAnalysisVersion(
+      ACTOR_ID,
+      'application-analysis-v2',
+      {
+        allowFixtureEvidence: true,
+      },
+    );
+
+    expect(result.status).toBe('COMPLETED');
+    expect(result.counts).toEqual(
+      expect.objectContaining({
+        approvedEvidenceCount: 1,
+        fixtureApprovedEvidenceCount: 1,
+        realApprovedEvidenceCount: 0,
+        evidenceMode: 'fixture',
+        workflowMode: 'governance',
+      }),
+    );
+  });
+
+  it('keeps governance evaluation failed in strict mode when only fixture evidence exists', async () => {
+    (
+      prisma.applicationAnalysisPolicyVersion.findMany as jest.Mock
+    ).mockResolvedValue([createPolicy()]);
+    (
+      prisma.applicationAnalysisPolicyVersion.findUnique as jest.Mock
+    ).mockResolvedValue(createPolicy());
+    (prisma.schoolPolicyEvidence.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'evidence-fixture-1',
+        metadata: {
+          governanceSourceMode: 'fixture',
+        },
+      },
+    ]);
+    (
+      prisma.applicationAnalysisReplayRun.findFirst as jest.Mock
+    ).mockResolvedValue(createReplayRun());
+
+    const result = await service.runGovernanceEvaluationForAnalysisVersion(
+      ACTOR_ID,
+      'application-analysis-v2',
+    );
+
+    expect(result.status).toBe('FAILED');
+    expect(result.failures).toContain(
+      'No approved real school policy evidence is available yet.',
+    );
+    expect(result.counts).toEqual(
+      expect.objectContaining({
+        fixtureApprovedEvidenceCount: 1,
+        realApprovedEvidenceCount: 0,
+        evidenceMode: 'fixture',
+        workflowMode: 'production',
+      }),
+    );
+  });
+
+  it('classifies fixture evidence in evidence listings', async () => {
+    (prisma.schoolPolicyEvidence.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'evidence-fixture-1',
+        schoolId: 'school-1',
+        school: null,
+        policyDimension: 'TESTING',
+        policyValue: 'BLIND',
+        sourceName: 'Fixture pack',
+        sourceUrl: null,
+        sourcePublishedAt: null,
+        sourceQuality: 100,
+        status: 'APPROVED',
+        reviewedAt: new Date('2026-04-10T00:00:00Z'),
+        reviewedBy: 'fixture-runner',
+        expiresAt: null,
+        notes: null,
+        metadata: {
+          governanceSourceMode: 'fixture',
+        },
+        createdAt: new Date('2026-04-10T00:00:00Z'),
+        updatedAt: new Date('2026-04-10T00:00:00Z'),
+      },
+    ]);
+    (prisma.schoolPolicyEvidence.count as jest.Mock).mockResolvedValue(1);
+
+    const result = await service.listEvidence({
+      page: 1,
+      pageSize: 20,
+    });
+
+    expect(result.items[0]?.evidenceMode).toBe('fixture');
   });
 });

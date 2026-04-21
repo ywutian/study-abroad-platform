@@ -1,0 +1,162 @@
+{
+  "id": "013-mit-1",
+  "description": "Required-policy output should remain deterministic for engineering applicants. Variant 1.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "en"
+  },
+  "analysisSnapshot": {
+    "locale": "en",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-013",
+      "userId": "gold-runner",
+      "gpa": 3.8,
+      "gpaScale": 4,
+      "targetMajor": "Engineering",
+      "intendedMajor": "Engineering",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "AP",
+      "nationality": "India",
+      "countryOfResidence": "India",
+      "citizenship": "India",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": true,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1490
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-013-activity",
+          "name": "Community Initiative",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-013-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-013-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "India",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-13-mit",
+        "schoolId": "mit",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "mit",
+          "name": "Massachusetts Institute of Technology",
+          "nameZh": "麻省理工学院",
+          "usNewsRank": 2,
+          "acceptanceRate": 4,
+          "sat25": 1530,
+          "sat75": 1580,
+          "satAvg": 1560,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5,
+          "metadata": {
+            "standardDeadline": "January 1"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-13-mit",
+        "schoolId": "mit",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "mit",
+          "name": "Massachusetts Institute of Technology",
+          "nameZh": "麻省理工学院",
+          "usNewsRank": 2,
+          "acceptanceRate": 4,
+          "sat25": 1530,
+          "sat75": 1580,
+          "satAvg": 1560,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5,
+          "metadata": {
+            "standardDeadline": "January 1"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "mit",
+        "probability": 0.16,
+        "probabilityLow": 0.11,
+        "probabilityHigh": 0.22,
+        "tier": "reach",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": [
+          "Keep the RD plan aligned with Massachusetts Institute of Technology."
+        ],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "RD",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "mit": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "mit",
+        "schoolName": "Massachusetts Institute of Technology",
+        "tier": "REACH",
+        "testingPolicy": "REQUIRED",
+        "probabilityRange": [0.1, 0.23]
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "policy-required"],
+  "ownerEmail": "governance@study-abroad.local"
+}

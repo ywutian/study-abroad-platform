@@ -246,7 +246,7 @@ export function OutcomesTab() {
                       </TableCell>
                       <TableCell>
                         {item.calibrationEligible ? (
-                          <Badge>Ready</Badge>
+                          <Badge>{t('statusReady')}</Badge>
                         ) : (
                           <Badge variant="outline">No</Badge>
                         )}

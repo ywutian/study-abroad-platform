@@ -1,0 +1,234 @@
+{
+  "id": "008-berkeley-columbia-balanced-en",
+  "description": "A multi-school ready case should preserve ordering and policy labels across mixed blind/optional schools.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "en"
+  },
+  "analysisSnapshot": {
+    "locale": "en",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-008",
+      "userId": "gold-runner",
+      "gpa": 3.9,
+      "gpaScale": 4,
+      "targetMajor": "Economics",
+      "intendedMajor": "Economics",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "US",
+      "nationality": "United States",
+      "countryOfResidence": "US",
+      "citizenship": "US",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "ED",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1510
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-008-activity",
+          "name": "Community Initiative",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-008-edu",
+          "schoolName": "Regional High School",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-008-hs",
+          "highSchool": {
+            "name": "Regional High School",
+            "tier": 3,
+            "type": "US_PUBLIC",
+            "country": "US",
+            "state": "CA"
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-8-ucb",
+        "schoolId": "ucb",
+        "tier": "REACH",
+        "round": "UC",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "ucb",
+          "name": "University of California, Berkeley",
+          "nameZh": "加州大学伯克利分校",
+          "usNewsRank": 1,
+          "acceptanceRate": 11,
+          "sat25": 1490,
+          "sat75": 1560,
+          "satAvg": 1530,
+          "testingPolicy": "BLIND",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 7,
+          "metadata": {
+            "standardDeadline": "November 30"
+          }
+        }
+      },
+      {
+        "id": "sl-8-columbia",
+        "schoolId": "columbia",
+        "tier": "TARGET",
+        "round": "ED",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "columbia",
+          "name": "Columbia University",
+          "nameZh": "哥伦比亚大学",
+          "usNewsRank": 12,
+          "acceptanceRate": 3.9,
+          "sat25": 1500,
+          "sat75": 1570,
+          "satAvg": 1540,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.1,
+          "metadata": {
+            "standardDeadline": "November 1"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-8-ucb",
+        "schoolId": "ucb",
+        "tier": "REACH",
+        "round": "UC",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "ucb",
+          "name": "University of California, Berkeley",
+          "nameZh": "加州大学伯克利分校",
+          "usNewsRank": 1,
+          "acceptanceRate": 11,
+          "sat25": 1490,
+          "sat75": 1560,
+          "satAvg": 1530,
+          "testingPolicy": "BLIND",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 7,
+          "metadata": {
+            "standardDeadline": "November 30"
+          }
+        }
+      },
+      {
+        "id": "sl-8-columbia",
+        "schoolId": "columbia",
+        "tier": "TARGET",
+        "round": "ED",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "columbia",
+          "name": "Columbia University",
+          "nameZh": "哥伦比亚大学",
+          "usNewsRank": 12,
+          "acceptanceRate": 3.9,
+          "sat25": 1500,
+          "sat75": 1570,
+          "satAvg": 1540,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.1,
+          "metadata": {
+            "standardDeadline": "November 1"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "ucb",
+        "probability": 0.29,
+        "probabilityLow": 0.23,
+        "probabilityHigh": 0.35,
+        "tier": "reach",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": [
+          "Keep the UC plan aligned with University of California, Berkeley."
+        ],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "UC",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      },
+      {
+        "schoolId": "columbia",
+        "probability": 0.23,
+        "probabilityLow": 0.18,
+        "probabilityHigh": 0.29,
+        "tier": "match",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": ["Keep the ED plan aligned with Columbia University."],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "ED",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "ucb": null,
+      "columbia": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "ucb",
+        "schoolName": "University of California, Berkeley",
+        "tier": "REACH",
+        "testingPolicy": "BLIND",
+        "probabilityRange": [0.22, 0.36],
+        "forbidden": {
+          "invalidActionKeywords": ["SAT", "ACT"]
+        }
+      },
+      {
+        "schoolId": "columbia",
+        "schoolName": "Columbia University",
+        "tier": "TARGET",
+        "testingPolicy": "OPTIONAL",
+        "probabilityRange": [0.16999999999999998, 0.3]
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "uc-test-blind", "policy-optional", "render-smoke"],
+  "ownerEmail": "governance@study-abroad.local"
+}

@@ -1,0 +1,137 @@
+{
+  "id": "044-no-predictions-stanford",
+  "description": "No-predictions state should remain explicit until prediction coverage exists.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-044",
+      "userId": "gold-runner",
+      "gpa": 3.76,
+      "gpaScale": 4,
+      "targetMajor": "Biology",
+      "intendedMajor": "Biology",
+      "secondMajor": null,
+      "grade": "SENIOR",
+      "educationSystem": "AP",
+      "nationality": "China",
+      "countryOfResidence": "China",
+      "citizenship": "China",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": true,
+      "applicationRound": "ED",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1490
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-044-activity",
+          "name": "Hospital Volunteer",
+          "category": "COMMUNITY_SERVICE",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-044-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-044-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "China",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-44-stanford",
+        "schoolId": "stanford",
+        "tier": "REACH",
+        "round": "ED",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "stanford",
+          "name": "Stanford University",
+          "nameZh": "斯坦福大学",
+          "usNewsRank": 3,
+          "acceptanceRate": 3.7,
+          "sat25": 1510,
+          "sat75": 1570,
+          "satAvg": 1550,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.4,
+          "metadata": {
+            "standardDeadline": "January 5"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-44-stanford",
+        "schoolId": "stanford",
+        "tier": "REACH",
+        "round": "ED",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "stanford",
+          "name": "Stanford University",
+          "nameZh": "斯坦福大学",
+          "usNewsRank": 3,
+          "acceptanceRate": 3.7,
+          "sat25": 1510,
+          "sat75": 1570,
+          "satAvg": 1550,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.4,
+          "metadata": {
+            "standardDeadline": "January 5"
+          }
+        }
+      }
+    ],
+    "predictions": [],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "stanford": null
+    }
+  },
+  "expected": {
+    "state": "noPredictions",
+    "schoolCards": [],
+    "meta": {
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "no-predictions"],
+  "ownerEmail": "governance@study-abroad.local"
+}

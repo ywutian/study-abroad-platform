@@ -1,5 +1,0 @@
-page.waitForResponse: Timeout 120000ms exceeded while waiting for event "response"
-    at sendChatPrompt (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:312:34)
-    at async run (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:866:24)
-    at async applicantAiJourneys (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:969:3)
-    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1756:7)

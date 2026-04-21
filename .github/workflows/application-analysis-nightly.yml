@@ -1,0 +1,167 @@
+name: Application Analysis Nightly
+
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+concurrency:
+  group: application-analysis-nightly
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    name: Application Analysis Nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: studyabroad_application_analysis_nightly
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Generate Prisma Client
+        run: pnpm --filter api exec prisma generate
+
+      - name: Enable pgvector extension
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d studyabroad_application_analysis_nightly -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+      - name: Apply migrations to database
+        run: pnpm --filter api exec prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
+
+      - name: Build shared package
+        run: pnpm --filter @study-abroad/shared build
+
+      - name: Generate render fixtures
+        run: pnpm --filter api gold:fixtures
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: nightly-secret-key
+          JWT_REFRESH_SECRET: nightly-refresh-secret
+          JWT_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+
+      - name: Seed database
+        run: pnpm --filter api exec prisma db seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
+
+      - name: Seed governance fixtures
+        run: pnpm --filter api exec ts-node --transpile-only scripts/seed-application-analysis-governance.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
+
+      - name: Start API server
+        run: |
+          mkdir -p .ci-logs
+          pnpm --filter api dev > .ci-logs/application-analysis-api.log 2>&1 &
+          echo $! > .ci-logs/api.pid
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: nightly-secret-key
+          JWT_REFRESH_SECRET: nightly-refresh-secret
+          JWT_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          RUNTIME_AUDIT_APPLICANT_EMAIL: application.analysis.qa@example.com
+          RUNTIME_AUDIT_APPLICANT_PASSWORD: Demo123!
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 40); do
+            if curl -sf http://localhost:4101/health >/dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          cat .ci-logs/application-analysis-api.log || true
+          exit 1
+
+      - name: Start Web server
+        run: |
+          pnpm --filter web dev > .ci-logs/application-analysis-web.log 2>&1 &
+          echo $! > .ci-logs/web.pid
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4101
+          ENABLE_E2E_FIXTURES: true
+
+      - name: Wait for Web
+        run: |
+          for i in $(seq 1 40); do
+            if curl -sf http://localhost:4100/en >/dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          cat .ci-logs/application-analysis-web.log || true
+          exit 1
+
+      - name: Run nightly governance
+        run: pnpm application-analysis:governance -- --mode=nightly
+        env:
+          CI: true
+          ENABLE_E2E_FIXTURES: true
+          NEXT_PUBLIC_API_URL: http://localhost:4101
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_application_analysis_nightly?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: nightly-secret-key
+          JWT_REFRESH_SECRET: nightly-refresh-secret
+          JWT_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          RUNTIME_AUDIT_APPLICANT_EMAIL: application.analysis.qa@example.com
+          RUNTIME_AUDIT_APPLICANT_PASSWORD: Demo123!
+
+      - name: Upload nightly artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: application-analysis-nightly
+          path: |
+            apps/api/gold-cases/reports/
+            e2e-report/
+            .ci-logs/
+          retention-days: 14

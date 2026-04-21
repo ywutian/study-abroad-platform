@@ -31,6 +31,7 @@ import { ConversationItem, MessageItem, formatDate, truncate } from './types';
 
 export function ConversationsSection() {
   const t = useTranslations('admin.memory');
+  const tAria = useTranslations('common.aria');
   const [convUserId, setConvUserId] = useState('');
   const [convPage, setConvPage] = useState(1);
   const convPageSize = 20;
@@ -88,8 +89,8 @@ export function ConversationsSection() {
                   <TableRow>
                     <TableHead className="w-[100px]">ID</TableHead>
                     <TableHead className="w-[100px]">User</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Summary</TableHead>
+                    <TableHead>{t('titleLabel')}</TableHead>
+                    <TableHead>{t('summaryLabel')}</TableHead>
                     <TableHead className="w-[80px]">Agent</TableHead>
                     <TableHead className="w-[60px]">Msgs</TableHead>
                     <TableHead className="w-[140px]">Created</TableHead>
@@ -99,10 +100,10 @@ export function ConversationsSection() {
                 <TableBody>
                   {convData.data.map((conv) => (
                     <TableRow key={conv.id}>
-                      <TableCell className="font-mono text-[10px] truncate max-w-[100px]">
+                      <TableCell className="font-mono text-2xs truncate max-w-[100px]">
                         {conv.id}
                       </TableCell>
-                      <TableCell className="font-mono text-[10px] truncate max-w-[100px]">
+                      <TableCell className="font-mono text-2xs truncate max-w-[100px]">
                         {conv.userId}
                       </TableCell>
                       <TableCell className="text-xs truncate max-w-[150px]">
@@ -113,7 +114,7 @@ export function ConversationsSection() {
                       </TableCell>
                       <TableCell>
                         {conv.agentType ? (
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-2xs">
                             {conv.agentType}
                           </Badge>
                         ) : (
@@ -130,7 +131,7 @@ export function ConversationsSection() {
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => setViewConvId(conv.id)}
-                          aria-label="View conversation"
+                          aria-label={tAria('viewConversation')}
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
@@ -175,27 +176,25 @@ export function ConversationsSection() {
                   )}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-2xs">
                       {msg.role}
                     </Badge>
                     {msg.agentType && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-2xs">
                         {msg.agentType}
                       </Badge>
                     )}
                     {msg.tokensUsed && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-2xs text-muted-foreground">
                         {msg.tokensUsed} tokens
                       </span>
                     )}
                     {msg.latencyMs && (
-                      <span className="text-[10px] text-muted-foreground">{msg.latencyMs}ms</span>
+                      <span className="text-2xs text-muted-foreground">{msg.latencyMs}ms</span>
                     )}
                   </div>
                   <p className="whitespace-pre-wrap text-xs">{truncate(msg.content, 500)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {formatDate(msg.createdAt)}
-                  </p>
+                  <p className="text-2xs text-muted-foreground mt-1">{formatDate(msg.createdAt)}</p>
                 </div>
               ))
             ) : (

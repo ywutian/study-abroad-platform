@@ -300,6 +300,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                 <div
                   className={cn(
                     'prose dark:prose-invert max-w-[68ch] mx-auto p-6 rounded-xl bg-muted/30 border',
+                    // @design-system-ignore-next-line: reading-surface
                     useSerif && 'font-serif'
                   )}
                 >
@@ -436,7 +437,7 @@ function AnalysisResultView({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-2xl font-bold">{analysis.overallScore}</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     {t('detail.analysis.score')}
                   </span>
                 </div>

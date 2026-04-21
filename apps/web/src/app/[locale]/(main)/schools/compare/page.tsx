@@ -25,6 +25,7 @@ export default function SchoolComparePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations('schoolCompare');
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const tc = useTranslations('common');
   const locale = useLocale();
   const format = useFormatter();
@@ -61,7 +62,7 @@ export default function SchoolComparePage() {
 
   const isLoading = schoolQueries.some((q) => q.isLoading);
 
-  const fields = useMemo(() => buildFields(t), [t]);
+  const fields = useMemo(() => buildFields(t, testingPolicyT), [t, testingPolicyT]);
 
   // Update URL with school IDs
   const updateUrl = useCallback(

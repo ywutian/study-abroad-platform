@@ -1,0 +1,137 @@
+{
+  "id": "043-no-predictions-mit",
+  "description": "No-predictions state should remain explicit until prediction coverage exists.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "en"
+  },
+  "analysisSnapshot": {
+    "locale": "en",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-043",
+      "userId": "gold-runner",
+      "gpa": 3.76,
+      "gpaScale": 4,
+      "targetMajor": "Biology",
+      "intendedMajor": "Biology",
+      "secondMajor": null,
+      "grade": "SENIOR",
+      "educationSystem": "US",
+      "nationality": "United States",
+      "countryOfResidence": "US",
+      "citizenship": "US",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": false,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1510
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-043-activity",
+          "name": "Hospital Volunteer",
+          "category": "COMMUNITY_SERVICE",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-043-edu",
+          "schoolName": "Regional High School",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-043-hs",
+          "highSchool": {
+            "name": "Regional High School",
+            "tier": 3,
+            "type": "US_PUBLIC",
+            "country": "US",
+            "state": "CA"
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-43-mit",
+        "schoolId": "mit",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "mit",
+          "name": "Massachusetts Institute of Technology",
+          "nameZh": "麻省理工学院",
+          "usNewsRank": 2,
+          "acceptanceRate": 4,
+          "sat25": 1530,
+          "sat75": 1580,
+          "satAvg": 1560,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5,
+          "metadata": {
+            "standardDeadline": "January 1"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-43-mit",
+        "schoolId": "mit",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "mit",
+          "name": "Massachusetts Institute of Technology",
+          "nameZh": "麻省理工学院",
+          "usNewsRank": 2,
+          "acceptanceRate": 4,
+          "sat25": 1530,
+          "sat75": 1580,
+          "satAvg": 1560,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5,
+          "metadata": {
+            "standardDeadline": "January 1"
+          }
+        }
+      }
+    ],
+    "predictions": [],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "mit": null
+    }
+  },
+  "expected": {
+    "state": "noPredictions",
+    "schoolCards": [],
+    "meta": {
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "no-predictions"],
+  "ownerEmail": "governance@study-abroad.local"
+}

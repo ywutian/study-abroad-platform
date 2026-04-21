@@ -47,6 +47,7 @@ interface ReferralListData {
 
 export default function ReferralPage() {
   const t = useTranslations('referral');
+  const tAria = useTranslations('common.aria');
   const format = useFormatter();
   const { user } = useAuthStore();
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
@@ -151,7 +152,7 @@ export default function ReferralPage() {
                           'bg-green-500 text-white border-green-500 hover:bg-green-600 hover:text-white'
                       )}
                       onClick={() => referralData && handleCopy(referralData.referralCode, 'code')}
-                      aria-label="Copy referral code"
+                      aria-label={tAria('copyReferralCode')}
                     >
                       {copied === 'code' ? (
                         <Check className="h-4 w-4" />

@@ -40,15 +40,15 @@ import {
 describe('colors', () => {
   describe('light theme', () => {
     it('has the correct primary color', () => {
-      expect(colors.light.primary).toBe('#6366f1');
+      expect(colors.light.primary).toBe('#5b66f6');
     });
 
     it('has the correct background color', () => {
-      expect(colors.light.background).toBe('#fafbfc');
+      expect(colors.light.background).toBe('#fafbfd');
     });
 
     it('has the correct foreground color', () => {
-      expect(colors.light.foreground).toBe('#0f172a');
+      expect(colors.light.foreground).toBe('#111827');
     });
 
     it('has the correct card color', () => {
@@ -56,69 +56,69 @@ describe('colors', () => {
     });
 
     it('has the correct border color', () => {
-      expect(colors.light.border).toBe('#e2e8f0');
+      expect(colors.light.border).toBe('#d9e2ec');
     });
 
     it('has the correct success color', () => {
-      expect(colors.light.success).toBe('#10b981');
+      expect(colors.light.success).toBe('#3a9564');
     });
 
     it('has the correct error color', () => {
-      expect(colors.light.error).toBe('#ef4444');
+      expect(colors.light.error).toBe('#bc4b45');
     });
 
     it('has the correct warning color', () => {
-      expect(colors.light.warning).toBe('#f59e0b');
+      expect(colors.light.warning).toBe('#b9852f');
     });
 
     it('has the correct info color', () => {
-      expect(colors.light.info).toBe('#3b82f6');
+      expect(colors.light.info).toBe('#4a81ae');
     });
 
     it('has the correct overlay value', () => {
-      expect(colors.light.overlay).toBe('rgba(0, 0, 0, 0.5)');
+      expect(colors.light.overlay).toBe('rgba(15, 23, 42, 0.5)');
     });
   });
 
   describe('dark theme', () => {
     it('has the correct primary color', () => {
-      expect(colors.dark.primary).toBe('#818cf8');
+      expect(colors.dark.primary).toBe('#8590ff');
     });
 
     it('has the correct background color', () => {
-      expect(colors.dark.background).toBe('#0f172a');
+      expect(colors.dark.background).toBe('#101726');
     });
 
     it('has the correct foreground color', () => {
-      expect(colors.dark.foreground).toBe('#f8fafc');
+      expect(colors.dark.foreground).toBe('#f5f7fb');
     });
 
     it('has the correct card color', () => {
-      expect(colors.dark.card).toBe('#1e293b');
+      expect(colors.dark.card).toBe('#161f2f');
     });
 
     it('has the correct border color', () => {
-      expect(colors.dark.border).toBe('#334155');
+      expect(colors.dark.border).toBe('#283142');
     });
 
     it('has the correct success color', () => {
-      expect(colors.dark.success).toBe('#34d399');
+      expect(colors.dark.success).toBe('#64bb84');
     });
 
     it('has the correct error color', () => {
-      expect(colors.dark.error).toBe('#f87171');
+      expect(colors.dark.error).toBe('#d96a63');
     });
 
     it('has the correct warning color', () => {
-      expect(colors.dark.warning).toBe('#fbbf24');
+      expect(colors.dark.warning).toBe('#d4aa59');
     });
 
     it('has the correct info color', () => {
-      expect(colors.dark.info).toBe('#60a5fa');
+      expect(colors.dark.info).toBe('#75abd2');
     });
 
     it('has the correct overlay value', () => {
-      expect(colors.dark.overlay).toBe('rgba(0, 0, 0, 0.7)');
+      expect(colors.dark.overlay).toBe('rgba(0, 0, 0, 0.68)');
     });
   });
 
@@ -353,23 +353,23 @@ describe('borderRadius', () => {
   });
 
   it('has correct sm value', () => {
-    expect(borderRadius.sm).toBe(4);
+    expect(borderRadius.sm).toBe(8);
   });
 
   it('has correct md value', () => {
-    expect(borderRadius.md).toBe(8);
+    expect(borderRadius.md).toBe(12);
   });
 
   it('has correct lg value', () => {
-    expect(borderRadius.lg).toBe(12);
+    expect(borderRadius.lg).toBe(16);
   });
 
   it('has correct xl value', () => {
-    expect(borderRadius.xl).toBe(16);
+    expect(borderRadius.xl).toBe(20);
   });
 
   it('has correct 2xl value', () => {
-    expect(borderRadius['2xl']).toBe(20);
+    expect(borderRadius['2xl']).toBe(24);
   });
 
   it('has correct full value', () => {
@@ -390,7 +390,7 @@ describe('lineHeight', () => {
   });
 
   it('has correct relaxed value', () => {
-    expect(lineHeight.relaxed).toBe(1.75);
+    expect(lineHeight.relaxed).toBe(1.625);
   });
 });
 
@@ -429,20 +429,20 @@ describe('shadows', () => {
   });
 
   it('has md shadow preset', () => {
-    expect(shadows.md.elevation).toBe(3);
+    expect(shadows.md.elevation).toBe(2);
   });
 
   it('has lg shadow preset', () => {
-    expect(shadows.lg.elevation).toBe(5);
+    expect(shadows.lg.elevation).toBe(2);
   });
 
   it('has xl shadow preset', () => {
-    expect(shadows.xl.elevation).toBe(8);
+    expect(shadows.xl.elevation).toBe(2);
   });
 
-  it('elevations increase from sm to xl', () => {
-    expect(shadows.sm.elevation).toBeLessThan(shadows.md.elevation);
-    expect(shadows.md.elevation).toBeLessThan(shadows.lg.elevation);
-    expect(shadows.lg.elevation).toBeLessThan(shadows.xl.elevation);
+  it('elevations are non-decreasing from sm to xl', () => {
+    expect(shadows.sm.elevation).toBeLessThanOrEqual(shadows.md.elevation);
+    expect(shadows.md.elevation).toBeLessThanOrEqual(shadows.lg.elevation);
+    expect(shadows.lg.elevation).toBeLessThanOrEqual(shadows.xl.elevation);
   });
 });

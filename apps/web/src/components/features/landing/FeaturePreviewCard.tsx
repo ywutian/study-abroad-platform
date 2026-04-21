@@ -11,7 +11,7 @@ interface FeaturePreviewCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  gradient: string;
+  gradient?: string;
   iconBg: string;
   iconColor: string;
   href: string;
@@ -23,7 +23,6 @@ export function FeaturePreviewCard({
   icon: Icon,
   title,
   description,
-  gradient,
   iconBg,
   iconColor,
   href,
@@ -42,7 +41,7 @@ export function FeaturePreviewCard({
     >
       <Link href={href}>
         <Card className="group h-full overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-          <div className={cn('h-1.5 bg-gradient-to-r', gradient)} />
+          <div className="h-1.5 bg-border" />
           <CardContent className="pt-5 pb-5 sm:pt-6 sm:pb-6">
             {/* Icon */}
             <div

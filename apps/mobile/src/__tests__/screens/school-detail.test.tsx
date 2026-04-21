@@ -53,6 +53,7 @@ jest.mock('@/utils/format', () => ({
 
 // Mock shared modules
 jest.mock('@study-abroad/shared', () => ({
+  ...jest.requireActual('@study-abroad/shared'),
   DATA_SOURCE_LABELS: {},
   API_ROUTES: {
     SCHOOLS: '/schools',

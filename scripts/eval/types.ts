@@ -83,6 +83,8 @@ export interface EvalCase {
   }>;
   /** mock 工具返回结果（用于 MVP1 fixtures 模式） */
   mockToolResults?: Record<string, string>;
+  /** mock 助手输出（用于 fixtures/live 内容断言） */
+  mockAssistantOutput?: string;
   /** 严重程度 */
   severity: Severity;
   /** 是否主观评价（主观 case 不纳入自动化指标） */

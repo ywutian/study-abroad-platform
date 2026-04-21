@@ -32,8 +32,13 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -79,57 +84,115 @@
    🎨 设计系统 - 亮色主题
    ======================================== */
 :root {
-  --radius: 0.75rem;
-  
+  /* =========================================
+     ⚓ DS v2.1 单一事实来源 (Light mode ground truth)
+     详见 docs/DESIGN_SYSTEM.md §色彩系统/阴影/圆角
+     Phase 0 临时位置;Phase 1 将迁移到 packages/shared/src/design/tokens.ts
+     ========================================= */
+  --ds-radius: 0.75rem;
+  --ds-primary: oklch(0.58 0.22 255);
+  --ds-primary-foreground: oklch(0.99 0 0);
+  --ds-secondary: oklch(0.965 0.008 260);
+  --ds-secondary-foreground: oklch(0.30 0.04 260);
+  --ds-success: oklch(0.68 0.18 155);
+  --ds-success-foreground: oklch(0.99 0 0);
+  --ds-warning: oklch(0.78 0.15 75);
+  --ds-warning-foreground: oklch(0.20 0 0);
+  --ds-destructive: oklch(0.60 0.20 25);
+  --ds-destructive-foreground: oklch(0.99 0 0);
+  --ds-info: oklch(0.62 0.16 200);
+  --ds-info-foreground: oklch(0.99 0 0);
+  --ds-info-surface: oklch(0.96 0.04 200);
+  --ds-background: oklch(0.988 0.002 260);
+  --ds-foreground: oklch(0.12 0.02 260);
+  --ds-card: oklch(1 0 0);
+  --ds-card-foreground: oklch(0.12 0.02 260);
+  --ds-popover: oklch(1 0 0);
+  --ds-popover-foreground: oklch(0.12 0.02 260);
+  --ds-muted: oklch(0.965 0.005 260);
+  --ds-muted-foreground: oklch(0.48 0.02 260);
+  --ds-accent: oklch(0.96 0.015 260);
+  --ds-accent-foreground: oklch(0.20 0.08 260);
+  --ds-surface-muted: oklch(0.972 0.007 260);
+  --ds-surface-subtle: oklch(0.985 0.004 260);
+  --ds-border: oklch(0.92 0.008 260);
+  --ds-border-strong: oklch(0.85 0.012 260);
+  --ds-input: oklch(0.92 0.008 260);
+  --ds-ring: oklch(0.58 0.22 255);
+  --ds-shadow-card: 0 1px 2px oklch(0 0 0 / 5%);
+  --ds-shadow-elevated: 0 2px 8px oklch(0 0 0 / 8%);
+
+  /* Admission Tier = DS 语义 token 别名 (UI_LANGUAGE_RESEARCH §8 CollegeVine tier chip) */
+  --ds-status-reach: var(--ds-destructive);
+  --ds-status-reach-bg: color-mix(in oklab, var(--ds-destructive) 12%, var(--ds-card));
+  --ds-status-reach-fg: color-mix(in oklab, var(--ds-destructive) 72%, var(--ds-foreground));
+  --ds-status-target: var(--ds-warning);
+  --ds-status-target-bg: color-mix(in oklab, var(--ds-warning) 14%, var(--ds-card));
+  --ds-status-target-fg: color-mix(in oklab, var(--ds-warning) 68%, var(--ds-foreground));
+  --ds-status-safety: var(--ds-success);
+  --ds-status-safety-bg: color-mix(in oklab, var(--ds-success) 12%, var(--ds-card));
+  --ds-status-safety-fg: color-mix(in oklab, var(--ds-success) 70%, var(--ds-foreground));
+  --ds-status-likely: var(--ds-primary);
+  --ds-status-likely-bg: color-mix(in oklab, var(--ds-primary) 10%, var(--ds-card));
+  --ds-status-likely-fg: color-mix(in oklab, var(--ds-primary) 72%, var(--ds-foreground));
+
+  /* ========== 语义别名层 (existing) ========== */
+  --radius: var(--ds-radius);
+
   /* 🔵 品牌色 - 现代蓝 */
-  --primary: oklch(0.58 0.22 255);
-  --primary-foreground: oklch(0.99 0 0);
+  --primary: var(--ds-primary);
+  --primary-foreground: var(--ds-primary-foreground);
   
   /* ⚪ 次要色 - 柔和灰蓝 */
-  --secondary: oklch(0.965 0.008 260);
-  --secondary-foreground: oklch(0.30 0.04 260);
+  --secondary: var(--ds-secondary);
+  --secondary-foreground: var(--ds-secondary-foreground);
   
   /* ✅ 成功色 - 翠绿 */
-  --success: oklch(0.68 0.18 155);
-  --success-foreground: oklch(0.99 0 0);
-  
+  --success: var(--ds-success);
+  --success-foreground: var(--ds-success-foreground);
+
   /* ⚠️ 警示色 - 琥珀 */
-  --warning: oklch(0.78 0.15 75);
-  --warning-foreground: oklch(0.20 0 0);
-  
+  --warning: var(--ds-warning);
+  --warning-foreground: var(--ds-warning-foreground);
+
   /* 🔴 危险色 */
-  --destructive: oklch(0.60 0.20 25);
-  
+  --destructive: var(--ds-destructive);
+  --destructive-foreground: var(--ds-destructive-foreground);
+
+  /* 💡 信息色 */
+  --info: var(--ds-info);
+  --info-foreground: var(--ds-info-foreground);
+
   /* 📄 背景 */
-  --background: oklch(0.988 0.002 260);
-  --foreground: oklch(0.12 0.02 260);
+  --background: var(--ds-background);
+  --foreground: var(--ds-foreground);
   
   /* 🎴 卡片 - 纯白带微光 */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.12 0.02 260);
+  --card: var(--ds-card);
+  --card-foreground: var(--ds-card-foreground);
   
   /* 💬 弹出层 */
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.12 0.02 260);
+  --popover: var(--ds-popover);
+  --popover-foreground: var(--ds-popover-foreground);
   
   /* 🔇 静音色 */
-  --muted: oklch(0.965 0.005 260);
-  --muted-foreground: oklch(0.48 0.02 260);
+  --muted: var(--ds-muted);
+  --muted-foreground: var(--ds-muted-foreground);
   
   /* ✨ 强调色 */
-  --accent: oklch(0.96 0.015 260);
-  --accent-foreground: oklch(0.20 0.08 260);
+  --accent: var(--ds-accent);
+  --accent-foreground: var(--ds-accent-foreground);
   
   /* 🔲 边框和输入 */
-  --border: oklch(0.92 0.008 260);
-  --input: oklch(0.92 0.008 260);
-  --ring: oklch(0.58 0.22 255);
+  --border: var(--ds-border);
+  --input: var(--ds-input);
+  --ring: var(--ds-ring);
   
   /* 📊 图表色 - 现代渐变系 */
-  --chart-1: oklch(0.58 0.22 255);
-  --chart-2: oklch(0.68 0.18 155);
-  --chart-3: oklch(0.62 0.16 200);
-  --chart-4: oklch(0.78 0.15 75);
+  --chart-1: var(--ds-primary);
+  --chart-2: var(--ds-success);
+  --chart-3: var(--ds-info);
+  --chart-4: var(--ds-warning);
   --chart-5: oklch(0.68 0.18 320);
   
   /* 📱 侧边栏 */
@@ -218,55 +281,111 @@
    🌙 设计系统 - 暗色主题
    ======================================== */
 .dark {
+  /* =========================================
+     ⚓ DS v2.1 单一事实来源 (Dark mode ground truth)
+     详见 docs/DESIGN_SYSTEM.md §暗色模式
+     ========================================= */
+  --ds-primary: oklch(0.68 0.20 255);
+  --ds-primary-foreground: oklch(0.12 0.02 260);
+  --ds-secondary: oklch(0.20 0.015 260);
+  --ds-secondary-foreground: oklch(0.90 0.01 260);
+  --ds-success: oklch(0.72 0.16 155);
+  --ds-success-foreground: oklch(0.10 0.015 260);
+  --ds-warning: oklch(0.80 0.14 75);
+  --ds-warning-foreground: oklch(0.10 0.015 260);
+  --ds-destructive: oklch(0.65 0.18 25);
+  --ds-destructive-foreground: oklch(0.99 0 0);
+  --ds-info: oklch(0.72 0.14 200);
+  --ds-info-foreground: oklch(0.10 0.015 260);
+  --ds-info-surface: oklch(0.22 0.04 200);
+  --ds-background: oklch(0.11 0.015 260);
+  --ds-foreground: oklch(0.96 0.008 260);
+  --ds-card: oklch(0.16 0.018 260);
+  --ds-card-foreground: oklch(0.96 0.008 260);
+  --ds-popover: oklch(0.16 0.018 260);
+  --ds-popover-foreground: oklch(0.96 0.008 260);
+  --ds-muted: oklch(0.20 0.015 260);
+  --ds-muted-foreground: oklch(0.70 0.012 260);
+  --ds-accent: oklch(0.24 0.02 260);
+  --ds-accent-foreground: oklch(0.90 0.01 260);
+  --ds-surface-muted: oklch(0.18 0.018 260);
+  --ds-surface-subtle: oklch(0.14 0.016 260);
+  --ds-border: oklch(0.22 0.01 260);
+  --ds-border-strong: oklch(0.32 0.012 260);
+  --ds-input: oklch(0.22 0.01 260);
+  --ds-ring: oklch(0.68 0.20 255);
+  --ds-shadow-card: 0 1px 2px oklch(0 0 0 / 30%);
+  --ds-shadow-elevated: 0 2px 8px oklch(0 0 0 / 35%);
+
+  /* Admission Tier 暗色自动跟随 (color-mix 读取暗色 --ds-card/--ds-foreground) */
+  --ds-status-reach: var(--ds-destructive);
+  --ds-status-reach-bg: color-mix(in oklab, var(--ds-destructive) 18%, var(--ds-card));
+  --ds-status-reach-fg: color-mix(in oklab, var(--ds-destructive) 45%, var(--ds-foreground));
+  --ds-status-target: var(--ds-warning);
+  --ds-status-target-bg: color-mix(in oklab, var(--ds-warning) 18%, var(--ds-card));
+  --ds-status-target-fg: color-mix(in oklab, var(--ds-warning) 45%, var(--ds-foreground));
+  --ds-status-safety: var(--ds-success);
+  --ds-status-safety-bg: color-mix(in oklab, var(--ds-success) 18%, var(--ds-card));
+  --ds-status-safety-fg: color-mix(in oklab, var(--ds-success) 45%, var(--ds-foreground));
+  --ds-status-likely: var(--ds-primary);
+  --ds-status-likely-bg: color-mix(in oklab, var(--ds-primary) 16%, var(--ds-card));
+  --ds-status-likely-fg: color-mix(in oklab, var(--ds-primary) 48%, var(--ds-foreground));
+
+  /* ========== 语义别名层 (existing) ========== */
   /* 📄 背景 - 深邃夜空 */
-  --background: oklch(0.11 0.015 260);
-  --foreground: oklch(0.96 0.008 260);
+  --background: var(--ds-background);
+  --foreground: var(--ds-foreground);
   
   /* 🎴 卡片 - 深色玻璃 */
-  --card: oklch(0.16 0.018 260);
-  --card-foreground: oklch(0.96 0.008 260);
+  --card: var(--ds-card);
+  --card-foreground: var(--ds-card-foreground);
   
   /* 💬 弹出层 */
-  --popover: oklch(0.16 0.018 260);
-  --popover-foreground: oklch(0.96 0.008 260);
+  --popover: var(--ds-popover);
+  --popover-foreground: var(--ds-popover-foreground);
   
   /* 🔵 品牌色 - 明亮蓝 */
-  --primary: oklch(0.68 0.20 255);
-  --primary-foreground: oklch(0.10 0.015 260);
+  --primary: var(--ds-primary);
+  --primary-foreground: var(--ds-primary-foreground);
   
   /* ⚪ 次要色 */
-  --secondary: oklch(0.20 0.015 260);
-  --secondary-foreground: oklch(0.96 0.008 260);
+  --secondary: var(--ds-secondary);
+  --secondary-foreground: var(--ds-secondary-foreground);
   
   /* ✅ 成功色 */
-  --success: oklch(0.72 0.16 155);
-  --success-foreground: oklch(0.10 0.015 260);
-  
+  --success: var(--ds-success);
+  --success-foreground: var(--ds-success-foreground);
+
   /* ⚠️ 警示色 */
-  --warning: oklch(0.80 0.14 75);
-  --warning-foreground: oklch(0.10 0.015 260);
+  --warning: var(--ds-warning);
+  --warning-foreground: var(--ds-warning-foreground);
   
   /* 🔇 静音色 - 优化对比度 */
-  --muted: oklch(0.20 0.015 260);
-  --muted-foreground: oklch(0.68 0.015 260);
+  --muted: var(--ds-muted);
+  --muted-foreground: var(--ds-muted-foreground);
   
   /* ✨ 强调色 */
-  --accent: oklch(0.24 0.02 260);
-  --accent-foreground: oklch(0.96 0.008 260);
+  --accent: var(--ds-accent);
+  --accent-foreground: var(--ds-accent-foreground);
   
   /* 🔴 危险色 */
-  --destructive: oklch(0.65 0.18 25);
-  
+  --destructive: var(--ds-destructive);
+  --destructive-foreground: var(--ds-destructive-foreground);
+
+  /* 💡 信息色 */
+  --info: var(--ds-info);
+  --info-foreground: var(--ds-info-foreground);
+
   /* 🔲 边框和输入 */
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.68 0.20 255);
-  
+  --border: var(--ds-border);
+  --input: var(--ds-input);
+  --ring: var(--ds-ring);
+
   /* 📊 图表色 */
-  --chart-1: oklch(0.68 0.20 255);
-  --chart-2: oklch(0.72 0.16 155);
-  --chart-3: oklch(0.68 0.15 200);
-  --chart-4: oklch(0.80 0.14 75);
+  --chart-1: var(--ds-primary);
+  --chart-2: var(--ds-success);
+  --chart-3: var(--ds-info);
+  --chart-4: var(--ds-warning);
   --chart-5: oklch(0.72 0.16 320);
   
   /* 📱 侧边栏 */
@@ -595,7 +714,9 @@
 }
 
 @keyframes pulse-glow {
+  /* @design-system-ignore-next-line */
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.58 0.22 255 / 40%); }
+  /* @design-system-ignore-next-line */
   50% { box-shadow: 0 0 20px 4px oklch(0.58 0.22 255 / 20%); }
 }
 
@@ -1102,25 +1223,7 @@
   
   .card-glow {
     position: relative;
-    transition: all 0.3s ease;
-  }
-  
-  .card-glow::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, oklch(0.58 0.22 255 / 20%), transparent, oklch(0.68 0.18 155 / 20%));
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-  
-  .card-glow:hover::before {
-    opacity: 1;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   }
   
   /* ========================================
@@ -1146,19 +1249,34 @@
     left: 100%;
   }
   
+  /* .btn-elegant-glow — DS v2.1: shine overlay removed (§5 禁止 glow 装饰)
+     保留基础 hover 态(提升 + 阴影),按 docs/UI_LANGUAGE_RESEARCH §7 §8.4 "克制动效" */
+  .btn-elegant-glow {
+    position: relative;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-elegant-glow:hover {
+    box-shadow: var(--landing-shadow-elevated);
+    transform: translateY(-1px);
+  }
+
   .btn-gradient-primary {
     background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.52 0.20 240));
     color: white;
+    /* @design-system-ignore-next-line */
     box-shadow: 0 4px 16px oklch(0.58 0.22 255 / 30%);
     transition: all 0.25s ease;
   }
-  
+
   .btn-gradient-primary:hover {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 6px 24px oklch(0.58 0.22 255 / 40%);
     transform: translateY(-1px);
   }
-  
+
   .dark .btn-gradient-primary {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 4px 20px oklch(0.58 0.22 255 / 35%);
   }
   
@@ -1166,10 +1284,12 @@
      📝 输入框效果
      ======================================== */
   .input-glow:focus {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 0 0 3px oklch(0.58 0.22 255 / 15%);
   }
-  
+
   .dark .input-glow:focus {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 0 0 3px oklch(0.68 0.20 255 / 20%);
   }
   
@@ -1337,14 +1457,17 @@
      🏷️ 徽章发光
      ======================================== */
   .badge-glow {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 0 12px oklch(0.58 0.22 255 / 40%);
   }
-  
+
   .badge-glow-success {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 0 12px oklch(0.68 0.18 155 / 40%);
   }
-  
+
   .badge-glow-warning {
+    /* @design-system-ignore-next-line */
     box-shadow: 0 0 12px oklch(0.78 0.15 75 / 40%);
   }
   
@@ -1481,6 +1604,7 @@
   }
 
   /* Aurora 背景 */
+  /* @design-system-ignore-next-line */
   .aurora-bg {
     position: absolute;
     inset: 0;
@@ -1494,6 +1618,7 @@
     filter: blur(60px);
   }
 
+  /* @design-system-ignore-next-line */
   .dark .aurora-bg {
     background:
       radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.45 0.22 255 / 0.35), transparent 50%),
@@ -1548,9 +1673,9 @@
     background: oklch(0.58 0.22 255 / 0.15);
     animation: float 12s ease-in-out infinite 2s;
   }
-  .dark .hero-orb-1 { background: oklch(0.50 0.20 280 / 0.25); }
-  .dark .hero-orb-2 { background: oklch(0.55 0.16 200 / 0.20); }
-  .dark .hero-orb-3 { background: oklch(0.45 0.22 255 / 0.15); }
+  .dark .hero-orb-1 { background: oklch(0.70 0.20 280 / 0.45); }
+  .dark .hero-orb-2 { background: oklch(0.75 0.16 200 / 0.40); }
+  .dark .hero-orb-3 { background: oklch(0.65 0.22 255 / 0.35); }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-orb { animation: none; }
@@ -1582,6 +1707,7 @@
   /* 减少动效 */
   @media (prefers-reduced-motion: reduce) {
     .text-gradient-animated { animation: none; }
+    /* @design-system-ignore-next-line */
     .aurora-bg { animation: none; }
   }
 
@@ -1694,5 +1820,195 @@
   @media (min-width: 1024px) {
     .zone-transition-to-dark,
     .zone-transition-from-dark { height: 8rem; }
+  }
+
+  /* ========================================
+     Landing Premium 首页专属样式
+     ======================================== */
+  @keyframes landingFloat {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -12px, 0); }
+  }
+
+  @keyframes landingBlink {
+    0%, 45% { opacity: 1; }
+    46%, 100% { opacity: 0; }
+  }
+
+  .landing-premium {
+    --landing-bg: var(--ds-background);
+    --landing-fg: var(--ds-foreground);
+    --landing-surface: var(--ds-card);
+    --landing-surface-muted: var(--ds-surface-muted);
+    --landing-border: var(--ds-border);
+    --landing-border-strong: var(--ds-border-strong);
+    --landing-muted: var(--ds-muted-foreground);
+    --landing-subtle: color-mix(in oklch, var(--ds-muted-foreground) 80%, white 20%);
+    --landing-glass: oklch(0.988 0.002 260 / 0.84);
+    --landing-shadow-card: var(--ds-shadow-card);
+    --landing-shadow-elevated: var(--ds-shadow-elevated);
+    --status-reach: var(--ds-status-reach);
+    --status-reach-bg: var(--ds-status-reach-bg);
+    --status-reach-fg: var(--ds-status-reach-fg);
+    --status-target: var(--ds-status-target);
+    --status-target-bg: var(--ds-status-target-bg);
+    --status-target-fg: var(--ds-status-target-fg);
+    --status-safety: var(--ds-status-safety);
+    --status-safety-bg: var(--ds-status-safety-bg);
+    --status-safety-fg: var(--ds-status-safety-fg);
+    --status-likely: var(--ds-status-likely);
+    --status-likely-bg: var(--ds-status-likely-bg);
+    --status-likely-fg: var(--ds-status-likely-fg);
+    background: linear-gradient(180deg, oklch(0.993 0.002 260) 0%, oklch(0.985 0.004 260) 100%);
+  }
+
+  .dark .landing-premium {
+    --landing-bg: var(--ds-background);
+    --landing-fg: var(--ds-foreground);
+    --landing-surface: var(--ds-card);
+    --landing-surface-muted: var(--ds-surface-muted);
+    --landing-border: var(--ds-border);
+    --landing-border-strong: var(--ds-border-strong);
+    --landing-muted: var(--ds-muted-foreground);
+    --landing-subtle: color-mix(in oklch, var(--ds-muted-foreground) 86%, white 14%);
+    --landing-glass: oklch(0.12 0.016 260 / 0.82);
+    --landing-shadow-card: var(--ds-shadow-card);
+    --landing-shadow-elevated: var(--ds-shadow-elevated);
+    --status-reach: var(--ds-status-reach);
+    --status-reach-bg: var(--ds-status-reach-bg);
+    --status-reach-fg: var(--ds-status-reach-fg);
+    --status-target: var(--ds-status-target);
+    --status-target-bg: var(--ds-status-target-bg);
+    --status-target-fg: var(--ds-status-target-fg);
+    --status-safety: var(--ds-status-safety);
+    --status-safety-bg: var(--ds-status-safety-bg);
+    --status-safety-fg: var(--ds-status-safety-fg);
+    --status-likely: var(--ds-status-likely);
+    --status-likely-bg: var(--ds-status-likely-bg);
+    --status-likely-fg: var(--ds-status-likely-fg);
+    background: linear-gradient(180deg, oklch(0.12 0.016 260) 0%, oklch(0.10 0.016 260) 100%);
+  }
+
+  .landing-glass-edge {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 25px 50px -12px color-mix(in oklch, var(--primary) 10%, transparent);
+  }
+
+  .dark .landing-glass-edge {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 25px 50px -12px color-mix(in oklch, var(--primary) 10%, transparent);
+  }
+
+  .landing-section {
+    padding-block: clamp(5rem, 10vw, 8.5rem);
+  }
+
+  .landing-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--landing-border);
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--landing-surface) 92%, var(--primary) 8%);
+    color: var(--landing-subtle);
+    font-size: 0.6875rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .landing-eyebrow-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    border: 1px solid color-mix(in oklch, var(--primary) 8%, transparent);
+    border-radius: 999px;
+    background: linear-gradient(to right, color-mix(in oklch, var(--primary) 6%, transparent), color-mix(in oklch, var(--primary) 1%, transparent));
+    padding: 0.5rem 1rem;
+    color: var(--landing-fg);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .landing-hero-accent {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ds-primary);
+  }
+
+  .landing-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    color: var(--landing-muted);
+    font-size: 0.875rem;
+    transition: color 160ms ease, background-color 160ms ease;
+  }
+
+  .landing-nav-link:hover {
+    color: var(--landing-fg);
+    background: color-mix(in oklch, var(--landing-surface-muted) 70%, white 30%);
+  }
+
+  .landing-canvas-texture {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(oklch(0.24 0.02 260 / 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent 70%);
+  }
+
+  .dark .landing-canvas-texture {
+    background-image: radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px);
+  }
+
+  .landing-grid-mask {
+    background-image:
+      linear-gradient(oklch(0.24 0.02 260 / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(0.24 0.02 260 / 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
+
+  .dark .landing-grid-mask {
+    background-image:
+      linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px);
+  }
+
+  /* DS v2.1 §装饰规则:移除 rotate(-2deg)(非必要装饰性旋转) */
+  .landing-console-backdrop {
+    position: absolute;
+    inset: 2rem 1.5rem auto auto;
+    width: calc(100% - 2rem);
+    height: calc(100% - 4rem);
+    border-radius: 2.25rem;
+    border: 1px solid var(--landing-border);
+    background: color-mix(in oklch, var(--landing-surface) 94%, var(--primary) 6%);
+    transform: translate3d(0.75rem, 1.25rem, 0);
+  }
+
+  .dark .landing-console-backdrop {
+    background: color-mix(in oklch, var(--landing-surface) 92%, var(--primary) 8%);
+    border-color: oklch(1 0 0 / 0.15);
+  }
+
+  .landing-marquee-mask {
+    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  }
+
+  @media (max-width: 768px) {
+    .landing-grid-mask {
+      background-size: 36px 36px;
+    }
+
+    .landing-console-backdrop {
+      display: none;
+    }
   }
 }

@@ -47,7 +47,6 @@ import {
   ReviewSchoolPolicyEvidenceDto,
   UpdateApplicationAnalysisExperimentConfigDto,
 } from '../admin/dto';
-import { APPLICATION_ANALYSIS_GOLD_SET } from './application-analysis-gold-set';
 import {
   APPLICATION_ANALYSIS_DEFAULT_THRESHOLDS,
   APPLICATION_ANALYSIS_EXPERIMENT_AUTOMATION,
@@ -82,6 +81,7 @@ type EvidenceStatus =
   | 'APPROVED'
   | 'REJECTED'
   | 'EXPIRED';
+type GovernanceEvidenceMode = 'fixture' | 'real' | 'mixed' | 'none';
 
 @Injectable()
 export class ApplicationAnalysisWorkflowService {
@@ -226,9 +226,7 @@ export class ApplicationAnalysisWorkflowService {
     };
   }
 
-  private asRecord(
-    value: Prisma.JsonValue | Record<string, unknown> | null | undefined,
-  ): Record<string, unknown> {
+  private asRecord(value: unknown): Record<string, unknown> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return {};
     }
@@ -250,6 +248,259 @@ export class ApplicationAnalysisWorkflowService {
   private asStringArray(value: unknown): string[] {
     if (!Array.isArray(value)) return [];
     return value.filter((item): item is string => typeof item === 'string');
+  }
+
+  private getEvidenceModeFromMetadata(
+    metadata: Prisma.JsonValue | Record<string, unknown> | null | undefined,
+  ): Exclude<GovernanceEvidenceMode, 'mixed' | 'none'> {
+    const raw = this.asRecord(metadata);
+    const directMode = this.asString(raw.governanceSourceMode);
+    if (directMode === 'fixture') {
+      return 'fixture';
+    }
+
+    const provenance = this.asRecord(raw.provenance);
+    const nestedMode = this.asString(provenance.mode);
+    if (nestedMode === 'fixture') {
+      return 'fixture';
+    }
+
+    return 'real';
+  }
+
+  private summarizeEvidenceModes(
+    records: Array<{
+      metadata?: Prisma.JsonValue | Record<string, unknown> | null;
+    }>,
+  ) {
+    let fixtureCount = 0;
+    let realCount = 0;
+    for (const record of records) {
+      if (this.getEvidenceModeFromMetadata(record.metadata) === 'fixture') {
+        fixtureCount += 1;
+      } else {
+        realCount += 1;
+      }
+    }
+
+    const evidenceMode: GovernanceEvidenceMode =
+      fixtureCount > 0 && realCount > 0
+        ? 'mixed'
+        : fixtureCount > 0
+          ? 'fixture'
+          : realCount > 0
+            ? 'real'
+            : 'none';
+
+    return {
+      evidenceMode,
+      fixtureEvidenceCount: fixtureCount,
+      realEvidenceCount: realCount,
+      totalEvidenceCount: fixtureCount + realCount,
+    };
+  }
+
+  private getReplayScopeSummary(
+    replay?: {
+      summary?: Prisma.JsonValue | null;
+      dataset?: string | null;
+      id?: string | null;
+    } | null,
+  ): Record<string, unknown> {
+    const summary = this.asRecord(replay?.summary);
+    return {
+      ...summary,
+      dataset: this.asString(summary.dataset) ?? replay?.dataset ?? null,
+      totalCases:
+        this.asNumber(summary.totalCases) ??
+        this.asNumber(summary.caseCount) ??
+        0,
+      caseIds: this.asStringArray(summary.caseIds),
+      commitSha: this.asString(summary.commitSha),
+      reportPath: this.asString(summary.reportPath),
+      reportJsonPath: this.asString(summary.reportJsonPath),
+    };
+  }
+
+  private getReplayCaseCount(
+    replay?: {
+      summary?: Prisma.JsonValue | null;
+    } | null,
+  ): number {
+    const summary = this.asRecord(replay?.summary);
+    return (
+      this.asNumber(summary.totalCases) ??
+      this.asNumber(summary.caseCount) ??
+      this.asStringArray(summary.caseIds).length
+    );
+  }
+
+  private roundMetric(value: number): number {
+    return Math.round(value * 100) / 100;
+  }
+
+  private dedupeStrings(values: Array<string | null | undefined>): string[] {
+    return [
+      ...new Set(
+        values.filter((value): value is string => Boolean(value?.trim())),
+      ),
+    ];
+  }
+
+  private async findPreferredPolicyVersionForAnalysisVersion(
+    analysisVersion: string,
+  ) {
+    const policies =
+      await this.prisma.applicationAnalysisPolicyVersion.findMany({
+        where: {
+          analysisVersion,
+          status: { in: ['ACTIVE', 'SHADOW', 'CANDIDATE', 'DRAFT'] },
+        },
+        orderBy: [{ updatedAt: 'desc' }],
+        take: 20,
+      });
+    const statusOrder: Record<PolicyStatus, number> = {
+      ACTIVE: 0,
+      SHADOW: 1,
+      CANDIDATE: 2,
+      DRAFT: 3,
+      RETIRED: 4,
+    };
+
+    return (
+      [...policies].sort((left, right) => {
+        const statusDelta =
+          statusOrder[left.status as PolicyStatus] -
+          statusOrder[right.status as PolicyStatus];
+        if (statusDelta !== 0) {
+          return statusDelta;
+        }
+        return right.updatedAt.getTime() - left.updatedAt.getTime();
+      })[0] ?? null
+    );
+  }
+
+  private async findLatestGoldReplayRun(analysisVersion: string) {
+    const deterministicReplay =
+      await this.prisma.applicationAnalysisReplayRun.findFirst({
+        where: {
+          analysisVersion,
+          dataset: { startsWith: 'gold:deterministic' },
+          status: { in: ['COMPLETED', 'FAILED'] },
+        },
+        orderBy: [{ finishedAt: 'desc' }, { createdAt: 'desc' }],
+      });
+
+    if (deterministicReplay) {
+      return deterministicReplay;
+    }
+
+    return this.prisma.applicationAnalysisReplayRun.findFirst({
+      where: {
+        analysisVersion,
+        dataset: { startsWith: 'gold:' },
+        status: { in: ['COMPLETED', 'FAILED'] },
+      },
+      orderBy: [{ finishedAt: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  private summarizeApplicantFeedbackRecords(
+    records: Array<{
+      applicationAnalysisRunId?: string | null;
+      sentiment: ApplicationAnalysisFeedbackSentiment;
+      category: ApplicationAnalysisFeedbackCategory | null;
+    }>,
+  ) {
+    const total = records.length;
+    const helpfulCount = records.filter(
+      (record) => record.sentiment === 'HELPFUL',
+    ).length;
+    const notHelpfulCount = total - helpfulCount;
+    const distinctRunCount = new Set(
+      records
+        .map((record) => record.applicationAnalysisRunId)
+        .filter((value): value is string => Boolean(value)),
+    ).size;
+    const countByCategory = (category: ApplicationAnalysisFeedbackCategory) =>
+      records.filter((record) => record.category === category).length;
+
+    return {
+      applicantFeedbackCount: total,
+      helpfulFeedbackCount: helpfulCount,
+      notHelpfulFeedbackCount: notHelpfulCount,
+      helpfulFeedbackRate:
+        total > 0 ? this.roundMetric(helpfulCount / total) : 0,
+      negativeFeedbackRate:
+        total > 0 ? this.roundMetric(notHelpfulCount / total) : 0,
+      lowActionabilityFeedbackRate:
+        total > 0
+          ? this.roundMetric(countByCategory('LOW_ACTIONABILITY') / total)
+          : 0,
+      policyMismatchFeedbackRate:
+        total > 0
+          ? this.roundMetric(countByCategory('POLICY_MISMATCH') / total)
+          : 0,
+      fairnessConcernFeedbackRate:
+        total > 0
+          ? this.roundMetric(countByCategory('FAIRNESS_CONCERN') / total)
+          : 0,
+      misleadingUncertaintyFeedbackRate:
+        total > 0
+          ? this.roundMetric(countByCategory('MISLEADING_UNCERTAINTY') / total)
+          : 0,
+      distinctRunCount,
+    };
+  }
+
+  private async syncRunFeedbackMetrics(runId: string) {
+    const run = await this.prisma.applicationAnalysisRun.findUnique({
+      where: { id: runId },
+      select: {
+        id: true,
+        metrics: true,
+      },
+    });
+    if (!run) return;
+
+    const feedback =
+      await this.prisma.applicationAnalysisFeedbackRecord.findMany({
+        where: { applicationAnalysisRunId: runId },
+        select: {
+          applicationAnalysisRunId: true,
+          sentiment: true,
+          category: true,
+        },
+      });
+
+    await this.prisma.applicationAnalysisRun.update({
+      where: { id: runId },
+      data: {
+        metrics: {
+          ...this.asRecord(run.metrics),
+          ...this.summarizeApplicantFeedbackRecords(feedback),
+        } as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  private async computeApplicantFeedbackSignals(analysisVersion: string) {
+    const feedback =
+      await this.prisma.applicationAnalysisFeedbackRecord.findMany({
+        where: {
+          applicationAnalysisRunId: { not: null },
+          applicationAnalysisRun: {
+            analysisVersion,
+          },
+        },
+        select: {
+          applicationAnalysisRunId: true,
+          sentiment: true,
+          category: true,
+        },
+      });
+
+    return this.summarizeApplicantFeedbackRecords(feedback);
   }
 
   private capabilityFlagKey(capability: ExperimentCapability) {
@@ -528,134 +779,189 @@ export class ApplicationAnalysisWorkflowService {
     return incident;
   }
 
-  private buildExperimentMetrics(
-    capability: ExperimentCapability,
-    approvedEvidenceCount: number,
-  ): {
+  private async getLatestReplaySnapshot(analysisVersion?: string | null) {
+    if (!analysisVersion) {
+      return {
+        replay: null,
+        metrics: {} as Record<string, unknown>,
+        failures: [
+          'No application-analysis policy version is linked to this experiment.',
+        ],
+      };
+    }
+
+    const replay = await this.findLatestGoldReplayRun(analysisVersion);
+
+    const failures: string[] = [];
+    if (!replay) {
+      failures.push(
+        `No replay-backed evaluation exists for analysis version ${analysisVersion}.`,
+      );
+    } else if (replay.status === 'FAILED') {
+      failures.push('Latest replay-backed evaluation failed.');
+    }
+
+    return {
+      replay,
+      metrics: this.asRecord(replay?.metrics as Prisma.JsonValue),
+      failures,
+    };
+  }
+
+  private async buildExperimentMetrics(experiment: {
+    id: string;
+    capability: ExperimentCapability;
+    policyVersionId?: string | null;
+  }): Promise<{
     metrics: Record<string, number | boolean>;
     failures: string[];
-  } {
-    const baseline =
-      approvedEvidenceCount >= 12
-        ? 'strong'
-        : approvedEvidenceCount >= 8
-          ? 'good'
-          : approvedEvidenceCount >= 4
-            ? 'thin'
-            : 'weak';
+    counts: Record<string, number | string | null>;
+    latestReplayId: string | null;
+  }> {
+    const [policy, liveSignals, openIncidents] = await Promise.all([
+      experiment.policyVersionId
+        ? this.prisma.applicationAnalysisPolicyVersion.findUnique({
+            where: { id: experiment.policyVersionId },
+            select: { analysisVersion: true },
+          })
+        : Promise.resolve(null),
+      this.computeExperimentLiveSignals(experiment.id),
+      this.prisma.applicationAnalysisExperimentIncident.findMany({
+        where: {
+          experimentVersionId: experiment.id,
+          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+        },
+        select: {
+          type: true,
+          severity: true,
+          status: true,
+        },
+      }),
+    ]);
 
-    if (capability === 'RECOURSE') {
-      const metrics = {
-        unsafeSuggestionRate: 0,
-        immutableFeatureViolation: 0,
-        actionabilityMean:
-          baseline === 'strong'
-            ? 4.6
-            : baseline === 'good'
-              ? 4.45
-              : baseline === 'thin'
-                ? 4.2
-                : 3.9,
-        schoolPolicyConsistency:
-          baseline === 'strong'
-            ? 0.98
-            : baseline === 'good'
-              ? 0.97
-              : baseline === 'thin'
-                ? 0.93
-                : 0.86,
-        contractParityPass: true,
-        webRenderPass: true,
-        mobileRenderPass: true,
-        journeyPassRate: baseline === 'weak' ? 0.75 : 1,
-      };
-      return {
-        metrics,
-        failures:
-          approvedEvidenceCount === 0
-            ? [
-                'Recourse guidance remains blocked until approved school-policy evidence exists.',
-              ]
-            : [],
-      };
+    const replaySnapshot = await this.getLatestReplaySnapshot(
+      policy?.analysisVersion ?? null,
+    );
+    const replayMetrics = replaySnapshot.metrics;
+    const failures = [...replaySnapshot.failures];
+    const metrics: Record<string, number | boolean> = {};
+
+    const contractParityPass = this.asBoolean(replayMetrics.contractParityPass);
+    if (contractParityPass != null) {
+      metrics.contractParityPass = contractParityPass;
+    } else {
+      failures.push(
+        'Contract parity result is missing from the replay metrics.',
+      );
     }
 
-    if (capability === 'UNCERTAINTY') {
-      const metrics = {
-        empiricalCoverageOverall:
-          baseline === 'strong'
-            ? 0.91
-            : baseline === 'good'
-              ? 0.89
-              : baseline === 'thin'
-                ? 0.84
-                : 0.76,
-        empiricalCoverageKeySubgroup:
-          baseline === 'strong'
-            ? 0.87
-            : baseline === 'good'
-              ? 0.84
-              : baseline === 'thin'
-                ? 0.79
-                : 0.7,
-        medianIntervalWidthDelta:
-          baseline === 'strong'
-            ? 0.08
-            : baseline === 'good'
-              ? 0.1
-              : baseline === 'thin'
-                ? 0.14
-                : 0.2,
-        contractParityPass: true,
-        webRenderPass: true,
-        mobileRenderPass: true,
-        journeyPassRate: baseline === 'weak' ? 0.75 : 1,
-      };
-      return {
-        metrics,
-        failures:
-          approvedEvidenceCount === 0
-            ? [
-                'Uncertainty intervals remain blocked until approved school-policy evidence exists.',
-              ]
-            : [],
-      };
+    const webRenderPass = this.asBoolean(replayMetrics.webRenderPass);
+    if (webRenderPass != null) {
+      metrics.webRenderPass = webRenderPass;
+    } else {
+      failures.push('Web render result is missing from the replay metrics.');
     }
 
-    const metrics = {
-      fabricatedInsightCount: 0,
-      unknownPolicyRateDelta:
-        baseline === 'strong'
-          ? 0.05
-          : baseline === 'good'
-            ? 0.08
-            : baseline === 'thin'
-              ? 0.13
-              : 0.2,
-      actionabilityMeanDelta:
-        baseline === 'strong'
-          ? 0.22
-          : baseline === 'good'
-            ? 0.38
-            : baseline === 'thin'
-              ? 0.56
-              : 0.8,
-      blockedSubgroupCount:
-        baseline === 'weak' ? 2 : baseline === 'thin' ? 1 : 0,
-      disclosurePass: baseline !== 'weak',
-      contractParityPass: true,
-      webRenderPass: true,
-      mobileRenderPass: true,
-      journeyPassRate: baseline === 'weak' ? 0.75 : 1,
-    };
+    const mobileRenderPass = this.asBoolean(replayMetrics.mobileRenderPass);
+    if (mobileRenderPass != null) {
+      metrics.mobileRenderPass = mobileRenderPass;
+    } else {
+      failures.push('Mobile render result is missing from the replay metrics.');
+    }
+
+    const journeyPassRate = this.asNumber(replayMetrics.journeyPassRate);
+    if (journeyPassRate != null) {
+      metrics.journeyPassRate = journeyPassRate;
+    } else {
+      failures.push('Journey pass rate is missing from the replay metrics.');
+    }
+
+    if (experiment.capability === 'RECOURSE') {
+      if (liveSignals.exposureCount > 0) {
+        metrics.unsafeSuggestionRate =
+          liveSignals.unsafeRecourseCount / liveSignals.exposureCount;
+      } else {
+        failures.push(
+          'Unsafe recourse rate cannot be measured before the experiment has live exposures.',
+        );
+      }
+
+      const actionabilityMean = this.asNumber(replayMetrics.actionabilityMean);
+      if (actionabilityMean != null) {
+        metrics.actionabilityMean = actionabilityMean;
+      } else {
+        failures.push(
+          'Recourse actionability is missing from the replay-backed evaluation.',
+        );
+      }
+
+      const schoolPolicyConsistency = this.asNumber(
+        replayMetrics.policyCorrectnessRate,
+      );
+      if (schoolPolicyConsistency != null) {
+        metrics.schoolPolicyConsistency = schoolPolicyConsistency;
+      } else {
+        failures.push(
+          'School policy consistency is missing from the replay-backed evaluation.',
+        );
+      }
+
+      const immutableIncidents = openIncidents.filter((incident) =>
+        incident.type.toUpperCase().includes('IMMUTABLE'),
+      ).length;
+      if (immutableIncidents > 0) {
+        metrics.immutableFeatureViolation = immutableIncidents;
+      } else {
+        failures.push(
+          'Immutable-feature violations are not instrumented in replay/live data yet.',
+        );
+      }
+    } else if (experiment.capability === 'UNCERTAINTY') {
+      if (liveSignals.outcomeSampleCount > 0) {
+        metrics.outcomeRegressionDelta = liveSignals.outcomeRegressionDelta;
+        metrics.outcomeSampleCount = liveSignals.outcomeSampleCount;
+      }
+      failures.push(
+        'Replay-backed empirical uncertainty coverage metrics are not instrumented yet.',
+      );
+    } else {
+      const fabricatedInsightCount = this.asNumber(
+        replayMetrics.fabricatedInsightCount,
+      );
+      if (fabricatedInsightCount != null) {
+        metrics.fabricatedInsightCount = fabricatedInsightCount;
+      } else {
+        failures.push(
+          'Fabricated-insight count is missing from the replay-backed evaluation.',
+        );
+      }
+
+      const fairnessIncidents = openIncidents.filter(
+        (incident) =>
+          incident.type.toUpperCase().includes('FAIRNESS') ||
+          incident.severity === 'CRITICAL',
+      ).length;
+      metrics.blockedSubgroupCount = fairnessIncidents;
+      if (fairnessIncidents === 0 && fabricatedInsightCount === 0) {
+        metrics.disclosurePass = true;
+      }
+
+      failures.push(
+        'Fairness subgroup delta metrics are not instrumented in replay/live data yet.',
+      );
+    }
+
     return {
       metrics,
-      failures:
-        approvedEvidenceCount === 0
-          ? [
-              'Fairness disclosure remains blocked until approved school-policy evidence exists.',
-            ]
-          : [],
+      failures: [...new Set(failures)],
+      counts: {
+        exposureCount: liveSignals.exposureCount,
+        feedbackCount: liveSignals.feedbackCount,
+        negativeFeedbackCount: liveSignals.negativeFeedbackCount,
+        outcomeSampleCount: liveSignals.outcomeSampleCount,
+        openIncidentCount: openIncidents.length,
+      },
+      latestReplayId: replaySnapshot.replay?.id ?? null,
     };
   }
 
@@ -663,6 +969,38 @@ export class ApplicationAnalysisWorkflowService {
     return this.prisma.applicationAnalysisPolicyVersion.findFirst({
       where: { status: 'ACTIVE' },
       orderBy: [{ activatedAt: 'desc' }, { updatedAt: 'desc' }],
+    });
+  }
+
+  async runGovernanceEvaluationForAnalysisVersion(
+    actorId: string,
+    analysisVersion: string,
+    options:
+      | ApplicationAnalysisEvaluationMode
+      | {
+          mode?: ApplicationAnalysisEvaluationMode;
+          allowFixtureEvidence?: boolean;
+        } = 'GOLD_SET',
+  ) {
+    const policy =
+      await this.findPreferredPolicyVersionForAnalysisVersion(analysisVersion);
+
+    if (!policy) {
+      throw new NotFoundException(
+        `No application-analysis policy version found for ${analysisVersion}.`,
+      );
+    }
+
+    const normalizedOptions =
+      typeof options === 'string'
+        ? { mode: options, allowFixtureEvidence: false }
+        : {
+            mode: options.mode ?? 'GOLD_SET',
+            allowFixtureEvidence: options.allowFixtureEvidence ?? false,
+          };
+
+    return this.runEvaluation(policy.id, normalizedOptions.mode, actorId, {
+      allowFixtureEvidence: normalizedOptions.allowFixtureEvidence,
     });
   }
 
@@ -751,6 +1089,24 @@ export class ApplicationAnalysisWorkflowService {
           }
         : {}),
       ...(query.schoolId ? { schoolId: query.schoolId } : {}),
+      ...(query.evidenceMode === 'fixture'
+        ? {
+            metadata: {
+              path: ['governanceSourceMode'],
+              equals: 'fixture',
+            } satisfies Prisma.JsonFilter,
+          }
+        : {}),
+      ...(query.evidenceMode === 'real'
+        ? {
+            NOT: {
+              metadata: {
+                path: ['governanceSourceMode'],
+                equals: 'fixture',
+              } satisfies Prisma.JsonFilter,
+            },
+          }
+        : {}),
     };
 
     const page = query.page ?? 1;
@@ -772,7 +1128,15 @@ export class ApplicationAnalysisWorkflowService {
       this.prisma.schoolPolicyEvidence.count({ where }),
     ]);
 
-    return createPaginatedResponse(items, total, page, pageSize);
+    return createPaginatedResponse(
+      items.map((item) => ({
+        ...item,
+        evidenceMode: this.getEvidenceModeFromMetadata(item.metadata),
+      })),
+      total,
+      page,
+      pageSize,
+    );
   }
 
   async createEvidence(actorId: string, dto: CreateSchoolPolicyEvidenceDto) {
@@ -1022,6 +1386,9 @@ export class ApplicationAnalysisWorkflowService {
     policyVersionId: string,
     mode: ApplicationAnalysisEvaluationMode,
     actorId: string,
+    options: {
+      allowFixtureEvidence?: boolean;
+    } = {},
   ) {
     const policy =
       await this.prisma.applicationAnalysisPolicyVersion.findUnique({
@@ -1034,72 +1401,99 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
-    const approvedEvidenceCount = await this.prisma.schoolPolicyEvidence.count({
+    const approvedEvidence = await this.prisma.schoolPolicyEvidence.findMany({
       where: {
         status: 'APPROVED',
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
+      select: {
+        id: true,
+        metadata: true,
+      },
     });
+    const evidenceCounts = this.summarizeEvidenceModes(approvedEvidence);
+    const latestReplay = await this.findLatestGoldReplayRun(
+      policy.analysisVersion,
+    );
 
-    const policyCorrectnessRate =
-      approvedEvidenceCount >= 12
-        ? 0.97
-        : approvedEvidenceCount >= 8
-          ? 0.95
-          : approvedEvidenceCount >= 4
-            ? 0.92
-            : approvedEvidenceCount >= 1
-              ? 0.88
-              : 0.8;
-
-    const unknownPolicyRate =
-      approvedEvidenceCount >= 12
-        ? 0.1
-        : approvedEvidenceCount >= 8
-          ? 0.18
-          : approvedEvidenceCount >= 4
-            ? 0.28
-            : 0.45;
-
+    const replayMetrics =
+      latestReplay?.metrics && typeof latestReplay.metrics === 'object'
+        ? (latestReplay.metrics as Record<string, unknown>)
+        : {};
+    const replayFailures = this.asStringArray(latestReplay?.failures);
+    const replayScopeSummary = this.getReplayScopeSummary(latestReplay);
+    const goldReplayCaseCount = this.getReplayCaseCount(latestReplay);
+    const applicantFeedbackSignals = await this.computeApplicantFeedbackSignals(
+      policy.analysisVersion,
+    );
     const metrics = {
-      policyCorrectnessRate,
-      weakStateCorrectnessRate: 0.99,
-      fabricatedInsightCount: 0,
-      actionabilityMean: 4.4,
-      contractParityPass: true,
-      webRenderPass: true,
-      mobileRenderPass: true,
-      journeyPassRate: 1,
-      unknownPolicyRate,
+      ...replayMetrics,
+      ...applicantFeedbackSignals,
     };
 
-    const failures =
-      approvedEvidenceCount === 0
-        ? ['No approved school policy evidence is available yet.']
-        : [];
+    const failures: string[] = [...replayFailures];
+    if (!latestReplay) {
+      failures.push('No replay-backed gold evaluation is available yet.');
+    }
+    if (options.allowFixtureEvidence) {
+      if (evidenceCounts.totalEvidenceCount === 0) {
+        failures.push(
+          'No approved school policy evidence is available yet, including governance fixtures.',
+        );
+      }
+    } else if (evidenceCounts.realEvidenceCount === 0) {
+      failures.push(
+        'No approved real school policy evidence is available yet.',
+      );
+    }
+    if (latestReplay?.status === 'FAILED') {
+      failures.push('Latest replay-backed evaluation did not pass.');
+    }
+    if (
+      applicantFeedbackSignals.applicantFeedbackCount >= 5 &&
+      applicantFeedbackSignals.helpfulFeedbackRate < 0.6
+    ) {
+      failures.push('Applicant helpfulness signal is below the operating bar.');
+    }
+    if (
+      applicantFeedbackSignals.applicantFeedbackCount >= 5 &&
+      applicantFeedbackSignals.lowActionabilityFeedbackRate > 0.35
+    ) {
+      failures.push(
+        'Applicant feedback indicates the structured next actions are not actionable enough.',
+      );
+    }
 
     const run = await this.prisma.applicationAnalysisEvaluationRun.create({
       data: {
         policyVersionId,
         mode,
         status: failures.length === 0 ? 'COMPLETED' : 'FAILED',
-        scopeSummary: {
-          totalCases: APPLICATION_ANALYSIS_GOLD_SET.length,
-          categories: APPLICATION_ANALYSIS_GOLD_SET.reduce<
-            Record<string, number>
-          >((acc, item) => {
-            acc[item.category] = (acc[item.category] ?? 0) + 1;
-            return acc;
-          }, {}),
-          caseIds: APPLICATION_ANALYSIS_GOLD_SET.map((item) => item.id),
-        } as Prisma.InputJsonValue,
+        scopeSummary: replayScopeSummary as Prisma.InputJsonValue,
         counts: {
-          approvedEvidenceCount,
-          goldSetCaseCount: APPLICATION_ANALYSIS_GOLD_SET.length,
+          approvedEvidenceCount: evidenceCounts.totalEvidenceCount,
+          fixtureApprovedEvidenceCount: evidenceCounts.fixtureEvidenceCount,
+          realApprovedEvidenceCount: evidenceCounts.realEvidenceCount,
+          evidenceMode: evidenceCounts.evidenceMode,
+          latestReplayId: latestReplay?.id ?? null,
+          goldReplayCaseCount,
+          replayDataset: this.asString(replayScopeSummary.dataset),
+          replayMode: this.asString(replayScopeSummary.mode),
+          replayCommitSha: this.asString(replayScopeSummary.commitSha),
+          replayReportPath: this.asString(replayScopeSummary.reportPath),
+          replayReportJsonPath: this.asString(
+            replayScopeSummary.reportJsonPath,
+          ),
           mode,
+          workflowMode: options.allowFixtureEvidence
+            ? 'governance'
+            : 'production',
+          applicantFeedbackCount:
+            applicantFeedbackSignals.applicantFeedbackCount,
+          runsWithApplicantFeedback: applicantFeedbackSignals.distinctRunCount,
         } as Prisma.InputJsonValue,
         metrics: metrics as Prisma.InputJsonValue,
-        failures,
+        failures: this.dedupeStrings(failures),
         startedAt: new Date(),
         finishedAt: new Date(),
         createdBy: actorId,
@@ -1316,17 +1710,20 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
-    const approvedEvidenceCount = await this.prisma.schoolPolicyEvidence.count({
-      where: {
-        status: 'APPROVED',
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    });
-
-    const { metrics, failures } = this.buildExperimentMetrics(
-      experiment.capability as ExperimentCapability,
-      approvedEvidenceCount,
-    );
+    const { metrics, failures, counts, latestReplayId } =
+      await this.buildExperimentMetrics({
+        id: experiment.id,
+        capability: experiment.capability as ExperimentCapability,
+        policyVersionId: experiment.policyVersionId,
+      });
+    const latestReplay =
+      latestReplayId != null
+        ? await this.prisma.applicationAnalysisReplayRun.findUnique({
+            where: { id: latestReplayId },
+          })
+        : null;
+    const replayScopeSummary = this.getReplayScopeSummary(latestReplay);
+    const goldReplayCaseCount = this.getReplayCaseCount(latestReplay);
 
     const run =
       await this.prisma.applicationAnalysisExperimentEvaluationRun.create({
@@ -1335,18 +1732,17 @@ export class ApplicationAnalysisWorkflowService {
           mode,
           status: failures.length === 0 ? 'COMPLETED' : 'FAILED',
           scopeSummary: {
-            totalCases: APPLICATION_ANALYSIS_GOLD_SET.length,
-            categories: APPLICATION_ANALYSIS_GOLD_SET.reduce<
-              Record<string, number>
-            >((acc, item) => {
-              acc[item.category] = (acc[item.category] ?? 0) + 1;
-              return acc;
-            }, {}),
+            ...replayScopeSummary,
             capability: experiment.capability,
           } as Prisma.InputJsonValue,
           counts: {
-            approvedEvidenceCount,
-            goldSetCaseCount: APPLICATION_ANALYSIS_GOLD_SET.length,
+            ...counts,
+            latestReplayId,
+            goldReplayCaseCount,
+            replayDataset: this.asString(replayScopeSummary.dataset),
+            replayMode: this.asString(replayScopeSummary.mode),
+            replayCommitSha: this.asString(replayScopeSummary.commitSha),
+            replayReportPath: this.asString(replayScopeSummary.reportPath),
             mode,
           } as Prisma.InputJsonValue,
           metrics: metrics as Prisma.InputJsonValue,
@@ -1690,6 +2086,7 @@ export class ApplicationAnalysisWorkflowService {
     query: ApplicationAnalysisExperimentFeedbackQueryDto,
   ) {
     const where = {
+      exposureRecord: { isNot: null },
       ...(query.capability
         ? {
             capability:
@@ -1888,8 +2285,9 @@ export class ApplicationAnalysisWorkflowService {
   async submitApplicantFeedback(
     userId: string,
     dto: {
-      exposureId: string;
-      capability: ExperimentCapability;
+      runId?: string;
+      exposureId?: string;
+      capability?: ExperimentCapability;
       sentiment: FeedbackSentiment;
       schoolId?: string;
       category?: FeedbackCategory;
@@ -1899,6 +2297,74 @@ export class ApplicationAnalysisWorkflowService {
     if (dto.sentiment === 'NOT_HELPFUL' && !dto.category) {
       throw new ConflictException(
         'A negative application-analysis feedback item requires a category.',
+      );
+    }
+
+    const normalizedCategory =
+      dto.sentiment === 'NOT_HELPFUL'
+        ? ((dto.category ??
+            'LOW_ACTIONABILITY') as ApplicationAnalysisFeedbackCategory)
+        : (dto.category as ApplicationAnalysisFeedbackCategory | undefined);
+
+    if (dto.runId) {
+      const run = await this.prisma.applicationAnalysisRun.findFirst({
+        where: {
+          id: dto.runId,
+          userId,
+        },
+        select: {
+          id: true,
+          analysisVersion: true,
+        },
+      });
+
+      if (!run) {
+        throw new NotFoundException(
+          'Application-analysis run not found for this feedback submission.',
+        );
+      }
+
+      const feedback =
+        await this.prisma.applicationAnalysisFeedbackRecord.create({
+          data: {
+            applicationAnalysisRunId: run.id,
+            exposureId: dto.exposureId ?? run.id,
+            userId,
+            ...(dto.capability
+              ? {
+                  capability:
+                    dto.capability as ApplicationAnalysisExperimentCapability,
+                }
+              : {}),
+            schoolId: dto.schoolId,
+            category: normalizedCategory,
+            sentiment: dto.sentiment as ApplicationAnalysisFeedbackSentiment,
+            notes: dto.notes,
+          },
+        });
+
+      await this.syncRunFeedbackMetrics(run.id);
+
+      await this.writeAuditLog(
+        userId,
+        'APPLICATION_ANALYSIS_RUN_FEEDBACK_SUBMIT',
+        'application_analysis_feedback',
+        feedback.id,
+        {
+          runId: run.id,
+          analysisVersion: run.analysisVersion,
+          sentiment: dto.sentiment,
+          category: dto.category,
+          schoolId: dto.schoolId,
+        },
+      );
+
+      return feedback;
+    }
+
+    if (!dto.exposureId || !dto.capability) {
+      throw new ConflictException(
+        'Experiment feedback requires both exposureId and capability.',
       );
     }
 
@@ -1926,8 +2392,7 @@ export class ApplicationAnalysisWorkflowService {
           userId,
           capability: dto.capability as ApplicationAnalysisExperimentCapability,
           schoolId: dto.schoolId,
-          category: (dto.category ??
-            'LOW_ACTIONABILITY') as ApplicationAnalysisFeedbackCategory,
+          category: normalizedCategory,
           sentiment: dto.sentiment as ApplicationAnalysisFeedbackSentiment,
           notes: dto.notes,
         },
@@ -2950,7 +3415,7 @@ export class ApplicationAnalysisWorkflowService {
       (latestEvaluation?.metrics as Record<string, number | boolean> | null) ??
       {};
 
-    const failures: string[] = [];
+    const failures: string[] = this.asStringArray(latestEvaluation?.failures);
     if (!latestShadow) {
       failures.push(
         'A completed shadow evaluation is required before activation.',
@@ -3002,29 +3467,36 @@ export class ApplicationAnalysisWorkflowService {
     if (metrics.mobileRenderPass !== true) {
       failures.push('Mobile render gate failed.');
     }
-    if (metrics.journeyPassRate !== Number(thresholds.journeyPassRate)) {
+    const journeyPassRate = numericGate('journeyPassRate');
+    if (
+      journeyPassRate == null ||
+      journeyPassRate < Number(thresholds.journeyPassRate)
+    ) {
       failures.push('Journey pass gate failed.');
     }
 
-    const unknownPolicyRate = numericGate('maxUnknownPolicyRate');
+    const maxUnknownPolicyRate =
+      typeof thresholds.maxUnknownPolicyRate === 'number'
+        ? Number(thresholds.maxUnknownPolicyRate)
+        : null;
     const measuredUnknownPolicyRate =
       typeof metrics.unknownPolicyRate === 'number'
         ? Number(metrics.unknownPolicyRate)
         : null;
     if (
-      unknownPolicyRate != null &&
+      maxUnknownPolicyRate != null &&
       measuredUnknownPolicyRate != null &&
-      measuredUnknownPolicyRate > unknownPolicyRate
+      measuredUnknownPolicyRate > maxUnknownPolicyRate
     ) {
       failures.push('Unknown policy rate gate failed.');
     }
 
     return {
-      ready: failures.length === 0,
+      ready: this.dedupeStrings(failures).length === 0,
       thresholds,
       latestEvaluation,
       metrics,
-      failures,
+      failures: this.dedupeStrings(failures),
     };
   }
 
@@ -3279,21 +3751,40 @@ export class ApplicationAnalysisWorkflowService {
     const coverage =
       typeof metrics.empiricalCoverageOverall === 'number'
         ? Number(metrics.empiricalCoverageOverall)
-        : 0.82;
+        : null;
     const widthDelta =
       typeof metrics.medianIntervalWidthDelta === 'number'
         ? Number(metrics.medianIntervalWidthDelta)
-        : 0.14;
+        : null;
+    const intervalLabel =
+      widthDelta == null
+        ? ('wide' as const)
+        : widthDelta <= 0.09
+          ? ('tight' as const)
+          : widthDelta <= 0.13
+            ? ('balanced' as const)
+            : ('wide' as const);
 
     return {
-      probabilityLow: Math.max(0.12, coverage - 0.22 - widthDelta / 2),
-      probabilityHigh: Math.min(0.92, coverage + 0.08 + widthDelta / 2),
-      intervalLabel:
-        widthDelta <= 0.09 ? 'tight' : widthDelta <= 0.13 ? 'balanced' : 'wide',
-      reasons: [
-        'Show strategy uncertainty alongside prediction probability, never instead of it.',
-        'Wider intervals usually mean school-policy coverage or subgroup evidence is still thinner than desired.',
-      ],
+      probabilityLow:
+        coverage != null && widthDelta != null
+          ? Math.max(0.12, coverage - 0.22 - widthDelta / 2)
+          : undefined,
+      probabilityHigh:
+        coverage != null && widthDelta != null
+          ? Math.min(0.92, coverage + 0.08 + widthDelta / 2)
+          : undefined,
+      intervalLabel,
+      reasons:
+        coverage != null && widthDelta != null
+          ? [
+              'Show strategy uncertainty alongside prediction probability, never instead of it.',
+              'Wider intervals usually mean school-policy coverage or subgroup evidence is still thinner than desired.',
+            ]
+          : [
+              'Uncertainty preview is blocked until replay-backed empirical coverage metrics are available.',
+              'Keep uncertainty intervals hidden from rollout decisions until dedicated coverage evaluation is instrumented.',
+            ],
       policyVersion: {
         id: policy.id,
         policyKey: policy.policyKey,
@@ -3348,30 +3839,40 @@ export class ApplicationAnalysisWorkflowService {
     const blockedSubgroupCount =
       typeof metrics.blockedSubgroupCount === 'number'
         ? Number(metrics.blockedSubgroupCount)
-        : 1;
-    const disclosurePass = metrics.disclosurePass === true;
+        : null;
+    const disclosurePass =
+      typeof metrics.disclosurePass === 'boolean'
+        ? metrics.disclosurePass
+        : null;
 
     return {
       status:
-        blockedSubgroupCount > 0
-          ? 'blocked'
-          : disclosurePass
-            ? 'clear'
-            : 'limited',
+        blockedSubgroupCount == null || disclosurePass == null
+          ? 'limited'
+          : blockedSubgroupCount > 0
+            ? 'blocked'
+            : disclosurePass
+              ? 'clear'
+              : 'limited',
       notes:
-        blockedSubgroupCount > 0
+        blockedSubgroupCount == null || disclosurePass == null
           ? [
-              'One or more key subgroups still fail the current fairness disclosure gate.',
-              'Keep this capability off for public rollout until subgroup evidence and policy coverage improve.',
+              'Fairness disclosure is limited because subgroup-delta metrics are not instrumented yet.',
+              'Keep this capability off for public rollout until replay-backed subgroup evaluation is available.',
             ]
-          : disclosurePass
+          : blockedSubgroupCount > 0
             ? [
-                'Current fairness disclosure checks are passing for the tracked rollout cohorts.',
-                'Continue monitoring subgroup deltas during canary and active rollout.',
+                'One or more key subgroups still fail the current fairness disclosure gate.',
+                'Keep this capability off for public rollout until subgroup evidence and policy coverage improve.',
               ]
-            : [
-                'Fairness disclosure is still limited because evaluation coverage is incomplete.',
-              ],
+            : disclosurePass
+              ? [
+                  'Current fairness disclosure checks are passing for the tracked rollout cohorts.',
+                  'Continue monitoring subgroup deltas during canary and active rollout.',
+                ]
+              : [
+                  'Fairness disclosure is still limited because evaluation coverage is incomplete.',
+                ],
       appliesTo: [
         'international',
         'need-aid',

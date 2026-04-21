@@ -5,6 +5,10 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  resolveSchoolTestingPolicyValue,
+  toLegacyTestOptionalFlag,
+} from '@study-abroad/shared/utils';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
@@ -94,6 +98,10 @@ export class SchoolToolsService implements IToolHandlerProvider {
     }
 
     const metadata = (fullSchool.metadata as any) || {};
+    const testingPolicy = resolveSchoolTestingPolicyValue({
+      testingPolicy: (fullSchool as any).testingPolicy,
+      testOptional: (fullSchool as any).testOptional,
+    });
 
     return {
       id: fullSchool.id,
@@ -115,7 +123,12 @@ export class SchoolToolsService implements IToolHandlerProvider {
         (fullSchool as any).retentionRate != null
           ? `${(fullSchool as any).retentionRate}%`
           : 'N/A',
-      testOptional: (fullSchool as any).testOptional ?? null,
+      testingPolicy,
+      testOptional:
+        toLegacyTestOptionalFlag({
+          testingPolicy,
+          testOptional: (fullSchool as any).testOptional,
+        }) ?? null,
       acceptsCommonApp: (fullSchool as any).acceptsCommonApp ?? null,
       hasEarlyDecision: (fullSchool as any).hasEarlyDecision ?? null,
       salary6YrPostGrad:
@@ -157,6 +170,10 @@ export class SchoolToolsService implements IToolHandlerProvider {
 
     return {
       comparison: schools.map((s) => ({
+        testingPolicy: resolveSchoolTestingPolicyValue({
+          testingPolicy: (s as any).testingPolicy,
+          testOptional: (s as any).testOptional,
+        }),
         name: s.name,
         rank: s.usNewsRank,
         acceptanceRate:
@@ -166,7 +183,11 @@ export class SchoolToolsService implements IToolHandlerProvider {
         tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',
         avgSalary: s.avgSalary ? `$${s.avgSalary.toLocaleString()}` : 'N/A',
         state: s.state,
-        testOptional: (s as any).testOptional ?? null,
+        testOptional:
+          toLegacyTestOptionalFlag({
+            testingPolicy: (s as any).testingPolicy,
+            testOptional: (s as any).testOptional,
+          }) ?? null,
         retentionRate:
           (s as any).retentionRate != null
             ? `${(s as any).retentionRate}%`

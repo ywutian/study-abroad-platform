@@ -1,9 +1,9 @@
 {
   "meta": {
     "home": {
-      "title": "Study Abroad Platform - Smart School Selection & Admission Prediction",
-      "description": "AI-powered study abroad platform with school recommendations, admission predictions, and case library",
-      "keywords": "study abroad,school recommendation,admission prediction,AI college,overseas study,US college,university application,study planning"
+      "title": "StudyAI Home | The AI Admissions Workbench",
+      "description": "StudyAI brings school matching, essay collaboration, timelines, and real admissions data into one AI-native workflow for ambitious families.",
+      "keywords": "StudyAI,AI admissions,college application,school matching,essay workbench,admissions data,timeline planning,student teams"
     }
   },
   "common": {
@@ -91,7 +91,42 @@
       "business": "Business"
     },
     "rankingTooltip": "{source} {year} Ranking",
-    "rankingTooltipOverall": "US News National University Overall Ranking"
+    "rankingTooltipOverall": "US News National University Overall Ranking",
+    "aria": {
+      "moreOptions": "More options",
+      "close": "Close",
+      "copy": "Copy",
+      "copyReferralCode": "Copy referral code",
+      "deleteSection": "Delete section",
+      "deleteItem": "Delete",
+      "viewItem": "View",
+      "viewConversation": "View conversation",
+      "viewMemory": "View memory",
+      "deleteMemory": "Delete memory",
+      "attachFile": "Attach file",
+      "attachImage": "Attach image",
+      "voiceInput": "Voice input",
+      "stopGenerating": "Stop generating",
+      "sendMessage": "Send message",
+      "probabilityTrend": "Probability trend",
+      "preview": "Preview",
+      "proofDocument": "Proof document",
+      "removeTag": "Remove tag",
+      "breadcrumb": "Breadcrumb",
+      "editDeadline": "Edit deadline",
+      "deleteDeadline": "Delete deadline",
+      "editEvent": "Edit event",
+      "deleteEvent": "Delete event"
+    },
+    "tryAgain": "Try again",
+    "invalidJson": "Invalid JSON",
+    "unsupportedFileFormat": "Unsupported file format. Please use .txt, .docx, or .pdf",
+    "failedToReadFile": "Failed to read file. Please try pasting the content instead.",
+    "errorBoundary": {
+      "title": "Something went wrong",
+      "defaultMessage": "An unexpected error occurred. Please try again.",
+      "tryAgain": "Try again"
+    }
   },
   "dashboard": {
     "welcome": "Welcome back, {name}",
@@ -170,227 +205,465 @@
     }
   },
   "home": {
+    "brand": "StudyAI",
     "nav": {
-      "features": "Features",
-      "howItWorks": "How It Works",
-      "testimonials": "Testimonials",
-      "getStarted": "Get Started"
+      "product": "Product",
+      "cases": "Cases",
+      "pricing": "Pricing",
+      "community": "Community",
+      "about": "About",
+      "signIn": "Sign in",
+      "getStarted": "Get started"
     },
-    "badge": "AI-Powered Study Abroad Platform",
-    "heroTitle": "Your Dream School, Within Reach",
-    "heroSubtitle": "AI-driven school matching, admission prediction, and essay coaching — everything you need to land your offer",
-    "scrollDown": "Scroll Down",
-    "heroLeft": {
-      "top100": "Covers US Top 100 Schools",
-      "aiAnalysis": "AI Smart Analysis",
-      "realTimeData": "Real-time Data Updates"
-    },
-    "heroRight": {
-      "dataSecurity": "Secure Data Encryption",
-      "fastPrediction": "Instant Predictions",
-      "onlineSupport": "24/7 Online Support"
-    },
-    "usp": {
-      "gpt4": "GPT-4 Analysis",
-      "accuracy": "95% Accuracy",
-      "cases": "10000+ Real Cases"
-    },
-    "stats": {
-      "cases": "Real Cases",
-      "schools": "Schools Covered",
-      "accuracy": "Prediction Accuracy",
-      "aiAssistant": "AI Assistant Online"
-    },
-    "coreFeatures": "Core Features",
-    "coreFeaturesSubtitle": "One-stop solution for all your study abroad needs",
-    "whyChooseUs": {
-      "title": "Why Choose Us?",
-      "subtitle": "We provide the most professional study abroad services",
-      "realData": "Real Case Data",
-      "realDataDesc": "All data comes from real application cases to ensure reference value",
-      "smartAlgorithm": "Smart Algorithm",
-      "smartAlgorithmDesc": "AI-based smart analysis for accurate admission predictions",
-      "globalCoverage": "Global Coverage",
-      "globalCoverageDesc": "Covering popular destinations like US, UK, Canada and more",
-      "admissionRate": "Admission Rate"
-    },
-    "stories": {
-      "title": "Success Stories",
-      "subtitle": "See how our users got into their dream schools",
-      "viewMore": "View More Cases",
-      "story1": {
-        "name": "Student Li",
-        "avatar": "L",
-        "background": "Public HS | GPA 3.8",
-        "result": "Admitted",
-        "quote": "The admission prediction was very accurate and helped me find the best school selection strategy."
+    "hero": {
+      "eyebrow": "Powered by GPT-5 · 3,000+ global schools tracked",
+      "headline": ["Rebuild your admissions strategy", "with AI that can actually reason"],
+      "subtitle": "Expert AI capabilities, real admissions data, and a peer network that moves with you. What used to feel chaotic becomes a workflow with priorities, pace, and signal.",
+      "features": [
+        "Generate the first school matrix in 2 minutes",
+        "Keep essays, timelines, and tasks in one surface",
+        "Use human advisors for the decisions that matter"
+      ],
+      "trustLine": "Trusted by 12,400+ families · 2,100+ Top-30 offers",
+      "primaryCta": "Get started free",
+      "secondaryCta": "See student stories",
+      "statLabel": "Top-30 admits · 2026 calibrated",
+      "floatingQuote": {
+        "quote": "I finally knew what the next move was.",
+        "meta": "Lin · UCLA '28"
       },
-      "story2": {
-        "name": "Student Wang",
-        "avatar": "W",
-        "background": "US HS | GPA 3.9",
-        "result": "Full Scholarship",
-        "quote": "The case library helped me learn many application tips and I got a full scholarship to my dream school."
+      "aiDisclosure": {
+        "trigger": "View model basis",
+        "inputs": [
+          "Academic profile strength",
+          "School-specific historical outcomes",
+          "Essay and material completion",
+          "Timeline and deadline proximity"
+        ],
+        "confidence": "Medium",
+        "limitations": [
+          "Late institutional priorities are not directly observed.",
+          "Department-level capacity can shift faster than public data.",
+          "Human review quality is inferred, not guaranteed."
+        ]
       },
-      "story3": {
-        "name": "Student Zhang",
-        "avatar": "Z",
-        "background": "Intl School | GPA 4.0",
-        "result": "Admitted",
-        "quote": "The AI assistant guided my entire application process, from school selection to essays, every step was clear."
+      "console": {
+        "workspace": "Workspace",
+        "profileLabel": "Amy Z. · Senior",
+        "profileMeta": "GPA 3.92 · SAT 1540 · CS",
+        "termLabel": "Fall 2026 · CS",
+        "sections": ["Overview", "Schools · 6", "Essays · 14", "Timeline", "Teams"],
+        "title": "My Application Matrix",
+        "assistantBadge": "AI Copilot",
+        "assistantMessages": [
+          "Your CMU essay overlaps too closely with MIT. Tighten the second proof point.",
+          "Georgia Tech Why Major improved by 14% after the latest revision.",
+          "Purdue is submission-ready. Tonight is the cleanest window to send it."
+        ],
+        "tasksLabel": "Today · 3 tasks",
+        "tasks": [
+          "Finish GT Why-Essay v2",
+          "Remind Ms. Chen to upload the recommendation",
+          "Confirm the Purdue submission window"
+        ],
+        "askAnything": "Ask the copilot",
+        "statusReady": "Analysis ready",
+        "statusLive": "Live admissions signals · synced",
+        "rows": [
+          {
+            "name": "MIT EECS",
+            "probability": 14,
+            "status": "Drafting",
+            "tone": "reach"
+          },
+          {
+            "name": "CMU CS",
+            "probability": 22,
+            "status": "Rewriting v2",
+            "tone": "reach"
+          },
+          {
+            "name": "Georgia Tech",
+            "probability": 47,
+            "status": "Awaiting rec",
+            "tone": "target"
+          },
+          {
+            "name": "UIUC CS+X",
+            "probability": 62,
+            "status": "Ready",
+            "tone": "target"
+          },
+          {
+            "name": "Purdue ECE",
+            "probability": 81,
+            "status": "Ready to submit",
+            "tone": "safety"
+          }
+        ]
       }
     },
-    "ctaBadge": "Join 1,200+ Applicants",
-    "ctaTitle": "Your dream school is closer than you think",
-    "ctaSubtitle": "Get your personalized admission prediction in under 2 minutes — completely free",
-    "ctaButton": "Get My Prediction",
-    "ctaFeature1": "100% Free",
-    "ctaFeature2": "No Credit Card Required",
-    "ctaFeature3": "Results in 2 Minutes",
-    "viewCases": "Browse Cases",
-    "copyright": "© 2026 Study Abroad Platform. All rights reserved.",
-    "aboutUs": "About Us",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "features": {
-      "profile": "Create and manage your application profile, export professional resume with one click",
-      "ranking": "Customize school rankings based on your preferences",
-      "prediction": "Predict admission probability based on your background",
-      "cases": "Browse real application cases and learn from success stories",
-      "chat": "Connect with verified users for first-hand information",
-      "hall": "Admissions officer scoring, rank comparison, create lists"
-    },
-    "modules": {
-      "title": "Four Core Modules",
-      "subtitle": "From school selection to application, all in one place",
-      "schools": {
-        "title": "School Library",
-        "desc": "Browse, filter and find your perfect fit"
-      },
-      "prediction": {
-        "title": "AI Prediction",
-        "desc": "AI-powered admission probability analysis"
-      },
-      "cases": {
-        "title": "Case Gallery",
-        "desc": "Real admission cases and success stories"
-      },
-      "forum": {
-        "title": "Community Forum",
-        "desc": "Connect with applicants, share experiences"
-      }
-    },
-    "bento": {
-      "chatUser": "Can you help me improve my MIT essay?",
-      "chatAi": "I've analyzed your essay. Here are 3 key suggestions..."
-    },
-    "demo": {
-      "step1": {
-        "title": "Search",
-        "desc": "Filter schools based on your background and preferences"
-      },
-      "step2": {
-        "title": "Predict",
-        "desc": "Evaluate your profile and predict admission chances"
-      },
-      "step3": {
-        "title": "Track",
-        "desc": "Get personalized timeline and task checklist"
-      },
-      "step4": {
-        "title": "Connect",
-        "desc": "Connect with other applicants for real insights"
-      }
-    },
-    "demoFlow": {
-      "badge": "How It Works",
-      "title": "Four Simple Steps to Get Started",
-      "subtitle": "From school selection to admission, we're with you every step",
-      "stepIndicator": "Step {current}"
-    },
-    "demoUI": {
-      "step1": {
-        "searchPlaceholder": "Search school name...",
-        "filterUS": "US",
-        "filterTop50": "Top 50",
-        "filterPrivate": "Private",
-        "filterHighRanking": "High Ranking",
-        "filterCSMajor": "CS Major",
-        "acceptance": "Acceptance: {rate}%",
-        "viewAllSchools": "View All Schools"
-      },
-      "step2": {
-        "yourProfile": "Your Profile",
-        "profileDetail": "GPA 3.8 / SAT 1480 / 3 Competition Awards",
-        "score": "Match Score",
-        "reach": "Reach",
-        "target": "Target",
-        "safety": "Safety",
-        "aiSuggestion": "AI Suggestion",
-        "suggestionText": "Based on your profile, consider adding 1-2 safety schools",
-        "fullAnalysis": "View Full Analysis"
-      },
-      "step3": {
-        "applicationProgress": "Application Progress",
-        "tasksCompleted": "Tasks Completed",
-        "completeProfile": "Complete Profile",
-        "submitScores": "Submit Test Scores",
-        "requestRecs": "Request Recommendations",
-        "writeEssay": "Write Essays",
-        "viewTimeline": "View Full Timeline",
-        "dateOct15": "Oct 15",
-        "dateOct20": "Oct 20",
-        "dateNov1": "Nov 1",
-        "dateNov15": "Nov 15"
-      },
-      "step4": {
-        "trendingTopics": "Trending Topics",
-        "post1Title": "ED Strategy Sharing",
-        "post1Tag": "School Selection",
-        "post2Title": "CS Application Tips",
-        "post2Tag": "Experience",
-        "post3Title": "Essay Peer Review",
-        "post3Tag": "Essay",
-        "joinCommunity": "Join Community",
-        "viewAll": "View All",
-        "connectMessage": "Connect with fellow applicants"
-      }
-    },
-    "scoreCard": {
-      "title": "My Test Scores",
-      "subtitle": "Manage your language and academic test scores",
-      "notAvailable": "N/A",
-      "editScores": "Edit Scores"
+    "trust": {
+      "label": "Partner schools · Historical admits",
+      "stats": [
+        {
+          "value": "12,400+",
+          "label": "Active families"
+        },
+        {
+          "value": "2,100+",
+          "label": "Top-30 admits"
+        },
+        {
+          "value": "87%",
+          "label": "Model calibration"
+        },
+        {
+          "value": "3,000+",
+          "label": "School dataset"
+        }
+      ],
+      "schools": [
+        "MIT",
+        "Stanford",
+        "Harvard",
+        "Princeton",
+        "Yale",
+        "Columbia",
+        "Caltech",
+        "UChicago",
+        "UPenn",
+        "Cornell",
+        "Brown",
+        "Duke",
+        "JHU",
+        "Northwestern",
+        "UCLA"
+      ]
     },
     "problem": {
-      "title": "Study Abroad Shouldn't Be This Hard.",
-      "subtitle": "Millions of students face the same challenges every year",
-      "pain1Title": "Information Overload",
-      "pain1Desc": "Thousands of schools, countless rankings, conflicting advice — where do you even start?",
-      "pain2Title": "Deadline Chaos",
-      "pain2Desc": "Different schools, different deadlines, different requirements — missing one can cost you everything.",
-      "pain3Title": "Uncertain Chances",
-      "pain3Desc": "Will I get in? Am I reaching too high or aiming too low? The anxiety of not knowing."
+      "eyebrow": "Why most families still take expensive wrong turns",
+      "title": "Admissions should not remain an information war",
+      "subtitle": "The issue is not a lack of information. The issue is lacking a system that can compare signals, set priorities, and turn uncertainty into action.",
+      "items": [
+        {
+          "number": "01",
+          "title": "Information asymmetry",
+          "description": "Forums, consultants, rankings, and social feeds all tell partial stories. Families collect fragments when they really need a way to evaluate tradeoffs."
+        },
+        {
+          "number": "02",
+          "title": "School lists by intuition",
+          "description": "Rankings dominate the conversation while fit, program dynamics, and probability drift get ignored. The list looks impressive but lacks strategy."
+        },
+        {
+          "number": "03",
+          "title": "Essays lose the person",
+          "description": "Template language and over-edited drafts flatten the applicant’s voice. Strong essay work should sharpen originality, not erase it."
+        },
+        {
+          "number": "04",
+          "title": "Execution collapses late",
+          "description": "Deadlines, recommendations, activity upgrades, and essay revisions stack up at once. Without a unified operating surface, anxiety peaks exactly when it hurts most."
+        }
+      ],
+      "visuals": {
+        "signalNoise": {
+          "label": "Fragmented signal flow",
+          "tabs": [
+            "Xiaohongshu",
+            "College Confidential",
+            "Reddit",
+            "1point3acres",
+            "US News",
+            "Official FAQ"
+          ],
+          "notes": [
+            "Does MIT still care about AP Physics C?",
+            "Is summer school worth the spend?",
+            "How big is 1520 vs 1570 really?",
+            "Can I open with dialogue?",
+            "Are 3 recommendation letters enough?"
+          ],
+          "footer": "More inputs, but no consistent frame for judgment"
+        },
+        "decisionQuestions": {
+          "eyebrow": "Harvard College · Regular Decision",
+          "excerpt": "“After careful review, we are unable to offer you a place...”",
+          "stamp": "Decision · 03.27",
+          "questions": [
+            "Why did 1570 still miss?",
+            "Was the essay not sharp enough?",
+            "Was the activity list too light?",
+            "Or was it mostly variance?"
+          ]
+        }
+      }
     },
-    "howItWorks": {
-      "title": "Three Steps to Your Dream School",
-      "subtitle": "From profile to acceptance, we've got you covered",
-      "step1Title": "Build Your Profile",
-      "step1Desc": "Enter your grades, test scores, activities, and preferences — takes just 5 minutes.",
-      "step2Title": "AI Smart Match",
-      "step2Desc": "Our AI analyzes your profile against 10,000+ real cases to find your best-fit schools.",
-      "step3Title": "Apply with Confidence",
-      "step3Desc": "Get personalized timelines, essay guidance, and real-time admission predictions."
+    "features": {
+      "eyebrow": "An AI-native admissions workbench",
+      "title": "Six capabilities, designed to behave like one system",
+      "subtitle": "Not a pile of tools. One coordinated workflow for school strategy, essays, planning, prediction, collaboration, and expert judgment.",
+      "items": [
+        {
+          "number": "01",
+          "tag": "AI · Matching",
+          "title": "School matching engine",
+          "description": "Combine profile strength, real admissions outcomes, and institutional patterns into a reach / target / safety matrix you can defend."
+        },
+        {
+          "number": "02",
+          "tag": "AI · Essays",
+          "title": "Essay co-creation desk",
+          "description": "Use AI as a thinking partner from brainstorm to rewrite, without handing over the applicant’s voice."
+        },
+        {
+          "number": "03",
+          "tag": "Planning",
+          "title": "Three-year timeline",
+          "description": "Turn testing, research, activities, recommendations, and deadlines into a pacing system instead of a last-minute scramble."
+        },
+        {
+          "number": "04",
+          "tag": "Data",
+          "title": "Admissions probability model",
+          "description": "Get calibrated probability ranges grounded in current data rather than consultant instinct or forum folklore."
+        },
+        {
+          "number": "05",
+          "tag": "Community",
+          "title": "Student teaming layer",
+          "description": "Find peers applying to similar programs, share signal, cross-review essays, and protect each other’s momentum."
+        },
+        {
+          "number": "06",
+          "tag": "Human",
+          "title": "Expert oversight",
+          "description": "Let former AOs and Top-30 mentors handle the irreversible judgment calls while AI accelerates the day-to-day work."
+        }
+      ],
+      "visuals": {
+        "openModule": "Open module",
+        "matching": {
+          "label": "List balance",
+          "schools": [
+            {
+              "name": "MIT",
+              "odds": 14,
+              "tier": "reach"
+            },
+            {
+              "name": "CMU",
+              "odds": 47,
+              "tier": "target"
+            },
+            {
+              "name": "UIUC",
+              "odds": 62,
+              "tier": "target"
+            },
+            {
+              "name": "Purdue",
+              "odds": 81,
+              "tier": "safety"
+            }
+          ]
+        },
+        "essay": {
+          "kicker": "Common App · Prompt 1",
+          "lines": [
+            "Growing up in my grandmother’s kitchen, I learned that",
+            "patience is a virtue",
+            "recipes are really stories told in flavors"
+          ],
+          "chips": ["More personal", "Tighter rhythm", "Ending needs lift"]
+        },
+        "timeline": {
+          "label": "Pacing map",
+          "items": [
+            {
+              "month": "Sep",
+              "label": "Testing · SAT"
+            },
+            {
+              "month": "Nov",
+              "label": "Summer Programs"
+            },
+            {
+              "month": "Feb",
+              "label": "Research Track"
+            },
+            {
+              "month": "Jun",
+              "label": "Recommendations"
+            }
+          ]
+        },
+        "probability": {
+          "label": "Calibrated ranges",
+          "ranges": [
+            {
+              "tier": "reach",
+              "text": "MIT · 12–18%"
+            },
+            {
+              "tier": "target",
+              "text": "GT · 43–51%"
+            },
+            {
+              "tier": "safety",
+              "text": "Purdue · 78–86%"
+            }
+          ],
+          "note": "The model narrows direction. It does not replace final judgment."
+        },
+        "team": {
+          "label": "Team momentum",
+          "members": [
+            {
+              "name": "Amy",
+              "task": "CMU peer review",
+              "status": "success"
+            },
+            {
+              "name": "Leo",
+              "task": "MIT proof point update",
+              "status": "ai"
+            },
+            {
+              "name": "Jing",
+              "task": "Purdue submission check",
+              "status": "warning"
+            }
+          ]
+        },
+        "mentor": {
+          "label": "Human oversight",
+          "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
+          "points": ["List structure review", "Final essay direction", "Submission risk check"]
+        }
+      }
     },
-    "ctaSubtext": "Free to use — no credit card required",
-    "socialProofRating": "2,000+ students helped",
+    "how": {
+      "eyebrow": "Four steps, end to end",
+      "title": "From “I want to apply” to “I got in”",
+      "subtitle": "Build judgment first, then execute. Each step clarifies what matters next instead of leaving the hardest choices for the final month.",
+      "steps": [
+        {
+          "number": "01",
+          "title": "Build the profile",
+          "description": "Capture grades, activities, goals, and context so the system can see where the applicant really stands."
+        },
+        {
+          "number": "02",
+          "title": "Generate the matrix",
+          "description": "Compare schools, probabilities, essay load, and timing on one decision surface rather than across scattered tabs."
+        },
+        {
+          "number": "03",
+          "title": "Advance essays and collaboration",
+          "description": "Use AI for structure, peers for pressure, and mentors for judgment until the drafts are strong for the right reasons."
+        },
+        {
+          "number": "04",
+          "title": "Track submission and outcomes",
+          "description": "Keep progress, reminders, and material status synchronized all the way through the actual offer cycle."
+        }
+      ],
+      "dashboard": {
+        "eyebrow": "StudyAI dashboard",
+        "title": "One surface for list strategy, essays, and pacing",
+        "note": "School matrix · essay sprint · AI review",
+        "cards": ["School list", "Essay sprint", "Team signals"],
+        "assistantBadge": "AI Copilot",
+        "tip": "AI is checking overlap between MIT and CMU essays",
+        "tasksLabel": "Today’s push",
+        "tasks": ["Refine the profile", "Finish GT Why Essay", "Confirm Purdue submission"],
+        "columns": ["School", "Tier", "Progress"]
+      }
+    },
+    "social": {
+      "eyebrow": "Real students · Real outcomes",
+      "title": "Not louder marketing. Better delivery.",
+      "stats": [
+        {
+          "value": "12,400+",
+          "label": "Active students"
+        },
+        {
+          "value": "2,100+",
+          "label": "Top-30 admits"
+        },
+        {
+          "value": "87%",
+          "label": "Model calibration"
+        },
+        {
+          "value": "3,000+",
+          "label": "Schools tracked"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "I thought the consultancy would be the sharpest part of the process. A month in, the AI list was simply better reasoned. MIT EA came through.",
+          "name": "Lin",
+          "meta": "MIT CS · Class of 2028",
+          "tag": "MIT CS",
+          "monogram": "L"
+        },
+        {
+          "quote": "The team layer changed everything. Four Econ applicants reviewed each other’s essays for weeks, and every one of us ended up beating our expected outcomes.",
+          "name": "Wang",
+          "meta": "UPenn Wharton · Class of 2028",
+          "tag": "Wharton",
+          "monogram": "W"
+        },
+        {
+          "quote": "AI didn’t write for me. It pushed me until the story was finally mine. By draft seventeen, the Common App essay actually sounded like me.",
+          "name": "Zhou",
+          "meta": "Stanford · Class of 2028",
+          "tag": "Stanford",
+          "monogram": "Z"
+        },
+        {
+          "quote": "From the parent side, this was the first time I could see the pace clearly. Not more anxiety. Just more clarity about what mattered each week.",
+          "name": "Ms. Zhang",
+          "meta": "Parent perspective",
+          "tag": "Parent POV",
+          "monogram": "Z"
+        }
+      ]
+    },
+    "cta": {
+      "eyebrow": "Start now · Free",
+      "title": ["Stop wasting years", "to information gaps"],
+      "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
+      "primary": "Create free account",
+      "secondary": "Book a 1:1 consult",
+      "trust": "No card required · Cancel anytime · Privacy first"
+    },
     "footer": {
-      "description": "AI-powered study abroad platform with school recommendations, admission predictions, and case library",
-      "products": "Products",
-      "resources": "Resources",
-      "contact": "Contact",
-      "helpCenter": "Help Center",
-      "contactEmail": "contact@studyabroad.com"
+      "description": "StudyAI brings school matching, essay collaboration, timelines, and real admissions data into one operating surface so ambitious families can move with clarity.",
+      "columns": [
+        {
+          "title": "Product",
+          "links": ["AI matching", "Essay desk", "Timeline", "Probability", "Teams"]
+        },
+        {
+          "title": "Resources",
+          "links": ["Student stories", "Help center", "About us", "Get started", "Terms"]
+        },
+        {
+          "title": "Company",
+          "links": ["About the team", "Community", "Support", "Privacy", "Create account"]
+        },
+        {
+          "title": "Legal",
+          "links": ["Privacy policy", "Terms of service", "Help docs"]
+        }
+      ],
+      "copyright": "© 2026 StudyAI · Admissions, no longer a black box.",
+      "note": "Made with clarity"
     }
   },
   "auth": {
@@ -524,7 +797,7 @@
       "heroDesc": "Smart school selection, accurate predictions, case sharing\nMake your application journey clear",
       "features": {
         "ai": "AI Smart School Recommendations",
-        "accuracy": "95% Prediction Accuracy",
+        "accuracy": "Outcome-Calibrated Predictions",
         "cases": "10,000+ Real Cases",
         "schools": "500+ Schools Covered"
       },
@@ -1287,7 +1560,8 @@
       },
       "empty": "No recommendation letters yet",
       "emptyHint": "Add your recommenders to track letter status"
-    }
+    },
+    "linkedToTemplate": "Linked to template"
   },
   "ranking": {
     "title": "Custom Rankings",
@@ -1343,7 +1617,8 @@
     "tier": {
       "reach": "Reach",
       "match": "Match",
-      "safety": "Safety"
+      "safety": "Safety",
+      "unknown": "Unknown"
     },
     "ucOneClick": "UC One-Click Prediction",
     "ucOneClickUnavailable": "UC school list is not available",
@@ -1419,12 +1694,6 @@
       "medium": "Moderate Data Support",
       "low": "Limited Data Support"
     },
-    "tier": {
-      "reach": "Reach",
-      "match": "Match",
-      "safety": "Safety",
-      "unknown": "Unknown"
-    },
     "tooltip": {
       "ensemble": "Combines AI, statistics, and historical signals into one personal estimate"
     },
@@ -1437,7 +1706,6 @@
     "detailedAnalysisPrompt": "Please analyze my chances for {schoolName} like a professional admissions counselor. Clearly distinguish the school's overall acceptance rate from my profile-based personal estimate, then explain key factors and next steps.",
     "dataCompleteness": "Profile Completeness",
     "dataCompletenessLow": "Complete your profile for more accurate predictions",
-    "completeProfile": "Complete Profile",
     "fromCache": "Cached",
     "expand": "Show Details",
     "collapse": "Hide Details",
@@ -2196,6 +2464,22 @@
     }
   },
   "ui": {
+    "admissionTiers": {
+      "reach": "Reach",
+      "target": "Target",
+      "safety": "Safety",
+      "likely": "Likely"
+    },
+    "aiDisclosure": {
+      "inputs": "Inputs",
+      "confidence": "Confidence",
+      "limitations": "Limitations",
+      "confidenceLevels": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    },
     "countBadge": {
       "unread": "{count, plural, one {# unread message} other {# unread messages}}"
     },
@@ -2512,6 +2796,7 @@
       "acceptanceRate": "Acceptance Rate",
       "intlAcceptanceRate": "Intl. Acceptance Rate",
       "hasEarlyDecision": "Early Decision",
+      "testingPolicy": "Testing Policy",
       "testOptional": "Test Optional",
       "satAvg": "SAT Average",
       "satRange": "SAT Range (25th-75th)",
@@ -2739,12 +3024,19 @@
       "description": "Run the application analysis to see school-aware guidance."
     },
     "emptyList": "No items yet",
+    "trace": "Trace",
+    "unknowns": "Unknowns",
     "overallScore": "Overall score",
     "focusSchools": "Focus schools",
     "profileContext": "Profile context",
     "schoolListDiagnosis": "School list diagnosis",
     "foundationReview": "Foundation review",
     "riskBoundaries": "Risk boundaries",
+    "topReasons": "Top reasons",
+    "topRisks": "Top risks",
+    "evidenceSummary": "Evidence summary",
+    "confidenceSummary": "Confidence summary",
+    "freshnessSummary": "Freshness summary",
     "missingPredictions": "Missing predictions",
     "missingRounds": "Schools without rounds",
     "highlights": "Highlights",
@@ -2895,7 +3187,7 @@
       }
     },
     "feedback": {
-      "title": "Was this experimental guidance helpful?",
+      "title": "Was this structured analysis helpful?",
       "helpful": "Helpful",
       "notHelpful": "Not helpful",
       "chooseReason": "Choose a reason",
@@ -3226,7 +3518,7 @@
       },
       "ai": {
         "title": "AI Upgrade",
-        "desc": "Introduced GPT-4, significantly improved prediction accuracy"
+        "desc": "Introduced GPT-4 to improve explanation quality and decision support"
       },
       "expansion": {
         "title": "Global Expansion",
@@ -3410,7 +3702,7 @@
       },
       "predictionAccuracy": {
         "question": "How accurate are the predictions?",
-        "answer": "Based on large amounts of real case data, our prediction accuracy is over 95%."
+        "answer": "We continuously recalibrate predictions against verified outcomes. Public fixed accuracy claims remain disabled until the verified sample base is large enough."
       },
       "dataPrivacy": {
         "question": "Is my data secure?",
@@ -3683,7 +3975,28 @@
       "pageCount": "{count} page",
       "pageWarning": "Resume exceeds {max} page limit",
       "zoom": "Zoom",
-      "sections": "Sections"
+      "sections": "Sections",
+      "placeholder": {
+        "awardLevel": "National / State / School",
+        "schoolName": "Harvard University",
+        "degree": "Bachelor of Arts",
+        "major": "Computer Science",
+        "location": "Cambridge, MA",
+        "fullName": "John Doe",
+        "cityState": "City, State",
+        "addTech": "Add tech...",
+        "authors": "Last, F., Last, F., ...",
+        "publicationStatus": "Published / Under Review / Submitted",
+        "skillCategory": "Category (e.g., Languages, Frameworks)",
+        "addSkill": "Add skill...",
+        "testName": "SAT, TOEFL, etc.",
+        "name": "Name",
+        "ucCappedGpa": "UC Capped GPA",
+        "ucUncappedGpa": "UC Uncapped GPA"
+      },
+      "chooseTemplate": "Choose Template",
+      "searchTemplates": "Search templates...",
+      "relevantCoursework": "Relevant Coursework:"
     },
     "customize": {
       "title": "Customize",
@@ -5149,7 +5462,8 @@
       "schoolPlaceholder": "Select a school",
       "tags": "Tags (optional)",
       "tagsPlaceholder": "Type and press Enter to add (max 10)",
-      "tagsHint": "Up to {max} tags"
+      "tagsHint": "Up to {max} tags",
+      "removeTag": "Remove"
     },
     "join": "Join",
     "leave": "Leave Team",
@@ -5288,6 +5602,19 @@
         "teamUp": "Team up",
         "networking": "Networking"
       },
+      "moderationStatus": {
+        "pendingReview": "Pending review",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "contextSourceType": {
+        "official": "Official",
+        "community": "Community"
+      },
+      "preview": {
+        "bannerTitle": "Preview mode",
+        "bannerHint": "Browse what others are recruiting for. Create and publish your own card to start matching."
+      },
       "empty": {
         "noCard": "Create and publish a recruitment card first",
         "deckEmpty": "Deck is empty",
@@ -5322,7 +5649,9 @@
         "city": "City",
         "cityPlaceholder": "SF / NYC / Remote",
         "languages": "Languages",
-        "languagesPlaceholder": "English, Chinese"
+        "languagesPlaceholder": "English, Chinese",
+        "timezone": "Timezone",
+        "timezonePlaceholder": "UTC+8"
       },
       "intentMode": {
         "teamUp": "Team up",
@@ -5365,7 +5694,9 @@
         "need": "Need",
         "skills": "Skills",
         "members": "Members",
-        "confirmed": "Confirmed"
+        "confirmed": "Confirmed",
+        "detailExpand": "Show full description",
+        "detailCollapse": "Show less"
       },
       "toast": {
         "cardCreated": "Recruitment card created",
@@ -5373,7 +5704,66 @@
         "cardPublished": "Recruitment card published",
         "cardClosed": "Recruitment card closed",
         "displayUpdated": "Member display updated",
-        "matched": "It matched and opened a group chat"
+        "matched": "It matched and opened a group chat",
+        "contextCreated": "Community context created",
+        "contextUpdated": "Community context updated",
+        "contextPublished": "Community context published"
+      },
+      "copy": {
+        "publicTab": "Public",
+        "privateTab": "Private",
+        "matchesTab": "Matches",
+        "myTeamTab": "My Team",
+        "publicTitle": "Public Match Pools",
+        "publicDescription": "Pick a pool, then a competition, then the official recruitment context.",
+        "privateTitle": "Private Community Context",
+        "privateDescription": "Create your own context first, then bind and publish a recruitment card.",
+        "pool": "Pool",
+        "poolEntry": "Competition",
+        "context": "Recruitment Context",
+        "myContexts": "My Community Contexts",
+        "createContext": "Create Context",
+        "updateContext": "Update Context",
+        "publishContext": "Publish Context",
+        "openInPublic": "Open in Public",
+        "openInPrivate": "Open in Private",
+        "currentSelection": "Current selection",
+        "noPoolEntries": "This pool does not have entries yet.",
+        "noPublicContext": "This competition does not have an official published context yet.",
+        "noPrivateContext": "Create a community context first.",
+        "sourceUrl": "Source URL",
+        "registrationCloseAt": "Registration close",
+        "eventStartAt": "Event start",
+        "eventEndAt": "Event end",
+        "locationMode": "Location mode",
+        "locationText": "Location detail",
+        "rolePresets": "Role presets",
+        "selectContextFirst": "Select a context before creating a recruitment card.",
+        "existingCards": "Existing cards",
+        "loadCard": "Load into editor",
+        "moderationStatus": "Moderation",
+        "sourceType": "Source",
+        "communityBadge": "COMMUNITY",
+        "officialBadge": "OFFICIAL",
+        "noCards": "No recruitment cards yet.",
+        "openPublicDeck": "Open Public deck"
+      },
+      "contextForm": {
+        "new": "New community context",
+        "title": "Title",
+        "chineseTitle": "Chinese title",
+        "rolePresetsPlaceholder": "Captain, Analyst, Presenter",
+        "description": "Description"
+      },
+      "trust": {
+        "adminTooltip": "Admin — platform staff",
+        "adminAria": "Admin verified member",
+        "verifiedTooltip": "Verified user — identity confirmed",
+        "verifiedAria": "Verified member",
+        "emailTooltip": "Email verified",
+        "emailAria": "Email verified member",
+        "thinLabel": "Light on detail",
+        "thinAria": "Recruitment card has a short headline"
       }
     }
   },
@@ -5964,6 +6354,21 @@
         "rankings": "Rankings",
         "financial": "Financial",
         "application": "Application"
+      },
+      "editDialog": {
+        "usNewsRank": "US News Rank",
+        "qsRank": "QS Rank",
+        "testingPolicy": "Testing Policy",
+        "testOptional": "Test Optional",
+        "earlyDecision": "Early Decision",
+        "commonApp": "Common App",
+        "coalitionApp": "Coalition App",
+        "feeWaiver": "Fee Waiver",
+        "needBlindIntl": "Need Blind (Intl)"
+      },
+      "dataQuality": {
+        "loadFailedTitle": "Failed to load data quality report",
+        "loadFailedDescription": "Please try refreshing"
       }
     },
     "data": {
@@ -6056,8 +6461,9 @@
       },
       "stats": {
         "calibratedSchools": "Calibrated Schools",
-        "predictionsWithOutcomes": "Predictions with Outcomes",
-        "overallAccuracy": "Overall Accuracy",
+        "verifiedOutcomes": "Verified Outcomes",
+        "brierScore": "Brier Score",
+        "ece": "Calibration ECE",
         "schoolsNeedingAttention": "Schools Needing Attention"
       },
       "charts": {
@@ -6225,7 +6631,8 @@
         "notesPlaceholder": "Explain verification, conflict, or censoring decision",
         "markFinal": "Mark as final outcome",
         "cancel": "Cancel",
-        "saveReview": "Save Review"
+        "saveReview": "Save Review",
+        "statusReady": "Ready"
       }
     },
     "applicationAnalysisWorkflow": {
@@ -6235,6 +6642,7 @@
         "evidence": "Evidence",
         "policies": "Policies",
         "evaluations": "Evaluations",
+        "replays": "Replays",
         "gates": "Gates",
         "activate": "Activate / Rollback",
         "experiments": "Experiments",
@@ -6245,6 +6653,11 @@
       "evidence": {
         "createTitle": "Create School Policy Evidence",
         "queueTitle": "Evidence Review Queue",
+        "fixtureHint": "Fixture evidence is only for CI/nightly governance. Production trust still requires reviewed real evidence.",
+        "modeFilter": "Evidence Mode",
+        "modeAll": "All",
+        "modeFixture": "Fixture",
+        "modeReal": "Real",
         "schoolId": "School ID",
         "dimension": "Policy Dimension",
         "policyValue": "Policy Value",
@@ -6281,7 +6694,40 @@
         "policyCorrectnessRate": "Policy Correctness",
         "weakStateCorrectnessRate": "Weak-State Correctness",
         "actionabilityMean": "Actionability",
+        "webVisualPass": "Web Visual",
+        "liveGoldPassRate": "Live Gold Pass",
+        "journeyPassRate": "Journey Pass",
+        "caseCount": "Gold Cases",
+        "workflowMode": "Workflow Mode",
+        "dataset": "Dataset",
+        "replayMode": "Replay Mode",
+        "evidenceMode": "Evidence Mode",
+        "fixtureEvidenceCount": "Fixture Evidence",
+        "realEvidenceCount": "Real Evidence",
+        "commitSha": "Commit",
+        "latestReplayId": "Latest Replay",
+        "reportPath": "Report",
+        "reportJsonPath": "Report JSON",
+        "workflowRunUrl": "Workflow",
+        "failures": "Failures",
         "empty": "No evaluation runs have been recorded yet."
+      },
+      "replays": {
+        "title": "Replay Runs",
+        "goldPassRate": "Gold Pass",
+        "webRenderPass": "Web DOM",
+        "mobileRenderPass": "Mobile RN",
+        "liveGoldPassRate": "Live Gold Pass",
+        "caseCount": "Cases",
+        "workflowMode": "Workflow Mode",
+        "commitSha": "Commit",
+        "renderParityMode": "Render Mode",
+        "reportPath": "Report",
+        "reportJsonPath": "Report JSON",
+        "workflowRunUrl": "Workflow",
+        "liveReplayId": "Live Replay",
+        "failures": "Failures",
+        "empty": "No replay runs have been recorded yet."
       },
       "gates": {
         "title": "Promotion Gates",
@@ -6552,7 +6998,8 @@
       "agentMaxTokensDesc": "Maximum number of tokens per response, controlling the maximum reply length",
       "agentTools": "Tools",
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "traceId": "Trace ID"
     },
     "memory": {
       "title": "Memory Management",
@@ -6633,7 +7080,10 @@
       "decayArchived": "Archived",
       "decayDeleted": "Deleted",
       "decayErrors": "Errors",
-      "decayDuration": "Duration"
+      "decayDuration": "Duration",
+      "titleLabel": "Title",
+      "summaryLabel": "Summary",
+      "allTypes": "All Types"
     },
     "highSchools": {
       "title": "High School Management",
@@ -7169,7 +7619,8 @@
         "optional": "Optional",
         "table": {
           "school": "School"
-        }
+        },
+        "statusLabel": "Status"
       },
       "toast": {
         "approved": "Approved successfully",
@@ -7361,7 +7812,8 @@
         "REFER_USER": "Refer User",
         "SWIPE_CASE": "Swipe Case",
         "REPORT_CONTENT": "Report Content"
-      }
+      },
+      "descriptionLabel": "Description"
     },
     "contentMod": {
       "title": "Content Moderation",
@@ -7441,7 +7893,9 @@
       "reason": "Reason",
       "reasonPlaceholder": "Enter reason (optional)...",
       "action": "Action",
-      "noEvents": "No security events found"
+      "noEvents": "No security events found",
+      "postsUpdated": "{count} posts updated",
+      "titleLabel": "Title"
     },
     "payments": {
       "title": "Payment Management",
@@ -7996,6 +8450,30 @@
         "autoApproved": "Auto Approved",
         "rejected": "Rejected"
       }
+    },
+    "activityTemplates": {
+      "toast": {
+        "created": "Activity template created",
+        "updated": "Activity template updated",
+        "deleted": "Activity template deleted"
+      },
+      "description": "Manage activity templates (name, category, tier) for student",
+      "searchPlaceholder": "Search by name, Chinese name, or aliases...",
+      "tierPlaceholder": "Tier",
+      "categoryPlaceholder": "Category",
+      "allTiers": "All Tiers",
+      "allCategories": "All Categories",
+      "deleteTitle": "Delete Activity Template",
+      "chineseName": "Chinese Name",
+      "name": "Name",
+      "category": "Category",
+      "tier": "Tier",
+      "aliases": "Aliases",
+      "active": "Active",
+      "descriptionLabel": "Description",
+      "optionalDescription": "Optional description",
+      "emptyTitle": "No Activity Templates",
+      "emptyDescription": "Click Create to add a new activity template"
     }
   },
   "essayAdmin": {
@@ -8291,5 +8769,14 @@
       "share": "Share Your Case",
       "shareDesc": "Contribute your admission results to help others and earn platform points."
     }
+  },
+  "layout": {
+    "description": "AI-driven study abroad planning platform"
+  },
+  "schoolDetail": {
+    "edII": "ED II"
+  },
+  "activityForm": {
+    "linkedToTemplate": "Linked to template"
   }
 }

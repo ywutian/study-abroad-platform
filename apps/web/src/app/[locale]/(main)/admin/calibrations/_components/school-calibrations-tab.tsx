@@ -60,6 +60,7 @@ function multiplierToPercent(m: number): number {
 
 export function SchoolCalibrationsTab() {
   const t = useTranslations('admin.calibrations');
+  const tc = useTranslations('common');
   const locale = useLocale();
   const queryClient = useQueryClient();
 
@@ -119,7 +120,7 @@ export function SchoolCalibrationsTab() {
       const items = Array.isArray(parsed) ? parsed : [parsed];
       bulkMutation.mutate(items);
     } catch {
-      toast.error('Invalid JSON');
+      toast.error(tc('invalidJson'));
     }
   }
 

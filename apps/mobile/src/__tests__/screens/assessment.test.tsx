@@ -64,6 +64,7 @@ jest.mock('expo-haptics', () => ({
 
 // Mock shared routes
 jest.mock('@study-abroad/shared', () => ({
+  ...jest.requireActual('@study-abroad/shared'),
   API_ROUTES: {
     ASSESSMENTS: '/assessments',
   },

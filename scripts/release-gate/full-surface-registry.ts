@@ -28,6 +28,9 @@ export const FULL_SURFACE_QUALITY_DIMENSIONS = [
 export type SurfaceType = 'route' | 'capability' | 'journey';
 export type SurfacePlatform = 'web' | 'mobile' | 'api' | 'mcp' | 'cross-platform';
 export type SurfacePersona = 'guest' | 'applicant' | 'admin' | 'external' | 'shared' | 'inactive';
+export type UiLayer = 'marketing' | 'entry' | 'tool' | 'ai' | 'community' | 'admin';
+export type PageContractVariant = UiLayer;
+export type MigrationStatus = 'not-started' | 'in-progress' | 'migrated' | 'waived';
 export type AgentBundleId =
   | 'batch-0-inventory-triage'
   | 'batch-1-applicant-web-auth'
@@ -75,6 +78,10 @@ export interface BaseSurfaceDefinition {
 
 export interface RouteSurfaceDefinition extends BaseSurfaceDefinition {
   surfaceType: 'route';
+  uiLayer: UiLayer;
+  pageContractVariant: PageContractVariant;
+  migrationStatus: MigrationStatus;
+  aiExplanatorySurface: boolean;
   routeMetadata: RouteMetadata;
 }
 
@@ -317,6 +324,7 @@ function classifyWebPersona(routeTemplate: string, sourcePath: string): SurfaceP
   if (sourcePath.includes('/(auth)/')) return 'guest';
   if (
     routeTemplate === '/' ||
+    routeTemplate === '/:locale' ||
     routeTemplate.startsWith('/:locale/about') ||
     routeTemplate.startsWith('/:locale/help') ||
     routeTemplate.startsWith('/:locale/privacy') ||
@@ -433,6 +441,77 @@ function routeReuseTags(
   return [...tags];
 }
 
+function routeUiLayer(routeTemplate: string, persona: SurfacePersona): UiLayer {
+  if (persona === 'admin' || routeTemplate.includes('/admin')) return 'admin';
+  if (
+    routeTemplate === '/' ||
+    routeTemplate === '/:locale' ||
+    routeTemplate.includes('/about') ||
+    routeTemplate.includes('/pricing')
+  ) {
+    return 'marketing';
+  }
+  if (
+    routeTemplate.includes('/login') ||
+    routeTemplate.includes('/register') ||
+    routeTemplate.includes('/forgot-password') ||
+    routeTemplate.includes('/reset-password') ||
+    routeTemplate.includes('/verify-email') ||
+    routeTemplate.includes('/onboarding')
+  ) {
+    return 'entry';
+  }
+  if (
+    routeTemplate.includes('/prediction') ||
+    routeTemplate.includes('/assessment') ||
+    routeTemplate.includes('/recommendation') ||
+    routeTemplate.includes('/uncommon-app') ||
+    routeTemplate.includes('/ai') ||
+    routeTemplate.includes('/chat')
+  ) {
+    return 'ai';
+  }
+  if (
+    routeTemplate.includes('/teams') ||
+    routeTemplate.includes('/forum') ||
+    routeTemplate.includes('/cases') ||
+    routeTemplate.includes('/hall') ||
+    routeTemplate.includes('/followers')
+  ) {
+    return 'community';
+  }
+  return 'tool';
+}
+
+const MIGRATED_WEB_ROUTE_TEMPLATES = new Set([
+  '/:locale',
+  '/:locale/admin',
+  '/:locale/dashboard',
+  '/:locale/prediction',
+  '/:locale/teams',
+]);
+
+function routeMigrationStatus(
+  routeTemplate: string,
+  persona: SurfacePersona,
+  platform: 'web' | 'mobile'
+): MigrationStatus {
+  if (persona === 'inactive') return 'waived';
+  if (platform === 'web' && MIGRATED_WEB_ROUTE_TEMPLATES.has(routeTemplate)) {
+    return 'migrated';
+  }
+  return 'in-progress';
+}
+
+function routeAiExplanatorySurface(routeTemplate: string, uiLayer: UiLayer) {
+  return (
+    uiLayer === 'ai' ||
+    routeTemplate.includes('/prediction') ||
+    routeTemplate.includes('/recommendation') ||
+    routeTemplate.includes('/assessment')
+  );
+}
+
 function buildWebRouteSurface(filePath: string): RouteSurfaceDefinition {
   const relativePath = toPosix(path.relative(WEB_APP_ROOT, filePath));
   const routeTemplate = normalizeWebRoute(relativePath);
@@ -446,10 +525,15 @@ function buildWebRouteSurface(filePath: string): RouteSurfaceDefinition {
     supportingShells: supportingShells(WEB_APP_ROOT, relativePath),
     standaloneCounted: true,
   };
+  const uiLayer = routeUiLayer(routeTemplate, persona);
 
   return {
     surfaceId: `WEB_ROUTE:${routeTemplate}`,
     surfaceType: 'route',
+    uiLayer,
+    pageContractVariant: uiLayer,
+    migrationStatus: routeMigrationStatus(routeTemplate, persona, 'web'),
+    aiExplanatorySurface: routeAiExplanatorySurface(routeTemplate, uiLayer),
     platform: 'web',
     persona,
     routeOrEntry: routeTemplate,
@@ -478,10 +562,15 @@ function buildMobileRouteSurface(filePath: string): RouteSurfaceDefinition {
     supportingShells: supportingShells(MOBILE_APP_ROOT, relativePath),
     standaloneCounted: !relativePath.endsWith('_layout.tsx'),
   };
+  const uiLayer = routeUiLayer(routeTemplate, persona);
 
   return {
     surfaceId: `MOBILE_ROUTE:${routeTemplate}`,
     surfaceType: 'route',
+    uiLayer,
+    pageContractVariant: uiLayer,
+    migrationStatus: routeMigrationStatus(routeTemplate, persona, 'mobile'),
+    aiExplanatorySurface: routeAiExplanatorySurface(routeTemplate, uiLayer),
     platform: 'mobile',
     persona,
     routeOrEntry: routeTemplate,

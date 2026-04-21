@@ -5,7 +5,7 @@ import type { CompareField } from './types';
 // Field grouping for category headers
 export const CATEGORY_FIELDS: Record<string, string[]> = {
   rankings: ['usNewsRank', 'qsRank'],
-  admissions: ['acceptanceRate', 'intlAcceptanceRate', 'hasEarlyDecision', 'testOptional'],
+  admissions: ['acceptanceRate', 'intlAcceptanceRate', 'hasEarlyDecision', 'testingPolicy'],
   testScores: ['satAvg', 'satRange', 'actAvg', 'toeflMin'],
   cost: [
     'tuition',
@@ -18,7 +18,10 @@ export const CATEGORY_FIELDS: Record<string, string[]> = {
   campus: ['studentCount', 'studentFacultyRatio', 'intlStudentPct'],
 };
 
-export function buildFields(t: ReturnType<typeof useTranslations>): CompareField[] {
+export function buildFields(
+  t: ReturnType<typeof useTranslations>,
+  testingPolicyT: ReturnType<typeof useTranslations>
+): CompareField[] {
   const pct = (_v: number | string | null | undefined) => {
     if (_v == null) return '-';
     const n = typeof _v === 'string' ? parseFloat(_v) : _v;
@@ -107,10 +110,10 @@ export function buildFields(t: ReturnType<typeof useTranslations>): CompareField
       best: 'higher',
     },
     {
-      key: 'testOptional',
-      labelKey: 'fields.testOptional',
-      getValue: (s) => s.testOptional as unknown as number,
-      format: bool,
+      key: 'testingPolicy',
+      labelKey: 'fields.testingPolicy',
+      getValue: (s) => s.testingPolicy,
+      format: (_v) => (typeof _v === 'string' && _v.length > 0 ? testingPolicyT(_v as any) : '-'),
       best: 'higher',
     },
     // Test Scores

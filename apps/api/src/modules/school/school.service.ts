@@ -9,6 +9,7 @@ import type {
   TrustTier,
 } from '@study-abroad/shared';
 import {
+  toLegacyTestOptionalFlag,
   normalizeSchoolProvenance,
   toSchoolFieldSource,
 } from '@study-abroad/shared/utils';
@@ -78,6 +79,7 @@ interface SchoolFilters {
   sizeMax?: number;
   schoolType?: 'public' | 'private';
   testOptional?: boolean;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   needBlind?: boolean;
   hasEarlyDecision?: boolean;
 }
@@ -270,8 +272,15 @@ export class SchoolService {
       where.isPrivate = filters.schoolType === 'private';
     }
 
+    if (filters?.testingPolicy) {
+      where.testingPolicy = filters.testingPolicy;
+    }
     if (filters?.testOptional) {
-      where.testOptional = true;
+      where.OR = [
+        ...(Array.isArray(where.OR) ? where.OR : []),
+        { testingPolicy: 'OPTIONAL' },
+        { testingPolicy: 'UNKNOWN', testOptional: true },
+      ];
     }
     if (filters?.needBlind) {
       where.needBlindInternational = true;
@@ -579,12 +588,23 @@ export class SchoolService {
       metadata,
     });
 
+    const testingPolicy =
+      (
+        school as {
+          testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN' | null;
+        }
+      ).testingPolicy ?? 'UNKNOWN';
     const nextSchool = {
       ...school,
       acceptanceRate:
         clampPercentRate(school.acceptanceRate) ?? school.acceptanceRate,
       graduationRate:
         clampPercentRate(school.graduationRate) ?? school.graduationRate,
+      testingPolicy,
+      testOptional: toLegacyTestOptionalFlag({
+        testingPolicy,
+        testOptional: school.testOptional,
+      }),
       metadata,
       fieldSources,
       communityRatingSummary,
@@ -632,6 +652,7 @@ export class SchoolService {
       'averageNetPrice',
       'applicationFee',
       'acceptsCommonApp',
+      'testingPolicy',
       'testOptional',
       'percentNeedMet',
     ] as const;
@@ -660,6 +681,7 @@ export class SchoolService {
         averageNetPrice: true,
         applicationFee: true,
         acceptsCommonApp: true,
+        testingPolicy: true,
         testOptional: true,
         percentNeedMet: true,
         totalEnrollment: true,

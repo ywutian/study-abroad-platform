@@ -18,7 +18,8 @@ overrides:
   minimatch@^10: '>=10.2.3'
   serialize-javascript: '>=7.0.3'
   '@isaacs/brace-expansion': '>=5.0.1'
-  basic-ftp: '>=5.2.2'
+  basic-ftp: '>=5.3.0'
+  protobufjs: '>=7.5.5 <8'
   rollup: '>=4.59.0'
   glob@>=11.0.0 <11.1.0: '>=11.1.0'
   jws@4.0.0: '>=4.0.1'
@@ -12803,10 +12804,10 @@ packages:
       }
     hasBin: true
 
-  basic-ftp@5.2.2:
+  basic-ftp@5.3.0:
     resolution:
       {
-        integrity: sha512-1tDrzKsdCg70WGvbFss/ulVAxupNauGnOlgpyjKzeQxzyllBLS0CGLV7tjIXTK3ZQA9/FBEm9qyFFN1bciA6pw==,
+        integrity: sha512-5K9eNNn7ywHPsYnFwjKgYH8Hf8B5emh7JKcPaVjjrMJFQQwGpwowEnZNEtHs7DfR7hCZsmaK3VA4HUK0YarT+w==,
       }
     engines: { node: '>=10.0.0' }
 
@@ -22007,10 +22008,10 @@ packages:
         integrity: sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ==,
       }
 
-  protobufjs@7.5.4:
+  protobufjs@7.5.5:
     resolution:
       {
-        integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==,
+        integrity: sha512-3wY1AxV+VBNW8Yypfd1yQY9pXnqTAN+KwQxL8iYm3/BjKYMNg4i0owhEe26PWDOMaIrzeeF98Lqd5NGz4omiIg==,
       }
     engines: { node: '>=12.0.0' }
 
@@ -29747,7 +29748,7 @@ snapshots:
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.2
-      protobufjs: 7.5.4
+      protobufjs: 7.5.5
       yargs: 17.7.2
 
   '@hapi/hoek@9.3.0':
@@ -31760,7 +31761,7 @@ snapshots:
       '@opentelemetry/sdk-logs': 0.213.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-metrics': 2.6.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 2.6.0(@opentelemetry/api@1.9.0)
-      protobufjs: 7.5.4
+      protobufjs: 7.5.5
 
   '@opentelemetry/propagator-b3@2.6.0(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -36453,7 +36454,7 @@ snapshots:
 
   baseline-browser-mapping@2.9.17: {}
 
-  basic-ftp@5.2.2: {}
+  basic-ftp@5.3.0: {}
 
   bcrypt-pbkdf@1.0.2:
     dependencies:
@@ -39147,7 +39148,7 @@ snapshots:
 
   get-uri@6.0.5:
     dependencies:
-      basic-ftp: 5.2.2
+      basic-ftp: 5.3.0
       data-uri-to-buffer: 6.0.2
       debug: 4.4.3
     transitivePeerDependencies:
@@ -43068,7 +43069,7 @@ snapshots:
 
   property-information@7.1.0: {}
 
-  protobufjs@7.5.4:
+  protobufjs@7.5.5:
     dependencies:
       '@protobufjs/aspromise': 1.1.2
       '@protobufjs/base64': 1.1.2

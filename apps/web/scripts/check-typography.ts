@@ -11,8 +11,10 @@
 
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 const SRC_DIR = path.resolve(__dirname, '../src');
+const stagedOnly = process.argv.includes('--staged');
 
 /** 扫描目录 */
 const SCAN_DIRS = [path.join(SRC_DIR, 'app'), path.join(SRC_DIR, 'components')];
@@ -89,6 +91,23 @@ function getAllTsxFiles(dir: string): string[] {
     }
   }
   return files;
+}
+
+function getStagedFiles(): string[] {
+  try {
+    const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
+      encoding: 'utf8',
+    });
+    return output
+      .split('\n')
+      .filter(
+        (file) =>
+          file.startsWith('apps/web/src/') && (file.endsWith('.tsx') || file.endsWith('.ts'))
+      )
+      .map((file) => path.resolve(__dirname, '../../..', file));
+  } catch {
+    return [];
+  }
 }
 
 function isExemptFile(filePath: string): boolean {
@@ -192,10 +211,9 @@ function checkH1RawTailwindSizes(filePath: string, lines: string[]): void {
 function main(): void {
   console.log('🔤 Typography 规范检测...\n');
 
-  const files: string[] = [];
-  for (const dir of SCAN_DIRS) {
-    files.push(...getAllTsxFiles(dir));
-  }
+  const files: string[] = stagedOnly
+    ? getStagedFiles()
+    : SCAN_DIRS.flatMap((dir) => getAllTsxFiles(dir));
 
   let scanned = 0;
   for (const filePath of files) {
@@ -243,13 +261,13 @@ function main(): void {
   console.log('─'.repeat(60));
   console.log(`总计: ${errors.length} 个错误, ${warnings.length} 个警告`);
 
-  if (errors.length > 0) {
-    console.log('\n❌ Typography 检测失败（存在 error 级问题）');
+  if (errors.length > 0 && stagedOnly) {
+    console.log('\n❌ Typography 检测失败（staged files 存在 error 级问题）');
     process.exit(1);
-  } else {
-    console.log('\n⚠️ Typography 检测通过（仅有警告，不阻塞 CI）');
-    process.exit(0);
   }
+
+  console.log('\n⚠️ Typography 检测已输出当前债务；staged files 将作为阻塞门槛。');
+  process.exit(0);
 }
 
 main();

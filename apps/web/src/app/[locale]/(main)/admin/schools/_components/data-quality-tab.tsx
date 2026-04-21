@@ -476,8 +476,8 @@ export function DataQualityTab({ qualityData, isLoading, onRefresh }: DataQualit
       ) : (
         <EmptyState
           icon={<XCircle className="h-12 w-12" />}
-          title="Failed to load data quality report"
-          description="Please try refreshing"
+          title={t('schools.dataQuality.loadFailedTitle')}
+          description={t('schools.dataQuality.loadFailedDescription')}
         />
       )}
     </>

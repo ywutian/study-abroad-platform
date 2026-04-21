@@ -1,0 +1,1215 @@
+{
+  "generatedAt": "2026-04-21T07:33:55.774Z",
+  "dataset": "gold:deterministic:v1",
+  "mode": "deterministic",
+  "analysisVersion": "application-analysis-v2",
+  "commitSha": "244268730009cded2ca3bcd31753dab7eadd1e43",
+  "aggregate": {
+    "totalCases": 50,
+    "passedCases": 50,
+    "policyCorrectnessRate": 1,
+    "weakStateCorrectnessRate": 1,
+    "fabricatedInsightCount": 0,
+    "actionabilityMean": 1,
+    "contractParityPass": true,
+    "webRenderPass": null,
+    "mobileRenderPass": null,
+    "journeyPassRate": null,
+    "unknownPolicyRate": 0.2778,
+    "goldPassRate": 1
+  },
+  "cases": [
+    {
+      "caseId": "001-uc-berkeley-blind-en",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 2,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "002-no-target-schools-zh",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "003-columbia-optional-en",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "004-no-predictions-en",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "005-insufficient-profile-en",
+      "passed": true,
+      "failures": [],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "006-mit-required-en",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "007-unknown-policy-zh",
+      "passed": true,
+      "failures": [],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 2,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "008-berkeley-columbia-balanced-en",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 2,
+        "policyMatches": 2,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 2,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "009-stanford-required-zh",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "010-brown-optional-aid-en",
+      "passed": true,
+      "failures": [],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "011-ucb-1",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "012-columbia-1",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "013-mit-1",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "014-stanford-1",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "015-brown-1",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "016-unknown-tech-1",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 2,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "017-columbia-1",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "018-ucb-2",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "019-columbia-2",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "020-mit-2",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "021-stanford-2",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "022-brown-2",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "023-unknown-tech-2",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 2,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "024-columbia-2",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "025-ucb-3",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "026-columbia-3",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "027-mit-3",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "028-stanford-3",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "029-brown-3",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "030-unknown-tech-3",
+      "passed": true,
+      "failures": [],
+      "durationMs": 1,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 2,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "031-columbia-3",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "032-ucb-4",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "033-columbia-4",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "034-mit-4",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "035-stanford-4",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "036-brown-4",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "037-unknown-tech-4",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 2,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "038-columbia-4",
+      "passed": true,
+      "failures": [
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "039-no-target-1",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "040-no-target-2",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "041-no-target-3",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "042-no-target-4",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "043-no-predictions-mit",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "044-no-predictions-stanford",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "045-no-predictions-columbia",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "046-no-predictions-ucb",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "047-insufficient-ucb",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "048-insufficient-columbia",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "049-insufficient-mit",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "050-insufficient-unknown-tech",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    }
+  ]
+}

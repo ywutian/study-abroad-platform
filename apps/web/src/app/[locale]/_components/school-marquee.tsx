@@ -30,11 +30,14 @@ export function SchoolMarquee() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <div className="relative overflow-hidden py-4">
-      {/* Gradient masks */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24 bg-gradient-to-r from-muted/30 to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24 bg-gradient-to-l from-muted/30 to-transparent" />
-
+    // DS v2.1 §4: use mask-image (not bg-gradient-to-*) for edge fade
+    <div
+      className="relative overflow-hidden py-4"
+      style={{
+        maskImage: 'linear-gradient(90deg, transparent, black 6%, black 94%, transparent)',
+        WebkitMaskImage: 'linear-gradient(90deg, transparent, black 6%, black 94%, transparent)',
+      }}
+    >
       <div className={cn('flex w-max gap-6 sm:gap-8', !prefersReducedMotion && 'animate-marquee')}>
         {/* Render twice for seamless loop */}
         {[...schools, ...schools].map((school, i) => (

@@ -24,7 +24,9 @@ export function SchoolHeroHeader({
   actions,
 }: SchoolHeroHeaderProps) {
   const t = useTranslations();
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
+  const showTestingPolicy = school.testingPolicy != null && school.testingPolicy !== 'UNKNOWN';
 
   return (
     <motion.div
@@ -85,12 +87,12 @@ export function SchoolHeroHeader({
                   </Badge>
                 </>
               )}
-              {school.testOptional && (
+              {showTestingPolicy && (
                 <Badge
                   variant="outline"
                   className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                 >
-                  Test Optional
+                  {testingPolicyT(school.testingPolicy as any)}
                 </Badge>
               )}
               {school.hasEarlyDecision && (

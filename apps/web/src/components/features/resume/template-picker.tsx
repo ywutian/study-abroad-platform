@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,7 @@ export function TemplatePicker({
   onSelect,
   trigger,
 }: TemplatePickerProps) {
+  const t = useTranslations('resume.editor');
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<TemplateCategory | 'all'>('all');
   const [search, setSearch] = useState('');
@@ -108,14 +110,14 @@ export function TemplatePicker({
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Choose Template</DialogTitle>
+          <DialogTitle>{t('chooseTemplate')}</DialogTitle>
         </DialogHeader>
 
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search templates..."
+            placeholder={t('searchTemplates')}
             className="pl-9"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -164,17 +166,17 @@ export function TemplatePicker({
                     <span className="text-xs font-medium">{t.name}</span>
                     {currentTemplateId === t.id && <Check className="h-3 w-3 text-primary" />}
                   </div>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                  <p className="mt-0.5 text-2xs text-muted-foreground line-clamp-1">
                     {t.description}
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     {recommended?.has(t.id) && (
-                      <Badge variant="default" className="h-4 px-1 text-[9px]">
+                      <Badge variant="default" className="h-4 px-1 text-2xs">
                         Recommended
                       </Badge>
                     )}
                     {t.tags.slice(0, 2).map((tag) => (
-                      <Badge key={tag} variant="secondary" className="h-4 px-1 text-[9px]">
+                      <Badge key={tag} variant="secondary" className="h-4 px-1 text-2xs">
                         {tag}
                       </Badge>
                     ))}

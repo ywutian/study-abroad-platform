@@ -8,6 +8,7 @@ export type SchoolPolicyEvidenceStatus =
   | 'APPROVED'
   | 'REJECTED'
   | 'EXPIRED';
+export type GovernanceEvidenceMode = 'fixture' | 'real' | 'mixed' | 'none';
 export type ApplicationAnalysisPolicyStatus =
   | 'DRAFT'
   | 'CANDIDATE'
@@ -66,6 +67,7 @@ export interface SchoolPolicyEvidenceRecord {
   expiresAt?: string | null;
   notes?: string | null;
   metadata?: Record<string, unknown> | null;
+  evidenceMode?: GovernanceEvidenceMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,6 +113,37 @@ export interface ApplicationAnalysisEvaluationRunRecord {
   createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ApplicationAnalysisReplayCaseResultRecord {
+  id: string;
+  replayRunId: string;
+  runId?: string | null;
+  caseId: string;
+  sourceType: string;
+  status: string;
+  traceId?: string | null;
+  outputPayload?: Record<string, unknown> | null;
+  metrics?: Record<string, unknown> | null;
+  failures?: unknown[] | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApplicationAnalysisReplayRunRecord {
+  id: string;
+  analysisVersion: string;
+  dataset: string;
+  status: string;
+  summary?: Record<string, unknown> | null;
+  metrics?: Record<string, unknown> | null;
+  failures?: unknown[] | null;
+  createdBy?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  caseResults?: ApplicationAnalysisReplayCaseResultRecord[];
 }
 
 export interface ApplicationAnalysisExperimentVersionRecord {
@@ -205,12 +238,13 @@ export interface ApplicationAnalysisExposureRecord {
 
 export interface ApplicationAnalysisFeedbackRecord {
   id: string;
-  exposureRecordId: string;
-  exposureId: string;
+  exposureRecordId?: string | null;
+  applicationAnalysisRunId?: string | null;
+  exposureId?: string | null;
   userId: string;
-  capability: ApplicationAnalysisExperimentCapability;
+  capability?: ApplicationAnalysisExperimentCapability | null;
   schoolId?: string | null;
-  category: ApplicationAnalysisFeedbackCategory;
+  category?: ApplicationAnalysisFeedbackCategory | null;
   sentiment: ApplicationAnalysisFeedbackSentiment;
   notes?: string | null;
   createdAt: string;
@@ -287,8 +321,9 @@ export interface UpdateApplicationAnalysisExperimentConfigInput {
 }
 
 export interface SubmitApplicationAnalysisFeedbackInput {
-  exposureId: string;
-  capability: ApplicationAnalysisExperimentCapability;
+  runId?: string;
+  exposureId?: string;
+  capability?: ApplicationAnalysisExperimentCapability;
   sentiment: ApplicationAnalysisFeedbackSentiment;
   schoolId?: string;
   category?: ApplicationAnalysisFeedbackCategory;
@@ -301,6 +336,8 @@ export type PaginatedApplicationAnalysisPolicyResponse =
   PaginatedResponse<ApplicationAnalysisPolicyVersionRecord>;
 export type PaginatedApplicationAnalysisEvaluationResponse =
   PaginatedResponse<ApplicationAnalysisEvaluationRunRecord>;
+export type PaginatedApplicationAnalysisReplayRunResponse =
+  PaginatedResponse<ApplicationAnalysisReplayRunRecord>;
 export type PaginatedApplicationAnalysisExperimentResponse =
   PaginatedResponse<ApplicationAnalysisExperimentVersionRecord>;
 export type PaginatedApplicationAnalysisExperimentEvaluationResponse =

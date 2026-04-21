@@ -53,7 +53,7 @@
 
 | 名称            | 亮色模式               | 暗色模式               | 用途                 |
 | --------------- | ---------------------- | ---------------------- | -------------------- |
-| **Primary**     | `oklch(0.58 0.22 255)` | `oklch(0.65 0.20 255)` | 主要操作、链接、重点 |
+| **Primary**     | `oklch(0.58 0.22 255)` | `oklch(0.68 0.20 255)` | 主要操作、链接、重点 |
 | **Success**     | `oklch(0.68 0.18 155)` | `oklch(0.72 0.16 155)` | 成功状态、录取       |
 | **Warning**     | `oklch(0.78 0.15 75)`  | `oklch(0.80 0.14 75)`  | 警示、候补           |
 | **Destructive** | `oklch(0.60 0.20 25)`  | `oklch(0.65 0.18 25)`  | 错误、拒绝、删除     |
@@ -425,6 +425,49 @@ animate-pulse-glow
 | 卡片 | `oklch(1 0 0)`           | `oklch(0.16 0.018 260)` |
 | 主色 | `oklch(0.58 0.22 255)`   | `oklch(0.68 0.20 255)`  |
 | 边框 | `oklch(0.92 0.008 260)`  | `oklch(0.22 0.01 260)`  |
+
+---
+
+## Token 架构
+
+### 三层结构
+
+```css
+--ds-*        /* canonical source */
+--primary     /* semantic alias */
+--landing-*   /* scope-specific derivation */
+--status-*    /* semantic derivation for admission tiers */
+```
+
+- `--ds-*` 是设计系统的唯一源头，当前由 `packages/shared/src/design/tokens.ts` 维护，并生成 Web CSS 变量与 RN theme。
+- `--primary`、`--background`、`--border`、`--success` 等语义别名必须引用 `var(--ds-*)`，不能直接写字面色值。
+- `--landing-*`、`--status-*` 等作用域 token 必须从 semantic alias 或 `--ds-*` 派生，不单独复制一套 canonical 值。
+
+### 派生规则
+
+- Admission tier 语义固定映射：
+  - `reach -> destructive`
+  - `target -> warning`
+  - `safety -> success`
+  - `likely -> primary`
+- tier 的 `bg / fg` 应由 base semantic color 派生，不再手写独立色板。
+- Web 通过 `getThemeCssText()` 注入 `:root/.dark` 的 `--ds-*`，`globals.css` 只负责消费和局部组合。
+- Mobile theme adapter 必须从 shared token 导入 canonical 值，不得在 RN theme 中复制同名主色、边框、状态色。
+
+### 新 token 流程
+
+1. 先在 shared canonical source 中新增或修改 `--ds-*`
+2. 再在 alias 层接入 `--primary` / `--background` 等语义变量
+3. 最后按页面或组件需要派生 `--landing-*` / `--status-*`
+
+### 防回归规则
+
+- `pnpm --filter web lint:quality` 检查：
+  - 禁止 semantic alias 直接写死字面色值
+  - 禁止引用未定义的 `--ds-*`
+- `pnpm --filter study-abroad-mobile lint:quality` 检查：
+  - 禁止 mobile theme adapter 手写 canonical DS 色值
+  - 禁止页面 chrome 回退到独立 gradient hero / 大 elevation
 
 ---
 

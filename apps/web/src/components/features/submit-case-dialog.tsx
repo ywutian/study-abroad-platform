@@ -442,7 +442,7 @@ export function SubmitCaseDialog({
                                 step="0.01"
                                 min="0"
                                 max="5"
-                                placeholder="UC Capped GPA"
+                                placeholder={t('ucCappedGpaLabel')}
                                 {...field}
                               />
                             </FormControl>
@@ -461,7 +461,7 @@ export function SubmitCaseDialog({
                                 step="0.01"
                                 min="0"
                                 max="5"
-                                placeholder="UC Uncapped GPA"
+                                placeholder={t('ucUncappedGpaLabel')}
                                 {...field}
                               />
                             </FormControl>

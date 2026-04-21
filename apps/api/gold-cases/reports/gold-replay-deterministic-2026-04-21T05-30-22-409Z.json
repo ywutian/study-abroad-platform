@@ -1,0 +1,168 @@
+{
+  "generatedAt": "2026-04-21T05:30:22.502Z",
+  "dataset": "gold:deterministic",
+  "mode": "deterministic",
+  "analysisVersion": "application-analysis-v2",
+  "commitSha": "244268730009cded2ca3bcd31753dab7eadd1e43",
+  "aggregate": {
+    "totalCases": 5,
+    "passedCases": 2,
+    "policyCorrectnessRate": 1,
+    "weakStateCorrectnessRate": 1,
+    "fabricatedInsightCount": 5,
+    "actionabilityMean": 1,
+    "contractParityPass": true,
+    "webRenderPass": true,
+    "mobileRenderPass": true,
+    "journeyPassRate": 0.4,
+    "unknownPolicyRate": 0,
+    "goldPassRate": 0.4
+  },
+  "cases": [
+    {
+      "caseId": "001-uc-berkeley-blind-en",
+      "passed": false,
+      "failures": [
+        {
+          "dimension": "forbiddenKeyword",
+          "expected": "not contains ACT",
+          "actual": "ACT",
+          "severity": "block",
+          "message": "Forbidden keyword \"ACT\" appeared for University of California, Berkeley."
+        },
+        {
+          "dimension": "school_presence",
+          "expected": "no unexpected schools",
+          "actual": "加州大学伯克利分校",
+          "severity": "block",
+          "message": "Unexpected school 加州大学伯克利分校 appeared in the analysis output."
+        },
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 2,
+      "journeyScore": 0,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 2,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 0
+      }
+    },
+    {
+      "caseId": "002-no-target-schools-zh",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    },
+    {
+      "caseId": "003-columbia-optional-en",
+      "passed": false,
+      "failures": [
+        {
+          "dimension": "school_presence",
+          "expected": "no unexpected schools",
+          "actual": "哥伦比亚大学",
+          "severity": "block",
+          "message": "Unexpected school 哥伦比亚大学 appeared in the analysis output."
+        },
+        {
+          "dimension": "contract",
+          "expected": "medium",
+          "actual": "high",
+          "severity": "warn",
+          "message": "Confidence label differs from the gold expectation."
+        }
+      ],
+      "durationMs": 0,
+      "journeyScore": 0,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 1,
+        "policyMatches": 1,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 1,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 0
+      }
+    },
+    {
+      "caseId": "004-no-predictions-en",
+      "passed": false,
+      "failures": [
+        {
+          "dimension": "school_presence",
+          "expected": "no unexpected schools",
+          "actual": "康奈尔大学",
+          "severity": "block",
+          "message": "Unexpected school 康奈尔大学 appeared in the analysis output."
+        }
+      ],
+      "durationMs": 1,
+      "journeyScore": 0,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 2,
+        "unknownPolicyCount": 0,
+        "schoolCount": 1,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 0
+      }
+    },
+    {
+      "caseId": "005-insufficient-profile-en",
+      "passed": true,
+      "failures": [],
+      "durationMs": 0,
+      "journeyScore": 1,
+      "actionabilityScore": 1,
+      "stats": {
+        "policyChecks": 0,
+        "policyMatches": 0,
+        "stateChecks": 1,
+        "stateMatches": 1,
+        "fabricatedInsightCount": 0,
+        "unknownPolicyCount": 0,
+        "schoolCount": 0,
+        "contractPass": true,
+        "actionabilityScore": 1,
+        "journeyScore": 1
+      }
+    }
+  ]
+}

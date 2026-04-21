@@ -68,6 +68,88 @@ export function EvaluationsTab() {
                     value={item.metrics?.actionabilityMean}
                   />
                 </div>
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  <MetricCard
+                    label={t('evaluations.webVisualPass')}
+                    value={item.metrics?.webVisualPass}
+                  />
+                  <MetricCard
+                    label={t('evaluations.liveGoldPassRate')}
+                    value={item.metrics?.liveGoldPassRate}
+                  />
+                  <MetricCard
+                    label={t('evaluations.journeyPassRate')}
+                    value={item.metrics?.journeyPassRate}
+                  />
+                </div>
+                <div className="mt-4 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+                  <div>
+                    {t('evaluations.caseCount')}:{' '}
+                    {String(item.scopeSummary?.totalCases ?? item.counts?.goldReplayCaseCount ?? 0)}
+                  </div>
+                  <div>
+                    {t('evaluations.workflowMode')}:{' '}
+                    {String(item.counts?.workflowMode ?? item.scopeSummary?.mode ?? 'n/a')}
+                  </div>
+                  <div>
+                    {t('evaluations.dataset')}:{' '}
+                    {String(item.scopeSummary?.dataset ?? item.counts?.replayDataset ?? 'n/a')}
+                  </div>
+                  <div>
+                    {t('evaluations.replayMode')}:{' '}
+                    {String(item.scopeSummary?.mode ?? item.counts?.replayMode ?? 'n/a')}
+                  </div>
+                  <div>
+                    {t('evaluations.evidenceMode')}: {String(item.counts?.evidenceMode ?? 'n/a')}
+                  </div>
+                  <div>
+                    {t('evaluations.realEvidenceCount')}:{' '}
+                    {String(item.counts?.realApprovedEvidenceCount ?? 0)}
+                  </div>
+                  <div>
+                    {t('evaluations.fixtureEvidenceCount')}:{' '}
+                    {String(item.counts?.fixtureApprovedEvidenceCount ?? 0)}
+                  </div>
+                  <div>
+                    {t('evaluations.commitSha')}:{' '}
+                    {String(item.scopeSummary?.commitSha ?? item.counts?.replayCommitSha ?? 'n/a')}
+                  </div>
+                  <div>
+                    {t('evaluations.latestReplayId')}:{' '}
+                    {String(item.counts?.latestReplayId ?? 'n/a')}
+                  </div>
+                  <div className="truncate">
+                    {t('evaluations.reportPath')}:{' '}
+                    {String(
+                      item.scopeSummary?.reportPath ?? item.counts?.replayReportPath ?? 'n/a'
+                    )}
+                  </div>
+                  <div className="truncate">
+                    {t('evaluations.reportJsonPath')}:{' '}
+                    {String(
+                      item.scopeSummary?.reportJsonPath ??
+                        item.counts?.replayReportJsonPath ??
+                        'n/a'
+                    )}
+                  </div>
+                  <div className="truncate">
+                    {t('evaluations.workflowRunUrl')}:{' '}
+                    {String(
+                      (item.scopeSummary?.provenance as Record<string, unknown> | undefined)
+                        ?.workflowRunUrl ?? 'n/a'
+                    )}
+                  </div>
+                </div>
+                {(item.failures?.length ?? 0) > 0 ? (
+                  <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                    <div className="font-medium">{t('evaluations.failures')}</div>
+                    <div className="mt-1 space-y-1">
+                      {item.failures?.slice(0, 4).map((failure) => (
+                        <div key={failure}>{failure}</div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ))}
             {(data?.items?.length ?? 0) === 0 ? (

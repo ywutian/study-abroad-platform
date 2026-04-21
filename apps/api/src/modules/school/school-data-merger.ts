@@ -88,6 +88,7 @@ export const MERGEABLE_FIELDS = [
   'acceptsCommonApp',
   'acceptsCoalition',
   'testOptional',
+  'testingPolicy',
   'hasEarlyDecision',
   'salary6YrPostGrad',
   'loanDefaultRate',

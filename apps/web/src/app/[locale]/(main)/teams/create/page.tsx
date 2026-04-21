@@ -204,7 +204,7 @@ export default function CreateTeamPage() {
                   {tag}
                   <button
                     type="button"
-                    aria-label="Remove"
+                    aria-label={t('createForm.removeTag')}
                     className="rounded-full p-0.5 hover:bg-muted"
                     onClick={() => removeTag(tag)}
                   >

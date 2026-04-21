@@ -11,6 +11,7 @@ import {
   LEGACY_PREDICTION_POLICY_NAME,
   LEGACY_PREDICTION_POLICY_VERSION,
 } from '../src/modules/prediction/prediction-policy.constants';
+import { seedCompetitions } from './seed-competitions';
 import { seedTeamData } from './seed-teams';
 
 const prisma = new PrismaClient();
@@ -57,7 +58,8 @@ const schools = [
     retentionRate: 98,
     totalEnrollment: 8478,
     studentFacultyRatio: 5,
-    testOptional: false,
+    testingPolicy: 'OPTIONAL',
+    testOptional: true,
     hasEarlyDecision: false,
     website: 'https://www.princeton.edu',
     metadata: {
@@ -92,6 +94,7 @@ const schools = [
     retentionRate: 99,
     totalEnrollment: 11858,
     studentFacultyRatio: 3,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: false,
     website: 'https://www.mit.edu',
@@ -127,6 +130,7 @@ const schools = [
     retentionRate: 97,
     totalEnrollment: 30631,
     studentFacultyRatio: 6,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: false,
     website: 'https://www.harvard.edu',
@@ -162,6 +166,7 @@ const schools = [
     retentionRate: 98,
     totalEnrollment: 17680,
     studentFacultyRatio: 5,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: false,
     website: 'https://www.stanford.edu',
@@ -197,6 +202,7 @@ const schools = [
     retentionRate: 99,
     totalEnrollment: 14776,
     studentFacultyRatio: 6,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: false,
     website: 'https://www.yale.edu',
@@ -232,6 +238,7 @@ const schools = [
     retentionRate: 98,
     totalEnrollment: 28306,
     studentFacultyRatio: 6,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: true,
     website: 'https://www.upenn.edu',
@@ -267,7 +274,8 @@ const schools = [
     retentionRate: 98,
     totalEnrollment: 2397,
     studentFacultyRatio: 3,
-    testOptional: false,
+    testingPolicy: 'OPTIONAL',
+    testOptional: true,
     hasEarlyDecision: false,
     website: 'https://www.caltech.edu',
     metadata: {
@@ -302,6 +310,7 @@ const schools = [
     retentionRate: 98,
     totalEnrollment: 17620,
     studentFacultyRatio: 6,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: true,
     website: 'https://www.duke.edu',
@@ -337,6 +346,7 @@ const schools = [
     retentionRate: 98,
     totalEnrollment: 11083,
     studentFacultyRatio: 6,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: true,
     website: 'https://www.brown.edu',
@@ -442,7 +452,8 @@ const schools = [
     retentionRate: 99,
     totalEnrollment: 36649,
     studentFacultyRatio: 6,
-    testOptional: false,
+    testingPolicy: 'OPTIONAL',
+    testOptional: true,
     hasEarlyDecision: true,
     website: 'https://www.columbia.edu',
     metadata: {
@@ -477,6 +488,7 @@ const schools = [
     retentionRate: 97,
     totalEnrollment: 25898,
     studentFacultyRatio: 9,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: true,
     website: 'https://www.cornell.edu',
@@ -652,6 +664,7 @@ const schools = [
     retentionRate: 97,
     totalEnrollment: 6834,
     studentFacultyRatio: 7,
+    testingPolicy: 'REQUIRED',
     testOptional: false,
     hasEarlyDecision: true,
     website: 'https://www.dartmouth.edu',
@@ -2034,8 +2047,11 @@ export async function main() {
   // ========== Chat Test Users & Data ==========
   await seedChatTestData();
 
+  // ========== Competition Reference Data ==========
+  await seedCompetitions(prisma);
+
   // ========== Team & Recruitment Data ==========
-  await seedTeamData();
+  await seedTeamData(prisma);
 
   console.log('🎉 Seed completed!');
 }

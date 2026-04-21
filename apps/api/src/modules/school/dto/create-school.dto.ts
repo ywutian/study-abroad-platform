@@ -5,12 +5,14 @@ import {
   IsNumber,
   IsUrl,
   IsBoolean,
+  IsEnum,
   Min,
   Max,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { TestingPolicy } from '@prisma/client';
 
 export class CreateSchoolDto {
   @ApiProperty({ description: 'School name in English' })
@@ -311,6 +313,11 @@ export class CreateSchoolDto {
   @IsBoolean()
   @Type(() => Boolean)
   testOptional?: boolean;
+
+  @ApiPropertyOptional({ enum: TestingPolicy, description: 'Testing policy' })
+  @IsOptional()
+  @IsEnum(TestingPolicy)
+  testingPolicy?: TestingPolicy;
 
   @ApiPropertyOptional({ description: 'Has Early Decision option' })
   @IsOptional()

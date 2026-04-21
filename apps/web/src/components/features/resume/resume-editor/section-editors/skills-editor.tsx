@@ -1,3 +1,4 @@
+// @i18n-skip-file Resume editor — content mirrors the English PDF output for ATS
 'use client';
 
 import { Input } from '@/components/ui/input';

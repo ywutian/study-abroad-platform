@@ -1,8 +1,0 @@
-locator.fill: Timeout 30000ms exceeded.
-Call log:
-[2m  - waiting for locator('textarea').last()[22m
-
-    at sendChatPrompt (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:335:20)
-    at async run (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:884:24)
-    at async applicantAiJourneys (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:917:3)
-    at async main (/Users/yitianwu/Documents/study-abroad-platform/scripts/runtime-journey-audit-2026-03-31.ts:1774:7)

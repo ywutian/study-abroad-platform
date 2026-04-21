@@ -51,6 +51,8 @@ import { MemoryItem, MEMORY_TYPES, memoryTypeBadge, formatDate, truncate } from 
 
 export function MemoryBrowserSection() {
   const t = useTranslations('admin.memory');
+  const tAria = useTranslations('common.aria');
+  const tc = useTranslations('common');
   const queryClient = useQueryClient();
 
   const [memFilters, setMemFilters] = useState({
@@ -123,7 +125,7 @@ export function MemoryBrowserSection() {
                 <SelectValue placeholder={t('typeDistribution')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">{t('allTypes')}</SelectItem>
                 {MEMORY_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
@@ -177,7 +179,7 @@ export function MemoryBrowserSection() {
                   {memData.data.map((mem) => (
                     <TableRow key={mem.id}>
                       <TableCell>
-                        <Badge className={cn('text-[10px]', memoryTypeBadge[mem.type])}>
+                        <Badge className={cn('text-2xs', memoryTypeBadge[mem.type])}>
                           {mem.type}
                         </Badge>
                       </TableCell>
@@ -193,7 +195,7 @@ export function MemoryBrowserSection() {
                               style={{ width: `${mem.importance * 100}%` }}
                             />
                           </div>
-                          <span className="text-[10px]">{(mem.importance * 100).toFixed(0)}%</span>
+                          <span className="text-2xs">{(mem.importance * 100).toFixed(0)}%</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-xs text-center">{mem.accessCount}</TableCell>
@@ -207,7 +209,7 @@ export function MemoryBrowserSection() {
                             size="icon"
                             className="h-7 w-7"
                             onClick={() => setViewMemory(mem)}
-                            aria-label="View memory"
+                            aria-label={tAria('viewMemory')}
                           >
                             <Eye className="h-3.5 w-3.5" />
                           </Button>
@@ -216,7 +218,7 @@ export function MemoryBrowserSection() {
                             size="icon"
                             className="h-7 w-7 text-destructive"
                             onClick={() => setDeleteMemoryId(mem.id)}
-                            aria-label="Delete memory"
+                            aria-label={tAria('deleteMemory')}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -301,7 +303,7 @@ export function MemoryBrowserSection() {
             <AlertDialogDescription>{t('deleteConfirm')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMemoryId && deleteMemoryMutation.mutate(deleteMemoryId)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

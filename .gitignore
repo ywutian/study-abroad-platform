@@ -29,12 +29,11 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
-e2e-report/**/android-logcat.txt
-e2e-report/**/emulator-logcat.txt
-e2e-report/**/device-push-logcat.txt
 
 # Testing
 coverage
+e2e-report/
+scripts/eval/results/
 
 # Expo
 .expo/

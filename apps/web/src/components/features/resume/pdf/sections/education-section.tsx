@@ -1,3 +1,4 @@
+// @i18n-skip-file PDF renderer — resume PDFs stay in English for ATS compatibility
 import React from 'react';
 import { Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { SectionRendererProps } from '../types';

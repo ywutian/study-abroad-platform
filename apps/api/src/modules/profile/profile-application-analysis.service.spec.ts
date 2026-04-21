@@ -6,9 +6,11 @@ import { PredictionService } from '../prediction/prediction.service';
 import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
+import { ProfileApplicationAnalysisV2Service } from './profile-application-analysis-v2.service';
 
 describe('ProfileApplicationAnalysisService', () => {
   let service: ProfileApplicationAnalysisService;
+  const originalV2Flag = process.env.APPLICATION_ANALYSIS_V2_ENABLED;
 
   const mockPrisma = {
     profile: {
@@ -49,6 +51,10 @@ describe('ProfileApplicationAnalysisService', () => {
     listApprovedEvidenceBySchool: jest.fn(),
     getRuntimeExperiments: jest.fn(),
     recordRuntimeExposure: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockProfileApplicationAnalysisV2Service = {
+    getAnalysisForUser: jest.fn(),
   };
 
   const profileBase = {
@@ -111,6 +117,7 @@ describe('ProfileApplicationAnalysisService', () => {
         sat25: 1480,
         sat75: 1560,
         satAvg: 1520,
+        testingPolicy: 'OPTIONAL',
         testOptional: true,
         needBlindInternational: false,
         intlAcceptanceRate: 3.2,
@@ -146,6 +153,7 @@ describe('ProfileApplicationAnalysisService', () => {
   ];
 
   beforeEach(async () => {
+    process.env.APPLICATION_ANALYSIS_V2_ENABLED = 'false';
     jest.clearAllMocks();
 
     mockPrisma.profile.findUnique.mockImplementation(
@@ -254,10 +262,22 @@ describe('ProfileApplicationAnalysisService', () => {
           provide: ApplicationAnalysisWorkflowService,
           useValue: mockApplicationAnalysisWorkflowService,
         },
+        {
+          provide: ProfileApplicationAnalysisV2Service,
+          useValue: mockProfileApplicationAnalysisV2Service,
+        },
       ],
     }).compile();
 
     service = module.get(ProfileApplicationAnalysisService);
+  });
+
+  afterAll(() => {
+    if (originalV2Flag == null) {
+      delete process.env.APPLICATION_ANALYSIS_V2_ENABLED;
+      return;
+    }
+    process.env.APPLICATION_ANALYSIS_V2_ENABLED = originalV2Flag;
   });
 
   it('returns cached analysis when the cache key hits', async () => {
@@ -280,7 +300,7 @@ describe('ProfileApplicationAnalysisService', () => {
       },
     });
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(result.status).toBe('cached');
     expect(mockPrisma.schoolListItem.findMany).not.toHaveBeenCalled();
@@ -304,7 +324,7 @@ describe('ProfileApplicationAnalysisService', () => {
     });
     mockPrisma.schoolListItem.findMany.mockResolvedValue([]);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(result.status).toBe('fresh');
     expect(result.meta?.state).toBe('insufficientProfileData');
@@ -320,7 +340,7 @@ describe('ProfileApplicationAnalysisService', () => {
     mockPrisma.predictionResult.count.mockResolvedValue(0);
     mockPrisma.predictionResult.findMany.mockResolvedValue([]);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(result.meta?.state).toBe('noTargetSchools');
     expect(
@@ -333,7 +353,7 @@ describe('ProfileApplicationAnalysisService', () => {
     mockPrisma.predictionResult.count.mockResolvedValue(0);
     mockPrisma.predictionResult.findMany.mockResolvedValue([]);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(
       mockPredictionService.predictForApplicationAnalysis,
@@ -372,7 +392,7 @@ describe('ProfileApplicationAnalysisService', () => {
       ],
     );
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(result.meta?.experimentalVersions?.length).toBe(3);
     expect(result.targetSchoolInsights?.[0]?.recourseGuidance).toBeDefined();
@@ -385,7 +405,7 @@ describe('ProfileApplicationAnalysisService', () => {
       new Error('LLM timeout'),
     );
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(result.status).toBe('degraded');
     expect(result.meta?.state).toBe('analysisError');
@@ -401,7 +421,7 @@ describe('ProfileApplicationAnalysisService', () => {
       .mockResolvedValueOnce([])
       .mockResolvedValue(predictionBase);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(
       mockPredictionService.predictForApplicationAnalysis,
@@ -429,7 +449,7 @@ describe('ProfileApplicationAnalysisService', () => {
       ])
       .mockResolvedValue(predictionBase);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(
       mockPredictionService.predictForApplicationAnalysis,
@@ -464,7 +484,7 @@ describe('ProfileApplicationAnalysisService', () => {
       ])
       .mockResolvedValue(predictionBase);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(
       mockPredictionService.predictForApplicationAnalysis,
@@ -482,7 +502,7 @@ describe('ProfileApplicationAnalysisService', () => {
     ]);
     mockPrisma.predictionResult.findMany.mockResolvedValue(predictionBase);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(
       mockPredictionService.predictForApplicationAnalysis,
@@ -520,6 +540,7 @@ describe('ProfileApplicationAnalysisService', () => {
           ...schoolListBase[0].school,
           name: 'University of California, Berkeley',
           nameZh: '加州大学伯克利分校',
+          testingPolicy: 'BLIND',
           testOptional: false,
         },
       },
@@ -532,7 +553,7 @@ describe('ProfileApplicationAnalysisService', () => {
       },
     ]);
 
-    const result = await service.getAnalysisForUser('user-1', 'en');
+    const result = (await service.getAnalysisForUser('user-1', 'en')) as any;
 
     expect(
       mockPredictionService.predictForApplicationAnalysis,

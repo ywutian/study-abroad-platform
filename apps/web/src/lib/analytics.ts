@@ -1,0 +1,88 @@
+/**
+ * Product analytics abstraction.
+ *
+ * Goals:
+ *  - Zero-config dev experience: `trackEvent` just logs to the console so
+ *    engineers can verify funnels locally without touching env files.
+ *  - Provider-agnostic: consumers call `trackEvent('team_card_swiped', {...})`
+ *    without importing any SDK. The sink is chosen by
+ *    `NEXT_PUBLIC_ANALYTICS_SINK` — future PostHog / Mixpanel integrations
+ *    plug in here without touching call sites.
+ *  - PII-safe by default: callers are responsible for not passing raw email /
+ *    names / free-text; this module never inspects payload contents to avoid
+ *    giving a false sense of safety.
+ */
+
+type EventProps = Record<string, string | number | boolean | null | undefined>;
+
+type Sink = 'console' | 'none' | 'posthog' | 'mixpanel';
+
+function resolveSink(): Sink {
+  if (typeof window === 'undefined') return 'none';
+  const raw = (process.env.NEXT_PUBLIC_ANALYTICS_SINK ?? '').toLowerCase();
+  if (raw === 'posthog' || raw === 'mixpanel' || raw === 'none') return raw;
+  // Default: verbose in dev, silent in prod until a real sink is configured.
+  return process.env.NODE_ENV === 'development' ? 'console' : 'none';
+}
+
+const sink: Sink = resolveSink();
+
+/**
+ * Fire-and-forget event tracking. Safe to call from render paths — no
+ * network activity when the sink is 'none'.
+ */
+export function trackEvent(name: string, props: EventProps = {}): void {
+  if (sink === 'none') return;
+
+  if (sink === 'console') {
+    // eslint-disable-next-line no-console
+    console.debug('[analytics]', name, props);
+    return;
+  }
+
+  // Future: PostHog / Mixpanel dynamic imports keyed off `sink`. We bail
+  // silently today so production builds don't pull in any SDK until a team
+  // explicitly opts in.
+  if (typeof window === 'undefined') return;
+}
+
+// ── Impression dedupe ──────────────────────────────────────
+// Card impressions fire during render; without dedupe the same card would
+// log once per React re-render. Keep a bounded in-memory set of keys with
+// a 60s TTL so repeated renders of the same deck stay quiet.
+
+const SEEN_IMPRESSIONS = new Map<string, number>();
+const IMPRESSION_TTL_MS = 60_000;
+const IMPRESSION_CAP = 500;
+
+function gcImpressions(now: number) {
+  if (SEEN_IMPRESSIONS.size < IMPRESSION_CAP) return;
+  for (const [key, ts] of SEEN_IMPRESSIONS) {
+    if (now - ts > IMPRESSION_TTL_MS) SEEN_IMPRESSIONS.delete(key);
+  }
+}
+
+/**
+ * Deduplicated impression event. Call on every render of a given card —
+ * only the first call within the TTL window hits the sink.
+ */
+export function trackImpression(dedupeKey: string, name: string, props: EventProps = {}): void {
+  const now = Date.now();
+  const last = SEEN_IMPRESSIONS.get(dedupeKey);
+  if (last != null && now - last < IMPRESSION_TTL_MS) return;
+  SEEN_IMPRESSIONS.set(dedupeKey, now);
+  gcImpressions(now);
+  trackEvent(name, props);
+}
+
+// ── Team-domain event names (typed for discoverability) ────
+// Keep the names stable — downstream funnel definitions will key off them.
+
+export const TEAM_EVENTS = {
+  poolViewed: 'team_pool_viewed',
+  cardImpression: 'team_card_impression',
+  cardSwiped: 'team_card_swiped',
+  cardCreated: 'team_card_created',
+  cardPublished: 'team_card_published',
+  matchActivated: 'team_match_activated',
+} as const;

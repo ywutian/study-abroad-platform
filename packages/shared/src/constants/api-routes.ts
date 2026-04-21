@@ -253,9 +253,27 @@ export const teamRoutes = {
   join: (id: string) => `${API_ROUTES.TEAMS}/${id}/join`,
   leave: (id: string) => `${API_ROUTES.TEAMS}/${id}/leave`,
   recruitmentContexts: () => `${API_ROUTES.TEAMS}/recruitment-contexts`,
+  recruitmentContextsBySourceTypeAndCompetitionId: (params: {
+    sourceType?: string | null;
+    competitionId?: string | null;
+  }) => {
+    const query = new URLSearchParams();
+    if (params.sourceType) query.set('sourceType', params.sourceType);
+    if (params.competitionId) query.set('competitionId', params.competitionId);
+    const queryString = query.toString();
+    return queryString
+      ? `${teamRoutes.recruitmentContexts()}?${queryString}`
+      : teamRoutes.recruitmentContexts();
+  },
+  communityContexts: () => `${API_ROUTES.TEAMS}/community-contexts`,
+  communityContextById: (id: string) => `${API_ROUTES.TEAMS}/community-contexts/${id}`,
+  communityContextPublish: (id: string) => `${API_ROUTES.TEAMS}/community-contexts/${id}/publish`,
+  matchPools: () => `${API_ROUTES.TEAMS}/match-pools`,
+  matchPoolById: (id: string) => `${API_ROUTES.TEAMS}/match-pools/${id}`,
   recruitments: () => `${API_ROUTES.TEAMS}/recruitments`,
   myRecruitments: () => `${API_ROUTES.TEAMS}/recruitments/me`,
   recruitmentDeck: () => `${API_ROUTES.TEAMS}/recruitments/deck`,
+  recruitmentDeckPreview: () => `${API_ROUTES.TEAMS}/recruitments/deck/preview`,
   recruitmentById: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}`,
   recruitmentMemberProfile: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}/members/me`,
   recruitmentPublish: (id: string) => `${API_ROUTES.TEAMS}/recruitments/${id}/publish`,
@@ -343,6 +361,12 @@ export const adminRoutes = {
   forumsPostDelete: (id: string) => `${API_ROUTES.ADMIN}/forums/posts/${id}`,
   forumsPostPin: (postId: string) => `${API_ROUTES.ADMIN}/forums/posts/${postId}/pin`,
   forumsPostLock: (postId: string) => `${API_ROUTES.ADMIN}/forums/posts/${postId}/lock`,
+  matchPools: () => `${API_ROUTES.ADMIN}/match-pools`,
+  matchPoolById: (id: string) => `${API_ROUTES.ADMIN}/match-pools/${id}`,
+  matchPoolEntryById: (id: string) => `${API_ROUTES.ADMIN}/match-pools/entries/${id}`,
+  communityContexts: () => `${API_ROUTES.ADMIN}/community-contexts`,
+  communityContextReview: (id: string) => `${API_ROUTES.ADMIN}/community-contexts/${id}/review`,
+  communityContextPromote: (id: string) => `${API_ROUTES.ADMIN}/community-contexts/${id}/promote`,
   forumsPostsBatch: () => `${API_ROUTES.ADMIN}/forums/posts/batch`,
   forumsCommentDelete: (id: string) => `${API_ROUTES.ADMIN}/forums/comments/${id}`,
   chatsMessageDelete: (id: string) => `${API_ROUTES.ADMIN}/chats/messages/${id}`,
@@ -481,6 +505,8 @@ export const adminRoutes = {
     `${API_ROUTES.ADMIN}/application-analysis-workflow/policies/rollback`,
   applicationAnalysisWorkflowEvaluations: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/evaluations`,
+  applicationAnalysisWorkflowReplays: () =>
+    `${API_ROUTES.ADMIN}/application-analysis-workflow/replays`,
   applicationAnalysisWorkflowExperiments: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/experiments`,
   applicationAnalysisWorkflowExperimentSweep: () =>

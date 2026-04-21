@@ -1,12 +1,14 @@
 'use client';
 
-import { forwardRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { motion, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Target, Clock3, Globe, MapPin, Wifi, Users, Heart, X, Sparkles } from 'lucide-react';
+import { Clock3, Globe, MapPin, Wifi, Users, Sparkles } from 'lucide-react';
 import type { TeamRecruitmentCardFrontDto } from '@study-abroad/shared';
+import { getRecruitmentContextLabel, getRecruitmentContextMeta } from './team-recruitment-utils';
+import { CardQualityPill, TrustBadge } from './TrustBadge';
 
 const VELOCITY_THRESHOLD = 500;
 const DRAG_THRESHOLD = 100;
@@ -23,6 +25,7 @@ const COLLAB_ICON = { ONLINE: Wifi, OFFLINE: MapPin, HYBRID: Globe };
 export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeCardProps>(
   ({ card, onSwipe, isTop = false, className }, ref) => {
     const t = useTranslations('teams.recruitment');
+    const locale = useLocale();
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 200], [-12, 12]);
     const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 1, 1, 1, 0.5]);
@@ -51,6 +54,8 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
       : Globe;
 
     const isNetworking = card.intentMode === 'NETWORKING_ONLY';
+    const contextLabel = getRecruitmentContextLabel(card, locale);
+    const contextMeta = getRecruitmentContextMeta(card, locale);
 
     return (
       <motion.div
@@ -110,11 +115,23 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
           <div className="p-5 pb-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground truncate">
-                  {card.context.competition.abbreviation} / {card.context.trackName}
-                </p>
+                {contextMeta ? (
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground truncate">
+                    {contextMeta}
+                  </p>
+                ) : null}
+                {contextLabel ? (
+                  <p className="mt-1 truncate text-sm font-medium text-foreground/80">
+                    {contextLabel}
+                  </p>
+                ) : null}
                 <h3 className="text-xl font-bold mt-1 truncate">{card.team.name}</h3>
                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{card.headline}</p>
+                {card.qualitySignal === 'thin' ? (
+                  <div className="mt-1.5">
+                    <CardQualityPill signal={card.qualitySignal} />
+                  </div>
+                ) : null}
               </div>
               <Badge
                 variant={isNetworking ? 'secondary' : 'default'}
@@ -192,29 +209,31 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
           </div>
 
           {/* Detail note */}
-          {card.detailNote && (
-            <div className="px-5 pb-4">
-              <div className="rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground line-clamp-3">
-                {card.detailNote}
-              </div>
-            </div>
-          )}
+          {card.detailNote ? (
+            <RecruitmentDetailNote cardId={card.id} text={card.detailNote} />
+          ) : null}
 
           {/* Members preview */}
           {card.members.length > 0 && (
             <div className="px-5 pb-5">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {card.members.slice(0, 3).map((m) => (
                   <div
                     key={m.userId}
                     className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1"
                   >
-                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
+                    <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-2xs font-bold text-primary shrink-0">
                       {(m.displayName || '?')[0]}
                     </div>
                     <span className="text-xs font-medium truncate max-w-[80px]">
                       {m.displayName || m.role}
                     </span>
+                    <TrustBadge level={m.verificationLevel} />
+                    {m.school ? (
+                      <span className="text-2xs text-muted-foreground truncate max-w-[90px] border-l border-border pl-1.5">
+                        {m.school}
+                      </span>
+                    ) : null}
                   </div>
                 ))}
                 {card.members.length > 3 && (
@@ -238,6 +257,50 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
 );
 
 RecruitmentSwipeCard.displayName = 'RecruitmentSwipeCard';
+
+function RecruitmentDetailNote({ cardId, text }: { cardId: string; text: string }) {
+  const t = useTranslations('teams.recruitment');
+  const [expanded, setExpanded] = useState(false);
+  const [isTruncatable, setIsTruncatable] = useState(false);
+  const paragraphRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [cardId]);
+
+  useLayoutEffect(() => {
+    if (expanded) return;
+    const el = paragraphRef.current;
+    if (!el) return;
+    setIsTruncatable(el.scrollHeight > el.clientHeight + 2);
+  }, [cardId, text, expanded]);
+
+  return (
+    <div className="px-5 pb-4">
+      <div className="rounded-xl bg-muted/50 p-3 overflow-hidden">
+        <p
+          ref={paragraphRef}
+          className={cn(
+            'text-sm text-muted-foreground break-words m-0',
+            expanded ? 'whitespace-pre-line' : 'line-clamp-5'
+          )}
+        >
+          {text}
+        </p>
+        {isTruncatable ? (
+          <button
+            type="button"
+            className="mt-1.5 text-xs font-medium text-primary underline-offset-2 hover:underline"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? t('card.detailCollapse') : t('card.detailExpand')}
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function RoleBlock({
   label,

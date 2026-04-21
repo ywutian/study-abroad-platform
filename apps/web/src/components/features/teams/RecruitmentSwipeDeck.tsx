@@ -17,6 +17,8 @@ interface RecruitmentSwipeDeckProps {
   isLoading?: boolean;
   isPending?: boolean;
   className?: string;
+  /** When true, swipe actions are disabled — guest-preview mode. */
+  isPreview?: boolean;
 }
 
 export function RecruitmentSwipeDeck({
@@ -26,6 +28,7 @@ export function RecruitmentSwipeDeck({
   isLoading = false,
   isPending = false,
   className,
+  isPreview = false,
 }: RecruitmentSwipeDeckProps) {
   const t = useTranslations('teams.recruitment.swipeDeck');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,7 +46,7 @@ export function RecruitmentSwipeDeck({
 
   const handleSwipe = useCallback(
     (direction: 'left' | 'right') => {
-      if (!currentCard || isPending) return;
+      if (!currentCard || isPending || isPreview) return;
       setLastDirection(direction);
       onSwipe(currentCard.id, direction === 'right' ? 'LIKE' : 'PASS');
 
@@ -52,7 +55,7 @@ export function RecruitmentSwipeDeck({
       }
       setCurrentIndex((prev) => prev + 1);
     },
-    [currentCard, currentIndex, cards.length, onSwipe, onEmpty, isPending]
+    [currentCard, currentIndex, cards.length, onSwipe, onEmpty, isPending, isPreview]
   );
 
   // Keyboard shortcuts
@@ -73,7 +76,7 @@ export function RecruitmentSwipeDeck({
 
   if (isLoading) {
     return (
-      <div className={cn('flex items-center justify-center h-[520px]', className)}>
+      <div className={cn('flex items-center justify-center min-h-[520px] py-4', className)}>
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
@@ -84,7 +87,7 @@ export function RecruitmentSwipeDeck({
     return (
       <div
         className={cn(
-          'flex flex-col items-center justify-center h-[520px] text-center px-4',
+          'flex flex-col items-center justify-center min-h-[520px] py-4 text-center px-4',
           className
         )}
       >
@@ -132,23 +135,21 @@ export function RecruitmentSwipeDeck({
         </div>
       </div>
 
-      {/* Card Stack */}
-      <div className="relative h-[520px] sm:h-[560px] flex items-center justify-center">
-        <AnimatePresence mode="popLayout">
-          {/* Background card */}
-          {nextCard && (
-            <motion.div
-              key={`bg-${nextCard.id}`}
-              className="absolute w-full max-w-md"
-              initial={{ scale: 0.92, opacity: 0.5 }}
-              animate={{ scale: 0.96, opacity: 0.7 }}
-              style={{ zIndex: 0 }}
-            >
-              <RecruitmentSwipeCard card={nextCard} isTop={false} />
-            </motion.div>
-          )}
+      {/* Background card stays outside AnimatePresence so exit layout cannot race React teardown. */}
+      <div className="relative min-h-[520px] sm:min-h-[560px] flex items-start justify-center py-4 sm:py-5">
+        {nextCard ? (
+          <motion.div
+            key={`bg-${nextCard.id}`}
+            className="absolute w-full max-w-md"
+            initial={{ scale: 0.92, opacity: 0.5 }}
+            animate={{ scale: 0.96, opacity: 0.7 }}
+            style={{ zIndex: 0 }}
+          >
+            <RecruitmentSwipeCard card={nextCard} isTop={false} />
+          </motion.div>
+        ) : null}
 
-          {/* Top card */}
+        <AnimatePresence mode="sync">
           <motion.div
             key={currentCard.id}
             className="absolute w-full max-w-md"
@@ -176,7 +177,7 @@ export function RecruitmentSwipeDeck({
               <Button
                 variant="outline"
                 size="lg"
-                disabled={isPending}
+                disabled={isPending || isPreview}
                 className={cn(
                   'h-14 w-14 rounded-full',
                   'border-2 border-destructive/50 hover:border-destructive',
@@ -197,7 +198,7 @@ export function RecruitmentSwipeDeck({
               <Button
                 variant="outline"
                 size="lg"
-                disabled={isPending}
+                disabled={isPending || isPreview}
                 className={cn(
                   'h-16 w-16 rounded-full',
                   'border-2 border-green-500/50 hover:border-green-500',

@@ -212,6 +212,7 @@ const PROPER_NOUNS = new Set([
   'VCE',
   'DSE',
   'ED',
+  'ED II',
   'EA',
   'RD',
   'REA',
@@ -353,6 +354,10 @@ function checkToastMessage(line: string, lineNum: number): Issue | null {
  * Lower confidence — may be legitimate component names or enum values
  */
 function checkJsxLabel(line: string, lineNum: number): Issue | null {
+  // Skip TS generic type annotations like Promise<void>, Array<T>, Map<K,V>
+  if (/\b(Promise|Array|Map|Set|Record|Partial|Readonly|Pick|Omit)\s*</.test(line)) return null;
+  // Skip lines that look like TS type declarations
+  if (/:\s*[A-Z]\w*\s*</.test(line)) return null;
   const match = line.match(/>\s*([A-Z][a-z]{2,})\s*</);
   if (match) {
     const text = match[1];
@@ -383,6 +388,8 @@ function checkFile(filePath: string): Issue[] {
   if (isExempt(filePath)) return issues;
 
   const content = fs.readFileSync(filePath, 'utf-8');
+  // File-level opt-out: allows intentionally-English files (e.g. root error boundary).
+  if (content.includes('@i18n-skip-file')) return issues;
   const lines = content.split('\n');
   const relPath = relativePath(filePath);
   const usesTranslations = hasUseTranslations(content);
@@ -403,6 +410,16 @@ function checkFile(filePath: string): Issue[] {
 
     // Skip exempt lines
     if (isExemptLine(line)) continue;
+
+    // Inline opt-out: @i18n-skip on same line, or on any of the 3 preceding lines
+    // (covers JSX comments placed above multi-line elements like <Input ...>).
+    if (line.includes('@i18n-skip')) continue;
+    if (
+      (i > 0 && lines[i - 1].includes('@i18n-skip')) ||
+      (i > 1 && lines[i - 2].includes('@i18n-skip')) ||
+      (i > 2 && lines[i - 3].includes('@i18n-skip'))
+    )
+      continue;
 
     // Skip lines that are clearly using i18n already
     if (
@@ -508,6 +525,12 @@ function main() {
 
   console.log(`\n💡 Total: ${allIssues.length} issues in ${byFile.size} files.`);
   console.log('   Use the i18n audit skill (scripts/i18n-audit-skill.md) for AI-guided fixes.\n');
+
+  // Exit non-zero in staged mode so pre-commit can gate new regressions.
+  // Full-repo scans stay advisory to avoid blocking on pre-existing tech debt.
+  if (stagedOnly && allIssues.some((i) => i.confidence === 'high')) {
+    process.exit(1);
+  }
 }
 
 main();

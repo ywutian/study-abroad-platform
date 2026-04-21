@@ -17,3 +17,4 @@ export * from './school-provenance';
 export * from './resume';
 export * from './team-recruitment';
 export * from './application-analysis-workflow';
+export * from './application-analysis-render';

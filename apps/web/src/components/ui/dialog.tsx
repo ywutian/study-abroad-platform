@@ -61,6 +61,7 @@ function DialogContent({
         {/* Fallback hidden title for accessibility when no DialogTitle is provided */}
         {!hasDialogTitle(children) && (
           <VisuallyHidden.Root asChild>
+            {/* @i18n-skip a11y fallback, announced by screen readers only */}
             <DialogPrimitive.Title>Dialog</DialogPrimitive.Title>
           </VisuallyHidden.Root>
         )}

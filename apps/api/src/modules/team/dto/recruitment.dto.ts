@@ -15,6 +15,8 @@ import {
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   CollaborationMode,
+  LocationMode,
+  RecruitmentContextSourceType,
   RecruitmentAvailabilityBand,
   RecruitmentIntentMode,
   TeamRecruitmentSwipeAction,
@@ -37,10 +39,20 @@ export class CreateRecruitmentDto {
   @MaxLength(100)
   teamName?: string;
 
-  @ApiProperty({ description: 'Competition track id' })
+  @ApiProperty({
+    description: 'Recruitment context id (official or community)',
+  })
   @IsString()
   @MaxLength(200)
-  competitionTrackId: string;
+  recruitmentContextId: string;
+
+  @ApiPropertyOptional({
+    description: 'Deprecated competition track id for compatibility',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  competitionTrackId?: string;
 
   @ApiProperty({ description: 'Card headline shown on the front of the card' })
   @IsString()
@@ -142,6 +154,105 @@ export class UpdateRecruitmentDto extends PartialType(CreateRecruitmentDto) {
   isClosed?: boolean;
 }
 
+export class RecruitmentContextQueryDto {
+  @ApiPropertyOptional({ enum: RecruitmentContextSourceType })
+  @IsOptional()
+  @IsEnum(RecruitmentContextSourceType)
+  sourceType?: RecruitmentContextSourceType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  competitionId?: string;
+}
+
+export class CreateCommunityContextDto {
+  @ApiProperty()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(160)
+  title: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  titleZh?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(3000)
+  description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  sourceUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  registrationCloseAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  eventStartAt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  eventEndAt?: string;
+
+  @ApiPropertyOptional({ enum: LocationMode })
+  @IsOptional()
+  @IsEnum(LocationMode)
+  locationMode?: LocationMode;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  locationText?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(50, { each: true })
+  @ArrayMaxSize(8)
+  rolePresets?: string[];
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2)
+  @Max(100)
+  minTeamSize: number;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2)
+  @Max(100)
+  maxTeamSize: number;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(30, { each: true })
+  @ArrayMaxSize(5)
+  languages?: string[];
+}
+
+export class UpdateCommunityContextDto extends PartialType(
+  CreateCommunityContextDto,
+) {}
+
 export class UpdateRecruitmentMemberProfileDto {
   @ApiPropertyOptional()
   @IsOptional()
@@ -183,7 +294,32 @@ export class RecruitmentDeckQueryDto {
   @IsOptional()
   @IsString()
   @MaxLength(200)
+  cardId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
   teamId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number = 20;
+}
+
+export class RecruitmentDeckPreviewQueryDto {
+  @ApiPropertyOptional({
+    description:
+      'Recruitment context to browse. Omit for a cross-context sample.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  recruitmentContextId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -10,10 +10,12 @@ import {
 import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
+import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 import {
   AnalysisActionPlan,
   AnalysisApplicantType,
   AnalysisContextFlag,
+  ApplicationAnalysisResponseV2,
   ExperimentalVersionSummary,
   FairnessDisclosure,
   AnalysisMeta,
@@ -41,22 +43,11 @@ import {
   classifyMajor,
 } from '../prediction/prediction.constants';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
+import { ProfileApplicationAnalysisV2Service } from './profile-application-analysis-v2.service';
 
 const DEFAULT_ANALYSIS_VERSION = 'application-analysis-v1';
 const ANALYSIS_CACHE_TTL_SECONDS = 3600;
 const MAX_FOCUS_SCHOOLS = 5;
-const UC_TEST_BLIND_SCHOOL_NAMES = new Set([
-  'University of California, Berkeley',
-  'University of California, Los Angeles',
-  'University of California, San Diego',
-  'University of California, Irvine',
-  'University of California, Davis',
-  'University of California, Santa Barbara',
-  'University of California, Santa Cruz',
-  'University of California, Riverside',
-  'University of California, Merced',
-]);
-
 const ANALYSIS_SCHOOL_SELECT = {
   id: true,
   name: true,
@@ -66,6 +57,7 @@ const ANALYSIS_SCHOOL_SELECT = {
   sat25: true,
   sat75: true,
   satAvg: true,
+  testingPolicy: true,
   testOptional: true,
   needBlindInternational: true,
   intlAcceptanceRate: true,
@@ -173,9 +165,35 @@ export class ProfileApplicationAnalysisService {
     private readonly predictionHistoricalService: PredictionHistoricalService,
     private readonly llmService: LLMService,
     private readonly applicationAnalysisWorkflowService: ApplicationAnalysisWorkflowService,
+    private readonly profileApplicationAnalysisV2Service: ProfileApplicationAnalysisV2Service,
   ) {}
 
   async getAnalysisForUser(
+    userId: string,
+    locale = 'zh',
+    options?: {
+      debug?: boolean;
+      role?: string;
+    },
+  ): Promise<ApplicationAnalysisResponseV2 | DetailedProfileAnalysisResponse> {
+    if (this.isV2Enabled()) {
+      return this.profileApplicationAnalysisV2Service.getAnalysisForUser(
+        userId,
+        locale,
+        {
+          debug: Boolean(options?.debug),
+        },
+      );
+    }
+
+    return this.getLegacyAnalysisForUser(userId, locale);
+  }
+
+  private isV2Enabled(): boolean {
+    return process.env.APPLICATION_ANALYSIS_V2_ENABLED !== 'false';
+  }
+
+  private async getLegacyAnalysisForUser(
     userId: string,
     locale = 'zh',
   ): Promise<DetailedProfileAnalysisResponse> {
@@ -607,6 +625,7 @@ export class ProfileApplicationAnalysisService {
     return this.applicationAnalysisWorkflowService.submitApplicantFeedback(
       userId,
       {
+        runId: dto.runId,
         exposureId: dto.exposureId,
         capability: dto.capability,
         sentiment: dto.sentiment,
@@ -1419,16 +1438,10 @@ function buildSchoolPolicyContext(
 function resolveSchoolTestingPolicy(
   item: LoadedSchoolListItem,
 ): SchoolPolicyContext['testingPolicy'] {
-  if (UC_TEST_BLIND_SCHOOL_NAMES.has(item.school.name)) {
-    return 'BLIND';
-  }
-  if (item.school.testOptional === true) {
-    return 'OPTIONAL';
-  }
-  if (item.school.testOptional === false) {
-    return 'REQUIRED';
-  }
-  return 'UNKNOWN';
+  return resolveSchoolTestingPolicyValue({
+    testingPolicy: item.school.testingPolicy as any,
+    testOptional: item.school.testOptional,
+  });
 }
 
 function resolveSchoolIntlAidPolicy(
@@ -1478,9 +1491,7 @@ function resolveSchoolRoundContext(
     case 'UC':
       return normalized;
     default:
-      return UC_TEST_BLIND_SCHOOL_NAMES.has(item.school.name)
-        ? 'UC'
-        : 'UNKNOWN';
+      return item.school.testingPolicy === 'BLIND' ? 'UC' : 'UNKNOWN';
   }
 }
 

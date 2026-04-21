@@ -1,0 +1,155 @@
+{
+  "id": "029-brown-3",
+  "description": "Optional-policy zh output should stay stable for aid-sensitive applicants. Variant 3.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-029",
+      "userId": "gold-runner",
+      "gpa": 3.7,
+      "gpaScale": 4,
+      "targetMajor": "History",
+      "intendedMajor": "History",
+      "secondMajor": null,
+      "grade": "JUNIOR",
+      "educationSystem": "AP",
+      "nationality": "China",
+      "countryOfResidence": "China",
+      "citizenship": "China",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": true,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [],
+      "activities": [
+        {
+          "id": "profile-gold-029-activity",
+          "name": "Community Initiative",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-029-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-029-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "China",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-29-brown",
+        "schoolId": "brown",
+        "tier": "TARGET",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "brown",
+          "name": "Brown University",
+          "nameZh": "布朗大学",
+          "usNewsRank": 9,
+          "acceptanceRate": 5.2,
+          "sat25": 1490,
+          "sat75": 1560,
+          "satAvg": 1530,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5.5,
+          "metadata": {
+            "standardDeadline": "January 3"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-29-brown",
+        "schoolId": "brown",
+        "tier": "TARGET",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "brown",
+          "name": "Brown University",
+          "nameZh": "布朗大学",
+          "usNewsRank": 9,
+          "acceptanceRate": 5.2,
+          "sat25": 1490,
+          "sat75": 1560,
+          "satAvg": 1530,
+          "testingPolicy": "OPTIONAL",
+          "testOptional": true,
+          "needBlindInternational": true,
+          "intlAcceptanceRate": 5.5,
+          "metadata": {
+            "standardDeadline": "January 3"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "brown",
+        "probability": 0.23,
+        "probabilityLow": 0.17,
+        "probabilityHigh": 0.3,
+        "tier": "match",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": ["Keep the RD plan aligned with Brown University."],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "RD",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "brown": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "brown",
+        "schoolName": "Brown University",
+        "tier": "TARGET",
+        "testingPolicy": "OPTIONAL",
+        "probabilityRange": [0.16, 0.31]
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "policy-optional"],
+  "ownerEmail": "governance@study-abroad.local"
+}

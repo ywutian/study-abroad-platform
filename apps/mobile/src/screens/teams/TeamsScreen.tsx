@@ -8,7 +8,13 @@ import type {
   TeamMatchDto,
   TeamRecruitmentCardFrontDto,
 } from '@study-abroad/shared';
-import { resumeRoutes } from '@study-abroad/shared';
+import {
+  getCompetitionTrackLabel,
+  getRecruitmentContext,
+  getRecruitmentContextId,
+  getRecruitmentContextName,
+  resumeRoutes,
+} from '@study-abroad/shared';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { EmptyState, Loading, Segment, Select } from '@/components/ui';
 import { PageContainer } from '@/components/layout/PageContainer';
@@ -42,7 +48,7 @@ type ResumeOption = {
 
 const EMPTY_FORM = {
   teamName: '',
-  competitionTrackId: '',
+  recruitmentContextId: '',
   headline: '',
   detailNote: '',
   offerRoles: '',
@@ -93,22 +99,24 @@ export default function TeamsScreen() {
     if (!contextsData?.items?.length) return;
     setForm((prev) => ({
       ...prev,
-      competitionTrackId: prev.competitionTrackId || contextsData.items[0].id,
+      recruitmentContextId:
+        prev.recruitmentContextId || getRecruitmentContextId(contextsData.items[0]) || '',
       targetTeamSize: prev.targetTeamSize || String(contextsData.items[0].maxTeamSize),
     }));
   }, [contextsData?.items]);
 
   useEffect(() => {
     if (!currentCard) return;
+    const currentContext = getRecruitmentContext(currentCard);
     setForm({
       teamName: currentEntry?.team.name ?? '',
-      competitionTrackId: currentCard.context.trackId,
+      recruitmentContextId: getRecruitmentContextId(currentCard) ?? '',
       headline: currentCard.headline,
       detailNote: currentCard.detailNote ?? '',
       offerRoles: currentCard.offerRoles.join(', '),
       needRoles: currentCard.needRoles.join(', '),
       skillTags: currentCard.skillTags.join(', '),
-      targetTeamSize: String(currentCard.team.targetSize),
+      targetTeamSize: String(currentCard.team.targetSize || currentContext?.maxTeamSize || ''),
     });
   }, [currentCard, currentEntry?.team.name]);
 
@@ -135,7 +143,8 @@ export default function TeamsScreen() {
       teamService.createRecruitment({
         teamId: selectedTeamId === 'new-solo' ? undefined : selectedTeamId,
         teamName: selectedTeamId === 'new-solo' ? form.teamName || undefined : undefined,
-        competitionTrackId: form.competitionTrackId,
+        recruitmentContextId: form.recruitmentContextId,
+        competitionTrackId: form.recruitmentContextId,
         headline: form.headline,
         detailNote: form.detailNote || undefined,
         offerRoles: splitList(form.offerRoles),
@@ -156,7 +165,8 @@ export default function TeamsScreen() {
   const updateMutation = useMutation({
     mutationFn: () =>
       teamService.updateRecruitment(currentCard!.id, {
-        competitionTrackId: form.competitionTrackId,
+        recruitmentContextId: form.recruitmentContextId,
+        competitionTrackId: form.recruitmentContextId,
         headline: form.headline,
         detailNote: form.detailNote || undefined,
         offerRoles: splitList(form.offerRoles),
@@ -227,8 +237,8 @@ export default function TeamsScreen() {
 
   const contextOptions =
     contextsData?.items.map((track) => ({
-      value: track.id,
-      label: `${track.competition.abbreviation} / ${track.name}`,
+      value: getRecruitmentContextId(track) ?? track.id,
+      label: `${getCompetitionTrackLabel(track.competition, i18n.language) || 'TEAM'} / ${getRecruitmentContextName(track, i18n.language)}`,
     })) ?? [];
 
   const teamOptions = [
@@ -251,14 +261,14 @@ export default function TeamsScreen() {
   const matches = matchesData?.items ?? [];
 
   return (
-    <PageContainer>
+    <PageContainer variant="community">
       <PageHeader
         title={t('teams.title')}
         description={
           i18n.language.startsWith('zh') ? '比赛组队匹配工作台' : 'Competition matching workspace'
         }
         icon="people-outline"
-        color="#f59e0b"
+        variant="community"
       />
 
       <Segment
@@ -292,7 +302,7 @@ export default function TeamsScreen() {
             />
           ) : (
             <View style={styles.section}>
-              <RecruitmentCard card={deckCard} />
+              <RecruitmentCard card={deckCard} locale={i18n.language} />
               <View style={styles.row}>
                 <TouchableOpacity
                   style={[styles.actionButton, { borderColor: colors.border }]}
@@ -348,8 +358,15 @@ export default function TeamsScreen() {
                     {match.otherCard.team.name}
                   </Text>
                   <Text style={[styles.cardMeta, { color: colors.foregroundMuted }]}>
-                    {match.otherCard.context.competition.abbreviation} /{' '}
-                    {match.otherCard.context.trackName}
+                    {getCompetitionTrackLabel(
+                      getRecruitmentContext(match.otherCard)?.competition,
+                      i18n.language
+                    ) || 'TEAM'}{' '}
+                    /{' '}
+                    {getRecruitmentContextName(
+                      getRecruitmentContext(match.otherCard),
+                      i18n.language
+                    )}
                   </Text>
                   <View style={styles.badges}>
                     <BadgeLike label={match.matchKind} colors={colors} />
@@ -383,9 +400,9 @@ export default function TeamsScreen() {
                   <Select
                     label={i18n.language.startsWith('zh') ? '比赛赛道' : 'Competition track'}
                     options={contextOptions}
-                    value={form.competitionTrackId}
+                    value={form.recruitmentContextId}
                     onChange={(value) =>
-                      setForm((prev) => ({ ...prev, competitionTrackId: value }))
+                      setForm((prev) => ({ ...prev, recruitmentContextId: value }))
                     }
                   />
                   <FieldInput
@@ -499,7 +516,7 @@ export default function TeamsScreen() {
                   </View>
                 </View>
 
-                {currentCard && <RecruitmentCard card={currentCard} />}
+                {currentCard && <RecruitmentCard card={currentCard} locale={i18n.language} />}
               </>
             )}
           </View>
@@ -509,13 +526,15 @@ export default function TeamsScreen() {
   );
 }
 
-function RecruitmentCard({ card }: { card: TeamRecruitmentCardFrontDto }) {
+function RecruitmentCard({ card, locale }: { card: TeamRecruitmentCardFrontDto; locale: string }) {
   const colors = useColors();
+  const context = getRecruitmentContext(card);
 
   return (
     <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <Text style={[styles.cardKicker, { color: colors.foregroundMuted }]}>
-        {card.context.competition.abbreviation} / {card.context.trackName}
+        {getCompetitionTrackLabel(context?.competition, locale) || 'TEAM'} /{' '}
+        {getRecruitmentContextName(context, locale)}
       </Text>
       <Text style={[styles.cardTitle, { color: colors.foreground }]}>{card.team.name}</Text>
       <Text style={[styles.cardMeta, { color: colors.foregroundMuted }]}>{card.headline}</Text>

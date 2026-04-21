@@ -174,7 +174,7 @@ export default function AdminPointsPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>{t('points.action')}</TableHead>
-                          <TableHead>Description</TableHead>
+                          <TableHead>{t('points.descriptionLabel')}</TableHead>
                           <TableHead className="w-[150px]">{t('points.value')}</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -218,7 +218,7 @@ export default function AdminPointsPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>{t('points.action')}</TableHead>
-                          <TableHead>Description</TableHead>
+                          <TableHead>{t('points.descriptionLabel')}</TableHead>
                           <TableHead className="w-[150px]">{t('points.value')}</TableHead>
                         </TableRow>
                       </TableHeader>

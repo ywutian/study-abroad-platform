@@ -89,7 +89,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
       setSelectedIds(new Set());
-      toast.success(`${result.success} posts updated`);
+      toast.success(t('moderation.postsUpdated', { count: result.success }));
     },
   });
 
@@ -170,7 +170,7 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
                         onCheckedChange={toggleSelectAll}
                       />
                     </TableHead>
-                    <TableHead>Title</TableHead>
+                    <TableHead>{t('moderation.titleLabel')}</TableHead>
                     <TableHead>{t('contentMod.author')}</TableHead>
                     <TableHead>{t('contentMod.category')}</TableHead>
                     <TableHead>{t('contentMod.replies')}</TableHead>

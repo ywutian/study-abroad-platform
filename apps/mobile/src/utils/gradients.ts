@@ -1,46 +1,34 @@
 /**
- * Gradient System
+ * Restricted gradient tokens.
  *
- * Predefined gradient color arrays and direction presets
- * for use with expo-linear-gradient.
+ * Page chrome should not depend on gradients. These remain available only for
+ * explicit allowlisted cases such as loading shimmer, chart fills, and
+ * illustration assets.
  */
 
-/** Gradient color presets (arrays of hex/rgba colors) */
 export const gradients = {
-  // Brand gradients
-  primary: ['#6366f1', '#4f46e5'] as const,
-  primarySoft: ['rgba(99,102,241,0.12)', 'rgba(79,70,229,0.06)'] as const,
-  primaryDark: ['#818cf8', '#6366f1'] as const,
-
-  // Hero gradients (multi-color)
-  hero: ['#6366f1', '#8b5cf6', '#ec4899'] as const,
-  heroDark: ['#818cf8', '#a78bfa', '#f472b6'] as const,
-
-  // Semantic gradients
-  success: ['#10b981', '#059669'] as const,
-  warning: ['#f59e0b', '#d97706'] as const,
-  error: ['#ef4444', '#dc2626'] as const,
-  info: ['#3b82f6', '#2563eb'] as const,
-
-  // Decorative gradients
-  rose: ['#f43f5e', '#e11d48'] as const,
-  violet: ['#8b5cf6', '#7c3aed'] as const,
-  amber: ['#f59e0b', '#d97706'] as const,
-  emerald: ['#10b981', '#059669'] as const,
-
-  // Background mesh gradients (very low opacity, atmosphere)
-  meshPrimary: ['rgba(99,102,241,0.06)', 'transparent'] as const,
-  meshSuccess: ['rgba(16,185,129,0.04)', 'transparent'] as const,
-  meshWarm: ['rgba(245,158,11,0.04)', 'transparent'] as const,
+  loadingShimmer: ['rgba(255,255,255,0)', 'rgba(255,255,255,0.45)', 'rgba(255,255,255,0)'] as const,
+  illustrationCool: ['rgba(91,102,246,0.08)', 'rgba(53,111,157,0.04)'] as const,
+  illustrationWarm: ['rgba(180,123,23,0.08)', 'rgba(77,155,110,0.04)'] as const,
+  chartInfo: ['rgba(53,111,157,0.18)', 'rgba(53,111,157,0.02)'] as const,
 } as const;
 
-/** Gradient direction presets for LinearGradient start/end */
 export const gradientDirections = {
   toBottom: { start: { x: 0.5, y: 0 }, end: { x: 0.5, y: 1 } },
   toRight: { start: { x: 0, y: 0.5 }, end: { x: 1, y: 0.5 } },
   diagonal: { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } },
-  diagonalReverse: { start: { x: 1, y: 0 }, end: { x: 0, y: 1 } },
 } as const;
+
+export const gradientAllowlist = new Set<GradientKey>([
+  'loadingShimmer',
+  'illustrationCool',
+  'illustrationWarm',
+  'chartInfo',
+]);
+
+export function isAllowedGradientKey(key: string): key is GradientKey {
+  return gradientAllowlist.has(key as GradientKey);
+}
 
 export type GradientKey = keyof typeof gradients;
 export type GradientDirection = keyof typeof gradientDirections;

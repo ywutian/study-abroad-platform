@@ -1,0 +1,160 @@
+{
+  "id": "009-stanford-required-zh",
+  "description": "Stanford required-policy output should hold under zh locale render parity.",
+  "createdAt": "2026-04-21",
+  "lastReviewedAt": "2026-04-21",
+  "inputConfig": {
+    "locale": "zh"
+  },
+  "analysisSnapshot": {
+    "locale": "zh",
+    "analysisVersion": "application-analysis-v2",
+    "profile": {
+      "id": "profile-gold-009",
+      "userId": "gold-runner",
+      "gpa": 3.93,
+      "gpaScale": 4,
+      "targetMajor": "Mathematics",
+      "intendedMajor": "Mathematics",
+      "secondMajor": null,
+      "grade": "SENIOR",
+      "educationSystem": "AP",
+      "nationality": "China",
+      "countryOfResidence": "China",
+      "citizenship": "China",
+      "legacy": [],
+      "firstGeneration": false,
+      "needsFinancialAid": true,
+      "applicationRound": "RD",
+      "updatedAt": "2026-04-09T12:00:00.000Z",
+      "testScores": [
+        {
+          "type": "SAT",
+          "score": 1490
+        }
+      ],
+      "activities": [
+        {
+          "id": "profile-gold-009-activity",
+          "name": "Community Initiative",
+          "category": "ACADEMIC",
+          "role": "Lead",
+          "description": "Structured leadership activity used for governance replay.",
+          "hoursPerWeek": 5,
+          "weeksPerYear": 30,
+          "order": 0,
+          "activityTemplate": {
+            "tier": 3
+          }
+        }
+      ],
+      "awards": [],
+      "education": [
+        {
+          "id": "profile-gold-009-edu",
+          "schoolName": "Global Academy",
+          "schoolType": "HIGH_SCHOOL",
+          "highSchoolId": "profile-gold-009-hs",
+          "highSchool": {
+            "name": "Global Academy",
+            "tier": 4,
+            "type": "INTL_CN",
+            "country": "China",
+            "state": null
+          }
+        }
+      ],
+      "essays": [],
+      "semesterGpas": []
+    },
+    "schoolListItems": [
+      {
+        "id": "sl-9-stanford",
+        "schoolId": "stanford",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "stanford",
+          "name": "Stanford University",
+          "nameZh": "斯坦福大学",
+          "usNewsRank": 3,
+          "acceptanceRate": 3.7,
+          "sat25": 1510,
+          "sat75": 1570,
+          "satAvg": 1550,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.4,
+          "metadata": {
+            "standardDeadline": "January 5"
+          }
+        }
+      }
+    ],
+    "focusSchools": [
+      {
+        "id": "sl-9-stanford",
+        "schoolId": "stanford",
+        "tier": "REACH",
+        "round": "RD",
+        "updatedAt": "2026-04-09T12:10:00.000Z",
+        "school": {
+          "id": "stanford",
+          "name": "Stanford University",
+          "nameZh": "斯坦福大学",
+          "usNewsRank": 3,
+          "acceptanceRate": 3.7,
+          "sat25": 1510,
+          "sat75": 1570,
+          "satAvg": 1550,
+          "testingPolicy": "REQUIRED",
+          "testOptional": false,
+          "needBlindInternational": false,
+          "intlAcceptanceRate": 4.4,
+          "metadata": {
+            "standardDeadline": "January 5"
+          }
+        }
+      }
+    ],
+    "predictions": [
+      {
+        "schoolId": "stanford",
+        "probability": 0.15,
+        "probabilityLow": 0.11,
+        "probabilityHigh": 0.21,
+        "tier": "reach",
+        "confidence": "medium",
+        "factors": [],
+        "suggestions": ["Keep the RD plan aligned with Stanford University."],
+        "confidenceReason": "Governance gold case prediction baseline.",
+        "applicationRound": "RD",
+        "updatedAt": "2026-04-09T12:20:00.000Z"
+      }
+    ],
+    "approvedEvidence": [],
+    "historyBySchool": {
+      "stanford": null
+    }
+  },
+  "expected": {
+    "state": "ready",
+    "schoolCards": [
+      {
+        "schoolId": "stanford",
+        "schoolName": "Stanford University",
+        "tier": "REACH",
+        "testingPolicy": "REQUIRED",
+        "probabilityRange": [0.1, 0.22]
+      }
+    ],
+    "meta": {
+      "confidence": "medium",
+      "minActionCount": 1
+    }
+  },
+  "tags": ["deterministic", "policy-required", "render-smoke"],
+  "ownerEmail": "governance@study-abroad.local"
+}

@@ -22,6 +22,7 @@ export interface School {
   nicheLifeGrade?: string;
   nicheFoodGrade?: string;
   nicheOverallGrade?: string;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;

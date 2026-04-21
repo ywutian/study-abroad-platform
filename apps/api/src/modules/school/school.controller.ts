@@ -143,6 +143,7 @@ export class SchoolController {
       sizeMax,
       schoolType,
       testOptional,
+      testingPolicy,
       needBlind,
       hasEarlyDecision,
     } = query;
@@ -164,6 +165,7 @@ export class SchoolController {
         sizeMax,
         schoolType,
         testOptional,
+        testingPolicy,
         needBlind,
         hasEarlyDecision,
       },

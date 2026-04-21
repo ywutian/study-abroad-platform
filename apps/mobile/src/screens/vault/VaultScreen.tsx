@@ -19,12 +19,12 @@ export default function VaultScreen() {
   });
 
   return (
-    <PageContainer onRefresh={() => {}}>
+    <PageContainer onRefresh={() => {}} variant="tool">
       <PageHeader
         title={t('vault.title')}
         description={t('vault.description')}
         icon="lock-closed-outline"
-        color="#10b981"
+        variant="tool"
       />
       {isLoading ? (
         <Loading />

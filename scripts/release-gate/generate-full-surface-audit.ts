@@ -74,14 +74,14 @@ function renderRouteTable(title: string, routes: readonly RouteSurfaceDefinition
   const lines = [
     `## ${title}`,
     '',
-    '| surface_id | route | source | persona | owner | validation | batch | quality_dimensions | shell_artifacts |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| surface_id | route | source | persona | ui_layer | page_contract_variant | migration_status | ai_explanatory_surface | owner | validation | batch | quality_dimensions | shell_artifacts |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...routes.map((route) => {
       const shells =
         route.routeMetadata.supportingShells.length > 0
           ? route.routeMetadata.supportingShells.map((shell) => shell.relativePath).join('<br/>')
           : '-';
-      return `| ${route.surfaceId} | \`${route.routeMetadata.routeTemplate}\` | \`${route.routeMetadata.sourcePath}\` | \`${route.persona}\` | \`${route.executionOwner}\` | \`${route.validationType}\` | \`${route.agentBundle}\` | ${qualityDimensionChineseLabels(route.qualityDimensions).join(' / ')} | ${shells} |`;
+      return `| ${route.surfaceId} | \`${route.routeMetadata.routeTemplate}\` | \`${route.routeMetadata.sourcePath}\` | \`${route.persona}\` | \`${route.uiLayer}\` | \`${route.pageContractVariant}\` | \`${route.migrationStatus}\` | \`${route.aiExplanatorySurface}\` | \`${route.executionOwner}\` | \`${route.validationType}\` | \`${route.agentBundle}\` | ${qualityDimensionChineseLabels(route.qualityDimensions).join(' / ')} | ${shells} |`;
     }),
     '',
   ];

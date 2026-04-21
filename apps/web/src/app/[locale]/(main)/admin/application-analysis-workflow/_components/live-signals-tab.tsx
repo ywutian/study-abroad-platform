@@ -65,10 +65,10 @@ export function LiveSignalsTab() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
                     <div className="font-medium">
-                      {item.capability} · {humanizeEnum(item.sentiment)}
+                      {humanizeEnum(item.capability ?? 'GENERAL')} · {humanizeEnum(item.sentiment)}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {humanizeEnum(item.category)}
+                      {humanizeEnum(item.category ?? 'UNSPECIFIED')}
                       {item.schoolId ? ` · ${item.schoolId}` : ''}
                     </div>
                   </div>

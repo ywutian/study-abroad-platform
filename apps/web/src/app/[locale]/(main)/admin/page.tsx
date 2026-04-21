@@ -104,7 +104,7 @@ export default function AdminOverviewPage() {
 
   return (
     <>
-      <PageHeader title={t('title')} description={t('description')} icon={Shield} color="violet" />
+      <PageHeader title={t('title')} description={t('description')} icon={Shield} variant="admin" />
 
       {/* Stats cards */}
       {statsLoading ? (

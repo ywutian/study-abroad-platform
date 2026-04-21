@@ -122,7 +122,7 @@ export function SectionCard({
       onUpdateContent(parsed);
       setEditingContent(false);
     } catch {
-      toast.error('Invalid JSON');
+      toast.error(tc('invalidJson'));
     }
   };
 
@@ -171,7 +171,7 @@ export function SectionCard({
               size="icon"
               className="h-7 w-7 text-destructive hover:text-destructive"
               onClick={onDelete}
-              aria-label="Delete section"
+              aria-label={tc('aria.deleteSection')}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>

@@ -38,6 +38,7 @@ interface School {
   averageNetPrice?: number;
   roomAndBoard?: number;
   percentNeedMet?: number;
+  testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;
@@ -88,6 +89,7 @@ export function SchoolsList({
   onViewCommunity,
 }: SchoolsListProps) {
   const t = useTranslations('admin');
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
 
   return (
@@ -151,6 +153,11 @@ export function SchoolsList({
                               {getSchoolSubName(school, locale)}
                             </div>
                           )}
+                          {school.testingPolicy && school.testingPolicy !== 'UNKNOWN' ? (
+                            <Badge variant="outline" className="mt-1 text-2xs">
+                              {testingPolicyT(school.testingPolicy as any)}
+                            </Badge>
+                          ) : null}
                         </div>
                       </TableCell>
                       <TableCell>{school.state || '-'}</TableCell>

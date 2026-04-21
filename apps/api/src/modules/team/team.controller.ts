@@ -18,11 +18,15 @@ import { JoinByTokenDto } from './dto/join-by-token.dto';
 import { TransferOwnerDto } from './dto/transfer-owner.dto';
 import { TeamQueryDto } from './dto/team-query.dto';
 import {
+  CreateCommunityContextDto,
   CreateRecruitmentDto,
   CreateRecruitmentSwipeDto,
   InviteMatchMembersDto,
   MatchQueryDto,
+  RecruitmentContextQueryDto,
+  RecruitmentDeckPreviewQueryDto,
   RecruitmentDeckQueryDto,
+  UpdateCommunityContextDto,
   UpdateRecruitmentDto,
   UpdateRecruitmentMemberProfileDto,
 } from './dto/recruitment.dto';
@@ -78,9 +82,67 @@ export class TeamController {
   @Get('recruitment-contexts')
   @Public()
   @ThrottleRelaxed()
-  @ApiOperation({ summary: 'Get active competition recruitment contexts' })
-  async getRecruitmentContexts() {
-    return this.recruitmentService.getRecruitmentContexts();
+  @ApiOperation({ summary: 'Get published recruitment contexts' })
+  async getRecruitmentContexts(@Query() query: RecruitmentContextQueryDto) {
+    return this.recruitmentService.getRecruitmentContexts(query);
+  }
+
+  @Get('match-pools')
+  @Public()
+  @ThrottleRelaxed()
+  @ApiOperation({ summary: 'Get active public match pools' })
+  async getMatchPools() {
+    return this.recruitmentService.getMatchPools();
+  }
+
+  @Get('match-pools/:id')
+  @Public()
+  @ThrottleRelaxed()
+  @ApiOperation({ summary: 'Get a public match pool with entries' })
+  async getMatchPoolById(@Param('id') id: string) {
+    return this.recruitmentService.getMatchPoolById(id);
+  }
+
+  @Get('community-contexts')
+  @ApiBearerAuth()
+  @ThrottleRelaxed()
+  @ApiOperation({ summary: 'Get my community recruitment contexts' })
+  async getCommunityContexts(@CurrentUser() user: CurrentUserPayload) {
+    return this.recruitmentService.getMyCommunityContexts(user.id);
+  }
+
+  @Post('community-contexts')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Create a private community recruitment context' })
+  async createCommunityContext(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateCommunityContextDto,
+  ) {
+    return this.recruitmentService.createCommunityContext(user.id, dto);
+  }
+
+  @Patch('community-contexts/:id')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Update my private community recruitment context' })
+  async updateCommunityContext(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdateCommunityContextDto,
+  ) {
+    return this.recruitmentService.updateCommunityContext(id, user.id, dto);
+  }
+
+  @Post('community-contexts/:id/publish')
+  @ApiBearerAuth()
+  @ThrottleSensitive()
+  @ApiOperation({ summary: 'Publish my private community recruitment context' })
+  async publishCommunityContext(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.recruitmentService.publishCommunityContext(id, user.id);
   }
 
   @Get('recruitments/me')
@@ -88,6 +150,19 @@ export class TeamController {
   @ApiOperation({ summary: 'Get my teams with recruitment cards' })
   async getMyRecruitments(@CurrentUser() user: CurrentUserPayload) {
     return this.recruitmentService.getMyRecruitments(user.id);
+  }
+
+  @Get('recruitments/deck/preview')
+  @Public()
+  @ThrottleRelaxed()
+  @ApiOperation({
+    summary:
+      'Guest-preview swipe deck — returns published cards without requiring a source card. Used on first visit so users can browse before publishing their own card.',
+  })
+  async getRecruitmentDeckPreview(
+    @Query() query: RecruitmentDeckPreviewQueryDto,
+  ) {
+    return this.recruitmentService.getDeckPreview(query);
   }
 
   @Get('recruitments/deck')
