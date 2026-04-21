@@ -1625,7 +1625,7 @@ function hashString(value: string): string {
 }
 
 function toJson(value: unknown): Prisma.InputJsonValue {
-  return value as unknown as Prisma.InputJsonValue;
+  return value as Prisma.InputJsonValue;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

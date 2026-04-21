@@ -518,14 +518,14 @@ export class TeamRecruitmentService {
     const created = await this.prisma.$transaction(async (tx) => {
       if (team.maxMembers !== targetTeamSize) {
         await tx.team.update({
-          where: { id: teamId! },
+          where: { id: teamId },
           data: { maxMembers: targetTeamSize },
         });
       }
 
       const card = await tx.teamRecruitmentCard.create({
         data: {
-          teamId: teamId!,
+          teamId: teamId,
           recruitmentContextId: recruitmentContext.id,
           headline: dto.headline.trim(),
           detailNote: dto.detailNote?.trim() || null,

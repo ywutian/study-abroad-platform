@@ -232,7 +232,7 @@ export class PredictionTransformerService {
     };
 
     const testingPolicy =
-      captureField('testingPolicy', (school as any).testingPolicy as any) ??
+      captureField('testingPolicy', (school as any).testingPolicy) ??
       resolveSchoolTestingPolicyValue({
         testingPolicy: (school as any).testingPolicy,
         testOptional: (school as any).testOptional,

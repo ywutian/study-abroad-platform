@@ -96,10 +96,8 @@ describe('TeamController', () => {
     }).compile();
 
     controller = module.get<TeamController>(TeamController);
-    teamService = module.get(TeamService) as jest.Mocked<TeamService>;
-    recruitmentService = module.get(
-      TeamRecruitmentService,
-    ) as jest.Mocked<TeamRecruitmentService>;
+    teamService = module.get(TeamService);
+    recruitmentService = module.get(TeamRecruitmentService);
   });
 
   it('should be defined', () => {
