@@ -11,10 +11,6 @@ on:
       - 'packages/shared/**'
       - 'prisma/**'
 
-concurrency:
-  group: preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
   id-token: write
@@ -22,11 +18,15 @@ permissions:
 
 jobs:
   deploy-preview:
-    # Requires: GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_PROJECT_ID, GCP_REGION secrets
-    # Skip gracefully if secrets are not configured
-    if: ${{ secrets.GCP_PROJECT_ID != '' }}
+    # Requires: GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_PROJECT_ID, GCP_REGION secrets.
+    # Skip gracefully when GCP is not configured for the repo (e.g. forks, or
+    # before first deploy) — use a repo variable that's visible to job-if.
+    if: github.event_name == 'pull_request' && vars.PREVIEW_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: staging
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v6
 
