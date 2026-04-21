@@ -1,0 +1,60 @@
+{
+  "checks": [
+    {
+      "name": "单调性 / Elite private",
+      "passed": true,
+      "detail": "概率序列: 5% -> 5% -> 5% -> 6.1%"
+    },
+    {
+      "name": "单调性 / Highly selective",
+      "passed": true,
+      "detail": "概率序列: 5% -> 5% -> 5% -> 12.1%"
+    },
+    {
+      "name": "单调性 / Selective",
+      "passed": false,
+      "detail": "概率序列: 5.7% -> 5% -> 13.9% -> 24.2%"
+    },
+    {
+      "name": "单调性 / Broad access",
+      "passed": false,
+      "detail": "概率序列: 22.2% -> 22% -> 45.6% -> 54.9%"
+    },
+    {
+      "name": "选择性方向 / Sparse profile / missing critical inputs",
+      "passed": true,
+      "detail": "从最难到最易的概率序列: 5% -> 5% -> 5.7% -> 22.2%"
+    },
+    {
+      "name": "选择性方向 / Baseline applicant",
+      "passed": true,
+      "detail": "从最难到最易的概率序列: 5% -> 5% -> 5% -> 22%"
+    },
+    {
+      "name": "选择性方向 / Competitive applicant",
+      "passed": true,
+      "detail": "从最难到最易的概率序列: 5% -> 5% -> 13.9% -> 45.6%"
+    },
+    {
+      "name": "选择性方向 / Elite applicant",
+      "passed": true,
+      "detail": "从最难到最易的概率序列: 6.1% -> 12.1% -> 24.2% -> 54.9%"
+    },
+    {
+      "name": "轮次敏感性 / RD EA ED",
+      "passed": true,
+      "detail": "RD 5%, EA 5.5%, ED 6.8%"
+    },
+    {
+      "name": "缺失数据韧性 / confidence 降级",
+      "passed": false,
+      "detail": "sparse=medium, rich=high"
+    },
+    {
+      "name": "稳定性 / 重复运行一致",
+      "passed": true,
+      "detail": "重复 5 次输出: 5, 5, 5, 5, 5"
+    }
+  ],
+  "scenarioCount": 16
+}

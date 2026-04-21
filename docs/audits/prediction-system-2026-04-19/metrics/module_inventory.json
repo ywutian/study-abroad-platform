@@ -1,0 +1,61 @@
+[
+  {
+    "module": "prediction",
+    "outputKind": "Served personal admit probability, tier, confidence, factors",
+    "sourceBoundary": [
+      "v3-enterprise served",
+      "v5-ml-primary feature-flag/shadow",
+      "legacy fusion"
+    ],
+    "eligibleForFormalAccuracy": true,
+    "notes": [
+      "Formal accuracy claim must use verified ADMITTED/REJECTED outcomes only.",
+      "Served probability is post-processed after calibration by major, feeder, round, and school multipliers."
+    ],
+    "evidence": [
+      "apps/api/src/modules/prediction/prediction.service.ts:1177",
+      "docs/PREDICTION_CLOSED_LOOP_SOP.md"
+    ],
+    "observedPredictionRows": 29
+  },
+  {
+    "module": "recommendation",
+    "outputKind": "Estimated personal chance inside recommendation list",
+    "sourceBoundary": ["LLM recommendation output", "stats anchor ±15pp"],
+    "eligibleForFormalAccuracy": false,
+    "notes": [
+      "Recommendation probability is strategy guidance, not the formal prediction accuracy surface.",
+      "Current design clamps LLM estimatedProbability to within ±15 percentage points of the stats baseline."
+    ],
+    "evidence": [
+      "apps/api/src/modules/recommendation/recommendation.service.ts:613",
+      "packages/shared/src/types/recommendation.ts:47"
+    ]
+  },
+  {
+    "module": "quick-match",
+    "outputKind": "Heuristic probability/tier generated from shared scoring utilities",
+    "sourceBoundary": ["v1-stats", "source=quick-match"],
+    "eligibleForFormalAccuracy": true,
+    "notes": [
+      "Quick-match persists into PredictionResult and must be split out from main prediction accuracy reporting.",
+      "Quick-match confidence is hard-coded low in the persistence bridge."
+    ],
+    "evidence": [
+      "apps/api/src/modules/school-list/school-list.service.ts:608",
+      "apps/api/src/modules/school-list/school-list.service.ts:609"
+    ],
+    "observedPredictionRows": 44
+  },
+  {
+    "module": "ranking",
+    "outputKind": "Weighted school ranking score, not admit probability",
+    "sourceBoundary": ["Ranking weights over school attributes"],
+    "eligibleForFormalAccuracy": false,
+    "notes": [
+      "Ranking service normalizes school attributes and returns rank/score only.",
+      "It should never be included in probability accuracy claims."
+    ],
+    "evidence": ["apps/api/src/modules/ranking/ranking.service.ts:27"]
+  }
+]

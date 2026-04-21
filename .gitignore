@@ -33,6 +33,7 @@ pnpm-debug.log*
 # Testing
 coverage
 e2e-report/
+scripts/eval/results/
 
 # Expo
 .expo/

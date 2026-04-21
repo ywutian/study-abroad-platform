@@ -1,0 +1,87 @@
+{
+  "localDbBaseline": {
+    "windowDays": 365,
+    "sampleCount": 0,
+    "verdict": "insufficient_verified_outcomes",
+    "message": "No verified ADMITTED/REJECTED outcomes were found in the selected window.",
+    "outcomeInventory": [
+      {
+        "status": "SELF_REPORTED",
+        "result": "ADMITTED",
+        "count": 5
+      }
+    ]
+  },
+  "offlineImport": {
+    "status": "missing_input",
+    "message": "No --import-dir was provided. CSV ingestion scaffold is implemented but no read-only export was supplied.",
+    "schema": {
+      "requiredFiles": [
+        "prediction_result.csv",
+        "prediction_outcome_label_record.csv",
+        "school.csv"
+      ],
+      "optionalFiles": ["admission_case.csv", "school_recommendation.csv", "school_list_item.csv"]
+    }
+  },
+  "gate": {
+    "exitCode": 1,
+    "stdout": "> study-abroad-platform@1.0.0 prediction:gate /Users/yitianwu/Documents/study-abroad-platform\n> tsx scripts/prediction-gate.ts --days 365 --min-verified 200\n\nPrediction Gate\n- workflow: FAIL\n- accuracy: CHECK\n- verified-samples: 0/200\n- overall: FAIL\n\nWorkflow summary: fetch failed\nAccuracy summary: 0 verified ADMITTED/REJECTED outcomes\n\nPrediction Stability Smoke\n- [FAIL] smoke: fetch failed\n\nPrediction Accuracy Report\nWindow: last 365 days\nVerified samples: 0 (no COUNSELOR_VERIFIED / DOCUMENT_VERIFIED ADMITTED/REJECTED outcomes)\n\nOutcome inventory\n- SELF_REPORTED / ADMITTED: 5\n ELIFECYCLE  Command failed with exit code 1.",
+    "stderr": ""
+  },
+  "staticRisks": [
+    {
+      "id": "p0-truth-contamination",
+      "priority": "P0",
+      "title": "Legacy calibration consumes unverified SELF_REPORTED outcomes via PredictionResult.actualResult",
+      "impact": "Calibration and drift suggestions can be trained on contaminated truth while training-data and monitoring paths use verified-only outcomes. This creates conflicting truth regimes inside the same prediction system.",
+      "recommendation": "Gate all calibration/drift inputs through canonical verified outcome records only. Stop using PredictionResult.actualResult as calibration truth unless its provenance is verified.",
+      "evidence": [
+        "apps/api/src/modules/prediction/prediction-reporting.service.ts:176",
+        "apps/api/src/modules/prediction/prediction-reporting.service.ts:64",
+        "apps/api/src/modules/prediction/prediction-calibration.service.ts:112",
+        "apps/api/src/modules/prediction/ml/training-data.service.ts:200",
+        "docs/PREDICTION_CLOSED_LOOP_SOP.md"
+      ]
+    },
+    {
+      "id": "p1-calibration-ordering",
+      "priority": "P1",
+      "title": "Served probability is modified after Platt calibration",
+      "impact": "The number shown to users is no longer the same quantity that was calibrated if later major, feeder, round, and school multipliers materially move it.",
+      "recommendation": "Either calibrate the final served probability after all deterministic adjustments, or move post-calibration modifiers into the calibratable model input space.",
+      "evidence": [
+        "apps/api/src/modules/prediction/prediction.service.ts:1177",
+        "apps/api/src/modules/prediction/prediction.service.ts:1196",
+        "apps/api/src/modules/prediction/prediction.service.ts:1234",
+        "apps/api/src/modules/prediction/prediction.service.ts:1262",
+        "apps/api/src/modules/prediction/prediction.service.ts:841"
+      ]
+    },
+    {
+      "id": "p1-unsupported-marketing-claim",
+      "priority": "P1",
+      "title": "Outward-facing 95% accuracy claim conflicts with current verified baseline and SOP",
+      "impact": "The current claim exposes the product to trust and governance risk because the repo baseline shows zero verified ADMITTED/REJECTED outcomes in the last 365 days.",
+      "recommendation": "Immediately replace marketing copy with non-quantified language until prediction gate passes with verified sample threshold support.",
+      "evidence": [
+        "apps/web/src/messages/zh.json:579",
+        "apps/web/src/messages/en.json:579",
+        "apps/web/src/messages/zh.json:3460",
+        "docs/PREDICTION_CLOSED_LOOP_SOP.md"
+      ]
+    },
+    {
+      "id": "p1-source-mixing",
+      "priority": "P1",
+      "title": "Quick-match writes v1-stats rows into PredictionResult and can be mixed into accuracy reporting",
+      "impact": "Without explicit source segmentation, the audit can combine a heuristic quick-match branch with the main prediction workflow and produce misleading aggregate metrics.",
+      "recommendation": "Split formal reporting by source and modelVersion, and exclude quick-match from any headline prediction accuracy number.",
+      "evidence": [
+        "apps/api/src/modules/school-list/school-list.service.ts:609",
+        "apps/api/src/modules/school-list/school-list.service.ts:608",
+        "scripts/prediction-accuracy-report.ts:270"
+      ]
+    }
+  ]
+}

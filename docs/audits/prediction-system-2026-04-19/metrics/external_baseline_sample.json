@@ -1,0 +1,112 @@
+{
+  "sources": [
+    {
+      "label": "College Scorecard API",
+      "url": "https://collegescorecard.ed.gov/data/api/",
+      "use": "Official admissions-rate and test-score baseline for school-level spot checks."
+    },
+    {
+      "label": "IPEDS",
+      "url": "https://nces.ed.gov/ipeds/Home",
+      "use": "Official federal postsecondary data system; validates institution-level data provenance and coverage."
+    },
+    {
+      "label": "Common Data Set",
+      "url": "https://commondataset.org/",
+      "use": "Common schema for institution-published admissions and enrollment details, often needed for fields not exposed in Scorecard."
+    },
+    {
+      "label": "Stanford CDS / IR example",
+      "url": "https://irds.stanford.edu/data-findings/cds",
+      "use": "Example school-operated institutional research page for manual round/intl-context checks."
+    }
+  ],
+  "rows": [
+    {
+      "schoolName": "Stanford University",
+      "officialSchoolName": "Stanford University",
+      "scorecardId": 243744,
+      "officialAdmissionRatePct": 3.61,
+      "officialSatAvg": 1553,
+      "officialActMid": 35,
+      "internalMatchedName": "Stanford University",
+      "internalAcceptanceRatePct": 3.7,
+      "internalSatAvg": 1550,
+      "internalActAvg": 35,
+      "acceptanceRateDeltaPct": 0.09,
+      "satDelta": -3,
+      "actDelta": 0,
+      "sourceUrl": "https://api.data.gov/ed/collegescorecard/v1/schools.json?api_key=DEMO_KEY&school.name=Stanford+University&_fields=id%2Cschool.name%2Clatest.admissions.admission_rate.overall%2Clatest.admissions.sat_scores.average.overall%2Clatest.admissions.act_scores.midpoint.cumulative&_per_page=5"
+    },
+    {
+      "schoolName": "Harvard University",
+      "officialSchoolName": "Harvard University",
+      "scorecardId": 166027,
+      "officialAdmissionRatePct": 3.65,
+      "officialSatAvg": 1553,
+      "officialActMid": 35,
+      "internalMatchedName": "Harvard University",
+      "internalAcceptanceRatePct": 3.4,
+      "internalSatAvg": 1550,
+      "internalActAvg": 35,
+      "acceptanceRateDeltaPct": -0.25,
+      "satDelta": -3,
+      "actDelta": 0,
+      "sourceUrl": "https://api.data.gov/ed/collegescorecard/v1/schools.json?api_key=DEMO_KEY&school.name=Harvard+University&_fields=id%2Cschool.name%2Clatest.admissions.admission_rate.overall%2Clatest.admissions.sat_scores.average.overall%2Clatest.admissions.act_scores.midpoint.cumulative&_per_page=5"
+    },
+    {
+      "schoolName": "Massachusetts Institute of Technology",
+      "officialSchoolName": "Massachusetts Institute of Technology",
+      "scorecardId": 166683,
+      "officialAdmissionRatePct": 4.55,
+      "officialSatAvg": 1560,
+      "officialActMid": null,
+      "internalMatchedName": "Massachusetts Institute of Technology",
+      "internalAcceptanceRatePct": 4,
+      "internalSatAvg": 1560,
+      "internalActAvg": 36,
+      "acceptanceRateDeltaPct": -0.55,
+      "satDelta": 0,
+      "actDelta": null,
+      "sourceUrl": "https://api.data.gov/ed/collegescorecard/v1/schools.json?api_key=DEMO_KEY&school.name=Massachusetts+Institute+of+Technology&_fields=id%2Cschool.name%2Clatest.admissions.admission_rate.overall%2Clatest.admissions.sat_scores.average.overall%2Clatest.admissions.act_scores.midpoint.cumulative&_per_page=5"
+    },
+    {
+      "schoolName": "University of California-Los Angeles",
+      "officialSchoolName": "University of California-Los Angeles",
+      "scorecardId": 110662,
+      "officialAdmissionRatePct": 8.97,
+      "officialSatAvg": null,
+      "officialActMid": null,
+      "internalMatchedName": "University of California, Los Angeles",
+      "internalAcceptanceRatePct": 8.6,
+      "internalSatAvg": 1440,
+      "internalActAvg": 33,
+      "acceptanceRateDeltaPct": -0.37,
+      "satDelta": null,
+      "actDelta": null,
+      "sourceUrl": "https://api.data.gov/ed/collegescorecard/v1/schools.json?api_key=DEMO_KEY&school.name=University+of+California-Los+Angeles&_fields=id%2Cschool.name%2Clatest.admissions.admission_rate.overall%2Clatest.admissions.sat_scores.average.overall%2Clatest.admissions.act_scores.midpoint.cumulative&_per_page=5"
+    },
+    {
+      "schoolName": "University of Michigan-Ann Arbor",
+      "officialSchoolName": "University of Michigan-Ann Arbor",
+      "scorecardId": 170976,
+      "officialAdmissionRatePct": 15.64,
+      "officialSatAvg": 1465,
+      "officialActMid": null,
+      "internalMatchedName": "University of Michigan, Ann Arbor",
+      "internalAcceptanceRatePct": 17.7,
+      "internalSatAvg": 1470,
+      "internalActAvg": 34,
+      "acceptanceRateDeltaPct": 2.06,
+      "satDelta": 5,
+      "actDelta": null,
+      "sourceUrl": "https://api.data.gov/ed/collegescorecard/v1/schools.json?api_key=DEMO_KEY&school.name=University+of+Michigan-Ann+Arbor&_fields=id%2Cschool.name%2Clatest.admissions.admission_rate.overall%2Clatest.admissions.sat_scores.average.overall%2Clatest.admissions.act_scores.midpoint.cumulative&_per_page=5"
+    }
+  ],
+  "summary": {
+    "sampledSchools": 5,
+    "internalMatches": 5,
+    "officialMatches": 5,
+    "avgAbsAcceptanceRateDeltaPct": 0.66
+  }
+}

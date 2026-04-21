@@ -1,0 +1,101 @@
+[
+  {
+    "id": "auth-accuracy-zh",
+    "severity": "P1",
+    "disposition": "需立即下线或替换",
+    "summary": "认证页直接宣称 95% 预测准确率",
+    "detail": "当前仓库 verified outcome 样本数为 0，且 SOP 规定 verified < 200 不得对外宣称已验证准确率。",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/zh.json",
+    "needle": "\"accuracy\": \"95% 预测准确率\"",
+    "evidence": "auth.layout.features.accuracy",
+    "line": 579
+  },
+  {
+    "id": "auth-accuracy-en",
+    "severity": "P1",
+    "disposition": "需立即下线或替换",
+    "summary": "Auth page claims 95% prediction accuracy",
+    "detail": "The claim is unsupported by current verified-outcome inventory and contradicts the closed-loop SOP threshold.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/en.json",
+    "needle": "\"accuracy\": \"95% Prediction Accuracy\"",
+    "evidence": "auth.layout.features.accuracy",
+    "line": 579
+  },
+  {
+    "id": "faq-accuracy-zh",
+    "severity": "P1",
+    "disposition": "需立即下线或替换",
+    "summary": "FAQ 将预测准确率表述为 95% 以上",
+    "detail": "FAQ answer overstates verified accuracy and should be replaced with a capability description or a gated statement tied to verified sample thresholds.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/zh.json",
+    "needle": "\"answer\": \"基于大量真实案例数据，我们的预测准确率达到 95% 以上。\"",
+    "evidence": "help.faqItems.predictionAccuracy.answer",
+    "line": 3460
+  },
+  {
+    "id": "faq-accuracy-en",
+    "severity": "P1",
+    "disposition": "需立即下线或替换",
+    "summary": "FAQ says prediction accuracy is over 95%",
+    "detail": "This is outward-facing marketing copy that currently has no verified sample support in the repo baseline.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/en.json",
+    "needle": "\"answer\": \"Based on large amounts of real case data, our prediction accuracy is over 95%.\"",
+    "evidence": "help.faqItems.predictionAccuracy.answer",
+    "line": 3465
+  },
+  {
+    "id": "landing-calibration-en",
+    "severity": "P2",
+    "disposition": "需降级表述",
+    "summary": "Landing page markets calibrated probabilities as inherently more trustworthy",
+    "detail": "This quality framing should be downgraded until calibration quality is backed by verified-sample evidence.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/en.json",
+    "needle": "\"description\": \"Get calibrated probability ranges grounded in current data rather than consultant instinct or forum folklore.\"",
+    "evidence": "home.showcase.items.04.description",
+    "line": 296
+  },
+  {
+    "id": "landing-calibration-zh",
+    "severity": "P2",
+    "disposition": "需降级表述",
+    "summary": "落地页把“持续校准的模型”包装成更可信概率",
+    "detail": "在 verified gate 未通过前，这类文案应保持能力描述，而不是可信度承诺。",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/zh.json",
+    "needle": "\"description\": \"用持续校准的模型给出更可信的概率判断，而不是情绪化的乐观或悲观。\"",
+    "evidence": "home.showcase.items.04.description",
+    "line": 296
+  },
+  {
+    "id": "admin-overall-accuracy",
+    "severity": "P2",
+    "disposition": "需降级表述",
+    "summary": "Admin overallAccuracy 是 bucket 中点误差近似值，不是正式 accuracy metric",
+    "detail": "This should stay internal and be labeled as an approximate calibration proxy, not “accuracy”.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/app/[locale]/(main)/admin/calibrations/_components/overview-tab.tsx",
+    "needle": "Compute overall accuracy (average absolute error across buckets)",
+    "evidence": "overview-tab overallAccuracy calculation",
+    "line": 94
+  },
+  {
+    "id": "recommendation-disclaimer-zh",
+    "severity": "P3",
+    "disposition": "可保留",
+    "summary": "推荐页已区分个人预估机会和学校整体录取率",
+    "detail": "This disclaimer is directionally correct and should remain visible because recommendation is not the formal prediction-accuracy surface.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/zh.json",
+    "needle": "\"probabilityTooltip\": \"这是基于你当前档案的个人预估，不等于学校整体录取率。如需更完整的概率分析，请使用录取预测功能。\"",
+    "evidence": "schoolRecommendation.probabilityTooltip",
+    "line": 4791
+  },
+  {
+    "id": "recommendation-disclaimer-en",
+    "severity": "P3",
+    "disposition": "可保留",
+    "summary": "Recommendation copy distinguishes school-wide rate from personal chance",
+    "detail": "This is the right boundary for recommendation and should remain part of the product narrative.",
+    "file": "/Users/yitianwu/Documents/study-abroad-platform/apps/web/src/messages/en.json",
+    "needle": "\"probabilityTooltip\": \"This is a personal estimate based on your current profile, not the school's overall acceptance rate. For a fuller probability analysis, use Prediction.\"",
+    "evidence": "schoolRecommendation.probabilityTooltip",
+    "line": 4796
+  }
+]
