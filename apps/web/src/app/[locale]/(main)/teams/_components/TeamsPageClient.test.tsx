@@ -54,8 +54,8 @@ vi.mock('@/components/layout', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/tabs', () => {
-  const React = require('react') as typeof import('react');
+vi.mock('@/components/ui/tabs', async () => {
+  const React = await import('react');
   const TabsContext = React.createContext<{
     value: string;
     onValueChange?: (value: string) => void;
