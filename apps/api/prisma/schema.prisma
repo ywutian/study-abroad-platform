@@ -14,8 +14,8 @@ datasource db {
 enum Role {
   USER
   VERIFIED
-  OPERATOR    // 数据录入/审核（实习生）
-  ADMIN       // 管理员
+  OPERATOR // 数据录入/审核（实习生）
+  ADMIN // 管理员
   SUPER_ADMIN // 超级管理员（全权）
 }
 
@@ -97,6 +97,13 @@ enum EducationSystem {
   CANADIAN
   AUSTRALIAN
   OTHER
+}
+
+enum TestingPolicy {
+  REQUIRED
+  OPTIONAL
+  BLIND
+  UNKNOWN
 }
 
 enum AwardLevel {
@@ -309,6 +316,23 @@ enum CompetitionEditionStatus {
   ARCHIVED
 }
 
+enum RecruitmentContextSourceType {
+  OFFICIAL
+  COMMUNITY
+}
+
+enum RecruitmentContextModerationStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum LocationMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
 enum TeamRecruitmentPhase {
   DRAFT
   PUBLISHED
@@ -342,6 +366,11 @@ enum TeamMatchKind {
   NETWORKING
 }
 
+enum MatchPoolEntryType {
+  OFFICIAL_COMPETITION
+  PROMOTED_COMMUNITY_CONTEXT
+}
+
 enum ConversationKind {
   DIRECT
   MATCH_GROUP
@@ -364,38 +393,39 @@ model User {
   locale               String    @default("zh")
 
   // Relations
-  profile         Profile?
-  refreshTokens   RefreshToken[]
-  followers       Follow[]                  @relation("Following")
-  following       Follow[]                  @relation("Followers")
-  blockedUsers    Block[]                   @relation("Blocker")
-  blockedBy       Block[]                   @relation("Blocked")
-  sentMessages    Message[]
-  conversations   ConversationParticipant[]
+  profile                   Profile?
+  refreshTokens             RefreshToken[]
+  followers                 Follow[]                       @relation("Following")
+  following                 Follow[]                       @relation("Followers")
+  blockedUsers              Block[]                        @relation("Blocker")
+  blockedBy                 Block[]                        @relation("Blocked")
+  sentMessages              Message[]
+  conversations             ConversationParticipant[]
   recruitmentMemberProfiles TeamRecruitmentMemberProfile[]
   recruitmentSwipesActed    TeamRecruitmentSwipe[]
-  customRankings  CustomRanking[]
-  reviewsGiven      Review[]                  @relation("Reviewer")
-  reviewsReceived   Review[]                  @relation("ReviewedProfile")
-  reviewReactions   ReviewReaction[]
-  reports           Report[]
-  assignedReports   Report[]                  @relation("ReportAssignee")
-  admissionCases  AdmissionCase[]
-  userLists       UserList[]
-  userListVotes   UserListVote[]
-  schoolListItems SchoolListItem[]
+  customRankings            CustomRanking[]
+  reviewsGiven              Review[]                       @relation("Reviewer")
+  reviewsReceived           Review[]                       @relation("ReviewedProfile")
+  reviewReactions           ReviewReaction[]
+  reports                   Report[]
+  assignedReports           Report[]                       @relation("ReportAssignee")
+  admissionCases            AdmissionCase[]
+  userLists                 UserList[]
+  userListVotes             UserListVote[]
+  schoolListItems           SchoolListItem[]
 
   // Forum relations
-  forumPosts               ForumPost[]
-  forumComments            ForumComment[]
-  teamMemberships          TeamMember[]
+  forumPosts              ForumPost[]
+  forumComments           ForumComment[]
+  teamMemberships         TeamMember[]
   teamApplicationsApplied TeamApplication[]
 
   // Standalone 组队 (first-class teams)
-  createdTeams             Team[]             @relation("TeamCreator")
-  standaloneTeamMemberships TeamMembership[]   @relation("StandaloneTeamMember")
-  teamInvitationsSent     TeamInvitation[]    @relation("TeamInvitationSent")
-  teamInvitationsReceived TeamInvitation[]    @relation("TeamInvitationReceived")
+  createdTeams                 Team[]               @relation("TeamCreator")
+  standaloneTeamMemberships    TeamMembership[]     @relation("StandaloneTeamMember")
+  teamInvitationsSent          TeamInvitation[]     @relation("TeamInvitationSent")
+  teamInvitationsReceived      TeamInvitation[]     @relation("TeamInvitationReceived")
+  communityRecruitmentContexts RecruitmentContext[] @relation("CommunityRecruitmentContextCreator")
 
   // Swipe game
   points       Int            @default(0)
@@ -422,7 +452,7 @@ model User {
   mcpApiKeys McpApiKey[]
 
   // Recommendations (选校推荐)
-  schoolRecommendations SchoolRecommendation[]
+  schoolRecommendations  SchoolRecommendation[]
   schoolCommunityRatings SchoolCommunityRating[]
 
   // Case views (案例查看记录)
@@ -442,16 +472,16 @@ model User {
   userPermissions UserPermission[]
 
   // Referral system
-  referralCode    String?   @unique
-  referredById    String?
-  referredBy      User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals       User[]    @relation("UserReferrals")
+  referralCode String? @unique
+  referredById String?
+  referredBy   User?   @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals    User[]  @relation("UserReferrals")
 
   // Ban system
-  isBanned      Boolean   @default(false)
-  bannedAt      DateTime?
-  bannedUntil   DateTime? // null = permanent ban
-  banReason     String?
+  isBanned    Boolean   @default(false)
+  bannedAt    DateTime?
+  bannedUntil DateTime? // null = permanent ban
+  banReason   String?
 
   // Timestamps
   createdAt   DateTime  @default(now())
@@ -491,7 +521,6 @@ model McpApiKey {
 
   @@index([userId])
   @@index([keyPrefix])
-
   @@map("mcp_api_keys")
 }
 
@@ -540,8 +569,8 @@ model Profile {
   nationality        String?
   countryOfResidence String?
   citizenship        String?
-  legacy             String[]  @default([])
-  firstGeneration    Boolean   @default(false)
+  legacy             String[]         @default([])
+  firstGeneration    Boolean          @default(false)
   needsFinancialAid  Boolean?
   educationSystem    EducationSystem?
 
@@ -552,14 +581,15 @@ model Profile {
   visibility Visibility @default(PRIVATE)
 
   // Relations
-  testScores   TestScore[]
-  activities   Activity[]
-  awards       Award[]
-  education    Education[]
-  essays       Essay[]
-  predictions  PredictionResult[]
+  testScores         TestScore[]
+  activities         Activity[]
+  awards             Award[]
+  education          Education[]
+  essays             Essay[]
+  predictions        PredictionResult[]
   sourceObservations PredictionSourceObservation[]
-  semesterGpas SemesterGpa[]
+  semesterGpas       SemesterGpa[]
+  applicationAnalysisRuns ApplicationAnalysisRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -574,12 +604,12 @@ model SemesterGpa {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  semester String  // e.g. "Fall 2024", "Spring 2025", "Grade 9", "Grade 10"
-  year     Int     // academic year, e.g. 2024
-  gpa      Decimal @db.Decimal(5, 2)
-  gpaScale Decimal @default(4.0) @db.Decimal(5, 2)
+  semester String // e.g. "Fall 2024", "Spring 2025", "Grade 9", "Grade 10"
+  year     Int // academic year, e.g. 2024
+  gpa      Decimal  @db.Decimal(5, 2)
+  gpaScale Decimal  @default(4.0) @db.Decimal(5, 2)
   credits  Decimal? @db.Decimal(5, 1) // optional: credit hours for weighted avg
-  order    Int     @default(0)
+  order    Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -609,22 +639,22 @@ model Activity {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  name               String
-  category           ActivityCategory
-  role               String
-  organization       String?
-  description           String?          @db.Text
-  commonAppDescription  String?          @db.VarChar(150)
-  startDate             DateTime?
-  endDate            DateTime?
-  hoursPerWeek       Int?
-  weeksPerYear       Int?
-  isOngoing          Boolean          @default(false)
-  order              Int              @default(0)
-  gradeLevels        Int[]            @default([])
-  timing             ActivityTiming?
-  activityTemplateId String?
-  activityTemplate   ActivityTemplate? @relation(fields: [activityTemplateId], references: [id], onDelete: SetNull)
+  name                 String
+  category             ActivityCategory
+  role                 String
+  organization         String?
+  description          String?           @db.Text
+  commonAppDescription String?           @db.VarChar(150)
+  startDate            DateTime?
+  endDate              DateTime?
+  hoursPerWeek         Int?
+  weeksPerYear         Int?
+  isOngoing            Boolean           @default(false)
+  order                Int               @default(0)
+  gradeLevels          Int[]             @default([])
+  timing               ActivityTiming?
+  activityTemplateId   String?
+  activityTemplate     ActivityTemplate? @relation(fields: [activityTemplateId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -661,7 +691,7 @@ model Award {
   category    AwardCategory?
   year        Int?
   description String?
-  order       Int        @default(0)
+  order       Int            @default(0)
 
   competitionId String?
   competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
@@ -691,26 +721,27 @@ model Competition {
   website       String?
   isActive      Boolean             @default(true)
 
-  awards    Award[]
-  editions  CompetitionEdition[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  awards           Award[]
+  editions         CompetitionEdition[]
+  matchPoolEntries MatchPoolEntry[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
   @@index([category])
   @@index([tier])
 }
 
 model CompetitionEdition {
-  id                   String                   @id @default(cuid())
-  competitionId        String
-  competition          Competition              @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  seasonLabel          String
-  status               CompetitionEditionStatus @default(ACTIVE)
-  registrationOpenAt   DateTime?
-  registrationCloseAt  DateTime?
-  eventStartAt         DateTime?
-  eventEndAt           DateTime?
-  tracks               CompetitionTrack[]
+  id                  String                   @id @default(cuid())
+  competitionId       String
+  competition         Competition              @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  seasonLabel         String
+  status              CompetitionEditionStatus @default(ACTIVE)
+  registrationOpenAt  DateTime?
+  registrationCloseAt DateTime?
+  eventStartAt        DateTime?
+  eventEndAt          DateTime?
+  tracks              CompetitionTrack[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -720,16 +751,16 @@ model CompetitionEdition {
 }
 
 model CompetitionTrack {
-  id                    String               @id @default(cuid())
-  competitionEditionId  String
-  competitionEdition    CompetitionEdition   @relation(fields: [competitionEditionId], references: [id], onDelete: Cascade)
-  name                  String
-  rolePresets           String[]
-  minTeamSize           Int
-  maxTeamSize           Int
-  languages             String[]
-  isActive              Boolean              @default(true)
-  recruitmentCards      TeamRecruitmentCard[]
+  id                   String              @id @default(cuid())
+  competitionEditionId String
+  competitionEdition   CompetitionEdition  @relation(fields: [competitionEditionId], references: [id], onDelete: Cascade)
+  name                 String
+  rolePresets          String[]
+  minTeamSize          Int
+  maxTeamSize          Int
+  languages            String[]
+  isActive             Boolean             @default(true)
+  recruitmentContext   RecruitmentContext?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -738,23 +769,96 @@ model CompetitionTrack {
   @@index([isActive])
 }
 
+model MatchPool {
+  id          String  @id @default(cuid())
+  name        String
+  nameZh      String?
+  description String? @db.Text
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  entries MatchPoolEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model MatchPoolEntry {
+  id                   String              @id @default(cuid())
+  matchPoolId          String
+  matchPool            MatchPool           @relation(fields: [matchPoolId], references: [id], onDelete: Cascade)
+  entryType            MatchPoolEntryType
+  competitionId        String?
+  competition          Competition?        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  recruitmentContextId String?
+  recruitmentContext   RecruitmentContext? @relation(fields: [recruitmentContextId], references: [id], onDelete: Cascade)
+  sortOrder            Int                 @default(0)
+  isActive             Boolean             @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([matchPoolId, isActive, sortOrder])
+  @@index([competitionId])
+  @@index([recruitmentContextId])
+}
+
+model RecruitmentContext {
+  id                  String                             @id @default(cuid())
+  sourceType          RecruitmentContextSourceType
+  title               String
+  titleZh             String?
+  subtitle            String?
+  description         String?                            @db.Text
+  sourceUrl           String?
+  registrationCloseAt DateTime?
+  eventStartAt        DateTime?
+  eventEndAt          DateTime?
+  locationMode        LocationMode?
+  locationText        String?
+  rolePresets         String[]
+  minTeamSize         Int
+  maxTeamSize         Int
+  languages           String[]
+  moderationStatus    RecruitmentContextModerationStatus @default(PENDING_REVIEW)
+  isPublished         Boolean                            @default(false)
+  publishedAt         DateTime?
+  isActive            Boolean                            @default(true)
+  createdById         String?
+  createdBy           User?                              @relation("CommunityRecruitmentContextCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  competitionTrackId  String?                            @unique
+  competitionTrack    CompetitionTrack?                  @relation(fields: [competitionTrackId], references: [id], onDelete: Cascade)
+
+  matchPoolEntries MatchPoolEntry[]
+  recruitmentCards TeamRecruitmentCard[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sourceType, isPublished, isActive])
+  @@index([createdById, updatedAt])
+  @@index([moderationStatus, updatedAt])
+}
+
 model Education {
   id        String  @id @default(cuid())
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  schoolName    String
-  schoolType    String? // HIGH_SCHOOL / COLLEGE / etc.
-  degree        String?
-  major         String?
-  startDate     DateTime?
-  endDate       DateTime?
-  gpa           Decimal?  @db.Decimal(3, 2)
-  gpaScale      Decimal?  @db.Decimal(3, 2)
-  description   String?
-  highSchoolId  String?
-  highSchool    HighSchool? @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
-  gpaSystem     String?    // "SCALE_4_UW" | "SCALE_4_W" | "SCALE_5" | "PCT_100" | "IB_45" | "A_LEVEL"
+  schoolName   String
+  schoolType   String? // HIGH_SCHOOL / COLLEGE / etc.
+  degree       String?
+  major        String?
+  startDate    DateTime?
+  endDate      DateTime?
+  gpa          Decimal?    @db.Decimal(3, 2)
+  gpaScale     Decimal?    @db.Decimal(3, 2)
+  description  String?
+  highSchoolId String?
+  highSchool   HighSchool? @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
+  gpaSystem    String? // "SCALE_4_UW" | "SCALE_4_W" | "SCALE_5" | "PCT_100" | "IB_45" | "A_LEVEL"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -768,49 +872,49 @@ model Education {
 // ============================================
 
 model HighSchool {
-  id            String         @id @default(cuid())
-  name          String
-  nameZh        String?
-  abbreviation  String?        @unique
-  country       String
-  state         String?
-  city          String?
-  type          HighSchoolType
-  tier          Int // 1-5 (5 = top feeder, computed from evaluation dimensions)
-  description   String?        @db.Text
-  isActive      Boolean        @default(true)
+  id           String         @id @default(cuid())
+  name         String
+  nameZh       String?
+  abbreviation String?        @unique
+  country      String
+  state        String?
+  city         String?
+  type         HighSchoolType
+  tier         Int // 1-5 (5 = top feeder, computed from evaluation dimensions)
+  description  String?        @db.Text
+  isActive     Boolean        @default(true)
 
   // === Standardized Evaluation Dimensions (1-5) ===
-  recognition     Int?    // AO 认可度: AO familiarity with this school
-  academicRigor   Int?    // 学术严格度: course difficulty, grade deflation
-  placementRecord Int?    // 升学表现: historical placement at top universities
-  studentQuality  Int?    // 生源质量: student body competitiveness
-  resources       Int?    // 资源与支持: counseling, alumni network, AO relationships
+  recognition     Int? // AO 认可度: AO familiarity with this school
+  academicRigor   Int? // 学术严格度: course difficulty, grade deflation
+  placementRecord Int? // 升学表现: historical placement at top universities
+  studentQuality  Int? // 生源质量: student body competitiveness
+  resources       Int? // 资源与支持: counseling, alumni network, AO relationships
 
   // === Evaluation Metadata ===
-  evaluatedAt     DateTime?  // Last evaluation timestamp
-  evaluatedBy     String?    // Evaluator: admin userId or "system" or "ai-draft"
-  evaluationNotes String?  @db.Text  // Evaluation notes / justification
+  evaluatedAt     DateTime? // Last evaluation timestamp
+  evaluatedBy     String? // Evaluator: admin userId or "system" or "ai-draft"
+  evaluationNotes String?   @db.Text // Evaluation notes / justification
 
   // === Supplementary Data ===
-  avgSatScore      Int?       // Average SAT of graduates
-  avgIbScore       Int?       // Average IB score (if applicable)
-  annualTop30Count Int?       // Estimated annual admits to US Top 30
-  annualApplicants Int?       // Estimated annual US college applicants
-  gradeInflation   String?    // "deflation" | "neutral" | "inflation"
-  website          String?    // Official website URL
+  avgSatScore      Int? // Average SAT of graduates
+  avgIbScore       Int? // Average IB score (if applicable)
+  annualTop30Count Int? // Estimated annual admits to US Top 30
+  annualApplicants Int? // Estimated annual US college applicants
+  gradeInflation   String? // "deflation" | "neutral" | "inflation"
+  website          String? // Official website URL
 
   // === Quality Gate (Layer 1) ===
-  qualityScore    Int?       // 0-100, computed by computeHsQualityScore()
-  qualityGrade    String?    // A/B/C/D — determines routing
-  hsImpactEnabled Boolean    @default(true)  // D-grade schools do not participate in prediction scoring
+  qualityScore    Int? // 0-100, computed by computeHsQualityScore()
+  qualityGrade    String? // A/B/C/D — determines routing
+  hsImpactEnabled Boolean @default(true) // D-grade schools do not participate in prediction scoring
 
-  educations Education[]
-  cases      AdmissionCase[]
-  sourceObservations PredictionSourceObservation[]
+  educations          Education[]
+  cases               AdmissionCase[]
+  sourceObservations  PredictionSourceObservation[]
   relationshipSignals SchoolRelationshipSignal[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime                      @updatedAt
 
   @@unique([name, country, state])
   @@index([country])
@@ -826,7 +930,7 @@ model HighSchoolSuggestion {
   city        String?
   submittedBy String[] // userIds who suggested this school
   status      String   @default("pending") // pending | approved | rejected | merged
-  mergedInto  String?  // highSchoolId if merged into existing
+  mergedInto  String? // highSchoolId if merged into existing
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -864,11 +968,11 @@ model Essay {
 // ============================================
 
 model School {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   name     String
-  nameNorm String @unique // LOWER(TRIM(name)), maintained by DB trigger
+  nameNorm String  @unique // LOWER(TRIM(name)), maintained by DB trigger
   nameZh   String?
-  country  String @default("US")
+  country  String  @default("US")
   state    String?
   city     String?
 
@@ -920,7 +1024,7 @@ model School {
   studentFacultyRatio Int? // e.g. 6 means 6:1
 
   // Financial Aid (from BigFuture + Appily)
-  percentNeedMet   Decimal? @db.Decimal(5, 2) // % of demonstrated need met
+  percentNeedMet    Decimal? @db.Decimal(5, 2) // % of demonstrated need met
   averageAidPackage Int? // Average financial aid package in USD
   averageNetPrice   Int? // Net price after aid in USD
   roomAndBoard      Int? // Annual room & board cost in USD
@@ -931,6 +1035,7 @@ model School {
   acceptsCommonApp   Boolean? // null=unknown, false=no, true=yes
   acceptsCoalition   Boolean?
   testOptional       Boolean?
+  testingPolicy      TestingPolicy @default(UNKNOWN)
   hasEarlyDecision   Boolean?
 
   // Post-Graduation Outcomes (from Appily)
@@ -957,24 +1062,24 @@ model School {
   metadata      Json? // { deadlines, essayPrompts, requirements, lastScraped }
 
   // Relations
-  metrics       SchoolMetric[]
-  programs      SchoolProgram[]
-  cases         AdmissionCase[]
-  targetedBy    ProfileTargetSchool[]
-  schoolLists   SchoolListItem[]
-  essayPrompts  EssayPrompt[]
-  essaySources  SchoolEssaySource[]
-  deadlines     SchoolDeadline[]
-  timelines     ApplicationTimeline[]
-  teams         Team[]
-  calibration   SchoolCalibration?
-  rankings      SchoolRanking[]
+  metrics             SchoolMetric[]
+  programs            SchoolProgram[]
+  cases               AdmissionCase[]
+  targetedBy          ProfileTargetSchool[]
+  schoolLists         SchoolListItem[]
+  essayPrompts        EssayPrompt[]
+  essaySources        SchoolEssaySource[]
+  deadlines           SchoolDeadline[]
+  timelines           ApplicationTimeline[]
+  teams               Team[]
+  calibration         SchoolCalibration?
+  rankings            SchoolRanking[]
   sourceObservations  PredictionSourceObservation[]
   cohortRoundPriors   SchoolCohortRoundPrior[]
   cohortRegimeSignals SchoolCohortRegimeSignal[]
   relationshipSignals SchoolRelationshipSignal[]
-  communityRatings SchoolCommunityRating[]
-  policyEvidence   SchoolPolicyEvidence[]
+  communityRatings    SchoolCommunityRating[]
+  policyEvidence      SchoolPolicyEvidence[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -984,15 +1089,16 @@ model School {
   @@index([usNewsRank])
   @@index([isPrivate])
   @@index([testOptional])
+  @@index([testingPolicy])
   @@index([hasEarlyDecision])
   @@index([country, usNewsRank])
 }
 
 // Multi-source ranking: one school can appear in multiple ranking lists
 model SchoolRanking {
-  id       String @id @default(cuid())
-  schoolId String
-  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  schoolId  String
+  school    School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   source    String // "US_NEWS", "QS", "NICHE", "FORBES", "THE"
   list      String // "NATIONAL_UNIVERSITY", "LIBERAL_ARTS", "ENGINEERING_NO_PHD", "ART_DESIGN", "CS", "BUSINESS"
   rank      Int
@@ -1123,9 +1229,9 @@ model PredictionPolicyVersion {
 }
 
 model SchoolPolicyEvidence {
-  id                String                   @id @default(cuid())
+  id                String                     @id @default(cuid())
   schoolId          String
-  school            School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school            School                     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   policyDimension   SchoolPolicyDimension
   policyValue       String
   sourceName        String
@@ -1136,10 +1242,10 @@ model SchoolPolicyEvidence {
   reviewedAt        DateTime?
   reviewedBy        String?
   expiresAt         DateTime?
-  notes             String?                  @db.Text
+  notes             String?                    @db.Text
   metadata          Json?
-  createdAt         DateTime                 @default(now())
-  updatedAt         DateTime                 @updatedAt
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
 
   @@index([schoolId, policyDimension, status])
   @@index([status, updatedAt])
@@ -1147,26 +1253,26 @@ model SchoolPolicyEvidence {
 }
 
 model ApplicationAnalysisPolicyVersion {
-  id               String                           @id @default(cuid())
-  policyKey        String                           @default("default")
-  version          String
-  name             String?
-  description      String?
-  status           ApplicationAnalysisPolicyStatus  @default(DRAFT)
-  analysisVersion  String
-  promptVersion    String?
+  id                String                          @id @default(cuid())
+  policyKey         String                          @default("default")
+  version           String
+  name              String?
+  description       String?
+  status            ApplicationAnalysisPolicyStatus @default(DRAFT)
+  analysisVersion   String
+  promptVersion     String?
   ruleBundleVersion String?
-  thresholds       Json?
-  rolloutConfig    Json?
-  monitoringConfig Json?
-  notes            String?                          @db.Text
-  effectiveFrom    DateTime?
-  shadowStartedAt  DateTime?
-  activatedAt      DateTime?
-  activatedBy      String?
-  retiredAt        DateTime?
-  createdAt        DateTime                         @default(now())
-  updatedAt        DateTime                         @updatedAt
+  thresholds        Json?
+  rolloutConfig     Json?
+  monitoringConfig  Json?
+  notes             String?                         @db.Text
+  effectiveFrom     DateTime?
+  shadowStartedAt   DateTime?
+  activatedAt       DateTime?
+  activatedBy       String?
+  retiredAt         DateTime?
+  createdAt         DateTime                        @default(now())
+  updatedAt         DateTime                        @updatedAt
 
   evaluationRuns ApplicationAnalysisEvaluationRun[]
   experiments    ApplicationAnalysisExperimentVersion[]
@@ -1177,11 +1283,11 @@ model ApplicationAnalysisPolicyVersion {
 }
 
 model ApplicationAnalysisEvaluationRun {
-  id              String                               @id @default(cuid())
+  id              String                              @id @default(cuid())
   policyVersionId String
-  policyVersion   ApplicationAnalysisPolicyVersion     @relation(fields: [policyVersionId], references: [id], onDelete: Cascade)
+  policyVersion   ApplicationAnalysisPolicyVersion    @relation(fields: [policyVersionId], references: [id], onDelete: Cascade)
   mode            ApplicationAnalysisEvaluationMode
-  status          ApplicationAnalysisEvaluationStatus  @default(PENDING)
+  status          ApplicationAnalysisEvaluationStatus @default(PENDING)
   scopeSummary    Json?
   counts          Json?
   metrics         Json?
@@ -1189,32 +1295,154 @@ model ApplicationAnalysisEvaluationRun {
   startedAt       DateTime?
   finishedAt      DateTime?
   createdBy       String?
-  createdAt       DateTime                             @default(now())
-  updatedAt       DateTime                             @updatedAt
+  createdAt       DateTime                            @default(now())
+  updatedAt       DateTime                            @updatedAt
 
   @@index([policyVersionId, mode, createdAt])
   @@index([status, createdAt])
 }
 
-model ApplicationAnalysisExperimentVersion {
-  id              String                               @id @default(cuid())
-  capability      ApplicationAnalysisExperimentCapability
-  version         String
-  policyVersionId String?
-  policyVersion   ApplicationAnalysisPolicyVersion?    @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
-  status          ApplicationAnalysisExperimentStatus  @default(DRAFT)
-  methodVersion   String
-  gateConfig      Json?
-  rolloutConfig   Json?
-  monitoringConfig Json?
-  notes           String?                              @db.Text
-  shadowStartedAt DateTime?
-  canaryStartedAt DateTime?
-  activatedAt     DateTime?
-  retiredAt       DateTime?
+model ApplicationAnalysisRun {
+  id                String   @id @default(cuid())
+  traceId           String   @unique
+  userId            String
+  profileId         String
+  profile           Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locale            String
+  analysisVersion   String
+  status            String
+  state             String
+  dataQuality       String
+  debugEnabled      Boolean  @default(false)
+  degradedReason    String?
+  inputHash         String
+  inputSnapshot     Json?
+  responsePayload   Json?
+  unknowns          Json?
+  metrics           Json?
+  selectedSchoolIds String[]
+  targetSchoolCount Int      @default(0)
+  focusSchoolCount  Int      @default(0)
+  schoolsWithPredictions Int @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  stepRuns        ApplicationAnalysisStepRun[]
+  schoolCards     ApplicationAnalysisSchoolCard[]
+  replayCaseRuns  ApplicationAnalysisReplayCaseResult[]
+  feedbackRecords ApplicationAnalysisFeedbackRecord[]
+
+  @@index([userId, createdAt])
+  @@index([profileId, createdAt])
+  @@index([analysisVersion, createdAt])
+  @@index([status, createdAt])
+}
+
+model ApplicationAnalysisStepRun {
+  id               String   @id @default(cuid())
+  runId            String
+  run              ApplicationAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepName         String
+  status           String
+  model            String?
+  inputHash        String?
+  promptHash       String?
+  normalizedInput  Json?
+  normalizedOutput Json?
+  tokenUsage       Json?
+  latencyMs        Int?
+  validationErrors Json?
+  error            String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([runId, createdAt])
+  @@index([stepName, createdAt])
+}
+
+model ApplicationAnalysisSchoolCard {
+  id          String   @id @default(cuid())
+  runId       String
+  run         ApplicationAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  schoolId    String
+  schoolName  String
+  stage       String
+  tier        String?
+  round       String?
+  evidenceIds String[]
+  unknowns    String[]
+  policyCard  Json?
+  analysisCard Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([runId, schoolId])
+  @@index([schoolId, createdAt])
+}
+
+model ApplicationAnalysisReplayRun {
+  id              String   @id @default(cuid())
+  analysisVersion String
+  dataset         String
+  status          String
+  summary         Json?
+  metrics         Json?
+  failures        Json?
   createdBy       String?
-  createdAt       DateTime                             @default(now())
-  updatedAt       DateTime                             @updatedAt
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  caseResults ApplicationAnalysisReplayCaseResult[]
+
+  @@index([analysisVersion, createdAt])
+  @@index([dataset, createdAt])
+  @@index([status, createdAt])
+}
+
+model ApplicationAnalysisReplayCaseResult {
+  id            String   @id @default(cuid())
+  replayRunId   String
+  replayRun     ApplicationAnalysisReplayRun @relation(fields: [replayRunId], references: [id], onDelete: Cascade)
+  runId         String?
+  run           ApplicationAnalysisRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  caseId        String
+  sourceType    String
+  status        String
+  traceId       String?
+  outputPayload Json?
+  metrics       Json?
+  failures      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([replayRunId, createdAt])
+  @@index([caseId, createdAt])
+  @@index([runId, createdAt])
+}
+
+model ApplicationAnalysisExperimentVersion {
+  id               String                                  @id @default(cuid())
+  capability       ApplicationAnalysisExperimentCapability
+  version          String
+  policyVersionId  String?
+  policyVersion    ApplicationAnalysisPolicyVersion?       @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  status           ApplicationAnalysisExperimentStatus     @default(DRAFT)
+  methodVersion    String
+  gateConfig       Json?
+  rolloutConfig    Json?
+  monitoringConfig Json?
+  notes            String?                                 @db.Text
+  shadowStartedAt  DateTime?
+  canaryStartedAt  DateTime?
+  activatedAt      DateTime?
+  retiredAt        DateTime?
+  createdBy        String?
+  createdAt        DateTime                                @default(now())
+  updatedAt        DateTime                                @updatedAt
 
   evaluationRuns ApplicationAnalysisExperimentEvaluationRun[]
   incidents      ApplicationAnalysisExperimentIncident[]
@@ -1226,58 +1454,58 @@ model ApplicationAnalysisExperimentVersion {
 }
 
 model ApplicationAnalysisExperimentEvaluationRun {
-  id                 String                                        @id @default(cuid())
+  id                  String                                        @id @default(cuid())
   experimentVersionId String
-  experimentVersion   ApplicationAnalysisExperimentVersion         @relation(fields: [experimentVersionId], references: [id], onDelete: Cascade)
-  mode               ApplicationAnalysisExperimentEvaluationMode
-  status             ApplicationAnalysisExperimentEvaluationStatus @default(PENDING)
-  scopeSummary       Json?
-  counts             Json?
-  metrics            Json?
-  failures           Json?
-  startedAt          DateTime?
-  finishedAt         DateTime?
-  createdBy          String?
-  createdAt          DateTime                                      @default(now())
-  updatedAt          DateTime                                      @updatedAt
+  experimentVersion   ApplicationAnalysisExperimentVersion          @relation(fields: [experimentVersionId], references: [id], onDelete: Cascade)
+  mode                ApplicationAnalysisExperimentEvaluationMode
+  status              ApplicationAnalysisExperimentEvaluationStatus @default(PENDING)
+  scopeSummary        Json?
+  counts              Json?
+  metrics             Json?
+  failures            Json?
+  startedAt           DateTime?
+  finishedAt          DateTime?
+  createdBy           String?
+  createdAt           DateTime                                      @default(now())
+  updatedAt           DateTime                                      @updatedAt
 
   @@index([experimentVersionId, mode, createdAt])
   @@index([status, createdAt])
 }
 
 model ApplicationAnalysisExperimentSweepRun {
-  id         String                                 @id @default(cuid())
+  id         String                                   @id @default(cuid())
   mode       ApplicationAnalysisExperimentSweepMode
   status     ApplicationAnalysisExperimentSweepStatus @default(RUNNING)
   actorId    String?
   lockKey    String?
   summary    Json?
   failures   Json?
-  startedAt  DateTime                               @default(now())
+  startedAt  DateTime                                 @default(now())
   finishedAt DateTime?
-  createdAt  DateTime                               @default(now())
-  updatedAt  DateTime                               @updatedAt
+  createdAt  DateTime                                 @default(now())
+  updatedAt  DateTime                                 @updatedAt
 
   @@index([mode, createdAt])
   @@index([status, createdAt])
 }
 
 model ApplicationAnalysisExperimentIncident {
-  id                 String                                    @id @default(cuid())
+  id                  String                                        @id @default(cuid())
   experimentVersionId String?
-  experimentVersion   ApplicationAnalysisExperimentVersion?    @relation(fields: [experimentVersionId], references: [id], onDelete: SetNull)
-  capability         ApplicationAnalysisExperimentCapability?
-  type               String
-  severity           ApplicationAnalysisExperimentIncidentSeverity
-  status             ApplicationAnalysisExperimentIncidentStatus @default(OPEN)
-  title              String
-  message            String
-  details            Json?
-  acknowledgedAt     DateTime?
-  acknowledgedBy     String?
-  resolvedAt         DateTime?
-  createdAt          DateTime                                  @default(now())
-  updatedAt          DateTime                                  @updatedAt
+  experimentVersion   ApplicationAnalysisExperimentVersion?         @relation(fields: [experimentVersionId], references: [id], onDelete: SetNull)
+  capability          ApplicationAnalysisExperimentCapability?
+  type                String
+  severity            ApplicationAnalysisExperimentIncidentSeverity
+  status              ApplicationAnalysisExperimentIncidentStatus   @default(OPEN)
+  title               String
+  message             String
+  details             Json?
+  acknowledgedAt      DateTime?
+  acknowledgedBy      String?
+  resolvedAt          DateTime?
+  createdAt           DateTime                                      @default(now())
+  updatedAt           DateTime                                      @updatedAt
 
   @@index([experimentVersionId, createdAt])
   @@index([capability, createdAt])
@@ -1285,19 +1513,19 @@ model ApplicationAnalysisExperimentIncident {
 }
 
 model ApplicationAnalysisExposureRecord {
-  id                 String                               @id @default(cuid())
-  exposureId         String
+  id                  String                                  @id @default(cuid())
+  exposureId          String
   experimentVersionId String
-  experimentVersion   ApplicationAnalysisExperimentVersion @relation(fields: [experimentVersionId], references: [id], onDelete: Cascade)
-  capability         ApplicationAnalysisExperimentCapability
-  userId             String
-  profileId          String
-  schoolIds          String[]
-  locale             String
-  exposurePayload    Json?
-  generatedAt        DateTime                             @default(now())
-  createdAt          DateTime                             @default(now())
-  updatedAt          DateTime                             @updatedAt
+  experimentVersion   ApplicationAnalysisExperimentVersion    @relation(fields: [experimentVersionId], references: [id], onDelete: Cascade)
+  capability          ApplicationAnalysisExperimentCapability
+  userId              String
+  profileId           String
+  schoolIds           String[]
+  locale              String
+  exposurePayload     Json?
+  generatedAt         DateTime                                @default(now())
+  createdAt           DateTime                                @default(now())
+  updatedAt           DateTime                                @updatedAt
 
   feedbackRecords ApplicationAnalysisFeedbackRecord[]
 
@@ -1308,70 +1536,73 @@ model ApplicationAnalysisExposureRecord {
 }
 
 model ApplicationAnalysisFeedbackRecord {
-  id               String                               @id @default(cuid())
-  exposureRecordId String
-  exposureRecord   ApplicationAnalysisExposureRecord   @relation(fields: [exposureRecordId], references: [id], onDelete: Cascade)
-  exposureId       String
+  id               String                                  @id @default(cuid())
+  exposureRecordId String?
+  exposureRecord   ApplicationAnalysisExposureRecord?      @relation(fields: [exposureRecordId], references: [id], onDelete: Cascade)
+  applicationAnalysisRunId String?
+  applicationAnalysisRun   ApplicationAnalysisRun?         @relation(fields: [applicationAnalysisRunId], references: [id], onDelete: SetNull)
+  exposureId       String?
   userId           String
-  capability       ApplicationAnalysisExperimentCapability
+  capability       ApplicationAnalysisExperimentCapability?
   schoolId         String?
   category         ApplicationAnalysisFeedbackCategory?
   sentiment        ApplicationAnalysisFeedbackSentiment
-  notes            String?                              @db.Text
-  createdAt        DateTime                             @default(now())
-  updatedAt        DateTime                             @updatedAt
+  notes            String?                                 @db.Text
+  createdAt        DateTime                                @default(now())
+  updatedAt        DateTime                                @updatedAt
 
   @@index([exposureRecordId, createdAt])
+  @@index([applicationAnalysisRunId, createdAt])
   @@index([exposureId, createdAt])
   @@index([capability, category, createdAt])
   @@index([userId, createdAt])
 }
 
 model PredictionSourceObservation {
-  id              String                      @id @default(cuid())
-  profileId       String?
-  profile         Profile?                    @relation(fields: [profileId], references: [id], onDelete: SetNull)
-  schoolId        String?
-  school          School?                     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  highSchoolId    String?
-  highSchool      HighSchool?                 @relation(fields: [highSchoolId], references: [id], onDelete: Cascade)
-  predictionResultId   String?
-  predictionResult     PredictionResult?      @relation("PredictionResultObservations", fields: [predictionResultId], references: [id], onDelete: Cascade)
-  predictionSnapshotId String?
-  predictionSnapshot   PredictionSnapshot?    @relation("PredictionSnapshotObservations", fields: [predictionSnapshotId], references: [id], onDelete: Cascade)
-  policyVersionId      String?
-  policyVersion        PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
-  cohortKey       String?
-  round           String?
-  metricType      String
-  rate            Decimal?                    @db.Decimal(6, 4)
-  admitCount      Int?
-  applyCount      Int?
-  year            Int?
-  sourceType      PredictionObservationSourceType
-  sourceName      String
-  sourceVersion   String?
-  sourceUrl       String?
-  license         String?
-  qualityScore    Int?
-  status          PredictionObservationStatus @default(RAW)
-  observationStage        String              @default("SERVE")
-  observedProbability     Decimal?            @db.Decimal(5, 4)
-  observedProbabilityLow  Decimal?            @db.Decimal(5, 4)
-  observedProbabilityHigh Decimal?            @db.Decimal(5, 4)
-  observedWeight          Decimal?            @db.Decimal(5, 4)
-  confidenceLabel String?
-  sampleCount     Int?
-  selectivityBand String?
-  metadata        Json?
-  reviewAt        DateTime?
-  reviewedBy      String?
-  observedAt      DateTime                    @default(now())
-  effectiveFromCycle String?
-  expiresAt       DateTime?
-  notes           String?                     @db.Text
-  createdAt       DateTime                    @default(now())
-  updatedAt       DateTime                    @updatedAt
+  id                      String                          @id @default(cuid())
+  profileId               String?
+  profile                 Profile?                        @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  schoolId                String?
+  school                  School?                         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  highSchoolId            String?
+  highSchool              HighSchool?                     @relation(fields: [highSchoolId], references: [id], onDelete: Cascade)
+  predictionResultId      String?
+  predictionResult        PredictionResult?               @relation("PredictionResultObservations", fields: [predictionResultId], references: [id], onDelete: Cascade)
+  predictionSnapshotId    String?
+  predictionSnapshot      PredictionSnapshot?             @relation("PredictionSnapshotObservations", fields: [predictionSnapshotId], references: [id], onDelete: Cascade)
+  policyVersionId         String?
+  policyVersion           PredictionPolicyVersion?        @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey               String?
+  round                   String?
+  metricType              String
+  rate                    Decimal?                        @db.Decimal(6, 4)
+  admitCount              Int?
+  applyCount              Int?
+  year                    Int?
+  sourceType              PredictionObservationSourceType
+  sourceName              String
+  sourceVersion           String?
+  sourceUrl               String?
+  license                 String?
+  qualityScore            Int?
+  status                  PredictionObservationStatus     @default(RAW)
+  observationStage        String                          @default("SERVE")
+  observedProbability     Decimal?                        @db.Decimal(5, 4)
+  observedProbabilityLow  Decimal?                        @db.Decimal(5, 4)
+  observedProbabilityHigh Decimal?                        @db.Decimal(5, 4)
+  observedWeight          Decimal?                        @db.Decimal(5, 4)
+  confidenceLabel         String?
+  sampleCount             Int?
+  selectivityBand         String?
+  metadata                Json?
+  reviewAt                DateTime?
+  reviewedBy              String?
+  observedAt              DateTime                        @default(now())
+  effectiveFromCycle      String?
+  expiresAt               DateTime?
+  notes                   String?                         @db.Text
+  createdAt               DateTime                        @default(now())
+  updatedAt               DateTime                        @updatedAt
 
   @@index([predictionResultId])
   @@index([predictionSnapshotId])
@@ -1385,31 +1616,31 @@ model PredictionSourceObservation {
 }
 
 model SchoolCohortRoundPrior {
-  id                 String   @id @default(cuid())
-  schoolId           String
-  school             School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  policyVersionId    String?
-  policyVersion      PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
-  cohortKey          String
-  round              String
-  applicationYear    Int?
-  setVersion         String?
-  priorRate          Decimal  @db.Decimal(6, 4)
-  lowerBound         Decimal? @db.Decimal(6, 5)
-  upperBound         Decimal? @db.Decimal(6, 5)
-  sampleCount        Int?
-  smoothingMethod    String?
-  confidence         String?
-  sourceSummary      Json?
-  sourceObservationIds String[] @default([])
-  effectiveFromCycle String?
-  metadata           Json?
-  reviewAt           DateTime?
-  expiresAt          DateTime?
-  owner              String?
-  notes              String?  @db.Text
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                   String                   @id @default(cuid())
+  schoolId             String
+  school               School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  policyVersionId      String?
+  policyVersion        PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey            String
+  round                String
+  applicationYear      Int?
+  setVersion           String?
+  priorRate            Decimal                  @db.Decimal(6, 4)
+  lowerBound           Decimal?                 @db.Decimal(6, 5)
+  upperBound           Decimal?                 @db.Decimal(6, 5)
+  sampleCount          Int?
+  smoothingMethod      String?
+  confidence           String?
+  sourceSummary        Json?
+  sourceObservationIds String[]                 @default([])
+  effectiveFromCycle   String?
+  metadata             Json?
+  reviewAt             DateTime?
+  expiresAt            DateTime?
+  owner                String?
+  notes                String?                  @db.Text
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
 
   @@unique([schoolId, cohortKey, round, policyVersionId, setVersion])
   @@index([setVersion, schoolId, cohortKey, round])
@@ -1417,34 +1648,34 @@ model SchoolCohortRoundPrior {
 }
 
 model SchoolCohortRegimeSignal {
-  id                 String   @id @default(cuid())
-  schoolId           String
-  school             School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  policyVersionId    String?
-  policyVersion      PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
-  cohortKey          String?
-  round              String?
-  applicationYear    Int?
-  setVersion         String?
-  regimeKey          String?
-  signalType         String?
-  direction          String?
-  driftMultiplier    Decimal? @db.Decimal(6, 4)
-  strength           Decimal? @db.Decimal(6, 5)
-  confidence         String?
-  sourceSummary      Json?
-  sourceObservationIds String[] @default([])
-  sampleCount        Int?
-  effectiveFromCycle String?
-  effectiveFrom      DateTime?
-  effectiveTo        DateTime?
-  metadata           Json?
-  reviewAt           DateTime?
-  expiresAt          DateTime?
-  owner              String?
-  notes              String?  @db.Text
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                   String                   @id @default(cuid())
+  schoolId             String
+  school               School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  policyVersionId      String?
+  policyVersion        PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  cohortKey            String?
+  round                String?
+  applicationYear      Int?
+  setVersion           String?
+  regimeKey            String?
+  signalType           String?
+  direction            String?
+  driftMultiplier      Decimal?                 @db.Decimal(6, 4)
+  strength             Decimal?                 @db.Decimal(6, 5)
+  confidence           String?
+  sourceSummary        Json?
+  sourceObservationIds String[]                 @default([])
+  sampleCount          Int?
+  effectiveFromCycle   String?
+  effectiveFrom        DateTime?
+  effectiveTo          DateTime?
+  metadata             Json?
+  reviewAt             DateTime?
+  expiresAt            DateTime?
+  owner                String?
+  notes                String?                  @db.Text
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
 
   @@unique([schoolId, cohortKey, round, regimeKey, policyVersionId, setVersion])
   @@index([setVersion, schoolId, cohortKey, round])
@@ -1456,35 +1687,35 @@ model SchoolCohortRegimeSignal {
 model SchoolRelationshipSignal {
   id                    String                     @id @default(cuid())
   sourceHighSchoolId    String?
-  sourceHighSchool      HighSchool?               @relation(fields: [sourceHighSchoolId], references: [id], onDelete: Cascade)
+  sourceHighSchool      HighSchool?                @relation(fields: [sourceHighSchoolId], references: [id], onDelete: Cascade)
   sourceInstitutionName String?
   targetSchoolId        String
-  targetSchool          School                    @relation(fields: [targetSchoolId], references: [id], onDelete: Cascade)
+  targetSchool          School                     @relation(fields: [targetSchoolId], references: [id], onDelete: Cascade)
   policyVersionId       String?
-  policyVersion         PredictionPolicyVersion?  @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  policyVersion         PredictionPolicyVersion?   @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
   cohortKey             String?
   round                 String?
   applicationYear       Int?
   setVersion            String?
   relationshipType      PredictionRelationshipType
   relationshipKey       String?
-  admitRate             Decimal?                  @db.Decimal(6, 5)
-  baselineRate          Decimal?                  @db.Decimal(6, 5)
-  strength              Decimal?                  @db.Decimal(6, 4)
-  signalStrength        Decimal?                  @db.Decimal(6, 5)
-  maxImpactCap          Decimal?                  @db.Decimal(6, 4)
+  admitRate             Decimal?                   @db.Decimal(6, 5)
+  baselineRate          Decimal?                   @db.Decimal(6, 5)
+  strength              Decimal?                   @db.Decimal(6, 4)
+  signalStrength        Decimal?                   @db.Decimal(6, 5)
+  maxImpactCap          Decimal?                   @db.Decimal(6, 4)
   sampleCount           Int?
   confidence            String?
   sourceSummary         Json?
-  sourceObservationIds  String[]                  @default([])
+  sourceObservationIds  String[]                   @default([])
   effectiveFromCycle    String?
   metadata              Json?
   reviewAt              DateTime?
   expiresAt             DateTime?
   owner                 String?
-  notes                 String?                   @db.Text
-  createdAt             DateTime                  @default(now())
-  updatedAt             DateTime                  @updatedAt
+  notes                 String?                    @db.Text
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
 
   @@unique([sourceHighSchoolId, targetSchoolId, cohortKey, round, relationshipType, policyVersionId, setVersion])
   @@index([setVersion, targetSchoolId, cohortKey, round])
@@ -1505,13 +1736,13 @@ model Team {
   description String?        @db.Text
   schoolId    String?
   school      School?        @relation(fields: [schoolId], references: [id], onDelete: SetNull)
-  tags        Json?          // string[] max 10 in app
+  tags        Json? // string[] max 10 in app
   visibility  TeamVisibility
   joinPolicy  TeamJoinPolicy
   maxMembers  Int?
 
-  members     TeamMembership[]
-  invitations TeamInvitation[]
+  members          TeamMembership[]
+  invitations      TeamInvitation[]
   recruitmentCards TeamRecruitmentCard[]
 
   createdAt DateTime @default(now())
@@ -1524,15 +1755,15 @@ model Team {
 }
 
 model TeamMembership {
-  id     String        @id @default(cuid())
-  teamId String
-  team   Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  userId String
-  user   User          @relation("StandaloneTeamMember", fields: [userId], references: [id], onDelete: Cascade)
-  role   TeamMemberRole
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  joinedAt  DateTime    @default(now())
+  id        String         @id @default(cuid())
+  teamId    String
+  team      Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation("StandaloneTeamMember", fields: [userId], references: [id], onDelete: Cascade)
+  role      TeamMemberRole
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  joinedAt  DateTime       @default(now())
 
   @@unique([teamId, userId])
   @@index([teamId])
@@ -1540,18 +1771,18 @@ model TeamMembership {
 }
 
 model TeamInvitation {
-  id        String              @id @default(cuid())
+  id        String               @id @default(cuid())
   teamId    String
-  team      Team                @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team      Team                 @relation(fields: [teamId], references: [id], onDelete: Cascade)
   inviterId String
-  inviter   User                @relation("TeamInvitationSent", fields: [inviterId], references: [id], onDelete: Cascade)
+  inviter   User                 @relation("TeamInvitationSent", fields: [inviterId], references: [id], onDelete: Cascade)
   inviteeId String?
-  invitee   User?               @relation("TeamInvitationReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
-  token     String?             @unique
+  invitee   User?                @relation("TeamInvitationReceived", fields: [inviteeId], references: [id], onDelete: Cascade)
+  token     String?              @unique
   status    TeamInvitationStatus @default(PENDING)
   expiresAt DateTime
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   @@index([teamId])
   @@index([inviteeId])
@@ -1560,55 +1791,55 @@ model TeamInvitation {
 }
 
 model TeamRecruitmentCard {
-  id                  String                      @id @default(cuid())
-  teamId              String
-  team                Team                        @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  competitionTrackId  String
-  competitionTrack    CompetitionTrack            @relation(fields: [competitionTrackId], references: [id], onDelete: Cascade)
-  phase               TeamRecruitmentPhase        @default(DRAFT)
-  headline            String
-  detailNote          String?                     @db.Text
-  highlightTitle      String?
-  offerRoles          String[]
-  needRoles           String[]
-  skillTags           String[]
-  availabilityBand    RecruitmentAvailabilityBand?
-  collaborationMode   CollaborationMode?
-  timezone            String?
-  city                String?
-  languages           String[]
-  intentMode          RecruitmentIntentMode      @default(TEAM_UP)
-  publishedAt         DateTime?
-  expiresAt           DateTime?
-  isClosed            Boolean                     @default(false)
-  version             Int                         @default(1)
+  id                   String                       @id @default(cuid())
+  teamId               String
+  team                 Team                         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  recruitmentContextId String
+  recruitmentContext   RecruitmentContext           @relation(fields: [recruitmentContextId], references: [id], onDelete: Cascade)
+  phase                TeamRecruitmentPhase         @default(DRAFT)
+  headline             String
+  detailNote           String?                      @db.Text
+  highlightTitle       String?
+  offerRoles           String[]
+  needRoles            String[]
+  skillTags            String[]
+  availabilityBand     RecruitmentAvailabilityBand?
+  collaborationMode    CollaborationMode?
+  timezone             String?
+  city                 String?
+  languages            String[]
+  intentMode           RecruitmentIntentMode        @default(TEAM_UP)
+  publishedAt          DateTime?
+  expiresAt            DateTime?
+  isClosed             Boolean                      @default(false)
+  version              Int                          @default(1)
 
   memberProfiles TeamRecruitmentMemberProfile[]
-  sourceSwipes   TeamRecruitmentSwipe[]           @relation("RecruitmentSwipeSource")
-  targetSwipes   TeamRecruitmentSwipe[]           @relation("RecruitmentSwipeTarget")
-  leftMatches    TeamMatch[]                      @relation("TeamMatchLeft")
-  rightMatches   TeamMatch[]                      @relation("TeamMatchRight")
+  sourceSwipes   TeamRecruitmentSwipe[]         @relation("RecruitmentSwipeSource")
+  targetSwipes   TeamRecruitmentSwipe[]         @relation("RecruitmentSwipeTarget")
+  leftMatches    TeamMatch[]                    @relation("TeamMatchLeft")
+  rightMatches   TeamMatch[]                    @relation("TeamMatchRight")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([teamId, competitionTrackId])
+  @@unique([teamId, recruitmentContextId])
   @@index([phase, isClosed])
   @@index([teamId, updatedAt])
 }
 
 model TeamRecruitmentMemberProfile {
-  id                    String               @id @default(cuid())
+  id                    String              @id @default(cuid())
   teamRecruitmentCardId String
-  teamRecruitmentCard   TeamRecruitmentCard  @relation(fields: [teamRecruitmentCardId], references: [id], onDelete: Cascade)
+  teamRecruitmentCard   TeamRecruitmentCard @relation(fields: [teamRecruitmentCardId], references: [id], onDelete: Cascade)
   userId                String
-  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   selectedResumeId      String?
-  selectedResume        Resume?              @relation("RecruitmentSelectedResume", fields: [selectedResumeId], references: [id], onDelete: SetNull)
+  selectedResume        Resume?             @relation("RecruitmentSelectedResume", fields: [selectedResumeId], references: [id], onDelete: SetNull)
   introLine             String?
-  showSchool            Boolean              @default(false)
-  showGrade             Boolean              @default(false)
-  showAwards            Boolean              @default(false)
+  showSchool            Boolean             @default(false)
+  showGrade             Boolean             @default(false)
+  showAwards            Boolean             @default(false)
   consentConfirmedAt    DateTime?
 
   createdAt DateTime @default(now())
@@ -1619,13 +1850,13 @@ model TeamRecruitmentMemberProfile {
 }
 
 model TeamRecruitmentSwipe {
-  id            String                    @id @default(cuid())
+  id            String                     @id @default(cuid())
   sourceCardId  String
-  sourceCard    TeamRecruitmentCard       @relation("RecruitmentSwipeSource", fields: [sourceCardId], references: [id], onDelete: Cascade)
+  sourceCard    TeamRecruitmentCard        @relation("RecruitmentSwipeSource", fields: [sourceCardId], references: [id], onDelete: Cascade)
   targetCardId  String
-  targetCard    TeamRecruitmentCard       @relation("RecruitmentSwipeTarget", fields: [targetCardId], references: [id], onDelete: Cascade)
+  targetCard    TeamRecruitmentCard        @relation("RecruitmentSwipeTarget", fields: [targetCardId], references: [id], onDelete: Cascade)
   actedById     String
-  actedBy       User                      @relation(fields: [actedById], references: [id], onDelete: Cascade)
+  actedBy       User                       @relation(fields: [actedById], references: [id], onDelete: Cascade)
   action        TeamRecruitmentSwipeAction
   sourceVersion Int
   targetVersion Int
@@ -1638,14 +1869,14 @@ model TeamRecruitmentSwipe {
 }
 
 model TeamMatch {
-  id             String               @id @default(cuid())
+  id             String              @id @default(cuid())
   leftCardId     String
-  leftCard       TeamRecruitmentCard  @relation("TeamMatchLeft", fields: [leftCardId], references: [id], onDelete: Cascade)
+  leftCard       TeamRecruitmentCard @relation("TeamMatchLeft", fields: [leftCardId], references: [id], onDelete: Cascade)
   rightCardId    String
-  rightCard      TeamRecruitmentCard  @relation("TeamMatchRight", fields: [rightCardId], references: [id], onDelete: Cascade)
+  rightCard      TeamRecruitmentCard @relation("TeamMatchRight", fields: [rightCardId], references: [id], onDelete: Cascade)
   matchKind      TeamMatchKind
-  conversationId String?              @unique
-  conversation   Conversation?        @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  conversationId String?             @unique
+  conversation   Conversation?       @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   closedAt       DateTime?
 
   createdAt DateTime @default(now())
@@ -1731,40 +1962,40 @@ model PredictionResult {
   profileId String
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  schoolId       String
-  probability    Decimal @db.Decimal(5, 4) // 0.0000 - 1.0000
-  probabilityLow Decimal? @db.Decimal(5, 4) // 置信区间下界
+  schoolId        String
+  probability     Decimal  @db.Decimal(5, 4) // 0.0000 - 1.0000
+  probabilityLow  Decimal? @db.Decimal(5, 4) // 置信区间下界
   probabilityHigh Decimal? @db.Decimal(5, 4) // 置信区间上界
-  factors        Json // [{ name: "GPA", impact: "positive", detail: "..." }]
-  modelVersion   String  @default("v2")
-  tier           String? // reach / match / safety
-  confidence     String? // low / medium / high
+  factors         Json // [{ name: "GPA", impact: "positive", detail: "..." }]
+  modelVersion    String   @default("v2")
+  tier            String? // reach / match / safety
+  confidence      String? // low / medium / high
 
   // 多引擎分数明细 (用于透明性和调试)
-  engineScores   Json?   // { stats: 0.35, ai: 0.28, historical: 0.32, weights: {...} }
-  suggestions    Json?   // 改进建议列表
-  comparison     Json?   // 对比数据
+  engineScores Json? // { stats: 0.35, ai: 0.28, historical: 0.32, weights: {...} }
+  suggestions  Json? // 改进建议列表
+  comparison   Json? // 对比数据
 
   // 数据来源
-  source         String? // prediction | recommendation | ai-recommend | quick-match
-  policyVersionId String?
-  policyVersion   PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
-  predictionModelId String?
-  predictionModel   PredictionModel? @relation(fields: [predictionModelId], references: [id], onDelete: SetNull)
-  servedTrace      Json?
-  sourceSummary    Json?
+  source             String? // prediction | recommendation | ai-recommend | quick-match
+  policyVersionId    String?
+  policyVersion      PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  predictionModelId  String?
+  predictionModel    PredictionModel?         @relation(fields: [predictionModelId], references: [id], onDelete: SetNull)
+  servedTrace        Json?
+  sourceSummary      Json?
   uncertaintyReasons Json?
-  confidenceReason String?
-  applicationRound  String? // normalized round bucket: ED / EA / RD / ROLLING / TRANSFER / etc.
-  applicationYear   Int?
-  cohortKey         String? // e.g. intl:CN:IB or domestic:public_us
-  selectivityBand   String?
+  confidenceReason   String?
+  applicationRound   String? // normalized round bucket: ED / EA / RD / ROLLING / TRANSFER / etc.
+  applicationYear    Int?
+  cohortKey          String? // e.g. intl:CN:IB or domestic:public_us
+  selectivityBand    String?
 
   // 准确率追踪
-  actualResult   String? // ADMITTED / REJECTED / WAITLISTED / UNKNOWN
-  reportedAt     DateTime? // 用户报告实际结果的时间
-  outcomeLabel   PredictionOutcomeLabel?
-  outcomeLabeledAt DateTime?
+  actualResult        String? // ADMITTED / REJECTED / WAITLISTED / UNKNOWN
+  reportedAt          DateTime? // 用户报告实际结果的时间
+  outcomeLabel        PredictionOutcomeLabel?
+  outcomeLabeledAt    DateTime?
   outcomeLabelRecords PredictionOutcomeLabelRecord[]
 
   sourceObservations PredictionSourceObservation[] @relation("PredictionResultObservations")
@@ -1786,33 +2017,33 @@ model PredictionResult {
 
 /// 预测历史快照 — 记录每次预测的概率用于趋势追踪
 model PredictionSnapshot {
-  id              String   @id @default(cuid())
-  profileId       String
-  schoolId        String
-  probability     Decimal  @db.Decimal(5, 4)
-  probabilityLow  Decimal? @db.Decimal(5, 4)
-  probabilityHigh Decimal? @db.Decimal(5, 4)
-  tier            String?
-  confidence      String?
-  source          String   @default("prediction") // prediction | recommendation | ai-recommend | quick-match
-  modelVersion    String   @default("v2")
-  policyVersionId String?
-  policyVersion   PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
-  predictionModelId String?
-  predictionModel   PredictionModel? @relation(fields: [predictionModelId], references: [id], onDelete: SetNull)
-  servedTrace      Json?
-  sourceSummary    Json?
+  id                 String                        @id @default(cuid())
+  profileId          String
+  schoolId           String
+  probability        Decimal                       @db.Decimal(5, 4)
+  probabilityLow     Decimal?                      @db.Decimal(5, 4)
+  probabilityHigh    Decimal?                      @db.Decimal(5, 4)
+  tier               String?
+  confidence         String?
+  source             String                        @default("prediction") // prediction | recommendation | ai-recommend | quick-match
+  modelVersion       String                        @default("v2")
+  policyVersionId    String?
+  policyVersion      PredictionPolicyVersion?      @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
+  predictionModelId  String?
+  predictionModel    PredictionModel?              @relation(fields: [predictionModelId], references: [id], onDelete: SetNull)
+  servedTrace        Json?
+  sourceSummary      Json?
   uncertaintyReasons Json?
-  confidenceReason String?
-  applicationRound  String?
-  applicationYear   Int?
-  cohortKey         String?
-  selectivityBand   String?
-  outcomeLabel      PredictionOutcomeLabel?
-  outcomeLabeledAt  DateTime?
+  confidenceReason   String?
+  applicationRound   String?
+  applicationYear    Int?
+  cohortKey          String?
+  selectivityBand    String?
+  outcomeLabel       PredictionOutcomeLabel?
+  outcomeLabeledAt   DateTime?
   sourceObservations PredictionSourceObservation[] @relation("PredictionSnapshotObservations")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt          DateTime                      @default(now())
+  updatedAt          DateTime                      @updatedAt
 
   @@index([profileId, schoolId, createdAt])
   @@index([profileId, createdAt])
@@ -1860,42 +2091,42 @@ model AdmissionCase {
   major  String?
 
   // Anonymized profile snapshot at time of application
-  gpaRange   String? // "3.7-3.9" (legacy; prefer gpa9–gpa12)
-  gpa9       Float?  // Grade 9 GPA
-  gpa10      Float?   // Grade 10 GPA
-  gpa11      Float?   // Grade 11 GPA (highest weight)
-  gpa12          Float?   // Grade 12 GPA
-  ucCappedGpa    Float?   // UC capped weighted GPA
-  ucUncappedGpa  Float?   // UC uncapped weighted GPA
-  gpaScale       Float?   // GPA scale (4.0, 5.0, 100)
-  satRange       String? // "1500-1550"
-  actRange   String?
-  toeflRange String?
-  tags       String[] // ["strong_research", "legacy", "athlete"]
-  activityList String? @db.Text // One activity per line, e.g. "Research - XX Lab; Contest - AMC 12"
+  gpaRange      String? // "3.7-3.9" (legacy; prefer gpa9–gpa12)
+  gpa9          Float? // Grade 9 GPA
+  gpa10         Float? // Grade 10 GPA
+  gpa11         Float? // Grade 11 GPA (highest weight)
+  gpa12         Float? // Grade 12 GPA
+  ucCappedGpa   Float? // UC capped weighted GPA
+  ucUncappedGpa Float? // UC uncapped weighted GPA
+  gpaScale      Float? // GPA scale (4.0, 5.0, 100)
+  satRange      String? // "1500-1550"
+  actRange      String?
+  toeflRange    String?
+  tags          String[] // ["strong_research", "legacy", "athlete"]
+  activityList  String?  @db.Text // One activity per line, e.g. "Research - XX Lab; Contest - AMC 12"
 
   // Structured test scores (preferred over range strings)
-  testScores      Json?             // CaseTestScore[] — [{type, score, subscores?, testDate?}]
-  apCount         Int?
-  apSubjects      String[]
-  ibScore         Int?
-  ibPredicted     Boolean?
+  testScores  Json? // CaseTestScore[] — [{type, score, subscores?, testDate?}]
+  apCount     Int?
+  apSubjects  String[]
+  ibScore     Int?
+  ibPredicted Boolean?
 
   // Structured extracurriculars & awards (JSON arrays)
-  activities      Json?             // CaseActivity[] — [{category, description, role?, tier?, hoursPerWeek?, weeksPerYear?}]
-  awards          Json?             // CaseAward[] — [{name, level, competition?, tier?, year?}]
+  activities Json? // CaseActivity[] — [{category, description, role?, tier?, hoursPerWeek?, weeksPerYear?}]
+  awards     Json? // CaseAward[] — [{name, level, competition?, tier?, year?}]
 
   // Student background
   highSchoolId    String?
-  highSchool      HighSchool?       @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
+  highSchool      HighSchool?      @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
   highSchoolType  HighSchoolType?
   curriculumType  EducationSystem?
-  demographicTags String[]          // first_gen, legacy, athlete, recruited, urm, international
-  nationality     String?           // Applicant nationality/citizenship (e.g., "China", "US")
+  demographicTags String[] // first_gen, legacy, athlete, recruited, urm, international
+  nationality     String? // Applicant nationality/citizenship (e.g., "China", "US")
 
   // Application context
-  financialAid     String?          // full_ride, significant, partial, none, merit_only
-  enrollmentStatus String?          // enrolled, declined, gap_year, waitlist_then_enrolled
+  financialAid     String? // full_ride, significant, partial, none, merit_only
+  enrollmentStatus String? // enrolled, declined, gap_year, waitlist_then_enrolled
   narrative        String? @db.Text // Free-form narrative: application story, special circumstances
 
   // Essay content (for essay gallery)
@@ -1908,17 +2139,17 @@ model AdmissionCase {
   visibility Visibility @default(PRIVATE)
 
   // Data enrichment — quality & review
-  qualityScore  Int?         @default(0)
+  qualityScore  Int?             @default(0)
   reviewStatus  DataReviewStatus @default(PENDING_REVIEW)
   reviewedBy    String?
   reviewedAt    DateTime?
-  source        String?      // reddit, onepoint3acres, user, manual, csv_import
-  importBatchId String?      // 批次 ID（回滚用）
+  source        String? // reddit, onepoint3acres, user, manual, csv_import
+  importBatchId String? // 批次 ID（回滚用）
 
   // Verification
-  isVerified            Boolean               @default(false)
-  verifiedAt            DateTime?
-  verificationRequests  VerificationRequest[]
+  isVerified           Boolean               @default(false)
+  verifiedAt           DateTime?
+  verificationRequests VerificationRequest[]
 
   // Swipe game
   swipes CaseSwipe[]
@@ -1936,8 +2167,8 @@ model AdmissionCase {
   @@index([essayType])
   @@index([reviewStatus])
   @@index([importBatchId])
-  @@index([userId, source, schoolId])    // Dedup query optimization for batch imports
-  @@index([importBatchId, createdAt])    // Batch history query optimization
+  @@index([userId, source, schoolId]) // Dedup query optimization for batch imports
+  @@index([importBatchId, createdAt]) // Batch history query optimization
   @@index([highSchoolId])
 }
 
@@ -1951,9 +2182,9 @@ model VerificationRequest {
   user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   caseId     String
   case       AdmissionCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  proofType  String             // offer_letter, enrollment_proof, student_id
+  proofType  String // offer_letter, enrollment_proof, student_id
   proofData  String?            @db.Text // Base64 data
-  proofUrl   String?            // Cloud storage URL
+  proofUrl   String? // Cloud storage URL
   status     VerificationStatus @default(PENDING)
   reviewerId String?
   reviewNote String?
@@ -2005,13 +2236,13 @@ model Block {
 // ============================================
 
 model Conversation {
-  id           String                    @id @default(cuid())
-  kind         ConversationKind          @default(DIRECT)
-  title        String?
-  createdBySystem Boolean                @default(false)
-  participants ConversationParticipant[]
-  messages     Message[]
-  teamMatch    TeamMatch?
+  id              String                    @id @default(cuid())
+  kind            ConversationKind          @default(DIRECT)
+  title           String?
+  createdBySystem Boolean                   @default(false)
+  participants    ConversationParticipant[]
+  messages        Message[]
+  teamMatch       TeamMatch?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2043,10 +2274,10 @@ model Message {
   senderId       String
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
-  content    String  @db.Text
-  isSystem   Boolean @default(false)
-  isDeleted  Boolean @default(false)
-  isRecalled Boolean @default(false)
+  content    String    @db.Text
+  isSystem   Boolean   @default(false)
+  isDeleted  Boolean   @default(false)
+  isRecalled Boolean   @default(false)
   recalledAt DateTime?
   mediaUrl   String?
   mediaType  String?
@@ -2173,7 +2404,7 @@ model Report {
   priority   ReportPriority   @default(MEDIUM)
 
   assignedTo     String?
-  assignedToUser User?    @relation("ReportAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  assignedToUser User?   @relation("ReportAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
 
   reviewedAt DateTime?
   reviewedBy String?
@@ -2217,7 +2448,7 @@ model AuditLog {
 model RolePermission {
   id         String   @id @default(cuid())
   role       Role
-  permission String   // "case:create", "case:review", "school:edit" 等
+  permission String // "case:create", "case:review", "school:edit" 等
   granted    Boolean  @default(true)
   grantedBy  String?
   updatedAt  DateTime @updatedAt
@@ -2269,17 +2500,17 @@ model OperatorInvite {
 model DataImportStaging {
   id            String        @id @default(cuid())
   dataType      DataType
-  source        String        // reddit, onepoint3acres, manual, csv_import, college_scorecard...
-  rawData       Json          // 标准中间格式 JSON
+  source        String // reddit, onepoint3acres, manual, csv_import, college_scorecard...
+  rawData       Json // 标准中间格式 JSON
   qualityScore  Int
   status        StagingStatus @default(PENDING)
-  createdBy     String?       // 导入者 ID（自我审核防护用）
-  importBatchId String?       // 批次 ID（回滚用）
-  assignedTo    String?       // 领取审核任务的管理员 ID
+  createdBy     String? // 导入者 ID（自我审核防护用）
+  importBatchId String? // 批次 ID（回滚用）
+  assignedTo    String? // 领取审核任务的管理员 ID
   reviewedBy    String?
   reviewedAt    DateTime?
   reviewNote    String?
-  mergedId      String?       // 入库后的正式记录 ID
+  mergedId      String? // 入库后的正式记录 ID
   createdAt     DateTime      @default(now())
 
   @@index([dataType])
@@ -2808,9 +3039,9 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id             String        @id @default(cuid())
-  userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 支付信息
   transactionId  String        @unique
@@ -3079,18 +3310,18 @@ model EssayPrompt {
   schoolId String
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
-  type      EssayType    @default(SUPPLEMENTAL)
-  status    EssayStatus  @default(PENDING)
-  year      Int          @default(2025)
+  type   EssayType   @default(SUPPLEMENTAL)
+  status EssayStatus @default(PENDING)
+  year   Int         @default(2025)
 
-  prompt    String       @db.Text
-  promptZh  String?      @db.Text
-  wordLimit Int?
-  isRequired Boolean     @default(true)
-  sortOrder  Int         @default(0)
+  prompt     String  @db.Text
+  promptZh   String? @db.Text
+  wordLimit  Int?
+  isRequired Boolean @default(true)
+  sortOrder  Int     @default(0)
 
   // AI 辅助字段
-  aiTips     String?     @db.Text
+  aiTips     String? @db.Text
   aiCategory String?
 
   // 审核字段
@@ -3099,15 +3330,15 @@ model EssayPrompt {
   rejectReason String?   @db.Text
 
   // 年度变化追踪
-  previousYearPromptId String?  // 关联去年同一题目
-  changeType           String?  // NEW, UNCHANGED, MODIFIED
+  previousYearPromptId String? // 关联去年同一题目
+  changeType           String? // NEW, UNCHANGED, MODIFIED
 
   // User essays linked to this prompt
   essays Essay[]
 
   // 来源
-  sources    EssayPromptSource[]
-  auditLogs  EssayPromptAudit[]
+  sources   EssayPromptSource[]
+  auditLogs EssayPromptAudit[]
 
   // Data enrichment
   importBatchId String?
@@ -3129,11 +3360,11 @@ model EssayPromptSource {
   essayPromptId String
   essayPrompt   EssayPrompt @relation(fields: [essayPromptId], references: [id], onDelete: Cascade)
 
-  sourceType  String
-  sourceUrl   String?
-  rawContent  String?   @db.Text  // 原始 HTML 片段用于审计
-  confidence  Float?              // AI 置信度 0.0-1.0
-  scrapedAt   DateTime?
+  sourceType String
+  sourceUrl  String?
+  rawContent String?   @db.Text // 原始 HTML 片段用于审计
+  confidence Float? // AI 置信度 0.0-1.0
+  scrapedAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3150,14 +3381,14 @@ model SchoolEssaySource {
   schoolId String
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
-  sourceType    String   // OFFICIAL, COLLEGEVINE, COMMON_APP
+  sourceType    String // OFFICIAL, COLLEGEVINE, COMMON_APP
   url           String
-  slug          String?  // CollegeVine-style slug
-  scrapeGroup   String   @default("GENERIC") // COMMON_APP, UC, COALITION, GENERIC
-  isActive      Boolean  @default(true)
-  priority      Int      @default(0)
+  slug          String? // CollegeVine-style slug
+  scrapeGroup   String    @default("GENERIC") // COMMON_APP, UC, COALITION, GENERIC
+  isActive      Boolean   @default(true)
+  priority      Int       @default(0)
   lastScrapedAt DateTime?
-  lastStatus    String?  // SUCCESS, FAILED, PARTIAL
+  lastStatus    String? // SUCCESS, FAILED, PARTIAL
   lastError     String?
 
   // 针对性采集配置（单校覆盖）
@@ -3173,17 +3404,17 @@ model SchoolEssaySource {
 }
 
 model EssayPipelineRun {
-  id             String   @id @default(cuid())
-  trigger        String   // SCHEDULED, MANUAL
+  id             String    @id @default(cuid())
+  trigger        String // SCHEDULED, MANUAL
   year           Int
-  status         String   @default("RUNNING") // RUNNING, COMPLETED, FAILED
-  totalSchools   Int      @default(0)
-  successCount   Int      @default(0)
-  failedCount    Int      @default(0)
-  newPrompts     Int      @default(0)
-  changedPrompts Int      @default(0)
-  details        Json?    // Per-school results array
-  startedAt      DateTime @default(now())
+  status         String    @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  totalSchools   Int       @default(0)
+  successCount   Int       @default(0)
+  failedCount    Int       @default(0)
+  newPrompts     Int       @default(0)
+  changedPrompts Int       @default(0)
+  details        Json? // Per-school results array
+  startedAt      DateTime  @default(now())
   completedAt    DateTime?
   operatorId     String?
 
@@ -3273,11 +3504,11 @@ model EssayPromptAudit {
   essayPromptId String
   essayPrompt   EssayPrompt @relation(fields: [essayPromptId], references: [id], onDelete: Cascade)
 
-  action       String       // CREATE, UPDATE, VERIFY, REJECT, ARCHIVE
+  action       String // CREATE, UPDATE, VERIFY, REJECT, ARCHIVE
   fromStatus   EssayStatus?
   toStatus     EssayStatus?
   operatorId   String
-  operatorType String       // ADMIN, SYSTEM, USER
+  operatorType String // ADMIN, SYSTEM, USER
   changes      Json?
   reason       String?
 
@@ -3298,7 +3529,7 @@ model VaultItem {
   type          VaultItemType @default(OTHER)
   title         String
   encryptedData String        @db.Text
-  iv            String        // Initialization vector for encryption
+  iv            String // Initialization vector for encryption
   category      String?
   tags          String[]
   icon          String?
@@ -3330,9 +3561,9 @@ model SystemSetting {
 // ============================================
 
 model SchoolRecommendation {
-  id              String @id @default(cuid())
+  id              String  @id @default(cuid())
   userId          String
-  user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   profileSnapshot Json
   preferences     Json
   recommendations Json
@@ -3352,16 +3583,16 @@ model SchoolRecommendation {
 // ============================================
 
 model EssayAIResult {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   essayId     String
-  essay       Essay   @relation(fields: [essayId], references: [id], onDelete: Cascade)
-  type        String  // 'polish' | 'review'
-  input       String  @db.Text
-  output      String  @db.Text
-  changes     Json?   // For polish type
-  scores      Json?   // For review type
-  suggestions Json?   // For review type
-  tokenUsed   Int     @default(0)
+  essay       Essay  @relation(fields: [essayId], references: [id], onDelete: Cascade)
+  type        String // 'polish' | 'review'
+  input       String @db.Text
+  output      String @db.Text
+  changes     Json? // For polish type
+  scores      Json? // For review type
+  suggestions Json? // For review type
+  tokenUsed   Int    @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3393,22 +3624,22 @@ model CaseView {
 // ============================================
 
 model Resume {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title          String       @default("My Resume")
-  status         ResumeStatus @default(DRAFT)
-  type           ResumeType   @default(COLLEGE_APPLICATION)
-  templateId     String       @default("jake-classic")
-  language       String       @default("en")
-  settings       Json         @default("{}")
-  sections           ResumeSection[]
-  snapshots          ResumeSnapshot[]
-  aiReviews          ResumeAIReview[]
-  teamApplications   TeamApplication[]          @relation("TeamApplicationResume")
+  id                        String                         @id @default(cuid())
+  userId                    String
+  user                      User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                     String                         @default("My Resume")
+  status                    ResumeStatus                   @default(DRAFT)
+  type                      ResumeType                     @default(COLLEGE_APPLICATION)
+  templateId                String                         @default("jake-classic")
+  language                  String                         @default("en")
+  settings                  Json                           @default("{}")
+  sections                  ResumeSection[]
+  snapshots                 ResumeSnapshot[]
+  aiReviews                 ResumeAIReview[]
+  teamApplications          TeamApplication[]              @relation("TeamApplicationResume")
   recruitmentMemberProfiles TeamRecruitmentMemberProfile[] @relation("RecruitmentSelectedResume")
-  version        Int          @default(1)
-  lastImportedAt DateTime?
+  version                   Int                            @default(1)
+  lastImportedAt            DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3434,9 +3665,9 @@ model ResumeSection {
 }
 
 model ResumeSnapshot {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   resumeId    String
-  resume      Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resume      Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   version     Int
   data        Json
   description String?
@@ -3623,38 +3854,38 @@ enum PredictionOutcomeLabelStatus {
 }
 
 model PredictionModel {
-  id              String      @id @default(cuid())
-  version         Int         @unique
-  tier            Int         // 1=Platt, 2=LR-basic, 3=LR-full, 4=GBDT
-  modelType       String      // 'platt' | 'logistic_regression' | 'gbdt'
-  weights         Json        // TrainedModel or GBDTModel serialized
-  config          Json        // training hyperparameters
-  medians         Json        // feature medians for imputation
-  selectivityBand String?     // null=global, "0.0-0.3", "0.3-0.6", "0.6-0.8", "0.8-1.0"
+  id              String  @id @default(cuid())
+  version         Int     @unique
+  tier            Int // 1=Platt, 2=LR-basic, 3=LR-full, 4=GBDT
+  modelType       String // 'platt' | 'logistic_regression' | 'gbdt'
+  weights         Json // TrainedModel or GBDTModel serialized
+  config          Json // training hyperparameters
+  medians         Json // feature medians for imputation
+  selectivityBand String? // null=global, "0.0-0.3", "0.3-0.6", "0.6-0.8", "0.8-1.0"
 
   // Evaluation metrics
-  trainSamples    Int
-  valSamples      Int
-  trainAuc        Float
-  valAuc          Float
-  brierScore      Float
-  calibrationECE  Float
-  cvMeanAuc       Float?
-  cvStdAuc        Float?
+  trainSamples   Int
+  valSamples     Int
+  trainAuc       Float
+  valAuc         Float
+  brierScore     Float
+  calibrationECE Float
+  cvMeanAuc      Float?
+  cvStdAuc       Float?
 
   // Lifecycle
-  status          ModelStatus @default(CANDIDATE)
-  promotedAt      DateTime?
-  retiredAt       DateTime?
-  shadowMetrics   Json?       // online A/B metrics accumulated during shadow
+  status        ModelStatus @default(CANDIDATE)
+  promotedAt    DateTime?
+  retiredAt     DateTime?
+  shadowMetrics Json? // online A/B metrics accumulated during shadow
 
   // Fairness
-  fairnessMetrics Json?       // { demographicParity, equalizedOdds, bandFairness }
+  fairnessMetrics     Json? // { demographicParity, equalizedOdds, bandFairness }
   predictionResults   PredictionResult[]
   predictionSnapshots PredictionSnapshot[]
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([tier, selectivityBand])
@@ -3676,12 +3907,12 @@ model FeatureFlag {
 /// Embedding vectors for semantic agent routing (pgvector).
 /// Each row stores one example query for an agent type.
 model AgentRouteEmbedding {
-  id        String                  @id @default(uuid())
-  agentType String                  @map("agent_type")
-  example   String                  /// Example query text
+  id        String                      @id @default(uuid())
+  agentType String                      @map("agent_type")
+  example   String /// Example query text
   embedding Unsupported("vector(1536)")
-  createdAt DateTime                @default(now()) @map("created_at")
-  updatedAt DateTime                @updatedAt @map("updated_at")
+  createdAt DateTime                    @default(now()) @map("created_at")
+  updatedAt DateTime                    @updatedAt @map("updated_at")
 
   @@index([agentType])
   @@map("agent_route_embeddings")
@@ -3689,16 +3920,16 @@ model AgentRouteEmbedding {
 
 /// Graph entity for relationship-based memory (schools, majors, deadlines).
 model GraphEntity {
-  id          String   @id @default(cuid())
-  userId      String
-  entityType  String   /// school, major, program, deadline, activity
-  name        String
-  attributes  Json?    /// flexible metadata (rank, acceptanceRate, etc.)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  userId     String
+  entityType String /// school, major, program, deadline, activity
+  name       String
+  attributes Json? /// flexible metadata (rank, acceptanceRate, etc.)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  outEdges    EntityRelationship[] @relation("source")
-  inEdges     EntityRelationship[] @relation("target")
+  outEdges EntityRelationship[] @relation("source")
+  inEdges  EntityRelationship[] @relation("target")
 
   @@unique([userId, entityType, name])
   @@index([userId, entityType])
@@ -3707,17 +3938,17 @@ model GraphEntity {
 
 /// Directed edge between two graph entities.
 model EntityRelationship {
-  id              String   @id @default(cuid())
-  userId          String
-  sourceEntityId  String
-  targetEntityId  String
-  relationType    String   /// applied_to, has_major, similar_to, has_deadline
-  weight          Float    @default(1.0)
-  metadata        Json?
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  sourceEntityId String
+  targetEntityId String
+  relationType   String /// applied_to, has_major, similar_to, has_deadline
+  weight         Float    @default(1.0)
+  metadata       Json?
+  createdAt      DateTime @default(now())
 
-  sourceEntity    GraphEntity @relation("source", fields: [sourceEntityId], references: [id], onDelete: Cascade)
-  targetEntity    GraphEntity @relation("target", fields: [targetEntityId], references: [id], onDelete: Cascade)
+  sourceEntity GraphEntity @relation("source", fields: [sourceEntityId], references: [id], onDelete: Cascade)
+  targetEntity GraphEntity @relation("target", fields: [targetEntityId], references: [id], onDelete: Cascade)
 
   @@index([userId, sourceEntityId])
   @@index([userId, relationType])
