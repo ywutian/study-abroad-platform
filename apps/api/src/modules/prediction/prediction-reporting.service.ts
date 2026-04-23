@@ -23,6 +23,7 @@ import type {
   ReviewPredictionOutcomeDto,
 } from '../admin/dto';
 import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
+import { DistillationStatsRollupService } from './distillation/distillation-stats-rollup.service';
 
 type ReportedOutcomeResult =
   | 'ADMITTED'
@@ -48,6 +49,8 @@ export class PredictionReportingService {
     @Optional()
     private readonly calibrationService?: PredictionCalibrationService,
     @Optional() private readonly shadowEvaluator?: ShadowEvaluatorService,
+    @Optional()
+    private readonly distillationRollups?: DistillationStatsRollupService,
   ) {}
 
   public mapLatestOutcomeLabel(record?: OutcomeLabelRecordShape | null) {
@@ -159,6 +162,9 @@ export class PredictionReportingService {
         select: {
           id: true,
           probability: true,
+          cohortKey: true,
+          schoolId: true,
+          profileId: true,
         },
       });
 
@@ -207,6 +213,25 @@ export class PredictionReportingService {
               outcomeLabeledAt: now,
             },
           });
+
+          const latestSnapshot = await tx.predictionSnapshot.findFirst({
+            where: {
+              profileId: prediction.profileId,
+              schoolId: prediction.schoolId,
+            },
+            orderBy: { createdAt: 'desc' },
+            select: { id: true },
+          });
+
+          if (latestSnapshot) {
+            await tx.predictionSnapshot.update({
+              where: { id: latestSnapshot.id },
+              data: {
+                outcomeLabel: canonical.canonicalOutcomeLabel,
+                outcomeLabeledAt: now,
+              },
+            });
+          }
         });
       } else {
         await this.prisma.$transaction(async (tx) => {
@@ -238,6 +263,25 @@ export class PredictionReportingService {
               outcomeLabeledAt: now,
             },
           });
+
+          const latestSnapshot = await tx.predictionSnapshot.findFirst({
+            where: {
+              profileId: prediction.profileId,
+              schoolId: prediction.schoolId,
+            },
+            orderBy: { createdAt: 'desc' },
+            select: { id: true },
+          });
+
+          if (latestSnapshot) {
+            await tx.predictionSnapshot.update({
+              where: { id: latestSnapshot.id },
+              data: {
+                outcomeLabel: canonical.canonicalOutcomeLabel,
+                outcomeLabeledAt: now,
+              },
+            });
+          }
         });
       }
 
@@ -300,6 +344,17 @@ export class PredictionReportingService {
           this.calibrationService.invalidateCalibrationCache(),
           this.logger,
           'Failed to invalidate calibration cache after outcome report',
+        );
+      }
+      if (this.distillationRollups) {
+        fireAndForget(
+          this.distillationRollups.refreshForOutcomeChange({
+            schoolId,
+            cohortKey: prediction.cohortKey ?? undefined,
+            asOf: now,
+          }),
+          this.logger,
+          'Failed to refresh distillation rollups after outcome report',
         );
       }
     } catch (error) {
@@ -413,6 +468,9 @@ export class PredictionReportingService {
             id: true,
             probability: true,
             selectivityBand: true,
+            schoolId: true,
+            profileId: true,
+            cohortKey: true,
           },
         },
       },
@@ -457,6 +515,25 @@ export class PredictionReportingService {
         },
       });
 
+      const latestSnapshot = await tx.predictionSnapshot.findFirst({
+        where: {
+          profileId: existing.predictionResult.profileId,
+          schoolId: existing.predictionResult.schoolId,
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      });
+
+      if (latestSnapshot) {
+        await tx.predictionSnapshot.update({
+          where: { id: latestSnapshot.id },
+          data: {
+            outcomeLabel: canonical.canonicalOutcomeLabel,
+            outcomeLabeledAt: new Date(),
+          },
+        });
+      }
+
       return {
         ...updated,
         latestOutcomeLabel: this.mapLatestOutcomeLabel(canonical.displayRecord),
@@ -489,6 +566,18 @@ export class PredictionReportingService {
         ),
         this.logger,
         'Failed to record shadow outcome feedback',
+      );
+    }
+
+    if (this.distillationRollups) {
+      fireAndForget(
+        this.distillationRollups.refreshForOutcomeChange({
+          schoolId: existing.predictionResult.schoolId,
+          cohortKey: existing.predictionResult.cohortKey ?? undefined,
+          asOf: new Date(),
+        }),
+        this.logger,
+        'Failed to refresh distillation rollups after outcome review',
       );
     }
 

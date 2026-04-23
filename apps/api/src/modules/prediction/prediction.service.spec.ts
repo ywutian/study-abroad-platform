@@ -19,6 +19,7 @@ import { ModelMonitorService } from './ml/model-monitor.service';
 import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
+import { DistillationService } from './benchmark/distillation.service';
 
 // Mock score-calculator utils
 jest.mock('./utils/score-calculator', () => ({
@@ -167,6 +168,7 @@ describe('PredictionService', () => {
   let reportingService: PredictionReportingService;
   let mlPrimaryService: PredictionMlPrimaryService;
   let featureFlagService: FeatureFlagService;
+  let distillationService: DistillationService;
 
   const mockProfile = {
     id: 'profile-1',
@@ -410,6 +412,23 @@ describe('PredictionService', () => {
             isEnabled: jest.fn().mockResolvedValue(false),
           },
         },
+        {
+          provide: DistillationService,
+          useValue: {
+            getPhase1LiveTeacherSignals: jest.fn().mockResolvedValue([]),
+            computeBlendDecision: jest
+              .fn()
+              .mockImplementation((probability) => ({
+                teacherSignals: [],
+                teacherEnsemble: null,
+                pairwiseMae: null,
+                disagreementFactor: 0,
+                effectiveW: 0,
+                blendedPrePlatt: probability,
+                hasSignal: false,
+              })),
+          },
+        },
       ],
     }).compile();
 
@@ -431,6 +450,7 @@ describe('PredictionService', () => {
       PredictionMlPrimaryService,
     );
     featureFlagService = module.get<FeatureFlagService>(FeatureFlagService);
+    distillationService = module.get<DistillationService>(DistillationService);
   });
 
   afterEach(() => {
@@ -712,6 +732,99 @@ describe('PredictionService', () => {
         'profile-1',
         'school-1',
         expect.objectContaining({ modelVersion: 'v5-ml-primary' }),
+      );
+    });
+
+    it('should keep distillation disabled when the feature flag is off', async () => {
+      await service.predict('profile-1', ['school-1']);
+
+      expect(
+        distillationService.getPhase1LiveTeacherSignals,
+      ).not.toHaveBeenCalled();
+      expect(distillationService.computeBlendDecision).not.toHaveBeenCalled();
+    });
+
+    it('should apply the pre-Platt distillation variant when the feature flag is on', async () => {
+      (featureFlagService.isEnabled as jest.Mock)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+      const calibrationService = service['calibrationService'];
+      (calibrationService.getPlattCalibration as jest.Mock).mockResolvedValue({
+        a: 1,
+        b: 0,
+      });
+      (
+        calibrationService.applyPlattCalibration as jest.Mock
+      ).mockImplementation((probability) => probability);
+      (
+        distillationService.getPhase1LiveTeacherSignals as jest.Mock
+      ).mockResolvedValue([
+        {
+          sourceKey: 'campusreel-static',
+          sourceLabel: 'CampusReel Static Teacher',
+          probability: 0.61,
+          weight: 0.3,
+          confidence: 'medium',
+          kind: 'static',
+          rawPayload: {},
+        },
+      ]);
+      (distillationService.computeBlendDecision as jest.Mock).mockReturnValue({
+        teacherSignals: [
+          {
+            sourceKey: 'campusreel-static',
+            sourceLabel: 'CampusReel Static Teacher',
+            probability: 0.61,
+            weight: 0.3,
+            confidence: 'medium',
+            kind: 'static',
+            rawPayload: {},
+          },
+        ],
+        teacherEnsemble: 0.61,
+        pairwiseMae: null,
+        disagreementFactor: 1,
+        effectiveW: 0.2,
+        blendedPrePlatt: 0.4,
+        hasSignal: true,
+      });
+
+      const output = await service.predict('profile-1', ['school-1'], true);
+
+      expect(
+        distillationService.getPhase1LiveTeacherSignals,
+      ).toHaveBeenCalledWith(mockProfileInput, 'school-1');
+      expect(calibrationService.applyPlattCalibration).toHaveBeenCalledWith(
+        0.4,
+        { a: 1, b: 0 },
+      );
+      expect(output.results[0].probability).toBeCloseTo(0.4, 6);
+    });
+
+    it('should leave the probability unchanged when distillation has no teacher signal', async () => {
+      (featureFlagService.isEnabled as jest.Mock)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+      (
+        distillationService.getPhase1LiveTeacherSignals as jest.Mock
+      ).mockResolvedValue([]);
+      (distillationService.computeBlendDecision as jest.Mock).mockReturnValue({
+        teacherSignals: [],
+        teacherEnsemble: null,
+        pairwiseMae: null,
+        disagreementFactor: 0,
+        effectiveW: 0,
+        blendedPrePlatt: mockFusedResult.probability,
+        hasSignal: false,
+      });
+
+      const output = await service.predict('profile-1', ['school-1'], true);
+
+      expect(output.results[0].probability).toBeCloseTo(
+        mockFusedResult.probability,
+        6,
       );
     });
   });

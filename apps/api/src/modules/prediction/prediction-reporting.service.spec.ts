@@ -44,6 +44,10 @@ describe('PredictionReportingService', () => {
         findFirst: jest.fn().mockResolvedValue(null),
         findMany: jest.fn().mockResolvedValue([]),
       },
+      predictionSnapshot: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'snap-1' }),
+        update: jest.fn().mockResolvedValue({ id: 'snap-1' }),
+      },
       school: {
         findUnique: jest.fn().mockResolvedValue(null),
       },
