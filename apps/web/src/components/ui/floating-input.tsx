@@ -149,8 +149,8 @@ const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                tabIndex={-1}
+                className="p-1 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
