@@ -1062,26 +1062,26 @@ model School {
   metadata      Json? // { deadlines, essayPrompts, requirements, lastScraped }
 
   // Relations
-  metrics               SchoolMetric[]
-  programs              SchoolProgram[]
-  cases                 AdmissionCase[]
-  targetedBy            ProfileTargetSchool[]
-  schoolLists           SchoolListItem[]
-  essayPrompts          EssayPrompt[]
-  essaySources          SchoolEssaySource[]
-  deadlines             SchoolDeadline[]
-  timelines             ApplicationTimeline[]
-  teams                 Team[]
-  calibration           SchoolCalibration?
-  rankings              SchoolRanking[]
-  sourceObservations    PredictionSourceObservation[]
-  cohortRoundPriors     SchoolCohortRoundPrior[]
-  cohortRegimeSignals   SchoolCohortRegimeSignal[]
-  relationshipSignals   SchoolRelationshipSignal[]
-  communityRatings      SchoolCommunityRating[]
-  policyEvidence        SchoolPolicyEvidence[]
-  competitorPredictions CompetitorPrediction[]
-  staticTeacherSnapshots StaticTeacherSnapshot[]
+  metrics                           SchoolMetric[]
+  programs                          SchoolProgram[]
+  cases                             AdmissionCase[]
+  targetedBy                        ProfileTargetSchool[]
+  schoolLists                       SchoolListItem[]
+  essayPrompts                      EssayPrompt[]
+  essaySources                      SchoolEssaySource[]
+  deadlines                         SchoolDeadline[]
+  timelines                         ApplicationTimeline[]
+  teams                             Team[]
+  calibration                       SchoolCalibration?
+  rankings                          SchoolRanking[]
+  sourceObservations                PredictionSourceObservation[]
+  cohortRoundPriors                 SchoolCohortRoundPrior[]
+  cohortRegimeSignals               SchoolCohortRegimeSignal[]
+  relationshipSignals               SchoolRelationshipSignal[]
+  communityRatings                  SchoolCommunityRating[]
+  policyEvidence                    SchoolPolicyEvidence[]
+  competitorPredictions             CompetitorPrediction[]
+  staticTeacherSnapshots            StaticTeacherSnapshot[]
   distillationSchoolDailyAggregates DistillationSchoolDailyAggregate[]
 
   createdAt DateTime @default(now())
@@ -3900,17 +3900,17 @@ model BenchmarkProfile {
 }
 
 model CompetitorSource {
-  id                         String                 @id @default(cuid())
-  key                        String                 @unique
+  id                         String                  @id @default(cuid())
+  key                        String                  @unique
   label                      String
   baseUrl                    String
-  enabled                    Boolean                @default(true)
-  supportsNumericProbability Boolean                @default(true)
+  enabled                    Boolean                 @default(true)
+  supportsNumericProbability Boolean                 @default(true)
   runs                       CompetitorRun[]
   predictions                CompetitorPrediction[]
   staticTeacherSnapshots     StaticTeacherSnapshot[]
-  createdAt                  DateTime               @default(now())
-  updatedAt                  DateTime               @updatedAt
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
 
   @@index([enabled])
 }
@@ -3983,25 +3983,25 @@ model StaticTeacherSnapshot {
 }
 
 model DistillationDailyAggregate {
-  id                  String   @id @default(cuid())
-  date                DateTime @db.Date
-  stage               String
-  teacherKey          String
-  cohortKey           String
-  selectivityBand     String?
-  predictionCount     Int      @default(0)
-  activeSignalCount   Int      @default(0)
-  resolvedOutcomeCount Int     @default(0)
+  id                    String   @id @default(cuid())
+  date                  DateTime @db.Date
+  stage                 String
+  teacherKey            String
+  cohortKey             String
+  selectivityBand       String?
+  predictionCount       Int      @default(0)
+  activeSignalCount     Int      @default(0)
+  resolvedOutcomeCount  Int      @default(0)
   avgTeacherProbability Decimal? @db.Decimal(6, 4)
-  avgObservedWeight   Decimal? @db.Decimal(6, 4)
-  avgBlendDelta       Decimal? @db.Decimal(6, 4)
-  avgAbsBlendDelta    Decimal? @db.Decimal(6, 4)
-  brierTeacher        Decimal? @db.Decimal(8, 6)
-  brierBlended        Decimal? @db.Decimal(8, 6)
-  brierServed         Decimal? @db.Decimal(8, 6)
-  distinctSchoolCount Int      @default(0)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  avgObservedWeight     Decimal? @db.Decimal(6, 4)
+  avgBlendDelta         Decimal? @db.Decimal(6, 4)
+  avgAbsBlendDelta      Decimal? @db.Decimal(6, 4)
+  brierTeacher          Decimal? @db.Decimal(8, 6)
+  brierBlended          Decimal? @db.Decimal(8, 6)
+  brierServed           Decimal? @db.Decimal(8, 6)
+  distinctSchoolCount   Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@unique([date, stage, teacherKey, cohortKey, selectivityBand])
   @@index([date, stage])
@@ -4010,23 +4010,23 @@ model DistillationDailyAggregate {
 }
 
 model DistillationSchoolDailyAggregate {
-  id                  String                    @id @default(cuid())
-  date                DateTime                  @db.Date
-  schoolId            String
-  school              School                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  cohortKey           String
-  stage               String
-  predictionCount     Int                       @default(0)
+  id                   String                   @id @default(cuid())
+  date                 DateTime                 @db.Date
+  schoolId             String
+  school               School                   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  cohortKey            String
+  stage                String
+  predictionCount      Int                      @default(0)
   resolvedOutcomeCount Int                      @default(0)
-  coverageTier        DistillationCoverageTier  @default(NONE)
-  activeTeacherKeys   String[]
-  avgBlendDelta       Decimal?                  @db.Decimal(6, 4)
-  avgAbsBlendDelta    Decimal?                  @db.Decimal(6, 4)
-  brierBlended        Decimal?                  @db.Decimal(8, 6)
-  brierServed         Decimal?                  @db.Decimal(8, 6)
-  lastObservedAt      DateTime?
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
+  coverageTier         DistillationCoverageTier @default(NONE)
+  activeTeacherKeys    String[]
+  avgBlendDelta        Decimal?                 @db.Decimal(6, 4)
+  avgAbsBlendDelta     Decimal?                 @db.Decimal(6, 4)
+  brierBlended         Decimal?                 @db.Decimal(8, 6)
+  brierServed          Decimal?                 @db.Decimal(8, 6)
+  lastObservedAt       DateTime?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
 
   @@unique([date, schoolId, cohortKey, stage])
   @@index([date, stage])

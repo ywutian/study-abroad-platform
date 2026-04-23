@@ -49,7 +49,7 @@ CREATE TABLE "DistillationSchoolDailyAggregate" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DistillationDailyAggregate_date_stage_teacherKey_cohortKey_key" ON "DistillationDailyAggregate"("date", "stage", "teacherKey", "cohortKey", "selectivityBand");
+CREATE UNIQUE INDEX "DistillationDailyAggregate_date_stage_teacherKey_cohortKey__key" ON "DistillationDailyAggregate"("date", "stage", "teacherKey", "cohortKey", "selectivityBand");
 
 -- CreateIndex
 CREATE INDEX "DistillationDailyAggregate_date_stage_idx" ON "DistillationDailyAggregate"("date", "stage");
@@ -61,7 +61,7 @@ CREATE INDEX "DistillationDailyAggregate_teacherKey_date_idx" ON "DistillationDa
 CREATE INDEX "DistillationDailyAggregate_cohortKey_date_idx" ON "DistillationDailyAggregate"("cohortKey", "date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DistillationSchoolDailyAggregate_date_schoolId_cohortKey_stag_key" ON "DistillationSchoolDailyAggregate"("date", "schoolId", "cohortKey", "stage");
+CREATE UNIQUE INDEX "DistillationSchoolDailyAggregate_date_schoolId_cohortKey_st_key" ON "DistillationSchoolDailyAggregate"("date", "schoolId", "cohortKey", "stage");
 
 -- CreateIndex
 CREATE INDEX "DistillationSchoolDailyAggregate_date_stage_idx" ON "DistillationSchoolDailyAggregate"("date", "stage");
