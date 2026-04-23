@@ -31,7 +31,7 @@ import { DiagnosticIngestService } from './diagnostic-ingest.service';
 import {
   BENCHMARK_CONTROLLERS,
   BENCHMARK_PROVIDERS,
-} from './benchmark/benchmark.module';
+} from './benchmark/benchmark-providers';
 import { DistillationModule } from './distillation/distillation.module';
 
 @Module({
