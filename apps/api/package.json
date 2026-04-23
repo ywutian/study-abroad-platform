@@ -33,7 +33,9 @@
     "gold:replay": "ts-node --transpile-only scripts/replay-analysis-gold.ts",
     "db:seed-calibrations": "ts-node prisma/seed-calibrations.ts",
     "scripts:fill-logos": "ts-node -r tsconfig-paths/register scripts/fill-school-logos.ts",
-    "lint:quality": "tsx scripts/check-api-quality.ts"
+    "lint:quality": "tsx scripts/check-api-quality.ts",
+    "owned-site-assessment:run": "tsx scripts/run-owned-site-assessment.ts",
+    "owned-site-assessment:manifest": "tsx scripts/run-owned-site-assessment.ts --print-default-manifest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",
