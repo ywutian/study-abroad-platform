@@ -91,7 +91,7 @@ function shuffle<T>(values: T[], rng: SeededRandom): T[] {
   const out = [...values];
   for (let i = out.length - 1; i > 0; i -= 1) {
     const j = Math.floor(rng.next() * (i + 1));
-    [out[i], out[j]] = [out[j]!, out[i]!];
+    [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
 }
@@ -130,7 +130,7 @@ function balancedCategories<T>(
 ): T[] {
   const out = Array.from(
     { length: count },
-    (_, index) => values[index % values.length]!,
+    (_, index) => values[index % values.length],
   );
   return shuffle(out, rng);
 }
@@ -205,7 +205,7 @@ function createAwards(
       AWARD_LEVELS.length - 1,
     );
     return {
-      level: AWARD_LEVELS[levelIndex]!,
+      level: AWARD_LEVELS[levelIndex],
       name: `${major} Award ${index + 1}`,
       competitionName:
         levelIndex >= 3 ? `${major} Competition` : `${major} Showcase`,
@@ -268,10 +268,10 @@ export class ProfileBankService {
     const legacyFlags = distributedBooleans(count, 0.15, rng);
 
     return Array.from({ length: count }, (_, index) => {
-      const major = majors[index]!;
-      const nationality = nationalities[index]!;
-      const highSchoolTier = highSchoolTiers[index]!;
-      const regime = regimes[index]!;
+      const major = majors[index];
+      const nationality = nationalities[index];
+      const highSchoolTier = highSchoolTiers[index];
+      const regime = regimes[index];
       const profileJson: BenchmarkProfileInput = {
         gpa: gpas[index],
         gpaScale: 4.0,
@@ -290,12 +290,12 @@ export class ProfileBankService {
         locale: 'en',
         testScores: createTestScores(
           regime,
-          satScores[index]!,
-          actScores[index]!,
+          satScores[index],
+          actScores[index],
           nationality,
         ),
-        activities: createActivities(activityCounts[index]!, major, rng),
-        awards: createAwards(awardCounts[index]!, major, highSchoolTier, rng),
+        activities: createActivities(activityCounts[index], major, rng),
+        awards: createAwards(awardCounts[index], major, highSchoolTier, rng),
       };
 
       return {

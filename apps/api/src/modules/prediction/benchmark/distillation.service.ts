@@ -84,7 +84,7 @@ function meanAbsolutePairwiseError(values: number[]): number | null {
   const diffs: number[] = [];
   for (let i = 0; i < values.length; i += 1) {
     for (let j = i + 1; j < values.length; j += 1) {
-      diffs.push(Math.abs(values[i]! - values[j]!));
+      diffs.push(Math.abs(values[i] - values[j]));
     }
   }
   return diffs.length > 0 ? average(diffs) : null;

@@ -22,7 +22,7 @@ function linearSlope(values: number[]): number {
   let denominator = 0;
   for (let index = 0; index < values.length; index += 1) {
     const x = index - xMean;
-    numerator += x * (values[index]! - yMean);
+    numerator += x * (values[index] - yMean);
     denominator += x * x;
   }
   return denominator === 0 ? 0 : numerator / denominator;
@@ -72,8 +72,8 @@ export class IpedsTrendTeacherService implements TeacherSignalProvider {
         ([, row]) =>
           typeof row.applications === 'number' &&
           typeof row.admissions === 'number' &&
-          row.applications! > 0 &&
-          row.admissions! >= 0,
+          row.applications > 0 &&
+          row.admissions >= 0,
       )
       .sort(([a], [b]) => a - b)
       .slice(-5)

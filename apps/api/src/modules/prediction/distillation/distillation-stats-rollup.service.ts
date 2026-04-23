@@ -495,7 +495,7 @@ export class DistillationStatsRollupService {
         cohortKey,
         row.selectivityBand ?? '',
       ].join('|');
-      const metadata = (row.metadata ?? {}) as Record<string, unknown>;
+      const metadata = row.metadata ?? {};
       const probability = toNumber(row.observedProbability);
       const observedWeight = toNumber(row.observedWeight);
       const outcome = resolveOutcomeLabel(row.predictionSnapshot?.outcomeLabel);
@@ -619,7 +619,7 @@ export class DistillationStatsRollupService {
 
     for (const row of blendRows) {
       if (!row.schoolId) continue;
-      const metadata = (row.metadata ?? {}) as Record<string, unknown>;
+      const metadata = row.metadata ?? {};
       const cohortKey = row.cohortKey ?? 'UNKNOWN';
       const date = startOfUtcDay(row.observedAt);
       const groupKey = [
