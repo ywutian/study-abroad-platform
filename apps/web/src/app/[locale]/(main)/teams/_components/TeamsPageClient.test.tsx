@@ -5,11 +5,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { resumeRoutes, teamRoutes, type TeamRecruitmentCardFrontDto } from '@study-abroad/shared';
 import { TeamsPageClient } from './TeamsPageClient';
 
-const { push, clipboardWriteText, toastSuccess, toastError } = vi.hoisted(() => ({
+const { push, clipboardWriteText, toastSuccess, toastError, authState } = vi.hoisted(() => ({
   push: vi.fn(),
   clipboardWriteText: vi.fn(),
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
+  authState: {
+    user: { id: 'user-1' } as { id: string } | null,
+    accessToken: 'token-1' as string | null,
+  },
 }));
 
 vi.mock('next-intl', () => ({
@@ -18,11 +22,9 @@ vi.mock('next-intl', () => ({
 }));
 
 vi.mock('@/stores/auth', () => ({
-  useAuthStore: (selector: (state: { user: { id: string }; accessToken: string }) => unknown) =>
-    selector({
-      user: { id: 'user-1' },
-      accessToken: 'token-1',
-    }),
+  useAuthStore: (
+    selector: (state: { user: { id: string } | null; accessToken: string | null }) => unknown
+  ) => selector(authState),
 }));
 
 vi.mock('@/lib/i18n/navigation', () => ({
@@ -72,10 +74,22 @@ vi.mock('@/components/ui/tabs', async () => {
       children: ReactNode;
     }) => <TabsContext.Provider value={{ value, onValueChange }}>{children}</TabsContext.Provider>,
     TabsList: ({ children }: { children: ReactNode }) => <div role="tablist">{children}</div>,
-    TabsTrigger: ({ value, children }: { value: string; children: ReactNode }) => {
+    TabsTrigger: ({
+      value,
+      children,
+      disabled,
+    }: {
+      value: string;
+      children: ReactNode;
+      disabled?: boolean;
+    }) => {
       const context = React.useContext(TabsContext);
       return (
-        <button role="tab" onClick={() => context.onValueChange?.(value)}>
+        <button
+          role="tab"
+          disabled={disabled}
+          onClick={() => !disabled && context.onValueChange?.(value)}
+        >
           {children}
         </button>
       );
@@ -147,6 +161,8 @@ function renderPage() {
 describe('TeamsPageClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    authState.user = { id: 'user-1' };
+    authState.accessToken = 'token-1';
     window.history.replaceState({}, '', 'http://localhost:3000/teams');
     Object.assign(navigator, {
       clipboard: {
@@ -287,6 +303,12 @@ describe('TeamsPageClient', () => {
           items: [otherCard],
         });
       }
+      if (url === teamRoutes.recruitmentDeckPreview()) {
+        return Promise.resolve({
+          sourceCard: null,
+          items: [otherCard],
+        });
+      }
 
       return Promise.resolve({ items: [] });
     });
@@ -388,5 +410,34 @@ describe('TeamsPageClient', () => {
       );
     });
     expect(toastSuccess).toHaveBeenCalledWith('toast.linkCopied');
+  });
+
+  it('loads public browse data for guests and blocks private tabs', async () => {
+    authState.user = null;
+    authState.accessToken = null;
+
+    renderPage();
+
+    expect(await screen.findByText('Popular Main Competitions')).toBeInTheDocument();
+    expect(await screen.findByText('recruitment.guest.title')).toBeInTheDocument();
+    expect(await screen.findByTestId('swipe-deck')).toHaveTextContent('1');
+
+    await waitFor(() => {
+      expect(apiClient.get).toHaveBeenCalledWith(teamRoutes.matchPools());
+      expect(apiClient.get).toHaveBeenCalledWith(teamRoutes.matchPoolById('pool-1'));
+      expect(apiClient.get).toHaveBeenCalledWith(
+        teamRoutes.recruitmentContextsBySourceTypeAndCompetitionId({
+          sourceType: 'OFFICIAL',
+          competitionId: 'comp-1',
+        })
+      );
+      expect(apiClient.get).toHaveBeenCalledWith(teamRoutes.recruitmentDeckPreview(), {
+        params: { recruitmentContextId: 'ctx-official-1' },
+      });
+    });
+
+    expect(screen.getByRole('tab', { name: 'recruitment.copy.privateTab' })).toBeDisabled();
+    expect(screen.getByRole('tab', { name: 'recruitment.copy.matchesTab' })).toBeDisabled();
+    expect(screen.getByRole('tab', { name: 'recruitment.copy.myTeamTab' })).toBeDisabled();
   });
 });

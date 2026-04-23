@@ -19,6 +19,8 @@ const messages = {
       description: 'Empty description',
     },
     emptyList: 'No items yet',
+    trace: 'Trace',
+    unknowns: 'Unknowns',
     focusSchools: 'Focus schools',
     profileContext: 'Profile context',
     schoolListDiagnosis: 'School list diagnosis',

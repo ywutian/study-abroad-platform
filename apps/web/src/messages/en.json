@@ -5615,6 +5615,11 @@
         "bannerTitle": "Preview mode",
         "bannerHint": "Browse what others are recruiting for. Create and publish your own card to start matching."
       },
+      "guest": {
+        "title": "Browse first, then log in to match",
+        "description": "The public pool is open for browsing without an account. Log in when you're ready to create a card, save display settings, and start matching.",
+        "action": "Log in to create a card"
+      },
       "empty": {
         "noCard": "Create and publish a recruitment card first",
         "deckEmpty": "Deck is empty",
