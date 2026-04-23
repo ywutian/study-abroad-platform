@@ -83,7 +83,7 @@ export function collectTokenStorageRisks(input: {
 
 export function detectChallengePoints(text: string): string[] {
   const haystack = text.toLowerCase();
-  const matches = [
+  const rules: Array<[string, RegExp]> = [
     ['captcha', /captcha/],
     ['rate-limit', /too many requests|rate limit|try again later/],
     [
@@ -91,20 +91,26 @@ export function detectChallengePoints(text: string): string[] {
       /verify you are human|human verification|are you a robot/,
     ],
     ['challenge', /security challenge|bot challenge|challenge required/],
-  ].flatMap(([label, pattern]) => (pattern.test(haystack) ? [label] : []));
+  ];
+  const matches = rules.flatMap(([label, pattern]) =>
+    pattern.test(haystack) ? [label] : [],
+  );
 
   return uniqueSortedStrings(matches, 10);
 }
 
 export function detectUiRoleGuards(text: string): string[] {
   const haystack = text.toLowerCase();
-  const matches = [
+  const rules: Array<[string, RegExp]> = [
     ['login-required', /sign in|log in|login required/],
     ['upgrade-required', /upgrade|premium|subscription required/],
     ['access-denied', /access denied|not authorized|permission denied/],
     ['institution-only', /for colleges|for schools|partner portal|institution/],
     ['admin-only', /admin|operator|internal only/],
-  ].flatMap(([label, pattern]) => (pattern.test(haystack) ? [label] : []));
+  ];
+  const matches = rules.flatMap(([label, pattern]) =>
+    pattern.test(haystack) ? [label] : [],
+  );
 
   return uniqueSortedStrings(matches, 10);
 }
