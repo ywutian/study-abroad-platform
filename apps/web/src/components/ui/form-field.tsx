@@ -138,8 +138,8 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                tabIndex={-1}
+                className="text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -250,6 +250,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
           maxLength={maxLength}
           className={cn(error && 'border-destructive focus-visible:ring-destructive/30', className)}
           aria-invalid={!!error}
+          aria-required={required || undefined}
           aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
           {...props}
         />
