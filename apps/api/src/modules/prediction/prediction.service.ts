@@ -52,9 +52,21 @@ import { PredictionCacheService } from './prediction-cache.service';
 import { PredictionCalibrationService } from './prediction-calibration.service';
 import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionMemoryService } from './prediction-memory.service';
-import { PredictionPersistenceService } from './prediction-persistence.service';
+import {
+  PredictionPersistenceService,
+  type SavedPredictionRefs,
+} from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
 import { PredictionPolicyService } from './prediction-policy.service';
+import { DistillationService } from './benchmark/distillation.service';
+import { CompliantDistillationService } from './distillation/compliant-distillation.service';
+import { DistillationObservationService } from './distillation/distillation-observation.service';
+import {
+  DISTILLATION_LIVE_STAGE,
+  DISTILLATION_SHADOW_STAGE,
+  type DistillationBlendDecision,
+  type DistillationEvaluationInput,
+} from './distillation/types';
 import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
 
 // ============================================
@@ -111,6 +123,11 @@ export class PredictionService {
     @Optional() private modelMonitor?: ModelMonitorService,
     @Optional() private mlPrimaryService?: PredictionMlPrimaryService,
     @Optional() private featureFlagService?: FeatureFlagService,
+    @Optional() private distillationService?: DistillationService,
+    @Optional()
+    private compliantDistillationService?: CompliantDistillationService,
+    @Optional()
+    private distillationObservationService?: DistillationObservationService,
   ) {}
 
   // ==================== School Calibration (delegated to PredictionCalibrationService) ====================
@@ -500,6 +517,161 @@ export class PredictionService {
     );
   }
 
+  /**
+   * Preview prediction — run the full multi-engine pipeline against a
+   * caller-supplied ProfileInput without touching any persistence layer.
+   *
+   * Skips: Redis lock, points charging, DB profile load, memory context,
+   * Redis cache (read and write), PredictionResult upsert, memory recording.
+   *
+   * Keeps: statistical/AI/ML/historical/fusion engines, Platt calibration,
+   * school-level calibration multipliers, monotonicity enforcement,
+   * program-level competitiveness modifier, round multiplier.
+   *
+   * Intended for offline analysis flows (ablation, backtest). Never call
+   * from a user-facing request path — it bypasses charging and auditing.
+   */
+  async previewPredict(
+    profileInput: ProfileInput,
+    schoolIds: string[],
+    options?: { locale?: string },
+  ): Promise<{
+    results: PredictionResultDto[];
+    dataCompleteness: number;
+  }> {
+    const locale = options?.locale ?? 'zh';
+
+    if (schoolIds.length === 0) {
+      return { results: [], dataCompleteness: 0 };
+    }
+
+    const schools = await this.prisma.school.findMany({
+      where: { id: { in: schoolIds } },
+    });
+    if (schools.length === 0) {
+      return { results: [], dataCompleteness: 0 };
+    }
+
+    const profileMetrics = this.transformer.extractProfileMetrics(profileInput);
+    const policyVersionId = this.policyService
+      ? await this.policyService.resolveServedPolicyVersionId()
+      : MODEL_VERSION;
+    const plattParams = await this.getPlattCalibration();
+
+    const emptyMemoryCtx = {
+      previousPredictions: [] as any[],
+      knownPreferences: [] as string[],
+      profileInsights: [] as string[],
+      memoryAdjustments: new Map<string, number>(),
+    };
+
+    const firstSchoolInput = this.schoolToInput(schools[0]);
+    const dataCompleteness = this.evaluateDataCompleteness(
+      profileInput,
+      firstSchoolInput,
+    );
+
+    // Prefetch program competitiveness for the target major
+    const programMap = new Map<string, any>();
+    if (profileInput.targetMajor) {
+      const targetCip = resolveMajorToCip(profileInput.targetMajor);
+      if (targetCip) {
+        const programs = await this.prisma.schoolProgram.findMany({
+          where: {
+            cipCode: targetCip,
+            schoolId: { in: schools.map((s) => s.id) },
+          },
+        });
+        for (const p of programs) programMap.set(p.schoolId, p);
+      }
+    }
+
+    const schoolMetaMap = new Map<
+      string,
+      {
+        usNewsRank?: number;
+        acceptanceRate?: number;
+        intlAcceptanceRate?: number;
+        intlStudentPct?: number;
+        needBlindInternational?: boolean;
+        graduationRate?: number;
+        satAvg?: number;
+        sat25?: number;
+        sat75?: number;
+      }
+    >();
+    for (const s of schools) {
+      schoolMetaMap.set(s.id, {
+        usNewsRank: s.usNewsRank ?? undefined,
+        acceptanceRate: clampPercentRate(s.acceptanceRate),
+        intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
+        intlStudentPct: (s as any).intlStudentPct
+          ? Number((s as any).intlStudentPct)
+          : undefined,
+        needBlindInternational: (s as any).needBlindInternational || undefined,
+        graduationRate: clampPercentRate(s.graduationRate),
+        satAvg: s.satAvg ?? undefined,
+        sat25: s.sat25 ?? undefined,
+        sat75: s.sat75 ?? undefined,
+      });
+    }
+
+    // Serial execution — preview is used by CLI tools where determinism
+    // matters more than throughput; also avoids concurrent log interleaving.
+    const results: PredictionResultDto[] = [];
+    for (const school of schools) {
+      try {
+        const result = await this.predictForSchool(
+          '', // no profileId — persist=false gates all profileId reads
+          profileInput,
+          profileMetrics,
+          school,
+          emptyMemoryCtx,
+          locale,
+          plattParams,
+          undefined, // profileHash unused when persist=false
+          programMap.get(school.id),
+          dataCompleteness,
+          undefined, // applicationRound: rely on profileInput if set upstream
+          policyVersionId,
+          false, // v5MlPrimary — keep preview on the deterministic served path
+          false, // v5Shadow
+          false, // useDistillationBlend
+          false, // compliantDistillationShadow
+          false, // compliantDistillationLive
+          false, // persist
+        );
+        result.schoolMeta = schoolMetaMap.get(result.schoolId);
+        results.push(result);
+      } catch (err) {
+        this.logger.warn(
+          `previewPredict: school ${school.id} failed`,
+          err as any,
+        );
+      }
+    }
+
+    // Batch validation + monotonicity (same invariants as the live path)
+    this.validateBatchResults(results);
+    enforceMonotonicity(results);
+
+    // School-level calibration multipliers (Platt happens inside predictForSchool)
+    const calibrationMap = await this.getSchoolCalibrations();
+    for (const r of results) {
+      const adj = calibrationMap[r.schoolId];
+      if (adj != null && adj > 0) {
+        r.probability = Math.min(0.98, r.probability * adj);
+        if (r.probabilityLow != null)
+          r.probabilityLow = Math.min(0.98, r.probabilityLow * adj);
+        if (r.probabilityHigh != null)
+          r.probabilityHigh = Math.min(0.98, r.probabilityHigh * adj);
+      }
+    }
+
+    results.sort((a, b) => b.probability - a.probability);
+    return { results, dataCompleteness };
+  }
+
   private async runPredictionWithLock(
     profileId: string,
     schoolIds: string[],
@@ -767,17 +939,50 @@ export class PredictionService {
     // Pre-compute v5 feature flags ONCE (not per-school)
     let v5MlPrimary = false;
     let v5Shadow = false;
-    if (this.mlPrimaryService && this.featureFlagService) {
+    let useDistillationBlend = false;
+    let compliantDistillationShadow = false;
+    let compliantDistillationLive = false;
+    if (this.featureFlagService) {
       try {
         const userId = await this.prisma.profile
           .findUnique({ where: { id: profileId }, select: { userId: true } })
           .then((p) => p?.userId);
         if (userId) {
-          [v5MlPrimary, v5Shadow] = await Promise.all([
-            this.featureFlagService.isEnabled('prediction-ml-primary', {
-              userId,
-            }),
-            this.featureFlagService.isEnabled('prediction-shadow', { userId }),
+          [
+            v5MlPrimary,
+            v5Shadow,
+            useDistillationBlend,
+            compliantDistillationShadow,
+            compliantDistillationLive,
+          ] = await Promise.all([
+            this.mlPrimaryService
+              ? this.featureFlagService.isEnabled('prediction-ml-primary', {
+                  userId,
+                })
+              : Promise.resolve(false),
+            this.mlPrimaryService
+              ? this.featureFlagService.isEnabled('prediction-shadow', {
+                  userId,
+                })
+              : Promise.resolve(false),
+            this.distillationService
+              ? this.featureFlagService.isEnabled(
+                  'prediction-distillation-blend',
+                  { userId },
+                )
+              : Promise.resolve(false),
+            this.compliantDistillationService
+              ? this.featureFlagService.isEnabled(
+                  'prediction-compliant-distillation-shadow',
+                  { userId },
+                )
+              : Promise.resolve(false),
+            this.compliantDistillationService
+              ? this.featureFlagService.isEnabled(
+                  'prediction-compliant-distillation-v1',
+                  { userId },
+                )
+              : Promise.resolve(false),
           ]);
         }
       } catch {
@@ -808,6 +1013,9 @@ export class PredictionService {
             policyVersionId,
             v5MlPrimary,
             v5Shadow,
+            useDistillationBlend,
+            compliantDistillationShadow,
+            compliantDistillationLive,
           ),
         ),
       );
@@ -907,6 +1115,10 @@ export class PredictionService {
     policyVersionId?: string,
     v5MlPrimary = false,
     v5Shadow = false,
+    useDistillationBlend = false,
+    compliantDistillationShadow = false,
+    compliantDistillationLive = false,
+    persist = true,
   ): Promise<PredictionResultDto> {
     // === v5 ML-Primary feature flag branch ===
     if (this.mlPrimaryService && (v5MlPrimary || v5Shadow)) {
@@ -932,26 +1144,73 @@ export class PredictionService {
             `[Shadow] ML-Primary: ${mlResult.probability.toFixed(3)} for ${school.name}`,
           );
         } else {
-          // ML-Primary mode: cache, persist, and return the served result
-          this.cacheService
-            .saveToCache(
+          const compliantEvaluation = await this.evaluateCompliantDistillation(
+            {
               profileId,
-              school.id,
-              mlResult,
-              profileHash,
-              policyVersionId,
-              'v5',
-            )
-            .catch(() => {
-              /* swallow cache errors */
-            });
-          await this.savePrediction(profileId, school.id, mlResult);
-          if (this.modelMonitor) {
-            this.modelMonitor
-              .recordPrediction(mlResult.probability)
+              profileInput,
+              profileMetrics,
+              school,
+              schoolInput: schoolInputV5,
+              ourProbPrePlatt: mlResult.probability,
+              servedProbability: mlResult.probability,
+              applicationRound: applicationRound || 'RD',
+              selectivityBand: mlResult.selectivityBand ?? null,
+            },
+            {
+              shadowEnabled: compliantDistillationShadow,
+              liveEnabled: compliantDistillationLive,
+            },
+          );
+          const candidateServedProbability = compliantEvaluation
+            ? this.computeDistillationCandidateServedProbability(
+                compliantEvaluation.decision,
+                mlResult.probability,
+                null,
+                true,
+              )
+            : mlResult.probability;
+
+          if (compliantEvaluation?.applyLiveBlend) {
+            this.applyProbabilityDelta(mlResult, candidateServedProbability);
+          }
+
+          mlResult.cohortKey =
+            compliantEvaluation?.decision.cohortKey ?? mlResult.cohortKey;
+
+          // ML-Primary mode: cache, persist, and return the served result
+          let savedRefs: SavedPredictionRefs = {};
+          if (persist) {
+            this.cacheService
+              .saveToCache(
+                profileId,
+                school.id,
+                mlResult,
+                profileHash,
+                policyVersionId,
+                'v5',
+              )
               .catch(() => {
-                /* swallow */
+                /* swallow cache errors */
               });
+            savedRefs =
+              (await this.savePrediction(profileId, school.id, mlResult)) ?? {};
+            await this.recordCompliantDistillationObservation({
+              savedRefs,
+              policyVersionId:
+                mlResult.policyVersionId ?? mlResult.servedPolicyVersionId,
+              evaluation: compliantEvaluation,
+              servedProbability: mlResult.probability,
+              candidateServedProbability,
+              applicationRound: applicationRound || 'RD',
+              selectivityBand: mlResult.selectivityBand ?? null,
+            });
+            if (this.modelMonitor) {
+              this.modelMonitor
+                .recordPrediction(mlResult.probability)
+                .catch(() => {
+                  /* swallow */
+                });
+            }
           }
           return mlResult;
         }
@@ -1257,6 +1516,84 @@ export class PredictionService {
       );
     }
 
+    const preDistillationProbability = fusedResult.probability;
+    const baselineServedProbability =
+      plattParams && !mlResult
+        ? this.applyPlattCalibration(preDistillationProbability, plattParams)
+        : preDistillationProbability;
+    const compliantEvaluation = await this.evaluateCompliantDistillation(
+      {
+        profileId,
+        profileInput,
+        profileMetrics,
+        school,
+        schoolInput,
+        ourProbPrePlatt: preDistillationProbability,
+        servedProbability: baselineServedProbability,
+        applicationRound:
+          schoolInput.applicationRound ?? applicationRound ?? 'RD',
+        selectivityBand,
+      },
+      {
+        shadowEnabled: compliantDistillationShadow,
+        liveEnabled: compliantDistillationLive,
+      },
+    );
+    const compliantCandidateServedProbability = compliantEvaluation
+      ? this.computeDistillationCandidateServedProbability(
+          compliantEvaluation.decision,
+          baselineServedProbability,
+          plattParams,
+          false,
+        )
+      : baselineServedProbability;
+
+    if (compliantEvaluation?.applyLiveBlend) {
+      this.applyProbabilityDelta(
+        fusedResult,
+        compliantEvaluation.decision.blendedPrePlatt,
+      );
+    }
+
+    const useLegacyBenchmarkBlend =
+      useDistillationBlend &&
+      !(compliantDistillationShadow || compliantDistillationLive);
+
+    if (useLegacyBenchmarkBlend && this.distillationService) {
+      try {
+        // Blend after our local major/feeder/round adjustments, before Platt.
+        const distillation = this.distillationService.computeBlendDecision(
+          fusedResult.probability,
+          await this.distillationService.getPhase1LiveTeacherSignals(
+            profileInput,
+            school.id,
+          ),
+        );
+
+        if (distillation.hasSignal) {
+          const delta = distillation.blendedPrePlatt - fusedResult.probability;
+          fusedResult.probability = distillation.blendedPrePlatt;
+          fusedResult.probabilityLow = Math.max(
+            0.01,
+            Math.min(
+              fusedResult.probability,
+              fusedResult.probabilityLow + delta,
+            ),
+          );
+          fusedResult.probabilityHigh = Math.max(
+            fusedResult.probability,
+            Math.min(0.99, fusedResult.probabilityHigh + delta),
+          );
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Distillation blend skipped for school ${school.id}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+    }
+
     // Platt scaling 校准（当有足够历史数据时）
     // Apply after deterministic modifiers so calibration operates on the
     // final served score instead of being overwritten by later adjustments.
@@ -1385,6 +1722,10 @@ export class PredictionService {
       servedTrace: servedTrace ?? undefined,
     };
 
+    if (compliantEvaluation) {
+      result.cohortKey = compliantEvaluation.decision.cohortKey;
+    }
+
     // Attach community insight if target major exists
     if (profileInput.targetMajor) {
       try {
@@ -1404,17 +1745,31 @@ export class PredictionService {
       }
     }
 
-    // 保存到缓存
-    await this.saveToCache(
-      profileId,
-      school.id,
-      result,
-      profileHash,
-      policyVersionId,
-    );
+    if (persist) {
+      // 保存到缓存
+      await this.saveToCache(
+        profileId,
+        school.id,
+        result,
+        profileHash,
+        policyVersionId,
+      );
 
-    // 保存到数据库
-    await this.savePrediction(profileId, school.id, result);
+      // 保存到数据库
+      const savedRefs =
+        (await this.savePrediction(profileId, school.id, result)) ?? {};
+      await this.recordCompliantDistillationObservation({
+        savedRefs,
+        policyVersionId: resolvedPolicyVersionId,
+        evaluation: compliantEvaluation,
+        servedProbability: result.probability,
+        candidateServedProbability: compliantEvaluation?.applyLiveBlend
+          ? result.probability
+          : compliantCandidateServedProbability,
+        applicationRound: resolvedApplicationRound,
+        selectivityBand,
+      });
+    }
 
     return result;
   }
@@ -1445,6 +1800,139 @@ export class PredictionService {
 
     const admitted = cases.find((c) => c.result === 'ADMITTED')?._count ?? 0;
     return { admitRate: admitted / total, totalCases: total };
+  }
+
+  private async evaluateCompliantDistillation(
+    params: {
+      profileId: string;
+      profileInput: ProfileInput;
+      profileMetrics: ProfileMetrics;
+      school: any;
+      schoolInput: SchoolInput;
+      ourProbPrePlatt: number;
+      servedProbability: number;
+      applicationRound: string;
+      selectivityBand: string | null;
+    },
+    options: {
+      shadowEnabled: boolean;
+      liveEnabled: boolean;
+    },
+  ) {
+    if (
+      !this.compliantDistillationService ||
+      (!options.shadowEnabled && !options.liveEnabled)
+    ) {
+      return null;
+    }
+
+    const inputSummary = this.compliantDistillationService.buildInputSummary(
+      params.profileInput,
+      params.profileMetrics,
+    );
+    const cohortKey = this.compliantDistillationService.resolveCohortKey(
+      params.profileInput,
+    );
+
+    const input: DistillationEvaluationInput = {
+      profileId: params.profileId,
+      schoolId: params.school.id,
+      schoolCountry: params.school.country ?? null,
+      profile: params.profileInput,
+      profileMetrics: params.profileMetrics,
+      school: params.schoolInput,
+      ourProbPrePlatt: params.ourProbPrePlatt,
+      servedProbability: params.servedProbability,
+      cohortKey,
+      applicationRound: params.applicationRound,
+      selectivityBand: params.selectivityBand,
+      inputSummary,
+    };
+
+    const evaluated =
+      await this.compliantDistillationService.evaluatePrediction(
+        input,
+        options,
+      );
+
+    if (!evaluated) return null;
+    return {
+      ...evaluated,
+      input,
+    };
+  }
+
+  private computeDistillationCandidateServedProbability(
+    decision: DistillationBlendDecision,
+    baselineServedProbability: number,
+    plattParams: { a: number; b: number } | null | undefined,
+    mlPrimaryPath: boolean,
+  ): number {
+    if (!decision.hasSignal) return baselineServedProbability;
+    if (mlPrimaryPath || !plattParams) return decision.blendedPrePlatt;
+    return this.applyPlattCalibration(decision.blendedPrePlatt, plattParams);
+  }
+
+  private applyProbabilityDelta(
+    current: {
+      probability: number;
+      probabilityLow?: number;
+      probabilityHigh?: number;
+    },
+    nextProbability: number,
+  ): void {
+    const delta = nextProbability - current.probability;
+    current.probability = nextProbability;
+    if (current.probabilityLow != null) {
+      current.probabilityLow = Math.max(
+        0.01,
+        Math.min(current.probability, current.probabilityLow + delta),
+      );
+    }
+    if (current.probabilityHigh != null) {
+      current.probabilityHigh = Math.max(
+        current.probability,
+        Math.min(0.99, current.probabilityHigh + delta),
+      );
+    }
+  }
+
+  private async recordCompliantDistillationObservation(payload: {
+    savedRefs: SavedPredictionRefs;
+    policyVersionId?: string;
+    evaluation: Awaited<
+      ReturnType<PredictionService['evaluateCompliantDistillation']>
+    >;
+    servedProbability: number;
+    candidateServedProbability: number;
+    applicationRound: string;
+    selectivityBand: string | null;
+  }): Promise<void> {
+    if (
+      !this.distillationObservationService ||
+      !payload.evaluation?.stage ||
+      !payload.savedRefs.predictionSnapshotId
+    ) {
+      return;
+    }
+
+    await this.distillationObservationService.record({
+      profileId: payload.evaluation.input.profileId,
+      schoolId: payload.evaluation.input.schoolId,
+      predictionResultId: payload.savedRefs.predictionResultId,
+      predictionSnapshotId: payload.savedRefs.predictionSnapshotId,
+      policyVersionId: payload.policyVersionId,
+      observedAt: new Date(),
+      stage: payload.evaluation.stage,
+      applicationRound: payload.applicationRound,
+      selectivityBand: payload.selectivityBand,
+      ourProbPrePlatt: payload.evaluation.input.ourProbPrePlatt,
+      candidateServedProbability: payload.candidateServedProbability,
+      servedProbability: payload.servedProbability,
+      coverageTier: payload.evaluation.decision.coverageTier,
+      inputSummary: payload.evaluation.input.inputSummary,
+      decision: payload.evaluation.decision,
+    });
   }
 
   // ==================== 辅助方法 ====================
@@ -1671,7 +2159,7 @@ export class PredictionService {
     profileId: string,
     schoolId: string,
     result: InternalPredictionResult,
-  ): Promise<void> {
+  ): Promise<SavedPredictionRefs> {
     return this.persistenceService.savePrediction(profileId, schoolId, result);
   }
 

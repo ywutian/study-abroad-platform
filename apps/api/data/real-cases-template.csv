@@ -1,0 +1,11 @@
+schoolName,result,year,round,gpaRange,satRange,actRange,toeflRange,major,activityCount,awardCount,isInternational,highSchoolType,evidenceUrl,sourceTag,notes
+Massachusetts Institute of Technology,ADMITTED,2025,RD,3.9-4.0,1560-1600,,115-120,Computer Science,8,3,true,international,,counselor,"强校 CS spike"
+Stanford University,REJECTED,2025,REA,3.85-3.95,1500-1550,,,Economics,6,1,true,public,,counselor,""
+University of Pennsylvania,ADMITTED,2025,ED,3.75-3.85,1480-1520,,105-110,Business,5,0,true,international,https://example.com/offer.pdf,offer_letter,"Wharton"
+Duke University,WAITLISTED,2025,RD,3.90-4.00,1540-1580,,115-120,Computer Science,7,2,true,international,,student_report,"WL 后最终 rejected"
+Northwestern University,ADMITTED,2025,ED,3.78-3.88,1460-1510,,110-115,Journalism,6,1,true,public,,counselor,""
+Carnegie Mellon University,REJECTED,2025,ED,3.85-3.95,1540-1580,,,Computer Science,5,2,true,international,,counselor,"SCS"
+"University of California, Berkeley",REJECTED,2025,RD,3.90-4.00,1500-1550,,105-110,EECS,7,3,true,international,,counselor,"EECS 极卷"
+Boston University,ADMITTED,2025,RD,3.70-3.80,1400-1450,,100-105,Business,4,0,true,public,,student_report,""
+New York University,ADMITTED,2025,RD,3.75-3.85,1450-1500,,105-110,Film,6,1,true,international,,counselor,""
+University of Michigan-Ann Arbor,REJECTED,2025,EA,3.80-3.90,1480-1530,,100-110,Computer Science,4,0,true,international,,student_report,"OOS 国际生"

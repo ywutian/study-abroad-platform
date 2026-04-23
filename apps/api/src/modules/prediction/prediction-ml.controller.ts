@@ -4,7 +4,19 @@
  * Admin-only endpoints for model training, management, monitoring, and fairness auditing.
  */
 
-import { Controller, Get, Post, Param, Query } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -18,6 +30,8 @@ import { ModelRegistryService } from './ml/model-registry.service';
 import { TrainingDataService } from './ml/training-data.service';
 import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
 import { ModelMonitorService } from './ml/model-monitor.service';
+import { DiagnosticIngestService } from './diagnostic-ingest.service';
+import { DiagIngestCasesDto } from './diagnostic-ingest.dto';
 
 @ApiTags('admin/predictions')
 @ApiBearerAuth()
@@ -30,7 +44,55 @@ export class PredictionMlController {
     private readonly trainingData: TrainingDataService,
     private readonly shadow: ShadowEvaluatorService,
     private readonly monitor: ModelMonitorService,
+    private readonly diagnosticIngest: DiagnosticIngestService,
   ) {}
+
+  // ============================================
+  // Diagnostic: real-case CSV ingest
+  // ============================================
+
+  @Post('diag/ingest-cases')
+  @HttpCode(200)
+  @ApiOperation({
+    summary:
+      'Ingest verified real admission cases from a CSV (used by admin UI + diag CLI). Use dryRun=true to preview.',
+  })
+  async diagIngestCases(@Body() body: DiagIngestCasesDto) {
+    const csv = body?.csv;
+    if (!csv || typeof csv !== 'string') {
+      throw new BadRequestException(
+        'Request body must include { csv: string }',
+      );
+    }
+    if (csv.length > 5 * 1024 * 1024) {
+      throw new BadRequestException('CSV too large (limit 5MB)');
+    }
+    try {
+      return await this.diagnosticIngest.ingestRealCases({
+        csvContent: csv,
+        dryRun: body?.dryRun ?? false,
+      });
+    } catch (e) {
+      throw new BadRequestException(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  @Get('diag/real-cases-template')
+  @ApiOperation({
+    summary:
+      'Download CSV column template for real-case ingest (same file as apps/api/data/real-cases-template.csv).',
+  })
+  getRealCasesTemplate(): string {
+    const filePath = path.join(
+      process.cwd(),
+      'data',
+      'real-cases-template.csv',
+    );
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException(`Template not found: ${filePath}`);
+    }
+    return fs.readFileSync(filePath, 'utf-8');
+  }
 
   // ============================================
   // Training

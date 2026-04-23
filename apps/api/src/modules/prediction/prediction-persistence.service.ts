@@ -32,6 +32,11 @@ export interface InternalPredictionResult extends PredictionResultDto {
   servedTrace?: unknown;
 }
 
+export interface SavedPredictionRefs {
+  predictionResultId?: string;
+  predictionSnapshotId?: string;
+}
+
 /**
  * Database persistence layer for prediction results.
  *
@@ -107,14 +112,14 @@ export class PredictionPersistenceService {
     profileId: string,
     schoolId: string,
     result: InternalPredictionResult,
-  ): Promise<void> {
+  ): Promise<SavedPredictionRefs> {
     try {
       const modelVersion = result.modelVersion ?? DEFAULT_MODEL_VERSION;
       const policyVersionId = await this.resolvePersistedPolicyVersionId(
         result.policyVersionId,
       );
 
-      await this.prisma.predictionResult.upsert({
+      const persistedResult = await this.prisma.predictionResult.upsert({
         where: {
           profileId_schoolId: { profileId, schoolId },
         },
@@ -165,7 +170,7 @@ export class PredictionPersistenceService {
       });
 
       // 写入历史快照（用于趋势追踪）
-      await this.prisma.predictionSnapshot.create({
+      const snapshot = await this.prisma.predictionSnapshot.create({
         data: {
           profileId,
           schoolId,
@@ -186,12 +191,18 @@ export class PredictionPersistenceService {
           selectivityBand: result.selectivityBand,
         },
       });
+
+      return {
+        predictionResultId: persistedResult.id,
+        predictionSnapshotId: snapshot.id,
+      };
     } catch (error) {
       if (error instanceof MissingPredictionPolicyVersionError) {
         this.logger.error(error.message);
-        return;
+        return {};
       }
       this.logger.warn('Failed to save prediction to database', error);
+      return {};
     }
   }
 }

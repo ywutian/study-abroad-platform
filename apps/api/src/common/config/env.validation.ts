@@ -111,6 +111,39 @@ const envSchema = z.object({
   AUTH_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(60000),
   AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(120000),
 
+  // --- Prediction Distillation ---
+  DISTILLATION_BLEND_WEIGHT: z.coerce.number().min(0).max(1).default(0.2),
+  DISTILLATION_TEACHER_WEIGHT_COLLEGEVINE: z.coerce
+    .number()
+    .min(0)
+    .max(1)
+    .default(0.6),
+  DISTILLATION_TEACHER_WEIGHT_CAMPUSREEL_STATIC: z.coerce
+    .number()
+    .min(0)
+    .max(1)
+    .default(0.3),
+  COMPLIANT_DISTILLATION_WEIGHT_SCORECARD_V1: z.coerce
+    .number()
+    .min(0)
+    .max(1)
+    .default(0.12),
+  COMPLIANT_DISTILLATION_WEIGHT_IPEDS_TREND_V1: z.coerce
+    .number()
+    .min(0)
+    .max(1)
+    .default(0.03),
+  COMPLIANT_DISTILLATION_WEIGHT_CN_CASE_V1: z.coerce
+    .number()
+    .min(0)
+    .max(1)
+    .default(0.12),
+  COMPLIANT_DISTILLATION_WEIGHT_CN_OUTCOME_V1: z.coerce
+    .number()
+    .min(0)
+    .max(1)
+    .default(0.08),
+
   // --- Prisma ---
   PRISMA_SLOW_QUERY_MS: z.coerce.number().int().positive().default(200),
 

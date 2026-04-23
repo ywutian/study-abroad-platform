@@ -3,9 +3,12 @@
 import {
   BarChart3,
   Brain,
+  Database,
+  Gauge,
   GitBranch,
   ShieldCheck,
   SlidersHorizontal,
+  Upload,
   Workflow,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -59,6 +62,27 @@ const OutcomesTab = dynamic(
     })),
   { ssr: false }
 );
+const RealCasesTab = dynamic(
+  () =>
+    import('./_components/real-cases-tab').then((m) => ({
+      default: m.RealCasesTab,
+    })),
+  { ssr: false }
+);
+const BenchmarkTab = dynamic(
+  () =>
+    import('./_components/benchmark-tab').then((m) => ({
+      default: m.BenchmarkTab,
+    })),
+  { ssr: false }
+);
+const DistillationTab = dynamic(
+  () =>
+    import('./_components/distillation-tab').then((m) => ({
+      default: m.DistillationTab,
+    })),
+  { ssr: false }
+);
 
 const VALID_TABS = [
   'diagnosis',
@@ -67,6 +91,9 @@ const VALID_TABS = [
   'workflow',
   'policies',
   'outcomes',
+  'real-cases',
+  'benchmark',
+  'distillation',
 ] as const;
 type CalibrationTab = (typeof VALID_TABS)[number];
 
@@ -100,6 +127,21 @@ const TAB_CONFIG = [
     value: 'outcomes' as const,
     icon: ShieldCheck,
     labelKey: 'admin.calibrations.tabs.outcomes',
+  },
+  {
+    value: 'real-cases' as const,
+    icon: Upload,
+    labelKey: 'admin.calibrations.tabs.realCases',
+  },
+  {
+    value: 'benchmark' as const,
+    icon: Gauge,
+    labelKey: 'admin.calibrations.tabs.benchmark',
+  },
+  {
+    value: 'distillation' as const,
+    icon: Database,
+    labelKey: 'admin.calibrations.tabs.distillation',
   },
 ];
 
@@ -160,6 +202,15 @@ export default function AdminCalibrationsPage() {
         </TabsContent>
         <TabsContent value="outcomes" className="mt-4">
           <OutcomesTab />
+        </TabsContent>
+        <TabsContent value="real-cases" className="mt-4">
+          <RealCasesTab />
+        </TabsContent>
+        <TabsContent value="benchmark" className="mt-4">
+          <BenchmarkTab />
+        </TabsContent>
+        <TabsContent value="distillation" className="mt-4">
+          <DistillationTab />
         </TabsContent>
       </Tabs>
     </>

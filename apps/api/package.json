@@ -35,7 +35,16 @@
     "scripts:fill-logos": "ts-node -r tsconfig-paths/register scripts/fill-school-logos.ts",
     "lint:quality": "tsx scripts/check-api-quality.ts",
     "owned-site-assessment:run": "tsx scripts/run-owned-site-assessment.ts",
-    "owned-site-assessment:manifest": "tsx scripts/run-owned-site-assessment.ts --print-default-manifest"
+    "owned-site-assessment:manifest": "tsx scripts/run-owned-site-assessment.ts --print-default-manifest",
+    "diag:ingest": "tsx scripts/ingest-real-cases.ts",
+    "diag:run": "tsx scripts/diagnose-prediction.ts",
+    "diag:compare": "tsx scripts/compare-diagnostic-reports.ts",
+    "diag:inspect": "tsx scripts/diagnose-data-quality.ts",
+    "benchmark:run": "tsx scripts/run-benchmark.ts",
+    "benchmark:profile-bank": "tsx scripts/generate-profile-bank.ts",
+    "benchmark:harvest-static": "tsx scripts/run-static-teacher-harvest.ts",
+    "benchmark:distillation": "tsx scripts/run-distillation.ts",
+    "distillation:rollups:backfill": "ts-node --transpile-only -r tsconfig-paths/register scripts/backfill-distillation-rollups.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",
@@ -79,6 +88,7 @@
     "openai": "^6.16.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "playwright": "^1.54.2",
     "prisma": "5.22.0",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.9.3",

@@ -27,6 +27,12 @@ import { PredictionWorkflowService } from './prediction-workflow.service';
 import { PredictionPolicyShadowService } from './prediction-policy-shadow.service';
 import { PredictionHookModifiersService } from './prediction-hook-modifiers.service';
 import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
+import { DiagnosticIngestService } from './diagnostic-ingest.service';
+import {
+  BENCHMARK_CONTROLLERS,
+  BENCHMARK_PROVIDERS,
+} from './benchmark/benchmark-providers';
+import { DistillationModule } from './distillation/distillation.module';
 
 @Module({
   imports: [
@@ -35,8 +41,13 @@ import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
     SchoolModule,
     ScheduleModule,
     PointsModule,
+    DistillationModule,
   ],
-  controllers: [PredictionController, PredictionMlController],
+  controllers: [
+    PredictionController,
+    PredictionMlController,
+    ...BENCHMARK_CONTROLLERS,
+  ],
   providers: [
     PredictionTransformerService,
     PredictionStatisticalEngine,
@@ -59,6 +70,8 @@ import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
     ModelMonitorService,
     PredictionHookModifiersService,
     PredictionMlPrimaryService,
+    ...BENCHMARK_PROVIDERS,
+    DiagnosticIngestService,
   ],
   exports: [
     PredictionService,
