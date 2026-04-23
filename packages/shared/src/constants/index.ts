@@ -162,3 +162,6 @@ export * from './prediction';
 
 // 共享枚举
 export * from './enums';
+
+// 真实案例 CSV 导入
+export * from './real-cases-ingest';

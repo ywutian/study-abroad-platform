@@ -254,6 +254,9 @@ importers:
       passport-jwt:
         specifier: ^4.0.1
         version: 4.0.1
+      playwright:
+        specifier: ^1.54.2
+        version: 1.58.2
       prisma:
         specifier: 5.22.0
         version: 5.22.0

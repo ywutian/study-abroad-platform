@@ -581,14 +581,14 @@ model Profile {
   visibility Visibility @default(PRIVATE)
 
   // Relations
-  testScores         TestScore[]
-  activities         Activity[]
-  awards             Award[]
-  education          Education[]
-  essays             Essay[]
-  predictions        PredictionResult[]
-  sourceObservations PredictionSourceObservation[]
-  semesterGpas       SemesterGpa[]
+  testScores              TestScore[]
+  activities              Activity[]
+  awards                  Award[]
+  education               Education[]
+  essays                  Essay[]
+  predictions             PredictionResult[]
+  sourceObservations      PredictionSourceObservation[]
+  semesterGpas            SemesterGpa[]
   applicationAnalysisRuns ApplicationAnalysisRun[]
 
   createdAt DateTime @default(now())
@@ -1062,24 +1062,27 @@ model School {
   metadata      Json? // { deadlines, essayPrompts, requirements, lastScraped }
 
   // Relations
-  metrics             SchoolMetric[]
-  programs            SchoolProgram[]
-  cases               AdmissionCase[]
-  targetedBy          ProfileTargetSchool[]
-  schoolLists         SchoolListItem[]
-  essayPrompts        EssayPrompt[]
-  essaySources        SchoolEssaySource[]
-  deadlines           SchoolDeadline[]
-  timelines           ApplicationTimeline[]
-  teams               Team[]
-  calibration         SchoolCalibration?
-  rankings            SchoolRanking[]
-  sourceObservations  PredictionSourceObservation[]
-  cohortRoundPriors   SchoolCohortRoundPrior[]
-  cohortRegimeSignals SchoolCohortRegimeSignal[]
-  relationshipSignals SchoolRelationshipSignal[]
-  communityRatings    SchoolCommunityRating[]
-  policyEvidence      SchoolPolicyEvidence[]
+  metrics               SchoolMetric[]
+  programs              SchoolProgram[]
+  cases                 AdmissionCase[]
+  targetedBy            ProfileTargetSchool[]
+  schoolLists           SchoolListItem[]
+  essayPrompts          EssayPrompt[]
+  essaySources          SchoolEssaySource[]
+  deadlines             SchoolDeadline[]
+  timelines             ApplicationTimeline[]
+  teams                 Team[]
+  calibration           SchoolCalibration?
+  rankings              SchoolRanking[]
+  sourceObservations    PredictionSourceObservation[]
+  cohortRoundPriors     SchoolCohortRoundPrior[]
+  cohortRegimeSignals   SchoolCohortRegimeSignal[]
+  relationshipSignals   SchoolRelationshipSignal[]
+  communityRatings      SchoolCommunityRating[]
+  policyEvidence        SchoolPolicyEvidence[]
+  competitorPredictions CompetitorPrediction[]
+  staticTeacherSnapshots StaticTeacherSnapshot[]
+  distillationSchoolDailyAggregates DistillationSchoolDailyAggregate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1303,29 +1306,29 @@ model ApplicationAnalysisEvaluationRun {
 }
 
 model ApplicationAnalysisRun {
-  id                String   @id @default(cuid())
-  traceId           String   @unique
-  userId            String
-  profileId         String
-  profile           Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  locale            String
-  analysisVersion   String
-  status            String
-  state             String
-  dataQuality       String
-  debugEnabled      Boolean  @default(false)
-  degradedReason    String?
-  inputHash         String
-  inputSnapshot     Json?
-  responsePayload   Json?
-  unknowns          Json?
-  metrics           Json?
-  selectedSchoolIds String[]
-  targetSchoolCount Int      @default(0)
-  focusSchoolCount  Int      @default(0)
-  schoolsWithPredictions Int @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  traceId                String   @unique
+  userId                 String
+  profileId              String
+  profile                Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locale                 String
+  analysisVersion        String
+  status                 String
+  state                  String
+  dataQuality            String
+  debugEnabled           Boolean  @default(false)
+  degradedReason         String?
+  inputHash              String
+  inputSnapshot          Json?
+  responsePayload        Json?
+  unknowns               Json?
+  metrics                Json?
+  selectedSchoolIds      String[]
+  targetSchoolCount      Int      @default(0)
+  focusSchoolCount       Int      @default(0)
+  schoolsWithPredictions Int      @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   stepRuns        ApplicationAnalysisStepRun[]
   schoolCards     ApplicationAnalysisSchoolCard[]
@@ -1339,7 +1342,7 @@ model ApplicationAnalysisRun {
 }
 
 model ApplicationAnalysisStepRun {
-  id               String   @id @default(cuid())
+  id               String                 @id @default(cuid())
   runId            String
   run              ApplicationAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
   stepName         String
@@ -1355,35 +1358,35 @@ model ApplicationAnalysisStepRun {
   error            String?
   startedAt        DateTime?
   finishedAt       DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
 
   @@index([runId, createdAt])
   @@index([stepName, createdAt])
 }
 
 model ApplicationAnalysisSchoolCard {
-  id          String   @id @default(cuid())
-  runId       String
-  run         ApplicationAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
-  schoolId    String
-  schoolName  String
-  stage       String
-  tier        String?
-  round       String?
-  evidenceIds String[]
-  unknowns    String[]
-  policyCard  Json?
+  id           String                 @id @default(cuid())
+  runId        String
+  run          ApplicationAnalysisRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  schoolId     String
+  schoolName   String
+  stage        String
+  tier         String?
+  round        String?
+  evidenceIds  String[]
+  unknowns     String[]
+  policyCard   Json?
   analysisCard Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
 
   @@index([runId, schoolId])
   @@index([schoolId, createdAt])
 }
 
 model ApplicationAnalysisReplayRun {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   analysisVersion String
   dataset         String
   status          String
@@ -1393,8 +1396,8 @@ model ApplicationAnalysisReplayRun {
   createdBy       String?
   startedAt       DateTime?
   finishedAt      DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   caseResults ApplicationAnalysisReplayCaseResult[]
 
@@ -1404,11 +1407,11 @@ model ApplicationAnalysisReplayRun {
 }
 
 model ApplicationAnalysisReplayCaseResult {
-  id            String   @id @default(cuid())
+  id            String                       @id @default(cuid())
   replayRunId   String
   replayRun     ApplicationAnalysisReplayRun @relation(fields: [replayRunId], references: [id], onDelete: Cascade)
   runId         String?
-  run           ApplicationAnalysisRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  run           ApplicationAnalysisRun?      @relation(fields: [runId], references: [id], onDelete: SetNull)
   caseId        String
   sourceType    String
   status        String
@@ -1416,8 +1419,8 @@ model ApplicationAnalysisReplayCaseResult {
   outputPayload Json?
   metrics       Json?
   failures      Json?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime                     @default(now())
+  updatedAt     DateTime                     @updatedAt
 
   @@index([replayRunId, createdAt])
   @@index([caseId, createdAt])
@@ -1536,20 +1539,20 @@ model ApplicationAnalysisExposureRecord {
 }
 
 model ApplicationAnalysisFeedbackRecord {
-  id               String                                  @id @default(cuid())
-  exposureRecordId String?
-  exposureRecord   ApplicationAnalysisExposureRecord?      @relation(fields: [exposureRecordId], references: [id], onDelete: Cascade)
+  id                       String                                   @id @default(cuid())
+  exposureRecordId         String?
+  exposureRecord           ApplicationAnalysisExposureRecord?       @relation(fields: [exposureRecordId], references: [id], onDelete: Cascade)
   applicationAnalysisRunId String?
-  applicationAnalysisRun   ApplicationAnalysisRun?         @relation(fields: [applicationAnalysisRunId], references: [id], onDelete: SetNull)
-  exposureId       String?
-  userId           String
-  capability       ApplicationAnalysisExperimentCapability?
-  schoolId         String?
-  category         ApplicationAnalysisFeedbackCategory?
-  sentiment        ApplicationAnalysisFeedbackSentiment
-  notes            String?                                 @db.Text
-  createdAt        DateTime                                @default(now())
-  updatedAt        DateTime                                @updatedAt
+  applicationAnalysisRun   ApplicationAnalysisRun?                  @relation(fields: [applicationAnalysisRunId], references: [id], onDelete: SetNull)
+  exposureId               String?
+  userId                   String
+  capability               ApplicationAnalysisExperimentCapability?
+  schoolId                 String?
+  category                 ApplicationAnalysisFeedbackCategory?
+  sentiment                ApplicationAnalysisFeedbackSentiment
+  notes                    String?                                  @db.Text
+  createdAt                DateTime                                 @default(now())
+  updatedAt                DateTime                                 @updatedAt
 
   @@index([exposureRecordId, createdAt])
   @@index([applicationAnalysisRunId, createdAt])
@@ -3851,6 +3854,184 @@ enum PredictionOutcomeLabelStatus {
   DOCUMENT_VERIFIED
   CONFLICTED
   CENSORED
+}
+
+enum CompetitorRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum CompetitorPredictionStatus {
+  PENDING
+  COMPLETED
+  TIER_ONLY
+  UNMATCHED
+  AMBIGUOUS
+  FAILED
+  SESSION_ERROR
+}
+
+enum StaticTeacherSnapshotStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum DistillationCoverageTier {
+  NONE
+  BASELINE_ONLY
+  CN_ENHANCED
+}
+
+model BenchmarkProfile {
+  id          String                 @id @default(cuid())
+  label       String
+  cohortTag   String?
+  profileJson Json
+  runs        CompetitorRun[]
+  predictions CompetitorPrediction[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@index([createdAt])
+  @@index([cohortTag, label])
+}
+
+model CompetitorSource {
+  id                         String                 @id @default(cuid())
+  key                        String                 @unique
+  label                      String
+  baseUrl                    String
+  enabled                    Boolean                @default(true)
+  supportsNumericProbability Boolean                @default(true)
+  runs                       CompetitorRun[]
+  predictions                CompetitorPrediction[]
+  staticTeacherSnapshots     StaticTeacherSnapshot[]
+  createdAt                  DateTime               @default(now())
+  updatedAt                  DateTime               @updatedAt
+
+  @@index([enabled])
+}
+
+model CompetitorRun {
+  id           String                 @id @default(cuid())
+  profileId    String
+  sourceId     String
+  profile      BenchmarkProfile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  source       CompetitorSource       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  status       CompetitorRunStatus    @default(PENDING)
+  startedAt    DateTime               @default(now())
+  finishedAt   DateTime?
+  successCount Int                    @default(0)
+  errorCount   Int                    @default(0)
+  note         String?
+  predictions  CompetitorPrediction[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([profileId, sourceId])
+  @@index([status])
+}
+
+model CompetitorPrediction {
+  id            String                     @id @default(cuid())
+  runId         String
+  profileId     String
+  sourceId      String
+  run           CompetitorRun              @relation(fields: [runId], references: [id], onDelete: Cascade)
+  profile       BenchmarkProfile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  source        CompetitorSource           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  schoolKey     String
+  rawSchoolName String
+  schoolId      String?
+  school        School?                    @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  matchType     String?
+  probability   Decimal?                   @db.Decimal(5, 4)
+  tierLabel     String?
+  rawPayload    Json
+  status        CompetitorPredictionStatus @default(PENDING)
+  errorMsg      String?
+  fetchedAt     DateTime                   @default(now())
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  @@unique([runId, schoolKey])
+  @@index([profileId, sourceId])
+  @@index([schoolId])
+  @@index([status])
+}
+
+model StaticTeacherSnapshot {
+  id         String                      @id @default(cuid())
+  sourceId   String
+  schoolId   String
+  source     CompetitorSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  school     School                      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  slug       String?
+  lookupJson Json
+  status     StaticTeacherSnapshotStatus @default(PENDING)
+  errorMsg   String?
+  fetchedAt  DateTime                    @default(now())
+  createdAt  DateTime                    @default(now())
+  updatedAt  DateTime                    @updatedAt
+
+  @@unique([sourceId, schoolId])
+  @@index([status])
+  @@index([sourceId, fetchedAt])
+}
+
+model DistillationDailyAggregate {
+  id                  String   @id @default(cuid())
+  date                DateTime @db.Date
+  stage               String
+  teacherKey          String
+  cohortKey           String
+  selectivityBand     String?
+  predictionCount     Int      @default(0)
+  activeSignalCount   Int      @default(0)
+  resolvedOutcomeCount Int     @default(0)
+  avgTeacherProbability Decimal? @db.Decimal(6, 4)
+  avgObservedWeight   Decimal? @db.Decimal(6, 4)
+  avgBlendDelta       Decimal? @db.Decimal(6, 4)
+  avgAbsBlendDelta    Decimal? @db.Decimal(6, 4)
+  brierTeacher        Decimal? @db.Decimal(8, 6)
+  brierBlended        Decimal? @db.Decimal(8, 6)
+  brierServed         Decimal? @db.Decimal(8, 6)
+  distinctSchoolCount Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([date, stage, teacherKey, cohortKey, selectivityBand])
+  @@index([date, stage])
+  @@index([teacherKey, date])
+  @@index([cohortKey, date])
+}
+
+model DistillationSchoolDailyAggregate {
+  id                  String                    @id @default(cuid())
+  date                DateTime                  @db.Date
+  schoolId            String
+  school              School                    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  cohortKey           String
+  stage               String
+  predictionCount     Int                       @default(0)
+  resolvedOutcomeCount Int                      @default(0)
+  coverageTier        DistillationCoverageTier  @default(NONE)
+  activeTeacherKeys   String[]
+  avgBlendDelta       Decimal?                  @db.Decimal(6, 4)
+  avgAbsBlendDelta    Decimal?                  @db.Decimal(6, 4)
+  brierBlended        Decimal?                  @db.Decimal(8, 6)
+  brierServed         Decimal?                  @db.Decimal(8, 6)
+  lastObservedAt      DateTime?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  @@unique([date, schoolId, cohortKey, stage])
+  @@index([date, stage])
+  @@index([schoolId, date])
+  @@index([cohortKey, date])
 }
 
 model PredictionModel {
