@@ -171,6 +171,7 @@ export function TeamsPageClient() {
   const queryClient = useQueryClient();
   const authUserId = useAuthStore((state) => state.user?.id ?? null);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = Boolean(accessToken);
 
   const copy = {
     publicTab: t('recruitment.copy.publicTab'),
@@ -209,6 +210,9 @@ export function TeamsPageClient() {
     communityBadge: t('recruitment.copy.communityBadge'),
     officialBadge: t('recruitment.copy.officialBadge'),
     noCards: t('recruitment.copy.noCards'),
+    guestTitle: t('recruitment.guest.title'),
+    guestDescription: t('recruitment.guest.description'),
+    guestAction: t('recruitment.guest.action'),
   };
 
   const [tab, setTab] = useState<TabKey>('public');
@@ -235,13 +239,12 @@ export function TeamsPageClient() {
   const { data: matchPoolsData, isLoading: matchPoolsLoading } = useQuery({
     queryKey: ['teams', 'match-pools'],
     queryFn: () => apiClient.get<MatchPoolsResponse>(teamRoutes.matchPools()),
-    enabled: !!accessToken,
   });
 
   const { data: selectedPoolDetail, isLoading: selectedPoolLoading } = useQuery({
     queryKey: ['teams', 'match-pools', selectedPublicPoolId],
     queryFn: () => apiClient.get<MatchPoolDto>(teamRoutes.matchPoolById(selectedPublicPoolId)),
-    enabled: !!accessToken && !!selectedPublicPoolId,
+    enabled: !!selectedPublicPoolId,
   });
 
   const selectedPublicEntry = useMemo(() => {
@@ -261,9 +264,7 @@ export function TeamsPageClient() {
         })
       ),
     enabled:
-      !!accessToken &&
-      !!selectedOfficialCompetitionId &&
-      selectedPublicEntry?.entryType === 'OFFICIAL_COMPETITION',
+      !!selectedOfficialCompetitionId && selectedPublicEntry?.entryType === 'OFFICIAL_COMPETITION',
   });
 
   const { data: myCommunityContextsData, isLoading: myCommunityContextsLoading } = useQuery({
@@ -330,7 +331,7 @@ export function TeamsPageClient() {
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
     queryKey: ['teams', 'matches'],
     queryFn: () => apiClient.get<{ items: TeamMatchDto[] }>(teamRoutes.matches()),
-    enabled: !!accessToken,
+    enabled: isAuthenticated,
   });
 
   const publicPools = matchPoolsData?.items ?? [];
@@ -386,6 +387,12 @@ export function TeamsPageClient() {
     knownContexts.find((context) => context.id === editorContextId) ??
     getRecruitmentContext(currentCard) ??
     null;
+
+  useEffect(() => {
+    if (!isAuthenticated && tab !== 'public') {
+      setTab('public');
+    }
+  }, [isAuthenticated, tab]);
 
   useEffect(() => {
     if (!myRecruitments?.items) return;
@@ -811,9 +818,15 @@ export function TeamsPageClient() {
       <Tabs value={tab} onValueChange={(value) => setTab(value as TabKey)} className="mt-6">
         <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="public">{copy.publicTab}</TabsTrigger>
-          <TabsTrigger value="private">{copy.privateTab}</TabsTrigger>
-          <TabsTrigger value="matches">{copy.matchesTab}</TabsTrigger>
-          <TabsTrigger value="my-team">{copy.myTeamTab}</TabsTrigger>
+          <TabsTrigger value="private" disabled={!isAuthenticated}>
+            {copy.privateTab}
+          </TabsTrigger>
+          <TabsTrigger value="matches" disabled={!isAuthenticated}>
+            {copy.matchesTab}
+          </TabsTrigger>
+          <TabsTrigger value="my-team" disabled={!isAuthenticated}>
+            {copy.myTeamTab}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="public" className="mt-6">
@@ -943,46 +956,57 @@ export function TeamsPageClient() {
                 </CardContent>
               </Card>
 
-              <RecruitmentEditorCard
-                t={t}
-                copy={copy}
-                selectedTeamId={selectedTeamId}
-                setSelectedTeamId={setSelectedTeamId}
-                myRecruitments={myRecruitments}
-                myRecruitmentsLoading={myRecruitmentsLoading}
-                form={form}
-                setForm={setForm}
-                currentCard={currentCard}
-                currentContextLabel={currentContextLabel}
-                currentContextMeta={currentContextMeta}
-                onCreate={() => createRecruitmentMutation.mutate()}
-                onUpdate={() => updateRecruitmentMutation.mutate()}
-                onPublish={() => currentCard && publishMutation.mutate(currentCard.id)}
-                onClose={() => currentCard && closeMutation.mutate(currentCard.id)}
-                createPending={createRecruitmentMutation.isPending}
-                updatePending={updateRecruitmentMutation.isPending}
-                publishPending={publishMutation.isPending}
-                closePending={closeMutation.isPending}
-              />
+              {isAuthenticated ? (
+                <>
+                  <RecruitmentEditorCard
+                    t={t}
+                    copy={copy}
+                    selectedTeamId={selectedTeamId}
+                    setSelectedTeamId={setSelectedTeamId}
+                    myRecruitments={myRecruitments}
+                    myRecruitmentsLoading={myRecruitmentsLoading}
+                    form={form}
+                    setForm={setForm}
+                    currentCard={currentCard}
+                    currentContextLabel={currentContextLabel}
+                    currentContextMeta={currentContextMeta}
+                    onCreate={() => createRecruitmentMutation.mutate()}
+                    onUpdate={() => updateRecruitmentMutation.mutate()}
+                    onPublish={() => currentCard && publishMutation.mutate(currentCard.id)}
+                    onClose={() => currentCard && closeMutation.mutate(currentCard.id)}
+                    createPending={createRecruitmentMutation.isPending}
+                    updatePending={updateRecruitmentMutation.isPending}
+                    publishPending={publishMutation.isPending}
+                    closePending={closeMutation.isPending}
+                  />
 
-              <DisplaySettingsCard
-                t={t}
-                currentCard={currentCard}
-                resumes={resumes}
-                introLine={introLine}
-                setIntroLine={setIntroLine}
-                selectedResumeId={selectedResumeId}
-                setSelectedResumeId={setSelectedResumeId}
-                showSchool={showSchool}
-                setShowSchool={setShowSchool}
-                showGrade={showGrade}
-                setShowGrade={setShowGrade}
-                showAwards={showAwards}
-                setShowAwards={setShowAwards}
-                onSave={() => memberProfileMutation.mutate(false)}
-                onConfirm={() => memberProfileMutation.mutate(true)}
-                pending={memberProfileMutation.isPending}
-              />
+                  <DisplaySettingsCard
+                    t={t}
+                    currentCard={currentCard}
+                    resumes={resumes}
+                    introLine={introLine}
+                    setIntroLine={setIntroLine}
+                    selectedResumeId={selectedResumeId}
+                    setSelectedResumeId={setSelectedResumeId}
+                    showSchool={showSchool}
+                    setShowSchool={setShowSchool}
+                    showGrade={showGrade}
+                    setShowGrade={setShowGrade}
+                    showAwards={showAwards}
+                    setShowAwards={setShowAwards}
+                    onSave={() => memberProfileMutation.mutate(false)}
+                    onConfirm={() => memberProfileMutation.mutate(true)}
+                    pending={memberProfileMutation.isPending}
+                  />
+                </>
+              ) : (
+                <GuestAccessCard
+                  title={copy.guestTitle}
+                  description={copy.guestDescription}
+                  actionLabel={copy.guestAction}
+                  onLogin={() => router.push('/login')}
+                />
+              )}
             </div>
 
             <DeckPanel
@@ -1576,6 +1600,33 @@ export function TeamsPageClient() {
         </TabsContent>
       </Tabs>
     </PageContainer>
+  );
+}
+
+function GuestAccessCard({
+  title,
+  description,
+  actionLabel,
+  onLogin,
+}: {
+  title: string;
+  description: string;
+  actionLabel: string;
+  onLogin: () => void;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-xl border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
+          {description}
+        </div>
+        <Button onClick={onLogin}>{actionLabel}</Button>
+      </CardContent>
+    </Card>
   );
 }
 
