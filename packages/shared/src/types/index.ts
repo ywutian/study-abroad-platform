@@ -18,3 +18,4 @@ export * from './resume';
 export * from './team-recruitment';
 export * from './application-analysis-workflow';
 export * from './application-analysis-render';
+export * from './owned-site-assessment';
