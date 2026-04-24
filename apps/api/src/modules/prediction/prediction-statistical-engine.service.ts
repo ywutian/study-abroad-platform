@@ -70,6 +70,38 @@ export class PredictionStatisticalEngine {
       selectivityOpts,
     );
 
+    // === Weak-signal base-rate anchor ===
+    // The sigmoid in calculateProbability uses (overallScore vs school.threshold)
+    // and does NOT use school.acceptanceRate as a Bayesian prior. For applicants
+    // with sparse profile data (no test score, no high school tier matched),
+    // overallScore collapses below threshold and probability bottoms out near
+    // the 0.05 floor regardless of how unselective the school is. That mis-
+    // predicts safety schools severely (e.g. UC Merced 90% admit rate -> 0.36
+    // for an incomplete profile observed 2026-04-23).
+    //
+    // Fix: when 2+ critical signals are missing, blend 70% toward the school's
+    // published admit rate (intl rate when available for international students),
+    // 30% toward the score-based sigmoid. Strong-signal predictions are unchanged.
+    const intlBaseRate =
+      profile.isInternational && school.intlAcceptanceRate != null
+        ? school.intlAcceptanceRate / 100
+        : null;
+    const overallBaseRate =
+      school.acceptanceRate != null ? school.acceptanceRate / 100 : null;
+    const baseRate = intlBaseRate ?? overallBaseRate;
+
+    if (baseRate != null && baseRate > 0 && baseRate < 1) {
+      const missingCriticalSignals =
+        Number(profileMetrics.gpa == null) +
+        Number(
+          profileMetrics.satScore == null && profileMetrics.actScore == null,
+        ) +
+        Number(profileMetrics.highSchoolTier == null);
+      if (missingCriticalSignals >= 2) {
+        probability = 0.3 * probability + 0.7 * baseRate;
+      }
+    }
+
     // Apply application round multiplier (ED has higher acceptance rate)
     const roundMultiplier = school.applicationRound
       ? (ROUND_MULTIPLIERS[school.applicationRound] ?? 1.0)
