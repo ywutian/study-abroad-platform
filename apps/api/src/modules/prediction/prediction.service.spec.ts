@@ -20,7 +20,7 @@ import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 import { DistillationService } from './benchmark/distillation.service';
-import { ScorecardTeacherService } from './distillation/teachers/scorecard-teacher.service';
+import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 
 // Mock score-calculator utils
 jest.mock('./utils/score-calculator', () => ({
@@ -170,7 +170,7 @@ describe('PredictionService', () => {
   let mlPrimaryService: PredictionMlPrimaryService;
   let featureFlagService: FeatureFlagService;
   let distillationService: DistillationService;
-  let scorecardTeacher: ScorecardTeacherService;
+  let compliantDistillationService: CompliantDistillationService;
 
   const mockProfile = {
     id: 'profile-1',
@@ -432,20 +432,19 @@ describe('PredictionService', () => {
           },
         },
         {
-          provide: ScorecardTeacherService,
+          provide: CompliantDistillationService,
           useValue: {
-            // Default: no active signal (so existing tests are unaffected and
-            // the legacy v3-enterprise served path is preserved).
-            evaluate: jest.fn().mockResolvedValue({
-              key: 'scorecard-v1',
-              label: 'Scorecard Conditional Probability',
-              sourceName: 'distillation:scorecard-v1',
-              sourceType: 'OFFICIAL_FEDERAL',
-              probability: null,
-              active: false,
-              confidence: 'low',
-              missingReasons: ['missing_test_score_or_distribution'],
+            buildInputSummary: jest.fn().mockReturnValue({
+              sat: 1500,
+              act: null,
+              gpaNormalized: 0.95,
+              nationality: 'CN',
+              curriculumType: 'AP',
+              highSchoolType: 'INTL_CN',
+              isInternational: true,
             }),
+            resolveCohortKey: jest.fn().mockReturnValue('CN__CHINA_INTL'),
+            evaluatePrediction: jest.fn().mockResolvedValue(null),
           },
         },
       ],
@@ -470,8 +469,8 @@ describe('PredictionService', () => {
     );
     featureFlagService = module.get<FeatureFlagService>(FeatureFlagService);
     distillationService = module.get<DistillationService>(DistillationService);
-    scorecardTeacher = module.get<ScorecardTeacherService>(
-      ScorecardTeacherService,
+    compliantDistillationService = module.get<CompliantDistillationService>(
+      CompliantDistillationService,
     );
   });
 
@@ -850,41 +849,66 @@ describe('PredictionService', () => {
       );
     });
 
-    it('should override served probability when Scorecard teacher returns active signal', async () => {
-      (scorecardTeacher.evaluate as jest.Mock).mockResolvedValueOnce({
-        key: 'scorecard-v1',
-        label: 'Scorecard Conditional Probability',
-        sourceName: 'distillation:scorecard-v1',
-        sourceType: 'OFFICIAL_FEDERAL',
-        probability: 0.72,
-        active: true,
-        confidence: 'medium',
-        sampleCount: 1,
-        bucketKey: 'sat:0.65',
-        missingReasons: [],
+    it('should apply the compliant distillation blend when live mode is enabled', async () => {
+      (featureFlagService.isEnabled as jest.Mock)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+      (
+        compliantDistillationService.evaluatePrediction as jest.Mock
+      ).mockResolvedValueOnce({
+        decision: {
+          hasSignal: true,
+          teacherSignals: [
+            {
+              key: 'scorecard-v1',
+              label: 'Scorecard Conditional Probability',
+              sourceName: 'distillation:scorecard-v1',
+              sourceType: 'OFFICIAL_FEDERAL',
+              configuredWeight: 0.12,
+              effectiveBlendWeight: 0.12,
+              probability: 0.61,
+              active: true,
+              confidence: 'medium',
+              missingReasons: [],
+            },
+          ],
+          coverageTier: 'CN_ENHANCED',
+          cohortKey: 'CN__CHINA_INTL',
+          blendedPrePlatt: 0.47,
+          totalConfiguredWeight: 0.12,
+          totalEffectiveWeight: 0.12,
+          liveEligible: true,
+        },
+        stage: 'DISTILLATION_LIVE',
+        applyLiveBlend: true,
       });
 
       const output = await service.predict('profile-1', ['school-1'], true);
 
-      expect(scorecardTeacher.evaluate).toHaveBeenCalled();
-      expect(output.results[0].probability).toBeCloseTo(0.72, 6);
-      expect(output.results[0].modelVersion).toBe('scorecard-normalcdf-v1');
-      expect(output.results[0].confidence).toBe('medium');
-      expect(output.results[0].sourceSummary?.[0]?.label).toBe(
-        'Scorecard Conditional Probability',
+      expect(
+        compliantDistillationService.evaluatePrediction,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ourProbPrePlatt: mockFusedResult.probability,
+          servedProbability: mockFusedResult.probability,
+        }),
+        { shadowEnabled: false, liveEnabled: true },
       );
-      // Confidence interval should be reasonable (centered on the new prob)
-      expect(output.results[0].probabilityLow).toBeLessThanOrEqual(0.72);
-      expect(output.results[0].probabilityHigh).toBeGreaterThanOrEqual(0.72);
+      expect(output.results[0].probability).toBeCloseTo(0.47, 6);
+      expect(output.results[0].modelVersion).toBe('v3-enterprise');
+      expect(output.results[0].cohortKey).toBe('CN__CHINA_INTL');
     });
 
-    it('should fall through to legacy path when Scorecard returns inactive', async () => {
-      // Default mock already returns active=false, but assert legacy path still wins.
+    it('should serve the fusion result when compliant live blend is off', async () => {
       const output = await service.predict('profile-1', ['school-1'], true);
 
-      expect(scorecardTeacher.evaluate).toHaveBeenCalled();
+      expect(
+        compliantDistillationService.evaluatePrediction,
+      ).not.toHaveBeenCalled();
       expect(output.results[0].modelVersion).toBe('v3-enterprise');
-      // Probability should match legacy fused output (Platt is identity in mock).
       expect(output.results[0].probability).toBeCloseTo(
         mockFusedResult.probability,
         6,

@@ -32,6 +32,12 @@ Consumer rule: any read feeding stats / training / distillation / UI trend **mus
 - Confidence intervals: high ±4%, medium ±7%, low ±11%
 - Calibration admin-only; result reporting uses @ThrottleSensitive
 
+## Served Probability
+
+- Default served probability is the v3 fusion result after local major, feeder, round, and Platt calibration adjustments.
+- When `prediction-compliant-distillation-v1` is live-eligible and enabled, `CompliantDistillationService` applies the weighted teacher blend before Platt; Scorecard remains one teacher signal inside that blend.
+- There is no post-blend Scorecard-only override. With compliant live blend off, served output stays fusion-only (`modelVersion: v3-enterprise`).
+
 ## Gotchas
 
 - v5 ML-primary may be in shadow mode; school agent must serve the actually-served result
