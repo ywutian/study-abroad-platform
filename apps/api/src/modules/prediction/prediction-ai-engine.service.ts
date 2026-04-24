@@ -288,11 +288,18 @@ Return JSON only: { "factors": [{"name":"...", "impact":"positive|negative|neutr
         suggestions?: string[];
       }>(response);
 
+      const VALID_IMPACTS = new Set(['positive', 'negative', 'neutral']);
       return {
         factors: (parsed?.factors || []).map((f) => ({
           name: f.name || 'Unknown',
-          impact:
-            (f.impact as 'positive' | 'negative' | 'neutral') || 'neutral',
+          // LLM occasionally hallucinates impact values like 'high' / 'important' /
+          // localized text. The previous `f.impact || 'neutral'` only caught
+          // falsy values; coerce anything outside the enum so the frontend's
+          // IMPACT_CONFIG[factor.impact] lookup never returns undefined.
+          impact: (VALID_IMPACTS.has(f.impact) ? f.impact : 'neutral') as
+            | 'positive'
+            | 'negative'
+            | 'neutral',
           weight: f.weight || 0,
           detail: f.detail || '',
         })),
