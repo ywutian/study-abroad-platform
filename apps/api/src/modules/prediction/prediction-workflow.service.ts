@@ -26,6 +26,12 @@ import {
 } from '../admin/dto';
 import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import {
+  parseGpaRange,
+  parseTestScoreRange,
+  toTestScoreEntry,
+  type NormalizedTestScoreEntry,
+} from './utils/legacy-case-parser';
 
 const DEFAULT_POLICY_THRESHOLDS = {
   minShadowPredictions: 1000,
@@ -1647,6 +1653,201 @@ export class PredictionWorkflowService {
       },
       yearBreakdown,
       recommendedNextAction,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Normalize legacy range-string fields on AdmissionCase into the
+   * structured columns the training pipeline and teachers need.
+   *
+   * Context
+   * -------
+   * /admin/prediction-workflow/data-inventory currently reports:
+   *   casesWithGpa11 = 0
+   *   casesWithTestScores = 0
+   * ...despite 1,235 approved cases existing. Historical imports populate
+   * `gpaRange` / `satRange` / `actRange` / `toeflRange` strings but never
+   * `gpa11` or the `testScores` JSON array. That leaves the ML feature
+   * vector and Scorecard teacher working with string fallbacks that get
+   * parsed lossily at serve-time rather than at import-time.
+   *
+   * Behavior
+   * --------
+   *   - Only writes fields that are currently NULL — never overwrites
+   *     counselor-entered structured data.
+   *   - GPA range-midpoint writes to `gpa11` (the "highest weight" grade
+   *     per schema comment; ML feature vector uses this).
+   *   - Sets `gpaScale` when we can detect it and the column is NULL.
+   *   - Test-score parsers build a CaseTestScore[] array tagged with
+   *     source='legacy_range_parse' + confidence ('exact' |
+   *     'range-midpoint' | 'lower-bound-only'). Downstream consumers can
+   *     down-weight midpoints.
+   *   - dryRun returns counts + a 20-row preview without touching the DB.
+   */
+  async normalizeLegacyCases(
+    options: { dryRun?: boolean; limit?: number } = {},
+  ) {
+    const dryRun = options.dryRun ?? false;
+
+    // Only touch cases where at least one legacy field is set AND the
+    // corresponding structured field is empty. Prisma can't express "any
+    // of {satRange,actRange,...} non-null AND matching target null" in
+    // one clause cleanly; the OR-of-ANDs below covers the four pairs.
+    const cases = await this.prisma.admissionCase.findMany({
+      where: {
+        reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
+        OR: [
+          // GPA pair
+          {
+            gpaRange: { not: null },
+            gpa11: null,
+          },
+          // Test-score pairs — testScores JSON is DB NULL (unset column).
+          // Prisma uses `{ equals: DbNull }` for nullable JSON WHERE filters;
+          // `JsonNull` refers to the stored JSON literal `null`, not DB NULL.
+          {
+            satRange: { not: null },
+            testScores: { equals: Prisma.DbNull },
+          },
+          {
+            actRange: { not: null },
+            testScores: { equals: Prisma.DbNull },
+          },
+          {
+            toeflRange: { not: null },
+            testScores: { equals: Prisma.DbNull },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        gpaRange: true,
+        gpa11: true,
+        gpaScale: true,
+        satRange: true,
+        actRange: true,
+        toeflRange: true,
+        testScores: true,
+      },
+      take: options.limit,
+    });
+
+    let gpaWritten = 0;
+    let gpaScaleWritten = 0;
+    let testScoresWritten = 0;
+    let scanned = 0;
+    const preview: Array<{
+      caseId: string;
+      gpa11?: number;
+      gpaScale?: number;
+      testScores?: NormalizedTestScoreEntry[];
+    }> = [];
+    const parseFailures: Array<{
+      caseId: string;
+      field: string;
+      value: string;
+    }> = [];
+
+    for (const c of cases) {
+      scanned++;
+      const updates: {
+        gpa11?: number;
+        gpaScale?: number;
+        testScores?: NormalizedTestScoreEntry[];
+      } = {};
+
+      // ----- GPA -----
+      if (c.gpaRange && c.gpa11 == null) {
+        const parsedGpa = parseGpaRange(c.gpaRange);
+        if (parsedGpa) {
+          updates.gpa11 = parsedGpa.gpa;
+          if (c.gpaScale == null) updates.gpaScale = parsedGpa.scale;
+        } else {
+          parseFailures.push({
+            caseId: c.id,
+            field: 'gpaRange',
+            value: c.gpaRange,
+          });
+        }
+      }
+
+      // ----- Test scores -----
+      // Only build a new testScores array if the existing one is null;
+      // if it's already a (possibly empty) array, an import already
+      // touched it and we refuse to second-guess the import decision.
+      if (c.testScores === null) {
+        const entries: NormalizedTestScoreEntry[] = [];
+        const tryAdd = (raw: string | null, type: 'SAT' | 'ACT' | 'TOEFL') => {
+          if (!raw) return;
+          const parsed = parseTestScoreRange(raw, type);
+          if (parsed) {
+            entries.push(toTestScoreEntry(parsed));
+          } else {
+            parseFailures.push({
+              caseId: c.id,
+              field: `${type.toLowerCase()}Range`,
+              value: raw,
+            });
+          }
+        };
+        tryAdd(c.satRange, 'SAT');
+        tryAdd(c.actRange, 'ACT');
+        tryAdd(c.toeflRange, 'TOEFL');
+        if (entries.length > 0) {
+          updates.testScores = entries;
+        }
+      }
+
+      if (!updates.gpa11 && !updates.gpaScale && !updates.testScores) {
+        continue;
+      }
+
+      if (updates.gpa11 != null) gpaWritten++;
+      if (updates.gpaScale != null) gpaScaleWritten++;
+      if (updates.testScores) testScoresWritten++;
+
+      if (preview.length < 20) {
+        preview.push({
+          caseId: c.id,
+          gpa11: updates.gpa11,
+          gpaScale: updates.gpaScale,
+          testScores: updates.testScores,
+        });
+      }
+
+      if (!dryRun) {
+        await this.prisma.admissionCase.update({
+          where: { id: c.id },
+          data: {
+            ...(updates.gpa11 != null ? { gpa11: updates.gpa11 } : {}),
+            ...(updates.gpaScale != null ? { gpaScale: updates.gpaScale } : {}),
+            ...(updates.testScores
+              ? {
+                  testScores:
+                    updates.testScores as unknown as Prisma.InputJsonValue,
+                }
+              : {}),
+          },
+        });
+      }
+    }
+
+    if (!dryRun) {
+      this.logger.log(
+        `Normalized legacy cases: scanned=${scanned}, gpa11=${gpaWritten}, gpaScale=${gpaScaleWritten}, testScores=${testScoresWritten}, parseFailures=${parseFailures.length}`,
+      );
+    }
+
+    return {
+      dryRun,
+      scanned,
+      gpaWritten,
+      gpaScaleWritten,
+      testScoresWritten,
+      parseFailures: parseFailures.slice(0, 50), // cap to keep response bounded
+      parseFailuresTruncatedAt: parseFailures.length > 50 ? 50 : null,
+      preview,
       generatedAt: new Date().toISOString(),
     };
   }

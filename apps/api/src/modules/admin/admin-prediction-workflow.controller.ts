@@ -28,6 +28,7 @@ import {
   RollbackPredictionPolicyDto,
   PredictionOutcomeQueryDto,
   ReviewPredictionOutcomeDto,
+  NormalizeLegacyCasesDto,
 } from './dto';
 import { PredictionWorkflowService } from '../prediction/prediction-workflow.service';
 import { PredictionPolicyShadowService } from '../prediction/prediction-policy-shadow.service';
@@ -260,5 +261,19 @@ export class AdminPredictionWorkflowController {
   @RequirePermission(Permission.SYSTEM_CALIBRATION)
   async getPredictionTrainingReadiness() {
     return this.predictionWorkflowService.getTrainingReadiness();
+  }
+
+  @Post('cases/normalize-legacy')
+  @ThrottleSensitive()
+  @ApiOperation({
+    summary:
+      'Parse legacy gpaRange/satRange/actRange/toeflRange strings into structured gpa11 + testScores[] JSON. Only fills NULL target fields; never overwrites.',
+  })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async normalizeLegacyCases(@Body() dto: NormalizeLegacyCasesDto) {
+    return this.predictionWorkflowService.normalizeLegacyCases({
+      dryRun: dto.dryRun,
+      limit: dto.limit,
+    });
   }
 }
