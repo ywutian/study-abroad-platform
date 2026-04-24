@@ -10,6 +10,7 @@ export const DISTILLATION_TEACHER_KEYS = [
   'ipeds-trend-v1',
   'cn-case-v1',
   'cn-outcome-v1',
+  'cohort-prior-v1',
   'blend-v1',
 ] as const;
 
@@ -17,7 +18,8 @@ export type DistillationTeacherKey =
   | 'scorecard-v1'
   | 'ipeds-trend-v1'
   | 'cn-case-v1'
-  | 'cn-outcome-v1';
+  | 'cn-outcome-v1'
+  | 'cohort-prior-v1';
 
 export type DistillationCoverageTier = 'NONE' | 'BASELINE_ONLY' | 'CN_ENHANCED';
 

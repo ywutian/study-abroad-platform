@@ -7,6 +7,7 @@ import { ScorecardTeacherService } from './teachers/scorecard-teacher.service';
 import { IpedsTrendTeacherService } from './teachers/ipeds-trend-teacher.service';
 import { ChineseCaseTeacherService } from './teachers/chinese-case-teacher.service';
 import { ChineseOutcomeTeacherService } from './teachers/chinese-outcome-teacher.service';
+import { CohortPriorTeacherService } from './teachers/cohort-prior-teacher.service';
 import { PredictionDistillationController } from './prediction-distillation.controller';
 import { PredictionPolicyService } from '../prediction-policy.service';
 
@@ -19,6 +20,7 @@ import { PredictionPolicyService } from '../prediction-policy.service';
     IpedsTrendTeacherService,
     ChineseCaseTeacherService,
     ChineseOutcomeTeacherService,
+    CohortPriorTeacherService,
     DistillationObservationService,
     DistillationStatsRollupService,
     CompliantDistillationService,
