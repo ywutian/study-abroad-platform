@@ -168,6 +168,13 @@ describe('PredictionWorkflowService', () => {
             schoolCohortRoundPrior: {
               findMany: jest.fn().mockResolvedValue([]),
               count: jest.fn().mockResolvedValue(0),
+              findFirst: jest.fn().mockResolvedValue(null),
+              create: jest
+                .fn()
+                .mockImplementation(({ data }) => ({ id: 'prior-1', ...data })),
+              update: jest
+                .fn()
+                .mockImplementation(({ data }) => ({ id: 'prior-1', ...data })),
             },
             schoolCohortRegimeSignal: {
               findMany: jest.fn().mockResolvedValue([]),
@@ -2355,6 +2362,169 @@ describe('PredictionWorkflowService', () => {
       await service.normalizeLegacyCases({ dryRun: false });
       // No update — no fields to fill.
       expect(prisma.admissionCase.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('backfillCohortPriors', () => {
+    // Helper: build a minimal admissionCase payload that deriveCohortKeyFromCase
+    // accepts. Same shape as the findMany select in the service.
+    const mkCase = (
+      over: Partial<{
+        id: string;
+        schoolId: string;
+        round: string;
+        result: 'ADMITTED' | 'REJECTED';
+        nationality: string | null;
+        curriculumType: string | null;
+        highSchoolType: string | null;
+        demographicTags: string[];
+      }> = {},
+    ) => ({
+      id: 'c1',
+      schoolId: 's1',
+      round: 'RD',
+      result: 'ADMITTED' as const,
+      nationality: 'US',
+      curriculumType: null,
+      highSchoolType: null,
+      demographicTags: [],
+      highSchool: null,
+      ...over,
+    });
+
+    it('dryRun=true returns preview without writing', async () => {
+      const cases = Array.from({ length: 6 }, (_, i) =>
+        mkCase({ id: `c${i}`, result: i < 4 ? 'ADMITTED' : 'REJECTED' }),
+      );
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue(cases);
+
+      const result = await service.backfillCohortPriors({ dryRun: true });
+
+      expect(result.dryRun).toBe(true);
+      expect(result.scanned).toBe(6);
+      expect(result.eligibleBuckets).toBe(1); // all 6 cases in one bucket
+      expect(result.written).toBe(0);
+      expect(result.updated).toBe(0);
+      expect(prisma.schoolCohortRoundPrior.create).not.toHaveBeenCalled();
+      expect(prisma.schoolCohortRoundPrior.update).not.toHaveBeenCalled();
+      expect(result.preview).toHaveLength(1);
+      expect(result.preview[0]).toMatchObject({
+        schoolId: 's1',
+        cohortKey: 'US__US_HS',
+        round: 'RD',
+        admits: 4,
+        rejects: 2,
+      });
+    });
+
+    it('drops buckets under MIN_SAMPLES', async () => {
+      const cases = [
+        mkCase({ id: 'c1', schoolId: 's1', result: 'ADMITTED' }),
+        mkCase({ id: 'c2', schoolId: 's1', result: 'REJECTED' }),
+        mkCase({ id: 'c3', schoolId: 's1', result: 'ADMITTED' }),
+      ];
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue(cases);
+
+      const result = await service.backfillCohortPriors({
+        dryRun: true,
+        minSamples: 5,
+      });
+
+      expect(result.bucketsTotal).toBe(1);
+      expect(result.eligibleBuckets).toBe(0);
+      expect(result.droppedLowSample).toBe(1);
+    });
+
+    it('aggregates by (school, cohort, round) — separate rounds stay distinct', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        ...Array.from({ length: 5 }, (_, i) =>
+          mkCase({ id: `ed${i}`, round: 'ED', result: 'ADMITTED' }),
+        ),
+        ...Array.from({ length: 5 }, (_, i) =>
+          mkCase({ id: `rd${i}`, round: 'RD', result: 'REJECTED' }),
+        ),
+      ]);
+
+      const result = await service.backfillCohortPriors({ dryRun: true });
+
+      expect(result.eligibleBuckets).toBe(2);
+      const byRound = Object.fromEntries(
+        result.preview.map((p) => [p.round, p]),
+      );
+      expect(byRound.ED.admits).toBe(5);
+      expect(byRound.ED.rejects).toBe(0);
+      expect(byRound.RD.admits).toBe(0);
+      expect(byRound.RD.rejects).toBe(5);
+    });
+
+    it('normalizes round to uppercase', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue(
+        Array.from({ length: 5 }, (_, i) =>
+          mkCase({ id: `c${i}`, round: 'rd', result: 'ADMITTED' }),
+        ),
+      );
+      const result = await service.backfillCohortPriors({ dryRun: true });
+      expect(result.preview[0].round).toBe('RD');
+    });
+
+    it('writes new SchoolCohortRoundPrior when none exists (dryRun=false)', async () => {
+      const cases = Array.from({ length: 5 }, (_, i) =>
+        mkCase({ id: `c${i}`, result: 'ADMITTED' }),
+      );
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue(cases);
+      (prisma.schoolCohortRoundPrior.findFirst as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      const result = await service.backfillCohortPriors({ dryRun: false });
+
+      expect(result.dryRun).toBe(false);
+      expect(result.written).toBe(1);
+      expect(result.updated).toBe(0);
+      expect(prisma.schoolCohortRoundPrior.create).toHaveBeenCalledTimes(1);
+      const createArg = (prisma.schoolCohortRoundPrior.create as jest.Mock).mock
+        .calls[0][0];
+      expect(createArg.data.schoolId).toBe('s1');
+      expect(createArg.data.cohortKey).toBe('US__US_HS');
+      expect(createArg.data.round).toBe('RD');
+      expect(createArg.data.sampleCount).toBe(5);
+      expect(createArg.data.policyVersionId).toBeNull();
+      expect(createArg.data.smoothingMethod).toBe('wilson-95');
+    });
+
+    it('updates existing prior when findFirst returns one', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue(
+        Array.from({ length: 5 }, (_, i) =>
+          mkCase({ id: `c${i}`, result: 'ADMITTED' }),
+        ),
+      );
+      (prisma.schoolCohortRoundPrior.findFirst as jest.Mock).mockResolvedValue({
+        id: 'existing-prior',
+      });
+
+      const result = await service.backfillCohortPriors({ dryRun: false });
+
+      expect(result.written).toBe(0);
+      expect(result.updated).toBe(1);
+      expect(prisma.schoolCohortRoundPrior.update).toHaveBeenCalledTimes(1);
+      expect(prisma.schoolCohortRoundPrior.create).not.toHaveBeenCalled();
+    });
+
+    it('skipped counters: no cohort (cannot derive) and no round', async () => {
+      // A case with no round is skipped by the service's Prisma filter
+      // `round: { not: null }`, so it never reaches the loop — meaning
+      // `skippedNoRound` counts only cases that pass the filter but have
+      // round falsy at the TS level (e.g. empty string). The service's
+      // fallthrough branch handles that defensively.
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        ...Array.from({ length: 5 }, (_, i) =>
+          mkCase({ id: `c${i}`, result: 'ADMITTED' }),
+        ),
+      ]);
+
+      const result = await service.backfillCohortPriors({ dryRun: true });
+      expect(result.skippedNoCohort).toBe(0);
+      expect(result.skippedNoRound).toBe(0);
     });
   });
 });

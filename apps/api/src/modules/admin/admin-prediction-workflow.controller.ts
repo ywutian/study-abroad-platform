@@ -29,6 +29,7 @@ import {
   PredictionOutcomeQueryDto,
   ReviewPredictionOutcomeDto,
   NormalizeLegacyCasesDto,
+  BackfillCohortPriorsDto,
 } from './dto';
 import { PredictionWorkflowService } from '../prediction/prediction-workflow.service';
 import { PredictionPolicyShadowService } from '../prediction/prediction-policy-shadow.service';
@@ -274,6 +275,21 @@ export class AdminPredictionWorkflowController {
     return this.predictionWorkflowService.normalizeLegacyCases({
       dryRun: dto.dryRun,
       limit: dto.limit,
+    });
+  }
+
+  @Post('cohort-priors/backfill')
+  @ThrottleSensitive()
+  @ApiOperation({
+    summary:
+      'Backfill SchoolCohortRoundPrior from approved AdmissionCase rows. Unlocks CohortPriorTeacher. Idempotent; re-run as new cases land.',
+  })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async backfillCohortPriors(@Body() dto: BackfillCohortPriorsDto) {
+    return this.predictionWorkflowService.backfillCohortPriors({
+      dryRun: dto.dryRun,
+      minSamples: dto.minSamples,
+      setVersion: dto.setVersion,
     });
   }
 }
