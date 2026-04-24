@@ -61,6 +61,7 @@ import { PredictionPolicyService } from './prediction-policy.service';
 import { DistillationService } from './benchmark/distillation.service';
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 import { DistillationObservationService } from './distillation/distillation-observation.service';
+import { ScorecardTeacherService } from './distillation/teachers/scorecard-teacher.service';
 import {
   DISTILLATION_LIVE_STAGE,
   DISTILLATION_SHADOW_STAGE,
@@ -128,6 +129,7 @@ export class PredictionService {
     private compliantDistillationService?: CompliantDistillationService,
     @Optional()
     private distillationObservationService?: DistillationObservationService,
+    @Optional() private scorecardTeacher?: ScorecardTeacherService,
   ) {}
 
   // ==================== School Calibration (delegated to PredictionCalibrationService) ====================
@@ -1724,6 +1726,81 @@ export class PredictionService {
 
     if (compliantEvaluation) {
       result.cohortKey = compliantEvaluation.decision.cohortKey;
+    }
+
+    // === Scorecard-first served override ===
+    // If the College Scorecard teacher (federal data + normalCDF over the
+    // school's SAT/ACT distribution × admit rate) can produce an active
+    // signal, replace the served probability with it. This makes the user-
+    // visible number a direct function of well-published statistics rather
+    // than our internal v3-enterprise sigmoid blend, which over- or under-
+    // shoots safety/match schools when profile data is sparse. When Scorecard
+    // returns inactive (no test score, or school has no admit rate), we keep
+    // the existing legacy/anchor probability untouched.
+    if (this.scorecardTeacher) {
+      try {
+        const scorecardSig = await this.scorecardTeacher.evaluate({
+          profileId,
+          schoolId: school.id,
+          schoolCountry: school.country ?? null,
+          profile: profileInput,
+          profileMetrics,
+          school: schoolInput,
+          ourProbPrePlatt: preDistillationProbability,
+          servedProbability: fusedResult.probability,
+          cohortKey: result.cohortKey ?? servedTrace?.cohortKey ?? 'unknown',
+          applicationRound: resolvedApplicationRound,
+          selectivityBand,
+          inputSummary: {
+            sat: profileMetrics.satScore ?? null,
+            act: profileMetrics.actScore ?? null,
+            gpaNormalized: profileMetrics.gpa ?? null,
+            nationality: profileInput.nationality ?? null,
+            curriculumType: profileInput.educationSystem ?? null,
+            highSchoolType: null,
+            isInternational: Boolean(profileInput.isInternational),
+          },
+        });
+
+        if (scorecardSig.active && scorecardSig.probability != null) {
+          const scorecardProb = scorecardSig.probability;
+          const scorecardWidth =
+            scorecardSig.confidence === 'high'
+              ? 0.1
+              : scorecardSig.confidence === 'medium'
+                ? 0.15
+                : 0.2;
+          result.probability = scorecardProb;
+          result.probabilityLow = Math.max(
+            0.01,
+            scorecardProb - scorecardWidth / 2,
+          );
+          result.probabilityHigh = Math.min(
+            0.99,
+            scorecardProb + scorecardWidth / 2,
+          );
+          result.tier = calculateTier(scorecardProb, tierSchoolMetrics);
+          result.modelVersion = 'scorecard-normalcdf-v1';
+          result.confidence = scorecardSig.confidence;
+          result.sourceSummary = [
+            {
+              label: scorecardSig.label,
+              detail:
+                'College Scorecard SAT/ACT distribution + admit rate (normalCDF)',
+            },
+          ];
+          if (result.servedTrace) {
+            (result.servedTrace as any).priorTier = 'scorecard_normalcdf';
+            (result.servedTrace as any).calibrationPath = ['scorecard'];
+          }
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Scorecard override skipped for school ${school.id}: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      }
     }
 
     // Attach community insight if target major exists

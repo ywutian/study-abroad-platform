@@ -20,6 +20,7 @@ import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 import { DistillationService } from './benchmark/distillation.service';
+import { ScorecardTeacherService } from './distillation/teachers/scorecard-teacher.service';
 
 // Mock score-calculator utils
 jest.mock('./utils/score-calculator', () => ({
@@ -169,6 +170,7 @@ describe('PredictionService', () => {
   let mlPrimaryService: PredictionMlPrimaryService;
   let featureFlagService: FeatureFlagService;
   let distillationService: DistillationService;
+  let scorecardTeacher: ScorecardTeacherService;
 
   const mockProfile = {
     id: 'profile-1',
@@ -429,6 +431,23 @@ describe('PredictionService', () => {
               })),
           },
         },
+        {
+          provide: ScorecardTeacherService,
+          useValue: {
+            // Default: no active signal (so existing tests are unaffected and
+            // the legacy v3-enterprise served path is preserved).
+            evaluate: jest.fn().mockResolvedValue({
+              key: 'scorecard-v1',
+              label: 'Scorecard Conditional Probability',
+              sourceName: 'distillation:scorecard-v1',
+              sourceType: 'OFFICIAL_FEDERAL',
+              probability: null,
+              active: false,
+              confidence: 'low',
+              missingReasons: ['missing_test_score_or_distribution'],
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -451,6 +470,9 @@ describe('PredictionService', () => {
     );
     featureFlagService = module.get<FeatureFlagService>(FeatureFlagService);
     distillationService = module.get<DistillationService>(DistillationService);
+    scorecardTeacher = module.get<ScorecardTeacherService>(
+      ScorecardTeacherService,
+    );
   });
 
   afterEach(() => {
@@ -822,6 +844,47 @@ describe('PredictionService', () => {
 
       const output = await service.predict('profile-1', ['school-1'], true);
 
+      expect(output.results[0].probability).toBeCloseTo(
+        mockFusedResult.probability,
+        6,
+      );
+    });
+
+    it('should override served probability when Scorecard teacher returns active signal', async () => {
+      (scorecardTeacher.evaluate as jest.Mock).mockResolvedValueOnce({
+        key: 'scorecard-v1',
+        label: 'Scorecard Conditional Probability',
+        sourceName: 'distillation:scorecard-v1',
+        sourceType: 'OFFICIAL_FEDERAL',
+        probability: 0.72,
+        active: true,
+        confidence: 'medium',
+        sampleCount: 1,
+        bucketKey: 'sat:0.65',
+        missingReasons: [],
+      });
+
+      const output = await service.predict('profile-1', ['school-1'], true);
+
+      expect(scorecardTeacher.evaluate).toHaveBeenCalled();
+      expect(output.results[0].probability).toBeCloseTo(0.72, 6);
+      expect(output.results[0].modelVersion).toBe('scorecard-normalcdf-v1');
+      expect(output.results[0].confidence).toBe('medium');
+      expect(output.results[0].sourceSummary?.[0]?.label).toBe(
+        'Scorecard Conditional Probability',
+      );
+      // Confidence interval should be reasonable (centered on the new prob)
+      expect(output.results[0].probabilityLow).toBeLessThanOrEqual(0.72);
+      expect(output.results[0].probabilityHigh).toBeGreaterThanOrEqual(0.72);
+    });
+
+    it('should fall through to legacy path when Scorecard returns inactive', async () => {
+      // Default mock already returns active=false, but assert legacy path still wins.
+      const output = await service.predict('profile-1', ['school-1'], true);
+
+      expect(scorecardTeacher.evaluate).toHaveBeenCalled();
+      expect(output.results[0].modelVersion).toBe('v3-enterprise');
+      // Probability should match legacy fused output (Platt is identity in mock).
       expect(output.results[0].probability).toBeCloseTo(
         mockFusedResult.probability,
         6,
