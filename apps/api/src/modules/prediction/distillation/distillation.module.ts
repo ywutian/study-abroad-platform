@@ -27,6 +27,7 @@ import { PredictionPolicyService } from '../prediction-policy.service';
     DistillationObservationService,
     DistillationStatsRollupService,
     CompliantDistillationService,
+    ScorecardTeacherService,
   ],
 })
 export class DistillationModule {}
