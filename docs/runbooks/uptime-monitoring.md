@@ -3,7 +3,7 @@
 ## What this is
 
 Cloud Monitoring uptime check + alert policy that polls the API's `/health`
-endpoint every 5 minutes and emails `yunzhi@yungrace.com` when the response
+endpoint every 5 minutes and emails `ywu1286@gmail.com` when the response
 body does not contain `"status":"ok"` for ~10 minutes continuously.
 
 This exists because in 2026-03/04 the API ran in `"status":"degraded"` for
@@ -28,7 +28,7 @@ broken state. Both gaps are now closed:
 
 ## Provisioning (first-time setup)
 
-These commands were run once by `yunzhi@yungrace.com`. Kept here for
+These commands were run by the operator. Kept here for
 disaster-recovery / re-provisioning. IaC (Terraform) is deliberately
 skipped at this stage — three small artifacts aren't worth the overhead
 and the runbook is the source of truth.
@@ -38,9 +38,9 @@ and the runbook is the source of truth.
 ```bash
 gcloud beta monitoring channels create \
   --project=study-abroad-prod-2025 \
-  --display-name="Yunzhi email" \
+  --display-name="Yitian gmail" \
   --type=email \
-  --channel-labels=email_address=yunzhi@yungrace.com \
+  --channel-labels=email_address=ywu1286@gmail.com \
   --description="Primary on-call email for study-abroad-api"
 ```
 
@@ -207,7 +207,7 @@ gcloud monitoring uptime delete study-abroad-api-health --project=study-abroad-p
 
 - **No Slack/PagerDuty integration** — email is sufficient while user count
   is near zero. Add before real-user launch.
-- **Single notification channel** — if yunzhi@yungrace.com inbox is
+- **Single notification channel** — if ywu1286@gmail.com inbox is
   unreachable, alert is invisible. Add a second channel before first
   paying customer.
 - **No SLO / error-budget tracking** — just binary up/down.
