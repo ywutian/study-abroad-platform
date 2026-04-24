@@ -32,6 +32,11 @@ import {
   toTestScoreEntry,
   type NormalizedTestScoreEntry,
 } from './utils/legacy-case-parser';
+import {
+  deriveCohortKeyFromCase,
+  wilsonInterval,
+  confidenceTier,
+} from './utils/cohort-key';
 
 const DEFAULT_POLICY_THRESHOLDS = {
   minShadowPredictions: 1000,
@@ -1848,6 +1853,226 @@ export class PredictionWorkflowService {
       parseFailures: parseFailures.slice(0, 50), // cap to keep response bounded
       parseFailuresTruncatedAt: parseFailures.length > 50 ? 50 : null,
       preview,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Backfill SchoolCohortRoundPrior from approved AdmissionCase rows.
+   *
+   * Reads verified cases → derives cohortKey via `deriveCohortKeyFromCase`
+   * (mirror of runtime PredictionPolicyService.resolveCohortKey, adapted
+   * for AdmissionCase's field set) → groups by (schoolId, cohortKey, round)
+   * → computes priorRate + Wilson 95% CI → writes to SchoolCohortRoundPrior.
+   *
+   * Unlocks the `CohortPriorTeacher` distillation signal, which has been
+   * reading an empty table. Cells with fewer than MIN_SAMPLES (5) cases are
+   * dropped — a prior with too-wide CI is worse than falling back to
+   * school-level admit rate.
+   *
+   * Idempotent: re-running overwrites existing priors for the same
+   * (schoolId, cohortKey, round, policyVersionId=NULL, setVersion) key.
+   * setVersion encodes today's date, so re-running on a different day
+   * writes a new set rather than overwriting history.
+   *
+   * Uses find-first + branch instead of upsert because Postgres treats
+   * NULLs as distinct in unique constraints, so an upsert with a NULL
+   * policyVersionId would always CREATE and never UPDATE.
+   */
+  async backfillCohortPriors(
+    options: {
+      dryRun?: boolean;
+      setVersion?: string;
+      minSamples?: number;
+    } = {},
+  ) {
+    const dryRun = options.dryRun ?? false;
+    const minSamples = options.minSamples ?? 5;
+    const setVersion =
+      options.setVersion ??
+      `backfill-admission-cases-${new Date().toISOString().slice(0, 10)}`;
+
+    const cases = await this.prisma.admissionCase.findMany({
+      where: {
+        reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
+        result: { in: ['ADMITTED', 'REJECTED'] },
+        round: { not: null },
+      },
+      select: {
+        id: true,
+        schoolId: true,
+        round: true,
+        result: true,
+        nationality: true,
+        curriculumType: true,
+        highSchoolType: true,
+        demographicTags: true,
+        highSchool: { select: { country: true } },
+      },
+    });
+
+    type Bucket = {
+      schoolId: string;
+      cohortKey: string;
+      round: string;
+      admits: number;
+      rejects: number;
+      caseIds: string[];
+    };
+    const buckets = new Map<string, Bucket>();
+    let skippedNoCohort = 0;
+    let skippedNoRound = 0;
+
+    for (const c of cases) {
+      const cohortKey = deriveCohortKeyFromCase({
+        nationality: c.nationality,
+        curriculumType: c.curriculumType,
+        highSchoolType: c.highSchoolType,
+        demographicTags: c.demographicTags,
+        highSchool: c.highSchool,
+      });
+      if (!cohortKey) {
+        skippedNoCohort++;
+        continue;
+      }
+      if (!c.round) {
+        skippedNoRound++;
+        continue;
+      }
+
+      const round = c.round.toUpperCase();
+      const key = `${c.schoolId}|${cohortKey}|${round}`;
+      const bucket: Bucket = buckets.get(key) ?? {
+        schoolId: c.schoolId,
+        cohortKey,
+        round,
+        admits: 0,
+        rejects: 0,
+        caseIds: [],
+      };
+      if (c.result === 'ADMITTED') bucket.admits++;
+      else if (c.result === 'REJECTED') bucket.rejects++;
+      bucket.caseIds.push(c.id);
+      buckets.set(key, bucket);
+    }
+
+    const eligible = Array.from(buckets.values()).filter(
+      (b) => b.admits + b.rejects >= minSamples,
+    );
+    const droppedLowSample = buckets.size - eligible.length;
+
+    // Return a preview for dry-run so the operator can inspect the output
+    // shape before committing. We only surface the first 20 rows — the
+    // full set would bloat response bodies for schools with many cohorts.
+    const previewRows = eligible.slice(0, 20).map((b) => {
+      const total = b.admits + b.rejects;
+      const rate = b.admits / total;
+      const { lower, upper } = wilsonInterval(b.admits, total);
+      return {
+        schoolId: b.schoolId,
+        cohortKey: b.cohortKey,
+        round: b.round,
+        admits: b.admits,
+        rejects: b.rejects,
+        priorRate: rate,
+        ciLower: lower,
+        ciUpper: upper,
+        confidence: confidenceTier(total),
+      };
+    });
+
+    if (dryRun) {
+      return {
+        dryRun: true,
+        scanned: cases.length,
+        skippedNoCohort,
+        skippedNoRound,
+        bucketsTotal: buckets.size,
+        eligibleBuckets: eligible.length,
+        droppedLowSample,
+        written: 0,
+        updated: 0,
+        setVersion,
+        minSamples,
+        preview: previewRows,
+        generatedAt: new Date().toISOString(),
+      };
+    }
+
+    let written = 0;
+    let updated = 0;
+    for (const b of eligible) {
+      const total = b.admits + b.rejects;
+      const rate = b.admits / total;
+      const { lower, upper } = wilsonInterval(b.admits, total);
+
+      const payload = {
+        priorRate: new Prisma.Decimal(rate),
+        lowerBound: new Prisma.Decimal(lower),
+        upperBound: new Prisma.Decimal(upper),
+        sampleCount: total,
+        smoothingMethod: 'wilson-95',
+        confidence: confidenceTier(total),
+        sourceSummary: {
+          origin: 'admission_case_aggregate',
+          admits: b.admits,
+          rejects: b.rejects,
+          caseIds: b.caseIds.slice(0, 50),
+          caseIdsTruncatedAt: b.caseIds.length > 50 ? 50 : null,
+        } as Prisma.InputJsonValue,
+        sourceObservationIds: [] as string[],
+        notes: `Derived from ${total} verified AdmissionCase rows; see sourceSummary.caseIds.`,
+      };
+
+      const existing = await this.prisma.schoolCohortRoundPrior.findFirst({
+        where: {
+          schoolId: b.schoolId,
+          cohortKey: b.cohortKey,
+          round: b.round,
+          policyVersionId: null,
+          setVersion,
+        },
+        select: { id: true },
+      });
+
+      if (existing) {
+        await this.prisma.schoolCohortRoundPrior.update({
+          where: { id: existing.id },
+          data: payload,
+        });
+        updated++;
+      } else {
+        await this.prisma.schoolCohortRoundPrior.create({
+          data: {
+            schoolId: b.schoolId,
+            cohortKey: b.cohortKey,
+            round: b.round,
+            policyVersionId: null,
+            setVersion,
+            ...payload,
+          },
+        });
+        written++;
+      }
+    }
+
+    this.logger.log(
+      `Backfilled cohort priors: ${written} new + ${updated} updated from ${cases.length} cases, setVersion=${setVersion}`,
+    );
+
+    return {
+      dryRun: false,
+      scanned: cases.length,
+      skippedNoCohort,
+      skippedNoRound,
+      bucketsTotal: buckets.size,
+      eligibleBuckets: eligible.length,
+      droppedLowSample,
+      written,
+      updated,
+      setVersion,
+      minSamples,
+      preview: previewRows,
       generatedAt: new Date().toISOString(),
     };
   }

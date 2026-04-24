@@ -481,3 +481,36 @@ export class NormalizeLegacyCasesDto {
   @Max(10000)
   limit?: number;
 }
+
+export class BackfillCohortPriorsDto {
+  @ApiPropertyOptional({
+    default: false,
+    description:
+      'When true, compute the aggregation and return a preview but do not write to SchoolCohortRoundPrior.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+
+  @ApiPropertyOptional({
+    default: 5,
+    minimum: 1,
+    maximum: 100,
+    description:
+      'Minimum cases per (school, cohort, round) cell before a prior is emitted.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  minSamples?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Custom setVersion tag; defaults to `backfill-admission-cases-YYYY-MM-DD`.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  setVersion?: string;
+}
