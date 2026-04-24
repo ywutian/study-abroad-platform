@@ -16,6 +16,7 @@ import { ScorecardTeacherService } from './teachers/scorecard-teacher.service';
 import { IpedsTrendTeacherService } from './teachers/ipeds-trend-teacher.service';
 import { ChineseCaseTeacherService } from './teachers/chinese-case-teacher.service';
 import { ChineseOutcomeTeacherService } from './teachers/chinese-outcome-teacher.service';
+import { CohortPriorTeacherService } from './teachers/cohort-prior-teacher.service';
 
 const CHINA_COHORT_PREFIX = 'CN__';
 const PUBLIC_TEACHERS = new Set(['scorecard-v1', 'ipeds-trend-v1']);
@@ -35,12 +36,14 @@ export class CompliantDistillationService {
     ipedsTrendTeacher: IpedsTrendTeacherService,
     chineseCaseTeacher: ChineseCaseTeacherService,
     chineseOutcomeTeacher: ChineseOutcomeTeacherService,
+    cohortPriorTeacher: CohortPriorTeacherService,
   ) {
     this.teachers = [
       scorecardTeacher,
       ipedsTrendTeacher,
       chineseCaseTeacher,
       chineseOutcomeTeacher,
+      cohortPriorTeacher,
     ];
   }
 
