@@ -13,42 +13,26 @@ function clampProbability(value: number): number {
 }
 
 function percentileToMultiplier(percentile: number): number {
-  if (percentile >= 0.75) return 1.5;
-  if (percentile >= 0.5) return 1.2;
-  if (percentile >= 0.25) return 1.0;
-  return 0.6;
+  // Linear mapping: p=0.5 -> 1.0, p=0.75 -> 1.5, p=0.9 -> 1.8.
+  // Clamp the tails so one axis cannot push the product past plausible bounds.
+  return Math.max(0.2, Math.min(2.0, 2 * percentile));
 }
 
 type ScoreAxisResult = {
-  axis: 'sat' | 'act';
+  axis: 'sat' | 'act' | 'gpa';
   probability: number;
   percentile: number;
   multiplier: number;
   bucketKey: string;
   confidence: 'low' | 'medium';
-  mode: 'distribution' | 'average_only';
+  mode: 'distribution' | 'heuristic_gpa';
 };
-
-function fallbackPercentileFromDelta(
-  axis: 'sat' | 'act',
-  delta: number,
-): number {
-  if (axis === 'sat') {
-    if (delta >= 100) return 0.75;
-    if (delta >= 30) return 0.5;
-    if (delta >= -40) return 0.25;
-    return 0.1;
-  }
-
-  if (delta >= 3) return 0.75;
-  if (delta >= 1) return 0.5;
-  if (delta >= -1) return 0.25;
-  return 0.1;
-}
 
 @Injectable()
 export class ScorecardTeacherService implements TeacherSignalProvider {
+  // Keep the persisted teacher key stable; diagnostics distinguish v2 behavior.
   readonly key = 'scorecard-v1' as const;
+  readonly version = 2 as const;
   readonly label = 'Scorecard Conditional Probability';
   readonly sourceType = 'OFFICIAL_FEDERAL' as const;
   readonly defaultWeight = DEFAULT_WEIGHT;
@@ -79,6 +63,7 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
     const axisResults = [
       this.evaluateSat(baseRate, input),
       this.evaluateAct(baseRate, input),
+      this.evaluateGpa(baseRate, input),
     ].filter((value): value is ScoreAxisResult => Boolean(value));
 
     if (axisResults.length === 0) {
@@ -93,6 +78,7 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
         missingReasons: ['missing_test_score_or_distribution'],
         metadata: {
           schoolAcceptanceRate: baseRate,
+          scorecardVersion: this.version,
         },
       };
     }
@@ -114,6 +100,7 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
       missingReasons: [],
       metadata: {
         schoolAcceptanceRate: baseRate,
+        scorecardVersion: this.version,
         axes: axisResults,
       },
     };
@@ -150,18 +137,7 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
       };
     }
 
-    const percentile = fallbackPercentileFromDelta('sat', satScore - satAvg);
-    const multiplier = percentileToMultiplier(percentile);
-
-    return {
-      axis: 'sat',
-      probability: clampProbability(baseRate * multiplier),
-      percentile,
-      multiplier,
-      bucketKey: `sat_avg_only:${percentile.toFixed(2)}`,
-      confidence: 'low',
-      mode: 'average_only',
-    };
+    return null;
   }
 
   private evaluateAct(
@@ -195,18 +171,40 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
       };
     }
 
-    const percentile = fallbackPercentileFromDelta('act', actScore - actAvg);
+    return null;
+  }
+
+  private evaluateGpa(
+    baseRate: number,
+    input: DistillationEvaluationInput,
+  ): ScoreAxisResult | null {
+    const gpaNormalized = input.inputSummary.gpaNormalized;
+    if (gpaNormalized == null) return null;
+
+    // Schema has no school-level GPA stats; derive expected GPA from the
+    // school's selectivity until school-specific GPA distributions exist.
+    const expectedGpa = this.expectedGpaForSelectivity(baseRate);
+    const sigma = 0.04;
+
+    const percentile = normalCDF((gpaNormalized - expectedGpa) / sigma);
     const multiplier = percentileToMultiplier(percentile);
 
     return {
-      axis: 'act',
+      axis: 'gpa',
       probability: clampProbability(baseRate * multiplier),
       percentile,
       multiplier,
-      bucketKey: `act_avg_only:${percentile.toFixed(2)}`,
+      bucketKey: `gpa:${percentile.toFixed(2)}`,
       confidence: 'low',
-      mode: 'average_only',
+      mode: 'heuristic_gpa',
     };
+  }
+
+  private expectedGpaForSelectivity(baseRate: number): number {
+    if (baseRate < 0.1) return 0.975;
+    if (baseRate < 0.25) return 0.95;
+    if (baseRate < 0.5) return 0.9;
+    return 0.85;
   }
 
   private resolveConfidence(
@@ -216,7 +214,9 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
       (axis) => axis.mode === 'distribution',
     ).length;
 
-    if (distributionAxes === axisResults.length && axisResults.length === 2) {
+    // GPA is heuristic and low-confidence; only both distribution-backed test
+    // axes can promote the teacher to high confidence.
+    if (distributionAxes === 2 && axisResults.length >= 2) {
       return 'high';
     }
     if (distributionAxes >= 1) {

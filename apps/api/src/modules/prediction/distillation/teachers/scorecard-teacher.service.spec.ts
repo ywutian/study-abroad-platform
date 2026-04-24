@@ -37,7 +37,7 @@ function buildInput(
     inputSummary: {
       sat: 1520,
       act: null,
-      gpaNormalized: 3.9,
+      gpaNormalized: 0.95,
       nationality: 'CN',
       curriculumType: 'AP',
       highSchoolType: 'INTL_CN',
@@ -58,10 +58,15 @@ describe('ScorecardTeacherService', () => {
     expect(result.bucketKey).toContain('sat:');
     expect(result.metadata).toMatchObject({
       schoolAcceptanceRate: 0.12,
+      scorecardVersion: 2,
     });
+    expect((result.metadata?.axes as any[]).map((axis) => axis.axis)).toEqual([
+      'sat',
+      'gpa',
+    ]);
   });
 
-  it('falls back to avg-only SAT heuristic when quartiles are missing', async () => {
+  it('does not use avg-only SAT heuristic when quartiles are missing', async () => {
     const result = await service.evaluate(
       buildInput({
         school: {
@@ -76,7 +81,7 @@ describe('ScorecardTeacherService', () => {
         inputSummary: {
           sat: 1540,
           act: null,
-          gpaNormalized: 3.9,
+          gpaNormalized: null,
           nationality: 'CN',
           curriculumType: 'AP',
           highSchoolType: 'INTL_CN',
@@ -85,10 +90,11 @@ describe('ScorecardTeacherService', () => {
       }),
     );
 
-    expect(result.active).toBe(true);
-    expect(result.confidence).toBe('low');
-    expect(result.bucketKey).toBe('sat_avg_only:0.75');
-    expect(result.probability).toBeCloseTo(0.3, 6);
+    expect(result.active).toBe(false);
+    expect(result.probability).toBeNull();
+    expect(result.missingReasons).toContain(
+      'missing_test_score_or_distribution',
+    );
     expect(result.metadata).toMatchObject({
       schoolAcceptanceRate: 0.2,
     });
@@ -100,7 +106,7 @@ describe('ScorecardTeacherService', () => {
         inputSummary: {
           sat: null,
           act: null,
-          gpaNormalized: 3.9,
+          gpaNormalized: null,
           nationality: 'CN',
           curriculumType: 'AP',
           highSchoolType: 'INTL_CN',
@@ -113,5 +119,109 @@ describe('ScorecardTeacherService', () => {
     expect(result.missingReasons).toContain(
       'missing_test_score_or_distribution',
     );
+  });
+
+  it('uses a low-confidence GPA axis at the expected selectivity GPA', async () => {
+    const result = await service.evaluate(
+      buildInput({
+        inputSummary: {
+          sat: null,
+          act: null,
+          gpaNormalized: 0.95,
+          nationality: 'CN',
+          curriculumType: 'AP',
+          highSchoolType: 'INTL_CN',
+          isInternational: true,
+        },
+      }),
+    );
+
+    expect(result.active).toBe(true);
+    expect(result.confidence).toBe('low');
+    expect(result.bucketKey).toBe('gpa:0.50');
+    expect(result.probability).toBeCloseTo(0.12, 6);
+    expect(result.metadata).toMatchObject({
+      schoolAcceptanceRate: 0.12,
+      scorecardVersion: 2,
+    });
+    const axis = (result.metadata?.axes as any[])[0];
+    expect(axis).toMatchObject({
+      axis: 'gpa',
+      confidence: 'low',
+      mode: 'heuristic_gpa',
+    });
+    expect(axis.percentile).toBeCloseTo(0.5, 6);
+    expect(axis.multiplier).toBeCloseTo(1, 6);
+  });
+
+  it('rewards GPA one sigma above the expected selectivity GPA', async () => {
+    const result = await service.evaluate(
+      buildInput({
+        inputSummary: {
+          sat: null,
+          act: null,
+          gpaNormalized: 0.99,
+          nationality: 'CN',
+          curriculumType: 'AP',
+          highSchoolType: 'INTL_CN',
+          isInternational: true,
+        },
+      }),
+    );
+
+    const axis = (result.metadata?.axes as any[])[0];
+    expect(result.active).toBe(true);
+    expect(axis.axis).toBe('gpa');
+    expect(axis.percentile).toBeCloseTo(0.8413, 3);
+    expect(axis.multiplier).toBeCloseTo(1.6826, 3);
+    expect(result.probability).toBeCloseTo(0.2019, 3);
+  });
+
+  it('penalizes GPA one sigma below the expected selectivity GPA', async () => {
+    const result = await service.evaluate(
+      buildInput({
+        inputSummary: {
+          sat: null,
+          act: null,
+          gpaNormalized: 0.91,
+          nationality: 'CN',
+          curriculumType: 'AP',
+          highSchoolType: 'INTL_CN',
+          isInternational: true,
+        },
+      }),
+    );
+
+    const axis = (result.metadata?.axes as any[])[0];
+    expect(result.active).toBe(true);
+    expect(axis.axis).toBe('gpa');
+    expect(axis.percentile).toBeCloseTo(0.1587, 3);
+    expect(axis.multiplier).toBeCloseTo(0.3174, 3);
+    expect(result.probability).toBeCloseTo(0.0381, 3);
+  });
+
+  it('averages SAT, ACT, and GPA axes when all are present', async () => {
+    const result = await service.evaluate(
+      buildInput({
+        inputSummary: {
+          sat: 1520,
+          act: 35,
+          gpaNormalized: 0.99,
+          nationality: 'CN',
+          curriculumType: 'AP',
+          highSchoolType: 'INTL_CN',
+          isInternational: true,
+        },
+      }),
+    );
+
+    const axes = result.metadata?.axes as any[];
+    const expectedProbability =
+      axes.reduce((sum, axis) => sum + axis.probability, 0) / axes.length;
+
+    expect(result.active).toBe(true);
+    expect(result.confidence).toBe('high');
+    expect(axes.map((axis) => axis.axis)).toEqual(['sat', 'act', 'gpa']);
+    expect(result.probability).toBeCloseTo(expectedProbability, 6);
   });
 });
