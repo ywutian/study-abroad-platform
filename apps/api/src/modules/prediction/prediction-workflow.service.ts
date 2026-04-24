@@ -1321,4 +1321,78 @@ export class PredictionWorkflowService {
       restoredPolicyVersionId: previousRetired.id,
     };
   }
+
+  /**
+   * Authority distribution across PredictionResult + PredictionSnapshot.
+   *
+   * Used to verify the PredictionAuthority invariant in prod: every row should
+   * declare AUTHORITATIVE (full pipeline) or PREVIEW (school-list quick-match),
+   * with no NULLs after the backfill migration. NULLs here indicate a writer
+   * that bypassed both the application check and the lint rule.
+   *
+   * See apps/api/src/modules/prediction/BRIEF.md "Authority invariant".
+   */
+  async getAuthorityStats() {
+    const [resultGroups, snapshotGroups, previewWithOutcome] =
+      await Promise.all([
+        this.prisma.predictionResult.groupBy({
+          by: ['authority'],
+          _count: { _all: true },
+        }),
+        this.prisma.predictionSnapshot.groupBy({
+          by: ['authority'],
+          _count: { _all: true },
+        }),
+        // Canary: a PREVIEW row should never carry an outcome label. If this is
+        // non-zero, we've somehow labeled a quick-match row as an admission
+        // result — investigate before relying on calibration inputs.
+        this.prisma.predictionResult.count({
+          where: {
+            authority: 'PREVIEW',
+            outcomeLabelRecords: { some: {} },
+          },
+        }),
+      ]);
+
+    type AuthorityBuckets = {
+      total: number;
+      AUTHORITATIVE: number;
+      PREVIEW: number;
+      NULL: number;
+    };
+    const toBuckets = (
+      groups: Array<{ authority: string | null; _count: { _all: number } }>,
+    ): AuthorityBuckets => {
+      const bucket: AuthorityBuckets = {
+        total: 0,
+        AUTHORITATIVE: 0,
+        PREVIEW: 0,
+        NULL: 0,
+      };
+      for (const row of groups) {
+        const key = (row.authority ?? 'NULL') as keyof AuthorityBuckets;
+        if (key === 'total') continue;
+        bucket[key] += row._count._all;
+        bucket.total += row._count._all;
+      }
+      return bucket;
+    };
+
+    const resultBuckets = toBuckets(resultGroups);
+    const snapshotBuckets = toBuckets(snapshotGroups);
+
+    return {
+      result: resultBuckets,
+      snapshot: snapshotBuckets,
+      invariantChecks: {
+        // NULLs should be zero after the backfill migration in PR #45. Any non-
+        // zero value means a writer is silently inserting rows without an
+        // authority — the lint rule should have caught this in CI.
+        resultNullCount: resultBuckets.NULL,
+        snapshotNullCount: snapshotBuckets.NULL,
+        previewRowsWithOutcomeLabel: previewWithOutcome,
+      },
+      generatedAt: new Date().toISOString(),
+    };
+  }
 }

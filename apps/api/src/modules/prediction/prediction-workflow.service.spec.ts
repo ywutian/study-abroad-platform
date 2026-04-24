@@ -160,6 +160,10 @@ describe('PredictionWorkflowService', () => {
             predictionResult: {
               findMany: jest.fn().mockResolvedValue([]),
               count: jest.fn().mockResolvedValue(0),
+              groupBy: jest.fn().mockResolvedValue([]),
+            },
+            predictionSnapshot: {
+              groupBy: jest.fn().mockResolvedValue([]),
             },
             schoolCohortRoundPrior: {
               findMany: jest.fn().mockResolvedValue([]),
@@ -2003,6 +2007,71 @@ describe('PredictionWorkflowService', () => {
       expect(prisma.schoolCohortRoundPrior.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ take: 5 }),
       );
+    });
+  });
+
+  describe('getAuthorityStats', () => {
+    it('aggregates AUTHORITATIVE + PREVIEW + NULL buckets for both tables', async () => {
+      (prisma.predictionResult.groupBy as jest.Mock).mockResolvedValue([
+        { authority: 'AUTHORITATIVE', _count: { _all: 120 } },
+        { authority: 'PREVIEW', _count: { _all: 45 } },
+      ]);
+      (prisma.predictionSnapshot.groupBy as jest.Mock).mockResolvedValue([
+        { authority: 'AUTHORITATIVE', _count: { _all: 80 } },
+      ]);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValue(0);
+
+      const result = await service.getAuthorityStats();
+
+      expect(result.result).toEqual({
+        total: 165,
+        AUTHORITATIVE: 120,
+        PREVIEW: 45,
+        NULL: 0,
+      });
+      expect(result.snapshot).toEqual({
+        total: 80,
+        AUTHORITATIVE: 80,
+        PREVIEW: 0,
+        NULL: 0,
+      });
+      expect(result.invariantChecks.resultNullCount).toBe(0);
+      expect(result.invariantChecks.snapshotNullCount).toBe(0);
+      expect(result.invariantChecks.previewRowsWithOutcomeLabel).toBe(0);
+      expect(result.generatedAt).toBeDefined();
+    });
+
+    it('flags NULL authority rows (post-backfill invariant violation)', async () => {
+      (prisma.predictionResult.groupBy as jest.Mock).mockResolvedValue([
+        { authority: 'AUTHORITATIVE', _count: { _all: 100 } },
+        { authority: null, _count: { _all: 3 } },
+      ]);
+      (prisma.predictionSnapshot.groupBy as jest.Mock).mockResolvedValue([]);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValue(0);
+
+      const result = await service.getAuthorityStats();
+
+      expect(result.result.NULL).toBe(3);
+      expect(result.invariantChecks.resultNullCount).toBe(3);
+    });
+
+    it('flags PREVIEW rows that somehow acquired outcome labels', async () => {
+      (prisma.predictionResult.groupBy as jest.Mock).mockResolvedValue([]);
+      (prisma.predictionSnapshot.groupBy as jest.Mock).mockResolvedValue([]);
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValue(2);
+
+      const result = await service.getAuthorityStats();
+
+      expect(result.invariantChecks.previewRowsWithOutcomeLabel).toBe(2);
+      // The count should query where authority=PREVIEW with outcome labels —
+      // the test here only asserts the value flows through; the SQL shape is
+      // enforced by the count mock's first call args:
+      expect(prisma.predictionResult.count).toHaveBeenCalledWith({
+        where: {
+          authority: 'PREVIEW',
+          outcomeLabelRecords: { some: {} },
+        },
+      });
     });
   });
 });

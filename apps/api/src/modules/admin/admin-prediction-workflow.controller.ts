@@ -231,4 +231,14 @@ export class AdminPredictionWorkflowController {
   ) {
     return this.predictionWorkflowService.reviewOutcomeLabel(user.id, id, dto);
   }
+
+  @Get('authority-stats')
+  @ApiOperation({
+    summary:
+      'PredictionAuthority distribution (AUTHORITATIVE vs PREVIEW) + invariant checks',
+  })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async getPredictionAuthorityStats() {
+    return this.predictionWorkflowService.getAuthorityStats();
+  }
 }
