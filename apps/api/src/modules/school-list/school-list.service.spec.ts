@@ -74,6 +74,11 @@ describe('SchoolListService', () => {
             },
             predictionResult: {
               findMany: jest.fn().mockResolvedValue([]),
+              findUnique: jest.fn().mockResolvedValue(null),
+              upsert: jest.fn().mockResolvedValue({ id: 'pred-1' }),
+            },
+            predictionSnapshot: {
+              create: jest.fn().mockResolvedValue({ id: 'snap-1' }),
             },
             essayPrompt: {
               groupBy: jest.fn().mockResolvedValue([]),
@@ -398,6 +403,84 @@ describe('SchoolListService', () => {
         round: 'EA',
       });
       expect(result).toBeDefined();
+    });
+  });
+
+  describe('syncQuickMatchToPrediction authority invariant', () => {
+    const quickMatchSchool = {
+      id: 'school-1',
+      acceptanceRate: 10,
+      satAvg: 1500,
+      sat25: 1450,
+      sat75: 1550,
+      actAvg: 33,
+      act25: 32,
+      act75: 34,
+      usNewsRank: 10,
+    };
+
+    const profileMetrics = {
+      gpa: 3.8,
+      sat: 1500,
+      toefl: 110,
+      activityCount: 5,
+      awardCount: 2,
+    };
+
+    it('writes authority=PREVIEW and never writes PredictionSnapshot', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await (service as any).syncQuickMatchToPrediction(
+        'profile-1',
+        [quickMatchSchool],
+        profileMetrics,
+      );
+
+      expect(prisma.predictionResult.upsert).toHaveBeenCalledTimes(1);
+      const upsertArg = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      expect(upsertArg.create.authority).toBe('PREVIEW');
+      expect(upsertArg.update.authority).toBe('PREVIEW');
+      expect(upsertArg.create.source).toBe('quick-match');
+      expect(upsertArg.create.modelVersion).toBe('v1-stats');
+
+      // Critical: PREVIEW must never pollute the snapshot time-series that
+      // distillation + reporting + UI trend read from.
+      expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
+    });
+
+    it('does not overwrite existing AUTHORITATIVE PredictionResult', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        authority: 'AUTHORITATIVE',
+      });
+
+      await (service as any).syncQuickMatchToPrediction(
+        'profile-1',
+        [quickMatchSchool],
+        profileMetrics,
+      );
+
+      expect(prisma.predictionResult.upsert).not.toHaveBeenCalled();
+      expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
+    });
+
+    it('overwrites existing PREVIEW (quick-match) with fresh PREVIEW', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        authority: 'PREVIEW',
+      });
+
+      await (service as any).syncQuickMatchToPrediction(
+        'profile-1',
+        [quickMatchSchool],
+        profileMetrics,
+      );
+
+      // PREVIEW -> PREVIEW is allowed (refresh quick-match estimates).
+      expect(prisma.predictionResult.upsert).toHaveBeenCalledTimes(1);
+      const upsertArg = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      expect(upsertArg.update.authority).toBe('PREVIEW');
+      expect(prisma.predictionSnapshot.create).not.toHaveBeenCalled();
     });
   });
 });

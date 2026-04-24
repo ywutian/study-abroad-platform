@@ -193,6 +193,18 @@ enum AdmissionResult {
   DEFERRED
 }
 
+/// Declares which writer produced a prediction row so downstream consumers
+/// can filter correctly and writers never accidentally clobber each other.
+/// - AUTHORITATIVE: full pipeline (PredictionService / ML / Scorecard served path)
+/// - PREVIEW: UI-facing quick estimate (SchoolListService.syncQuickMatchToPrediction)
+/// Invariant: PREVIEW must never overwrite an AUTHORITATIVE row. Enforced in
+/// application (school-list.service.ts) and by check-integration lint rule
+/// `prediction-write-must-declare-authority`.
+enum PredictionAuthority {
+  AUTHORITATIVE
+  PREVIEW
+}
+
 enum PredictionOutcomeLabel {
   ADMITTED
   REJECTED
@@ -1981,6 +1993,7 @@ model PredictionResult {
 
   // 数据来源
   source             String? // prediction | recommendation | ai-recommend | quick-match
+  authority          PredictionAuthority? // Nullable during migration; new writes must set it explicitly (lint-enforced).
   policyVersionId    String?
   policyVersion      PredictionPolicyVersion? @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
   predictionModelId  String?
@@ -2016,6 +2029,7 @@ model PredictionResult {
   @@index([outcomeLabel])
   @@index([applicationRound, applicationYear])
   @@index([cohortKey])
+  @@index([authority])
 }
 
 /// 预测历史快照 — 记录每次预测的概率用于趋势追踪
@@ -2029,6 +2043,7 @@ model PredictionSnapshot {
   tier               String?
   confidence         String?
   source             String                        @default("prediction") // prediction | recommendation | ai-recommend | quick-match
+  authority          PredictionAuthority? // Nullable during migration; new writes must set it explicitly (lint-enforced).
   modelVersion       String                        @default("v2")
   policyVersionId    String?
   policyVersion      PredictionPolicyVersion?      @relation(fields: [policyVersionId], references: [id], onDelete: SetNull)
@@ -2055,6 +2070,7 @@ model PredictionSnapshot {
   @@index([outcomeLabel])
   @@index([applicationRound, applicationYear])
   @@index([cohortKey])
+  @@index([profileId, schoolId, authority, createdAt])
 }
 
 model PredictionOutcomeLabelRecord {

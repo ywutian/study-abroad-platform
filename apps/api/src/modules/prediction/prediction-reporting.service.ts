@@ -218,6 +218,9 @@ export class PredictionReportingService {
             where: {
               profileId: prediction.profileId,
               schoolId: prediction.schoolId,
+              // Outcome labels attach only to real predictions; PREVIEW rows
+              // (quick-match) are UI transient state and must not be labeled.
+              authority: 'AUTHORITATIVE',
             },
             orderBy: { createdAt: 'desc' },
             select: { id: true },
@@ -268,6 +271,9 @@ export class PredictionReportingService {
             where: {
               profileId: prediction.profileId,
               schoolId: prediction.schoolId,
+              // Outcome labels attach only to real predictions; PREVIEW rows
+              // (quick-match) are UI transient state and must not be labeled.
+              authority: 'AUTHORITATIVE',
             },
             orderBy: { createdAt: 'desc' },
             select: { id: true },

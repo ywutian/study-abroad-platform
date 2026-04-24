@@ -195,6 +195,7 @@ export class TrainingDataService {
     const [predictions, caseCount] = await Promise.all([
       this.prisma.predictionResult.findMany({
         where: {
+          authority: 'AUTHORITATIVE',
           outcomeLabelRecords: {
             some: {
               status: { in: VERIFIED_OUTCOME_STATUSES },
@@ -238,6 +239,7 @@ export class TrainingDataService {
     const [predictions, caseCount, admittedCase] = await Promise.all([
       this.prisma.predictionResult.findMany({
         where: {
+          authority: 'AUTHORITATIVE',
           outcomeLabelRecords: {
             some: {
               status: { in: VERIFIED_OUTCOME_STATUSES },
@@ -313,6 +315,7 @@ export class TrainingDataService {
   private async collectFromPredictions(): Promise<TrainingRecord[]> {
     const predictions = await this.prisma.predictionResult.findMany({
       where: {
+        authority: 'AUTHORITATIVE',
         outcomeLabelRecords: {
           some: {
             status: { in: VERIFIED_OUTCOME_STATUSES },

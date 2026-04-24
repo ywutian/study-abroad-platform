@@ -346,6 +346,7 @@ async function ensureSchoolListAndPredictions(
           `Keep the ${target.round} application materials aligned with ${target.name}.`,
         ],
         source: 'governance-fixture',
+        authority: 'AUTHORITATIVE',
         confidenceReason:
           'Governance fixture prediction used for deterministic application-analysis runtime checks.',
         applicationRound: target.round,
@@ -376,6 +377,7 @@ async function ensureSchoolListAndPredictions(
           `Keep the ${target.round} application materials aligned with ${target.name}.`,
         ],
         source: 'governance-fixture',
+        authority: 'AUTHORITATIVE',
         confidenceReason:
           'Governance fixture prediction used for deterministic application-analysis runtime checks.',
         applicationRound: target.round,
