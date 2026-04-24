@@ -974,7 +974,7 @@ jobs:
             RESPONSE=$(curl -s "$CANARY_URL/health" --max-time 15 || echo '{}')
             STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$CANARY_URL/health" --max-time 15 || echo "000")
             HEALTH=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
-            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" -o "$HEALTH" = "degraded" ]; then
+            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" ]; then
               echo "✅ Canary health check passed (attempt $i)"
               exit 0
             fi
@@ -1008,7 +1008,7 @@ jobs:
             RESPONSE=$(curl -s "$URL/health" --max-time 15 || echo '{}')
             STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || echo "000")
             HEALTH=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
-            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" -o "$HEALTH" = "degraded" ]; then
+            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" ]; then
               echo "✅ Health check passed (attempt $i, status=$HEALTH)"
               echo "::notice title=API deployed::Cloud Run URL: $URL (health=$HEALTH)"
               exit 0
