@@ -241,4 +241,24 @@ export class AdminPredictionWorkflowController {
   async getPredictionAuthorityStats() {
     return this.predictionWorkflowService.getAuthorityStats();
   }
+
+  @Get('data-inventory')
+  @ApiOperation({
+    summary:
+      'Row-count inventory across every table that feeds prediction teachers — lets us decide where the data bottleneck actually is before committing to distillation work.',
+  })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async getPredictionDataInventory() {
+    return this.predictionWorkflowService.getDataInventory();
+  }
+
+  @Get('training-readiness')
+  @ApiOperation({
+    summary:
+      'ML training readiness: verified outcomes + admission cases, broken down by tier threshold and selectivity band.',
+  })
+  @RequirePermission(Permission.SYSTEM_CALIBRATION)
+  async getPredictionTrainingReadiness() {
+    return this.predictionWorkflowService.getTrainingReadiness();
+  }
 }

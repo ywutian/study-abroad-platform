@@ -182,6 +182,24 @@ describe('PredictionWorkflowService', () => {
             },
             school: {
               findUnique: jest.fn().mockResolvedValue(null),
+              count: jest.fn().mockResolvedValue(0),
+            },
+            schoolProgram: {
+              count: jest.fn().mockResolvedValue(0),
+            },
+            schoolCalibration: {
+              count: jest.fn().mockResolvedValue(0),
+            },
+            schoolMetric: {
+              count: jest.fn().mockResolvedValue(0),
+              findMany: jest.fn().mockResolvedValue([]),
+            },
+            admissionCase: {
+              count: jest.fn().mockResolvedValue(0),
+              groupBy: jest.fn().mockResolvedValue([]),
+            },
+            predictionOutcomeLabelRecord: {
+              count: jest.fn().mockResolvedValue(0),
             },
             $transaction: jest
               .fn()
@@ -2072,6 +2090,122 @@ describe('PredictionWorkflowService', () => {
           outcomeLabelRecords: { some: {} },
         },
       });
+    });
+  });
+
+  describe('getDataInventory', () => {
+    it('aggregates row counts across every teacher-input table', async () => {
+      (prisma.school.count as jest.Mock)
+        .mockResolvedValueOnce(150) // total
+        .mockResolvedValueOnce(110) // withSat
+        .mockResolvedValueOnce(140) // withAdmitRate
+        .mockResolvedValueOnce(105); // withBoth
+      (prisma.schoolProgram.count as jest.Mock)
+        .mockResolvedValueOnce(250) // total
+        .mockResolvedValueOnce(200); // withAcceptanceRateEstimate
+      (prisma.schoolCalibration.count as jest.Mock).mockResolvedValue(5);
+      (prisma.schoolCohortRoundPrior.count as jest.Mock).mockResolvedValue(0);
+      (prisma.schoolCohortRegimeSignal.count as jest.Mock).mockResolvedValue(0);
+      (prisma.schoolRelationshipSignal.count as jest.Mock).mockResolvedValue(0);
+      (prisma.admissionCase.count as jest.Mock)
+        .mockResolvedValueOnce(1200) // total
+        .mockResolvedValueOnce(800) // verified
+        .mockResolvedValueOnce(1000) // approvedForTeacher
+        .mockResolvedValueOnce(900) // withGpa11
+        .mockResolvedValueOnce(850); // withTestScores
+      (prisma.admissionCase.groupBy as jest.Mock).mockResolvedValue([
+        { result: 'ADMITTED', _count: { _all: 400 } },
+        { result: 'REJECTED', _count: { _all: 600 } },
+      ]);
+      (prisma.schoolMetric.count as jest.Mock).mockResolvedValue(45);
+      (prisma.schoolMetric.findMany as jest.Mock).mockResolvedValue([
+        { metricKey: 'applications' },
+        { metricKey: 'admissions' },
+      ]);
+
+      const result = await service.getDataInventory();
+
+      expect(result.schools).toEqual({
+        total: 150,
+        withSat: 110,
+        withAdmitRate: 140,
+        withBoth: 105,
+        scorecardReady: 105,
+      });
+      expect(result.schoolPrograms).toEqual({
+        total: 250,
+        withAcceptanceRateEstimate: 200,
+      });
+      expect(result.admissionCases.byResult).toEqual({
+        ADMITTED: 400,
+        REJECTED: 600,
+      });
+      expect(result.teacherSignalTables.cohortRoundPriors).toBe(0);
+      expect(result.schoolMetrics.distinctKeys).toEqual([
+        'applications',
+        'admissions',
+      ]);
+      expect(result.generatedAt).toBeDefined();
+    });
+  });
+
+  describe('getTrainingReadiness', () => {
+    it('reports Tier 0 and "INSUFFICIENT" action when data is near-empty', async () => {
+      (
+        prisma.predictionOutcomeLabelRecord.count as jest.Mock
+      ).mockResolvedValue(0);
+      (prisma.admissionCase.count as jest.Mock).mockResolvedValue(10); // far below 50
+      (prisma.admissionCase.groupBy as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getTrainingReadiness();
+
+      expect(result.totalLabeled).toBe(10);
+      expect(result.tier.current).toBe(0);
+      expect(result.tier.next?.tier).toBe(1);
+      expect(result.tier.next?.samplesNeeded).toBe(40);
+      expect(result.recommendedNextAction).toContain('INSUFFICIENT');
+    });
+
+    it('reports Tier 2 when total labeled sits at 250', async () => {
+      // count is called 3 times: (1) verified labels, (2) approved cases, (3) cases with structured test scores
+      (
+        prisma.predictionOutcomeLabelRecord.count as jest.Mock
+      ).mockResolvedValue(50);
+      (prisma.admissionCase.count as jest.Mock)
+        .mockResolvedValueOnce(200) // approvedAdmissionCases
+        .mockResolvedValueOnce(180); // casesWithStructuredTestScores
+      (prisma.admissionCase.groupBy as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getTrainingReadiness();
+
+      expect(result.totalLabeled).toBe(250);
+      expect(result.tier.current).toBe(2);
+      expect(result.tier.next?.tier).toBe(3);
+      expect(result.tier.next?.samplesNeeded).toBe(750);
+      expect(result.recommendedNextAction).toContain('Tier 2 viable');
+    });
+
+    it('counts schools above per-school thresholds from groupBy result', async () => {
+      (
+        prisma.predictionOutcomeLabelRecord.count as jest.Mock
+      ).mockResolvedValue(0);
+      (prisma.admissionCase.count as jest.Mock).mockResolvedValue(100);
+      (prisma.admissionCase.groupBy as jest.Mock)
+        .mockResolvedValueOnce([]) // casesByYear
+        .mockResolvedValueOnce([
+          { schoolId: 's1', _count: { _all: 60 } },
+          { schoolId: 's2', _count: { _all: 25 } },
+          { schoolId: 's3', _count: { _all: 12 } },
+          { schoolId: 's4', _count: { _all: 8 } },
+        ]); // casesBySchool
+
+      const result = await service.getTrainingReadiness();
+
+      expect(result.perSchoolCoverage.schoolsWithAtLeast10Samples).toBe(3);
+      expect(result.perSchoolCoverage.schoolsWithAtLeast20Samples).toBe(2);
+      expect(result.perSchoolCoverage.schoolsWithAtLeast50Samples).toBe(1);
+      expect(result.perSchoolCoverage.schoolsWithAtLeast100Samples).toBe(0);
+      expect(result.perSchoolCoverage.totalSchoolsWithAnySample).toBe(4);
     });
   });
 });

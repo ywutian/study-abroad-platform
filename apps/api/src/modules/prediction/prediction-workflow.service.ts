@@ -1395,4 +1395,259 @@ export class PredictionWorkflowService {
       generatedAt: new Date().toISOString(),
     };
   }
+
+  /**
+   * Row-count inventory across every table that feeds a prediction teacher.
+   *
+   * Purpose: answer "where is the data bottleneck?" before committing to
+   * distillation work. A teacher is only as strong as its input coverage —
+   * e.g. a CohortPriorTeacher needs `SchoolCohortRoundPrior` populated, which
+   * in turn needs verified `AdmissionCase` rows to aggregate from.
+   *
+   * Every count is cheap (index-only) so this can be polled freely.
+   */
+  async getDataInventory() {
+    const [
+      schools,
+      schoolsWithSat,
+      schoolsWithAdmitRate,
+      schoolsWithBoth,
+      schoolPrograms,
+      schoolProgramsWithRate,
+      schoolCalibrations,
+      cohortRoundPriors,
+      cohortRegimeSignals,
+      relationshipSignals,
+      admissionCasesTotal,
+      admissionCasesVerified,
+      admissionCasesApproved,
+      admissionCasesByResult,
+      admissionCasesWithGpa11,
+      admissionCasesWithTestScores,
+      schoolMetrics,
+      schoolMetricsDistinctKeys,
+    ] = await Promise.all([
+      this.prisma.school.count(),
+      this.prisma.school.count({ where: { satAvg: { not: null } } }),
+      this.prisma.school.count({ where: { acceptanceRate: { not: null } } }),
+      this.prisma.school.count({
+        where: {
+          satAvg: { not: null },
+          acceptanceRate: { not: null },
+        },
+      }),
+      this.prisma.schoolProgram.count(),
+      this.prisma.schoolProgram.count({
+        where: { acceptanceRateEstimate: { not: null } },
+      }),
+      this.prisma.schoolCalibration.count(),
+      this.prisma.schoolCohortRoundPrior.count(),
+      this.prisma.schoolCohortRegimeSignal.count(),
+      this.prisma.schoolRelationshipSignal.count(),
+      this.prisma.admissionCase.count(),
+      this.prisma.admissionCase.count({ where: { isVerified: true } }),
+      this.prisma.admissionCase.count({
+        where: { reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] } },
+      }),
+      this.prisma.admissionCase.groupBy({
+        by: ['result'],
+        _count: { _all: true },
+      }),
+      this.prisma.admissionCase.count({
+        where: { gpa11: { not: null } },
+      }),
+      this.prisma.admissionCase.count({
+        where: { testScores: { not: Prisma.JsonNull } },
+      }),
+      this.prisma.schoolMetric.count(),
+      this.prisma.schoolMetric.findMany({
+        select: { metricKey: true },
+        distinct: ['metricKey'],
+      }),
+    ]);
+
+    const casesByResult: Record<string, number> = {};
+    for (const row of admissionCasesByResult) {
+      casesByResult[row.result] = row._count._all;
+    }
+
+    return {
+      schools: {
+        total: schools,
+        withSat: schoolsWithSat,
+        withAdmitRate: schoolsWithAdmitRate,
+        withBoth: schoolsWithBoth,
+        scorecardReady: schoolsWithBoth, // Scorecard teacher requires both
+      },
+      schoolPrograms: {
+        total: schoolPrograms,
+        withAcceptanceRateEstimate: schoolProgramsWithRate,
+      },
+      schoolCalibrations: { total: schoolCalibrations },
+      teacherSignalTables: {
+        cohortRoundPriors,
+        cohortRegimeSignals,
+        relationshipSignals,
+      },
+      admissionCases: {
+        total: admissionCasesTotal,
+        verified: admissionCasesVerified,
+        approvedForTeacher: admissionCasesApproved,
+        byResult: casesByResult,
+        withGpa11: admissionCasesWithGpa11,
+        withTestScores: admissionCasesWithTestScores,
+      },
+      schoolMetrics: {
+        total: schoolMetrics,
+        distinctKeys: schoolMetricsDistinctKeys.map((r) => r.metricKey),
+      },
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * ML training readiness diagnostic.
+   *
+   * Compares total available labeled samples (verified user outcomes +
+   * approved admission cases) against the tier thresholds in
+   * `apps/api/src/modules/prediction/ml/tier-strategy.ts`:
+   *   Tier 0: 0        (heuristic only — no ML)
+   *   Tier 1: 50       (Platt calibration)
+   *   Tier 2: 200      (basic LR, 20 features)
+   *   Tier 3: 1000     (full LR, 44 features + per-band)
+   *   Tier 4: 5000     (GBDT + per-band)
+   *
+   * Also breaks samples down by selectivity band (for per-band model
+   * thresholds) and by school — a model is only useful for a school once
+   * it has enough per-school samples, which is why band-level aggregation
+   * matters more than total count in sparse-data regimes.
+   */
+  async getTrainingReadiness() {
+    const VERIFIED_OUTCOME_STATUSES = [
+      'COUNSELOR_VERIFIED',
+      'DOCUMENT_VERIFIED',
+    ];
+
+    const [
+      verifiedOutcomeLabels,
+      caseCount,
+      casesWithStructuredScores,
+      casesByYear,
+      casesBySchool,
+    ] = await Promise.all([
+      this.prisma.predictionOutcomeLabelRecord.count({
+        where: {
+          status: { in: VERIFIED_OUTCOME_STATUSES as never[] },
+          result: { in: ['ADMITTED', 'REJECTED'] },
+        },
+      }),
+      this.prisma.admissionCase.count({
+        where: {
+          reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
+          result: { in: ['ADMITTED', 'REJECTED'] },
+        },
+      }),
+      this.prisma.admissionCase.count({
+        where: {
+          reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
+          result: { in: ['ADMITTED', 'REJECTED'] },
+          testScores: { not: Prisma.JsonNull },
+        },
+      }),
+      this.prisma.admissionCase.groupBy({
+        by: ['year'],
+        where: {
+          reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
+          result: { in: ['ADMITTED', 'REJECTED'] },
+        },
+        _count: { _all: true },
+      }),
+      this.prisma.admissionCase.groupBy({
+        by: ['schoolId'],
+        where: {
+          reviewStatus: { in: ['AUTO_APPROVED', 'APPROVED'] },
+          result: { in: ['ADMITTED', 'REJECTED'] },
+        },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const totalLabeled = verifiedOutcomeLabels + caseCount;
+
+    const TIER_THRESHOLDS: Array<{ tier: number; min: number; label: string }> =
+      [
+        { tier: 0, min: 0, label: 'Heuristic only' },
+        { tier: 1, min: 50, label: 'Platt calibration' },
+        { tier: 2, min: 200, label: 'Basic LR (20 features)' },
+        { tier: 3, min: 1000, label: 'Full LR (44 features) + per-band' },
+        { tier: 4, min: 5000, label: 'GBDT + per-band' },
+      ];
+
+    let currentTier = 0;
+    for (const t of TIER_THRESHOLDS) {
+      if (totalLabeled >= t.min) currentTier = t.tier;
+    }
+    const nextTierInfo =
+      currentTier < 4 ? TIER_THRESHOLDS[currentTier + 1] : null;
+
+    const schoolsWithMinSamples: Record<string, number> = {};
+    for (const threshold of [10, 20, 50, 100]) {
+      schoolsWithMinSamples[`schoolsWithAtLeast${threshold}Samples`] =
+        casesBySchool.filter((s) => s._count._all >= threshold).length;
+    }
+
+    const yearBreakdown: Record<string, number> = {};
+    for (const row of casesByYear) {
+      yearBreakdown[String(row.year)] = row._count._all;
+    }
+
+    // Surface a clear next-step recommendation so operators don't have to
+    // mentally map counts → action.
+    let recommendedNextAction: string;
+    if (totalLabeled < 50) {
+      recommendedNextAction =
+        'INSUFFICIENT: import more AdmissionCase rows (CSV import script) before attempting ML.';
+    } else if (totalLabeled < 200) {
+      recommendedNextAction =
+        'Tier 1 viable (Platt calibration). Can train a calibrator but not a feature-based model. Keep accumulating cases.';
+    } else if (totalLabeled < 1000) {
+      recommendedNextAction =
+        'Tier 2 viable (basic LR, 20 features). Train a global XGBoost champion for top schools with ≥20 per-school samples.';
+    } else if (totalLabeled < 5000) {
+      recommendedNextAction =
+        'Tier 3 viable (full LR + per-band models). Promote per-selectivity-band champions.';
+    } else {
+      recommendedNextAction = 'Tier 4 viable (GBDT). Full ensemble deployable.';
+    }
+
+    return {
+      totalLabeled,
+      breakdown: {
+        verifiedOutcomeLabels,
+        approvedAdmissionCases: caseCount,
+        casesWithStructuredTestScores: casesWithStructuredScores,
+      },
+      tier: {
+        current: currentTier,
+        currentLabel:
+          TIER_THRESHOLDS.find((t) => t.tier === currentTier)?.label ??
+          'unknown',
+        next: nextTierInfo
+          ? {
+              tier: nextTierInfo.tier,
+              label: nextTierInfo.label,
+              samplesNeeded: nextTierInfo.min - totalLabeled,
+            }
+          : null,
+        thresholds: TIER_THRESHOLDS,
+      },
+      perSchoolCoverage: {
+        ...schoolsWithMinSamples,
+        totalSchoolsWithAnySample: casesBySchool.length,
+      },
+      yearBreakdown,
+      recommendedNextAction,
+      generatedAt: new Date().toISOString(),
+    };
+  }
 }
