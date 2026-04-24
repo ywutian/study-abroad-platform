@@ -27,7 +27,11 @@ export const FactorsPanel = memo(function FactorsPanel({ factors }: FactorsPanel
       <p className="text-overline text-muted-foreground">{t('impactFactors')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {sorted.map((factor) => {
-          const config = IMPACT_CONFIG[factor.impact];
+          // Defensive: backend may occasionally surface unexpected impact
+          // strings (e.g. LLM hallucinations like "high"). Fall back to
+          // neutral styling instead of crashing the whole panel on
+          // `undefined.icon`.
+          const config = IMPACT_CONFIG[factor.impact] ?? IMPACT_CONFIG.neutral;
           const Icon = config.icon;
           return (
             <div
