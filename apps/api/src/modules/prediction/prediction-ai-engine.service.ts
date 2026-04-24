@@ -11,6 +11,19 @@ import { PredictionFactor, PredictionComparison } from './dto';
 import { calculateSelectivityIndex } from './utils/score-calculator';
 import { PredictionTransformerService } from './prediction-transformer.service';
 
+type FactorImpact = 'positive' | 'negative' | 'neutral';
+const VALID_IMPACTS: ReadonlySet<string> = new Set<FactorImpact>([
+  'positive',
+  'negative',
+  'neutral',
+]);
+
+function normalizeImpact(value: unknown): FactorImpact {
+  return typeof value === 'string' && VALID_IMPACTS.has(value)
+    ? (value as FactorImpact)
+    : 'neutral';
+}
+
 /**
  * Engine 2: AI-powered prediction using LLM expert consultation.
  *
@@ -180,7 +193,7 @@ export class PredictionAiEngine {
         probability,
         factors: (parsed.factors || []).map((f: any) => ({
           name: f.name || 'Unknown',
-          impact: f.impact || 'neutral',
+          impact: normalizeImpact(f.impact),
           weight: f.weight || 0,
           detail: f.detail || '',
           improvement: f.improvement || undefined,
@@ -288,18 +301,10 @@ Return JSON only: { "factors": [{"name":"...", "impact":"positive|negative|neutr
         suggestions?: string[];
       }>(response);
 
-      const VALID_IMPACTS = new Set(['positive', 'negative', 'neutral']);
       return {
         factors: (parsed?.factors || []).map((f) => ({
           name: f.name || 'Unknown',
-          // LLM occasionally hallucinates impact values like 'high' / 'important' /
-          // localized text. The previous `f.impact || 'neutral'` only caught
-          // falsy values; coerce anything outside the enum so the frontend's
-          // IMPACT_CONFIG[factor.impact] lookup never returns undefined.
-          impact: (VALID_IMPACTS.has(f.impact) ? f.impact : 'neutral') as
-            | 'positive'
-            | 'negative'
-            | 'neutral',
+          impact: normalizeImpact(f.impact),
           weight: f.weight || 0,
           detail: f.detail || '',
         })),
