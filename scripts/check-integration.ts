@@ -64,6 +64,7 @@ type RuleName =
   | 'cache-invalidation-audit'
   | 'llm-json-import-check'
   | 'school-write-must-have-provenance'
+  | 'prediction-write-must-declare-authority'
   | 'governance-optional-security'
   | 'governance-nl-endpoint-coverage'
   | 'governance-config-consistency'
@@ -87,6 +88,7 @@ const DOMAINS: Record<string, RuleName[]> = {
     'cache-invalidation-audit',
     'llm-json-import-check',
     'school-write-must-have-provenance',
+    'prediction-write-must-declare-authority',
   ],
   governance: [
     'governance-optional-security',
@@ -1382,6 +1384,100 @@ function checkSchoolWriteMustHaveProvenance(): Issue[] {
   return issues;
 }
 
+// ── Rule 18: prediction-write-must-declare-authority ────────
+//
+// Every `prisma.predictionResult.{create,upsert}` and
+// `prisma.predictionSnapshot.{create,upsert}` must explicitly set the
+// `authority` field so consumers (chinese-outcome-teacher, reporting,
+// training data, UI trend) can filter AUTHORITATIVE vs PREVIEW rows.
+//
+// Replaces the former modelVersion allowlist in school-list.service.ts which
+// silently clobbered new model versions (Scorecard broke this in #43).
+
+const PREDICTION_WRITE_SCAN_PATHS = [
+  path.resolve(ROOT, 'apps/api/src/**/*.ts'),
+  path.resolve(ROOT, 'apps/api/scripts/**/*.ts'),
+];
+
+const PREDICTION_WRITE_TARGETS = new Set([
+  'prisma.predictionResult',
+  'prisma.predictionSnapshot',
+  'this.prisma.predictionResult',
+  'this.prisma.predictionSnapshot',
+  'tx.predictionResult',
+  'tx.predictionSnapshot',
+]);
+
+function checkPredictionWriteMustDeclareAuthority(): Issue[] {
+  const issues: Issue[] = [];
+  const project = new Project({
+    skipAddingFilesFromTsConfig: true,
+    compilerOptions: { allowJs: false },
+  });
+  const sourceFiles = project.addSourceFilesAtPaths(PREDICTION_WRITE_SCAN_PATHS);
+
+  const hasAuthorityInPayload = (callExpr: import('ts-morph').CallExpression): boolean => {
+    // `.create({ data: {...} })` → inspect the `data` object literal
+    // `.upsert({ update: {...}, create: {...} })` → both must have authority
+    const objectArg = callExpr.getArguments().find((arg) => Node.isObjectLiteralExpression(arg));
+    if (!objectArg || !Node.isObjectLiteralExpression(objectArg)) return false;
+
+    const dataProp = objectArg.getProperty('data');
+    if (dataProp && Node.isPropertyAssignment(dataProp)) {
+      const init = dataProp.getInitializer();
+      if (Node.isObjectLiteralExpression(init)) {
+        return Boolean(init.getProperty('authority'));
+      }
+    }
+
+    const updateProp = objectArg.getProperty('update');
+    const createProp = objectArg.getProperty('create');
+    if (updateProp && createProp) {
+      const updateInit = Node.isPropertyAssignment(updateProp) ? updateProp.getInitializer() : null;
+      const createInit = Node.isPropertyAssignment(createProp) ? createProp.getInitializer() : null;
+      if (
+        Node.isObjectLiteralExpression(updateInit) &&
+        Node.isObjectLiteralExpression(createInit)
+      ) {
+        return (
+          Boolean(updateInit.getProperty('authority')) &&
+          Boolean(createInit.getProperty('authority'))
+        );
+      }
+    }
+
+    return false;
+  };
+
+  for (const sourceFile of sourceFiles) {
+    const filePath = sourceFile.getFilePath();
+    if (isTestFile(filePath)) continue;
+
+    for (const callExpr of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+      const expr = callExpr.getExpression();
+      if (!Node.isPropertyAccessExpression(expr)) continue;
+
+      const method = expr.getName();
+      if (!['create', 'upsert'].includes(method)) continue;
+
+      const targetText = expr.getExpression().getText();
+      if (!PREDICTION_WRITE_TARGETS.has(targetText)) continue;
+
+      if (!hasAuthorityInPayload(callExpr)) {
+        issues.push({
+          rule: 'prediction-write-must-declare-authority',
+          severity: 'error',
+          file: rel(filePath),
+          line: callExpr.getStartLineNumber(),
+          message: `${targetText}.${method}() must declare authority: 'AUTHORITATIVE' | 'PREVIEW' in its payload (invariant: PREVIEW must never overwrite AUTHORITATIVE).`,
+        });
+      }
+    }
+  }
+
+  return issues;
+}
+
 // ── Output ──────────────────────────────────────────────────
 
 const COLORS = {
@@ -1521,6 +1617,7 @@ const RULE_MAP: Record<RuleName, () => Issue[]> = {
   'cache-invalidation-audit': checkCacheInvalidation,
   'llm-json-import-check': checkLlmJsonImport,
   'school-write-must-have-provenance': checkSchoolWriteMustHaveProvenance,
+  'prediction-write-must-declare-authority': checkPredictionWriteMustDeclareAuthority,
   'governance-optional-security': () => runGovernanceRule('optional-security'),
   'governance-nl-endpoint-coverage': () => runGovernanceRule('nl-endpoint-coverage'),
   'governance-config-consistency': () => runGovernanceRule('config-consistency'),

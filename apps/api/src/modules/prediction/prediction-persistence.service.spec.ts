@@ -95,6 +95,7 @@ describe('PredictionPersistenceService', () => {
           modelVersion: 'v3-enterprise',
           policyVersionId: undefined,
           source: 'prediction',
+          authority: 'AUTHORITATIVE',
         },
         create: {
           profileId: 'profile-1',
@@ -111,6 +112,7 @@ describe('PredictionPersistenceService', () => {
           modelVersion: 'v3-enterprise',
           policyVersionId: undefined,
           source: 'prediction',
+          authority: 'AUTHORITATIVE',
         },
       });
     });
@@ -130,8 +132,22 @@ describe('PredictionPersistenceService', () => {
           source: 'prediction',
           modelVersion: 'v3-enterprise',
           policyVersionId: undefined,
+          authority: 'AUTHORITATIVE',
         },
       });
+    });
+
+    it('should declare authority=AUTHORITATIVE on upsert + snapshot', async () => {
+      await service.savePrediction('profile-1', 'school-1', mockResult);
+
+      const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
+        .calls[0][0];
+      expect(upsertCall.create.authority).toBe('AUTHORITATIVE');
+      expect(upsertCall.update.authority).toBe('AUTHORITATIVE');
+
+      const snapshotCall = (prisma.predictionSnapshot.create as jest.Mock).mock
+        .calls[0][0];
+      expect(snapshotCall.data.authority).toBe('AUTHORITATIVE');
     });
 
     it('should call upsert before snapshot (sequential)', async () => {

@@ -49,6 +49,9 @@ export class ChineseOutcomeTeacherService implements TeacherSignalProvider {
       const grouped = await this.prisma.predictionSnapshot.groupBy({
         by: ['outcomeLabel'],
         where: {
+          // Only count real predictions — PREVIEW rows (school-list quick-match)
+          // must never inform teacher-signal statistics.
+          authority: 'AUTHORITATIVE',
           outcomeLabel: {
             in: ['ADMITTED', 'REJECTED', 'WAITLISTED'],
           },

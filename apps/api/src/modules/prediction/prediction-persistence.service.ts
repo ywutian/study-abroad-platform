@@ -143,6 +143,7 @@ export class PredictionPersistenceService {
           confidenceReason: result.confidenceReason,
           selectivityBand: result.selectivityBand,
           source: 'prediction',
+          authority: 'AUTHORITATIVE',
         },
         create: {
           profileId,
@@ -166,6 +167,7 @@ export class PredictionPersistenceService {
           confidenceReason: result.confidenceReason,
           selectivityBand: result.selectivityBand,
           source: 'prediction',
+          authority: 'AUTHORITATIVE',
         },
       });
 
@@ -180,6 +182,7 @@ export class PredictionPersistenceService {
           tier: result.tier,
           confidence: result.confidence,
           source: 'prediction',
+          authority: 'AUTHORITATIVE',
           modelVersion,
           policyVersionId,
           servedTrace: result.servedTrace as any,

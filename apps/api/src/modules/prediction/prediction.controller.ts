@@ -289,7 +289,13 @@ export class PredictionController {
         },
       }),
       this.prisma.predictionSnapshot.findMany({
-        where: { profileId: profile.id, schoolId },
+        where: {
+          profileId: profile.id,
+          schoolId,
+          // Trend graph shows real predictions only; PREVIEW rows would mix
+          // UI-transient quick-match estimates with served history.
+          authority: 'AUTHORITATIVE',
+        },
         orderBy: { createdAt: 'desc' },
         take: 20,
       }),

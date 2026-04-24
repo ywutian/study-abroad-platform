@@ -527,7 +527,9 @@ export class SchoolListService {
       }
     }
 
-    // 桥接：将快速评分结果异步写入 PredictionResult + PredictionSnapshot
+    // Bridge: write quick-match estimates to PredictionResult as PREVIEW authority.
+    // Never writes PredictionSnapshot — snapshots are the time-series of real
+    // served predictions used by distillation / reporting / trend UI.
     this.syncQuickMatchToPrediction(profile.id, schools, profileMetrics).catch(
       (err) => {
         this.logger.warn('Failed to sync quick-match to predictions', err);
@@ -538,7 +540,10 @@ export class SchoolListService {
   }
 
   /**
-   * 桥接：将快速评分结果同步到 PredictionResult + PredictionSnapshot
+   * Bridge: sync quick-match estimates to PredictionResult with authority=PREVIEW.
+   * Invariant (enforced at line ~594 + in check-integration): PREVIEW must never
+   * overwrite AUTHORITATIVE. No PredictionSnapshot writes — preview belongs only
+   * on PredictionResult (the school-list UI column source).
    */
   private async syncQuickMatchToPrediction(
     profileId: string,
@@ -580,22 +585,18 @@ export class SchoolListService {
       const tier = calculateTier(probability, schoolMetrics);
 
       try {
-        // 防覆盖高质量结果
+        // Authority invariant: PREVIEW must never overwrite AUTHORITATIVE.
+        // This replaces the legacy modelVersion allowlist so that every
+        // future authoritative model (Scorecard, v4, ML champion, etc.) is
+        // automatically protected without touching this file.
         const existing = await this.prisma.predictionResult.findUnique({
           where: {
             profileId_schoolId: { profileId, schoolId: school.id },
           },
-          select: { modelVersion: true },
+          select: { authority: true },
         });
 
-        if (
-          existing?.modelVersion === 'v3-enterprise' ||
-          existing?.modelVersion === 'v2-ensemble' ||
-          existing?.modelVersion === 'v2-recommendation-anchored' ||
-          existing?.modelVersion === 'v1-recommendation-ai' ||
-          existing?.modelVersion === 'v1-school-ai'
-        )
-          continue;
+        if (existing && existing.authority === 'AUTHORITATIVE') continue;
 
         await this.prisma.predictionResult.upsert({
           where: {
@@ -607,6 +608,7 @@ export class SchoolListService {
             confidence: 'low',
             modelVersion: 'v1-stats',
             source: 'quick-match',
+            authority: 'PREVIEW',
           },
           create: {
             profileId,
@@ -617,20 +619,15 @@ export class SchoolListService {
             factors: [] as any,
             modelVersion: 'v1-stats',
             source: 'quick-match',
+            authority: 'PREVIEW',
           },
         });
 
-        await this.prisma.predictionSnapshot.create({
-          data: {
-            profileId,
-            schoolId: school.id,
-            probability,
-            tier,
-            confidence: 'low',
-            source: 'quick-match',
-            modelVersion: 'v1-stats',
-          },
-        });
+        // Intentionally NOT writing PredictionSnapshot here: snapshots are the
+        // time-series of real served predictions (read by the Chinese-cohort
+        // distillation teacher, reporting, UI trend graph). Preview estimates
+        // are only for the school-list UI column and will be superseded when
+        // the user triggers a full predict.
       } catch (error) {
         this.logger.warn(
           `Failed to sync quick-match for school ${school.id}`,
