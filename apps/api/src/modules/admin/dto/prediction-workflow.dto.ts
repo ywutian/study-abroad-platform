@@ -458,3 +458,26 @@ export class RollbackPredictionPolicyDto {
   @MaxLength(200)
   policyKey?: string;
 }
+
+export class NormalizeLegacyCasesDto {
+  @ApiPropertyOptional({
+    default: false,
+    description:
+      'When true, parse cases and return preview + counts but do not write to the DB.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: 10000,
+    description:
+      'Cap how many cases to process in one call. Defaults to processing all cases with unparsed legacy fields.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  limit?: number;
+}

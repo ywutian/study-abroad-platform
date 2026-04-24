@@ -197,6 +197,11 @@ describe('PredictionWorkflowService', () => {
             admissionCase: {
               count: jest.fn().mockResolvedValue(0),
               groupBy: jest.fn().mockResolvedValue([]),
+              findMany: jest.fn().mockResolvedValue([]),
+              update: jest.fn().mockImplementation(({ where, data }) => ({
+                id: where.id,
+                ...data,
+              })),
             },
             predictionOutcomeLabelRecord: {
               count: jest.fn().mockResolvedValue(0),
@@ -2206,6 +2211,150 @@ describe('PredictionWorkflowService', () => {
       expect(result.perSchoolCoverage.schoolsWithAtLeast50Samples).toBe(1);
       expect(result.perSchoolCoverage.schoolsWithAtLeast100Samples).toBe(0);
       expect(result.perSchoolCoverage.totalSchoolsWithAnySample).toBe(4);
+    });
+  });
+
+  describe('normalizeLegacyCases', () => {
+    const mkCase = (
+      over: Partial<{
+        id: string;
+        gpaRange: string | null;
+        gpa11: number | null;
+        gpaScale: number | null;
+        satRange: string | null;
+        actRange: string | null;
+        toeflRange: string | null;
+        testScores: unknown;
+      }> = {},
+    ) => ({
+      id: 'c1',
+      gpaRange: null,
+      gpa11: null,
+      gpaScale: null,
+      satRange: null,
+      actRange: null,
+      toeflRange: null,
+      testScores: null,
+      ...over,
+    });
+
+    it('dryRun=true returns preview + counts without calling update', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mkCase({ gpaRange: '3.7-3.9', satRange: '1500-1550' }),
+      ]);
+
+      const result = await service.normalizeLegacyCases({ dryRun: true });
+
+      expect(result.dryRun).toBe(true);
+      expect(result.scanned).toBe(1);
+      expect(result.gpaWritten).toBe(1);
+      expect(result.testScoresWritten).toBe(1);
+      expect(prisma.admissionCase.update).not.toHaveBeenCalled();
+      expect(result.preview).toHaveLength(1);
+      expect(result.preview[0].gpa11).toBeCloseTo(3.8, 5);
+      expect(result.preview[0].testScores).toEqual([
+        {
+          type: 'SAT',
+          score: 1525,
+          confidence: 'range-midpoint',
+          source: 'legacy_range_parse',
+        },
+      ]);
+    });
+
+    it('writes gpa11 + gpaScale when range parseable and targets are NULL', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mkCase({ id: 'c1', gpaRange: '3.8' }),
+      ]);
+
+      await service.normalizeLegacyCases({ dryRun: false });
+
+      expect(prisma.admissionCase.update).toHaveBeenCalledTimes(1);
+      const updateArg = (prisma.admissionCase.update as jest.Mock).mock
+        .calls[0][0];
+      expect(updateArg.where.id).toBe('c1');
+      expect(updateArg.data.gpa11).toBe(3.8);
+      expect(updateArg.data.gpaScale).toBe(4.0);
+    });
+
+    it('does NOT overwrite existing gpa11 even if gpaRange is present', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        // Prisma WHERE filter would normally exclude this case because
+        // gpa11 is non-null, but the findMany mock returns it anyway.
+        // The service's own null-guard (`c.gpa11 == null`) must still
+        // skip it — this asserts that second layer of defense.
+        mkCase({ gpaRange: '3.7-3.9', gpa11: 3.5 }),
+      ]);
+
+      await service.normalizeLegacyCases({ dryRun: false });
+
+      // Only the testScores update path writes — GPA path is skipped.
+      // Since no testScores in input, no update at all.
+      expect(prisma.admissionCase.update).not.toHaveBeenCalled();
+    });
+
+    it('builds testScores[] with all three test types when provided', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mkCase({
+          satRange: '1500-1550',
+          actRange: '32-34',
+          toeflRange: '100-110',
+        }),
+      ]);
+
+      await service.normalizeLegacyCases({ dryRun: false });
+
+      const updateArg = (prisma.admissionCase.update as jest.Mock).mock
+        .calls[0][0];
+      expect(updateArg.data.testScores).toHaveLength(3);
+      const byType = Object.fromEntries(
+        (
+          updateArg.data.testScores as Array<{ type: string; score: number }>
+        ).map((e) => [e.type, e.score]),
+      );
+      expect(byType.SAT).toBe(1525);
+      expect(byType.ACT).toBe(33);
+      expect(byType.TOEFL).toBe(105);
+    });
+
+    it('skips unparseable legacy strings and records them as parseFailures', async () => {
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mkCase({ id: 'c1', gpaRange: 'strong' }),
+        mkCase({ id: 'c2', satRange: 'high' }),
+      ]);
+
+      const result = await service.normalizeLegacyCases({ dryRun: true });
+
+      expect(result.gpaWritten).toBe(0);
+      expect(result.testScoresWritten).toBe(0);
+      expect(result.parseFailures).toEqual(
+        expect.arrayContaining([
+          { caseId: 'c1', field: 'gpaRange', value: 'strong' },
+          { caseId: 'c2', field: 'satRange', value: 'high' },
+        ]),
+      );
+    });
+
+    it('does not touch testScores when existing value is non-null', async () => {
+      // A case that already has testScores set (non-null) must be left
+      // alone — we only fill the gap, never second-guess an existing
+      // structured array.
+      (prisma.admissionCase.findMany as jest.Mock).mockResolvedValue([
+        mkCase({
+          satRange: '1500-1550',
+          testScores: [
+            {
+              type: 'SAT',
+              score: 1600,
+              source: 'counselor_verified',
+            },
+          ],
+        }),
+      ]);
+
+      await service.normalizeLegacyCases({ dryRun: false });
+      // No update — no fields to fill.
+      expect(prisma.admissionCase.update).not.toHaveBeenCalled();
     });
   });
 });
