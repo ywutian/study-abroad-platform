@@ -7,6 +7,8 @@ import type {
 import { normalCDF } from '../../utils/score-calculator';
 
 const DEFAULT_WEIGHT = 0.12;
+const SAT_AVG_ONLY_SIGMA = 100;
+const ACT_AVG_ONLY_SIGMA = 3;
 
 function clampProbability(value: number): number {
   return Math.max(0.01, Math.min(0.99, value));
@@ -25,7 +27,7 @@ type ScoreAxisResult = {
   multiplier: number;
   bucketKey: string;
   confidence: 'low' | 'medium';
-  mode: 'distribution' | 'heuristic_gpa';
+  mode: 'distribution' | 'heuristic_avg' | 'heuristic_gpa';
 };
 
 @Injectable()
@@ -137,7 +139,18 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
       };
     }
 
-    return null;
+    const percentile = normalCDF((satScore - satAvg) / SAT_AVG_ONLY_SIGMA);
+    const multiplier = percentileToMultiplier(percentile);
+
+    return {
+      axis: 'sat',
+      probability: clampProbability(baseRate * multiplier),
+      percentile,
+      multiplier,
+      bucketKey: `sat_avg:${percentile.toFixed(2)}`,
+      confidence: 'low',
+      mode: 'heuristic_avg',
+    };
   }
 
   private evaluateAct(
@@ -171,7 +184,18 @@ export class ScorecardTeacherService implements TeacherSignalProvider {
       };
     }
 
-    return null;
+    const percentile = normalCDF((actScore - actAvg) / ACT_AVG_ONLY_SIGMA);
+    const multiplier = percentileToMultiplier(percentile);
+
+    return {
+      axis: 'act',
+      probability: clampProbability(baseRate * multiplier),
+      percentile,
+      multiplier,
+      bucketKey: `act_avg:${percentile.toFixed(2)}`,
+      confidence: 'low',
+      mode: 'heuristic_avg',
+    };
   }
 
   private evaluateGpa(

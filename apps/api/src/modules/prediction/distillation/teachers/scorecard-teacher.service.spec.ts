@@ -66,7 +66,7 @@ describe('ScorecardTeacherService', () => {
     ]);
   });
 
-  it('does not use avg-only SAT heuristic when quartiles are missing', async () => {
+  it('uses low-confidence avg-only SAT heuristic when quartiles are missing', async () => {
     const result = await service.evaluate(
       buildInput({
         school: {
@@ -90,14 +90,21 @@ describe('ScorecardTeacherService', () => {
       }),
     );
 
-    expect(result.active).toBe(false);
-    expect(result.probability).toBeNull();
-    expect(result.missingReasons).toContain(
-      'missing_test_score_or_distribution',
-    );
+    expect(result.active).toBe(true);
+    expect(result.confidence).toBe('low');
+    expect(result.bucketKey).toContain('sat_avg:');
+    expect(result.missingReasons).toEqual([]);
     expect(result.metadata).toMatchObject({
       schoolAcceptanceRate: 0.2,
     });
+    const axis = (result.metadata?.axes as any[])[0];
+    expect(axis).toMatchObject({
+      axis: 'sat',
+      confidence: 'low',
+      mode: 'heuristic_avg',
+    });
+    expect(axis.percentile).toBeGreaterThan(0.99);
+    expect(axis.multiplier).toBeCloseTo(1.9836, 4);
   });
 
   it('returns inactive when there is no test score anchor at all', async () => {
@@ -223,5 +230,41 @@ describe('ScorecardTeacherService', () => {
     expect(result.confidence).toBe('high');
     expect(axes.map((axis) => axis.axis)).toEqual(['sat', 'act', 'gpa']);
     expect(result.probability).toBeCloseTo(expectedProbability, 6);
+  });
+
+  it('emits SAT, ACT, and GPA axes for UC-style avg-only test data', async () => {
+    const result = await service.evaluate(
+      buildInput({
+        school: {
+          acceptanceRate: 11,
+          satAvg: 1415,
+          sat25: null,
+          sat75: null,
+          actAvg: 32,
+          act25: null,
+          act75: null,
+        } as any,
+        inputSummary: {
+          sat: 1550,
+          act: 34,
+          gpaNormalized: 0.98,
+          nationality: 'US',
+          curriculumType: null,
+          highSchoolType: 'US_HS',
+          isInternational: false,
+        },
+      }),
+    );
+
+    const axes = result.metadata?.axes as any[];
+
+    expect(result.active).toBe(true);
+    expect(result.confidence).toBe('low');
+    expect(axes.map((axis) => axis.axis)).toEqual(['sat', 'act', 'gpa']);
+    expect(axes.map((axis) => axis.mode)).toEqual([
+      'heuristic_avg',
+      'heuristic_avg',
+      'heuristic_gpa',
+    ]);
   });
 });

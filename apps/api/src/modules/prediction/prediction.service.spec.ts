@@ -900,6 +900,16 @@ describe('PredictionService', () => {
       expect(output.results[0].probability).toBeCloseTo(0.47, 6);
       expect(output.results[0].modelVersion).toBe('v3-enterprise');
       expect(output.results[0].cohortKey).toBe('CN__CHINA_INTL');
+      expect((output.results[0] as any).servedTrace.distillation).toMatchObject(
+        {
+          stage: 'DISTILLATION_LIVE',
+          applyLiveBlend: true,
+          liveEligible: true,
+          activeTeacherKeys: ['scorecard-v1'],
+          candidateServedProbability: 0.47,
+          servedProbability: 0.47,
+        },
+      );
     });
 
     it('should serve the fusion result when compliant live blend is off', async () => {
