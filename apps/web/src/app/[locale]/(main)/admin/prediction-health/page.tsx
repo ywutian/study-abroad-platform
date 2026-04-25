@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { adminRoutes } from '@study-abroad/shared';
+import { OperationalActionsCard } from './_components/operational-actions-card';
 
 // -----------------------------------------------------------------------------
 // Types mirror the service return shapes defined in
@@ -155,6 +156,9 @@ export default function AdminPredictionHealthPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Card 0: Operational actions (run normalize + backfill without DevTools) */}
+      <OperationalActionsCard />
 
       {/* Card 1: Authority Distribution */}
       <Card>

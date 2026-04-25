@@ -6522,6 +6522,35 @@
         "atLeast100": "≥100 samples",
         "yearBreakdown": "By application year",
         "recommendation": "Recommended next action"
+      },
+      "actions": {
+        "title": "Operational actions",
+        "subtitle": "Run the one-shot data-population endpoints. Dry-run returns preview counts without writing; Live commits the update and is idempotent (safe to re-run).",
+        "dryRun": "Dry run",
+        "live": "Live",
+        "dryRunBadge": "Dry-run preview",
+        "liveBadge": "Committed",
+        "fullJson": "Show full JSON response",
+        "error": "Request failed",
+        "normalize": {
+          "title": "Normalize legacy cases",
+          "subtitle": "Parse gpaRange/satRange/actRange/toeflRange strings into structured gpa11 + testScores[]. Fills only NULL target fields; never overwrites.",
+          "confirmLive": "Run normalize on prod cases now? This writes to AdmissionCase rows where gpa11 / testScores are currently NULL. The write is additive and idempotent."
+        },
+        "backfill": {
+          "title": "Backfill cohort priors",
+          "subtitle": "Aggregate approved AdmissionCase rows into SchoolCohortRoundPrior. Required before CohortPriorTeacher can serve signals.",
+          "confirmLive": "Run cohort-prior backfill now? This writes new rows to SchoolCohortRoundPrior (setVersion=today). Rollback via DELETE WHERE setVersion LIKE 'backfill-%'."
+        },
+        "result": {
+          "scanned": "Scanned",
+          "written": "Written",
+          "updated": "Updated",
+          "gpaWritten": "GPA written",
+          "testScoresWritten": "Test scores written",
+          "eligibleBuckets": "Eligible buckets",
+          "droppedLowSample": "Dropped (low sample)"
+        }
       }
     },
     "calibrations": {
