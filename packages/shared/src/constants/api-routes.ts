@@ -510,6 +510,10 @@ export const adminRoutes = {
   predictionWorkflowDataInventory: () => `${API_ROUTES.ADMIN}/prediction-workflow/data-inventory`,
   predictionWorkflowTrainingReadiness: () =>
     `${API_ROUTES.ADMIN}/prediction-workflow/training-readiness`,
+  predictionWorkflowCasesNormalizeLegacy: () =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/cases/normalize-legacy`,
+  predictionWorkflowCohortPriorsBackfill: () =>
+    `${API_ROUTES.ADMIN}/prediction-workflow/cohort-priors/backfill`,
   applicationAnalysisWorkflowEvidence: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence`,
   applicationAnalysisWorkflowEvidenceReview: (id: string) =>
