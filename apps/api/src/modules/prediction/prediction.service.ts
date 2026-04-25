@@ -57,13 +57,14 @@ import {
   type SavedPredictionRefs,
 } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
-import { PredictionPolicyService } from './prediction-policy.service';
+import {
+  PredictionPolicyService,
+  type PredictionTracePayload,
+} from './prediction-policy.service';
 import { DistillationService } from './benchmark/distillation.service';
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 import { DistillationObservationService } from './distillation/distillation-observation.service';
 import {
-  DISTILLATION_LIVE_STAGE,
-  DISTILLATION_SHADOW_STAGE,
   type DistillationBlendDecision,
   type DistillationEvaluationInput,
 } from './distillation/types';
@@ -1176,6 +1177,12 @@ export class PredictionService {
 
           mlResult.cohortKey =
             compliantEvaluation?.decision.cohortKey ?? mlResult.cohortKey;
+          mlResult.servedTrace = this.withCompliantDistillationTrace(
+            (mlResult.servedTrace ?? {}) as object,
+            compliantEvaluation,
+            candidateServedProbability,
+            mlResult.probability,
+          ) as any;
 
           // ML-Primary mode: cache, persist, and return the served result
           let savedRefs: SavedPredictionRefs = {};
@@ -1660,19 +1667,24 @@ export class PredictionService {
     // 选择最佳 comparison (优先 AI，回退 stats)
     const comparison = aiResult?.comparison || statsResult.comparison;
 
-    const servedTrace = this.policyService.buildTracePayload({
-      policyVersionId: policyVersionId ?? MODEL_VERSION,
-      profile: profileInput,
-      school: schoolInput,
-      roundContext: schoolInput.applicationRound,
-      confidence: confidenceLevel,
-      schoolMeta: {
-        acceptanceRate: schoolInput.acceptanceRate,
-        intlAcceptanceRate: schoolInput.intlAcceptanceRate,
-        usNewsRank: schoolInput.usNewsRank,
-        graduationRate: schoolInput.graduationRate,
-      },
-    });
+    const servedTrace = this.withCompliantDistillationTrace(
+      this.policyService.buildTracePayload({
+        policyVersionId: policyVersionId ?? MODEL_VERSION,
+        profile: profileInput,
+        school: schoolInput,
+        roundContext: schoolInput.applicationRound,
+        confidence: confidenceLevel,
+        schoolMeta: {
+          acceptanceRate: schoolInput.acceptanceRate,
+          intlAcceptanceRate: schoolInput.intlAcceptanceRate,
+          usNewsRank: schoolInput.usNewsRank,
+          graduationRate: schoolInput.graduationRate,
+        },
+      }),
+      compliantEvaluation,
+      compliantCandidateServedProbability,
+      fusedResult.probability,
+    );
 
     const resolvedPolicyVersionId =
       servedTrace?.policyVersionId ?? policyVersionId ?? MODEL_VERSION;
@@ -1933,6 +1945,50 @@ export class PredictionService {
       inputSummary: payload.evaluation.input.inputSummary,
       decision: payload.evaluation.decision,
     });
+  }
+
+  private withCompliantDistillationTrace<T extends object>(
+    trace: T,
+    evaluation: Awaited<
+      ReturnType<PredictionService['evaluateCompliantDistillation']>
+    >,
+    candidateServedProbability: number,
+    servedProbability: number,
+  ): T & { distillation?: PredictionTracePayload['distillation'] } {
+    if (!evaluation) return trace;
+
+    const teacherSummaries = evaluation.decision.teacherSignals.map(
+      (signal) => ({
+        key: signal.key,
+        active: signal.active,
+        probability: signal.probability,
+        effectiveWeight: signal.effectiveBlendWeight,
+        confidence: signal.confidence,
+        sampleCount: signal.sampleCount ?? null,
+        bucketKey: signal.bucketKey ?? null,
+        missingReasons: signal.missingReasons,
+      }),
+    );
+
+    return {
+      ...trace,
+      distillation: {
+        stage: evaluation.stage,
+        applyLiveBlend: evaluation.applyLiveBlend,
+        liveEligible: evaluation.decision.liveEligible,
+        coverageTier: evaluation.decision.coverageTier,
+        cohortKey: evaluation.decision.cohortKey,
+        activeTeacherKeys: teacherSummaries
+          .filter((signal) => signal.active && signal.probability != null)
+          .map((signal) => signal.key),
+        totalConfiguredWeight: evaluation.decision.totalConfiguredWeight,
+        totalEffectiveWeight: evaluation.decision.totalEffectiveWeight,
+        blendedPrePlatt: evaluation.decision.blendedPrePlatt,
+        candidateServedProbability,
+        servedProbability,
+        teacherSummaries,
+      },
+    };
   }
 
   // ==================== 辅助方法 ====================

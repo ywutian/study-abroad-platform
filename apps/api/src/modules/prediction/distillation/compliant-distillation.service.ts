@@ -19,10 +19,26 @@ import { ChineseOutcomeTeacherService } from './teachers/chinese-outcome-teacher
 import { CohortPriorTeacherService } from './teachers/cohort-prior-teacher.service';
 
 const CHINA_COHORT_PREFIX = 'CN__';
-const PUBLIC_TEACHERS = new Set(['scorecard-v1', 'ipeds-trend-v1']);
+const PUBLIC_BASELINE_TEACHERS = new Set(['scorecard-v1', 'ipeds-trend-v1']);
+const CHINA_SPECIFIC_TEACHERS = new Set(['cn-case-v1', 'cn-outcome-v1']);
+const COHORT_PRIOR_TEACHER = 'cohort-prior-v1';
+const COHORT_PRIOR_MIN_LIVE_SAMPLES = 5;
 
 function clampProbability(value: number): number {
   return Math.max(0.01, Math.min(0.99, value));
+}
+
+function isExactCohortPriorLiveSignal(
+  signal: DistillationTeacherSignal,
+): boolean {
+  return (
+    signal.key === COHORT_PRIOR_TEACHER &&
+    signal.active &&
+    signal.probability != null &&
+    (signal.sampleCount ?? 0) >= COHORT_PRIOR_MIN_LIVE_SAMPLES &&
+    signal.bucketKey === 'exact' &&
+    signal.metadata?.tier === 'exact'
+  );
 }
 
 @Injectable()
@@ -121,26 +137,32 @@ export class CompliantDistillationService {
         signal.configuredWeight > 0,
     );
 
-    const activeChinaSignals = activeSignals.filter(
-      (signal) => !PUBLIC_TEACHERS.has(signal.key),
+    const activeChinaSpecificSignals = activeSignals.filter((signal) =>
+      CHINA_SPECIFIC_TEACHERS.has(signal.key),
     );
-    const activePublicSignals = activeSignals.filter((signal) =>
-      PUBLIC_TEACHERS.has(signal.key),
+    const activeCohortPriorSignals = activeSignals.filter(
+      (signal) => signal.key === COHORT_PRIOR_TEACHER,
+    );
+    const activeBaselineSignals = activeSignals.filter(
+      (signal) =>
+        PUBLIC_BASELINE_TEACHERS.has(signal.key) ||
+        signal.key === COHORT_PRIOR_TEACHER,
     );
 
     const coverageTier: DistillationCoverageTier =
-      activeChinaSignals.length > 0
+      activeChinaSpecificSignals.length > 0
         ? 'CN_ENHANCED'
-        : activePublicSignals.length > 0
+        : activeBaselineSignals.length > 0
           ? 'BASELINE_ONLY'
           : 'NONE';
 
     const maxTotalWeight =
-      activeChinaSignals.length > 0
+      activeChinaSpecificSignals.length > 0 ||
+      activeCohortPriorSignals.length > 0
         ? 0.35
-        : activePublicSignals.length > 1
+        : activeBaselineSignals.length > 1
           ? 0.15
-          : activePublicSignals.length === 1
+          : activeBaselineSignals.length === 1
             ? 0.1
             : 0;
     const totalConfiguredWeight = activeSignals.reduce(
@@ -177,10 +199,15 @@ export class CompliantDistillationService {
         : input.ourProbPrePlatt;
 
     const chinaCohort = input.cohortKey.startsWith(CHINA_COHORT_PREFIX);
-    const liveEligible =
-      chinaCohort && activeChinaSignals.length > 0
+    const exactCohortPriorLiveEligible = activeSignals.some(
+      isExactCohortPriorLiveSignal,
+    );
+    const chinaSpecificLiveEligible =
+      chinaCohort && activeChinaSpecificSignals.length > 0
         ? await this.rollupService.isChinaCohortEligibleForLive(input.cohortKey)
         : false;
+    const liveEligible =
+      exactCohortPriorLiveEligible || chinaSpecificLiveEligible;
     const applyLiveBlend = Boolean(options?.liveEnabled) && liveEligible;
     const stage = applyLiveBlend
       ? DISTILLATION_LIVE_STAGE

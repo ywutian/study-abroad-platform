@@ -27,6 +27,29 @@ export interface PredictionTracePayload {
   calibrationPath: string[];
   uncertaintyReasons: string[];
   sourceSummary: Array<{ label: string; detail?: string }>;
+  distillation?: {
+    stage: string | null;
+    applyLiveBlend: boolean;
+    liveEligible: boolean;
+    coverageTier: string;
+    cohortKey: string;
+    activeTeacherKeys: string[];
+    totalConfiguredWeight: number;
+    totalEffectiveWeight: number;
+    blendedPrePlatt: number;
+    candidateServedProbability: number;
+    servedProbability: number;
+    teacherSummaries: Array<{
+      key: string;
+      active: boolean;
+      probability: number | null;
+      effectiveWeight: number;
+      confidence: string;
+      sampleCount: number | null;
+      bucketKey: string | null;
+      missingReasons: string[];
+    }>;
+  };
 }
 
 @Injectable()
