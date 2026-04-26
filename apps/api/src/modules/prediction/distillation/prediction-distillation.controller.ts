@@ -15,6 +15,7 @@ import { DistillationStatsRollupService } from './distillation-stats-rollup.serv
 import {
   BackfillCaseAggregatesDto,
   BackfillDistillationRollupsDto,
+  CounselorBackfillDto,
   LoadCdsBandsDto,
   LoadCdsBandsFixtureDto,
   PreviewPredictionDto,
@@ -23,6 +24,7 @@ import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
 import { CDS_BANDS_BUNDLED_FIXTURE } from './cds-bands-fixture';
 import { PredictionService } from '../prediction.service';
+import { CounselorBackfillService } from '../counselor/counselor-backfill.service';
 import type { ProfileInput } from '../prediction.prompts';
 
 @ApiTags('admin/predictions/distillation')
@@ -36,6 +38,7 @@ export class PredictionDistillationController {
     private readonly caseAggregateBackfill: CaseAggregateBackfillService,
     @Inject(forwardRef(() => PredictionService))
     private readonly predictionService: PredictionService,
+    private readonly counselorBackfill: CounselorBackfillService,
   ) {}
 
   @Get('overview')
@@ -174,6 +177,25 @@ export class PredictionDistillationController {
       locale: body.locale ?? 'en',
       includeShadowDistillation: true,
       applicationRound: body.applicationRound,
+    });
+  }
+
+  @Post('backfill-counselor')
+  @ThrottleRelaxed()
+  @ApiOperation({
+    summary:
+      'Rewrite stored PredictionResult rows to use counselor engine (PR-7). ' +
+      'Idempotent — re-runs skip rows already on counselor unless forceRecompute. ' +
+      'Tier-4 (insufficient data) rows are skipped (existing fusion result preserved). ' +
+      'On non-dry runs, also flushes Redis prediction cache so users see fresh numbers.',
+  })
+  async backfillCounselor(@Body() body: CounselorBackfillDto) {
+    return this.counselorBackfill.runBackfill({
+      dryRun: body.dryRun ?? true,
+      batchSize: body.batchSize,
+      cursor: body.cursor ?? null,
+      forceRecompute: body.forceRecompute,
+      skipCacheFlush: body.skipCacheFlush,
     });
   }
 }

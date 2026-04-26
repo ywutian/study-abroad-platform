@@ -524,6 +524,12 @@ export const adminRoutes = {
   // Synthetic prediction with shadow-distillation enabled — admin diagnostic
   // for verifying which teachers fire on a given mock profile. No DB writes.
   predictionDistillationDryRun: () => `${API_ROUTES.ADMIN}/predictions/distillation/dry-run`,
+  // Counselor backfill (PR-7) — rewrites stored PredictionResult rows so every
+  // user sees counselor numbers in the page / history / admin views, not just
+  // on freshly-computed predictions. Cursor-paginated; idempotent. Also
+  // flushes Redis prediction cache on non-dry runs.
+  predictionDistillationBackfillCounselor: () =>
+    `${API_ROUTES.ADMIN}/predictions/distillation/backfill-counselor`,
   applicationAnalysisWorkflowEvidence: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence`,
   applicationAnalysisWorkflowEvidenceReview: (id: string) =>

@@ -30,9 +30,18 @@ import { CaseAggregateBackfillService } from './case-aggregate-backfill.service'
 // Nest to resolve the dependency after both modules are constructed; the
 // dry-run admin endpoint then injects PredictionService at request time.
 import { PredictionModule } from '../prediction.module';
+import { CounselorEngineModule } from '../counselor/counselor-engine.module';
 
 @Module({
-  imports: [PrismaModule, forwardRef(() => PredictionModule)],
+  // CounselorEngineModule is imported (no forwardRef needed — counselor only
+  // depends on PrismaModule + RedisModule, no cycle back to distillation).
+  // The PredictionDistillationController consumes CounselorBackfillService
+  // from this module for the PR-7 backfill admin endpoint.
+  imports: [
+    PrismaModule,
+    forwardRef(() => PredictionModule),
+    CounselorEngineModule,
+  ],
   controllers: [PredictionDistillationController],
   providers: [
     PredictionPolicyService,
