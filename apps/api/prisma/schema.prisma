@@ -2051,6 +2051,11 @@ model PredictionResult {
 
   sourceObservations PredictionSourceObservation[] @relation("PredictionResultObservations")
 
+  // Beta-quality user feedback (PR-4) — sentiment + category + notes per (user, prediction).
+  // Distinct from outcomeLabelRecords (factual ADMITTED/REJECTED outcomes); this is
+  // subjective UX/quality feedback to inform counselor modifier tuning during cold start.
+  feedback PredictionFeedback[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -2126,6 +2131,39 @@ model PredictionOutcomeLabelRecord {
 
   @@index([predictionResultId, createdAt])
   @@index([status])
+}
+
+/// Beta-quality user feedback on prediction results (PR-4).
+///
+/// Distinct from PredictionOutcomeLabelRecord:
+///   - OutcomeLabel = factual: "I got admitted/rejected"
+///   - PredictionFeedback = subjective: "this 90% feels too high" / "factor breakdown looks wrong"
+///
+/// During cold start (no outcome labels yet), user-perception feedback is the
+/// fastest signal we have to identify which counselor modifiers need refining.
+/// `engineSnapshot` lets us slice feedback by which engine produced the prediction
+/// even after the engine retires (e.g. "negative feedback rate on counselor vs fusion").
+/// `probabilitySnapshot` records the value the user actually saw — by the time
+/// admin reviews, the underlying PredictionResult.probability may have been
+/// recomputed if the user updated their profile and re-ran the prediction.
+model PredictionFeedback {
+  id                  String                      @id @default(cuid())
+  predictionResultId  String
+  predictionResult    PredictionResult            @relation(fields: [predictionResultId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sentiment           PredictionFeedbackSentiment
+  category            PredictionFeedbackCategory?
+  notes               String?                     @db.Text
+  engineSnapshot      String? // 'counselor' | 'fusion' | etc. — captured from servedTrace.engine at submit time
+  probabilitySnapshot Decimal?                    @db.Decimal(6, 4) // probability shown to user at submit time
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  @@unique([predictionResultId, userId]) // one feedback per user per prediction (upsert on resubmit)
+  @@index([sentiment, createdAt])
+  @@index([engineSnapshot, createdAt])
+  @@index([userId, createdAt])
 }
 
 // ============================================
