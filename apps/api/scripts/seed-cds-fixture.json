@@ -1,6 +1,6 @@
 [
   {
-    "schoolNameNorm": "university of california merced",
+    "schoolNameNorm": "university of california, merced",
     "gpaBand": "3.75-4.00",
     "testType": "SAT",
     "testBand": "1500-1600",
@@ -11,7 +11,7 @@
     "sourceUrl": "https://admissions.ucmerced.edu/"
   },
   {
-    "schoolNameNorm": "university of california merced",
+    "schoolNameNorm": "university of california, merced",
     "gpaBand": "3.75-4.00",
     "testType": "GPA_ONLY",
     "testBand": "ANY",
@@ -22,7 +22,7 @@
     "sourceUrl": "https://admissions.ucmerced.edu/"
   },
   {
-    "schoolNameNorm": "university of california berkeley",
+    "schoolNameNorm": "university of california, berkeley",
     "gpaBand": "3.75-4.00",
     "testType": "GPA_ONLY",
     "testBand": "ANY",
