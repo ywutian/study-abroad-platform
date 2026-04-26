@@ -1,17 +1,29 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Query,
+  forwardRef,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles } from '../../../common/decorators';
+import { ThrottleRelaxed } from '../../../common/decorators/throttle.decorator';
 import { DistillationStatsRollupService } from './distillation-stats-rollup.service';
 import {
   BackfillCaseAggregatesDto,
   BackfillDistillationRollupsDto,
   LoadCdsBandsDto,
   LoadCdsBandsFixtureDto,
+  PreviewPredictionDto,
 } from './distillation.dto';
 import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
 import { CDS_BANDS_BUNDLED_FIXTURE } from './cds-bands-fixture';
+import { PredictionService } from '../prediction.service';
+import type { ProfileInput } from '../prediction.prompts';
 
 @ApiTags('admin/predictions/distillation')
 @ApiBearerAuth()
@@ -22,6 +34,8 @@ export class PredictionDistillationController {
     private readonly rollups: DistillationStatsRollupService,
     private readonly cdsBandsIngestion: CdsBandsIngestionService,
     private readonly caseAggregateBackfill: CaseAggregateBackfillService,
+    @Inject(forwardRef(() => PredictionService))
+    private readonly predictionService: PredictionService,
   ) {}
 
   @Get('overview')
@@ -134,6 +148,32 @@ export class PredictionDistillationController {
       dryRun: body.dryRun ?? true,
       minSamples: body.minSamples,
       setVersion: body.setVersion,
+    });
+  }
+
+  @Post('dry-run')
+  @ThrottleRelaxed()
+  @ApiOperation({
+    summary:
+      'Run a synthetic prediction with shadow-distillation enabled. Returns full servedTrace.distillation per school so admins can verify which teachers fire for a given mock profile. Read-only — no DB writes, no charging.',
+  })
+  async dryRunPrediction(@Body() body: PreviewPredictionDto) {
+    // The DTO whitelists a subset of ProfileInput fields. previewPredict()
+    // expects a fully-typed ProfileInput, so we cast — `whitelist: true`
+    // on the global ValidationPipe ensures no unexpected fields slip
+    // through; missing optional fields are handled inside the engines.
+    const profileInput = {
+      ...(body.profile as Partial<ProfileInput>),
+      // Coerce to the runtime-required arrays even when omitted.
+      testScores: body.profile.testScores ?? [],
+      activities: body.profile.activities ?? [],
+      awards: body.profile.awards ?? [],
+    } as ProfileInput;
+
+    return this.predictionService.previewPredict(profileInput, body.schoolIds, {
+      locale: body.locale ?? 'en',
+      includeShadowDistillation: true,
+      applicationRound: body.applicationRound,
     });
   }
 }

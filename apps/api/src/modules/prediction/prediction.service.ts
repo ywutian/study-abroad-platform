@@ -531,16 +531,36 @@ export class PredictionService {
    *
    * Intended for offline analysis flows (ablation, backtest). Never call
    * from a user-facing request path — it bypasses charging and auditing.
+   *
+   * Options:
+   *   - `includeShadowDistillation`: run the compliant distillation evaluator
+   *     in shadow mode and surface the resulting `servedTrace` per result.
+   *     Used by the admin "synthetic prediction" endpoint to inspect which
+   *     teachers fire for a given mock profile. Default false (keeps the
+   *     deterministic served path the standard preview emits).
+   *   - `includeServedTrace`: attach `servedTrace` to each result. Implied
+   *     true when `includeShadowDistillation` is true (the trace would be
+   *     uninteresting otherwise).
    */
   async previewPredict(
     profileInput: ProfileInput,
     schoolIds: string[],
-    options?: { locale?: string },
+    options?: {
+      locale?: string;
+      includeShadowDistillation?: boolean;
+      includeServedTrace?: boolean;
+      applicationRound?: string;
+    },
   ): Promise<{
-    results: PredictionResultDto[];
+    results: Array<PredictionResultDto & { servedTrace?: unknown }>;
     dataCompleteness: number;
   }> {
     const locale = options?.locale ?? 'zh';
+    const includeShadowDistillation =
+      options?.includeShadowDistillation ?? false;
+    const includeServedTrace =
+      options?.includeServedTrace ?? includeShadowDistillation;
+    const overrideApplicationRound = options?.applicationRound;
 
     if (schoolIds.length === 0) {
       return { results: [], dataCompleteness: 0 };
@@ -619,7 +639,7 @@ export class PredictionService {
 
     // Serial execution — preview is used by CLI tools where determinism
     // matters more than throughput; also avoids concurrent log interleaving.
-    const results: PredictionResultDto[] = [];
+    const results: Array<PredictionResultDto & { servedTrace?: unknown }> = [];
     for (const school of schools) {
       try {
         const result = await this.predictForSchool(
@@ -633,17 +653,26 @@ export class PredictionService {
           undefined, // profileHash unused when persist=false
           programMap.get(school.id),
           dataCompleteness,
-          undefined, // applicationRound: rely on profileInput if set upstream
+          overrideApplicationRound, // applicationRound — admin diagnostic flow can inject a round
           policyVersionId,
           false, // v5MlPrimary — keep preview on the deterministic served path
           false, // v5Shadow
           false, // useDistillationBlend
-          false, // compliantDistillationShadow
-          false, // compliantDistillationLive
+          includeShadowDistillation, // compliantDistillationShadow
+          false, // compliantDistillationLive — never live-blend on preview
           false, // persist
         );
         result.schoolMeta = schoolMetaMap.get(result.schoolId);
-        results.push(result);
+        // predictForSchool always populates `servedTrace` on its internal
+        // return shape; expose it only when the caller asked. This keeps
+        // the standard preview output (used by ablation harnesses) lean.
+        const decoratedResult = result as PredictionResultDto & {
+          servedTrace?: unknown;
+        };
+        if (!includeServedTrace) {
+          delete decoratedResult.servedTrace;
+        }
+        results.push(decoratedResult);
       } catch (err) {
         this.logger.warn(
           `previewPredict: school ${school.id} failed`,

@@ -33,6 +33,7 @@ import {
   BENCHMARK_PROVIDERS,
 } from './benchmark/benchmark-providers';
 import { DistillationModule } from './distillation/distillation.module';
+import { forwardRef } from '@nestjs/common';
 
 @Module({
   imports: [
@@ -41,7 +42,11 @@ import { DistillationModule } from './distillation/distillation.module';
     SchoolModule,
     ScheduleModule,
     PointsModule,
-    DistillationModule,
+    // forwardRef paired with DistillationModule's reciprocal forwardRef —
+    // distillation depends on PredictionService for the admin dry-run
+    // endpoint while prediction depends on the distillation services for
+    // the served blend. forwardRef defers both resolutions to runtime.
+    forwardRef(() => DistillationModule),
   ],
   controllers: [
     PredictionController,
