@@ -521,6 +521,9 @@ export const adminRoutes = {
     `${API_ROUTES.ADMIN}/predictions/distillation/cds-bands/load-fixture`,
   predictionDistillationCaseAggregatesBackfill: () =>
     `${API_ROUTES.ADMIN}/predictions/distillation/case-aggregates/backfill`,
+  // Synthetic prediction with shadow-distillation enabled — admin diagnostic
+  // for verifying which teachers fire on a given mock profile. No DB writes.
+  predictionDistillationDryRun: () => `${API_ROUTES.ADMIN}/predictions/distillation/dry-run`,
   applicationAnalysisWorkflowEvidence: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence`,
   applicationAnalysisWorkflowEvidenceReview: (id: string) =>

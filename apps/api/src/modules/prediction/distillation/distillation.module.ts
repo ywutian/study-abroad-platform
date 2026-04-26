@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../../prisma/prisma.module';
 import { CompliantDistillationService } from './compliant-distillation.service';
 import { DistillationObservationService } from './distillation-observation.service';
@@ -24,8 +24,15 @@ import { PredictionHookModifiersService } from '../prediction-hook-modifiers.ser
 import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
 
+// Lazy-import PredictionModule via forwardRef — PredictionModule already
+// imports DistillationModule (because the prediction service blends teacher
+// signals), so a direct import here would close the cycle. forwardRef tells
+// Nest to resolve the dependency after both modules are constructed; the
+// dry-run admin endpoint then injects PredictionService at request time.
+import { PredictionModule } from '../prediction.module';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, forwardRef(() => PredictionModule)],
   controllers: [PredictionDistillationController],
   providers: [
     PredictionPolicyService,
