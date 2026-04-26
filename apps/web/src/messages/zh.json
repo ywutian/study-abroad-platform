@@ -6521,10 +6521,23 @@
           "subtitle": "把已验证 AdmissionCase 聚合进 SchoolCohortRoundPrior 表。CohortPriorTeacher 依赖这张表才能产出信号。",
           "confirmLive": "立刻执行 cohort-prior 回填? 写入新行到 SchoolCohortRoundPrior (setVersion=今天)。回滚: DELETE WHERE setVersion LIKE 'backfill-%'。"
         },
+        "cdsBands": {
+          "title": "加载 CDS 录取分位数据",
+          "subtitle": "把内置 CDS 录取分位起步数据写入 SchoolCdsAdmitBand。激活 cds-bands-v1 teacher (shadow)。要灌大批量自定义数据请直接 POST /admin/predictions/distillation/cds-bands/load。",
+          "confirmLive": "立刻把 CDS 起步数据写入 prod? 幂等 — 重复写入会更新相同 (schoolId, gpaBand, testType, testBand, cycleYear) 键的行。"
+        },
+        "caseAggregates": {
+          "title": "回填案例聚合 teacher 数据",
+          "subtitle": "读已验证 AdmissionCase → 按 (teacher, school, bucket) 聚合 → 写 PredictionSourceObservation, 喂给 ap-rigor / ib / feeder-hs / activity-intensity 这 4 个 teacher。每个 setVersion 幂等 (默认 = 今天)。",
+          "confirmLive": "立刻回填案例聚合 teacher 数据? 删除当前 setVersion 的旧行后重新写入。每个 teacher 的覆盖率会显示在 eligibleByTeacher 字段。"
+        },
         "result": {
           "scanned": "扫描行数",
           "written": "新写入",
           "updated": "更新",
+          "created": "新建",
+          "valid": "有效行",
+          "deleted": "已删除 (替换)",
           "gpaWritten": "GPA 已写",
           "testScoresWritten": "成绩已写",
           "eligibleBuckets": "合格桶",

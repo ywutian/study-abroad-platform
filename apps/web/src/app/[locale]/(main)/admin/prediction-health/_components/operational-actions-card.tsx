@@ -29,7 +29,7 @@ import { adminRoutes } from '@study-abroad/shared';
  *     refresh without a manual page reload.
  */
 
-type ActionId = 'normalize' | 'backfill';
+type ActionId = 'normalize' | 'backfill' | 'cdsBands' | 'caseAggregates';
 
 interface ActionResponse {
   [key: string]: unknown;
@@ -43,6 +43,8 @@ export function OperationalActionsCard() {
   >({
     normalize: null,
     backfill: null,
+    cdsBands: null,
+    caseAggregates: null,
   });
 
   const normalize = useMutation({
@@ -83,13 +85,48 @@ export function OperationalActionsCard() {
     },
   });
 
+  // CDS Bands loader uses the bundled-fixture endpoint so the operator
+  // doesn't need to paste 35 rows of JSON. For larger CDS sets use the
+  // /cds-bands/load endpoint with a curated rows[] payload.
+  const cdsBands = useMutation({
+    mutationFn: (dryRun: boolean) =>
+      apiClient.post<ActionResponse>(adminRoutes.predictionDistillationCdsBandsLoadFixture(), {
+        dryRun,
+      }),
+    onSuccess: (response, dryRun) => {
+      setLastResult((prev) => ({
+        ...prev,
+        cdsBands: { dryRun, response },
+      }));
+    },
+  });
+
+  const caseAggregates = useMutation({
+    mutationFn: (dryRun: boolean) =>
+      apiClient.post<ActionResponse>(adminRoutes.predictionDistillationCaseAggregatesBackfill(), {
+        dryRun,
+      }),
+    onSuccess: (response, dryRun) => {
+      setLastResult((prev) => ({
+        ...prev,
+        caseAggregates: { dryRun, response },
+      }));
+    },
+  });
+
   const runLive = (
     action: ActionId,
-    confirmKey: 'normalize.confirmLive' | 'backfill.confirmLive'
+    confirmKey:
+      | 'normalize.confirmLive'
+      | 'backfill.confirmLive'
+      | 'cdsBands.confirmLive'
+      | 'caseAggregates.confirmLive'
   ) => {
     if (!window.confirm(t(confirmKey))) return;
     if (action === 'normalize') normalize.mutate(false);
-    else backfill.mutate(false);
+    else if (action === 'backfill') backfill.mutate(false);
+    else if (action === 'cdsBands') cdsBands.mutate(false);
+    else if (action === 'caseAggregates') caseAggregates.mutate(false);
   };
 
   return (
@@ -118,6 +155,26 @@ export function OperationalActionsCard() {
             isLoading={backfill.isPending}
             error={backfill.error}
             result={lastResult.backfill}
+            t={t}
+          />
+          <ActionBlock
+            title={t('cdsBands.title')}
+            subtitle={t('cdsBands.subtitle')}
+            onDryRun={() => cdsBands.mutate(true)}
+            onLive={() => runLive('cdsBands', 'cdsBands.confirmLive')}
+            isLoading={cdsBands.isPending}
+            error={cdsBands.error}
+            result={lastResult.cdsBands}
+            t={t}
+          />
+          <ActionBlock
+            title={t('caseAggregates.title')}
+            subtitle={t('caseAggregates.subtitle')}
+            onDryRun={() => caseAggregates.mutate(true)}
+            onLive={() => runLive('caseAggregates', 'caseAggregates.confirmLive')}
+            isLoading={caseAggregates.isPending}
+            error={caseAggregates.error}
+            result={lastResult.caseAggregates}
             t={t}
           />
         </div>
@@ -222,10 +279,24 @@ function ResultSummary({
   push(t('result.scanned'), result.scanned);
   push(t('result.written'), result.written);
   push(t('result.updated'), result.updated);
+  push(t('result.created'), result.created); // CDS bands ingestion
+  push(t('result.valid'), result.valid); // CDS bands ingestion
+  push(t('result.deleted'), result.deleted); // case-aggregate replace step
   push(t('result.gpaWritten'), result.gpaWritten);
   push(t('result.testScoresWritten'), result.testScoresWritten);
   push(t('result.eligibleBuckets'), result.eligibleBuckets);
   push(t('result.droppedLowSample'), result.droppedLowSample);
+
+  // Per-teacher tally surfaces from the case-aggregate response so the
+  // operator immediately sees which case-driven teachers actually have
+  // coverage (a teacher with 0 here means its underlying field is sparse).
+  if (result.eligibleByTeacher && typeof result.eligibleByTeacher === 'object') {
+    for (const [teacherKey, count] of Object.entries(
+      result.eligibleByTeacher as Record<string, number>
+    )) {
+      rows.push({ label: teacherKey, value: count });
+    }
+  }
 
   if (rows.length === 0) return null;
 

@@ -116,6 +116,18 @@ export class LoadCdsBandsDto {
   rows: LoadCdsBandRowDto[];
 }
 
+export class LoadCdsBandsFixtureDto {
+  @ApiProperty({
+    required: false,
+    default: true,
+    description:
+      'When true, count what would be loaded but do not write. Recommended on first call.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+}
+
 export class BackfillCaseAggregatesDto {
   @ApiProperty({
     required: false,
