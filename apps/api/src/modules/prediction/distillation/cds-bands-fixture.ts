@@ -16,8 +16,13 @@ import type { CdsBandInputRow } from './cds-bands-ingestion.service';
  * Schema reference: see `CdsBandInputRow` (cds-bands-ingestion.service.ts).
  */
 export const CDS_BANDS_BUNDLED_FIXTURE: CdsBandInputRow[] = [
+  // School.nameNorm = lowercased name with the comma. The DoE / IPEDS official
+  // names for UCs include a comma after "University of California" — the
+  // platform's School table follows that convention. We learned this by
+  // probing /api/v1/schools?search=Merced after PR #58 returned
+  // unknown_school errors on the no-comma fixture.
   {
-    schoolNameNorm: 'university of california merced',
+    schoolNameNorm: 'university of california, merced',
     gpaBand: '3.75-4.00',
     testType: 'SAT',
     testBand: '1500-1600',
@@ -28,7 +33,7 @@ export const CDS_BANDS_BUNDLED_FIXTURE: CdsBandInputRow[] = [
     sourceUrl: 'https://admissions.ucmerced.edu/',
   },
   {
-    schoolNameNorm: 'university of california merced',
+    schoolNameNorm: 'university of california, merced',
     gpaBand: '3.75-4.00',
     testType: 'GPA_ONLY',
     testBand: 'ANY',
@@ -39,7 +44,7 @@ export const CDS_BANDS_BUNDLED_FIXTURE: CdsBandInputRow[] = [
     sourceUrl: 'https://admissions.ucmerced.edu/',
   },
   {
-    schoolNameNorm: 'university of california berkeley',
+    schoolNameNorm: 'university of california, berkeley',
     gpaBand: '3.75-4.00',
     testType: 'GPA_ONLY',
     testBand: 'ANY',
