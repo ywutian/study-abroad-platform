@@ -22,6 +22,7 @@ import { PredictionDistillationController } from './prediction-distillation.cont
 import { PredictionPolicyService } from '../prediction-policy.service';
 import { PredictionHookModifiersService } from '../prediction-hook-modifiers.service';
 import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
+import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
 
 @Module({
   imports: [PrismaModule],
@@ -45,6 +46,7 @@ import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
     ActivityIntensityTeacherService,
     PredictionHookModifiersService,
     CdsBandsIngestionService,
+    CaseAggregateBackfillService,
     DistillationObservationService,
     DistillationStatsRollupService,
     CompliantDistillationService,
