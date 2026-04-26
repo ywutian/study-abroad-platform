@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../../prisma/prisma.module';
-import { RedisModule } from '../../../common/redis/redis.module';
 import { CounselorEngineService } from './counselor-engine.service';
 import { CounselorBackfillService } from './counselor-backfill.service';
 import { PredictionTransformerService } from '../prediction-transformer.service';
@@ -11,7 +10,12 @@ import { PredictionTransformerService } from '../prediction-transformer.service'
  * Provides:
  *   - `CounselorEngineService` — pure compute, no IO except CDS / SchoolProgram lookups
  *   - `CounselorBackfillService` — admin-triggered backfill that rewrites stored
- *     PredictionResult rows to use counselor (PR-7).
+ *     PredictionResult rows to use counselor (PR-7). RedisService is `@Optional()`
+ *     on the constructor so when this module boots in isolation (e.g. gold-case
+ *     runner via `NestFactory.createApplicationContext(CounselorEngineModule)`)
+ *     it doesn't pull in the whole RedisModule + ConfigService dependency chain.
+ *     In production, PredictionModule's transitive `RedisModule` makes
+ *     `RedisService` available; the cache flush works there.
  *
  * Why we re-provide `PredictionTransformerService` here instead of importing
  * PredictionModule: PredictionModule already imports this module (for the
@@ -22,7 +26,7 @@ import { PredictionTransformerService } from '../prediction-transformer.service'
  * The 8 modifier functions in `counselor-modifiers.ts` are pure — no DI needed.
  */
 @Module({
-  imports: [PrismaModule, RedisModule],
+  imports: [PrismaModule],
   providers: [
     CounselorEngineService,
     CounselorBackfillService,
