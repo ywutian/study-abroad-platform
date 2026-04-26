@@ -4,10 +4,12 @@ import { Role } from '@prisma/client';
 import { Roles } from '../../../common/decorators';
 import { DistillationStatsRollupService } from './distillation-stats-rollup.service';
 import {
+  BackfillCaseAggregatesDto,
   BackfillDistillationRollupsDto,
   LoadCdsBandsDto,
 } from './distillation.dto';
 import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
+import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
 
 @ApiTags('admin/predictions/distillation')
 @ApiBearerAuth()
@@ -17,6 +19,7 @@ export class PredictionDistillationController {
   constructor(
     private readonly rollups: DistillationStatsRollupService,
     private readonly cdsBandsIngestion: CdsBandsIngestionService,
+    private readonly caseAggregateBackfill: CaseAggregateBackfillService,
   ) {}
 
   @Get('overview')
@@ -105,6 +108,19 @@ export class PredictionDistillationController {
   async loadCdsBands(@Body() body: LoadCdsBandsDto) {
     return this.cdsBandsIngestion.ingestRows(body.rows, {
       dryRun: body.dryRun ?? true,
+    });
+  }
+
+  @Post('case-aggregates/backfill')
+  @ApiOperation({
+    summary:
+      'Backfill case-aggregate teachers (ap-rigor / ib / feeder-hs / activity-intensity) from approved AdmissionCase rows. Idempotent per setVersion.',
+  })
+  async backfillCaseAggregates(@Body() body: BackfillCaseAggregatesDto) {
+    return this.caseAggregateBackfill.runBackfill({
+      dryRun: body.dryRun ?? true,
+      minSamples: body.minSamples,
+      setVersion: body.setVersion,
     });
   }
 }

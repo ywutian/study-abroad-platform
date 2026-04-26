@@ -7,6 +7,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
+  Max,
   MaxLength,
   Min,
   ValidateNested,
@@ -112,4 +114,44 @@ export class LoadCdsBandsDto {
   @ValidateNested({ each: true })
   @Type(() => LoadCdsBandRowDto)
   rows: LoadCdsBandRowDto[];
+}
+
+export class BackfillCaseAggregatesDto {
+  @ApiProperty({
+    required: false,
+    default: true,
+    description:
+      'When true, compute aggregations and return counts/preview without writing to predictionSourceObservation.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+
+  @ApiProperty({
+    required: false,
+    default: 5,
+    minimum: 1,
+    maximum: 100,
+    description:
+      'Minimum cases per (teacher, school, bucket) cell before an aggregate is emitted.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  minSamples?: number;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Custom setVersion (sourceVersion column). Defaults to "case-aggregate-teachers-YYYY-MM-DD".',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  // Only allow setVersion strings that match the case-aggregate-teachers prefix —
+  // prevents overwriting other source versions (e.g. cohort-prior backfill rows)
+  // even if a typo'd name happens to collide.
+  @Matches(/^case-aggregate-teachers(-[\w.-]+)?$/i)
+  setVersion?: string;
 }
