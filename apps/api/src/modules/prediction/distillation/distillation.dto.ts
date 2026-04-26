@@ -433,3 +433,64 @@ export class PreviewPredictionDto {
   @MaxLength(20)
   applicationRound?: string;
 }
+
+// -----------------------------------------------------------------------------
+// Counselor backfill (PR-7) — admin-triggered rewrite of stored PredictionResult
+// rows so they reflect counselor-engine output everywhere (page / history / admin).
+// -----------------------------------------------------------------------------
+
+export class CounselorBackfillDto {
+  @ApiProperty({
+    required: false,
+    default: true,
+    description:
+      'When true, count what would be updated without writing. Recommended on first call to size the backfill.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+
+  @ApiProperty({
+    required: false,
+    default: 1000,
+    minimum: 1,
+    maximum: 5000,
+    description:
+      'Max rows processed this call. Cap at 5000 to leave headroom under Cloud Run 5-min request timeout.',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5000)
+  batchSize?: number;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'PredictionResult.id cursor for pagination — pass `nextCursor` from the previous response to continue.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  cursor?: string;
+
+  @ApiProperty({
+    required: false,
+    default: false,
+    description:
+      'When true, also recompute rows already on counselor engine (use after counselor math changes).',
+  })
+  @IsOptional()
+  @IsBoolean()
+  forceRecompute?: boolean;
+
+  @ApiProperty({
+    required: false,
+    default: false,
+    description:
+      'When true, skip Redis prediction cache flush. Set true for all but the final batch of a multi-batch sweep.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  skipCacheFlush?: boolean;
+}

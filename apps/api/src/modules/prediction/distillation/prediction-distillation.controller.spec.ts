@@ -5,6 +5,7 @@ import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 import { DistillationStatsRollupService } from './distillation-stats-rollup.service';
 import { PredictionDistillationController } from './prediction-distillation.controller';
 import { PredictionService } from '../prediction.service';
+import { CounselorBackfillService } from '../counselor/counselor-backfill.service';
 
 /**
  * Coverage for the admin "synthetic prediction" endpoint added in PR #60.
@@ -59,6 +60,12 @@ describe('PredictionDistillationController.dryRunPrediction', () => {
         { provide: CdsBandsIngestionService, useValue: {} },
         { provide: CaseAggregateBackfillService, useValue: {} },
         { provide: PredictionService, useValue: prediction },
+        // PR-7 added counselor backfill to the controller — mock here to keep
+        // the dry-run prediction tests focused on the previewPredict wiring.
+        {
+          provide: CounselorBackfillService,
+          useValue: { runBackfill: jest.fn() },
+        },
       ],
     }).compile();
 

@@ -6531,6 +6531,11 @@
           "subtitle": "读已验证 AdmissionCase → 按 (teacher, school, bucket) 聚合 → 写 PredictionSourceObservation, 喂给 ap-rigor / ib / feeder-hs / activity-intensity 这 4 个 teacher。每个 setVersion 幂等 (默认 = 今天)。",
           "confirmLive": "立刻回填案例聚合 teacher 数据? 删除当前 setVersion 的旧行后重新写入。每个 teacher 的覆盖率会显示在 eligibleByTeacher 字段。"
         },
+        "counselorBackfill": {
+          "title": "回填 counselor 预测",
+          "subtitle": "把数据库里所有 PredictionResult 行重新用 counselor 引擎计算一遍，让用户在所有视图（预测页 / 历史 / admin）看到的数都是 counselor 的，而不是只有新跑的预测才是。幂等 — 已经是 counselor 的行会跳过。Tier-4 学校（无 acceptanceRate）会跳过，保留旧 fusion 结果。Live 跑同时会清 Redis 预测缓存。",
+          "confirmLive": "立刻重写所有 PredictionResult 行为 counselor 引擎 + 清 Redis 预测缓存？分批 cursor 处理；如果 nextCursor 不为空，再点一次从该 cursor 继续。Tier-4 学校和已经是 counselor 的行会跳过。"
+        },
         "result": {
           "scanned": "扫描行数",
           "written": "新写入",
@@ -6541,7 +6546,13 @@
           "gpaWritten": "GPA 已写",
           "testScoresWritten": "成绩已写",
           "eligibleBuckets": "合格桶",
-          "droppedLowSample": "样本不足丢弃"
+          "droppedLowSample": "样本不足丢弃",
+          "skippedAlreadyCounselor": "跳过 (已是 counselor)",
+          "skippedTier4": "跳过 (学校数据不足)",
+          "skippedMissingProfile": "跳过 (profile 缺失)",
+          "cacheKeysDeleted": "已清缓存 key",
+          "nextCursor": "下一批游标 (粘回继续)",
+          "durationMs": "耗时 (ms)"
         }
       }
     },

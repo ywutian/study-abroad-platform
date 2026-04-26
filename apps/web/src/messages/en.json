@@ -6552,6 +6552,11 @@
           "subtitle": "Reads approved AdmissionCase rows → aggregates per (teacher, school, bucket) → writes PredictionSourceObservation rows for ap-rigor / ib / feeder-hs / activity-intensity teachers. Idempotent per setVersion (default = today).",
           "confirmLive": "Backfill case-aggregate teachers now? This deletes prior rows with today's setVersion and re-inserts. Per-teacher coverage will appear under eligibleByTeacher."
         },
+        "counselorBackfill": {
+          "title": "Backfill counselor predictions",
+          "subtitle": "Rewrites stored PredictionResult rows so users see counselor numbers everywhere (page / history / admin), not just on freshly-computed predictions. Idempotent — already-counselor rows are skipped. Tier-4 schools (no acceptanceRate) are skipped (existing fusion result preserved). Also flushes Redis prediction cache on Live runs.",
+          "confirmLive": "Rewrite all PredictionResult rows to use counselor engine + flush Redis prediction cache? Cursor-paginated; if nextCursor returns non-null, click again to continue from that point. Tier-4 schools and already-counselor rows are skipped."
+        },
         "result": {
           "scanned": "Scanned",
           "written": "Written",
@@ -6562,7 +6567,13 @@
           "gpaWritten": "GPA written",
           "testScoresWritten": "Test scores written",
           "eligibleBuckets": "Eligible buckets",
-          "droppedLowSample": "Dropped (low sample)"
+          "droppedLowSample": "Dropped (low sample)",
+          "skippedAlreadyCounselor": "Skipped (already counselor)",
+          "skippedTier4": "Skipped (insufficient school data)",
+          "skippedMissingProfile": "Skipped (missing profile)",
+          "cacheKeysDeleted": "Cache keys flushed",
+          "nextCursor": "Next cursor (paste back to continue)",
+          "durationMs": "Duration (ms)"
         }
       }
     },

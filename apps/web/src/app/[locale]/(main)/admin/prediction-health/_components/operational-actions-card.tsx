@@ -29,7 +29,7 @@ import { adminRoutes } from '@study-abroad/shared';
  *     refresh without a manual page reload.
  */
 
-type ActionId = 'normalize' | 'backfill' | 'cdsBands' | 'caseAggregates';
+type ActionId = 'normalize' | 'backfill' | 'cdsBands' | 'caseAggregates' | 'counselorBackfill';
 
 interface ActionResponse {
   [key: string]: unknown;
@@ -45,6 +45,7 @@ export function OperationalActionsCard() {
     backfill: null,
     cdsBands: null,
     caseAggregates: null,
+    counselorBackfill: null,
   });
 
   const normalize = useMutation({
@@ -114,6 +115,26 @@ export function OperationalActionsCard() {
     },
   });
 
+  // Counselor backfill (PR-7) — rewrites stored PredictionResult rows so users
+  // see counselor numbers everywhere (not just on freshly-computed predictions).
+  // Cursor-paginated; we send batches until nextCursor is null. The button
+  // wires the FIRST batch only; if nextCursor returns non-null, the result
+  // summary surfaces it so admin can paste back to continue. (Acceptable for
+  // our scale — most prod backfills will fit in 1-2 batches.)
+  const counselorBackfill = useMutation({
+    mutationFn: (dryRun: boolean) =>
+      apiClient.post<ActionResponse>(adminRoutes.predictionDistillationBackfillCounselor(), {
+        dryRun,
+        batchSize: 5000,
+      }),
+    onSuccess: (response, dryRun) => {
+      setLastResult((prev) => ({
+        ...prev,
+        counselorBackfill: { dryRun, response },
+      }));
+    },
+  });
+
   const runLive = (
     action: ActionId,
     confirmKey:
@@ -121,12 +142,14 @@ export function OperationalActionsCard() {
       | 'backfill.confirmLive'
       | 'cdsBands.confirmLive'
       | 'caseAggregates.confirmLive'
+      | 'counselorBackfill.confirmLive'
   ) => {
     if (!window.confirm(t(confirmKey))) return;
     if (action === 'normalize') normalize.mutate(false);
     else if (action === 'backfill') backfill.mutate(false);
     else if (action === 'cdsBands') cdsBands.mutate(false);
     else if (action === 'caseAggregates') caseAggregates.mutate(false);
+    else if (action === 'counselorBackfill') counselorBackfill.mutate(false);
   };
 
   return (
@@ -175,6 +198,16 @@ export function OperationalActionsCard() {
             isLoading={caseAggregates.isPending}
             error={caseAggregates.error}
             result={lastResult.caseAggregates}
+            t={t}
+          />
+          <ActionBlock
+            title={t('counselorBackfill.title')}
+            subtitle={t('counselorBackfill.subtitle')}
+            onDryRun={() => counselorBackfill.mutate(true)}
+            onLive={() => runLive('counselorBackfill', 'counselorBackfill.confirmLive')}
+            isLoading={counselorBackfill.isPending}
+            error={counselorBackfill.error}
+            result={lastResult.counselorBackfill}
             t={t}
           />
         </div>
@@ -286,6 +319,13 @@ function ResultSummary({
   push(t('result.testScoresWritten'), result.testScoresWritten);
   push(t('result.eligibleBuckets'), result.eligibleBuckets);
   push(t('result.droppedLowSample'), result.droppedLowSample);
+  // Counselor backfill (PR-7) result fields
+  push(t('result.skippedAlreadyCounselor'), result.skippedAlreadyCounselor);
+  push(t('result.skippedTier4'), result.skippedTier4);
+  push(t('result.skippedMissingProfile'), result.skippedMissingProfile);
+  push(t('result.cacheKeysDeleted'), result.cacheKeysDeleted);
+  push(t('result.nextCursor'), result.nextCursor);
+  push(t('result.durationMs'), result.durationMs);
 
   // Per-teacher tally surfaces from the case-aggregate response so the
   // operator immediately sees which case-driven teachers actually have
