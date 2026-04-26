@@ -19,6 +19,7 @@ import { ModelMonitorService } from './ml/model-monitor.service';
 import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
+import { CounselorEngineService } from './counselor/counselor-engine.service';
 import { DistillationService } from './benchmark/distillation.service';
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 
@@ -171,6 +172,7 @@ describe('PredictionService', () => {
   let featureFlagService: FeatureFlagService;
   let distillationService: DistillationService;
   let compliantDistillationService: CompliantDistillationService;
+  let counselorEngine: CounselorEngineService;
 
   const mockProfile = {
     id: 'profile-1',
@@ -447,6 +449,34 @@ describe('PredictionService', () => {
             evaluatePrediction: jest.fn().mockResolvedValue(null),
           },
         },
+        {
+          provide: CounselorEngineService,
+          useValue: {
+            // Default: return a Tier-2 counselor result with probability 0.55.
+            // Tests can override via mockResolvedValueOnce / mockImplementationOnce.
+            compute: jest.fn().mockResolvedValue({
+              probability: 0.55,
+              anchor: 0.5,
+              tier: 2,
+              anchorSource: 'scorecard (acceptanceRate + SAT bands)',
+              factors: [
+                {
+                  name: 'School baseline admit rate',
+                  impact: 'neutral',
+                  weight: 1,
+                  detail: 'Anchored at 50.0% (scorecard, Tier 2)',
+                },
+                {
+                  name: 'GPA above 75th percentile',
+                  impact: 'positive',
+                  weight: 0.3,
+                  detail: 'GPA 3.85 above 75th (×1.30)',
+                },
+              ],
+              modifierResults: {},
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -471,6 +501,9 @@ describe('PredictionService', () => {
     distillationService = module.get<DistillationService>(DistillationService);
     compliantDistillationService = module.get<CompliantDistillationService>(
       CompliantDistillationService,
+    );
+    counselorEngine = module.get<CounselorEngineService>(
+      CounselorEngineService,
     );
   });
 
@@ -923,6 +956,121 @@ describe('PredictionService', () => {
         mockFusedResult.probability,
         6,
       );
+    });
+
+    // ====================================================================
+    // Counselor mode (PR-2) — feature-flag-gated cold-start engine override
+    // ====================================================================
+    describe('counselor mode (prediction-counselor-mode-v1 flag)', () => {
+      it('serves fusion (default) when counselor flag is OFF', async () => {
+        (featureFlagService.isEnabled as jest.Mock).mockResolvedValue(false);
+
+        const output = await service.predict('profile-1', ['school-1'], true);
+
+        expect(counselorEngine.compute).not.toHaveBeenCalled();
+        expect(output.results[0].probability).toBeCloseTo(
+          mockFusedResult.probability,
+          6,
+        );
+        // No counselor metadata in trace
+        const trace = (output.results[0] as any).servedTrace;
+        if (trace) expect(trace.engine).not.toBe('counselor');
+      });
+
+      it('overrides served probability with counselor result when flag is ON', async () => {
+        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
+          (key: string) =>
+            Promise.resolve(key === 'prediction-counselor-mode-v1'),
+        );
+
+        const output = await service.predict('profile-1', ['school-1'], true);
+
+        expect(counselorEngine.compute).toHaveBeenCalledTimes(1);
+        // Default counselor mock returns probability 0.55
+        expect(output.results[0].probability).toBeCloseTo(0.55, 6);
+        expect(output.results[0].confidence).toBe('medium');
+        expect(output.results[0].confidenceReason).toContain('rules-of-thumb');
+      });
+
+      it('preserves fusion result in servedTrace.shadow.fusion for retroactive comparison', async () => {
+        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
+          (key: string) =>
+            Promise.resolve(key === 'prediction-counselor-mode-v1'),
+        );
+
+        const output = await service.predict('profile-1', ['school-1'], true);
+
+        const trace = (output.results[0] as any).servedTrace;
+        expect(trace.engine).toBe('counselor');
+        expect(trace.counselor).toBeDefined();
+        expect(trace.counselor.tier).toBe(2);
+        expect(trace.shadow?.fusion).toBeDefined();
+        // Fusion's original probability is captured in shadow even though the
+        // user-facing `probability` is counselor's. This is the path that
+        // retroactive Brier comparison will use once outcome labels accumulate.
+        expect(trace.shadow.fusion.probability).toBeCloseTo(
+          mockFusedResult.probability,
+          6,
+        );
+      });
+
+      it('falls back to fusion when counselor returns Tier 4 (insufficient data)', async () => {
+        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
+          (key: string) =>
+            Promise.resolve(key === 'prediction-counselor-mode-v1'),
+        );
+        (counselorEngine.compute as jest.Mock).mockResolvedValueOnce({
+          probability: 0,
+          anchor: 0,
+          tier: 4,
+          anchorSource: 'none',
+          factors: [],
+          insufficientData: { reason: 'school_missing_acceptance_rate' },
+          modifierResults: {},
+        });
+
+        const output = await service.predict('profile-1', ['school-1'], true);
+
+        // Tier 4 = silent counselor; fusion result preserved unchanged
+        expect(output.results[0].probability).toBeCloseTo(
+          mockFusedResult.probability,
+          6,
+        );
+        const trace = (output.results[0] as any).servedTrace;
+        if (trace) expect(trace.engine).not.toBe('counselor');
+      });
+
+      it('falls back to fusion (logs but does not throw) when counselor compute throws', async () => {
+        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
+          (key: string) =>
+            Promise.resolve(key === 'prediction-counselor-mode-v1'),
+        );
+        (counselorEngine.compute as jest.Mock).mockRejectedValueOnce(
+          new Error('database lookup failed'),
+        );
+
+        // Should not reject — fusion result is the safety net
+        const output = await service.predict('profile-1', ['school-1'], true);
+
+        expect(output.results[0].probability).toBeCloseTo(
+          mockFusedResult.probability,
+          6,
+        );
+      });
+
+      it('checks the flag with profileId as the userId (deterministic per-user rollout)', async () => {
+        (featureFlagService.isEnabled as jest.Mock).mockResolvedValue(false);
+
+        await service.predict('profile-1', ['school-1'], true);
+
+        // Flag service is called with profileId as the rollout-bucket key.
+        // Profile is 1:1 with user, so profileId-based hashing is functionally
+        // equivalent to userId-based hashing for percentage rollout.
+        expect(featureFlagService.isEnabled).toHaveBeenCalledWith(
+          'prediction-counselor-mode-v1',
+          expect.objectContaining({ userId: 'profile-1' }),
+        );
+      });
     });
   });
 
