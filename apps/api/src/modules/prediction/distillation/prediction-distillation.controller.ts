@@ -7,9 +7,11 @@ import {
   BackfillCaseAggregatesDto,
   BackfillDistillationRollupsDto,
   LoadCdsBandsDto,
+  LoadCdsBandsFixtureDto,
 } from './distillation.dto';
 import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
+import { CDS_BANDS_BUNDLED_FIXTURE } from './cds-bands-fixture';
 
 @ApiTags('admin/predictions/distillation')
 @ApiBearerAuth()
@@ -107,6 +109,17 @@ export class PredictionDistillationController {
   })
   async loadCdsBands(@Body() body: LoadCdsBandsDto) {
     return this.cdsBandsIngestion.ingestRows(body.rows, {
+      dryRun: body.dryRun ?? true,
+    });
+  }
+
+  @Post('cds-bands/load-fixture')
+  @ApiOperation({
+    summary:
+      'Load the CDS Bands teacher with the bundled starter fixture (handful of UC schools). Same idempotent semantics as cds-bands/load. For larger CDS sets, POST /cds-bands/load with custom rows[].',
+  })
+  async loadCdsBandsFixture(@Body() body: LoadCdsBandsFixtureDto) {
+    return this.cdsBandsIngestion.ingestRows(CDS_BANDS_BUNDLED_FIXTURE, {
       dryRun: body.dryRun ?? true,
     });
   }

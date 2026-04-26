@@ -514,6 +514,13 @@ export const adminRoutes = {
     `${API_ROUTES.ADMIN}/prediction-workflow/cases/normalize-legacy`,
   predictionWorkflowCohortPriorsBackfill: () =>
     `${API_ROUTES.ADMIN}/prediction-workflow/cohort-priors/backfill`,
+  // CDS bands + case-aggregate backfill live under the distillation
+  // controller (different prefix), but exposed here so the same admin UI
+  // can call them alongside the prediction-workflow ops.
+  predictionDistillationCdsBandsLoadFixture: () =>
+    `${API_ROUTES.ADMIN}/predictions/distillation/cds-bands/load-fixture`,
+  predictionDistillationCaseAggregatesBackfill: () =>
+    `${API_ROUTES.ADMIN}/predictions/distillation/case-aggregates/backfill`,
   applicationAnalysisWorkflowEvidence: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence`,
   applicationAnalysisWorkflowEvidenceReview: (id: string) =>

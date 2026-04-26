@@ -6542,10 +6542,23 @@
           "subtitle": "Aggregate approved AdmissionCase rows into SchoolCohortRoundPrior. Required before CohortPriorTeacher can serve signals.",
           "confirmLive": "Run cohort-prior backfill now? This writes new rows to SchoolCohortRoundPrior (setVersion=today). Rollback via DELETE WHERE setVersion LIKE 'backfill-%'."
         },
+        "cdsBands": {
+          "title": "Load CDS Bands fixture",
+          "subtitle": "Loads the bundled CDS admit-band starter set into SchoolCdsAdmitBand. Activates the cds-bands-v1 teacher in shadow. For larger curated sets call POST /admin/predictions/distillation/cds-bands/load directly.",
+          "confirmLive": "Load CDS Bands fixture into prod? Idempotent — re-loading just updates rows that share the same (schoolId, gpaBand, testType, testBand, cycleYear) key."
+        },
+        "caseAggregates": {
+          "title": "Backfill case-aggregate teachers",
+          "subtitle": "Reads approved AdmissionCase rows → aggregates per (teacher, school, bucket) → writes PredictionSourceObservation rows for ap-rigor / ib / feeder-hs / activity-intensity teachers. Idempotent per setVersion (default = today).",
+          "confirmLive": "Backfill case-aggregate teachers now? This deletes prior rows with today's setVersion and re-inserts. Per-teacher coverage will appear under eligibleByTeacher."
+        },
         "result": {
           "scanned": "Scanned",
           "written": "Written",
           "updated": "Updated",
+          "created": "Created",
+          "valid": "Valid rows",
+          "deleted": "Deleted (replaced)",
           "gpaWritten": "GPA written",
           "testScoresWritten": "Test scores written",
           "eligibleBuckets": "Eligible buckets",
