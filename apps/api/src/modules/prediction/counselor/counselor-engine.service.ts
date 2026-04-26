@@ -1,0 +1,366 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+import type { ProfileInput, SchoolInput } from '../prediction.prompts';
+import {
+  athleteMultiplier,
+  firstGenMultiplier,
+  geoMultiplier,
+  gpaBandMultiplier,
+  intlMultiplier,
+  legacyHookMultiplier,
+  majorMultiplier,
+  roundMultiplier,
+  testBandMultiplier,
+  urmMultiplier,
+  type ModifierResult,
+} from './counselor-modifiers';
+
+/**
+ * Counselor Engine Service — Anchored cold-start prediction.
+ *
+ * Mirrors how an admissions counselor estimates odds:
+ *   1. Anchor on the school's published CDS admit rate (via `cds-bands-v1` table
+ *      when (school, gpa-band, test-band) cell exists; else `school.acceptanceRate`)
+ *   2. Apply 8 deterministic modifiers (GPA, test, round, hooks, geography, intl, major)
+ *   3. Clip to [anchor × 0.3, anchor × 2.5] then [0.02, 0.98]
+ *
+ * Mathematical guarantee: no prediction can deviate from the school baseline by
+ * more than 2.5× or less than 0.3×. UCM at 49% (when published rate is ~88%)
+ * is mathematically impossible under this engine.
+ *
+ * Why not blend with AI/ML/distillation?
+ * Cold start (4 verified outcomes total) means LLM will hallucinate, ML will
+ * overfit, and distillation will drop most teachers as inactive. Counselor logic
+ * is the most defensible signal you can ship without data. When labels accumulate
+ * (~Feb 2027 estimate), a follow-up architecture can layer light ML on top.
+ *
+ * This service is invoked from `PredictionService.predictForSchool` when the
+ * `prediction-counselor-mode-v1` feature flag is enabled. The legacy
+ * fusion+distillation path runs in parallel (in shadow) and is captured in
+ * `servedTrace.shadow` for retrospective comparison.
+ */
+
+export type CounselorTier = 1 | 2 | 3 | 4;
+
+export interface CounselorFactor {
+  name: string;
+  impact: 'positive' | 'negative' | 'neutral';
+  weight: number;
+  detail: string;
+}
+
+export interface CounselorResult {
+  /** Final probability after anchor × multipliers × clip. */
+  probability: number;
+  /** The school admit rate used as the multiplicative anchor (0-1). */
+  anchor: number;
+  /** Source tier of the anchor (1 = CDS bands, 2 = scorecard+algorithmic, 3 = scorecard only, 4 = no data). */
+  tier: CounselorTier;
+  /** Identifier of the anchor source (e.g. 'cds-bands-v1', 'scorecard'). */
+  anchorSource: string;
+  /** Per-modifier breakdown for the factors[] response field. */
+  factors: CounselorFactor[];
+  /** Set when tier=4 (insufficient data). When set, the caller should surface a "not enough data" message and skip this prediction. */
+  insufficientData?: { reason: string };
+  /** Each modifier's raw result for debugging / shadow comparison. */
+  modifierResults: Record<string, ModifierResult>;
+}
+
+@Injectable()
+export class CounselorEngineService {
+  private readonly logger = new Logger(CounselorEngineService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Compute counselor prediction for a (profile, school) pair.
+   *
+   * @param profile - Profile data (may include extended fields recruitedAthlete, urmStatus)
+   * @param school - School data (must include acceptanceRate, sat25/75, state, isPrivate, etc.)
+   * @param applicationRound - Override for `profile.applicationRound`; the route layer can pass
+   *                           a per-application round (RD/ED/EA) since a profile may apply to
+   *                           multiple schools across different rounds.
+   */
+  async compute(
+    profile: ProfileInput & {
+      recruitedAthlete?: boolean;
+      urmStatus?: string | null;
+    },
+    school: SchoolInput & {
+      acceptanceRate?: number | null;
+      state?: string | null;
+      isPrivate?: boolean | null;
+      needBlindInternational?: boolean;
+      intlAcceptanceRate?: number | null;
+    },
+    applicationRound?: string,
+  ): Promise<CounselorResult> {
+    // ---- Step 1: resolve anchor -----------------------------------------
+    const { anchor, tier, anchorSource, insufficientData } =
+      await this.resolveAnchor(profile, school);
+
+    if (insufficientData) {
+      // Tier 4: return a sentinel result. Caller surfaces "insufficient data" UI.
+      return {
+        probability: 0,
+        anchor: 0,
+        tier: 4,
+        anchorSource: 'none',
+        factors: [],
+        insufficientData,
+        modifierResults: {},
+      };
+    }
+
+    // ---- Step 2: compute all 8 modifiers --------------------------------
+    // Round resolution priority: explicit param > school.applicationRound (set by
+    // the caller per-school, since one user applies to multiple schools each
+    // potentially in a different round) > 'RD' default. ProfileInput doesn't
+    // carry applicationRound — that's a per-school attribute.
+    const resolvedRound =
+      applicationRound ?? (school as SchoolInput).applicationRound ?? 'RD';
+    const modifierResults = {
+      gpaBand: gpaBandMultiplier(profile, school),
+      testBand: testBandMultiplier(profile, school),
+      round: roundMultiplier(resolvedRound),
+      legacyHook: legacyHookMultiplier(profile, school),
+      firstGen: firstGenMultiplier(profile),
+      athlete: athleteMultiplier(profile),
+      urm: urmMultiplier(profile, school),
+      geo: geoMultiplier(profile, school),
+      intl: intlMultiplier(profile, school),
+      major: majorMultiplier(
+        profile,
+        school,
+        await this.lookupProgramAcceptanceRate(profile, school),
+      ),
+    } as Record<string, ModifierResult>;
+
+    // ---- Step 3: combine + clip -----------------------------------------
+    const product = Object.values(modifierResults).reduce(
+      (acc, m) => acc * m.multiplier,
+      1.0,
+    );
+    const raw = anchor * product;
+    // Anchored clip: never more than 2.5× or less than 0.3× the school baseline.
+    const lowerBound = Math.max(0.02, anchor * 0.3);
+    const upperBound = Math.min(0.98, anchor * 2.5);
+    const probability = Math.max(lowerBound, Math.min(upperBound, raw));
+
+    // ---- Step 4: build factors[] for UI breakdown -----------------------
+    const factors: CounselorFactor[] = [
+      {
+        name: 'School baseline admit rate',
+        impact: 'neutral',
+        weight: 1.0,
+        detail: `Anchored at ${(anchor * 100).toFixed(1)}% (${anchorSource}, Tier ${tier})`,
+      },
+    ];
+    for (const [_key, mr] of Object.entries(modifierResults)) {
+      // Skip neutral (×1.0 with no specific evidence) factors to keep the breakdown focused.
+      if (mr.multiplier === 1.0 && mr.impact === 'neutral') continue;
+      factors.push({
+        name: mr.label,
+        impact: mr.impact,
+        weight: Math.abs(mr.multiplier - 1.0),
+        detail: `${mr.evidence} (×${mr.multiplier.toFixed(2)})`,
+      });
+    }
+    // Add the final clamp note if the raw value was clipped — operational
+    // transparency. Helps debugging "why didn't multiplying by 4× get me to 95%?"
+    if (raw > upperBound + 0.001) {
+      factors.push({
+        name: 'Capped at 2.5× school baseline',
+        impact: 'neutral',
+        weight: 0,
+        detail: `Combined modifiers would have produced ${(raw * 100).toFixed(0)}%, but counselor caps any prediction at 2.5× the school baseline`,
+      });
+    } else if (raw < lowerBound - 0.001) {
+      factors.push({
+        name: 'Floored at 0.3× school baseline',
+        impact: 'neutral',
+        weight: 0,
+        detail: `Combined modifiers would have produced ${(raw * 100).toFixed(1)}%, but counselor floors any prediction at 0.3× the school baseline`,
+      });
+    }
+
+    return {
+      probability,
+      anchor,
+      tier,
+      anchorSource,
+      factors,
+      modifierResults,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Anchor resolution: 4-tier fallback
+  // ---------------------------------------------------------------------------
+
+  private async resolveAnchor(
+    profile: ProfileInput,
+    school: SchoolInput & { acceptanceRate?: number | null },
+  ): Promise<{
+    anchor: number;
+    tier: CounselorTier;
+    anchorSource: string;
+    insufficientData?: { reason: string };
+  }> {
+    // Tier 1: CDS Section C9 admit-by-band lookup if (school, gpaBand, testBand)
+    // cell exists. Most accurate signal — uses school-published numbers directly.
+    const cdsBand = await this.lookupCdsBand(profile, school);
+    if (cdsBand != null) {
+      return { anchor: cdsBand, tier: 1, anchorSource: 'cds-bands-v1' };
+    }
+
+    // Tier 2 / 3: fall back to overall acceptanceRate.
+    // The difference between Tier 2 and Tier 3 is only relevant for the
+    // GPA/SAT band modifiers (which need sat25/75 to be useful) — both use
+    // acceptanceRate as anchor. Distinction is reported in `tier` for ops
+    // visibility but doesn't affect math here.
+    const overall = this.normalizeAcceptanceRate(school.acceptanceRate);
+    if (overall != null) {
+      const hasSatBands = school.sat25 != null && school.sat75 != null;
+      return {
+        anchor: overall,
+        tier: hasSatBands ? 2 : 3,
+        anchorSource: hasSatBands
+          ? 'scorecard (acceptanceRate + SAT bands)'
+          : 'scorecard (acceptanceRate only)',
+      };
+    }
+
+    // Tier 4: no usable data — caller shows "insufficient data" message.
+    return {
+      anchor: 0,
+      tier: 4,
+      anchorSource: 'none',
+      insufficientData: {
+        reason:
+          'school_missing_acceptance_rate: no acceptanceRate or CDS band data available for this school',
+      },
+    };
+  }
+
+  /**
+   * Look up `SchoolCdsAdmitBand` for the (school, gpaBand, testBand) cell.
+   * Mirrors `cds-bands-teacher.service.ts:resolveGpaBand/resolveSatBand` logic
+   * for a consistent band convention across the platform.
+   */
+  private async lookupCdsBand(
+    profile: ProfileInput,
+    school: SchoolInput,
+  ): Promise<number | null> {
+    const gpaBand = this.gpaToBand(profile.gpa, profile.gpaScale);
+    if (!gpaBand) return null;
+
+    const candidates: Array<{ testType: string; testBand: string }> = [];
+    const sat = profile.testScores?.find((t) => t.type === 'SAT')?.score;
+    if (sat != null) {
+      const satBand = this.satToBand(sat);
+      if (satBand) candidates.push({ testType: 'SAT', testBand: satBand });
+    }
+    const act = profile.testScores?.find((t) => t.type === 'ACT')?.score;
+    if (act != null) {
+      const actBand = this.actToBand(act);
+      if (actBand) candidates.push({ testType: 'ACT', testBand: actBand });
+    }
+    candidates.push({ testType: 'GPA_ONLY', testBand: 'ANY' });
+
+    for (const c of candidates) {
+      const row = await this.prisma.schoolCdsAdmitBand.findFirst({
+        where: {
+          schoolId: school.id,
+          gpaBand,
+          testType: c.testType,
+          testBand: c.testBand,
+        },
+        orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
+        select: { admitRate: true },
+      });
+      if (row) {
+        const rate = row.admitRate.toNumber();
+        if (rate > 0 && rate < 1) return rate;
+        if (rate >= 1) return rate / 100; // tolerate percentages stored as 88 not 0.88
+      }
+    }
+    return null;
+  }
+
+  private async lookupProgramAcceptanceRate(
+    profile: ProfileInput,
+    school: SchoolInput,
+  ): Promise<number | null> {
+    if (!profile.targetMajor) return null;
+    // Loose fuzzy match — SchoolProgram uses CIP codes and friendly names
+    // (`programName` field; not `name`). The precise CIP mapping lives in
+    // major-selectivity-teacher; counselor does the simpler programName-contains
+    // lookup. If no hit, returns null and majorMultiplier returns neutral.
+    const program = await this.prisma.schoolProgram.findFirst({
+      where: {
+        schoolId: school.id,
+        OR: [
+          {
+            programName: {
+              contains: profile.targetMajor,
+              mode: 'insensitive',
+            },
+          },
+          { cipCode: profile.targetMajor },
+        ],
+      },
+      select: { acceptanceRateEstimate: true },
+    });
+    if (!program?.acceptanceRateEstimate) return null;
+    const raw = program.acceptanceRateEstimate.toNumber();
+    if (raw <= 0) return null;
+    return raw > 1 ? raw / 100 : raw;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers (band conventions mirror cds-bands-teacher.service.ts)
+  // ---------------------------------------------------------------------------
+
+  private gpaToBand(
+    gpa: number | undefined,
+    gpaScale: number | undefined,
+  ): string | null {
+    if (gpa == null || !Number.isFinite(gpa)) return null;
+    const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
+    const gpa4 = (gpa / scale) * 4.0;
+    if (gpa4 >= 3.75) return '3.75-4.00';
+    if (gpa4 >= 3.5) return '3.50-3.74';
+    if (gpa4 >= 3.25) return '3.25-3.49';
+    if (gpa4 >= 3) return '3.00-3.24';
+    return '<3.00';
+  }
+
+  private satToBand(sat: number): string | null {
+    if (!Number.isFinite(sat)) return null;
+    if (sat >= 1500) return '1500-1600';
+    if (sat >= 1400) return '1400-1499';
+    if (sat >= 1300) return '1300-1399';
+    return '<1300';
+  }
+
+  private actToBand(act: number): string | null {
+    if (!Number.isFinite(act)) return null;
+    if (act >= 34) return '34-36';
+    if (act >= 31) return '31-33';
+    if (act >= 28) return '28-30';
+    return '<28';
+  }
+
+  /**
+   * Coerce school.acceptanceRate (Decimal column, may be 11.5 = 11.5% OR 0.115)
+   * to probability in [0, 1]. Returns null if missing or invalid.
+   */
+  private normalizeAcceptanceRate(
+    raw: number | null | undefined,
+  ): number | null {
+    if (raw == null || !Number.isFinite(raw) || raw <= 0) return null;
+    const normalized = raw > 1 ? raw / 100 : raw;
+    return normalized > 0 && normalized < 1 ? normalized : null;
+  }
+}

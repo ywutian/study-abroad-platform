@@ -586,6 +586,18 @@ model Profile {
   needsFinancialAid  Boolean?
   educationSystem    EducationSystem?
 
+  // Counselor-engine modifier inputs (PR-1, opt-in, additive migration).
+  // Both default to "no effect" so existing profiles aren't impacted by the
+  // counselor-mode rollout. Surfaced via profile settings UI when users
+  // self-identify (athletes for recruitment, demographic for URM context).
+  recruitedAthlete   Boolean?         @default(false)
+  // 'PREFER_NOT_SAY' | 'BLACK' | 'HISPANIC' | 'NATIVE_AMERICAN' | 'PACIFIC_ISLANDER' | null
+  // Stored as free-text string (not enum) because:
+  //   1. Categories may evolve as US Census revises (NACAC tracks 2030 reform)
+  //   2. Some users prefer multi-select; deferring to comma-separated string future-proofs
+  // Counselor's urmMultiplier reads only the canonical 4 values above.
+  urmStatus          String?
+
   // Recommendation preferences (JSON)
   recommendationPreferences Json?
 
