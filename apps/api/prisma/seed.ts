@@ -2053,7 +2053,47 @@ export async function main() {
   // ========== Team & Recruitment Data ==========
   await seedTeamData(prisma);
 
+  // ========== Feature Flags ==========
+  await seedFeatureFlags();
+
   console.log('🎉 Seed completed!');
+}
+
+/**
+ * Idempotent feature flag seed. New flags get created at safe defaults
+ * (counselor mode at 0% so it doesn't auto-engage on a fresh deploy);
+ * existing flags' rules/state are preserved (admin manages via /admin/feature-flags).
+ */
+async function seedFeatureFlags() {
+  const flags: Array<{
+    key: string;
+    description: string;
+    enabled: boolean;
+    rules: any;
+  }> = [
+    {
+      key: 'prediction-counselor-mode-v1',
+      description:
+        'Cold-start counselor engine: deterministic CDS-anchored prediction. When enabled for a user, served prediction = counselor output (anchor × 8 modifiers); legacy fusion+distillation runs in parallel and is captured in servedTrace.shadow for retrospective comparison.',
+      enabled: true,
+      rules: { percentage: 0 },
+    },
+  ];
+
+  for (const flag of flags) {
+    await prisma.featureFlag.upsert({
+      where: { key: flag.key },
+      // create-only: don't clobber admin's manual percentage tuning
+      create: {
+        key: flag.key,
+        description: flag.description,
+        enabled: flag.enabled,
+        rules: flag.rules,
+      },
+      update: {},
+    });
+  }
+  console.log(`✅ Seeded ${flags.length} feature flag(s)`);
 }
 
 async function seedChatTestData() {

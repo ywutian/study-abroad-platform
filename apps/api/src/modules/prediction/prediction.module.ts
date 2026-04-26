@@ -33,6 +33,7 @@ import {
   BENCHMARK_PROVIDERS,
 } from './benchmark/benchmark-providers';
 import { DistillationModule } from './distillation/distillation.module';
+import { CounselorEngineModule } from './counselor/counselor-engine.module';
 import { forwardRef } from '@nestjs/common';
 
 @Module({
@@ -47,6 +48,11 @@ import { forwardRef } from '@nestjs/common';
     // endpoint while prediction depends on the distillation services for
     // the served blend. forwardRef defers both resolutions to runtime.
     forwardRef(() => DistillationModule),
+    // Cold-start counselor engine — PredictionService injects
+    // CounselorEngineService when the prediction-counselor-mode-v1 feature
+    // flag is enabled. No circular dependency: counselor only depends on
+    // PrismaModule.
+    CounselorEngineModule,
   ],
   controllers: [
     PredictionController,

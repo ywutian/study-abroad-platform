@@ -16,6 +16,7 @@ import { PredictionResultDto } from './dto';
 import { InternalPredictionResult } from './prediction-persistence.service';
 import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
+import { CounselorEngineService } from './counselor/counselor-engine.service';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
 import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
@@ -129,6 +130,12 @@ export class PredictionService {
     private compliantDistillationService?: CompliantDistillationService,
     @Optional()
     private distillationObservationService?: DistillationObservationService,
+    // Cold-start counselor engine (PR-1). Optional so existing callers /
+    // legacy module configurations don't break — when missing or when the
+    // `prediction-counselor-mode-v1` feature flag is off, the prediction
+    // path falls through to the existing fusion+distillation pipeline
+    // with no behavior change.
+    @Optional() private counselorEngine?: CounselorEngineService,
   ) {}
 
   // ==================== School Calibration (delegated to PredictionCalibrationService) ====================
@@ -1786,6 +1793,97 @@ export class PredictionService {
         }
       } catch {
         // Non-critical — skip community data on error
+      }
+    }
+
+    // ==================== Counselor mode override (PR-2) ====================
+    // When the `prediction-counselor-mode-v1` feature flag is on for this user,
+    // override the served probability + factors with the counselor engine's
+    // deterministic CDS-anchored output. The fusion / distillation results that
+    // already computed above are preserved in `servedTrace.shadow.fusion` so
+    // we can retroactively compare counselor accuracy vs blend once outcome
+    // labels accumulate (~Feb 2027 estimate).
+    //
+    // Skipped when:
+    //   - profileId is empty (admin dry-run path; admin tests counselor via
+    //     /admin/predictions/distillation/dry-run endpoint specifically)
+    //   - counselor module not registered (graceful fallback for legacy module
+    //     configurations)
+    //   - feature flag disabled for this user
+    //   - counselor returns Tier 4 (insufficient school data) — keep fusion
+    //     so user still sees a number; counselor's "insufficient data" path
+    //     is meant for the explicit dry-run admin tooling
+    const counselorEnabled =
+      profileId !== '' &&
+      this.counselorEngine != null &&
+      this.featureFlagService != null
+        ? await this.featureFlagService.isEnabled(
+            'prediction-counselor-mode-v1',
+            { userId: profileId },
+          )
+        : false;
+
+    if (counselorEnabled && this.counselorEngine) {
+      try {
+        const counselorResult = await this.counselorEngine.compute(
+          profileInput as any,
+          schoolInput as any,
+          resolvedApplicationRound,
+        );
+
+        if (counselorResult.tier !== 4) {
+          // Stash fusion's pre-counselor output for shadow comparison
+          const shadowFusion = {
+            probability: result.probability,
+            probabilityLow: result.probabilityLow,
+            probabilityHigh: result.probabilityHigh,
+            factors: result.factors,
+            engineScores: result.engineScores,
+            confidence: result.confidence,
+          };
+
+          // Override served output with counselor's
+          result.probability = counselorResult.probability;
+          // Tight ±5pp CI (counselor is deterministic; CI reflects rules-of-thumb
+          // uncertainty, not statistical noise)
+          result.probabilityLow = Math.max(
+            0.02,
+            counselorResult.probability - 0.05,
+          );
+          result.probabilityHigh = Math.min(
+            0.98,
+            counselorResult.probability + 0.05,
+          );
+          result.factors = counselorResult.factors as any;
+          result.confidence = 'medium';
+          result.confidenceReason =
+            "Cold-start rules-of-thumb estimate anchored on the school's published CDS admit rate. Will become more precise as we collect outcome data from your reports.";
+
+          // Annotate trace — engine label + counselor metadata + shadow fusion
+          result.servedTrace = {
+            ...((result.servedTrace as object | undefined) ?? {}),
+            engine: 'counselor',
+            counselor: {
+              anchor: counselorResult.anchor,
+              anchorSource: counselorResult.anchorSource,
+              tier: counselorResult.tier,
+              modifiers: counselorResult.modifierResults,
+            },
+            shadow: {
+              ...(((result.servedTrace as any)?.shadow ?? {}) as object),
+              fusion: shadowFusion,
+            },
+          } as any;
+        }
+        // Tier 4: leave fusion result in place; counselor is silent.
+      } catch (err) {
+        // Counselor failure should never block a prediction. Log + fall back
+        // to fusion result. This is the third safety net (after Tier 4 sentinel
+        // and Optional injection).
+        this.logger.warn(
+          `Counselor compute failed for profile=${profileId} school=${school.id}; falling back to fusion`,
+          err as any,
+        );
       }
     }
 
