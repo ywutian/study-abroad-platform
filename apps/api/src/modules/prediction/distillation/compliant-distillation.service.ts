@@ -17,12 +17,48 @@ import { IpedsTrendTeacherService } from './teachers/ipeds-trend-teacher.service
 import { ChineseCaseTeacherService } from './teachers/chinese-case-teacher.service';
 import { ChineseOutcomeTeacherService } from './teachers/chinese-outcome-teacher.service';
 import { CohortPriorTeacherService } from './teachers/cohort-prior-teacher.service';
+import { CdsBandsTeacherService } from './teachers/cds-bands-teacher.service';
+import { HooksTeacherService } from './teachers/hooks-teacher.service';
+import { EdBoostTeacherService } from './teachers/ed-boost-teacher.service';
+import { GeoCohortTeacherService } from './teachers/geo-cohort-teacher.service';
+import { MajorSelectivityTeacherService } from './teachers/major-selectivity-teacher.service';
+import { IntlPoolTeacherService } from './teachers/intl-pool-teacher.service';
+import { ApRigorTeacherService } from './teachers/ap-rigor-teacher.service';
+import { IbTeacherService } from './teachers/ib-teacher.service';
+import { FeederHsTeacherService } from './teachers/feeder-hs-teacher.service';
+import { ActivityIntensityTeacherService } from './teachers/activity-intensity-teacher.service';
 
 const CHINA_COHORT_PREFIX = 'CN__';
-const PUBLIC_BASELINE_TEACHERS = new Set(['scorecard-v1', 'ipeds-trend-v1']);
+const PUBLIC_BASELINE_TEACHERS = new Set([
+  'scorecard-v1',
+  'ipeds-trend-v1',
+  'cds-bands-v1',
+  'hooks-v1',
+  'ed-boost-v1',
+  'geo-cohort-v1',
+  'major-selectivity-v1',
+  'intl-pool-v1',
+  'ap-rigor-v1',
+  'ib-v1',
+  'feeder-hs-v1',
+  'activity-intensity-v1',
+]);
 const CHINA_SPECIFIC_TEACHERS = new Set(['cn-case-v1', 'cn-outcome-v1']);
+const SHADOW_ONLY_TEACHERS = new Set([
+  'cds-bands-v1',
+  'hooks-v1',
+  'ed-boost-v1',
+  'geo-cohort-v1',
+  'major-selectivity-v1',
+  'intl-pool-v1',
+  'ap-rigor-v1',
+  'ib-v1',
+  'feeder-hs-v1',
+  'activity-intensity-v1',
+]);
 const COHORT_PRIOR_TEACHER = 'cohort-prior-v1';
 const COHORT_PRIOR_MIN_LIVE_SAMPLES = 5;
+const DEFAULT_MAX_TOTAL_WEIGHT = 0.55;
 
 function clampProbability(value: number): number {
   return Math.max(0.01, Math.min(0.99, value));
@@ -53,14 +89,37 @@ export class CompliantDistillationService {
     chineseCaseTeacher: ChineseCaseTeacherService,
     chineseOutcomeTeacher: ChineseOutcomeTeacherService,
     cohortPriorTeacher: CohortPriorTeacherService,
+    cdsBandsTeacher?: CdsBandsTeacherService,
+    hooksTeacher?: HooksTeacherService,
+    edBoostTeacher?: EdBoostTeacherService,
+    geoCohortTeacher?: GeoCohortTeacherService,
+    majorSelectivityTeacher?: MajorSelectivityTeacherService,
+    intlPoolTeacher?: IntlPoolTeacherService,
+    apRigorTeacher?: ApRigorTeacherService,
+    ibTeacher?: IbTeacherService,
+    feederHsTeacher?: FeederHsTeacherService,
+    activityIntensityTeacher?: ActivityIntensityTeacherService,
   ) {
-    this.teachers = [
+    const teachers: Array<TeacherSignalProvider | undefined> = [
       scorecardTeacher,
       ipedsTrendTeacher,
       chineseCaseTeacher,
       chineseOutcomeTeacher,
       cohortPriorTeacher,
+      cdsBandsTeacher,
+      hooksTeacher,
+      edBoostTeacher,
+      geoCohortTeacher,
+      majorSelectivityTeacher,
+      intlPoolTeacher,
+      apRigorTeacher,
+      ibTeacher,
+      feederHsTeacher,
+      activityIntensityTeacher,
     ];
+    this.teachers = teachers.filter(
+      (teacher): teacher is TeacherSignalProvider => Boolean(teacher),
+    );
   }
 
   buildInputSummary(
@@ -140,9 +199,6 @@ export class CompliantDistillationService {
     const activeChinaSpecificSignals = activeSignals.filter((signal) =>
       CHINA_SPECIFIC_TEACHERS.has(signal.key),
     );
-    const activeCohortPriorSignals = activeSignals.filter(
-      (signal) => signal.key === COHORT_PRIOR_TEACHER,
-    );
     const activeBaselineSignals = activeSignals.filter(
       (signal) =>
         PUBLIC_BASELINE_TEACHERS.has(signal.key) ||
@@ -157,14 +213,7 @@ export class CompliantDistillationService {
           : 'NONE';
 
     const maxTotalWeight =
-      activeChinaSpecificSignals.length > 0 ||
-      activeCohortPriorSignals.length > 0
-        ? 0.35
-        : activeBaselineSignals.length > 1
-          ? 0.15
-          : activeBaselineSignals.length === 1
-            ? 0.1
-            : 0;
+      activeSignals.length > 0 ? this.readMaxTotalWeight() : 0;
     const totalConfiguredWeight = activeSignals.reduce(
       (sum, signal) => sum + signal.configuredWeight,
       0,
@@ -208,6 +257,27 @@ export class CompliantDistillationService {
         : false;
     const liveEligible =
       exactCohortPriorLiveEligible || chinaSpecificLiveEligible;
+    const liveWeightedSignals = weightedSignals.filter(
+      (signal) =>
+        signal.active &&
+        signal.probability != null &&
+        !SHADOW_ONLY_TEACHERS.has(signal.key),
+    );
+    const totalLiveEffectiveWeight = liveWeightedSignals.reduce(
+      (sum, signal) => sum + signal.effectiveBlendWeight,
+      0,
+    );
+    const liveBlendedPrePlatt =
+      totalLiveEffectiveWeight > 0
+        ? clampProbability(
+            (1 - totalLiveEffectiveWeight) * input.ourProbPrePlatt +
+              liveWeightedSignals.reduce(
+                (sum, signal) =>
+                  sum + (signal.probability ?? 0) * signal.effectiveBlendWeight,
+                0,
+              ),
+          )
+        : input.ourProbPrePlatt;
     const applyLiveBlend = Boolean(options?.liveEnabled) && liveEligible;
     const stage = applyLiveBlend
       ? DISTILLATION_LIVE_STAGE
@@ -222,8 +292,10 @@ export class CompliantDistillationService {
         coverageTier,
         cohortKey: input.cohortKey,
         blendedPrePlatt,
+        liveBlendedPrePlatt,
         totalConfiguredWeight,
         totalEffectiveWeight,
+        totalLiveEffectiveWeight,
         liveEligible,
       },
       stage,
@@ -239,6 +311,14 @@ export class CompliantDistillationService {
     if (!value) return fallback;
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(0, Math.min(1, parsed));
+  }
+
+  private readMaxTotalWeight(): number {
+    const value = process.env.COMPLIANT_DISTILLATION_MAX_TOTAL_WEIGHT;
+    if (!value) return DEFAULT_MAX_TOTAL_WEIGHT;
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return DEFAULT_MAX_TOTAL_WEIGHT;
     return Math.max(0, Math.min(1, parsed));
   }
 }

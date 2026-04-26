@@ -1075,6 +1075,7 @@ model School {
 
   // Relations
   metrics                           SchoolMetric[]
+  cdsAdmitBands                     SchoolCdsAdmitBand[]
   programs                          SchoolProgram[]
   cases                             AdmissionCase[]
   targetedBy                        ProfileTargetSchool[]
@@ -1141,6 +1142,28 @@ model SchoolMetric {
 
   @@unique([schoolId, year, metricKey])
   @@index([schoolId])
+}
+
+model SchoolCdsAdmitBand {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  gpaBand   String
+  testType  String
+  testBand  String
+  admitRate Decimal @db.Decimal(6, 4)
+
+  sampleCount Int?
+  cycleYear   Int
+  source      String
+  sourceUrl   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, gpaBand, testType, testBand, cycleYear])
+  @@index([schoolId, gpaBand, testType, testBand])
 }
 
 model SchoolCommunityRating {

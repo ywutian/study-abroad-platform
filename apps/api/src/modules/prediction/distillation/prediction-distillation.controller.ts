@@ -3,14 +3,21 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles } from '../../../common/decorators';
 import { DistillationStatsRollupService } from './distillation-stats-rollup.service';
-import { BackfillDistillationRollupsDto } from './distillation.dto';
+import {
+  BackfillDistillationRollupsDto,
+  LoadCdsBandsDto,
+} from './distillation.dto';
+import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 
 @ApiTags('admin/predictions/distillation')
 @ApiBearerAuth()
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @Controller('admin/predictions/distillation')
 export class PredictionDistillationController {
-  constructor(private readonly rollups: DistillationStatsRollupService) {}
+  constructor(
+    private readonly rollups: DistillationStatsRollupService,
+    private readonly cdsBandsIngestion: CdsBandsIngestionService,
+  ) {}
 
   @Get('overview')
   @ApiOperation({
@@ -88,6 +95,16 @@ export class PredictionDistillationController {
       endDate,
       schoolId: body.schoolId,
       cohortKey: body.cohortKey,
+    });
+  }
+
+  @Post('cds-bands/load')
+  @ApiOperation({
+    summary: 'Load curated CDS admit-band rows for the CDS Bands teacher',
+  })
+  async loadCdsBands(@Body() body: LoadCdsBandsDto) {
+    return this.cdsBandsIngestion.ingestRows(body.rows, {
+      dryRun: body.dryRun ?? true,
     });
   }
 }

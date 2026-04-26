@@ -6504,20 +6504,20 @@
       },
       "actions": {
         "title": "运维操作",
-        "subtitle": "运行一次性数据填充 endpoint。Dry run 返回预览不写库；Live 真正写入, 幂等, 可重复跑。",
+        "subtitle": "运行一次性数据填充接口。试运行只返回预览、不写库；正式执行会写入数据，操作幂等，可重复运行。",
         "dryRun": "试运行",
-        "live": "Live 执行",
-        "dryRunBadge": "Dry-run 预览",
+        "live": "正式执行",
+        "dryRunBadge": "试运行预览",
         "liveBadge": "已提交",
         "fullJson": "查看完整 JSON",
         "error": "请求失败",
         "normalize": {
-          "title": "解析 legacy case 数据",
-          "subtitle": "把 gpaRange/satRange/actRange/toeflRange 字符串解析成结构化 gpa11 + testScores[]。仅填充 NULL 字段, 不覆盖已有数据。",
+          "title": "规范化历史案例",
+          "subtitle": "把 gpaRange/satRange/actRange/toeflRange 字符串解析成结构化 gpa11 + testScores[]。仅填充 NULL 字段，不覆盖已有数据。",
           "confirmLive": "立刻对 prod 案例数据执行解析? 仅写入 gpa11 / testScores 当前为 NULL 的行, 可反复执行。"
         },
         "backfill": {
-          "title": "回填 cohort priors",
+          "title": "回填同届轮次先验",
           "subtitle": "把已验证 AdmissionCase 聚合进 SchoolCohortRoundPrior 表。CohortPriorTeacher 依赖这张表才能产出信号。",
           "confirmLive": "立刻执行 cohort-prior 回填? 写入新行到 SchoolCohortRoundPrior (setVersion=今天)。回滚: DELETE WHERE setVersion LIKE 'backfill-%'。"
         },

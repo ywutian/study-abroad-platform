@@ -161,7 +161,7 @@ export class PredictionTransformerService {
       gpaSystem: hsEducation?.gpaSystem,
       grade: profile.grade ?? undefined,
       currentSchoolType: profile.currentSchoolType ?? undefined,
-      targetMajor: profile.targetMajor ?? undefined,
+      targetMajor: profile.targetMajor ?? profile.intendedMajor ?? undefined,
       isInternational: intlContext.isInternational,
       nationality: (profile as any).nationality ?? undefined,
       educationSystem: (profile as any).educationSystem ?? undefined,

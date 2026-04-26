@@ -36,7 +36,9 @@ export interface PredictionTracePayload {
     activeTeacherKeys: string[];
     totalConfiguredWeight: number;
     totalEffectiveWeight: number;
+    totalLiveEffectiveWeight?: number;
     blendedPrePlatt: number;
+    liveBlendedPrePlatt?: number;
     candidateServedProbability: number;
     servedProbability: number;
     teacherSummaries: Array<{

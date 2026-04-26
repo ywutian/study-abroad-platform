@@ -11,6 +11,16 @@ export const DISTILLATION_TEACHER_KEYS = [
   'cn-case-v1',
   'cn-outcome-v1',
   'cohort-prior-v1',
+  'cds-bands-v1',
+  'hooks-v1',
+  'ed-boost-v1',
+  'geo-cohort-v1',
+  'major-selectivity-v1',
+  'intl-pool-v1',
+  'ap-rigor-v1',
+  'ib-v1',
+  'feeder-hs-v1',
+  'activity-intensity-v1',
   'blend-v1',
 ] as const;
 
@@ -19,7 +29,17 @@ export type DistillationTeacherKey =
   | 'ipeds-trend-v1'
   | 'cn-case-v1'
   | 'cn-outcome-v1'
-  | 'cohort-prior-v1';
+  | 'cohort-prior-v1'
+  | 'cds-bands-v1'
+  | 'hooks-v1'
+  | 'ed-boost-v1'
+  | 'geo-cohort-v1'
+  | 'major-selectivity-v1'
+  | 'intl-pool-v1'
+  | 'ap-rigor-v1'
+  | 'ib-v1'
+  | 'feeder-hs-v1'
+  | 'activity-intensity-v1';
 
 export type DistillationCoverageTier = 'NONE' | 'BASELINE_ONLY' | 'CN_ENHANCED';
 
@@ -70,8 +90,10 @@ export type DistillationBlendDecision = {
   coverageTier: DistillationCoverageTier;
   cohortKey: string;
   blendedPrePlatt: number;
+  liveBlendedPrePlatt?: number;
   totalConfiguredWeight: number;
   totalEffectiveWeight: number;
+  totalLiveEffectiveWeight?: number;
   liveEligible: boolean;
 };
 
