@@ -1168,6 +1168,7 @@ export class PredictionService {
                 mlResult.probability,
                 null,
                 true,
+                compliantEvaluation.applyLiveBlend,
               )
             : mlResult.probability;
 
@@ -1552,13 +1553,15 @@ export class PredictionService {
           baselineServedProbability,
           plattParams,
           false,
+          compliantEvaluation.applyLiveBlend,
         )
       : baselineServedProbability;
 
     if (compliantEvaluation?.applyLiveBlend) {
       this.applyProbabilityDelta(
         fusedResult,
-        compliantEvaluation.decision.blendedPrePlatt,
+        compliantEvaluation.decision.liveBlendedPrePlatt ??
+          compliantEvaluation.decision.blendedPrePlatt,
       );
     }
 
@@ -1879,10 +1882,14 @@ export class PredictionService {
     baselineServedProbability: number,
     plattParams: { a: number; b: number } | null | undefined,
     mlPrimaryPath: boolean,
+    applyLiveBlend = false,
   ): number {
     if (!decision.hasSignal) return baselineServedProbability;
-    if (mlPrimaryPath || !plattParams) return decision.blendedPrePlatt;
-    return this.applyPlattCalibration(decision.blendedPrePlatt, plattParams);
+    const prePlatt = applyLiveBlend
+      ? (decision.liveBlendedPrePlatt ?? decision.blendedPrePlatt)
+      : decision.blendedPrePlatt;
+    if (mlPrimaryPath || !plattParams) return prePlatt;
+    return this.applyPlattCalibration(prePlatt, plattParams);
   }
 
   private applyProbabilityDelta(
@@ -1983,7 +1990,9 @@ export class PredictionService {
           .map((signal) => signal.key),
         totalConfiguredWeight: evaluation.decision.totalConfiguredWeight,
         totalEffectiveWeight: evaluation.decision.totalEffectiveWeight,
+        totalLiveEffectiveWeight: evaluation.decision.totalLiveEffectiveWeight,
         blendedPrePlatt: evaluation.decision.blendedPrePlatt,
+        liveBlendedPrePlatt: evaluation.decision.liveBlendedPrePlatt,
         candidateServedProbability,
         servedProbability,
         teacherSummaries,

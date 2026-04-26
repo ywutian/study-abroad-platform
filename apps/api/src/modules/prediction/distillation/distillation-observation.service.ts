@@ -59,6 +59,7 @@ export class DistillationObservationService {
           inputSummary: payload.inputSummary,
           ourProbPrePlatt: payload.ourProbPrePlatt,
           blendedPrePlatt: payload.decision.blendedPrePlatt,
+          liveBlendedPrePlatt: payload.decision.liveBlendedPrePlatt,
           candidateServedProbability: payload.candidateServedProbability,
           servedProbability: payload.servedProbability,
           coverageTier: payload.coverageTier,
@@ -91,8 +92,10 @@ export class DistillationObservationService {
         selectivityBand: payload.selectivityBand,
         totalConfiguredWeight: payload.decision.totalConfiguredWeight,
         totalEffectiveWeight: payload.decision.totalEffectiveWeight,
+        totalLiveEffectiveWeight: payload.decision.totalLiveEffectiveWeight,
         ourProbPrePlatt: payload.ourProbPrePlatt,
         blendedPrePlatt: payload.decision.blendedPrePlatt,
+        liveBlendedPrePlatt: payload.decision.liveBlendedPrePlatt,
         candidateServedProbability: payload.candidateServedProbability,
         servedProbability: payload.servedProbability,
         blendDelta:

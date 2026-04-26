@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 import { withSentryConfig } from '@sentry/nextjs';
@@ -5,10 +7,16 @@ import withPWA from '@ducanh2912/next-pwa';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
+const appDir = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = path.resolve(appDir, '../..');
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@study-abroad/shared', 'geist'],
   output: process.env.DOCKER_BUILD ? 'standalone' : undefined,
+  outputFileTracingRoot: workspaceRoot,
+  turbopack: {
+    root: workspaceRoot,
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons**' },

@@ -175,7 +175,63 @@ describe('CompliantDistillationService', () => {
     expect(result?.stage).toBe('DISTILLATION_SHADOW');
     expect(result?.decision.liveEligible).toBe(false);
     expect(result?.decision.coverageTier).toBe('BASELINE_ONLY');
-    expect(result?.decision.totalEffectiveWeight).toBeCloseTo(0.1, 6);
+    expect(result?.decision.totalEffectiveWeight).toBeCloseTo(0.12, 6);
+  });
+
+  it('keeps newly added non-cohort teachers out of the live blend', async () => {
+    const service = new CompliantDistillationService(
+      policyService as any,
+      rollupService as any,
+      teacher(
+        'scorecard-v1',
+        signal({
+          active: true,
+          probability: 0.2,
+          missingReasons: [],
+        }),
+      ) as any,
+      inactiveTeacher('ipeds-trend-v1') as any,
+      inactiveTeacher('cn-case-v1') as any,
+      inactiveTeacher('cn-outcome-v1') as any,
+      teacher(
+        'cohort-prior-v1',
+        signal({
+          key: 'cohort-prior-v1',
+          sourceName: 'distillation:cohort-prior-v1',
+          sourceType: 'INTERNAL_CASES',
+          active: true,
+          probability: 0.4,
+          sampleCount: 31,
+          bucketKey: 'exact',
+          missingReasons: [],
+          metadata: { tier: 'exact' },
+        }),
+      ) as any,
+      teacher(
+        'cds-bands-v1',
+        signal({
+          key: 'cds-bands-v1',
+          sourceName: 'distillation:cds-bands-v1',
+          sourceType: 'OFFICIAL_SCHOOL',
+          active: true,
+          probability: 0.9,
+          missingReasons: [],
+        }),
+        0.25,
+      ) as any,
+    );
+
+    const result = await service.evaluatePrediction(buildInput(), {
+      shadowEnabled: false,
+      liveEnabled: true,
+    });
+
+    expect(result?.applyLiveBlend).toBe(true);
+    expect(result?.decision.totalEffectiveWeight).toBeCloseTo(0.49, 6);
+    expect(result?.decision.totalLiveEffectiveWeight).toBeCloseTo(0.24, 6);
+    expect(result?.decision.blendedPrePlatt).toBeGreaterThan(
+      result?.decision.liveBlendedPrePlatt ?? 0,
+    );
   });
 
   it('does not live-serve broad cohort-prior fallback tiers', async () => {

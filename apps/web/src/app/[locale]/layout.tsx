@@ -66,11 +66,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>
-        <link rel="preconnect" href="https://npm.elemecdn.com" />
-        <link
-          rel="stylesheet"
-          href="https://npm.elemecdn.com/lxgw-wenkai-screen-webfont/style.css"
-        />
         <style nonce={nonce} dangerouslySetInnerHTML={{ __html: getThemeCssText() }} />
         <OrganizationJsonLd
           name="Study Abroad Platform"
