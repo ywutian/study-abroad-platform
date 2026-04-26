@@ -1,0 +1,23 @@
+{
+  "id": "011-mit-very-strong-rd-cs",
+  "description": "MIT — very strong applicant (4.0/1580), RD, CS",
+  "rationale": "MIT anchor 0.04. SAT 1580 = sat75 → test ×1.2 (above-75th tier; not >+50). GPA 4.0 → equiv-SAT 1500 < sat75=1580 → in middle 50 ×0.85. CS at top school × 0.5. Combined: 0.04 × 1.2 × 0.85 × 0.5 = 0.020 — at floor 0.04 × 0.3 = 0.012. Result hovers near floor; range [0.012, 0.05] reflects this.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 4,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "computer-science",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1580
+      }
+    ]
+  },
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.012, 0.05],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "010-ucb-average-ca-instate-rd",
+  "description": "UC Berkeley — average CA in-state applicant (3.6 GPA, 1300 SAT), RD",
+  "rationale": "UCB anchor 0.11. Average stats (1300 below 25th percentile 1330) → GPA ×0.85; test ×0.5; in-state UC ×1.8. Combined 0.77× anchor → ~0.085. Above floor 0.033. Range [0.04, 0.15].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.6,
+    "gpaScale": 4,
+    "highSchoolLocation": "CA",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1300
+      }
+    ]
+  },
+  "schoolName": "University of California, Berkeley",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.04, 0.2],
+  "tags": ["uc-system", "tier-2-algorithmic"]
+}

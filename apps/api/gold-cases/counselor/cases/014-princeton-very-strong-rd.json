@@ -1,0 +1,22 @@
+{
+  "id": "014-princeton-very-strong-rd",
+  "description": "Princeton — very strong RD applicant",
+  "rationale": "Princeton anchor ~0.04. Cap 2.5× = 0.10.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 4,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1580
+      }
+    ]
+  },
+  "schoolName": "Princeton University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.02, 0.1],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

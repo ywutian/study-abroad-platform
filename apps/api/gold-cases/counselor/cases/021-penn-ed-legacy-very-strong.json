@@ -1,0 +1,24 @@
+{
+  "id": "021-penn-ed-legacy-very-strong",
+  "description": "Penn ED + legacy + very strong — capped",
+  "rationale": "Penn anchor 0.07. ED ×2.5 + legacy ×3.0 + strong stats ×1.5 = 11.25× → clamped to 2.5× anchor = 0.175. This case explicitly verifies the cap activates.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "isLegacy": true,
+    "legacySchools": ["University of Pennsylvania"],
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1530
+      }
+    ]
+  },
+  "schoolName": "University of Pennsylvania",
+  "applicationRound": "ED",
+  "expectedProbabilityRange": [0.1, 0.2],
+  "tags": ["t20-private", "hook-legacy"]
+}

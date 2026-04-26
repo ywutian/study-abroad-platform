@@ -1,0 +1,23 @@
+{
+  "id": "008-ucsb-strong-ca-instate-rd",
+  "description": "UC Santa Barbara — strong CA in-state applicant, RD",
+  "rationale": "UCSB anchor ~0.26. Similar to UCSD; in-state advantage strong.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4,
+    "highSchoolLocation": "CA",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1450
+      }
+    ]
+  },
+  "schoolName": "University of California, Santa Barbara",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.3, 0.65],
+  "tags": ["uc-system", "tier-2-algorithmic"]
+}

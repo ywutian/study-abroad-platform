@@ -1,0 +1,23 @@
+{
+  "id": "012-stanford-very-strong-rd-cs",
+  "description": "Stanford — very strong RD applicant, CS major",
+  "rationale": "Stanford anchor ~0.04. Very strong stats × 1.5; CS at top schools × 0.5 (more selective). Combined ~0.03 — clamped at floor 0.012 (if anchor × 0.3). Range [0.02, 0.08].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 4,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "computer-science",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1570
+      }
+    ]
+  },
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.02, 0.1],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

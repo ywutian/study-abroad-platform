@@ -1,0 +1,22 @@
+{
+  "id": "027-nyu-china-intl-strong-rd",
+  "description": "NYU + China intl + strong RD",
+  "rationale": "NYU anchor ~0.12. Intl need-aware ×0.4; strong stats ×1.3. Combined ~0.06. Above floor 0.036.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4,
+    "isInternational": true,
+    "nationality": "CN",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1500
+      }
+    ]
+  },
+  "schoolName": "New York University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.03, 0.1],
+  "tags": ["t20-private", "international"]
+}

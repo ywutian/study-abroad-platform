@@ -1,0 +1,19 @@
+{
+  "id": "003-ucb-strong-ca-instate-rd",
+  "description": "UC Berkeley — strong CA in-state applicant, RD, CS major",
+  "rationale": "UCB CDS-published RD admit rate ~11%. Strong stats (1500/3.9 → in middle 50% at UCB which is sat25=1330, sat75=1530). GPA × 1.1 (above median ~1430); test × 1.2 (above 75th); in-state UC × 1.8. Combined ~2.4× anchor, clamped to 2.5× = 0.275. Range [0.15, 0.28] reflects typical CA strong applicant — UCB is genuinely competitive even for in-state.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "highSchoolLocation": "CA",
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "computer-science",
+    "testScores": [{ "type": "SAT", "score": 1500 }]
+  },
+  "schoolName": "University of California, Berkeley",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.15, 0.3],
+  "tags": ["uc-system", "tier-2-algorithmic"]
+}

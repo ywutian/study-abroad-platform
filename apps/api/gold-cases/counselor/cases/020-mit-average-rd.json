@@ -1,0 +1,22 @@
+{
+  "id": "020-mit-average-rd",
+  "description": "MIT — average applicant (3.7 GPA, 1450 SAT), RD",
+  "rationale": "MIT anchor ~0.04. Average stats (1450 below sat25=1520) → test ×0.5. Combined ~0.02 — at floor. Range [0.012, 0.05].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.7,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1450
+      }
+    ]
+  },
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.01, 0.06],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

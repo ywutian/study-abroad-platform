@@ -585,6 +585,25 @@ jobs:
           cat /tmp/prediction-gate-api.log || true
           exit 1
 
+      - name: Run counselor gold cases
+        # Cold-start counselor engine regression gate (PR-3). Loads 30 hand-curated
+        # (profile, school, expectedRange) cases from apps/api/gold-cases/counselor/
+        # and asserts no counselor prediction drifts outside its expected band.
+        # Runs BEFORE the existing accuracy/smoke check so a math regression in
+        # the modifiers fails fast, before the heavier seeded HTTP smoke.
+        working-directory: apps/api
+        run: pnpm gold:counselor
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+
+      - name: Upload counselor gold case report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: counselor-gold-case-report
+          path: apps/api/gold-cases/counselor/reports/
+          retention-days: 14
+
       - name: Run prediction gate
         run: pnpm exec tsx scripts/prediction-gate.ts --days 365 --min-verified 200 --school-query Wisconsin --round EA --base-url http://localhost:4101/api/v1
         env:

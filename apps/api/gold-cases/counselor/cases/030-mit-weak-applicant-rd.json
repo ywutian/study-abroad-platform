@@ -1,0 +1,22 @@
+{
+  "id": "030-mit-weak-applicant-rd",
+  "description": "Edge case: weak applicant at MIT — floor test",
+  "rationale": "MIT anchor 0.04. Weak stats (3.5/1300 — below 25th 1520) → GPA ×0.5; test ×0.3. Combined 0.6× anchor = 0.024 — at floor 0.012. Tests floor activation.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1300
+      }
+    ]
+  },
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.01, 0.05],
+  "tags": ["t20-private", "edge-case"]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "013-harvard-very-strong-rd",
+  "description": "Harvard — very strong RD applicant",
+  "rationale": "Harvard anchor ~0.04. Very strong stats; need-blind for intl but applicant is US. Range [0.03, 0.10].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 4,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1570
+      }
+    ]
+  },
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.02, 0.1],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}
