@@ -1,0 +1,18 @@
+{
+  "id": "009-ucm-average-ca-instate-rd",
+  "description": "UC Merced — average CA in-state applicant (3.5 GPA, no SAT), RD",
+  "rationale": "UCM anchor 0.91 (CDS-band fixture). Average stats (3.5 GPA, test-optional). With GPA ×1.1 (above median for UCM's low sat75), in-state UC ×1.8, plus ceiling clamp at anchor × 2.5 = 2.27 → 0.98 absolute ceiling. Range [0.55, 0.99] reflects clamp activation.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.5,
+    "gpaScale": 4,
+    "highSchoolLocation": "CA",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": []
+  },
+  "schoolName": "University of California, Merced",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.55, 0.99],
+  "tags": ["uc-system", "tier-2-algorithmic", "edge-case"]
+}

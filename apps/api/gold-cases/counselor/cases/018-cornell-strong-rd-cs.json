@@ -1,0 +1,23 @@
+{
+  "id": "018-cornell-strong-rd-cs",
+  "description": "Cornell — strong RD applicant, CS major",
+  "rationale": "Cornell anchor ~0.07. Strong stats; CS at top schools × 0.5. Range [0.04, 0.13].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "targetMajor": "computer-science",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1500
+      }
+    ]
+  },
+  "schoolName": "Cornell University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.03, 0.16],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

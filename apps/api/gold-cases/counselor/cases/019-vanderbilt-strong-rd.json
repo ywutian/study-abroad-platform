@@ -1,0 +1,22 @@
+{
+  "id": "019-vanderbilt-strong-rd",
+  "description": "Vanderbilt — strong RD applicant",
+  "rationale": "Vanderbilt anchor 0.07. SAT 1510 below sat75 ~1560 → test ×0.85; GPA equiv-SAT 1500 below sat75 → ×0.85. Combined ~0.05. Floor 0.021 doesn't bind. Range [0.018, 0.15].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1510
+      }
+    ]
+  },
+  "schoolName": "Vanderbilt University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.015, 0.15],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

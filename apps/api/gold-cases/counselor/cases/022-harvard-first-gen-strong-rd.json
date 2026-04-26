@@ -1,0 +1,23 @@
+{
+  "id": "022-harvard-first-gen-strong-rd",
+  "description": "Harvard + first-gen + strong RD",
+  "rationale": "Harvard anchor 0.034. First-gen ×1.4. Test 1530 below sat75 1580 → ×0.85; GPA equiv-SAT 1500 below sat75 → ×0.85. Combined 0.034 × 1.4 × 0.85 × 0.85 = 0.034 — close to anchor. Floor 0.010, cap 0.085. Range [0.015, 0.10].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "isFirstGen": true,
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1530
+      }
+    ]
+  },
+  "schoolName": "Harvard University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.015, 0.1],
+  "tags": ["t20-private", "hook-first-gen"]
+}

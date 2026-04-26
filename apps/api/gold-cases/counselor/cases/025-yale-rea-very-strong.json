@@ -1,0 +1,22 @@
+{
+  "id": "025-yale-rea-very-strong",
+  "description": "Yale REA + very strong applicant",
+  "rationale": "Yale anchor ~0.05. REA ×1.5 + strong stats ×1.5 = 2.25× → ~0.11. Within cap (0.125).",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.95,
+    "gpaScale": 4,
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1560
+      }
+    ]
+  },
+  "schoolName": "Yale University",
+  "applicationRound": "REA",
+  "expectedProbabilityRange": [0.04, 0.15],
+  "tags": ["t20-private", "tier-2-algorithmic"]
+}

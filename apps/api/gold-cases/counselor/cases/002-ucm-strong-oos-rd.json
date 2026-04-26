@@ -1,0 +1,18 @@
+{
+  "id": "002-ucm-strong-oos-rd",
+  "description": "UC Merced — strong OOS applicant, RD",
+  "rationale": "UCM anchor ~0.88. OOS at UC × 0.5; strong stats × 1.5 (combined GPA + test). Expected ~0.66 but anchor × 2.5 cap = 0.98 doesn't bind, anchor × 0.3 floor = 0.26 also doesn't bind. Strong stats partially offset OOS penalty. Range reflects expected band.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.85,
+    "gpaScale": 4,
+    "highSchoolLocation": "NY",
+    "isInternational": false,
+    "nationality": "US",
+    "testScores": [{ "type": "SAT", "score": 1480 }]
+  },
+  "schoolName": "University of California, Merced",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.5, 0.9],
+  "tags": ["uc-system", "tier-2-algorithmic"]
+}

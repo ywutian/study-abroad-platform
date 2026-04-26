@@ -1,0 +1,22 @@
+{
+  "id": "028-ucm-china-intl-strong-rd",
+  "description": "UCM + China intl + strong RD (no in-state, OOS)",
+  "rationale": "UCM anchor 0.91 (CDS-band fixture). UCM is need-blind for intl per scorecard data → intl ×0.7. Strong stats ×1.3. Combined ~0.83. Range [0.5, 0.95] reflects strong applicant + need-blind treatment. Note: this is the case where 'intl-pool' modifier disagrees with naive expectation (UCM, while public, accepts intl on a need-blind basis per IPEDS).",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": true,
+    "nationality": "CN",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1500
+      }
+    ]
+  },
+  "schoolName": "University of California, Merced",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.5, 0.95],
+  "tags": ["uc-system", "international"]
+}

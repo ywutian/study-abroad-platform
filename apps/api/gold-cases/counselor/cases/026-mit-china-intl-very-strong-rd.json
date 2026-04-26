@@ -1,0 +1,22 @@
+{
+  "id": "026-mit-china-intl-very-strong-rd",
+  "description": "MIT + China intl + very strong RD",
+  "rationale": "MIT anchor 0.04. Intl need-blind (MIT is need-blind for intl) ×0.7; strong stats ×1.5. Combined ~0.04. Range [0.02, 0.08].",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 4,
+    "gpaScale": 4,
+    "isInternational": true,
+    "nationality": "CN",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1570
+      }
+    ]
+  },
+  "schoolName": "Massachusetts Institute of Technology",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.02, 0.1],
+  "tags": ["t20-private", "international"]
+}

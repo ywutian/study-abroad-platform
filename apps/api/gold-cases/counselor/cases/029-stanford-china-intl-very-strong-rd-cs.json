@@ -1,0 +1,23 @@
+{
+  "id": "029-stanford-china-intl-very-strong-rd-cs",
+  "description": "Stanford + China intl + very strong RD CS",
+  "rationale": "Stanford anchor 0.04. Need-blind for intl (Stanford is) ×0.7; CS top school ×0.5; strong stats ×1.5. Combined ~0.022 — at floor 0.012.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 4,
+    "gpaScale": 4,
+    "isInternational": true,
+    "nationality": "CN",
+    "targetMajor": "computer-science",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1580
+      }
+    ]
+  },
+  "schoolName": "Stanford University",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.012, 0.07],
+  "tags": ["t20-private", "international"]
+}
