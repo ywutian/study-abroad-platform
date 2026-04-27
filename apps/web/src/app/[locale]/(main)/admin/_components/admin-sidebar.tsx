@@ -35,6 +35,7 @@ import {
   Menu,
   MessageSquareWarning,
   Database,
+  Key,
   type LucideIcon,
 } from 'lucide-react';
 import { RoleBadge } from './role-badge';
@@ -257,6 +258,7 @@ export function AdminSidebar() {
       items: [
         { href: '/admin/settings', icon: Settings, label: t('sidebar.settings') },
         { href: '/admin/feature-flags', icon: ToggleRight, label: t('sidebar.featureFlags') },
+        { href: '/admin/dev-tools', icon: Key, label: t('sidebar.devTools') },
       ],
     },
   ];

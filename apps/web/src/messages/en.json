@@ -6132,6 +6132,7 @@
       "health": "System Health",
       "team": "Team",
       "featureFlags": "Feature Flags",
+      "devTools": "Developer Tools",
       "menu": "Menu",
       "adminNav": "Admin Navigation",
       "groups": {
@@ -8338,6 +8339,27 @@
         "AI_QUOTA_DEFAULT_DAILY": "Default Daily Quota",
         "AI_QUOTA_PRO_DAILY": "Pro Daily Quota",
         "AI_QUOTA_PREMIUM_DAILY": "Premium Daily Quota"
+      }
+    },
+    "devTools": {
+      "title": "Developer Tools",
+      "description": "JWT inspection, copy, and refresh — for ops engineers using terminal/curl against admin endpoints.",
+      "noTokenAvailable": "No active JWT in this session. Re-login to refresh.",
+      "tokenCopied": "JWT copied to clipboard.",
+      "copyFailed": "Clipboard copy failed (browser permission?). Use the masked token shown to extract manually.",
+      "tokenRefreshed": "JWT refreshed successfully.",
+      "refreshFailed": "Refresh failed: {error}",
+      "jwtSection": {
+        "title": "Current Admin JWT",
+        "email": "Email",
+        "role": "Role",
+        "expiresIn": "Expires in",
+        "userId": "User ID",
+        "tokenLabel": "Token (masked):",
+        "copyButton": "Copy full token",
+        "refreshButton": "Refresh JWT",
+        "usageHeading": "Usage from terminal",
+        "usageBody": "Paste the copied token after 'Bearer' to authenticate curl/scripts to admin endpoints. Token expires in 15 minutes; click Refresh JWT to extend without re-login."
       }
     },
     "featureFlags": {

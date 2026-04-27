@@ -1,0 +1,255 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-27T10:30:00Z",
+    "source": "Each school's official CDS 2024-25 PDF (Section C1)",
+    "extractedBy": "Manual extraction via WebFetch + PDF Read tool by Claude",
+    "purpose": "Reference data for PR-13 importer (POSTs to /admin/schools/bulk-update-acceptance-rates from PR-12). Each row = real published admit rate by residency from official school CDS.",
+    "validity": "Each row cites official source URL. Audit trail via SCHOOL_RATES_BULK_UPDATE AuditLog upon import."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, davis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://aggiedata.ucdavis.edu/sites/g/files/dgvnsk1841/files/media/documents/CDS_UCD.pdf",
+      "applicants": {
+        "total": 98869,
+        "inState": 67710,
+        "outOfState": 12279,
+        "international": 18880
+      },
+      "admitted": {
+        "total": 41353,
+        "inState": 24746,
+        "outOfState": 7038,
+        "international": 9569
+      },
+      "enrolled": {
+        "total": 6804,
+        "inState": 5280,
+        "outOfState": 412,
+        "international": 1112
+      },
+      "rates": {
+        "acceptanceRate": 41.83,
+        "intlAcceptanceRate": 50.68,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf",
+      "applicants": {
+        "total": 57714,
+        "inState": 48922,
+        "outOfState": 2864,
+        "international": 5928
+      },
+      "admitted": {
+        "total": 44356,
+        "inState": 36711,
+        "outOfState": 2607,
+        "international": 5038
+      },
+      "enrolled": {
+        "total": 5419,
+        "inState": 5138,
+        "outOfState": 89,
+        "international": 192
+      },
+      "rates": {
+        "acceptanceRate": 76.85,
+        "intlAcceptanceRate": 84.99,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20252.pdf",
+      "applicants": {
+        "total": 134455,
+        "inState": 88418,
+        "outOfState": 24216,
+        "international": 21821
+      },
+      "admitted": {
+        "total": 35989,
+        "inState": 22984,
+        "outOfState": 8109,
+        "international": 4896
+      },
+      "enrolled": {
+        "total": 7330,
+        "inState": 5629,
+        "outOfState": 890,
+        "international": 811
+      },
+      "rates": {
+        "acceptanceRate": 26.77,
+        "intlAcceptanceRate": 22.44,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf",
+      "applicants": {
+        "total": 71696,
+        "inState": 57502,
+        "outOfState": 7782,
+        "international": 6412
+      },
+      "admitted": {
+        "total": 47012,
+        "inState": 35736,
+        "outOfState": 6335,
+        "international": 4941
+      },
+      "enrolled": {
+        "total": 4381,
+        "inState": 3939,
+        "outOfState": 234,
+        "international": 208
+      },
+      "rates": {
+        "acceptanceRate": 65.57,
+        "intlAcceptanceRate": 77.06,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "applicants": {
+        "total": 122706,
+        "inState": 87538,
+        "outOfState": 15792,
+        "international": 19376
+      },
+      "admitted": {
+        "total": 35317,
+        "inState": 19101,
+        "outOfState": 7858,
+        "international": 8358
+      },
+      "enrolled": {
+        "total": 6736,
+        "inState": 4901,
+        "outOfState": 693,
+        "international": 1142
+      },
+      "rates": {
+        "acceptanceRate": 28.78,
+        "intlAcceptanceRate": 43.14,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e1.wpmucdn.com/sites.harvard.edu/dist/6/210/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
+      "applicants": {
+        "total": 57517,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 2227,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1554,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 3.87,
+        "intlAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Harvard CDS does not publish residency breakdown. Counselor falls back to PR-8 selectivity-aware intl multiplier (highly selective + need-blind = 0.7×)."
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.mit.edu/projects/2024-25-common-data-set/",
+      "applicants": {
+        "total": 28232,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1284,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 4.55,
+        "intlAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "MIT CDS does not publish residency breakdown. Counselor falls back to PR-8 selectivity-aware intl multiplier (highly selective + need-blind = 0.7×)."
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+      "applicants": {
+        "total": 54008,
+        "inState": 3032,
+        "outOfState": 34216,
+        "international": 16760
+      },
+      "admitted": {
+        "total": 1970,
+        "inState": 265,
+        "outOfState": 1380,
+        "international": 325
+      },
+      "enrolled": {
+        "total": 1647,
+        "inState": 227,
+        "outOfState": 1125,
+        "international": 295
+      },
+      "rates": {
+        "acceptanceRate": 3.65,
+        "intlAcceptanceRate": 1.94,
+        "transferAcceptanceRate": null
+      },
+      "notes": "REVERSE pattern from UCs: Yale intl admit (1.94%) is ~half of overall (3.65%). Validates that real-data approach works for both selective and less-selective schools."
+    }
+  ],
+  "pendingExtraction": [
+    "university of california, berkeley (CDS in Excel format on opa.berkeley.edu — needs different scraping)",
+    "university of california, los angeles (only 2025-26 PDF found; 2024-25 not published yet)",
+    "university of california, santa barbara (no PDF URL found in search)",
+    "university of california, merced (most recent CDS is 2022-23)",
+    "massachusetts institute of technology (URL: https://ir.mit.edu/projects/2024-25-common-data-set/)",
+    "stanford university (URL: https://irds.stanford.edu/data-findings/cds — needs direct PDF link)",
+    "princeton university (URL: https://ir.princeton.edu/document/546)",
+    "university of pennsylvania, columbia university, brown university, cornell university, dartmouth college",
+    "duke, northwestern, johns hopkins, vanderbilt, notre dame, rice",
+    "university of michigan, university of virginia, university of north carolina, university of florida"
+  ],
+  "patterns": {
+    "ucSystem": "Intl admit rate >= overall (UCD 1.21×, UCR 1.11×, UCSC 1.18×, UCI 1.50×). UCSD is exception (0.84×) — moderate selectivity. Pattern: UCs aggressively admit intl for full OOS tuition.",
+    "elitePrivate": "Yale intl 0.53× of overall. Confirmed elite-school selectivity-aware logic from PR-8 is empirically right at top of pyramid. Wrong for less-selective publics.",
+    "harvardLike": "Some elite schools (Harvard) don't publish residency breakdown in CDS. Counselor falls back to PR-8 selectivity-aware heuristic for these."
+  }
+}
