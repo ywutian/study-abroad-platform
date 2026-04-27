@@ -1,0 +1,323 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { SchoolWriteService } from '../school/school-write.service';
+import {
+  BulkUpdateSchoolRatesDto,
+  BulkUpdateSchoolRateRowDto,
+} from './dto/bulk-update-school-rates.dto';
+
+/**
+ * AdminSchoolRatesService — bulk-update school admit rates from CDS / IPEDS / curated sources.
+ *
+ * Why this exists
+ * ---------------
+ * The counselor engine (PR-1 onward) and especially PR-8's selectivity-aware
+ * intl multiplier need REAL per-school admit rates to produce accurate
+ * predictions. The 4/26 evening discovery — UC intl admit rates are HIGHER
+ * than overall (UCD 50.7% vs 41.8%, UCR 85% vs 76.8%) — proves heuristic
+ * multipliers can't substitute for real published data.
+ *
+ * This service powers PR-13 (IPEDS importer for all 234 schools) and PR-14
+ * (top-30 CDS PDF refinement). Single endpoint, idempotent, audit-logged.
+ *
+ * Behavior
+ * --------
+ * For each row in the payload:
+ *   1. Locate school by `schoolId` (preferred) or `schoolNameNorm`
+ *   2. Skip if school not found → reported in `notFound[]`
+ *   3. Normalize rates: accept BOTH 0.418 AND 41.8 (auto-convert to percentage)
+ *   4. Compute diff vs current values; skip if no actual change (idempotent)
+ *   5. Write update via Prisma; write `AuditLog` row capturing who/what/source
+ *
+ * `dryRun: true` performs validation + diff calc but does not write.
+ *
+ * Rate convention
+ * ---------------
+ * Schema is `Decimal(5,2)` storing percentage (e.g. 41.80). PR-8 normalization
+ * code handles BOTH conventions, so we store the percentage form for clarity.
+ * Input < 1.0 → multiplied by 100 (interpreted as fraction).
+ * Input >= 1.0 → stored as-is (interpreted as percentage).
+ */
+
+export interface BulkUpdateRowResult {
+  schoolId: string;
+  schoolName: string;
+  changedFields: string[]; // empty when no diff (idempotent skip)
+  before: Partial<{
+    acceptanceRate: number | null;
+    intlAcceptanceRate: number | null;
+    transferAcceptanceRate: number | null;
+    needBlindInternational: boolean;
+  }>;
+  after: Partial<{
+    acceptanceRate: number;
+    intlAcceptanceRate: number;
+    transferAcceptanceRate: number;
+    needBlindInternational: boolean;
+  }>;
+}
+
+export interface BulkUpdateError {
+  rowIndex: number;
+  reason: string;
+  payload: BulkUpdateSchoolRateRowDto;
+}
+
+export interface BulkUpdateSchoolRatesResult {
+  dryRun: boolean;
+  scanned: number;
+  updated: number;
+  skippedNoChange: number;
+  notFound: Array<{
+    rowIndex: number;
+    schoolId?: string;
+    schoolNameNorm?: string;
+  }>;
+  errors: BulkUpdateError[];
+  changes: BulkUpdateRowResult[]; // includes skippedNoChange entries with empty changedFields
+  durationMs: number;
+}
+
+const PERCENT_THRESHOLD = 1.0;
+
+@Injectable()
+export class AdminSchoolRatesService {
+  private readonly logger = new Logger(AdminSchoolRatesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly schoolWrite: SchoolWriteService,
+  ) {}
+
+  /**
+   * Coerce input rate (0.418 OR 41.8) into the Decimal(5,2) percentage form.
+   * Returns null when input is null/undefined.
+   */
+  private normalizePercent(input: number | undefined | null): number | null {
+    if (input == null || !Number.isFinite(input)) return null;
+    if (input < 0) return null;
+    return input < PERCENT_THRESHOLD ? input * 100 : input;
+  }
+
+  async runBulkUpdate(
+    dto: BulkUpdateSchoolRatesDto,
+    actorUserId: string,
+  ): Promise<BulkUpdateSchoolRatesResult> {
+    const startedAt = Date.now();
+    const dryRun = dto.dryRun ?? false;
+    const result: BulkUpdateSchoolRatesResult = {
+      dryRun,
+      scanned: dto.rows.length,
+      updated: 0,
+      skippedNoChange: 0,
+      notFound: [],
+      errors: [],
+      changes: [],
+      durationMs: 0,
+    };
+
+    // Pre-check: each row must have at least one rate field OR needBlindInternational
+    for (let i = 0; i < dto.rows.length; i += 1) {
+      const row = dto.rows[i];
+      if (!row.schoolId && !row.schoolNameNorm) {
+        result.errors.push({
+          rowIndex: i,
+          reason: 'must provide schoolId or schoolNameNorm',
+          payload: row,
+        });
+        continue;
+      }
+      const hasAnyField =
+        row.acceptanceRate != null ||
+        row.intlAcceptanceRate != null ||
+        row.transferAcceptanceRate != null ||
+        row.needBlindInternational != null;
+      if (!hasAnyField) {
+        result.errors.push({
+          rowIndex: i,
+          reason:
+            'must provide at least one of: acceptanceRate, intlAcceptanceRate, transferAcceptanceRate, needBlindInternational',
+          payload: row,
+        });
+      }
+    }
+
+    // Bulk fetch schools by id and by nameNorm to minimize round-trips
+    const ids = dto.rows
+      .filter((r) => r.schoolId)
+      .map((r) => r.schoolId as string);
+    const norms = dto.rows
+      .filter((r) => !r.schoolId && r.schoolNameNorm)
+      .map((r) => r.schoolNameNorm as string);
+
+    const [byIdRows, byNormRows] = await Promise.all([
+      ids.length
+        ? this.prisma.school.findMany({
+            where: { id: { in: ids } },
+            select: this.schoolSelect(),
+          })
+        : Promise.resolve([]),
+      norms.length
+        ? this.prisma.school.findMany({
+            where: { nameNorm: { in: norms } },
+            select: this.schoolSelect(),
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const byId = new Map(byIdRows.map((s) => [s.id, s]));
+    const byNorm = new Map(byNormRows.map((s) => [s.nameNorm, s]));
+
+    for (let i = 0; i < dto.rows.length; i += 1) {
+      const row = dto.rows[i];
+      // Skip rows already errored in pre-check
+      if (result.errors.some((e) => e.rowIndex === i)) continue;
+
+      const school =
+        (row.schoolId && byId.get(row.schoolId)) ||
+        (row.schoolNameNorm && byNorm.get(row.schoolNameNorm)) ||
+        null;
+
+      if (!school) {
+        result.notFound.push({
+          rowIndex: i,
+          schoolId: row.schoolId,
+          schoolNameNorm: row.schoolNameNorm,
+        });
+        continue;
+      }
+
+      // Build proposed update (only fields that are explicitly present)
+      const updates: Prisma.SchoolUpdateInput = {};
+      const before: BulkUpdateRowResult['before'] = {};
+      const after: BulkUpdateRowResult['after'] = {};
+      const changedFields: string[] = [];
+
+      const tryField = (
+        key: 'acceptanceRate' | 'intlAcceptanceRate' | 'transferAcceptanceRate',
+        rawInput: number | undefined,
+      ) => {
+        if (rawInput == null) return;
+        const normalized = this.normalizePercent(rawInput);
+        if (normalized == null) return;
+        const currentDecimal = (school as any)[key] as Prisma.Decimal | null;
+        const currentNum = currentDecimal ? currentDecimal.toNumber() : null;
+        // Round to 2 dp for comparison (storage is Decimal(5,2))
+        const roundedNew = Math.round(normalized * 100) / 100;
+        if (currentNum != null && Math.abs(currentNum - roundedNew) < 0.005) {
+          // No-op
+          before[key] = currentNum;
+          return;
+        }
+        updates[key] = new Prisma.Decimal(roundedNew);
+        before[key] = currentNum;
+        after[key] = roundedNew;
+        changedFields.push(key);
+      };
+
+      tryField('acceptanceRate', row.acceptanceRate);
+      tryField('intlAcceptanceRate', row.intlAcceptanceRate);
+      tryField('transferAcceptanceRate', row.transferAcceptanceRate);
+
+      if (row.needBlindInternational != null) {
+        if (school.needBlindInternational !== row.needBlindInternational) {
+          updates.needBlindInternational = row.needBlindInternational;
+          before.needBlindInternational = school.needBlindInternational;
+          after.needBlindInternational = row.needBlindInternational;
+          changedFields.push('needBlindInternational');
+        } else {
+          before.needBlindInternational = school.needBlindInternational;
+        }
+      }
+
+      const rowResult: BulkUpdateRowResult = {
+        schoolId: school.id,
+        schoolName: school.name,
+        changedFields,
+        before,
+        after,
+      };
+      result.changes.push(rowResult);
+
+      if (changedFields.length === 0) {
+        result.skippedNoChange += 1;
+        continue;
+      }
+
+      if (dryRun) {
+        result.updated += 1; // count what *would* be updated
+        continue;
+      }
+
+      // Live: route school write through SchoolWriteService (governance:
+      // school-write-must-have-provenance — ensures cache invalidation +
+      // metadata + provenance pipeline). AuditLog written separately
+      // (best-effort; if audit fails, school update still applied — admin
+      // can reconstruct from update history).
+      try {
+        await this.schoolWrite.update(school.id, {
+          fields: updates as Record<string, unknown>,
+          provenance: {
+            source: row.source,
+            sourceUrl: row.sourceUrl,
+            cycleYear: row.cycleYear,
+            actor: actorUserId,
+          } as any,
+        });
+        try {
+          await this.prisma.auditLog.create({
+            data: {
+              userId: actorUserId,
+              action: 'SCHOOL_RATES_BULK_UPDATE',
+              resource: 'school',
+              resourceId: school.id,
+              metadata: {
+                source: row.source,
+                sourceUrl: row.sourceUrl,
+                cycleYear: row.cycleYear,
+                changedFields,
+                before,
+                after,
+              } as Prisma.InputJsonValue,
+            },
+          });
+        } catch (auditErr) {
+          this.logger.warn(
+            `AuditLog write failed for school ${school.id}, update still applied: ${
+              auditErr instanceof Error ? auditErr.message : String(auditErr)
+            }`,
+          );
+        }
+        result.updated += 1;
+      } catch (err) {
+        result.errors.push({
+          rowIndex: i,
+          reason: `schoolWrite.update failed: ${err instanceof Error ? err.message : String(err)}`,
+          payload: row,
+        });
+      }
+    }
+
+    result.durationMs = Date.now() - startedAt;
+    this.logger.log(
+      `Bulk school-rates ${dryRun ? '(dry-run) ' : ''}` +
+        `scanned=${result.scanned} updated=${result.updated} ` +
+        `skippedNoChange=${result.skippedNoChange} ` +
+        `notFound=${result.notFound.length} errors=${result.errors.length}`,
+    );
+    return result;
+  }
+
+  private schoolSelect() {
+    return {
+      id: true,
+      name: true,
+      nameNorm: true,
+      acceptanceRate: true,
+      intlAcceptanceRate: true,
+      transferAcceptanceRate: true,
+      needBlindInternational: true,
+    } satisfies Prisma.SchoolSelect;
+  }
+}
