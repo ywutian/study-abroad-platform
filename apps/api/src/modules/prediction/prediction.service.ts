@@ -157,18 +157,38 @@ export class PredictionService {
     return this.cacheService.hashProfileData(profile);
   }
 
+  private toPublicPredictionResult(
+    result: PredictionResultDto,
+  ): PredictionResultDto {
+    const {
+      servedTrace: _servedTrace,
+      policyVersionId: _policyVersionId,
+      applicationRound: _applicationRound,
+      selectivityBand: _selectivityBand,
+      ...publicResult
+    } = result as PredictionResultDto & {
+      servedTrace?: unknown;
+      policyVersionId?: string;
+      applicationRound?: string;
+      selectivityBand?: string | null;
+    };
+    return publicResult;
+  }
+
   /** @deprecated Use PredictionCacheService.getFromCache() directly */
   private async getFromCache(
     profileId: string,
     schoolId: string,
     profileHash?: string,
     policyVersionId?: string,
+    engineMode?: string,
   ): Promise<PredictionResultDto | null> {
     return this.cacheService.getFromCache(
       profileId,
       schoolId,
       profileHash,
       policyVersionId,
+      engineMode,
     );
   }
 
@@ -179,6 +199,7 @@ export class PredictionService {
     result: PredictionResultDto,
     profileHash?: string,
     policyVersionId?: string,
+    engineMode?: string,
   ): Promise<void> {
     return this.cacheService.saveToCache(
       profileId,
@@ -186,6 +207,7 @@ export class PredictionService {
       result,
       profileHash,
       policyVersionId,
+      engineMode,
     );
   }
 
@@ -548,6 +570,9 @@ export class PredictionService {
    *   - `includeServedTrace`: attach `servedTrace` to each result. Implied
    *     true when `includeShadowDistillation` is true (the trace would be
    *     uninteresting otherwise).
+   *   - `counselorMode`: overlay counselor-engine output without checking the
+   *     feature flag. Admin dry-run uses this to compare counselor vs legacy
+   *     without a real userId or persistence.
    */
   async previewPredict(
     profileInput: ProfileInput,
@@ -557,6 +582,7 @@ export class PredictionService {
       includeShadowDistillation?: boolean;
       includeServedTrace?: boolean;
       applicationRound?: string;
+      counselorMode?: boolean;
     },
   ): Promise<{
     results: Array<PredictionResultDto & { servedTrace?: unknown }>;
@@ -568,6 +594,7 @@ export class PredictionService {
     const includeServedTrace =
       options?.includeServedTrace ?? includeShadowDistillation;
     const overrideApplicationRound = options?.applicationRound;
+    const counselorMode = options?.counselorMode ?? false;
 
     if (schoolIds.length === 0) {
       return { results: [], dataCompleteness: 0 };
@@ -667,6 +694,7 @@ export class PredictionService {
           false, // useDistillationBlend
           includeShadowDistillation, // compliantDistillationShadow
           false, // compliantDistillationLive — never live-blend on preview
+          counselorMode,
           false, // persist
         );
         result.schoolMeta = schoolMetaMap.get(result.schoolId);
@@ -690,18 +718,20 @@ export class PredictionService {
 
     // Batch validation + monotonicity (same invariants as the live path)
     this.validateBatchResults(results);
-    enforceMonotonicity(results);
+    if (!counselorMode) {
+      enforceMonotonicity(results);
 
-    // School-level calibration multipliers (Platt happens inside predictForSchool)
-    const calibrationMap = await this.getSchoolCalibrations();
-    for (const r of results) {
-      const adj = calibrationMap[r.schoolId];
-      if (adj != null && adj > 0) {
-        r.probability = Math.min(0.98, r.probability * adj);
-        if (r.probabilityLow != null)
-          r.probabilityLow = Math.min(0.98, r.probabilityLow * adj);
-        if (r.probabilityHigh != null)
-          r.probabilityHigh = Math.min(0.98, r.probabilityHigh * adj);
+      // School-level calibration multipliers (Platt happens inside predictForSchool)
+      const calibrationMap = await this.getSchoolCalibrations();
+      for (const r of results) {
+        const adj = calibrationMap[r.schoolId];
+        if (adj != null && adj > 0) {
+          r.probability = Math.min(0.98, r.probability * adj);
+          if (r.probabilityLow != null)
+            r.probabilityLow = Math.min(0.98, r.probabilityLow * adj);
+          if (r.probabilityHigh != null)
+            r.probabilityHigh = Math.min(0.98, r.probabilityHigh * adj);
+        }
       }
     }
 
@@ -940,6 +970,74 @@ export class PredictionService {
       });
     }
 
+    // Pre-compute feature flags once per prediction request. `profileId` is a
+    // Profile.id, not a User.id, so use the already-loaded profile.userId for
+    // deterministic rollout hashing.
+    let v5MlPrimary = false;
+    let v5Shadow = false;
+    let useDistillationBlend = false;
+    let compliantDistillationShadow = false;
+    let compliantDistillationLive = false;
+    let counselorModeEnabled = false;
+    if (this.featureFlagService && profile.userId) {
+      try {
+        [
+          v5MlPrimary,
+          v5Shadow,
+          useDistillationBlend,
+          compliantDistillationShadow,
+          compliantDistillationLive,
+          counselorModeEnabled,
+        ] = await Promise.all([
+          this.mlPrimaryService
+            ? this.featureFlagService.isEnabled('prediction-ml-primary', {
+                userId: profile.userId,
+              })
+            : Promise.resolve(false),
+          this.mlPrimaryService
+            ? this.featureFlagService.isEnabled('prediction-shadow', {
+                userId: profile.userId,
+              })
+            : Promise.resolve(false),
+          this.distillationService
+            ? this.featureFlagService.isEnabled(
+                'prediction-distillation-blend',
+                { userId: profile.userId },
+              )
+            : Promise.resolve(false),
+          this.compliantDistillationService
+            ? this.featureFlagService.isEnabled(
+                'prediction-compliant-distillation-shadow',
+                { userId: profile.userId },
+              )
+            : Promise.resolve(false),
+          this.compliantDistillationService
+            ? this.featureFlagService.isEnabled(
+                'prediction-compliant-distillation-v1',
+                { userId: profile.userId },
+              )
+            : Promise.resolve(false),
+          this.counselorEngine
+            ? this.featureFlagService.isEnabled(
+                'prediction-counselor-mode-v1',
+                {
+                  userId: profile.userId,
+                },
+              )
+            : Promise.resolve(false),
+        ]);
+      } catch {
+        // Feature flag check failed, stay on legacy served behavior.
+        v5MlPrimary = false;
+        v5Shadow = false;
+        useDistillationBlend = false;
+        compliantDistillationShadow = false;
+        compliantDistillationLive = false;
+        counselorModeEnabled = false;
+      }
+    }
+    const predictionEngineMode = counselorModeEnabled ? 'counselor-v1' : 'v4';
+
     if (!forceRefresh) {
       for (const school of schools) {
         const cached = await this.getFromCache(
@@ -947,11 +1045,13 @@ export class PredictionService {
           school.id,
           profileHash,
           policyVersionId,
+          predictionEngineMode,
         );
         if (cached) {
           // Attach schoolMeta to cached results too
-          cached.schoolMeta = schoolMetaMap.get(school.id);
-          results.push(cached);
+          const publicCached = this.toPublicPredictionResult(cached);
+          publicCached.schoolMeta = schoolMetaMap.get(school.id);
+          results.push(publicCached);
         } else {
           schoolsToPredict.push(school);
         }
@@ -971,60 +1071,6 @@ export class PredictionService {
         where: { cipCode: targetCip, schoolId: { in: allSchoolIds } },
       });
       for (const p of programs) programMap.set(p.schoolId, p);
-    }
-
-    // Pre-compute v5 feature flags ONCE (not per-school)
-    let v5MlPrimary = false;
-    let v5Shadow = false;
-    let useDistillationBlend = false;
-    let compliantDistillationShadow = false;
-    let compliantDistillationLive = false;
-    if (this.featureFlagService) {
-      try {
-        const userId = await this.prisma.profile
-          .findUnique({ where: { id: profileId }, select: { userId: true } })
-          .then((p) => p?.userId);
-        if (userId) {
-          [
-            v5MlPrimary,
-            v5Shadow,
-            useDistillationBlend,
-            compliantDistillationShadow,
-            compliantDistillationLive,
-          ] = await Promise.all([
-            this.mlPrimaryService
-              ? this.featureFlagService.isEnabled('prediction-ml-primary', {
-                  userId,
-                })
-              : Promise.resolve(false),
-            this.mlPrimaryService
-              ? this.featureFlagService.isEnabled('prediction-shadow', {
-                  userId,
-                })
-              : Promise.resolve(false),
-            this.distillationService
-              ? this.featureFlagService.isEnabled(
-                  'prediction-distillation-blend',
-                  { userId },
-                )
-              : Promise.resolve(false),
-            this.compliantDistillationService
-              ? this.featureFlagService.isEnabled(
-                  'prediction-compliant-distillation-shadow',
-                  { userId },
-                )
-              : Promise.resolve(false),
-            this.compliantDistillationService
-              ? this.featureFlagService.isEnabled(
-                  'prediction-compliant-distillation-v1',
-                  { userId },
-                )
-              : Promise.resolve(false),
-          ]);
-        }
-      } catch {
-        // Feature flag check failed, stay on legacy
-      }
     }
 
     // 并行预测（控制并发上限为 3）
@@ -1053,6 +1099,7 @@ export class PredictionService {
             useDistillationBlend,
             compliantDistillationShadow,
             compliantDistillationLive,
+            counselorModeEnabled,
           ),
         ),
       );
@@ -1079,19 +1126,23 @@ export class PredictionService {
       );
     }
 
-    // 单调性约束: 保证 selectivity 更高的学校 probability 更低
-    enforceMonotonicity(results);
+    if (!counselorModeEnabled) {
+      // 单调性约束: 保证 selectivity 更高的学校 probability 更低.
+      // Counselor mode skips this legacy post-processing so its hard
+      // [anchor × 0.3, anchor × 2.5] clamp cannot be mutated after compute().
+      enforceMonotonicity(results);
 
-    // 学校级校准：从 DB 加载 SchoolCalibration 乘数（如 BU 过严时可设 >1）
-    const calibrationMap = await this.getSchoolCalibrations();
-    for (const r of results) {
-      const adj = calibrationMap[r.schoolId];
-      if (adj != null && adj > 0) {
-        r.probability = Math.min(0.98, r.probability * adj);
-        if (r.probabilityLow != null)
-          r.probabilityLow = Math.min(0.98, r.probabilityLow * adj);
-        if (r.probabilityHigh != null)
-          r.probabilityHigh = Math.min(0.98, r.probabilityHigh * adj);
+      // 学校级校准：从 DB 加载 SchoolCalibration 乘数（如 BU 过严时可设 >1）
+      const calibrationMap = await this.getSchoolCalibrations();
+      for (const r of results) {
+        const adj = calibrationMap[r.schoolId];
+        if (adj != null && adj > 0) {
+          r.probability = Math.min(0.98, r.probability * adj);
+          if (r.probabilityLow != null)
+            r.probabilityLow = Math.min(0.98, r.probabilityLow * adj);
+          if (r.probabilityHigh != null)
+            r.probabilityHigh = Math.min(0.98, r.probabilityHigh * adj);
+        }
       }
     }
 
@@ -1155,10 +1206,15 @@ export class PredictionService {
     useDistillationBlend = false,
     compliantDistillationShadow = false,
     compliantDistillationLive = false,
+    counselorModeEnabled = false,
     persist = true,
   ): Promise<PredictionResultDto> {
     // === v5 ML-Primary feature flag branch ===
-    if (this.mlPrimaryService && (v5MlPrimary || v5Shadow)) {
+    if (
+      this.mlPrimaryService &&
+      !counselorModeEnabled &&
+      (v5MlPrimary || v5Shadow)
+    ) {
       try {
         const schoolInputV5 = this.schoolToInput(school);
         if (applicationRound) schoolInputV5.applicationRound = applicationRound;
@@ -1228,7 +1284,7 @@ export class PredictionService {
               .saveToCache(
                 profileId,
                 school.id,
-                mlResult,
+                this.toPublicPredictionResult(mlResult),
                 profileHash,
                 policyVersionId,
                 'v5',
@@ -1256,7 +1312,7 @@ export class PredictionService {
                 });
             }
           }
-          return mlResult;
+          return persist ? this.toPublicPredictionResult(mlResult) : mlResult;
         }
       } catch (err) {
         this.logger.warn(
@@ -1762,6 +1818,7 @@ export class PredictionService {
       servedPolicyVersionId: resolvedPolicyVersionId,
       cohortKey: servedTrace?.cohortKey,
       roundContext: resolvedApplicationRound,
+      predictionMethod: 'fusion',
       sourceSummary: servedTrace?.sourceSummary,
       uncertaintyReasons: servedTrace?.uncertaintyReasons,
       confidenceReason,
@@ -1804,34 +1861,22 @@ export class PredictionService {
     // we can retroactively compare counselor accuracy vs blend once outcome
     // labels accumulate (~Feb 2027 estimate).
     //
-    // Skipped when:
-    //   - profileId is empty (admin dry-run path; admin tests counselor via
-    //     /admin/predictions/distillation/dry-run endpoint specifically)
-    //   - counselor module not registered (graceful fallback for legacy module
-    //     configurations)
-    //   - feature flag disabled for this user
-    //   - counselor returns Tier 4 (insufficient school data) — keep fusion
-    //     so user still sees a number; counselor's "insufficient data" path
-    //     is meant for the explicit dry-run admin tooling
-    const counselorEnabled =
-      profileId !== '' &&
-      this.counselorEngine != null &&
-      this.featureFlagService != null
-        ? await this.featureFlagService.isEnabled(
-            'prediction-counselor-mode-v1',
-            { userId: profileId },
-          )
-        : false;
-
-    if (counselorEnabled && this.counselorEngine) {
+    // Skipped when counselor module is missing, flag is disabled for this
+    // request, or counselor returns Tier 4. Production Tier 4 falls back to
+    // fusion so users still see the legacy prediction.
+    if (counselorModeEnabled && this.counselorEngine) {
       try {
         const counselorResult = await this.counselorEngine.compute(
-          profileInput as any,
-          schoolInput as any,
+          profileInput,
+          schoolInput,
           resolvedApplicationRound,
         );
 
         if (counselorResult.tier !== 4) {
+          const counselorMissingFields = counselorResult.missingFields ?? [];
+          const counselorSourceContributions =
+            counselorResult.sourceContributions ?? [];
+
           // Stash fusion's pre-counselor output for shadow comparison
           const shadowFusion = {
             probability: result.probability,
@@ -1854,10 +1899,29 @@ export class PredictionService {
             0.98,
             counselorResult.probability + 0.05,
           );
+          result.tier = calculateTier(
+            counselorResult.probability,
+            tierSchoolMetrics,
+          );
           result.factors = counselorResult.factors as any;
+          result.engineScores = undefined;
           result.confidence = 'medium';
           result.confidenceReason =
             "Cold-start rules-of-thumb estimate anchored on the school's published CDS admit rate. Will become more precise as we collect outcome data from your reports.";
+          result.predictionMethod = 'counselor';
+          result.sourceSummary = [
+            {
+              label: 'Counselor estimate',
+              detail: `${counselorResult.anchorSource}; anchor ${(counselorResult.anchor * 100).toFixed(1)}%; Tier ${counselorResult.tier}`,
+            },
+          ];
+          result.uncertaintyReasons = [
+            'Cold-start rules-of-thumb estimate; essays, recommendations, and institutional priorities are not fully modeled.',
+            ...counselorMissingFields.map(
+              (field) =>
+                `Missing ${field}; this signal was skipped neutrally instead of penalized.`,
+            ),
+          ];
 
           // Annotate trace — engine label + counselor metadata + shadow fusion
           result.servedTrace = {
@@ -1868,14 +1932,24 @@ export class PredictionService {
               anchorSource: counselorResult.anchorSource,
               tier: counselorResult.tier,
               modifiers: counselorResult.modifierResults,
+              missingFields: counselorMissingFields,
+              sourceContributions: counselorSourceContributions,
+              ruleVersion: counselorResult.ruleVersion,
             },
             shadow: {
               ...(((result.servedTrace as any)?.shadow ?? {}) as object),
               fusion: shadowFusion,
             },
           } as any;
+        } else {
+          result.servedTrace = {
+            ...((result.servedTrace as object | undefined) ?? {}),
+            counselorSkipped: {
+              reason: counselorResult.insufficientData?.reason ?? 'tier_4',
+              tier: counselorResult.tier,
+            },
+          } as any;
         }
-        // Tier 4: leave fusion result in place; counselor is silent.
       } catch (err) {
         // Counselor failure should never block a prediction. Log + fall back
         // to fusion result. This is the third safety net (after Tier 4 sentinel
@@ -1888,18 +1962,13 @@ export class PredictionService {
     }
 
     if (persist) {
-      // 保存到缓存
-      await this.saveToCache(
-        profileId,
-        school.id,
-        result,
-        profileHash,
-        policyVersionId,
-      );
-
-      // 保存到数据库
+      // 保存到数据库 first so the public response/cache can expose the
+      // PredictionResult row id used by prediction-quality feedback.
       const savedRefs =
         (await this.savePrediction(profileId, school.id, result)) ?? {};
+      if (savedRefs.predictionResultId) {
+        result.id = savedRefs.predictionResultId;
+      }
       await this.recordCompliantDistillationObservation({
         savedRefs,
         policyVersionId: resolvedPolicyVersionId,
@@ -1911,9 +1980,20 @@ export class PredictionService {
         applicationRound: resolvedApplicationRound,
         selectivityBand,
       });
+
+      // 保存到缓存 after persistence so feedback widgets can use result.id on
+      // subsequent cache hits too.
+      await this.saveToCache(
+        profileId,
+        school.id,
+        this.toPublicPredictionResult(result),
+        profileHash,
+        policyVersionId,
+        counselorModeEnabled ? 'counselor-v1' : 'v4',
+      );
     }
 
-    return result;
+    return persist ? this.toPublicPredictionResult(result) : result;
   }
 
   // ==================== Community Insights ====================

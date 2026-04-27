@@ -4,6 +4,7 @@ import { PredictionService } from './prediction.service';
 import { SchoolService } from '../school/school.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import { PredictionFeedbackService } from './prediction-feedback.service';
 
 describe('PredictionController', () => {
   let controller: PredictionController;
@@ -81,6 +82,12 @@ describe('PredictionController', () => {
               eligibleForCalibration: false,
             }),
             mapLatestOutcomeLabel: jest.fn().mockReturnValue(undefined),
+          },
+        },
+        {
+          provide: PredictionFeedbackService,
+          useValue: {
+            submitFeedback: jest.fn(),
           },
         },
       ],

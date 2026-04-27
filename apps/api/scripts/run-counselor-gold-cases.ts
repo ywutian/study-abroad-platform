@@ -24,6 +24,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
+import { Prisma } from '@prisma/client';
 import { CounselorEngineModule } from '../src/modules/prediction/counselor/counselor-engine.module';
 import { CounselorEngineService } from '../src/modules/prediction/counselor/counselor-engine.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -47,6 +48,79 @@ const REPORTS_DIR = resolve(
 
 const SLACK = 0.005; // ±0.5pp slack on probability range comparison
 
+const MINIMAL_CDS_FIXTURE = [
+  {
+    schoolNameNorm: 'university of california, merced',
+    gpaBand: '3.75-4.00',
+    testType: 'SAT',
+    testBand: '1500-1600',
+    admitRate: 0.92,
+    sampleCount: 500,
+    cycleYear: 2024,
+    source: 'gold-counselor-fixture:uc-merced:2024',
+    sourceUrl: 'https://admissions.ucmerced.edu/',
+  },
+  {
+    schoolNameNorm: 'university of california, merced',
+    gpaBand: '3.75-4.00',
+    testType: 'GPA_ONLY',
+    testBand: 'ANY',
+    admitRate: 0.88,
+    sampleCount: 1200,
+    cycleYear: 2024,
+    source: 'gold-counselor-fixture:uc-merced:2024',
+    sourceUrl: 'https://admissions.ucmerced.edu/',
+  },
+] as const;
+
+function normalizeSchoolName(name: string): string {
+  return name.trim().toLowerCase();
+}
+
+async function loadMinimalCdsFixture(prisma: PrismaService) {
+  for (const row of MINIMAL_CDS_FIXTURE) {
+    const school = await prisma.school.findUnique({
+      where: { nameNorm: row.schoolNameNorm },
+      select: { id: true },
+    });
+    if (!school) {
+      console.warn(
+        `⚠️  CDS fixture skipped: school not found (${row.schoolNameNorm})`,
+      );
+      continue;
+    }
+
+    await prisma.schoolCdsAdmitBand.upsert({
+      where: {
+        schoolId_gpaBand_testType_testBand_cycleYear: {
+          schoolId: school.id,
+          gpaBand: row.gpaBand,
+          testType: row.testType,
+          testBand: row.testBand,
+          cycleYear: row.cycleYear,
+        },
+      },
+      update: {
+        admitRate: new Prisma.Decimal(row.admitRate),
+        sampleCount: row.sampleCount,
+        source: row.source,
+        sourceUrl: row.sourceUrl,
+      },
+      create: {
+        schoolId: school.id,
+        gpaBand: row.gpaBand,
+        testType: row.testType,
+        testBand: row.testBand,
+        admitRate: new Prisma.Decimal(row.admitRate),
+        sampleCount: row.sampleCount,
+        cycleYear: row.cycleYear,
+        source: row.source,
+        sourceUrl: row.sourceUrl,
+      },
+    });
+  }
+}
+
 async function main() {
   // Load all gold cases
   const caseFiles = readdirSync(CASES_DIR)
@@ -69,17 +143,24 @@ async function main() {
   );
   const counselor = app.get(CounselorEngineService);
   const prisma = app.get(PrismaService);
+  await loadMinimalCdsFixture(prisma);
 
-  // Look up all unique schools by name in one query (avoids per-case round-trip)
+  // Look up all unique schools by stable normalized name in one query (avoids
+  // per-case round-trip and avoids environment-specific cuid IDs).
   const cases: CounselorGoldCase[] = caseFiles.map((file) =>
     JSON.parse(readFileSync(join(CASES_DIR, file), 'utf8')),
   );
-  const uniqueNames = Array.from(new Set(cases.map((c) => c.schoolName)));
+  const uniqueNameNorms = Array.from(
+    new Set(
+      cases.map((c) => c.schoolNameNorm ?? normalizeSchoolName(c.schoolName)),
+    ),
+  );
   const schoolRows = await prisma.school.findMany({
-    where: { name: { in: uniqueNames } },
+    where: { nameNorm: { in: uniqueNameNorms } },
     select: {
       id: true,
       name: true,
+      nameNorm: true,
       nameZh: true,
       acceptanceRate: true,
       satAvg: true,
@@ -94,12 +175,14 @@ async function main() {
       intlAcceptanceRate: true,
     },
   });
-  const schoolByName = new Map(schoolRows.map((s) => [s.name, s]));
+  const schoolByNameNorm = new Map(schoolRows.map((s) => [s.nameNorm, s]));
 
   // Run each case
   const results: CounselorGoldReplayResult[] = [];
   for (const c of cases) {
-    const school = schoolByName.get(c.schoolName);
+    const schoolNameNorm =
+      c.schoolNameNorm ?? normalizeSchoolName(c.schoolName);
+    const school = schoolByNameNorm.get(schoolNameNorm);
     if (!school) {
       results.push({
         caseId: c.id,

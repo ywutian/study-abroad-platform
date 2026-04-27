@@ -474,6 +474,9 @@ describe('PredictionService', () => {
                 },
               ],
               modifierResults: {},
+              missingFields: [],
+              sourceContributions: [],
+              ruleVersion: 'counselor-cold-start-v1.1',
             }),
           },
         },
@@ -690,6 +693,7 @@ describe('PredictionService', () => {
         expect.any(Object),
         expect.any(String),
         'v3-enterprise',
+        'v4',
       );
     });
 
@@ -933,16 +937,16 @@ describe('PredictionService', () => {
       expect(output.results[0].probability).toBeCloseTo(0.47, 6);
       expect(output.results[0].modelVersion).toBe('v3-enterprise');
       expect(output.results[0].cohortKey).toBe('CN__CHINA_INTL');
-      expect((output.results[0] as any).servedTrace.distillation).toMatchObject(
-        {
-          stage: 'DISTILLATION_LIVE',
-          applyLiveBlend: true,
-          liveEligible: true,
-          activeTeacherKeys: ['scorecard-v1'],
-          candidateServedProbability: 0.47,
-          servedProbability: 0.47,
-        },
-      );
+      const persistedResult = (persistenceService.savePrediction as jest.Mock)
+        .mock.calls[0][2] as any;
+      expect(persistedResult.servedTrace.distillation).toMatchObject({
+        stage: 'DISTILLATION_LIVE',
+        applyLiveBlend: true,
+        liveEligible: true,
+        activeTeacherKeys: ['scorecard-v1'],
+        candidateServedProbability: 0.47,
+        servedProbability: 0.47,
+      });
     });
 
     it('should serve the fusion result when compliant live blend is off', async () => {
@@ -1000,7 +1004,9 @@ describe('PredictionService', () => {
 
         const output = await service.predict('profile-1', ['school-1'], true);
 
-        const trace = (output.results[0] as any).servedTrace;
+        const persistedResult = (persistenceService.savePrediction as jest.Mock)
+          .mock.calls[0][2] as any;
+        const trace = persistedResult.servedTrace;
         expect(trace.engine).toBe('counselor');
         expect(trace.counselor).toBeDefined();
         expect(trace.counselor.tier).toBe(2);
@@ -1058,17 +1064,16 @@ describe('PredictionService', () => {
         );
       });
 
-      it('checks the flag with profileId as the userId (deterministic per-user rollout)', async () => {
+      it('checks the flag with profile.userId for deterministic per-user rollout', async () => {
         (featureFlagService.isEnabled as jest.Mock).mockResolvedValue(false);
 
         await service.predict('profile-1', ['school-1'], true);
 
-        // Flag service is called with profileId as the rollout-bucket key.
-        // Profile is 1:1 with user, so profileId-based hashing is functionally
-        // equivalent to userId-based hashing for percentage rollout.
+        // Rollout must be deterministic per real user, not per transient
+        // profile row, so repeated sessions see the same engine.
         expect(featureFlagService.isEnabled).toHaveBeenCalledWith(
           'prediction-counselor-mode-v1',
-          expect.objectContaining({ userId: 'profile-1' }),
+          expect.objectContaining({ userId: 'user-1' }),
         );
       });
     });

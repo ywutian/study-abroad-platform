@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PredictionService } from './prediction.service';
 import { PredictionController } from './prediction.controller';
+import { AdminPredictionFeedbackController } from './admin-prediction-feedback.controller';
 import { PredictionMlController } from './prediction-ml.controller';
 import { RedisModule } from '../../common/redis/redis.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
@@ -22,6 +23,7 @@ import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionMemoryService } from './prediction-memory.service';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
+import { PredictionFeedbackService } from './prediction-feedback.service';
 import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionWorkflowService } from './prediction-workflow.service';
 import { PredictionPolicyShadowService } from './prediction-policy-shadow.service';
@@ -56,6 +58,7 @@ import { forwardRef } from '@nestjs/common';
   ],
   controllers: [
     PredictionController,
+    AdminPredictionFeedbackController,
     PredictionMlController,
     ...BENCHMARK_CONTROLLERS,
   ],
@@ -71,6 +74,7 @@ import { forwardRef } from '@nestjs/common';
     PredictionMemoryService,
     PredictionPersistenceService,
     PredictionReportingService,
+    PredictionFeedbackService,
     PredictionPolicyService,
     PredictionWorkflowService,
     PredictionPolicyShadowService,

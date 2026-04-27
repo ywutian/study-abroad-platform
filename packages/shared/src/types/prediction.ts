@@ -93,6 +93,8 @@ export interface EngineScores {
 }
 
 export interface PredictionResult {
+  /** PredictionResult row ID. Present for persisted predictions; omitted for dry-run previews. */
+  id?: string;
   schoolId: string;
   schoolName: string;
   probability: number;
@@ -112,6 +114,7 @@ export interface PredictionResult {
   actualResult?: string;
   cohortKey?: string;
   roundContext?: string;
+  predictionMethod?: 'fusion' | 'counselor';
   sourceSummary?: PredictionSourceSummary[];
   uncertaintyReasons?: string[];
   confidenceReason?: string;

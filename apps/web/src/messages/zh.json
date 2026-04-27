@@ -1177,6 +1177,7 @@
       "educationSystem": "教育体系",
       "needsFinancialAid": "我需要助学金",
       "firstGeneration": "第一代大学生",
+      "recruitedAthlete": "校队招募运动员",
       "legacy": "校友关系 (Legacy)",
       "legacyPlaceholder": "例如：哈佛、斯坦福",
       "legacyHint": "如有校友关系，请输入学校名称，用逗号分隔",
@@ -1704,6 +1705,10 @@
     "suggestionsGenericHint": "这些建议基于您的目标专业。添加活动和奖项可获得更个性化的推荐。",
     "impactFactors": "影响因素分析",
     "factorsDisclaimer": "注意：本预测未包含文书质量、推荐信和面试表现的评估",
+    "counselor": {
+      "howWeComputed": "我们的计算依据",
+      "disclaimerBody": "这是冷启动规则估计：基于学校公开录取率和申请者调整项计算。它不是精确统计模型，会随着更多学生回报最终结果逐步校准。"
+    },
     "source": {
       "academic": "学术数据",
       "aiAnalysis": "AI分析",
@@ -1743,6 +1748,30 @@
     "outcomeLabelSaved": "结果标签已保存",
     "outcomeLabelSavedToast": "已保存，这会帮助我们改进后续预估。",
     "outcomeLabelSavedHint": "这会作为你提交的结果标签保存，后续可能进入人工复核。",
+    "predictionFeedback": {
+      "title": "预测质量反馈",
+      "hint": "基于你目前了解的信息，告诉我们这个预估是否有参考价值。",
+      "saved": "反馈已保存，管理员可以查看这条预测。",
+      "savedToast": "预测反馈已保存",
+      "edit": "编辑",
+      "categoryLabel": "哪里不对？",
+      "notesPlaceholder": "给顾问团队的补充说明（可选）",
+      "charCount": "{count}/500 字",
+      "submit": "提交反馈",
+      "error": "反馈保存失败",
+      "sentiment": {
+        "POSITIVE": "看起来合理",
+        "UNSURE": "不确定",
+        "NEGATIVE": "看起来不对"
+      },
+      "category": {
+        "TOO_HIGH": "概率太高",
+        "TOO_LOW": "概率太低",
+        "FACTORS_WRONG": "因素不匹配",
+        "NEVER_MOVES": "概率不变化",
+        "OTHER": "其他"
+      }
+    },
     "predictionInProgress": "预测进行中，请稍候",
     "resultsAnnouncement": "显示 {count} 个结果，按{sort}排序",
     "essayDisclaimer": "当前预测未包含文书、面试等主观因素。",
@@ -6071,6 +6100,8 @@
       "analytics": "数据分析",
       "calibrations": "预测校准",
       "predictionHealth": "预测数据健康",
+      "predictionFeedback": "预测反馈",
+      "cdsBands": "CDS 分位数据",
       "applicationAnalysisWorkflow": "申请分析工作流",
       "activityTemplates": "活动模板",
       "highSchools": "高中管理",
@@ -6554,6 +6585,66 @@
           "nextCursor": "下一批游标 (粘回继续)",
           "durationMs": "耗时 (ms)"
         }
+      }
+    },
+    "predictionFeedback": {
+      "title": "预测反馈",
+      "description": "查看内测用户对 counselor 预测的反馈，并按引擎、学校、态度和类别筛选。",
+      "filters": "筛选",
+      "sentiment": "态度",
+      "category": "类别",
+      "enginePlaceholder": "引擎快照，例如 counselor",
+      "schoolPlaceholder": "学校 ID",
+      "daysPlaceholder": "最近天数",
+      "total": "{count} 条反馈",
+      "loading": "加载中…",
+      "refresh": "刷新",
+      "loadFailed": "反馈加载失败。",
+      "empty": "没有匹配当前筛选条件的反馈。",
+      "unknownEngine": "未知引擎",
+      "school": "学校",
+      "probability": "当时展示概率",
+      "user": "用户",
+      "unknown": "未知",
+      "sentiments": {
+        "ALL": "全部",
+        "POSITIVE": "合理",
+        "UNSURE": "不确定",
+        "NEGATIVE": "不对"
+      },
+      "categories": {
+        "ALL": "全部",
+        "TOO_HIGH": "太高",
+        "TOO_LOW": "太低",
+        "FACTORS_WRONG": "因素不对",
+        "NEVER_MOVES": "不随档案变化",
+        "OTHER": "其他"
+      }
+    },
+    "cdsBands": {
+      "title": "CDS 分位覆盖",
+      "description": "查看和修正 SchoolCdsAdmitBand 单元格，这些数据会驱动 counselor Tier 1 锚点。",
+      "refresh": "刷新",
+      "priorityTitle": "重点学校覆盖",
+      "rowsTitle": "CDS 分位行",
+      "schoolIdPlaceholder": "按学校 ID 筛选",
+      "sourcePlaceholder": "按来源筛选",
+      "noCycle": "无年份",
+      "save": "保存",
+      "metrics": {
+        "totalCells": "总单元格",
+        "schoolsReady": "已就绪学校",
+        "priorityReady": "重点学校就绪",
+        "schoolsWithAny": "有任意单元格的学校"
+      },
+      "table": {
+        "school": "学校",
+        "gpaBand": "GPA 分段",
+        "test": "成绩分段",
+        "rate": "录取率",
+        "sample": "样本",
+        "source": "来源",
+        "action": "操作"
       }
     },
     "calibrations": {

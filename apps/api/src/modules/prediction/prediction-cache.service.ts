@@ -42,6 +42,18 @@ export class PredictionCacheService {
   hashProfileData(profile: {
     gpa?: any;
     gpaScale?: any;
+    targetMajor?: any;
+    intendedMajor?: any;
+    currentSchoolType?: any;
+    nationality?: any;
+    countryOfResidence?: any;
+    citizenship?: any;
+    educationSystem?: any;
+    needsFinancialAid?: any;
+    legacy?: any[];
+    firstGeneration?: any;
+    recruitedAthlete?: any;
+    urmStatus?: any;
     testScores?: Array<{ type: string; score: number }>;
     activities?: any[];
     awards?: Array<{ level?: string }>;
@@ -58,6 +70,17 @@ export class PredictionCacheService {
     const data = JSON.stringify({
       gpa: profile.gpa,
       gpaScale: profile.gpaScale,
+      major: profile.targetMajor ?? profile.intendedMajor ?? null,
+      currentSchoolType: profile.currentSchoolType ?? null,
+      nationality: profile.nationality ?? null,
+      countryOfResidence: profile.countryOfResidence ?? null,
+      citizenship: profile.citizenship ?? null,
+      educationSystem: profile.educationSystem ?? null,
+      needsFinancialAid: profile.needsFinancialAid ?? null,
+      legacy: (profile.legacy || []).map(String).sort(),
+      firstGeneration: profile.firstGeneration ?? null,
+      recruitedAthlete: profile.recruitedAthlete ?? null,
+      urmStatus: profile.urmStatus ?? null,
       scores: (profile.testScores || []).map((s) => ({
         t: s.type,
         s: s.score,

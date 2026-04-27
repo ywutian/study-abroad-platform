@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
+import { AnchorResolverService } from './anchor-resolver.service';
 import {
   athleteMultiplier,
   firstGenMultiplier,
@@ -60,6 +61,8 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
+export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.1';
+
 export interface CounselorFactor {
   name: string;
   impact: 'positive' | 'negative' | 'neutral';
@@ -82,13 +85,27 @@ export interface CounselorResult {
   insufficientData?: { reason: string };
   /** Each modifier's raw result for debugging / shadow comparison. */
   modifierResults: Record<string, ModifierResult>;
+  /** Rule-version fingerprint used to replay or audit historical outputs. */
+  ruleVersion: string;
+  /** Missing inputs that were skipped neutrally instead of punished. */
+  missingFields: string[];
+  /** Source-level contribution trace for enterprise cold-start audits. */
+  sourceContributions: Array<{
+    source: string;
+    value: number | null;
+    role: 'anchor' | 'modifier' | 'guardrail';
+    detail: string;
+  }>;
 }
 
 @Injectable()
 export class CounselorEngineService {
   private readonly logger = new Logger(CounselorEngineService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly anchorResolver?: AnchorResolverService,
+  ) {}
 
   /**
    * Compute counselor prediction for a (profile, school) pair.
@@ -114,8 +131,16 @@ export class CounselorEngineService {
     applicationRound?: string,
   ): Promise<CounselorResult> {
     // ---- Step 1: resolve anchor -----------------------------------------
-    const { anchor, tier, anchorSource, encodedDimensions, insufficientData } =
-      await this.resolveAnchor(profile, school);
+    const {
+      anchor,
+      tier,
+      anchorSource,
+      encodedDimensions,
+      insufficientData,
+      sourceContributions: anchorContributions,
+    } = this.anchorResolver
+      ? await this.anchorResolver.resolveAnchor(profile, school)
+      : await this.resolveAnchor(profile, school);
 
     if (insufficientData) {
       // Tier 4: return a sentinel result. Caller surfaces "insufficient data" UI.
@@ -127,6 +152,16 @@ export class CounselorEngineService {
         factors: [],
         insufficientData,
         modifierResults: {},
+        ruleVersion: COUNSELOR_RULE_VERSION,
+        missingFields: this.resolveMissingFields(profile, school),
+        sourceContributions: [
+          {
+            source: 'anchor',
+            value: null,
+            role: 'anchor',
+            detail: insufficientData.reason,
+          },
+        ],
       };
     }
 
@@ -229,7 +264,48 @@ export class CounselorEngineService {
       anchorSource,
       factors,
       modifierResults,
+      ruleVersion: COUNSELOR_RULE_VERSION,
+      missingFields: this.resolveMissingFields(profile, school),
+      sourceContributions: [
+        ...(anchorContributions ?? [
+          {
+            source: anchorSource,
+            value: anchor,
+            role: 'anchor' as const,
+            detail: `Anchor resolved from ${anchorSource} at Tier ${tier}`,
+          },
+        ]),
+        ...Object.entries(modifierResults).map(([key, modifier]) => ({
+          source: key,
+          value: modifier.multiplier,
+          role: 'modifier' as const,
+          detail: modifier.evidence,
+        })),
+        {
+          source: 'anchored-clamp',
+          value: probability,
+          role: 'guardrail',
+          detail:
+            'Final probability constrained to [anchor × 0.3, anchor × 2.5] and [0.02, 0.98].',
+        },
+      ],
     };
+  }
+
+  private resolveMissingFields(
+    profile: ProfileInput,
+    school: SchoolInput & { acceptanceRate?: number | null },
+  ): string[] {
+    const missing = new Set<string>();
+    if (profile.gpa == null) missing.add('profile.gpa');
+    if (!profile.testScores?.length) missing.add('profile.testScores');
+    if (!profile.highSchoolLocation) missing.add('profile.highSchoolLocation');
+    if (!profile.targetMajor) missing.add('profile.targetMajor');
+    if (school.acceptanceRate == null) missing.add('school.acceptanceRate');
+    if (school.sat25 == null || school.sat75 == null) {
+      missing.add('school.satBands');
+    }
+    return Array.from(missing);
   }
 
   // ---------------------------------------------------------------------------
@@ -251,6 +327,7 @@ export class CounselorEngineService {
      */
     encodedDimensions: ReadonlySet<EncodedDimension>;
     insufficientData?: { reason: string };
+    sourceContributions?: CounselorResult['sourceContributions'];
   }> {
     // Tier 1: CDS Section C9 admit-by-band lookup if (school, gpaBand, testBand)
     // cell exists. Most accurate signal — uses school-published numbers directly.

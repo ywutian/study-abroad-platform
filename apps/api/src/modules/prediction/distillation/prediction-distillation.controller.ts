@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
+  Patch,
   Post,
   Query,
   forwardRef,
@@ -16,9 +18,11 @@ import {
   BackfillCaseAggregatesDto,
   BackfillDistillationRollupsDto,
   CounselorBackfillDto,
+  ListCdsBandRowsDto,
   LoadCdsBandsDto,
   LoadCdsBandsFixtureDto,
   PreviewPredictionDto,
+  UpdateCdsBandRowDto,
 } from './distillation.dto';
 import { CdsBandsIngestionService } from './cds-bands-ingestion.service';
 import { CaseAggregateBackfillService } from './case-aggregate-backfill.service';
@@ -141,6 +145,36 @@ export class PredictionDistillationController {
     });
   }
 
+  @Get('cds-bands/coverage')
+  @ApiOperation({
+    summary:
+      'Get SchoolCdsAdmitBand coverage by school for Tier 1 counselor anchors.',
+  })
+  async getCdsBandsCoverage() {
+    return this.cdsBandsIngestion.getCoverage();
+  }
+
+  @Get('cds-bands/rows')
+  @ApiOperation({
+    summary:
+      'List raw SchoolCdsAdmitBand rows for admin review and manual correction.',
+  })
+  async listCdsBandRows(@Query() query: ListCdsBandRowsDto) {
+    return this.cdsBandsIngestion.listRows(query);
+  }
+
+  @Patch('cds-bands/rows/:id')
+  @ApiOperation({
+    summary:
+      'Update one SchoolCdsAdmitBand row after manual source verification.',
+  })
+  async updateCdsBandRow(
+    @Param('id') id: string,
+    @Body() body: UpdateCdsBandRowDto,
+  ) {
+    return this.cdsBandsIngestion.updateRow(id, body);
+  }
+
   @Post('case-aggregates/backfill')
   @ApiOperation({
     summary:
@@ -176,7 +210,9 @@ export class PredictionDistillationController {
     return this.predictionService.previewPredict(profileInput, body.schoolIds, {
       locale: body.locale ?? 'en',
       includeShadowDistillation: true,
+      includeServedTrace: true,
       applicationRound: body.applicationRound,
+      counselorMode: body.engine === 'counselor' || body.engine === 'both',
     });
   }
 

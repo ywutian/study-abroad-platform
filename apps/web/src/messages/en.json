@@ -1193,6 +1193,7 @@
       "educationSystem": "Education System",
       "needsFinancialAid": "I need financial aid",
       "firstGeneration": "First generation college student",
+      "recruitedAthlete": "Recruited athlete",
       "legacy": "Legacy (Alumni Connection)",
       "legacyPlaceholder": "e.g. Harvard, Stanford",
       "legacyHint": "Enter school names separated by commas if you have alumni connections",
@@ -1720,6 +1721,10 @@
     "suggestionsGenericHint": "These suggestions are based on your target major. Add activities and awards for more personalized recommendations.",
     "impactFactors": "Impact Factors",
     "factorsDisclaimer": "Note: This prediction does not account for essay quality, recommendation letters, or interview performance",
+    "counselor": {
+      "howWeComputed": "How we computed this",
+      "disclaimerBody": "This cold-start estimate uses school-published admit rates and applicant adjustments. It is a rules-of-thumb estimate and will become more precise as students report final outcomes."
+    },
     "source": {
       "academic": "Academic Data",
       "aiAnalysis": "AI Analysis",
@@ -1759,6 +1764,30 @@
     "outcomeLabelSaved": "Outcome label saved",
     "outcomeLabelSavedToast": "Saved. This helps improve future estimates.",
     "outcomeLabelSavedHint": "This label is stored as your submitted outcome and may be reviewed later.",
+    "predictionFeedback": {
+      "title": "Prediction quality feedback",
+      "hint": "Tell us whether this estimate feels useful based on what you know today.",
+      "saved": "Feedback saved. Admins can now review this prediction.",
+      "savedToast": "Prediction feedback saved",
+      "edit": "Edit",
+      "categoryLabel": "What looks off?",
+      "notesPlaceholder": "Optional note for the admissions team",
+      "charCount": "{count}/500",
+      "submit": "Submit feedback",
+      "error": "Could not save feedback",
+      "sentiment": {
+        "POSITIVE": "Looks reasonable",
+        "UNSURE": "Not sure",
+        "NEGATIVE": "Looks wrong"
+      },
+      "category": {
+        "TOO_HIGH": "Too high",
+        "TOO_LOW": "Too low",
+        "FACTORS_WRONG": "Factors wrong",
+        "NEVER_MOVES": "Doesn't move",
+        "OTHER": "Other"
+      }
+    },
     "predictionInProgress": "Prediction in progress, please wait",
     "resultsAnnouncement": "Showing {count} results, sorted by {sort}",
     "essayDisclaimer": "This prediction does not include essays, interviews, or other subjective factors.",
@@ -6092,6 +6121,8 @@
       "analytics": "Analytics",
       "calibrations": "Prediction Calibration",
       "predictionHealth": "Prediction Data Health",
+      "predictionFeedback": "Prediction Feedback",
+      "cdsBands": "CDS Bands",
       "applicationAnalysisWorkflow": "Application Analysis Workflow",
       "activityTemplates": "Activity Templates",
       "highSchools": "High Schools",
@@ -6575,6 +6606,66 @@
           "nextCursor": "Next cursor (paste back to continue)",
           "durationMs": "Duration (ms)"
         }
+      }
+    },
+    "predictionFeedback": {
+      "title": "Prediction Feedback",
+      "description": "Review beta-user feedback on counselor predictions and filter by engine, school, sentiment, and category.",
+      "filters": "Filters",
+      "sentiment": "Sentiment",
+      "category": "Category",
+      "enginePlaceholder": "Engine snapshot, e.g. counselor",
+      "schoolPlaceholder": "School ID",
+      "daysPlaceholder": "Days back",
+      "total": "{count} feedback rows",
+      "loading": "Loading…",
+      "refresh": "Refresh",
+      "loadFailed": "Failed to load feedback.",
+      "empty": "No feedback matches the selected filters.",
+      "unknownEngine": "Unknown engine",
+      "school": "School",
+      "probability": "Shown probability",
+      "user": "User",
+      "unknown": "Unknown",
+      "sentiments": {
+        "ALL": "All",
+        "POSITIVE": "Reasonable",
+        "UNSURE": "Unsure",
+        "NEGATIVE": "Wrong"
+      },
+      "categories": {
+        "ALL": "All",
+        "TOO_HIGH": "Too high",
+        "TOO_LOW": "Too low",
+        "FACTORS_WRONG": "Factors wrong",
+        "NEVER_MOVES": "Doesn't move",
+        "OTHER": "Other"
+      }
+    },
+    "cdsBands": {
+      "title": "CDS Band Coverage",
+      "description": "View and correct SchoolCdsAdmitBand cells that power Tier 1 counselor anchors.",
+      "refresh": "Refresh",
+      "priorityTitle": "Priority school coverage",
+      "rowsTitle": "CDS band rows",
+      "schoolIdPlaceholder": "Filter by school ID",
+      "sourcePlaceholder": "Filter by source",
+      "noCycle": "No cycle",
+      "save": "Save",
+      "metrics": {
+        "totalCells": "Total cells",
+        "schoolsReady": "Schools ready",
+        "priorityReady": "Priority ready",
+        "schoolsWithAny": "Schools with any cells"
+      },
+      "table": {
+        "school": "School",
+        "gpaBand": "GPA band",
+        "test": "Test band",
+        "rate": "Admit rate",
+        "sample": "Sample",
+        "source": "Source",
+        "action": "Action"
       }
     },
     "calibrations": {

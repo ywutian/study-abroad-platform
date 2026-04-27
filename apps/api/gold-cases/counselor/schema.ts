@@ -60,10 +60,17 @@ export interface CounselorGoldCase {
   };
 
   /**
-   * Look up this school in the DB by exact name match. Don't use cuid school
+   * Human-readable school name. The runner resolves by `schoolNameNorm` when
+   * provided, else by lowercasing/trimming this value; do not use cuid school
    * IDs because they vary between dev / staging / CI fresh-seed.
    */
   schoolName: string;
+
+  /** Optional stable lookup key matching School.nameNorm. */
+  schoolNameNorm?: string;
+
+  /** Optional stable lookup key for future seed variants. */
+  ipedsId?: string;
 
   /** Application round (RD if omitted). */
   applicationRound?: 'RD' | 'EA' | 'ED' | 'ED2' | 'REA' | 'SCEA';

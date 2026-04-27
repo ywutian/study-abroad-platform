@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -114,6 +115,77 @@ export class LoadCdsBandsDto {
   @ValidateNested({ each: true })
   @Type(() => LoadCdsBandRowDto)
   rows: LoadCdsBandRowDto[];
+}
+
+export class ListCdsBandRowsDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  schoolId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  source?: string;
+
+  @ApiProperty({ required: false, default: 200, minimum: 1, maximum: 1000 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  limit?: number;
+}
+
+export class UpdateCdsBandRowDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  gpaBand?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(16)
+  testType?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  testBand?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  admitRate?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  sampleCount?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(2000)
+  cycleYear?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  source?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  sourceUrl?: string;
 }
 
 export class LoadCdsBandsFixtureDto {
@@ -356,10 +428,22 @@ export class PreviewProfileDto {
   @IsBoolean()
   isLegacy?: boolean;
 
+  @ApiProperty({ required: false, type: [String], default: [] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(200, { each: true })
+  legacySchools?: string[];
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
   isFirstGen?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  recruitedAthlete?: boolean;
 
   @ApiProperty({ type: [PreviewTestScoreDto], required: false, default: [] })
   @IsOptional()
@@ -432,6 +516,19 @@ export class PreviewPredictionDto {
   @IsString()
   @MaxLength(20)
   applicationRound?: string;
+
+  @ApiProperty({
+    required: false,
+    default: 'legacy',
+    enum: ['legacy', 'counselor', 'both'],
+    description:
+      'legacy = existing fusion served output; counselor = counselor served output; both = counselor served output with fusion preserved in servedTrace.shadow.fusion.',
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['legacy', 'counselor', 'both'])
+  @MaxLength(20)
+  engine?: 'legacy' | 'counselor' | 'both';
 }
 
 // -----------------------------------------------------------------------------

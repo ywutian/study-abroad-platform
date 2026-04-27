@@ -45,6 +45,13 @@ const ResultFeedbackButtons = dynamic(
   () => import('./ResultFeedbackButtons').then((m) => ({ default: m.ResultFeedbackButtons })),
   { ssr: false }
 );
+const PredictionFeedbackWidget = dynamic(
+  () =>
+    import('./PredictionFeedbackWidget').then((m) => ({
+      default: m.PredictionFeedbackWidget,
+    })),
+  { ssr: false }
+);
 const PredictionHistoryPanel = dynamic(
   () => import('./PredictionHistoryPanel').then((m) => ({ default: m.PredictionHistoryPanel })),
   { ssr: false }
@@ -195,6 +202,7 @@ export const PredictionResultCard = memo(
       roundContext: result.roundContext,
       probability: result.probability,
     });
+    const isCounselorEstimate = result.predictionMethod === 'counselor';
     const hasExpandedContent =
       result.factors.length > 0 ||
       result.suggestions.length > 0 ||
@@ -359,7 +367,7 @@ export const PredictionResultCard = memo(
                 {t('estimatedProbabilityLabel')}
               </span>
               {contextualBaseline && (
-                <span className="text-[11px] text-muted-foreground mt-0.5">
+                <span className="text-2xs text-muted-foreground mt-0.5">
                   {t('rateBreakdown.contextualBaselineShort', {
                     rate: formatPercentValue(contextualBaseline.rate),
                   })}
@@ -446,7 +454,7 @@ export const PredictionResultCard = memo(
                       <div className="grid gap-3 sm:grid-cols-2">
                         {result.roundContext && (
                           <div className="space-y-1">
-                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                               {t('roundContextLabel')}
                             </p>
                             <p className="text-sm font-medium">
@@ -456,7 +464,7 @@ export const PredictionResultCard = memo(
                         )}
                         {result.cohortKey && (
                           <div className="space-y-1">
-                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                               {t('cohortKeyLabel')}
                             </p>
                             <p className="text-sm font-medium">
@@ -466,7 +474,7 @@ export const PredictionResultCard = memo(
                         )}
                         {normalizedSourceSummary.primary && (
                           <div className="space-y-1">
-                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                               {t('sourceSummaryLabel')}
                             </p>
                             <p className="text-sm font-medium">{normalizedSourceSummary.primary}</p>
@@ -474,7 +482,7 @@ export const PredictionResultCard = memo(
                         )}
                         {result.confidenceReason && (
                           <div className="space-y-1">
-                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                               {t('confidenceReasonLabel')}
                             </p>
                             <p className="text-sm font-medium">{result.confidenceReason}</p>
@@ -484,7 +492,7 @@ export const PredictionResultCard = memo(
                       {normalizedSourceSummary.secondary &&
                         normalizedSourceSummary.secondary.length > 0 && (
                           <div className="space-y-1">
-                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                               {t('sourceSummarySecondaryLabel')}
                             </p>
                             <div className="flex flex-wrap gap-1.5">
@@ -498,7 +506,7 @@ export const PredictionResultCard = memo(
                         )}
                       {uncertaintyReasons.length > 0 && (
                         <div className="space-y-1.5">
-                          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                          <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                             {t('uncertaintyReasonsLabel')}
                           </p>
                           <ul className="space-y-1 text-sm text-muted-foreground">
@@ -512,6 +520,47 @@ export const PredictionResultCard = memo(
                               </li>
                             ))}
                           </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {isCounselorEstimate && (
+                    <div className="rounded-lg border bg-primary/5 border-primary/15 p-3 space-y-3">
+                      <div className="space-y-1">
+                        <p className="text-overline text-primary flex items-center gap-1.5">
+                          <Info className="h-3.5 w-3.5" />
+                          {t('counselor.howWeComputed')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t('counselor.disclaimerBody')}
+                        </p>
+                      </div>
+                      {result.factors.length > 0 && (
+                        <div className="space-y-2">
+                          {result.factors.map((factor) => (
+                            <div
+                              key={`${result.schoolId}-counselor-${factor.name}`}
+                              className="flex items-start justify-between gap-3 text-sm"
+                            >
+                              <div className="min-w-0">
+                                <p className="font-medium">{factor.name}</p>
+                                <p className="text-xs text-muted-foreground">{factor.detail}</p>
+                              </div>
+                              {typeof factor.weight === 'number' &&
+                                factor.weight > 0 &&
+                                factor.impact !== 'neutral' && (
+                                  <Badge variant="outline" className="shrink-0 text-xs">
+                                    {factor.impact === 'negative'
+                                      ? '-'
+                                      : factor.impact === 'positive'
+                                        ? '+'
+                                        : ''}
+                                    {(factor.weight * 100).toFixed(0)}%
+                                  </Badge>
+                                )}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -569,7 +618,9 @@ export const PredictionResultCard = memo(
                   )}
 
                   {/* Impact factors */}
-                  {result.factors.length > 0 && <FactorsPanel factors={result.factors} />}
+                  {result.factors.length > 0 && !isCounselorEstimate && (
+                    <FactorsPanel factors={result.factors} />
+                  )}
 
                   {/* Applicant comparison */}
                   {result.comparison && <ComparisonPanel comparison={result.comparison} />}
@@ -591,6 +642,8 @@ export const PredictionResultCard = memo(
                     actualResult={result.latestOutcomeLabel?.result ?? result.actualResult}
                     onResultReported={onResultReported}
                   />
+
+                  <PredictionFeedbackWidget predictionResultId={result.id} />
 
                   {/* AI deep analysis link */}
                   <button

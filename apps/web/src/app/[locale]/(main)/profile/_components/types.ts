@@ -123,6 +123,7 @@ export interface ProfileData {
   educationSystem?: string;
   needsFinancialAid?: boolean;
   firstGeneration?: boolean;
+  recruitedAthlete?: boolean;
   legacy?: string[];
   intendedMajor?: string;
   secondMajor?: string;
@@ -152,6 +153,7 @@ export interface ProfileUpdatePayload {
   educationSystem?: string;
   needsFinancialAid?: boolean;
   firstGeneration?: boolean;
+  recruitedAthlete?: boolean;
   legacy?: string[];
   intendedMajor?: string;
   secondMajor?: string;

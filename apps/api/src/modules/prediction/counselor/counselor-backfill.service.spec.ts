@@ -94,15 +94,13 @@ describe('CounselorBackfillService', () => {
       }),
     };
     transformer = {
-      profileToInput: jest
-        .fn()
-        .mockReturnValue({
-          gpa: 3.9,
-          gpaScale: 4,
-          testScores: [],
-          activities: [],
-          awards: [],
-        }),
+      profileToInput: jest.fn().mockReturnValue({
+        gpa: 3.9,
+        gpaScale: 4,
+        testScores: [],
+        activities: [],
+        awards: [],
+      }),
       schoolToInput: jest
         .fn()
         .mockReturnValue({ id: 'school-1', name: 'Test University' }),
@@ -209,7 +207,7 @@ describe('CounselorBackfillService', () => {
       expect(updateCall.where).toEqual({ id: 'pr-1' });
       expect(updateCall.data.probability).toBe(0.85);
       expect(updateCall.data.confidenceReason).toContain('rules-of-thumb');
-      const trace = updateCall.data.servedTrace as any;
+      const trace = updateCall.data.servedTrace;
       expect(trace.engine).toBe('counselor');
       expect(trace.counselor.tier).toBe(2);
       expect(trace.counselor.backfilledAt).toBeDefined();
@@ -226,8 +224,8 @@ describe('CounselorBackfillService', () => {
 
       await service.runBackfill({ dryRun: false });
 
-      const trace = prisma.predictionResult.update.mock.calls[0][0].data
-        .servedTrace as any;
+      const trace =
+        prisma.predictionResult.update.mock.calls[0][0].data.servedTrace;
       expect(trace.policyVersionId).toBe('v3'); // existing field preserved
       expect(trace.shadow.fusion.probability).toBe(0.49); // pre-counselor probability captured
       expect(trace.shadow.fusion.capturedDuringBackfill).toBe(true);
@@ -245,8 +243,8 @@ describe('CounselorBackfillService', () => {
 
       await service.runBackfill({ dryRun: false });
 
-      const trace = prisma.predictionResult.update.mock.calls[0][0].data
-        .servedTrace as any;
+      const trace =
+        prisma.predictionResult.update.mock.calls[0][0].data.servedTrace;
       expect(trace.shadow.fusion.probability).toBe(0.42); // existing untouched
       expect(trace.shadow.fusion.capturedAt).toBe('earlier');
     });

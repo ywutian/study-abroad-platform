@@ -33,6 +33,8 @@ import {
   ToggleRight,
   ChevronDown,
   Menu,
+  MessageSquareWarning,
+  Database,
   type LucideIcon,
 } from 'lucide-react';
 import { RoleBadge } from './role-badge';
@@ -175,6 +177,18 @@ export function AdminSidebar() {
           requiredPermission: 'system:calibration',
         },
         {
+          href: '/admin/prediction-feedback',
+          icon: MessageSquareWarning,
+          label: t('sidebar.predictionFeedback'),
+          requiredPermission: 'system:calibration',
+        },
+        {
+          href: '/admin/cds-bands',
+          icon: Database,
+          label: t('sidebar.cdsBands'),
+          requiredPermission: 'system:calibration',
+        },
+        {
           href: '/admin/application-analysis-workflow',
           icon: ShieldCheck,
           label: t('sidebar.applicationAnalysisWorkflow'),
@@ -287,7 +301,7 @@ export function AdminSidebar() {
             variant="warning"
             className={cn(
               'ml-auto justify-center',
-              compact ? 'text-[10px] h-4 min-w-4 px-1' : 'text-xs h-5 min-w-5'
+              compact ? 'text-2xs h-4 min-w-4 px-1' : 'text-xs h-5 min-w-5'
             )}
           >
             {item.badge}
@@ -378,7 +392,7 @@ function SidebarGroup({
     <div className="mb-1">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+        className="flex w-full items-center justify-between px-3 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground/70 hover:text-muted-foreground transition-colors"
       >
         {group.title}
         <ChevronDown

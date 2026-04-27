@@ -215,6 +215,20 @@ enum PredictionOutcomeLabel {
   CENSORED
 }
 
+enum PredictionFeedbackSentiment {
+  POSITIVE
+  UNSURE
+  NEGATIVE
+}
+
+enum PredictionFeedbackCategory {
+  TOO_HIGH
+  TOO_LOW
+  FACTORS_WRONG
+  NEVER_MOVES
+  OTHER
+}
+
 enum TaskType {
   ESSAY
   DOCUMENT
@@ -466,6 +480,7 @@ model User {
   // Recommendations (选校推荐)
   schoolRecommendations  SchoolRecommendation[]
   schoolCommunityRatings SchoolCommunityRating[]
+  predictionFeedback     PredictionFeedback[]
 
   // Case views (案例查看记录)
   caseViews CaseView[]
@@ -2048,6 +2063,7 @@ model PredictionResult {
   outcomeLabel        PredictionOutcomeLabel?
   outcomeLabeledAt    DateTime?
   outcomeLabelRecords PredictionOutcomeLabelRecord[]
+  feedback            PredictionFeedback[]
 
   sourceObservations PredictionSourceObservation[] @relation("PredictionResultObservations")
 
@@ -2065,6 +2081,27 @@ model PredictionResult {
   @@index([applicationRound, applicationYear])
   @@index([cohortKey])
   @@index([authority])
+}
+
+model PredictionFeedback {
+  id                  String                      @id @default(cuid())
+  predictionResultId  String
+  predictionResult    PredictionResult            @relation(fields: [predictionResultId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sentiment           PredictionFeedbackSentiment
+  category            PredictionFeedbackCategory?
+  notes               String?                     @db.Text
+  engineSnapshot      String?
+  probabilitySnapshot Decimal?                    @db.Decimal(6, 4)
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  @@unique([predictionResultId, userId])
+  @@index([sentiment, createdAt])
+  @@index([engineSnapshot, createdAt])
+  @@index([userId, createdAt])
+  @@index([category, createdAt])
 }
 
 /// 预测历史快照 — 记录每次预测的概率用于趋势追踪

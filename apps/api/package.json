@@ -46,9 +46,11 @@
     "benchmark:distillation": "tsx scripts/run-distillation.ts",
     "distillation:rollups:backfill": "ts-node --transpile-only -r tsconfig-paths/register scripts/backfill-distillation-rollups.ts",
     "distillation:cds:load": "tsx scripts/load-cds-bands.ts",
+    "distillation:cds:scrape": "tsx scripts/scrape-cds-bands-collegetransitions.ts",
     "distillation:case-aggregates:backfill": "tsx scripts/backfill-case-aggregate-teachers.ts",
     "distillation:eval": "tsx scripts/eval-teacher-blend.ts",
-    "gold:counselor": "ts-node --transpile-only scripts/run-counselor-gold-cases.ts"
+    "gold:counselor": "ts-node --transpile-only scripts/run-counselor-gold-cases.ts",
+    "audit:counselor": "ts-node --transpile-only scripts/audit-counselor-distribution.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",

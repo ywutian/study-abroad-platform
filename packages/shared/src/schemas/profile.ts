@@ -62,6 +62,7 @@ export function createProfileSchema(
       educationSystem: z.enum(EDUCATION_SYSTEM_VALUES).default(''),
       needsFinancialAid: z.boolean().default(false),
       firstGeneration: z.boolean().default(false),
+      recruitedAthlete: z.boolean().default(false),
       legacy: z.array(z.string().max(500)).default([]),
       intendedMajor: z.string().max(200).default(''),
       secondMajor: z.string().max(200).default(''),
