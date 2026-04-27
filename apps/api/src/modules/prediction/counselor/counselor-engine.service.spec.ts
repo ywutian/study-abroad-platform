@@ -452,6 +452,109 @@ describe('CounselorEngineService', () => {
       expect(oosFactor).toBeUndefined();
     });
 
+    it('Tier 1 (SAT cell): suppresses gpa+test modifiers — no double-counting', async () => {
+      // Regression test for PR-10 architectural fix. When CDS C9 cell is for
+      // (gpa=3.75-4.0, sat=1500-1600), the cell admit rate ALREADY reflects
+      // strong-stats applicants. Multiplying by gpa×1.3 + test×1.5 again
+      // would over-credit strong applicants and overshoot the cap on every
+      // Tier 1 hit. After this fix, Tier 1 cell rate is the dominant signal.
+      prisma.schoolCdsAdmitBand.findFirst.mockImplementation(
+        async ({ where }: any) => {
+          // Only respond to the SAT-band query (first candidate the engine tries).
+          if (where.testType === 'SAT' && where.testBand === '1500-1600') {
+            return { admitRate: new Prisma.Decimal(0.65) };
+          }
+          return null;
+        },
+      );
+
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          highSchoolLocation: 'CA',
+          isInternational: false,
+        }),
+        school({
+          id: 'ucd',
+          name: 'University of California, Davis',
+          acceptanceRate: 0.37, // NOT used as anchor; Tier 1 cell wins
+          state: 'CA',
+          isPrivate: false,
+        }),
+        'RD',
+      );
+
+      expect(result.tier).toBe(1);
+      expect(result.anchor).toBeCloseTo(0.65, 2);
+      // Anchor 0.65 (Tier 1 SAT cell) × gpa 1.0 (suppressed) × test 1.0
+      // (suppressed) × geo CA in-state UC 1.8 = 1.17 → clipped at 0.98 ceiling
+      // (since 0.65 × 2.5 = 1.625, but absolute ceiling is 0.98).
+      // Critical: NOT 0.65 × 1.3 × 1.5 × 1.8 = 2.28 → that's the bug we fixed.
+      expect(result.probability).toBeGreaterThanOrEqual(0.95);
+      expect(result.probability).toBeLessThanOrEqual(0.98);
+
+      // factors[] should include the suppression note for both gpa and test
+      const gpaFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('gpa'),
+      );
+      expect(gpaFactor?.detail.toLowerCase()).toContain('encoded');
+    });
+
+    it('Tier 1 (GPA_ONLY cell): suppresses only gpa modifier — test still applies', async () => {
+      // GPA_ONLY cells (e.g., UCD freshman profile by HS GPA, no SAT cross-tab)
+      // encode only the gpa dimension. Test modifier still applies normally.
+      prisma.schoolCdsAdmitBand.findFirst.mockImplementation(
+        async ({ where }: any) => {
+          // Only the GPA_ONLY candidate matches (no SAT/ACT cells loaded).
+          if (where.testType === 'GPA_ONLY' && where.testBand === 'ANY') {
+            return { admitRate: new Prisma.Decimal(0.42) };
+          }
+          return null;
+        },
+      );
+
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          highSchoolLocation: 'NY', // OOS
+          isInternational: false,
+        }),
+        school({
+          id: 'ucd',
+          name: 'University of California, Davis',
+          acceptanceRate: 0.37,
+          sat25: 1280,
+          sat75: 1450,
+          state: 'CA',
+          isPrivate: false,
+        }),
+        'RD',
+      );
+
+      expect(result.tier).toBe(1);
+      expect(result.anchor).toBeCloseTo(0.42, 2);
+      // Anchor 0.42 (GPA-band) × gpa 1.0 (suppressed) × test 1.5 (still applies,
+      // 1500 above sat75+50=1500) × geo OOS strong-pref CA 0.5 = 0.315.
+      // Test modifier MUST still fire because GPA_ONLY cell doesn't encode test signal.
+      // Floored at 0.42 × 0.3 = 0.126 (safety floor doesn't bind here).
+      expect(result.probability).toBeGreaterThanOrEqual(0.25);
+      expect(result.probability).toBeLessThanOrEqual(0.42);
+
+      const gpaFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('gpa'),
+      );
+      expect(gpaFactor?.detail.toLowerCase()).toContain('encoded');
+      const testFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('test score'),
+      );
+      // Test factor SHOULD be in factors[] (not suppressed) — and its detail
+      // should NOT contain "encoded" wording.
+      expect(testFactor).toBeDefined();
+      expect(testFactor!.detail.toLowerCase()).not.toContain('encoded');
+    });
+
     it('uses intlAcceptanceRate ratio when school publishes it', async () => {
       // When the school has both intlAcceptanceRate and acceptanceRate, the
       // multiplier comes directly from intl/overall ratio (clamped 0.3-1.2).
