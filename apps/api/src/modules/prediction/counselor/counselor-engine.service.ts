@@ -42,6 +42,24 @@ import {
 
 export type CounselorTier = 1 | 2 | 3 | 4;
 
+/**
+ * Profile dimensions that can be "absorbed" by a Tier 1 anchor cell.
+ *
+ * When a CDS band cell is for `(gpaBand=3.75-4.0, testType=SAT, testBand=1500-1600)`
+ * the cell admit rate ALREADY reflects "applicants with strong GPA AND strong SAT".
+ * If we then also multiply by the gpaBand/testBand modifiers (×1.3 × ×1.5), we
+ * double-count the same signal — overshoots the cap, defeats the purpose of
+ * loading real cell data.
+ *
+ * `encodedDimensions` tells the compute step which modifier(s) to suppress:
+ * - `GPA_ONLY` cell → encodes ['gpa']; testBand modifier still applies
+ * - `SAT` or `ACT` cell → encodes ['gpa', 'test']; both suppressed
+ *
+ * Tier 2/3/4 anchors don't encode any dimension (overall school admit rate),
+ * so all modifiers continue to apply normally there.
+ */
+export type EncodedDimension = 'gpa' | 'test';
+
 export interface CounselorFactor {
   name: string;
   impact: 'positive' | 'negative' | 'neutral';
@@ -96,7 +114,7 @@ export class CounselorEngineService {
     applicationRound?: string,
   ): Promise<CounselorResult> {
     // ---- Step 1: resolve anchor -----------------------------------------
-    const { anchor, tier, anchorSource, insufficientData } =
+    const { anchor, tier, anchorSource, encodedDimensions, insufficientData } =
       await this.resolveAnchor(profile, school);
 
     if (insufficientData) {
@@ -119,9 +137,29 @@ export class CounselorEngineService {
     // carry applicationRound — that's a per-school attribute.
     const resolvedRound =
       applicationRound ?? (school as SchoolInput).applicationRound ?? 'RD';
+
+    // Suppress modifiers whose dimension is already encoded in a Tier 1 cell —
+    // see EncodedDimension docs above. Without this, a (gpa=3.75-4, sat=1500-1600)
+    // cell rate gets re-multiplied by gpa×1.3 + test×1.5, double-counting strong
+    // stats and overshooting the 2.5× cap on every Tier 1 hit.
+    //
+    // We deliberately use impact='positive' (not 'neutral') so the factor stays
+    // visible in the breakdown — users SHOULD see "strong GPA acknowledged".
+    // The multiplier is 1.0 because the contribution is already in the cell rate.
+    const suppressed = (label: string): ModifierResult => ({
+      multiplier: 1.0,
+      label: `${label} (already encoded in Tier 1 cell)`,
+      evidence: `Strong ${label.toLowerCase()} is already encoded in the school's published Tier 1 cell admit rate — not multiplied again to avoid double-counting.`,
+      impact: 'positive',
+    });
+
     const modifierResults = {
-      gpaBand: gpaBandMultiplier(profile, school),
-      testBand: testBandMultiplier(profile, school),
+      gpaBand: encodedDimensions.has('gpa')
+        ? suppressed('GPA')
+        : gpaBandMultiplier(profile, school),
+      testBand: encodedDimensions.has('test')
+        ? suppressed('Test score')
+        : testBandMultiplier(profile, school),
       round: roundMultiplier(resolvedRound),
       legacyHook: legacyHookMultiplier(profile, school),
       firstGen: firstGenMultiplier(profile),
@@ -205,13 +243,25 @@ export class CounselorEngineService {
     anchor: number;
     tier: CounselorTier;
     anchorSource: string;
+    /**
+     * Profile dimensions already absorbed into the anchor — see EncodedDimension.
+     * For Tier 1 CDS-band cells, this depends on the cell's `testType`. For
+     * Tier 2/3/4 (overall acceptance rate), the set is empty and all modifiers
+     * apply normally.
+     */
+    encodedDimensions: ReadonlySet<EncodedDimension>;
     insufficientData?: { reason: string };
   }> {
     // Tier 1: CDS Section C9 admit-by-band lookup if (school, gpaBand, testBand)
     // cell exists. Most accurate signal — uses school-published numbers directly.
     const cdsBand = await this.lookupCdsBand(profile, school);
     if (cdsBand != null) {
-      return { anchor: cdsBand, tier: 1, anchorSource: 'cds-bands-v1' };
+      return {
+        anchor: cdsBand.admitRate,
+        tier: 1,
+        anchorSource: 'cds-bands-v1',
+        encodedDimensions: cdsBand.encodedDimensions,
+      };
     }
 
     // Tier 2 / 3: fall back to overall acceptanceRate.
@@ -228,6 +278,7 @@ export class CounselorEngineService {
         anchorSource: hasSatBands
           ? 'scorecard (acceptanceRate + SAT bands)'
           : 'scorecard (acceptanceRate only)',
+        encodedDimensions: new Set(),
       };
     }
 
@@ -236,6 +287,7 @@ export class CounselorEngineService {
       anchor: 0,
       tier: 4,
       anchorSource: 'none',
+      encodedDimensions: new Set(),
       insufficientData: {
         reason:
           'school_missing_acceptance_rate: no acceptanceRate or CDS band data available for this school',
@@ -247,11 +299,19 @@ export class CounselorEngineService {
    * Look up `SchoolCdsAdmitBand` for the (school, gpaBand, testBand) cell.
    * Mirrors `cds-bands-teacher.service.ts:resolveGpaBand/resolveSatBand` logic
    * for a consistent band convention across the platform.
+   *
+   * Returns the cell admit rate AND which profile dimensions the cell
+   * encodes. `testType: 'GPA_ONLY'` cells encode only GPA; `SAT`/`ACT` cells
+   * encode both GPA and test. The caller uses this to suppress redundant
+   * modifiers in the compute step (see `EncodedDimension` docs).
    */
   private async lookupCdsBand(
     profile: ProfileInput,
     school: SchoolInput,
-  ): Promise<number | null> {
+  ): Promise<{
+    admitRate: number;
+    encodedDimensions: ReadonlySet<EncodedDimension>;
+  } | null> {
     const gpaBand = this.gpaToBand(profile.gpa, profile.gpaScale);
     if (!gpaBand) return null;
 
@@ -280,9 +340,14 @@ export class CounselorEngineService {
         select: { admitRate: true },
       });
       if (row) {
-        const rate = row.admitRate.toNumber();
-        if (rate > 0 && rate < 1) return rate;
-        if (rate >= 1) return rate / 100; // tolerate percentages stored as 88 not 0.88
+        let rate = row.admitRate.toNumber();
+        if (rate >= 1) rate = rate / 100; // tolerate percentages stored as 88 not 0.88
+        if (rate <= 0 || rate >= 1) continue;
+        // Cell with testType = SAT/ACT encodes BOTH gpa + test signal.
+        // Cell with testType = GPA_ONLY encodes ONLY gpa.
+        const encoded: Set<EncodedDimension> = new Set(['gpa']);
+        if (c.testType !== 'GPA_ONLY') encoded.add('test');
+        return { admitRate: rate, encodedDimensions: encoded };
       }
     }
     return null;
