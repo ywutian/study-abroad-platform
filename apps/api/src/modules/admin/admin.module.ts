@@ -14,6 +14,8 @@ import { PermissionGuard } from '../../common/guards/permission.guard';
 import { AdminFeatureFlagController } from './admin-feature-flag.controller';
 import { AdminPredictionWorkflowController } from './admin-prediction-workflow.controller';
 import { AdminApplicationAnalysisWorkflowController } from './admin-application-analysis-workflow.controller';
+import { AdminSchoolRatesController } from './admin-school-rates.controller';
+import { AdminSchoolRatesService } from './admin-school-rates.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -41,6 +43,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminFeatureFlagController,
     AdminPredictionWorkflowController,
     AdminApplicationAnalysisWorkflowController,
+    AdminSchoolRatesController,
   ],
   providers: [
     AdminService,
@@ -49,6 +52,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminOperatorService,
     AdminReviewService,
     AdminProgressGateway,
+    AdminSchoolRatesService,
     PermissionGuard,
   ],
   exports: [AdminService, AdminReviewService],
