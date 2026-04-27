@@ -1,0 +1,11 @@
+term,zh,en,avoid,scope
+Admission Case,录取案例,Admission case,Case Library as 案例库 is okay; avoid mixing case/案例 without context,cases
+Essay,文书,Essay,作文 when referring to application essays,essays
+Prediction,录取预测,Admission prediction,Do not call it official chance/rating,prediction
+Recommendation,选校推荐,School recommendation,"智能选校 can be marketing copy, not table/action label",recommendation
+Peer Review,互评,Peer review,同行评审 only where formal; mobile currently mixes terms,peerReview
+Recourse,改进建议 / 反事实改进建议,Recourse guidance,"Applicant-facing ""Recourse 指引""",applicationAnalysis
+Canonical analysis,标准申请分析 / 统一申请分析,Canonical analysis,"Applicant-facing ""canonical 分析""",applicationAnalysis/admin
+Gap Year,间隔年 / Gap Year,Gap year,Untranslated Gap Year in all zh selectors unless glossary decides bilingual,profile
+School Tier,冲刺 / 匹配 / 保底,Reach / Match / Safety,Do not translate Match as 比赛匹配 in school-list context,schools/prediction
+Team Match,组队匹配,Team match,Do not reuse school-tier Match label,teams

@@ -1,0 +1,6 @@
+id,risk,impact,mitigation,status
+RISK-001,Visual runtime for every route was not executed in browser in this pass,Text overflow/layout issues may remain after static source review,Run zh/en route walk with screenshots after fixing P1/P2 copy issues,open
+RISK-002,Server/API-provided dynamic labels can bypass locale files,Admin/import/profile cards may show API English labels in zh,Audit DTO/display fields and require localized label selection or server-provided zh/en fields,open
+RISK-003,"AI-generated content follows prompt locale, not translation files",AI outputs may mix languages even when UI shell is correct,Add locale-specific AI prompt tests for prediction/recommendation/essay/profile analysis,open
+RISK-004,Admin ML terminology policy is undecided,Chinese admin screens may remain half-English inconsistently,Product/engineering should approve terminology.csv policy before mass copy changes,open
+RISK-005,"Existing i18n scripts miss constants, manually branched locale strings, and exempted files",CI can pass while user-visible copy is untranslated,"Extend static checks to object props, RN text paths, and reduce blanket exemptions",open

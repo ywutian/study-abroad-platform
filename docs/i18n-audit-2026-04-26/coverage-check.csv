@@ -1,0 +1,11 @@
+check,expected_or_rule,actual,status
+web route/shell artifacts discovered,all app page/layout/loading/error/not-found TSX files,168,PASS
+web page-local components discovered,all app TS/TSX files except route/shell/test files,256,PASS
+web shared components discovered,all src/components TS/TSX except tests,289,PASS
+mobile route/shell artifacts discovered,all mobile app TS/TSX files except tests,53,PASS
+mobile screen components discovered,all mobile screens TS/TSX except tests,42,PASS
+mobile shared components discovered,all mobile components TS/TSX except tests,41,PASS
+web zh/en flattened key parity,same key count,7264/7264,PASS
+mobile zh/en flattened key parity,same key count,1408/1408,PASS
+text candidates dispositioned,all extracted candidates assigned disposition,374,PASS
+surface rows generated,one row per discovered page/shell/component,849,PASS

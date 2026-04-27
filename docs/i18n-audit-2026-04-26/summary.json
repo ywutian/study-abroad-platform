@@ -1,0 +1,94 @@
+{
+  "generatedAt": "2026-04-27T06:56:48.341Z",
+  "surfaces": 849,
+  "surfaceBreakdown": {
+    "mobile:route": 48,
+    "mobile:screen-component": 42,
+    "mobile:shared-component": 41,
+    "mobile:shell": 5,
+    "web:page-component": 256,
+    "web:route": 69,
+    "web:shared-component": 289,
+    "web:shell": 99
+  },
+  "translationKeys": {
+    "web": 7264,
+    "mobile": 1408,
+    "total": 8672
+  },
+  "textCandidates": {
+    "total": 374,
+    "confirmedIssue": 154,
+    "reviewedExempt": 50
+  },
+  "findings": {
+    "total": 18,
+    "byPriority": {
+      "P1": 3,
+      "P2": 9,
+      "P3": 6
+    }
+  },
+  "coverageChecks": [
+    {
+      "check": "web route/shell artifacts discovered",
+      "expected_or_rule": "all app page/layout/loading/error/not-found TSX files",
+      "actual": 168,
+      "status": "PASS"
+    },
+    {
+      "check": "web page-local components discovered",
+      "expected_or_rule": "all app TS/TSX files except route/shell/test files",
+      "actual": 256,
+      "status": "PASS"
+    },
+    {
+      "check": "web shared components discovered",
+      "expected_or_rule": "all src/components TS/TSX except tests",
+      "actual": 289,
+      "status": "PASS"
+    },
+    {
+      "check": "mobile route/shell artifacts discovered",
+      "expected_or_rule": "all mobile app TS/TSX files except tests",
+      "actual": 53,
+      "status": "PASS"
+    },
+    {
+      "check": "mobile screen components discovered",
+      "expected_or_rule": "all mobile screens TS/TSX except tests",
+      "actual": 42,
+      "status": "PASS"
+    },
+    {
+      "check": "mobile shared components discovered",
+      "expected_or_rule": "all mobile components TS/TSX except tests",
+      "actual": 41,
+      "status": "PASS"
+    },
+    {
+      "check": "web zh/en flattened key parity",
+      "expected_or_rule": "same key count",
+      "actual": "7264/7264",
+      "status": "PASS"
+    },
+    {
+      "check": "mobile zh/en flattened key parity",
+      "expected_or_rule": "same key count",
+      "actual": "1408/1408",
+      "status": "PASS"
+    },
+    {
+      "check": "text candidates dispositioned",
+      "expected_or_rule": "all extracted candidates assigned disposition",
+      "actual": 374,
+      "status": "PASS"
+    },
+    {
+      "check": "surface rows generated",
+      "expected_or_rule": "one row per discovered page/shell/component",
+      "actual": 849,
+      "status": "PASS"
+    }
+  ]
+}
