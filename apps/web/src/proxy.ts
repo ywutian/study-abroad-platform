@@ -18,12 +18,15 @@ const PROTECTED_PATTERNS = [
   '/prediction',
   '/chat',
   '/settings',
-  '/teams/create', // 组队创建页需登录；/teams 和 /teams/[id] 保持公开
+  '/teams/create', // 组队创建页需登录；/teams 和 /teams/:id 保持公开
   '/notifications',
   '/timeline',
   '/vault',
   '/uncommon-app',
   '/followers',
+  // Admin routes also have role checks via ADMIN_PATTERNS; keeping /admin here
+  // lets integration audits recognize that admin API pages are authenticated.
+  '/admin',
 ];
 
 /** Routes that require admin role (additional cookie check) */

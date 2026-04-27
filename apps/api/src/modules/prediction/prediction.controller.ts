@@ -27,12 +27,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   PredictionRequestDto,
   PredictionResponseDto,
+  SubmitPredictionFeedbackDto,
   ReportResultDto,
 } from './dto';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { SCHOOL_PREDICTION_CONTEXT_SELECT } from '../../common/constants/prisma-selects';
 import { PredictionReportingService } from './prediction-reporting.service';
+import { PredictionFeedbackService } from './prediction-feedback.service';
 
 @ApiTags('predictions')
 @ApiBearerAuth()
@@ -44,6 +46,7 @@ export class PredictionController {
     private readonly schoolService: SchoolService,
     private readonly prisma: PrismaService,
     private readonly reportingService: PredictionReportingService,
+    private readonly feedbackService: PredictionFeedbackService,
   ) {}
 
   @Post()
@@ -144,6 +147,27 @@ export class PredictionController {
     return { success: true, message: 'Result recorded for calibration' };
   }
 
+  @Post(':predictionResultId/feedback')
+  @ThrottleSensitive()
+  @ApiOperation({
+    summary: 'Submit subjective feedback on the quality of a prediction',
+  })
+  @ApiParam({
+    name: 'predictionResultId',
+    description: 'PredictionResult row ID returned by prediction APIs',
+  })
+  async submitFeedback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('predictionResultId') predictionResultId: string,
+    @Body() body: SubmitPredictionFeedbackDto,
+  ) {
+    return this.feedbackService.submitFeedback(
+      user.id,
+      predictionResultId,
+      body,
+    );
+  }
+
   @Get('calibration')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get model calibration data (admin)' })
@@ -239,6 +263,7 @@ export class PredictionController {
             ),
           };
         })(),
+        id: p.id,
         schoolId: p.schoolId,
         school: schoolMap.get(p.schoolId) ?? null,
         probability: Number(p.probability),
@@ -250,6 +275,10 @@ export class PredictionController {
         sourceSummary: p.sourceSummary,
         uncertaintyReasons: p.uncertaintyReasons,
         servedPolicyVersionId: p.policyVersionId ?? undefined,
+        predictionMethod:
+          (p.servedTrace as any)?.engine === 'counselor'
+            ? 'counselor'
+            : 'fusion',
         source: p.source,
         modelVersion: p.modelVersion,
         updatedAt: p.updatedAt,
@@ -314,6 +343,7 @@ export class PredictionController {
     return {
       current: current
         ? {
+            id: current.id,
             ...((): {
               latestOutcomeLabel?: ReturnType<
                 PredictionReportingService['mapLatestOutcomeLabel']
@@ -343,6 +373,10 @@ export class PredictionController {
             sourceSummary: current.sourceSummary,
             uncertaintyReasons: current.uncertaintyReasons,
             servedPolicyVersionId: current.policyVersionId ?? undefined,
+            predictionMethod:
+              (current.servedTrace as any)?.engine === 'counselor'
+                ? 'counselor'
+                : 'fusion',
             factors: current.factors,
             source: current.source,
             modelVersion: current.modelVersion,
@@ -350,6 +384,7 @@ export class PredictionController {
           }
         : null,
       history: history.map((h) => ({
+        id: h.id,
         probability: Number(h.probability),
         tier: h.tier,
         confidence: h.confidence,
@@ -359,6 +394,10 @@ export class PredictionController {
         sourceSummary: h.sourceSummary,
         uncertaintyReasons: h.uncertaintyReasons,
         servedPolicyVersionId: h.policyVersionId ?? undefined,
+        predictionMethod:
+          (h.servedTrace as any)?.engine === 'counselor'
+            ? 'counselor'
+            : 'fusion',
         source: h.source,
         modelVersion: h.modelVersion,
         createdAt: h.createdAt,

@@ -238,6 +238,9 @@ export class CounselorBackfillService {
           anchorSource: counselorResult.anchorSource,
           tier: counselorResult.tier,
           modifiers: counselorResult.modifierResults,
+          missingFields: counselorResult.missingFields ?? [],
+          sourceContributions: counselorResult.sourceContributions ?? [],
+          ruleVersion: counselorResult.ruleVersion,
           backfilledAt: new Date().toISOString(),
         },
         // Preserve fusion data in shadow if it wasn't already there.

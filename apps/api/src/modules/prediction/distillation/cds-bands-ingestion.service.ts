@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { ListCdsBandRowsDto, UpdateCdsBandRowDto } from './distillation.dto';
 
 export type CdsBandInputRow = {
   schoolId?: string;
@@ -34,9 +35,202 @@ const GPA_BANDS = new Set([
   '<3.00',
 ]);
 
+const PRIORITY_SCHOOL_NAME_NORMS = new Set(
+  [
+    'university of california, berkeley',
+    'university of california, los angeles',
+    'university of california, san diego',
+    'university of california, davis',
+    'university of california, irvine',
+    'university of california, santa barbara',
+    'university of california, riverside',
+    'university of california, santa cruz',
+    'university of california, merced',
+    'harvard university',
+    'yale university',
+    'princeton university',
+    'columbia university',
+    'brown university',
+    'dartmouth college',
+    'cornell university',
+    'university of pennsylvania',
+    'massachusetts institute of technology',
+    'stanford university',
+    'duke university',
+    'northwestern university',
+    'johns hopkins university',
+    'vanderbilt university',
+    'university of notre dame',
+    'rice university',
+    'university of michigan-ann arbor',
+    'university of virginia-main campus',
+    'university of north carolina at chapel hill',
+    'university of florida',
+  ].map((name) => name.toLowerCase()),
+);
+
 @Injectable()
 export class CdsBandsIngestionService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getCoverage() {
+    const [schools, grouped] = await Promise.all([
+      this.prisma.school.findMany({
+        where: { country: 'US' },
+        select: {
+          id: true,
+          name: true,
+          nameZh: true,
+          nameNorm: true,
+          usNewsRank: true,
+          acceptanceRate: true,
+        },
+        orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
+      }),
+      this.prisma.schoolCdsAdmitBand.groupBy({
+        by: ['schoolId'],
+        _count: { _all: true },
+        _max: { cycleYear: true, updatedAt: true },
+      }),
+    ]);
+
+    const bySchool = new Map(grouped.map((row) => [row.schoolId, row]));
+    const items = schools.map((school) => {
+      const coverage = bySchool.get(school.id);
+      const cellCount = coverage?._count._all ?? 0;
+      return {
+        schoolId: school.id,
+        schoolName: school.name,
+        schoolNameZh: school.nameZh,
+        schoolNameNorm: school.nameNorm,
+        usNewsRank: school.usNewsRank,
+        acceptanceRate: school.acceptanceRate
+          ? Number(school.acceptanceRate)
+          : null,
+        priority: PRIORITY_SCHOOL_NAME_NORMS.has(school.nameNorm),
+        cellCount,
+        ready: cellCount >= 10,
+        latestCycleYear: coverage?._max.cycleYear ?? null,
+        lastUpdatedAt: coverage?._max.updatedAt?.toISOString() ?? null,
+      };
+    });
+
+    const priority = items.filter((item) => item.priority);
+    return {
+      generatedAt: new Date().toISOString(),
+      totals: {
+        schools: items.length,
+        schoolsWithAnyCells: items.filter((item) => item.cellCount > 0).length,
+        schoolsReady: items.filter((item) => item.ready).length,
+        prioritySchools: priority.length,
+        priorityReady: priority.filter((item) => item.ready).length,
+        totalCells: grouped.reduce((sum, row) => sum + row._count._all, 0),
+      },
+      items,
+    };
+  }
+
+  async listRows(query: ListCdsBandRowsDto) {
+    const limit = Math.min(Math.max(query.limit ?? 200, 1), 1000);
+    const rows = await this.prisma.schoolCdsAdmitBand.findMany({
+      where: {
+        ...(query.schoolId ? { schoolId: query.schoolId } : {}),
+        ...(query.source
+          ? { source: { contains: query.source, mode: 'insensitive' } }
+          : {}),
+      },
+      include: {
+        school: {
+          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+        },
+      },
+      orderBy: [
+        { school: { usNewsRank: 'asc' } },
+        { school: { name: 'asc' } },
+        { cycleYear: 'desc' },
+        { gpaBand: 'asc' },
+        { testType: 'asc' },
+        { testBand: 'asc' },
+      ],
+      take: limit,
+    });
+
+    return {
+      items: rows.map((row) => ({
+        id: row.id,
+        schoolId: row.schoolId,
+        school: row.school,
+        gpaBand: row.gpaBand,
+        testType: row.testType,
+        testBand: row.testBand,
+        admitRate: Number(row.admitRate),
+        sampleCount: row.sampleCount,
+        cycleYear: row.cycleYear,
+        source: row.source,
+        sourceUrl: row.sourceUrl,
+        updatedAt: row.updatedAt.toISOString(),
+      })),
+    };
+  }
+
+  async updateRow(id: string, dto: UpdateCdsBandRowDto) {
+    const data: Prisma.SchoolCdsAdmitBandUpdateInput = {};
+    if (dto.gpaBand != null) {
+      if (!GPA_BANDS.has(dto.gpaBand)) {
+        throw new BadRequestException(`invalid_gpa_band:${dto.gpaBand}`);
+      }
+      data.gpaBand = dto.gpaBand;
+    }
+    if (dto.testType != null) {
+      const testType = dto.testType.trim().toUpperCase();
+      if (!ALLOWED_TEST_TYPES.has(testType)) {
+        throw new BadRequestException(`invalid_test_type:${dto.testType}`);
+      }
+      data.testType = testType;
+      if (testType === 'GPA_ONLY') data.testBand = 'ANY';
+    }
+    if (dto.testBand != null && dto.testType?.toUpperCase() !== 'GPA_ONLY') {
+      data.testBand = dto.testBand.trim();
+    }
+    if (dto.admitRate != null) {
+      const admitRate = dto.admitRate > 1 ? dto.admitRate / 100 : dto.admitRate;
+      if (!Number.isFinite(admitRate) || admitRate <= 0 || admitRate >= 1) {
+        throw new BadRequestException(`invalid_admit_rate:${dto.admitRate}`);
+      }
+      data.admitRate = new Prisma.Decimal(admitRate);
+    }
+    if (dto.sampleCount != null)
+      data.sampleCount = Math.max(0, dto.sampleCount);
+    if (dto.cycleYear != null) data.cycleYear = dto.cycleYear;
+    if (dto.source != null) data.source = dto.source.trim();
+    if (dto.sourceUrl !== undefined)
+      data.sourceUrl = dto.sourceUrl?.trim() || null;
+
+    const row = await this.prisma.schoolCdsAdmitBand.update({
+      where: { id },
+      data,
+      include: {
+        school: {
+          select: { id: true, name: true, nameZh: true, usNewsRank: true },
+        },
+      },
+    });
+
+    return {
+      id: row.id,
+      schoolId: row.schoolId,
+      school: row.school,
+      gpaBand: row.gpaBand,
+      testType: row.testType,
+      testBand: row.testBand,
+      admitRate: Number(row.admitRate),
+      sampleCount: row.sampleCount,
+      cycleYear: row.cycleYear,
+      source: row.source,
+      sourceUrl: row.sourceUrl,
+      updatedAt: row.updatedAt.toISOString(),
+    };
+  }
 
   async ingestRows(
     rows: CdsBandInputRow[],

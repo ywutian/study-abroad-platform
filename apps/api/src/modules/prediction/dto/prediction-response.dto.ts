@@ -173,6 +173,12 @@ export class PredictionOutcomeLabelDto {
 }
 
 export class PredictionResultDto {
+  @ApiPropertyOptional({
+    description:
+      'PredictionResult row ID. Present for persisted predictions; omitted for dry-run previews.',
+  })
+  id?: string;
+
   @ApiProperty({ description: 'School ID' })
   schoolId: string;
 
@@ -258,6 +264,13 @@ export class PredictionResultDto {
     example: 'ED',
   })
   roundContext?: string;
+
+  @ApiPropertyOptional({
+    description: 'Public served prediction method',
+    enum: ['fusion', 'counselor'],
+    example: 'counselor',
+  })
+  predictionMethod?: 'fusion' | 'counselor';
 
   @ApiPropertyOptional({
     description: 'Primary source summary shown to the user',

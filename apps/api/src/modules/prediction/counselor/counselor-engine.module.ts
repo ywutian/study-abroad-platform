@@ -3,6 +3,7 @@ import { PrismaModule } from '../../../prisma/prisma.module';
 import { CounselorEngineService } from './counselor-engine.service';
 import { CounselorBackfillService } from './counselor-backfill.service';
 import { PredictionTransformerService } from '../prediction-transformer.service';
+import { AnchorResolverService } from './anchor-resolver.service';
 
 /**
  * Counselor Engine Module — cold-start anchored prediction engine.
@@ -29,9 +30,14 @@ import { PredictionTransformerService } from '../prediction-transformer.service'
   imports: [PrismaModule],
   providers: [
     CounselorEngineService,
+    AnchorResolverService,
     CounselorBackfillService,
     PredictionTransformerService,
   ],
-  exports: [CounselorEngineService, CounselorBackfillService],
+  exports: [
+    CounselorEngineService,
+    AnchorResolverService,
+    CounselorBackfillService,
+  ],
 })
 export class CounselorEngineModule {}

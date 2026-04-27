@@ -76,13 +76,13 @@ export const COMMON_COUNTRIES = [
 /** Static active-icon class map per tab — avoids dynamic Tailwind class interpolation. */
 export const TAB_ICON_ACTIVE_CLASSES: Record<string, string> = {
   basic: 'bg-primary text-white shadow-md',
-  demographics: 'bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-md',
+  demographics: 'bg-teal-500 dark:bg-teal-600 text-white shadow-md',
   scores: 'bg-primary text-white shadow-md',
   gpa: 'bg-success text-white shadow-md',
   activities: 'bg-warning text-white shadow-md',
-  awards: 'bg-gradient-to-br from-yellow-500 to-orange-500 text-white shadow-md',
+  awards: 'bg-amber-500 dark:bg-amber-600 text-white shadow-md',
   targets: 'bg-destructive text-white shadow-md',
-  recLetters: 'bg-gradient-to-br from-violet-500 to-purple-500 text-white shadow-md',
+  recLetters: 'bg-violet-500 dark:bg-violet-600 text-white shadow-md',
   privacy: 'bg-muted-foreground text-white shadow-md',
 };
 
@@ -190,6 +190,7 @@ export const FIELD_TO_TAB: Record<string, string> = {
   educationSystem: 'demographics',
   needsFinancialAid: 'demographics',
   firstGeneration: 'demographics',
+  recruitedAthlete: 'demographics',
   legacy: 'demographics',
   intendedMajor: 'demographics',
   secondMajor: 'demographics',

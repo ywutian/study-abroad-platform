@@ -61,6 +61,10 @@ export interface ProfileInput {
   legacySchools?: string[];
   /** Whether the student is a first-generation college student */
   isFirstGen?: boolean;
+  /** Whether the student is a recruited athlete */
+  recruitedAthlete?: boolean;
+  /** Optional demographic context. Served counselor multiplier is disabled pending compliance review. */
+  urmStatus?: string | null;
   /** Essay quality score (0-10) from the latest AI essay review */
   essayQualityScore?: number;
 }
@@ -69,6 +73,9 @@ export interface SchoolInput {
   id: string;
   name: string;
   nameZh?: string;
+  country?: string;
+  state?: string;
+  isPrivate?: boolean;
   acceptanceRate?: number;
   intlAcceptanceRate?: number;
   intlStudentPct?: number;

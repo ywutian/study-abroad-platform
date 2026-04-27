@@ -295,11 +295,14 @@ export function legacyHookMultiplier(
   school: SchoolInput,
 ): ModifierResult {
   const isLegacy = profile.isLegacy === true;
+  const schoolTokens = [school.id, school.name, school.nameZh]
+    .filter((value): value is string => Boolean(value))
+    .map((value) => value.toLowerCase().trim());
   const matchedSchool = isLegacy
-    ? (profile.legacySchools ?? []).some(
-        (name) =>
-          name.toLowerCase().trim() === school.name.toLowerCase().trim(),
-      )
+    ? (profile.legacySchools ?? []).some((name) => {
+        const normalized = name.toLowerCase().trim();
+        return schoolTokens.includes(normalized);
+      })
     : false;
   if (!matchedSchool) {
     return { ...NEUTRAL, label: 'Legacy status' };
@@ -366,7 +369,7 @@ export function athleteMultiplier(
  */
 export function urmMultiplier(
   profile: ProfileInput & { urmStatus?: string | null },
-  school: SchoolInput,
+  _school: SchoolInput,
 ): ModifierResult {
   const isUrm =
     profile.urmStatus &&
@@ -376,21 +379,12 @@ export function urmMultiplier(
   if (!isUrm) {
     return { ...NEUTRAL, label: 'URM status' };
   }
-  // Only meaningful at need-blind schools (post-SFFA, race-conscious admission ended)
-  const isNeedBlindUS =
-    !school.needBlindInternational || (school.acceptanceRate ?? 1) < 0.3;
-  if (!isNeedBlindUS) {
-    return {
-      ...NEUTRAL,
-      label: 'URM status (no effect at non-holistic schools)',
-    };
-  }
   return {
-    multiplier: 1.5,
-    label: 'Under-represented minority',
+    multiplier: 1.0,
+    label: 'URM status (disabled pending review)',
     evidence:
-      'Post-SFFA, contextual review at need-blind schools still indirectly advantages URM applicants ~1.5× (Common App reports)',
-    impact: 'positive',
+      'This opt-in demographic field is recorded for future analysis but does not affect served predictions pending compliance review.',
+    impact: 'neutral',
   };
 }
 
@@ -614,8 +608,8 @@ export function majorMultiplier(
       label: `Major: ${profile.targetMajor} (no program-level data)`,
     };
   }
-  const schoolRate = school.acceptanceRate;
-  if (!schoolRate || schoolRate <= 0) {
+  const schoolRate = normalizeRate(school.acceptanceRate);
+  if (!schoolRate) {
     return { ...NEUTRAL, label: 'Major selectivity' };
   }
   // Both should be in same units (decimal probability)

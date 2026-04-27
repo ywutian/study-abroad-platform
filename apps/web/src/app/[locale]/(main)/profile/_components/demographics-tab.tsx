@@ -33,7 +33,7 @@ export function DemographicsTab({ control }: DemographicsTabProps) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="h-1.5 bg-gradient-to-r from-teal-500 to-cyan-500" />
+      <div className="h-1.5 bg-teal-500 dark:bg-teal-600" />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-teal-500 dark:text-teal-400" />
@@ -175,6 +175,20 @@ export function DemographicsTab({ control }: DemographicsTabProps) {
                 </FormControl>
                 <FormLabel className="text-sm cursor-pointer">
                   {t('profile.demographics.firstGeneration')}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="recruitedAthlete"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm cursor-pointer">
+                  {t('profile.demographics.recruitedAthlete')}
                 </FormLabel>
               </FormItem>
             )}

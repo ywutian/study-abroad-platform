@@ -1,0 +1,176 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-27T01:30:00Z",
+    "source": "Each campus's official CDS 2024-25 PDF (Section C1)",
+    "extractedBy": "Manual + WebFetch + PDF Read tool",
+    "purpose": "Reference data for PR-12/13/14 (admin bulk-update + IPEDS importer + CDS refinement). Replaces my earlier estimated cds-bands-uc-system.json fixture.",
+    "validity": "Use as ground truth for UCD/UCR/UCSD acceptanceRate + intlAcceptanceRate. Other UCs (UCSC/UCI/UCSB/UCM/UCLA/UCB) need extraction tomorrow."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, davis",
+      "cycleYear": "2024-25",
+      "sourceUrl": "https://aggiedata.ucdavis.edu/sites/g/files/dgvnsk1841/files/media/documents/CDS_UCD.pdf",
+      "freshmanProfile": {
+        "applied": 98869,
+        "admitted": 41353,
+        "enrolled": 6804,
+        "overallAdmitRate": 0.418
+      },
+      "byResidency": {
+        "inState": {
+          "applied": 67710,
+          "admitted": 24746,
+          "enrolled": 5280,
+          "admitRate": 0.365
+        },
+        "outOfState": {
+          "applied": 12279,
+          "admitted": 7038,
+          "enrolled": 412,
+          "admitRate": 0.573
+        },
+        "international": {
+          "applied": 18880,
+          "admitted": 9569,
+          "enrolled": 1112,
+          "admitRate": 0.507
+        }
+      },
+      "currentDbValues": {
+        "acceptanceRate": "~0.37 (estimated, off by ~5pp)",
+        "intlAcceptanceRate": "NOT SET → PR-8 falls to selectivity-aware heuristic 0.7×, which is wrong"
+      },
+      "proposedDbUpdate": {
+        "acceptanceRate": 0.418,
+        "intlAcceptanceRate": 0.507,
+        "oosAcceptanceRate": 0.573
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "cycleYear": "2024-25",
+      "sourceUrl": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf",
+      "freshmanProfile": {
+        "applied": 57714,
+        "admitted": 44356,
+        "enrolled": 5419,
+        "overallAdmitRate": 0.768
+      },
+      "byResidency": {
+        "inState": {
+          "applied": 48922,
+          "admitted": 36711,
+          "enrolled": 5138,
+          "admitRate": 0.75
+        },
+        "outOfState": {
+          "applied": 2864,
+          "admitted": 2607,
+          "enrolled": 89,
+          "admitRate": 0.91
+        },
+        "international": {
+          "applied": 5928,
+          "admitted": 5038,
+          "enrolled": 192,
+          "admitRate": 0.85
+        }
+      },
+      "currentDbValues": {
+        "acceptanceRate": "~0.66 (estimated, off by ~10pp — UCR opened up significantly in 2024)",
+        "intlAcceptanceRate": "NOT SET"
+      },
+      "proposedDbUpdate": {
+        "acceptanceRate": 0.768,
+        "intlAcceptanceRate": 0.85,
+        "oosAcceptanceRate": 0.91
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "cycleYear": "2024-25",
+      "sourceUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20252.pdf",
+      "freshmanProfile": {
+        "applied": 134455,
+        "admitted": 35989,
+        "enrolled": 7330,
+        "overallAdmitRate": 0.268
+      },
+      "byResidency": {
+        "inState": {
+          "applied": 88418,
+          "admitted": 22984,
+          "enrolled": 5629,
+          "admitRate": 0.26
+        },
+        "outOfState": {
+          "applied": 24216,
+          "admitted": 8109,
+          "enrolled": 890,
+          "admitRate": 0.335
+        },
+        "international": {
+          "applied": 21821,
+          "admitted": 4896,
+          "enrolled": 811,
+          "admitRate": 0.224
+        }
+      },
+      "currentDbValues": {
+        "acceptanceRate": "~0.24 (estimated)",
+        "intlAcceptanceRate": "NOT SET"
+      },
+      "proposedDbUpdate": {
+        "acceptanceRate": 0.268,
+        "intlAcceptanceRate": 0.224,
+        "oosAcceptanceRate": 0.335
+      }
+    }
+  ],
+  "pendingExtraction": [
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cdsPdfUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf",
+      "extractedAlready": false
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cdsPdfUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "extractedAlready": false
+    },
+    {
+      "schoolNameNorm": "university of california, santa barbara",
+      "cdsPdfUrl": "TBD - search bap.ucsb.edu or ir.ucsb.edu",
+      "extractedAlready": false
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "cdsPdfUrl": "TBD - search cie.ucmerced.edu, latest is 2022-23",
+      "extractedAlready": false
+    },
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "cdsPdfUrl": "https://apb.ucla.edu/file/d1ab04b3-ee89-4cf2-9124-8dc0471b5e5a (2025-26 — may contain 2024-25 data)",
+      "extractedAlready": false
+    },
+    {
+      "schoolNameNorm": "university of california, berkeley",
+      "cdsPdfUrl": "https://opa.berkeley.edu/campus-data/common-data-set (Excel format, not PDF)",
+      "extractedAlready": false
+    }
+  ],
+  "keyInsights": [
+    "UCD intl admit rate (50.7%) is HIGHER than overall (41.8%) — PR-8 intl multiplier is wrong for UC system",
+    "UCR intl admit rate (85%) also HIGHER than overall (76.8%) — same pattern",
+    "UCSD is only one with intl < overall (22.4% vs 26.8%) — moderate selectivity behaves differently",
+    "UC Riverside admit rate 76.8% in 2024-25 — significantly higher than my estimate ~0.66",
+    "All UC OOS admit rates in this sample are HIGHER than in-state — opposite of my PR-8 selectivity-aware geo assumption that strong-pref states penalize OOS",
+    "Pattern: UCs aggressively recruit non-CA students because OOS pays full tuition, NOT a selective filter against them"
+  ],
+  "implications": {
+    "forArchitecture": "Real per-school data (intlAcceptanceRate, oosAcceptanceRate) >>> any heuristic multiplier we can devise. PR-8 logic should be a TIE-BREAKER when data missing, not the primary path.",
+    "forNextSteps": "Build admin bulk-update endpoint (PR-12) + IPEDS importer (PR-13) to bring real data for ALL 234 US schools. Per-school CDS PDF as Tier 1 refinement for top-30 (PR-14).",
+    "forUserVisibility": "Once data loaded + backfill run, demo's UCD prediction will jump from ~50% to ~98% based on real CDS C1 numbers (anchor 0.418 × intl ratio 1.21 capped at 1.20 × strong stats × 1.95 → cap at 0.98 ceiling)"
+  }
+}

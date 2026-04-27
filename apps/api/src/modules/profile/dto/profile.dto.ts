@@ -139,6 +139,14 @@ export class UpdateProfileDto {
   firstGeneration?: boolean;
 
   @ApiPropertyOptional({
+    description: 'Whether the student is a recruited athlete',
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  recruitedAthlete?: boolean;
+
+  @ApiPropertyOptional({
     description: 'Legacy (alumni children)',
     type: [String],
   })

@@ -203,6 +203,8 @@ export class PredictionTransformerService {
           ? (profile as any).legacy
           : undefined,
       isFirstGen: (profile as any).firstGeneration ?? false,
+      recruitedAthlete: (profile as any).recruitedAthlete ?? false,
+      urmStatus: (profile as any).urmStatus ?? null,
     };
   }
 
@@ -242,6 +244,9 @@ export class PredictionTransformerService {
       id: school.id,
       name: school.name,
       nameZh: school.nameZh ?? undefined,
+      country: (school as any).country ?? undefined,
+      state: (school as any).state ?? undefined,
+      isPrivate: (school as any).isPrivate ?? undefined,
       acceptanceRate: captureField(
         'acceptanceRate',
         school.acceptanceRate,

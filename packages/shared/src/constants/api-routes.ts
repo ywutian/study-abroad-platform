@@ -121,6 +121,8 @@ export const predictionRoutes = {
   history: () => `${API_ROUTES.PREDICTIONS}/history`,
   result: (schoolId: string) => `${API_ROUTES.PREDICTIONS}/${schoolId}/result`,
   report: (schoolId: string) => `${API_ROUTES.PREDICTIONS}/${schoolId}/result`,
+  feedback: (predictionResultId: string) =>
+    `${API_ROUTES.PREDICTIONS}/${predictionResultId}/feedback`,
 };
 
 export const recommendationRoutes = {
@@ -530,6 +532,13 @@ export const adminRoutes = {
   // flushes Redis prediction cache on non-dry runs.
   predictionDistillationBackfillCounselor: () =>
     `${API_ROUTES.ADMIN}/predictions/distillation/backfill-counselor`,
+  predictionDistillationCdsBandsCoverage: () =>
+    `${API_ROUTES.ADMIN}/predictions/distillation/cds-bands/coverage`,
+  predictionDistillationCdsBandsRows: () =>
+    `${API_ROUTES.ADMIN}/predictions/distillation/cds-bands/rows`,
+  predictionDistillationCdsBandsRow: (id: string) =>
+    `${API_ROUTES.ADMIN}/predictions/distillation/cds-bands/rows/${id}`,
+  adminPredictionFeedback: () => `${API_ROUTES.ADMIN}/prediction-feedback`,
   applicationAnalysisWorkflowEvidence: () =>
     `${API_ROUTES.ADMIN}/application-analysis-workflow/evidence`,
   applicationAnalysisWorkflowEvidenceReview: (id: string) =>
