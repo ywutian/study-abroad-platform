@@ -499,10 +499,11 @@ function normalizeRate(raw: number | null | undefined): number | null {
  *      → use the ratio `intlRate / overallRate` clamped to [0.3, 1.2]. Most
  *      data-correct path. Today populated for ~30 schools via scorecard ETL.
  *   2. Selectivity-aware fallback (when intlAcceptanceRate is missing):
- *      - Less selective (≥ 50%): 0.95× — school takes everyone qualified,
- *        intl penalty is negligible (UCs Merced/Riverside/Santa Cruz)
- *      - Moderately selective (20-50%): 0.85× need-blind / 0.7× need-aware
- *        — intl pool somewhat competitive (BU, USC, UCSD, NYU edge)
+ *      - Less selective (≥ 40%): 0.95× — school takes everyone qualified,
+ *        intl penalty is negligible (UCs Merced/Riverside/Santa Cruz, ASU,
+ *        most state publics — intl admit rate ≈ overall per published CDS)
+ *      - Moderately selective (20-40%): 0.85× need-blind / 0.7× need-aware
+ *        — intl pool somewhat competitive (BU, USC, UCSD, UCD, UCI)
  *      - Highly selective (< 20%): 0.7× need-blind / 0.4× need-aware — the
  *        original peer-school calibration applies (HYPMSP, NYU, top T20)
  *   3. Unknown selectivity: assume highly-selective (conservative default)
@@ -536,8 +537,11 @@ export function intlMultiplier(
     };
   }
 
-  // Fallback: scale penalty by school's overall selectivity.
-  if (overallRate != null && overallRate >= 0.5) {
+  // Fallback: scale penalty by school's overall selectivity. The 40% threshold
+  // intentionally catches public state systems like UCSC (47%) where intl
+  // admit rate ≈ overall per published CDS — the elite-school 0.7× penalty
+  // is not empirically justified there.
+  if (overallRate != null && overallRate >= 0.4) {
     return {
       multiplier: 0.95,
       label: 'International (less-selective school)',
