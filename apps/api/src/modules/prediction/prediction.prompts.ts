@@ -63,6 +63,9 @@ export interface ProfileInput {
   isFirstGen?: boolean;
   /** Whether the student is a recruited athlete */
   recruitedAthlete?: boolean;
+  /** PR-14: Whether the student is applying test-optional (no SAT/ACT submitted).
+   * Counselor applies 0.85× modifier at <20% admit schools per Common App data. */
+  applyingTestOptional?: boolean;
   /** Optional demographic context. Served counselor multiplier is disabled pending compliance review. */
   urmStatus?: string | null;
   /** Essay quality score (0-10) from the latest AI essay review */

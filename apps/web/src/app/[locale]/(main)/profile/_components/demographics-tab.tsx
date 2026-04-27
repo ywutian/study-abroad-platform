@@ -193,6 +193,20 @@ export function DemographicsTab({ control }: DemographicsTabProps) {
               </FormItem>
             )}
           />
+          <FormField
+            control={control}
+            name="applyingTestOptional"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="text-sm cursor-pointer">
+                  {t('profile.demographics.applyingTestOptional')}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Legacy */}

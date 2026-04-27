@@ -389,42 +389,47 @@ export class CounselorEngineService {
     admitRate: number;
     encodedDimensions: ReadonlySet<EncodedDimension>;
   } | null> {
-    const gpaBand = this.gpaToBand(profile.gpa, profile.gpaScale);
-    if (!gpaBand) return null;
+    const gpaBands = this.gpaToBands(profile.gpa, profile.gpaScale);
+    if (!gpaBands.length) return null;
 
-    const candidates: Array<{ testType: string; testBand: string }> = [];
+    const testCandidates: Array<{ testType: string; testBand: string }> = [];
     const sat = profile.testScores?.find((t) => t.type === 'SAT')?.score;
     if (sat != null) {
       const satBand = this.satToBand(sat);
-      if (satBand) candidates.push({ testType: 'SAT', testBand: satBand });
+      if (satBand) testCandidates.push({ testType: 'SAT', testBand: satBand });
     }
     const act = profile.testScores?.find((t) => t.type === 'ACT')?.score;
     if (act != null) {
       const actBand = this.actToBand(act);
-      if (actBand) candidates.push({ testType: 'ACT', testBand: actBand });
+      if (actBand) testCandidates.push({ testType: 'ACT', testBand: actBand });
     }
-    candidates.push({ testType: 'GPA_ONLY', testBand: 'ANY' });
+    testCandidates.push({ testType: 'GPA_ONLY', testBand: 'ANY' });
 
-    for (const c of candidates) {
-      const row = await this.prisma.schoolCdsAdmitBand.findFirst({
-        where: {
-          schoolId: school.id,
-          gpaBand,
-          testType: c.testType,
-          testBand: c.testBand,
-        },
-        orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
-        select: { admitRate: true },
-      });
-      if (row) {
-        let rate = row.admitRate.toNumber();
-        if (rate >= 1) rate = rate / 100; // tolerate percentages stored as 88 not 0.88
-        if (rate <= 0 || rate >= 1) continue;
-        // Cell with testType = SAT/ACT encodes BOTH gpa + test signal.
-        // Cell with testType = GPA_ONLY encodes ONLY gpa.
-        const encoded: Set<EncodedDimension> = new Set(['gpa']);
-        if (c.testType !== 'GPA_ONLY') encoded.add('test');
-        return { admitRate: rate, encodedDimensions: encoded };
+    // PR-14: iterate gpaBands in preference order (UC weighted first, then
+    // standard 4.0 fallback). For each gpaBand, try each test candidate.
+    // First hit wins.
+    for (const gpaBand of gpaBands) {
+      for (const c of testCandidates) {
+        const row = await this.prisma.schoolCdsAdmitBand.findFirst({
+          where: {
+            schoolId: school.id,
+            gpaBand,
+            testType: c.testType,
+            testBand: c.testBand,
+          },
+          orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
+          select: { admitRate: true },
+        });
+        if (row) {
+          let rate = row.admitRate.toNumber();
+          if (rate >= 1) rate = rate / 100; // tolerate percentages stored as 88 not 0.88
+          if (rate <= 0 || rate >= 1) continue;
+          // Cell with testType = SAT/ACT encodes BOTH gpa + test signal.
+          // Cell with testType = GPA_ONLY encodes ONLY gpa.
+          const encoded: Set<EncodedDimension> = new Set(['gpa']);
+          if (c.testType !== 'GPA_ONLY') encoded.add('test');
+          return { admitRate: rate, encodedDimensions: encoded };
+        }
       }
     }
     return null;
@@ -468,14 +473,51 @@ export class CounselorEngineService {
     gpa: number | undefined,
     gpaScale: number | undefined,
   ): string | null {
-    if (gpa == null || !Number.isFinite(gpa)) return null;
+    // Legacy single-band: returns the standard 4.0-scale band for backward
+    // compatibility. New code uses gpaToBands() to also try UC-weighted bands.
+    const bands = this.gpaToBands(gpa, gpaScale);
+    return bands[bands.length - 1] ?? null;
+  }
+
+  /**
+   * Return all candidate gpaBand labels to try (in order of preference)
+   * when looking up a CDS cell. PR-14: also emits UC-weighted bands when
+   * the input scale > 4.0, so UC students with weighted GPA hit per-band
+   * UCOP cells loaded into `SchoolCdsAdmitBand` for higher precision.
+   *
+   * Order: most-specific first (UC weighted) → fallback (standard 4.0).
+   */
+  private gpaToBands(
+    gpa: number | undefined,
+    gpaScale: number | undefined,
+  ): string[] {
+    if (gpa == null || !Number.isFinite(gpa)) return [];
     const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
+    const bands: string[] = [];
+
+    // UC weighted scale (capped at 4.4): emit UC-style bands matching UCOP
+    // freshman profile data ("admit rate by HS GPA: 4.20+ / 4.00-4.19 / ...").
+    // Only emit when caller explicitly set scale > 4.0 (avoids misfiring
+    // on accidental gpa=4.30 with default 4.0 scale).
+    if (scale > 4.0) {
+      if (gpa >= 4.2) bands.push('4.20-4.40');
+      else if (gpa >= 4.0) bands.push('4.00-4.19');
+      else if (gpa >= 3.8) bands.push('3.80-3.99');
+      else if (gpa >= 3.6) bands.push('3.60-3.79');
+      else bands.push('<3.60');
+    }
+
+    // Always also emit standard 4.0-scale band (normalized). Acts as
+    // fallback when no UC-weighted cell matches; also primary for non-UC
+    // schools.
     const gpa4 = (gpa / scale) * 4.0;
-    if (gpa4 >= 3.75) return '3.75-4.00';
-    if (gpa4 >= 3.5) return '3.50-3.74';
-    if (gpa4 >= 3.25) return '3.25-3.49';
-    if (gpa4 >= 3) return '3.00-3.24';
-    return '<3.00';
+    if (gpa4 >= 3.75) bands.push('3.75-4.00');
+    else if (gpa4 >= 3.5) bands.push('3.50-3.74');
+    else if (gpa4 >= 3.25) bands.push('3.25-3.49');
+    else if (gpa4 >= 3) bands.push('3.00-3.24');
+    else bands.push('<3.00');
+
+    return bands;
   }
 
   private satToBand(sat: number): string | null {

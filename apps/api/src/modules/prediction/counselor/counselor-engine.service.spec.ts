@@ -555,6 +555,205 @@ describe('CounselorEngineService', () => {
       expect(testFactor!.detail.toLowerCase()).not.toContain('encoded');
     });
 
+    it('IB 42 student: uses IB→SAT concordance (1540 equiv) instead of NEUTRAL', async () => {
+      // PR-14: Before this fix, IB 42 was treated as "no test score" → NEUTRAL.
+      // Now uses College Board IB Concordance: 42 → SAT 1540.
+      const result = await service.compute(
+        profile({
+          gpa: 3.85,
+          testScores: [{ type: 'IB', score: 42 }] as any,
+          isInternational: true,
+          nationality: 'CN',
+        }),
+        school({
+          id: 'cornell',
+          name: 'Cornell University',
+          acceptanceRate: 0.084,
+          intlAcceptanceRate: 0.035,
+          sat25: 1470,
+          sat75: 1560,
+          isPrivate: true,
+        }),
+        'RD',
+      );
+      // IB 42 → equivSAT 1540, vs Cornell sat75=1560 → falls in middle 50 (0.85×)
+      // anchor 0.084 × intl ratio 0.42 × gpa 1.1 (3.85 above sat50) × test 0.85 = 0.033
+      // floored at 0.084 × 0.3 = 0.025. Result in [0.025, 0.10] range.
+      expect(result.probability).toBeGreaterThanOrEqual(0.025);
+      expect(result.probability).toBeLessThanOrEqual(0.1);
+
+      const testFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('test score'),
+      );
+      // Test factor MUST appear (not silently dropped)
+      expect(testFactor).toBeDefined();
+      expect(testFactor!.detail).toContain('IB 42');
+    });
+
+    it('Gaokao 690 student: uses Gaokao→SAT concordance (1550 equiv)', async () => {
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'GAOKAO', score: 690 }] as any,
+          isInternational: true,
+          nationality: 'CN',
+        }),
+        school({
+          id: 'ucb',
+          name: 'University of California, Berkeley',
+          acceptanceRate: 0.116,
+          sat25: 1330,
+          sat75: 1530,
+          isPrivate: false,
+          state: 'CA',
+        }),
+        'RD',
+      );
+      // Gaokao 690 → equivSAT 1550, vs UCB sat75 1530 → 1550 ≥ 1530+50? No (1550<1580) → 1.2× (above sat75)
+      // anchor 0.116 × strong stats × intl PR-8 → ~0.12-0.15 range
+      expect(result.probability).toBeGreaterThanOrEqual(0.04);
+      expect(result.probability).toBeLessThanOrEqual(0.3);
+
+      const testFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('test score'),
+      );
+      expect(testFactor).toBeDefined();
+      expect(testFactor!.detail).toContain('Gaokao 690');
+    });
+
+    it('A-Level 3A* (168 UCAS pts) student: uses A-Level→SAT concordance', async () => {
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'A_LEVEL', score: 168 }] as any,
+          isInternational: true,
+          nationality: 'CN',
+        }),
+        school({
+          id: 'imperial',
+          name: 'Imperial College',
+          acceptanceRate: 0.15,
+          sat25: 1450,
+          sat75: 1550,
+          isPrivate: true,
+        }),
+        'RD',
+      );
+      // 168 UCAS → equivSAT 1500, vs sat75 1550 → falls in middle 50 (0.85×)
+      expect(result.probability).toBeGreaterThanOrEqual(0.04);
+      expect(result.probability).toBeLessThanOrEqual(0.4);
+
+      const testFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('test score'),
+      );
+      expect(testFactor).toBeDefined();
+      expect(testFactor!.detail).toContain('A-Level');
+    });
+
+    it('Test-optional at MIT (highly selective, <20% admit): 0.85× penalty', async () => {
+      const result = await service.compute(
+        profile({
+          gpa: 4.0,
+          testScores: [],
+          applyingTestOptional: true,
+        } as any),
+        school({
+          id: 'mit',
+          name: 'Massachusetts Institute of Technology',
+          acceptanceRate: 0.0455,
+          sat25: 1520,
+          sat75: 1580,
+          isPrivate: true,
+          needBlindInternational: true,
+        }),
+        'RD',
+      );
+      // anchor 0.0455 × test 0.85 (test-optional penalty) × gpa 1.3 (3.95+ → 1500 equivSAT > sat75) = 0.050
+      // (no other modifiers active)
+      expect(result.probability).toBeGreaterThanOrEqual(0.014);
+      expect(result.probability).toBeLessThanOrEqual(0.1);
+
+      const testFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('test-optional'),
+      );
+      expect(testFactor).toBeDefined();
+      expect(testFactor!.detail).toContain('Common App');
+    });
+
+    it('Test-optional at less-selective school (≥20% admit): no penalty (modifierResults captures it)', async () => {
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [],
+          applyingTestOptional: true,
+          isInternational: false,
+        } as any),
+        school({
+          id: 'ucd',
+          name: 'University of California, Davis',
+          acceptanceRate: 0.418,
+          sat25: 1280,
+          sat75: 1450,
+          isPrivate: false,
+          state: 'CA',
+        }),
+        'RD',
+      );
+      // Test-optional has no penalty at >20% admit (UCD 41.8%) per Common App data.
+      // Factor is neutral (1.0×) so filtered from factors[] UI, but
+      // modifierResults captures the explicit handling for trace/audit.
+      expect(result.probability).toBeGreaterThanOrEqual(0.1);
+      expect(result.probability).toBeLessThanOrEqual(0.98);
+
+      // Architecture: neutral modifiers are skipped from factors[] UI to keep
+      // the breakdown focused. Test the modifierResults trace instead.
+      expect(result.modifierResults.testBand?.label).toContain(
+        'less-selective',
+      );
+      expect(result.modifierResults.testBand?.multiplier).toBe(1.0);
+    });
+
+    it('UC weighted GPA 4.30 (gpaScale 4.4): tries UC weighted band first', async () => {
+      // PR-14: gpaToBands emits ['4.20-4.40', '3.75-4.00'] when gpaScale > 4.0
+      // Test that lookupCdsBand tries the UC band first.
+      const bandsQueried: string[] = [];
+      prisma.schoolCdsAdmitBand.findFirst.mockImplementation(
+        async ({ where }: any) => {
+          bandsQueried.push(where.gpaBand);
+          // Return cell only when query matches the UC weighted band
+          if (where.gpaBand === '4.20-4.40' && where.testType === 'GPA_ONLY') {
+            return { admitRate: new Prisma.Decimal(0.55) };
+          }
+          return null;
+        },
+      );
+
+      const result = await service.compute(
+        profile({
+          gpa: 4.3,
+          gpaScale: 4.4,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          isInternational: false,
+          highSchoolLocation: 'CA',
+        }),
+        school({
+          id: 'ucd',
+          name: 'University of California, Davis',
+          acceptanceRate: 0.418,
+          sat25: 1280,
+          sat75: 1450,
+          isPrivate: false,
+          state: 'CA',
+        }),
+        'RD',
+      );
+      // First-tried band should be UC weighted (4.20-4.40)
+      expect(bandsQueried[0]).toBe('4.20-4.40');
+      // Tier 1 cell hit at 0.55
+      expect(result.tier).toBe(1);
+      expect(result.anchor).toBeCloseTo(0.55, 2);
+    });
+
     it('uses intlAcceptanceRate ratio when school publishes it', async () => {
       // When the school has both intlAcceptanceRate and acceptanceRate, the
       // multiplier comes directly from intl/overall ratio (clamped 0.3-1.2).

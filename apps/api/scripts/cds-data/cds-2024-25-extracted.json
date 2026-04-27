@@ -206,6 +206,64 @@
       "notes": "MIT CDS does not publish residency breakdown. Counselor falls back to PR-8 selectivity-aware intl multiplier (highly selective + need-blind = 0.7×)."
     },
     {
+      "schoolNameNorm": "cornell university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.dpb.cornell.edu/wp-content/uploads/2025/07/CDS-2024-2025-v6-print.pdf",
+      "applicants": {
+        "total": 65612,
+        "inState": 11722,
+        "outOfState": 37032,
+        "international": 16858
+      },
+      "admitted": {
+        "total": 5516,
+        "inState": 1556,
+        "outOfState": 3372,
+        "international": 588
+      },
+      "enrolled": {
+        "total": 3525,
+        "inState": 1104,
+        "outOfState": 2025,
+        "international": 396
+      },
+      "rates": {
+        "acceptanceRate": 8.41,
+        "intlAcceptanceRate": 3.49,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Cornell intl 3.49% vs overall 8.41% (ratio 0.42). Classic elite-private pattern."
+    },
+    {
+      "schoolNameNorm": "columbia university in the city of new york",
+      "cycleYear": 2024,
+      "sourceUrl": "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_College_and_Columbia_Engineering_CDS.pdf",
+      "applicants": {
+        "total": 60247,
+        "inState": 9133,
+        "outOfState": 36521,
+        "international": 14593
+      },
+      "admitted": {
+        "total": 2325,
+        "inState": 346,
+        "outOfState": 1620,
+        "international": 359
+      },
+      "enrolled": {
+        "total": 1483,
+        "inState": 247,
+        "outOfState": 986,
+        "international": 250
+      },
+      "rates": {
+        "acceptanceRate": 3.86,
+        "intlAcceptanceRate": 2.46,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Columbia intl 2.46% vs overall 3.86% (ratio 0.64). Same elite-private pattern as Yale/Cornell."
+    },
+    {
       "schoolNameNorm": "yale university",
       "cycleYear": 2024,
       "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",

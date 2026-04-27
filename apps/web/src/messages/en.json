@@ -1194,6 +1194,7 @@
       "needsFinancialAid": "I need financial aid",
       "firstGeneration": "First generation college student",
       "recruitedAthlete": "Recruited athlete",
+      "applyingTestOptional": "Applying test-optional (no SAT/ACT submitted)",
       "legacy": "Legacy (Alumni Connection)",
       "legacyPlaceholder": "e.g. Harvard, Stanford",
       "legacyHint": "Enter school names separated by commas if you have alumni connections",

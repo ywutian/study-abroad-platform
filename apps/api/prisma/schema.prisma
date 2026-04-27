@@ -67,6 +67,7 @@ enum TestType {
   A_LEVEL
   IGCSE
   DUOLINGO
+  GAOKAO
 }
 
 enum ActivityCategory {
@@ -612,6 +613,14 @@ model Profile {
   //   2. Some users prefer multi-select; deferring to comma-separated string future-proofs
   // Counselor's urmMultiplier reads only the canonical 4 values above.
   urmStatus          String?
+
+  // PR-14 (4/27): test-optional applicants. Common App data shows top-30
+  // private schools admit test-optional applicants 5-10pp lower than
+  // test-submitters; counselor applies a 0.85× modifier at <20% admit
+  // schools when this flag is true. Defaults false (legacy behavior).
+  // Different from "no test scores in profile" — this is an EXPLICIT
+  // declaration "I'm applying test-optional" vs "I haven't filled in yet".
+  applyingTestOptional Boolean?       @default(false)
 
   // Recommendation preferences (JSON)
   recommendationPreferences Json?

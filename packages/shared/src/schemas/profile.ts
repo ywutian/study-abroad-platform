@@ -63,6 +63,9 @@ export function createProfileSchema(
       needsFinancialAid: z.boolean().default(false),
       firstGeneration: z.boolean().default(false),
       recruitedAthlete: z.boolean().default(false),
+      // PR-14: explicit "I'm applying test-optional" flag. Counselor applies
+      // 0.85× modifier at <20% admit schools per Common App data.
+      applyingTestOptional: z.boolean().default(false),
       legacy: z.array(z.string().max(500)).default([]),
       intendedMajor: z.string().max(200).default(''),
       secondMajor: z.string().max(200).default(''),

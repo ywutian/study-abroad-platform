@@ -205,6 +205,9 @@ export class PredictionTransformerService {
       isFirstGen: (profile as any).firstGeneration ?? false,
       recruitedAthlete: (profile as any).recruitedAthlete ?? false,
       urmStatus: (profile as any).urmStatus ?? null,
+      // PR-14: explicit "applying test-optional" flag triggers 0.85× modifier
+      // at <20% admit schools per Common App data.
+      applyingTestOptional: (profile as any).applyingTestOptional ?? false,
     };
   }
 

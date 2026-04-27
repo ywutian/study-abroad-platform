@@ -1178,6 +1178,7 @@
       "needsFinancialAid": "我需要助学金",
       "firstGeneration": "第一代大学生",
       "recruitedAthlete": "校队招募运动员",
+      "applyingTestOptional": "申请 test-optional（不提交 SAT/ACT）",
       "legacy": "校友关系 (Legacy)",
       "legacyPlaceholder": "例如：哈佛、斯坦福",
       "legacyHint": "如有校友关系，请输入学校名称，用逗号分隔",
