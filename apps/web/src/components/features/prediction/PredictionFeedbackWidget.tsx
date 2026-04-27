@@ -106,10 +106,15 @@ export function PredictionFeedbackWidget({ predictionResultId }: PredictionFeedb
   }
 
   return (
-    <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
-      <div className="space-y-1">
-        <p className="text-overline text-muted-foreground">{t('title')}</p>
-        <p className="text-xs text-muted-foreground">{t('hint')}</p>
+    <div className="space-y-3 rounded-lg border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 rounded-full bg-primary/10 p-2">
+          <CircleHelp className="h-5 w-5 text-primary" />
+        </div>
+        <div className="space-y-1 min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground">{t('title')}</p>
+          <p className="text-xs text-muted-foreground">{t('hint')}</p>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">

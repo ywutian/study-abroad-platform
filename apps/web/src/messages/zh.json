@@ -6111,6 +6111,7 @@
       "health": "系统健康",
       "team": "团队",
       "featureFlags": "功能开关",
+      "devTools": "开发者工具",
       "menu": "菜单",
       "adminNav": "管理导航",
       "groups": {
@@ -8317,6 +8318,27 @@
         "AI_QUOTA_DEFAULT_DAILY": "默认每日配额",
         "AI_QUOTA_PRO_DAILY": "Pro 每日配额",
         "AI_QUOTA_PREMIUM_DAILY": "Premium 每日配额"
+      }
+    },
+    "devTools": {
+      "title": "开发者工具",
+      "description": "JWT 检查、复制、刷新 — 给运维工程师在终端 / curl 调用 admin endpoint 时用。",
+      "noTokenAvailable": "当前 session 无可用 JWT。请重新登录。",
+      "tokenCopied": "JWT 已复制到剪贴板。",
+      "copyFailed": "剪贴板复制失败（浏览器权限？）。请用上方掩码 token 手动提取。",
+      "tokenRefreshed": "JWT 已刷新成功。",
+      "refreshFailed": "刷新失败：{error}",
+      "jwtSection": {
+        "title": "当前 Admin JWT",
+        "email": "邮箱",
+        "role": "角色",
+        "expiresIn": "剩余时间",
+        "userId": "用户 ID",
+        "tokenLabel": "Token (掩码):",
+        "copyButton": "复制完整 token",
+        "refreshButton": "刷新 JWT",
+        "usageHeading": "终端使用方式",
+        "usageBody": "把复制的 token 粘到 'Bearer ' 后面，curl/脚本即可调用 admin endpoint。Token 15 分钟过期；点击「刷新 JWT」可不重新登录续期。"
       }
     },
     "featureFlags": {
