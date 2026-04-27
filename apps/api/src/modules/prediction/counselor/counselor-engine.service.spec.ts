@@ -188,8 +188,11 @@ describe('CounselorEngineService', () => {
     });
 
     it('floors at 0.3× anchor even when modifiers stack low', async () => {
-      // Far-below-25th GPA + far-below test + intl need-aware would push very
-      // low; clamp floors at 0.3×
+      // Far-below-25th GPA + far-below test + intl need-aware at a highly-
+      // selective school would push very low; clamp floors at 0.3×.
+      // Note: anchor must be < 0.2 to keep the intl penalty at 0.4× under
+      // the new selectivity-aware logic (4/26 PR-8 fix). Less-selective
+      // schools intentionally don't pile on intl penalties.
       const result = await service.compute(
         profile({
           gpa: 2.0,
@@ -197,14 +200,14 @@ describe('CounselorEngineService', () => {
           isInternational: true,
         }),
         school({
-          acceptanceRate: 0.5,
+          acceptanceRate: 0.1,
           sat25: 1400,
           sat75: 1500,
           needBlindInternational: false,
         }),
       );
 
-      expect(result.probability).toBeGreaterThanOrEqual(0.5 * 0.3 - 0.001);
+      expect(result.probability).toBeGreaterThanOrEqual(0.1 * 0.3 - 0.001);
     });
 
     it('respects absolute floor of 0.02 even if anchor is tiny', async () => {
@@ -353,10 +356,134 @@ describe('CounselorEngineService', () => {
         }),
         'RD',
       );
-      // anchor 0.12 × intl-need-aware 0.4 × strong stats ~1.1 ≈ 0.053
-      // floored at 0.12 × 0.3 = 0.036
+      // anchor 0.12 × intl-need-aware 0.4 (still kicks in for <20% selective)
+      // × strong stats ~1.1 ≈ 0.053; floored at 0.12 × 0.3 = 0.036
       expect(result.probability).toBeGreaterThanOrEqual(0.036);
       expect(result.probability).toBeLessThanOrEqual(0.12);
+    });
+
+    it('China intl at less-selective UC (e.g. UCM): no heavy penalty', async () => {
+      // Regression test for 4/26 evening: counselor was returning 35-40% for
+      // strong CN intl applicants at UCM (anchor 88%) because flat 0.4× intl
+      // penalty was calibrated for elite schools. UCM admits ~85% of intl
+      // applicants per IPEDS — should be NO meaningful penalty.
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          isInternational: true,
+          nationality: 'CN',
+        }),
+        school({
+          id: 'ucm',
+          name: 'University of California, Merced',
+          acceptanceRate: 0.88,
+          sat25: 1180,
+          sat75: 1400,
+          state: 'CA',
+          isPrivate: false,
+          needBlindInternational: false,
+        }),
+        'RD',
+      );
+      // anchor 0.88 × intl-less-selective 0.95 × strong GPA 1.3 × strong test 1.5
+      // = 1.63 → capped at 0.88 × 2.5 = 2.20 → 0.98 ceiling.
+      // Bottom line: strong intl applicant at non-selective school should NOT
+      // be punished into the 30s.
+      expect(result.probability).toBeGreaterThanOrEqual(0.7);
+      expect(result.probability).toBeLessThanOrEqual(0.98);
+    });
+
+    it('intl + highSchoolLocation set: geo modifier does NOT double-penalize', async () => {
+      // The exact bug that produced UCM 37% in prod: a CN intl applicant whose
+      // highSchoolLocation is set to a non-CA value would get hit by both
+      // intlMultiplier (0.4×) AND geoMultiplier (0.5× OOS at CA strong-pref
+      // public). Combined 0.2× wiped strong applicants down to ~30%.
+      // Fix: geoMultiplier returns NEUTRAL when isInternational is true.
+      const withLocation = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          isInternational: true,
+          nationality: 'CN',
+          highSchoolLocation: 'CN',
+        }),
+        school({
+          id: 'ucm',
+          name: 'University of California, Merced',
+          acceptanceRate: 0.88,
+          sat25: 1180,
+          sat75: 1400,
+          state: 'CA',
+          isPrivate: false,
+        }),
+        'RD',
+      );
+      const withoutLocation = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          isInternational: true,
+          nationality: 'CN',
+        }),
+        school({
+          id: 'ucm',
+          name: 'University of California, Merced',
+          acceptanceRate: 0.88,
+          sat25: 1180,
+          sat75: 1400,
+          state: 'CA',
+          isPrivate: false,
+        }),
+        'RD',
+      );
+
+      // Both should produce the SAME probability — geo must be neutralized for
+      // intl regardless of whether highSchoolLocation is set.
+      expect(withLocation.probability).toBeCloseTo(
+        withoutLocation.probability,
+        2,
+      );
+      // Sanity: no factor named with "Out-of-state" should appear for the
+      // intl applicant (geo modifier returned its neutral skip variant).
+      const oosFactor = withLocation.factors.find((f) =>
+        f.name.toLowerCase().includes('out-of-state'),
+      );
+      expect(oosFactor).toBeUndefined();
+    });
+
+    it('uses intlAcceptanceRate ratio when school publishes it', async () => {
+      // When the school has both intlAcceptanceRate and acceptanceRate, the
+      // multiplier comes directly from intl/overall ratio (clamped 0.3-1.2).
+      // No need for the selectivity-tier heuristic.
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1500 }],
+          isInternational: true,
+          nationality: 'CN',
+        }),
+        school({
+          id: 'cornell',
+          name: 'Cornell University',
+          acceptanceRate: 0.07,
+          intlAcceptanceRate: 0.05, // ratio = 0.05 / 0.07 = 0.71
+          sat25: 1470,
+          sat75: 1560,
+          isPrivate: true,
+          needBlindInternational: false,
+        }),
+        'RD',
+      );
+      // anchor 0.07 × intl-ratio 0.71 × strong stats ~1.3 = 0.065
+      // capped at 0.07 × 2.5 = 0.175
+      expect(result.probability).toBeGreaterThanOrEqual(0.04);
+      expect(result.probability).toBeLessThanOrEqual(0.18);
+      // Verify the ratio path was taken (label gives it away)
+      const intlFactor = result.factors.find((f) =>
+        f.name.toLowerCase().includes('school-published'),
+      );
+      expect(intlFactor).toBeDefined();
     });
   });
 

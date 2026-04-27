@@ -415,6 +415,16 @@ export function geoMultiplier(
   profile: ProfileInput,
   school: SchoolInput & { state?: string | null; isPrivate?: boolean | null },
 ): ModifierResult {
+  // Don't double-penalize international applicants — `intlMultiplier` already
+  // captures the intl-vs-domestic delta. Without this guard, a CN applicant
+  // looking at a UC public would get 0.4× intl × 0.5× OOS = 0.2× combined,
+  // which produced absurd 30-37% UC predictions (4/26 evening regression).
+  if (profile.isInternational) {
+    return {
+      ...NEUTRAL,
+      label: 'Geography (international applicant — see intl modifier)',
+    };
+  }
   if (school.isPrivate) {
     return {
       ...NEUTRAL,
@@ -462,24 +472,104 @@ export function geoMultiplier(
 }
 
 /**
+ * Coerce a stored admit-rate value (Decimal or number; may be 11.5 = 11.5% or
+ * 0.115) into a probability in (0, 1). Returns null on missing / invalid input.
+ *
+ * Mirrors `CounselorEngineService.normalizeAcceptanceRate` — kept inline here
+ * so the modifiers stay pure functions without a dep on the engine class.
+ */
+function normalizeRate(raw: number | null | undefined): number | null {
+  if (raw == null || !Number.isFinite(raw) || raw <= 0) return null;
+  const n = raw > 1 ? raw / 100 : raw;
+  return n > 0 && n < 1 ? n : null;
+}
+
+/**
  * Modifier #8b: International applicant.
  *
- * - Need-blind for intl (e.g. Harvard, MIT, Princeton, Yale, Amherst): 0.7×
- *   intl pool is more competitive but no need-aware penalty
- * - Need-aware for intl (most US schools): 0.4×
- *   intl pool faces both elevated competition AND financial-need filtering
- * - Domestic: 1.0
+ * The original counselor shipped with a flat 0.4× / 0.7× penalty. That was
+ * calibrated to elite schools where intl admit rates are 1/3-1/2 of overall.
+ * It produces *outrageous-low* predictions at less-selective schools (UCM,
+ * 88% overall × 0.4 = 36%, but UCM's actual intl admit rate is ~85% — i.e.
+ * essentially no penalty). This was the first regression the engine produced
+ * after going live for CN intl users on UC schools (4/26 evening).
+ *
+ * Fixed signal hierarchy (best to worst):
+ *   1. School publishes its own intl admit rate (`school.intlAcceptanceRate`)
+ *      → use the ratio `intlRate / overallRate` clamped to [0.3, 1.2]. Most
+ *      data-correct path. Today populated for ~30 schools via scorecard ETL.
+ *   2. Selectivity-aware fallback (when intlAcceptanceRate is missing):
+ *      - Less selective (≥ 40%): 0.95× — school takes everyone qualified,
+ *        intl penalty is negligible (UCs Merced/Riverside/Santa Cruz, ASU,
+ *        most state publics — intl admit rate ≈ overall per published CDS)
+ *      - Moderately selective (20-40%): 0.85× need-blind / 0.7× need-aware
+ *        — intl pool somewhat competitive (BU, USC, UCSD, UCD, UCI)
+ *      - Highly selective (< 20%): 0.7× need-blind / 0.4× need-aware — the
+ *        original peer-school calibration applies (HYPMSP, NYU, top T20)
+ *   3. Unknown selectivity: assume highly-selective (conservative default)
+ *
+ * Domestic applicants always return NEUTRAL (no change).
  */
 export function intlMultiplier(
   profile: ProfileInput,
   school: SchoolInput & {
     needBlindInternational?: boolean;
     intlAcceptanceRate?: number | null;
+    acceptanceRate?: number | null;
   },
 ): ModifierResult {
   if (!profile.isInternational) {
     return { ...NEUTRAL, label: 'International status (domestic applicant)' };
   }
+
+  const overallRate = normalizeRate(school.acceptanceRate);
+  const intlRate = normalizeRate(school.intlAcceptanceRate);
+
+  // Best signal: school publishes its own intl admit rate. Use ratio directly.
+  if (intlRate != null && overallRate != null) {
+    const ratio = intlRate / overallRate;
+    const clamped = Math.max(0.3, Math.min(1.2, ratio));
+    return {
+      multiplier: clamped,
+      label: 'International (school-published intl rate)',
+      evidence: `This school admits ~${(intlRate * 100).toFixed(0)}% of international applicants vs ~${(overallRate * 100).toFixed(0)}% overall (×${clamped.toFixed(2)})`,
+      impact: clamped >= 0.95 ? 'neutral' : 'negative',
+    };
+  }
+
+  // Fallback: scale penalty by school's overall selectivity. The 40% threshold
+  // intentionally catches public state systems like UCSC (47%) where intl
+  // admit rate ≈ overall per published CDS — the elite-school 0.7× penalty
+  // is not empirically justified there.
+  if (overallRate != null && overallRate >= 0.4) {
+    return {
+      multiplier: 0.95,
+      label: 'International (less-selective school)',
+      evidence: `This school admits ${(overallRate * 100).toFixed(0)}% overall — international applicants face only a small penalty at less-selective institutions`,
+      impact: 'neutral',
+    };
+  }
+
+  if (overallRate != null && overallRate >= 0.2) {
+    if (school.needBlindInternational) {
+      return {
+        multiplier: 0.85,
+        label: 'International (need-blind, moderately selective)',
+        evidence:
+          'International pool sees a moderate ~0.85× penalty at this need-blind moderately-selective school',
+        impact: 'negative',
+      };
+    }
+    return {
+      multiplier: 0.7,
+      label: 'International (need-aware, moderately selective)',
+      evidence:
+        'International applicants face ~0.7× the domestic admit rate at need-aware moderately-selective schools',
+      impact: 'negative',
+    };
+  }
+
+  // Highly selective (< 20% admit rate, or unknown selectivity).
   if (school.needBlindInternational) {
     return {
       multiplier: 0.7,
@@ -491,9 +581,9 @@ export function intlMultiplier(
   }
   return {
     multiplier: 0.4,
-    label: 'International (need-aware school)',
+    label: 'International (need-aware, highly selective school)',
     evidence:
-      'International applicants face ~0.4× the domestic admit rate at need-aware schools (most US institutions)',
+      'International applicants face ~0.4× the domestic admit rate at need-aware highly-selective schools',
     impact: 'negative',
   };
 }
