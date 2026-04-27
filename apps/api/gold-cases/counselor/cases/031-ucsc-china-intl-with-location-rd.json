@@ -1,0 +1,23 @@
+{
+  "id": "031-ucsc-china-intl-with-location-rd",
+  "description": "UC Santa Cruz + China intl with highSchoolLocation set + strong RD (regression: original 4/26 prod returned 19% due to geo+intl double-penalty)",
+  "rationale": "UCSC anchor 0.47. Pre-PR-8: intl 0.4 × geo OOS 0.5 (CN ≠ CA at strong-pref public) × strong stats ~1.95 = 0.39 → 47% × 0.39 = 18.3% (matches the actual prod 19% screenshot). Post-PR-8: intl 0.95 (less-selective, >40%) × geo SKIPPED (intl) × strong stats 1.95 = 1.85 → 47% × 1.85 = 0.87 capped at 47% × 2.5 = 1.18 → result ~0.87. Range [0.65, 0.95] catches both bugs: too low (geo not skipped) AND too high (>cap). This case must use highSchoolLocation: 'CN' to specifically trigger the bug path.",
+  "lastReviewedAt": "2026-04-26",
+  "profile": {
+    "gpa": 3.9,
+    "gpaScale": 4,
+    "isInternational": true,
+    "nationality": "CN",
+    "highSchoolLocation": "CN",
+    "testScores": [
+      {
+        "type": "SAT",
+        "score": 1500
+      }
+    ]
+  },
+  "schoolName": "University of California, Santa Cruz",
+  "applicationRound": "RD",
+  "expectedProbabilityRange": [0.65, 0.95],
+  "tags": ["uc-system", "international", "regression-pr8", "geo-skip"]
+}
