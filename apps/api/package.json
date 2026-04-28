@@ -53,6 +53,8 @@
     "audit:counselor": "ts-node --transpile-only scripts/audit-counselor-distribution.ts",
     "audit:coverage": "tsx scripts/audit-school-data-coverage.ts",
     "import:ipeds-csv": "tsx scripts/import-ipeds-csv.ts",
+    "cds:discover": "tsx scripts/discover-cds-pdfs.ts",
+    "cds:extract": "tsx scripts/extract-cds-c1.ts",
     "run:data-pipeline": "tsx scripts/run-full-data-pipeline.ts"
   },
   "dependencies": {

@@ -1,0 +1,4246 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-28T05:22:44.325Z",
+    "source": "tavily",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 80,
+    "selectedUrls": 29
+  },
+  "schools": [
+    {
+      "schoolId": "cmnwr8iwe004zz0tilegv5ian",
+      "schoolName": "Harvey Mudd College",
+      "schoolNameNorm": "harvey mudd college",
+      "usNewsRank": 1,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Harvey Mudd College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.cmc.edu/sites/default/files/Fact%20Sheet%202024-25.pdf",
+          "title": "[PDF] Undergraduate Fact Sheet 2024-2025 (as of fall 2024 census)",
+          "score": 154
+        },
+        {
+          "url": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf",
+          "title": "[PDF] Common Data Elements:",
+          "score": 146
+        },
+        {
+          "url": "https://www.hmc.edu/strategic-planning/wp-content/uploads/sites/72/2025/05/First-Interim-Report-of-Task-Force-on-College-Affordability.pdf",
+          "title": "[PDF] First Interim Report of the Task Force on College Affordability",
+          "score": 103
+        },
+        {
+          "url": "https://bulletin.columbia.edu/columbia-engineering/bulletin-pdf/Bulletin_2024-2025.pdf",
+          "title": "[PDF] BULLETIN 2024–2025 - Columbia University",
+          "score": 86
+        },
+        {
+          "url": "https://cic.edu/wp-content/uploads/2025/09/CIC-2024-2025-Annual-Report-1.pdf",
+          "title": "[PDF] 2024-25 CIC Annual Report",
+          "score": 79
+        },
+        {
+          "url": "https://d2e3a5v56wj8r4.cloudfront.net/files/CCO_Profile_2024-2025.pdf",
+          "title": "[PDF] PHILLIPS ACADEMY | ANDOVER - Cloudfront.net",
+          "score": 76
+        },
+        {
+          "url": "https://www.ccny.cuny.edu/sites/default/files/2025-11/CCNY_Annual%20Report_2025_11202025.pdf?srsltid=AfmBOopf_PEY0mf7KCTVBv1sFBJSGaapM9cDxgnOMmZ910F5RRYr_meK",
+          "title": "[PDF] FY24-25 PRESIDENT'S ANNUAL REPORT",
+          "score": 73
+        },
+        {
+          "url": "https://www.davisuwcscholars.org/sites/default/files/2025-03/DUWCSP_2025UTW_Annual_Report_v2.pdf?fv=yMFSuNx1",
+          "title": "[PDF] 2025 report - Davis UWC Scholars",
+          "score": 71
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivo004mz0tign5klw7c",
+      "schoolName": "Rhode Island School of Design",
+      "schoolNameNorm": "rhode island school of design",
+      "usNewsRank": 1,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Rhode Island School of Design\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://oir.brown.edu/sites/default/files/2020-04/CDS_2024_2025.pdf",
+          "title": "[PDF] Common Data Set - Brown University",
+          "score": 155
+        },
+        {
+          "url": "https://www.zelma.ai/data_documentation/EDC_technical_documentation_v3.0.pdf",
+          "title": "[PDF] Education Data Center December 2025 Version 3.0",
+          "score": 118
+        },
+        {
+          "url": "https://allinchallenge.org/wp-content/uploads/Rhode-Island-School-of-Design-2024-Action-Plan-revised-.pdf",
+          "title": "[PDF] '24 RISD Action Plan - ALL IN Campus Democracy Challenge",
+          "score": 110
+        },
+        {
+          "url": "https://ride.ri.gov/sites/g/files/xkgbur806/files/2025-03/RI%20Initiatives%202025.pdf",
+          "title": "[PDF] rhode island initiatives 2024-25 - RI Department of Education",
+          "score": 110
+        },
+        {
+          "url": "https://www.edchoice.org/wp-content/uploads/2025/12/The-ABCs-of-School-Choice-2026-WEB.pdf",
+          "title": "[PDF] 2026 EDITION - EdChoice",
+          "score": 101
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 94
+        },
+        {
+          "url": "https://www.risd.edu/sites/g/files/upbtqy111/files/2024-12/architecture-program-report-2023.pdf",
+          "title": "[PDF] Architecture Program Report - Rhode Island School of Design",
+          "score": 90
+        },
+        {
+          "url": "https://web.uri.edu/president/wp-content/uploads/sites/2061/2025_Pres_Report.pdf",
+          "title": "[PDF] Focus Forward - The University of Rhode Island",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iwg0050z0tiyrfhaavh",
+      "schoolName": "Rose-Hulman Institute of Technology",
+      "schoolNameNorm": "rose-hulman institute of technology",
+      "usNewsRank": 1,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Rose-Hulman Institute of Technology\" filetype:pdf",
+      "selectedUrl": "https://www.rose-hulman.edu/academics/academic-affairs/irpa/reports/2024-25-Academic-Year-CDS.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 Page | 1 - Rose-Hulman",
+          "url": "https://www.rose-hulman.edu/academics/academic-affairs/irpa/reports/2024-25-Academic-Year-CDS.pdf",
+          "snippet": "of Philosophy, Doctor of Education, Doctor of Juridical Science, and Doctor of Public Health in any field such as arts, sciences, education, engineering, business, and public administration. Also includes terminal degrees formerly designate",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.airweb.org/docs/default-source/documents-for-pages/governance/annual-reports/2024-2025-air-annual-report.pdf",
+          "title": "[PDF] AIR 2024-2025 Annual Report",
+          "score": 150
+        },
+        {
+          "url": "https://www.rose-hulman.edu/about-us/community-and-public-services/publications/echoes-pdfs/echoes-winter-2024.pdf",
+          "title": "[PDF] A VISION REALIZED - Rose-Hulman",
+          "score": 110
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 110
+        },
+        {
+          "url": "https://www.airweb.org/docs/default-source/documents-for-pages/governance/annual-reports/2023-2024-air-annual-report.pdf?sfvrsn=aefbd4b9_3",
+          "title": "[PDF] 2023–2024 AIR Annual Report",
+          "score": 103
+        },
+        {
+          "url": "https://ncaaorg.s3.amazonaws.com/governance/d3/ad_orient/D3Gov_NewADWorkbook.pdf",
+          "title": "[PDF] Division III New Athletics Director Handbook",
+          "score": 85
+        },
+        {
+          "url": "https://cccb.edu/sites/default/files/2024-10/24-25-academic-catalog.pdf",
+          "title": "[PDF] 2024-2025 Academic Catalog - Central Christian College of the Bible",
+          "score": 64
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/san_diego_banner-catalog-1749659652697.pdf",
+          "title": "[PDF] 2025 - 2026 Undergraduate Catalog - AWS",
+          "score": 47
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iw4004uz0tia8ikoq2b",
+      "schoolName": "The Juilliard School",
+      "schoolNameNorm": "the juilliard school",
+      "usNewsRank": 1,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"The Juilliard School\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.nordangliaeducation.com/cds-costa-rica/-/media/cds-costa-rica/pdf-attachments/cds-handbook-2024-2025.pdf?rev=5c40d4d3d55d47e4a3f0ebb23f7cfcd2&hash=B2734908CF77EE3B92E8C33744AF36EA",
+          "title": "[PDF] Cds Handbook 2024-2025.pdf - Nord Anglia Education",
+          "score": 120
+        },
+        {
+          "url": "https://nasm.arts-accredit.org/wp-content/uploads/sites/2/2026/01/NASM-2024-Proceedings-Final.pdf",
+          "title": "[PDF] PROCEEDINGS The 100th Annual Meeting 2024",
+          "score": 117
+        },
+        {
+          "url": "https://millsaps.edu/wp-content/uploads/2024/06/2024-25-Millsaps-College-Catalog.pdf",
+          "title": "[PDF] Millsaps College Catalog 2024-2025",
+          "score": 110
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/cornish-catalog-1740591269184.pdf",
+          "title": "[PDF] 2024-25 Course Catalog - AWS",
+          "score": 109
+        },
+        {
+          "url": "https://registrar.msj.edu/graduate-catalog/GradCatalog2024-2025003.pdf",
+          "title": "[PDF] 2024-2025 Graduate Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://www.wpunj.edu/president/assets/WP-Annual-Report-2025-web.pdf",
+          "title": "[PDF] Annual Report 2025 - William Paterson University",
+          "score": 92
+        },
+        {
+          "url": "https://supercool-ram.files.svdcdn.com/production/public/documents/Royal-Academy-of-Music-Financial-Statements-Year-Ended-31-July-2025.pdf?dm=1765803571",
+          "title": "[PDF] ANNUAL REVIEW AND FINANCIAL STATEMENTS",
+          "score": 90
+        },
+        {
+          "url": "https://www.arenastage.org/globalassets/tickets/202425-season/06-bedwetter/fy25-the-bedwetter-program-book_web.pdf",
+          "title": "[PDF] FEBRUARY 4 — MARCH 16 - Arena Stage",
+          "score": 64
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "schoolNameNorm": "williams college",
+      "usNewsRank": 1,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Williams College\" filetype:pdf",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "candidates": [
+        {
+          "title": "Williams College 2024-2025 Common Data Set A. General Information",
+          "url": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+          "snippet": "school grade-point averages within each of the following ranges (using 4.0 scale). [...] • Provide numbers of students for each of the following categories as of the institution’s official fall reporting date or as of October 15, 2024. [...",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 155
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 153
+        },
+        {
+          "url": "https://www.whitman.edu/institutional-research/common-data-set",
+          "title": "Common Data Set | Whitman College",
+          "score": 128
+        },
+        {
+          "url": "https://whitman.edu/institutional-research/common-data-set",
+          "title": "Common Data Set | Whitman College",
+          "score": 128
+        },
+        {
+          "url": "https://oira.harvard.edu/2025/06/13/2024-25-common-data-set-cds-published",
+          "title": "2024-25 Common Data Set (CDS) Published – Office of Institutional Research & Analytics",
+          "score": 120
+        },
+        {
+          "url": "https://barnard.edu/institutional-effectiveness/common-data-set",
+          "title": "Common Data Set | Barnard College",
+          "score": 113
+        },
+        {
+          "url": "https://www.bc.edu/bc-web/sites/common-data-set.html",
+          "title": "Common Data Set - Boston College",
+          "score": 109
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iur0043z0tie8ndrb65",
+      "schoolName": "Amherst College",
+      "schoolNameNorm": "amherst college",
+      "usNewsRank": 2,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Amherst College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.amherst.edu/system/files/D%20Transfer%20Admission_8.pdf",
+          "title": "[PDF] d. transfer admission - Amherst College",
+          "score": 160
+        },
+        {
+          "url": "https://www.amherst.edu/system/files/C%20First-Time%2C%20First-Year%20Admission_3.pdf",
+          "title": "Legacy-CDS_2024-2025 FINAL.xlsx",
+          "score": 160
+        },
+        {
+          "url": "https://wne.edu/institutional-research/doc/WNE-CDS-2024-25-FINAL.pdf",
+          "title": "Common Data Set 2024-2025",
+          "score": 155
+        },
+        {
+          "url": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf",
+          "title": "Smith College Common Data Set 2024-25 v2",
+          "score": 155
+        },
+        {
+          "url": "https://www.amherst.edu/system/files/G%20Annual%20Expenses_4.pdf",
+          "title": "[PDF] Legacy-CDS_2024-2025 FINAL.xlsx - Amherst College",
+          "score": 155
+        },
+        {
+          "url": "https://wne.edu/institutional-research/doc/CDS-2023-24.pdf",
+          "title": "[PDF] Common Data Set 2023-2024 - Western New England University",
+          "score": 143
+        },
+        {
+          "url": "https://www.umass.edu/uair/media/1062/download",
+          "title": "[PDF] Common Data Set 2025-2026 - UMass Amherst",
+          "score": 100
+        },
+        {
+          "url": "https://www.bppe.ca.gov/webapplications/annualReports/2024/document/9594295b-bc44-4233-ac5f-c82ffe60fcc2",
+          "title": "[PDF] General Catalog 2024-2025 - BPPE",
+          "score": 73
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iw7004vz0ti65mqjgq5",
+      "schoolName": "Berklee College of Music",
+      "schoolNameNorm": "berklee college of music",
+      "usNewsRank": 2,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Berklee College of Music\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/cornish-catalog-1740591269184.pdf",
+          "title": "[PDF] 2024-25 Course Catalog - AWS",
+          "score": 91
+        },
+        {
+          "url": "https://handbook.college.harvard.edu/sites/g/files/omnuum5551/files/2025-10/Harvard%20College%20Student%20Handbook%202025-2026.pdf",
+          "title": "Student Handbook 2024–2025",
+          "score": 69
+        },
+        {
+          "url": "https://handbook.college.harvard.edu/sites/g/files/omnuum5551/files/2025-08/Harvard%20College%20Student%20Handbook%202025-2026_0.pdf",
+          "title": "Student Handbook 2024–2025",
+          "score": 69
+        },
+        {
+          "url": "https://blo.org/wp-content/uploads/2025/02/BLO_Seasons_prog_WEB.pdf",
+          "title": "[PDF] YO U 'LL N EV ER W A LK ALO NE - Boston Lyric Opera",
+          "score": 61
+        },
+        {
+          "url": "https://nasm.arts-accredit.org/wp-content/uploads/sites/2/2026/01/NASM-2024-Proceedings-Final.pdf",
+          "title": "[PDF] PROCEEDINGS The 100th Annual Meeting 2024",
+          "score": 61
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/whitman_colleague_ethos/catalog/f98777e3-37bc-4513-9f1c-8a02969e2266-whitman_colleague_ethos-catalog-1761255648788.pdf",
+          "title": "[PDF] 2025-2026 College Catalog - AWS",
+          "score": 59
+        },
+        {
+          "url": "https://edc.nyc/sites/default/files/2024-11/Build-NYC-September-24-2024-board-meeting-minutes.pdf",
+          "title": "[PDF] Build-NYC-September-24-2024-board-meeting-minutes ... - NYCEDC",
+          "score": 58
+        },
+        {
+          "url": "https://catalog.manhattan.edu/undergraduate/2024_2025_Manhattan_University_Undergraduate_Catalog.pdf",
+          "title": "2024_2025 Manhattan University Catalog",
+          "score": 49
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iwi0051z0tidfdrzv7w",
+      "schoolName": "Cooper Union",
+      "schoolNameNorm": "cooper union",
+      "usNewsRank": 2,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Cooper Union\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - University at Buffalo",
+          "score": 140
+        },
+        {
+          "url": "https://www.passhe.edu/offices/public-affairs/Appropriation_Books/2024-25%20STATE%20SYSTEM%20APPROP%20REQUEST.pdf",
+          "title": "[PDF] 2024-2025 Appropriations Request and Accountability Report",
+          "score": 109
+        },
+        {
+          "url": "https://cooper.edu/sites/default/files/uploads/assets/site/files/2024/_AC_SUM24_32pp.pdf",
+          "title": "[PDF] transformation in the making - Cooper Union",
+          "score": 101
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 98
+        },
+        {
+          "url": "https://nasad.arts-accredit.org/wp-content/uploads/sites/3/2024/11/AD_2024-25_Handbook_Final_11-19-2024.pdf",
+          "title": "[PDF] HANDBOOK 2024-25",
+          "score": 91
+        },
+        {
+          "url": "https://cooper.edu/sites/default/files/uploads/assets/architecture/Cooper%20Union%202025%20APR_Compressed.pdf",
+          "title": "[PDF] Architecture Program Report - Cooper Union",
+          "score": 90
+        },
+        {
+          "url": "https://cooper.edu/sites/default/files/uploads/assets/registrar/CU_Catalog_Supplement_2024_25.pdf",
+          "title": "[PDF] course catalog 2024–25 supplement - Cooper Union",
+          "score": 75
+        },
+        {
+          "url": "https://datausa.io/profile/university/the-cooper-union-for-the-advancement-of-science-and-art",
+          "title": "The Cooper Union for the Advancement of Science and Art | Data USA",
+          "score": 28
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivr004nz0ti5oh56l0o",
+      "schoolName": "Pratt Institute",
+      "schoolNameNorm": "pratt institute",
+      "usNewsRank": 2,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Pratt Institute\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.pratt.edu/about/offices/office-of-the-provost/office-of-institutional-research-and-assessment/institute-and-ipeds-reports",
+          "title": "Institute and IPEDS Reports - Pratt Institute",
+          "score": 128
+        },
+        {
+          "url": "https://www.pratt.edu/administrative-departments/office-of-the-provost/office-of-institutional-research-and-assessment/institute-and-ipeds-reports/",
+          "title": "Institute and IPEDS Reports - Pratt Institute",
+          "score": 128
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 118
+        },
+        {
+          "url": "https://catalog.fitnyc.edu/pdf/2024-25-graduate.pdf",
+          "title": "[PDF] 2024-25 Graduate Catalog - Fashion Institute of Technology",
+          "score": 115
+        },
+        {
+          "url": "https://www.pratt.edu/wp-content/uploads/2025/01/OIRA-Quick-Facts-Brochure-2024-25.pdf",
+          "title": "OIRA Quick Facts Brochure 2024-25",
+          "score": 115
+        },
+        {
+          "url": "https://provost.duke.edu/sites/default/files/CDS-2023-24-FINAL.pdf",
+          "title": "[PDF] CDS 2023-24 FINAL - Provost | Office - Duke University",
+          "score": 113
+        },
+        {
+          "url": "https://www.pratt.edu/wp-content/uploads/2024/08/STUDENT-HANDBOOK_2024-25_WEB.pdf",
+          "title": "[PDF] Student Handbook | Pratt Institute",
+          "score": 110
+        },
+        {
+          "url": "https://now.stevenson.edu/wp-content/uploads/2023-24-Graduating-Student-Report.pdf",
+          "title": "[PDF] 2023-24-Graduating-Student-Report.pdf - Stevenson University",
+          "score": 97
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iw9004wz0tiun4guycq",
+      "schoolName": "Curtis Institute of Music",
+      "schoolNameNorm": "curtis institute of music",
+      "usNewsRank": 3,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Curtis Institute of Music\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.presby.edu/wp-content/uploads/2025/06/CDS_2024_2025_PresbyterianCollege-1.pdf",
+          "title": "[PDF] Common Data Elements: - Presbyterian College",
+          "score": 141
+        },
+        {
+          "url": "https://spl.cde.state.co.us/artemis/cca-cctserials/ccd2210internet/ccd2210202425internet.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Colorado Department of Education",
+          "score": 132
+        },
+        {
+          "url": "https://pccc.edu/wp-content/uploads/2025/03/Common-Data-Set-2024-25-1.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - PCCC",
+          "score": 130
+        },
+        {
+          "url": "https://aire.ku.edu/sites/air/files/files/CDS/KUCDS_2025_2026.pdf",
+          "title": "[PDF] Common Data Set Section A1. General Information 2025-2026 ...",
+          "score": 126
+        },
+        {
+          "url": "https://www.williston.com/wp-content/uploads/2024/08/WNS-Student-and-Family-Handbook-2024-25.pdf",
+          "title": "[PDF] WNS Student and Family Handbook 2024-25",
+          "score": 79
+        },
+        {
+          "url": "https://bulletin.yale.edu/sites/default/files/school-of-music-2024-2025.pdf",
+          "title": "[PDF] School of Music 2024–2025 - Bulletin of Yale University",
+          "score": 76
+        },
+        {
+          "url": "https://nasm.arts-accredit.org/wp-content/uploads/sites/2/2026/01/NASM-2024-Proceedings-Final.pdf",
+          "title": "[PDF] PROCEEDINGS The 100th Annual Meeting 2024",
+          "score": 61
+        },
+        {
+          "url": "https://www.filepicker.io/api/file/ug6Tn7WTAGVtbYT5ucz6?policy=eyJleHBpcnkiOjMxNTM2MDAwMDAwfQ==&signature=541dd4d1e28e7ba96cb7d0b4d3174001d7f46363dcbcc9668235143fcfa65498",
+          "title": "[PDF] CURTIS INSTITUTE OF MUSIC - VICE PRESIDENT OF ...",
+          "score": 51
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iwl0052z0ti9adsxk6l",
+      "schoolName": "Olin College of Engineering",
+      "schoolNameNorm": "olin college of engineering",
+      "usNewsRank": 3,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Olin College of Engineering\" filetype:pdf",
+      "selectedUrl": "https://www.olin.edu/sites/default/files/2023-02/CDS_2022-2023.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2022-2023 - Olin College of Engineering",
+          "url": "https://www.olin.edu/sites/default/files/2023-02/CDS_2022-2023.pdf",
+          "snippet": "enrolled in Fall 2022, including students who began studies during summer, international students/nonresidents, and students admitted under special arrangements. [...] the maximum meal plan. • Required fees include only charges that all ful",
+          "score": 143
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://olin.smartcatalogiq.com/-/media/institution/olin-college-of-engineering/2024-25/Catalog%202024-25.pdf",
+          "title": "[PDF] Catalog 2024-25 - Olin College of Engineering",
+          "score": 110
+        },
+        {
+          "url": "https://olin.smartcatalogiq.com/-/media/institution/olin-college-of-engineering/2024-25/2024-25%20Student%20Handbook.pdf",
+          "title": "[PDF] General Catalog 2006 - Olin College of Engineering",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/grad/Bulletin_2024-25_Grad_Business.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Olin School of Business Graduate Programs",
+          "score": 110
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 110
+        },
+        {
+          "url": "https://undergraduatecatalog.babson.edu/sites/default/files/2024-2025-undergraduate-catalog-08-18-2025.pdf",
+          "title": "[PDF] 2024-2025 Undergraduate Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/undergrad/Bulletin_2024-25_Undergraduate.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Undergraduate Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://millsaps.edu/wp-content/uploads/2024/06/2024-25-Millsaps-College-Catalog.pdf",
+          "title": "[PDF] Millsaps College Catalog 2024-2025",
+          "score": 109
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivt004oz0tin9oyxi60",
+      "schoolName": "School of the Art Institute of Chicago",
+      "schoolNameNorm": "school of the art institute of chicago",
+      "usNewsRank": 3,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"School of the Art Institute of Chicago\" filetype:pdf",
+      "selectedUrl": "https://www.luc.edu/media/lucedu/oie/CDS%202024-25%20Loyola%20University%20Chicago.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Loyola University Chicago",
+          "url": "https://www.luc.edu/media/lucedu/oie/CDS%202024-25%20Loyola%20University%20Chicago.pdf",
+          "snippet": "degree that is considered the highest degree in a field: example, M. Arch (in architecture) and MFA (master of fine arts in art or theater). [...] Percentage of all enrolled, degree-seeking, first-time, first-year students who had high scho",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 153
+        },
+        {
+          "url": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - University Enrollment",
+          "score": 150
+        },
+        {
+          "url": "https://nasad.arts-accredit.org/wp-content/uploads/sites/3/2024/11/AD_2024-25_Handbook_Final_11-19-2024.pdf",
+          "title": "[PDF] HANDBOOK 2024-25",
+          "score": 115
+        },
+        {
+          "url": "https://www.acmfrance.org/Content/Uploads/CMS/Images/ACM%20Catalog%202024-25%20-%20Updated%201-9-25.pdf",
+          "title": "[PDF] 2024-2025 Catalog Undergraduate and Graduate Programs",
+          "score": 110
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 108
+        },
+        {
+          "url": "https://www.ed.gov/sites/ed/files/2023/12/S411B230022_American-Institutes-for-Research-Narrative_Redacted_508_QC.pdf",
+          "title": "[PDF] S411B230022 Narrative - Department of Education",
+          "score": 89
+        },
+        {
+          "url": "https://studentaid.gov/sites/default/files/fy2024-fsa-annual-report.pdf",
+          "title": "[PDF] FSA Annual Report FY 2024 - Federal Student Aid",
+          "score": 81
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iut0044z0tie7749l79",
+      "schoolName": "Swarthmore College",
+      "schoolNameNorm": "swarthmore college",
+      "usNewsRank": 3,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Swarthmore College\" filetype:pdf",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "candidates": [
+        {
+          "title": "Swarthmore College Common Data Set 2024-2025",
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+          "snippet": "Stafford Loan 305 B412 Total 414 Per CDS instructions, Fall 2018 cohort information is available and provided below; Fall 2017 cohort information can be found in the 2023-24 CDS. [...] 'x' Distribution of high school units required and/or r",
+          "score": 163
+        },
+        {
+          "title": "[PDF] Swarthmore College Common Data Set 2023 - 2024",
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore%20CDS%202023-2024.pdf",
+          "snippet": "H4. Provide the number of students in the 2023 undergraduate class who started at your institution as first-time students and received a bachelor's degree between July 1, 2022 and June 30, 2023. Exclude students who transferred into your in",
+          "score": 143
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/voter-information/Swarthmore%20College%202024-25%20GOTV%20Action%20Plan%20053124%20-%20final.pdf",
+          "title": "[PDF] Swarthmore College Get Out the Vote Committee 2024-2025 Action ...",
+          "score": 115
+        },
+        {
+          "url": "https://cic.edu/wp-content/uploads/2025/09/CIC-2024-2025-Annual-Report-1.pdf",
+          "title": "[PDF] 2024-25 CIC Annual Report",
+          "score": 110
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/honors-program/HONORS%20HANDBOOK%202024-2025.pdf",
+          "title": "HONORS HANDBOOK 2024-2025. ...",
+          "score": 109
+        },
+        {
+          "url": "https://ncaaorg.s3.amazonaws.com/governance/d3/ann_rprt/2024-25D3Gov_AnnualReport.pdf",
+          "title": "[PDF] Division III 2024-25 Annual Report",
+          "score": 109
+        },
+        {
+          "url": "https://www.christendom.edu/wp-content/uploads/2025/08/bulletin.pdf",
+          "title": "[PDF] Undergraduate Bulletin 2024-2025 - Christendom College",
+          "score": 106
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/sustainability/7.2025_PSRF-Annual-Report_v5.pdf",
+          "title": "PSRF Annual Report (July 2025)",
+          "score": 89
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivw004pz0tie74ukvke",
+      "schoolName": "California Institute of the Arts",
+      "schoolNameNorm": "california institute of the arts",
+      "usNewsRank": 4,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"California Institute of the Arts\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research Office - Caltech",
+          "score": 159
+        },
+        {
+          "url": "https://iro.caltech.edu/documents/28464/Caltech_CDS_2023-2024_June_2024.pdf",
+          "title": "[PDF] A0. Respondent Information (Not for Publication)",
+          "score": 141
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/calarts-catalog-1713539038381.pdf",
+          "title": "[PDF] 2024-25 Catalog - AWS",
+          "score": 109
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/calarts-catalog-1745032450378.pdf",
+          "title": "[PDF] 2024-25 Catalog - AWS",
+          "score": 109
+        },
+        {
+          "url": "https://www.cccco.edu/-/media/CCCCO-Website/docs/report/2024-25-compendium-of-allocations-and-resources.pdf",
+          "title": "[PDF] 2024-25-compendium-of-allocations-and-resources.pdf",
+          "score": 109
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 108
+        },
+        {
+          "url": "https://www.nj.gov/education/sprreports/202324/School-Detail/25-3260-028.pdf",
+          "title": "[PDF] Biotechnology High School (25-3260-028) - NJ.gov",
+          "score": 96
+        },
+        {
+          "url": "https://www.aep-arts.org/wp-content/uploads/Arts-Education-Data-and-Reporting-Initiatives-2024.pdf",
+          "title": "Arts Education Data and Reporting Initiatives 2024",
+          "score": 88
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iwa004xz0tiygic7c6r",
+      "schoolName": "New England Conservatory",
+      "schoolNameNorm": "new england conservatory",
+      "usNewsRank": 4,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"New England Conservatory\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.lawrence.edu/sites/default/files/2025-02/CDS%202024-25_0.pdf",
+          "title": "[PDF] Lawrence University Common Data Set 2024-2025",
+          "score": 135
+        },
+        {
+          "url": "https://my.uolivet.edu/ICS/icsfs/UO_Proposed_Student_Handbook_2024-2025.pdf?target=adf61e0c-ceb4-4348-b8a4-87fe5f30d155",
+          "title": "[PDF] Student Handbook 2024-2025 - MyOlivet Portal",
+          "score": 92
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/cornish-catalog-1740591269184.pdf",
+          "title": "[PDF] 2024-25 Course Catalog - AWS",
+          "score": 85
+        },
+        {
+          "url": "https://tabor.edu/wp-content/uploads/2024/09/Academic-Catalog-24-25-FINAL.pdf",
+          "title": "[PDF] Academic Catalog 2024-2025 - Tabor College",
+          "score": 68
+        },
+        {
+          "url": "https://necmusic.edu/wp-content/uploads/2024/06/NEC_Academic_Catalog_2023_1.pdf",
+          "title": "[PDF] Academic Catalog - Boston - New England Conservatory",
+          "score": 66
+        },
+        {
+          "url": "https://www.northcarolina.edu/apps/bog/doc.php?id=68692&code=bog",
+          "title": "[PDF] UNC SYSTEM WORKFORCE ALIGNMENT REPORT",
+          "score": 54
+        },
+        {
+          "url": "https://nasm.arts-accredit.org/wp-content/uploads/sites/2/2026/01/NASM-2024-Proceedings-Final.pdf",
+          "title": "[PDF] PROCEEDINGS The 100th Annual Meeting 2024",
+          "score": 51
+        },
+        {
+          "url": "https://catalog.manhattan.edu/undergraduate/2024_2025_Manhattan_University_Undergraduate_Catalog.pdf",
+          "title": "[PDF] 2024_2025 Manhattan University Catalog",
+          "score": 50
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iuv0045z0tiq1lprcv8",
+      "schoolName": "Pomona College",
+      "schoolNameNorm": "pomona college",
+      "usNewsRank": 4,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Pomona College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.cmc.edu/sites/default/files/Fact%20Sheet%202024-25.pdf",
+          "title": "[PDF] Undergraduate Fact Sheet 2024-2025 (as of fall 2024 census)",
+          "score": 152
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025-excel-version.pdf",
+          "title": "Swarthmore College Common Data Set 2024-2025",
+          "score": 134
+        },
+        {
+          "url": "https://www.cpp.edu/senate/documents/annual_reports/2024_25_annual_report.pdf",
+          "title": "[PDF] Academic Senate 2024-2025 Annual Report - Cal Poly Pomona",
+          "score": 105
+        },
+        {
+          "url": "https://abgt.assembly.ca.gov/system/files/2026-04/sub-3-april-7-csu-final.pdf",
+          "title": "[PDF] California State Assembly",
+          "score": 99
+        },
+        {
+          "url": "https://www.mtsac.edu/catalog/pdf_ada/Mt_San_Antonio_College_PDF_24-25_Final_ADA_8724.pdf",
+          "title": "[PDF] Mt. SAC 2024-25 Catalog",
+          "score": 90
+        },
+        {
+          "url": "https://www.wiche.edu/wp-content/uploads/2024/11/2024-Tuition-and-Fees-Report.pdf",
+          "title": "[PDF] 2024-Tuition-and-Fees-Report.pdf - WICHE",
+          "score": 90
+        },
+        {
+          "url": "https://magazine.pomona.edu/wp-content/uploads/pdf/2024-summer.pdf",
+          "title": "[PDF] Summer 2024: Global Pomona",
+          "score": 74
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/pomona-catalog-1749076643328.pdf",
+          "title": "Pomona College 2025-2026 Catalog - AWS",
+          "score": 68
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivx004qz0ti7xo8qk4m",
+      "schoolName": "ArtCenter College of Design",
+      "schoolNameNorm": "artcenter college of design",
+      "usNewsRank": 5,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"ArtCenter College of Design\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://go.boarddocs.com/ca/smccd/Board.nsf/files/DDV2GP0224AC/$file/Mid-Year%20Report%20-%20Final.pdf",
+          "title": "[PDF] 2024-25 Mid-Year Budget Report - BoardDocs",
+          "score": 113
+        },
+        {
+          "url": "https://bulletin.wustl.edu/grad/Bulletin_2024-25_Grad_Art.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Graduate School of Art",
+          "score": 110
+        },
+        {
+          "url": "https://catalog.ringling.edu/sites/default/files/20242025-catalog-8-15-25.pdf",
+          "title": "[PDF] 2024-2025 Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://www.arch.rpi.edu/wp-content/uploads/2025_RPI_APR_two_programs.pdf",
+          "title": "[PDF] Architecture Program Report (APR) – Two Programs",
+          "score": 87
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/cornish-catalog-1740591269184.pdf",
+          "title": "[PDF] 2024-25 Course Catalog - AWS",
+          "score": 86
+        },
+        {
+          "url": "https://conwell.philasd.org/wp-content/uploads/sites/255/2024/09/The-School-District-of-Philadelphia-High-School-Directory.pdf",
+          "title": "[PDF] High School Directory - Fall 2025 Admissions",
+          "score": 73
+        },
+        {
+          "url": "https://download.hlcommission.org/institutional-examples/AssuranceArgument-MetropolitanCC-KansasCity_INF.pdf",
+          "title": "[PDF] Sample Assurance Argument: Metropolitan Community College",
+          "score": 72
+        },
+        {
+          "url": "https://exeter.edu/app/uploads/2025/07/PEA-COI-25-26-Web-7.28.25.pdf",
+          "title": "[PDF] Courses of Instruction - Phillips Exeter Academy",
+          "score": 57
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8is1002xz0ti23uxhu2j",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "usNewsRank": 5,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"California Polytechnic State University, San Luis Obispo\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.calstate.edu/impact-of-the-csu/government/Advocacy-and-State-Relations/legislativereports1/2025-Governors-Budget-Compact-Report-signed.pdf",
+          "title": "[PDF] The CSU 2025 Multiyear Compact Progress Report",
+          "score": 109
+        },
+        {
+          "url": "https://afd.calpoly.edu/sustainability/student/docs/eoy_reports/2024-25_gcfinalreport.pdf",
+          "title": "[PDF] Impact Report 2024-2025 - Cal Poly",
+          "score": 104
+        },
+        {
+          "url": "https://calearninglab.org/wp-content/uploads/2026/03/Annual-Report-3.10.26.pdf",
+          "title": "[PDF] TO THE LEGISLATURE - California Education Learning Lab",
+          "score": 98
+        },
+        {
+          "url": "https://www.calstate.edu/impact-of-the-csu/government/Advocacy-and-State-Relations/legislativereports1/csu-budget-compact-report-2024.pdf",
+          "title": "[PDF] 2024 Multiyear Compact Progress Report of the California State ...",
+          "score": 97
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 97
+        },
+        {
+          "url": "https://www.calstate.edu/csu-system/transparency-accountability/Financial%20Statements/FY2425%20CSU%20FS_final%20Secured%20-%20LF.pdf",
+          "title": "[PDF] FY2425 CSU Financial Statements - California State University",
+          "score": 83
+        },
+        {
+          "url": "https://www.calstate.edu/impact-of-the-csu/government/Advocacy-and-State-Relations/legislativereports1/csu-consolidated-turnaround-plan-budget-act-of-2025.pdf",
+          "title": "[PDF] csu-consolidated-turnaround-plan-budget-act-of-2025",
+          "score": 83
+        },
+        {
+          "url": "https://qaservices.sfsu.edu/sites/default/files/documents/2024-111-Report.pdf",
+          "title": "California Colleges",
+          "score": 73
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iwc004yz0tif1a6h2el",
+      "schoolName": "Manhattan School of Music",
+      "schoolNameNorm": "manhattan school of music",
+      "usNewsRank": 5,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Manhattan School of Music\" filetype:pdf",
+      "selectedUrl": "https://content.manhattan.edu/institutional-research/CDS_2024-2025.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Manhattan University",
+          "url": "https://content.manhattan.edu/institutional-research/CDS_2024-2025.pdf",
+          "snippet": "Art ☐ ☐ Athletics ☐ ☐ Job skills ☐ ☐ ROTC ☐ Leadership ☐ ☐ Music/drama ☐ ☐ Religious affiliation ☐ ☐ State/district residency ☐ ☐ Not Applicable Federal Direct Subsidized Loans Federal Direct Unsubsidized Loans Federal Direct PLUS Loans Fed",
+          "score": 151
+        },
+        {
+          "title": "[PDF] A. General Information - Manhattan University",
+          "url": "https://content.manhattan.edu/institutional-research/2025-26-CDS.pdf",
+          "snippet": "CDS-C Page 11 Common Data Set 2025-2026 Percent of first-time, first-year students with scores in each range: Score Range SAT Evidence-Based Reading and Writing SAT Math 700-800 25.00% 20.00% 600-699 37.50% 30.00% 500-599 17.50% 20.00% 400-",
+          "score": 136
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/2024-2025%20(pdf,%20file%20size%20907KB).pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - New York University",
+          "score": 138
+        },
+        {
+          "url": "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_General_Studies_CDS.pdf",
+          "title": "[PDF] Columbia General Studies 2024–2025 Common Data Set",
+          "score": 138
+        },
+        {
+          "url": "https://www.k-state.edu/data/institutional-research/resources/common-data-set/CDS_2024_2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Kansas State University",
+          "score": 127
+        },
+        {
+          "url": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+          "title": "[PDF] Common Data Set 2023-2024 CDS-A Page 1 - Barnard College",
+          "score": 103
+        },
+        {
+          "url": "https://bmccprodstroac.blob.core.windows.net/uploads/2025/06/CDS-2024_2025_BMCC.pdf",
+          "title": "[PDF] BMCC 2024-2025-CDS_for PDF_1.xlsx",
+          "score": 102
+        },
+        {
+          "url": "https://catalog.manhattan.edu/undergraduate/2024_2025_Manhattan_University_Undergraduate_Catalog.pdf",
+          "title": "[PDF] 2024_2025 Manhattan University Catalog",
+          "score": 67
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iux0046z0tilggqkjw6",
+      "schoolName": "Wellesley College",
+      "schoolNameNorm": "wellesley college",
+      "usNewsRank": 5,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Wellesley College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://undergraduatecatalog.babson.edu/sites/default/files/2024-2025-undergraduate-catalog-08-18-2025.pdf",
+          "title": "[PDF] 2024-2025 Undergraduate Catalog",
+          "score": 94
+        },
+        {
+          "url": "https://www1.wellesley.edu/sites/default/files/assets/departments/provost/files/department_chairs_manual_2024-25_10-10-24.pdf",
+          "title": "Manual for Department Chairs and Program Directors 2024 ...",
+          "score": 91
+        },
+        {
+          "url": "https://www.acgme.org/globalassets/pfassets/presentations/2025-specialty-updates/plastic-surgery-update-2025.pdf",
+          "title": "[PDF] SES050: Review Committee for Plastic Surgery Specialty Update",
+          "score": 88
+        },
+        {
+          "url": "https://ncaaorg.s3.amazonaws.com/governance/d3/ad_orient/D3Gov_NewADWorkbook.pdf",
+          "title": "[PDF] Division III New Athletics Director Handbook",
+          "score": 87
+        },
+        {
+          "url": "https://wellesley-college.files.svdcdn.com/production/About/Accreditation/NECHE_2024_Final.pdf?dm=1717602610",
+          "title": "[PDF] 2024 Interim Report",
+          "score": 80
+        },
+        {
+          "url": "https://research.collegeboard.org/media/pdf/ARC_Research_June2025.pdf",
+          "title": "[PDF] New Evidence on the Effect of Changes in College Admissions ...",
+          "score": 66
+        },
+        {
+          "url": "https://www.iso-ne.com/static-assets/documents/100032/npc-2026-02-05-composite5.pdf",
+          "title": "[PDF] January 29, 2026 VIA E-MAIL TO - ISO New England",
+          "score": 64
+        },
+        {
+          "url": "https://catalog.fitnyc.edu/pdf/2025-26%20Graduate%20Catalog.pdf",
+          "title": "2025-26 Graduate Catalog",
+          "score": 64
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iuy0047z0tijtdlowua",
+      "schoolName": "Bowdoin College",
+      "schoolNameNorm": "bowdoin college",
+      "usNewsRank": 6,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Bowdoin College\" filetype:pdf",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Bowdoin College",
+          "url": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+          "snippet": "Score Range Percent who had GPA of 4.0 Percent who had GPA between 3.75 and 3.99 Percent who had GPA between 3.50 and 3.74 Percent who had GPA between 3.25 and 3.49 Percent who had GPA between 3.00 and 3.24 Percent who had GPA between 2.50 ",
+          "score": 155
+        },
+        {
+          "title": "[PDF] 2023-24 Common Data Set - Bowdoin College",
+          "url": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2023-2024.pdf",
+          "snippet": "all full-time students must pay that are not included in tuition (e.g., registration, health, or activity fees.) ✓ Do not include optional fees (e.g., parking, laboratory use). The 2024-25 fees became available in May 2024. PRIVATE INSTITUT",
+          "score": 145
+        },
+        {
+          "title": "Common Data Set | Bowdoin College",
+          "url": "https://www.bowdoin.edu/ir/common-data/index.html",
+          "snippet": "Note: These files are in .pdf format, which requires Adobe Acrobat Reader to download. If you don't already have this software, please click here to download a free copy to your computer.\n\nList of Contents within each Common Data Set\n\n| Lis",
+          "score": 118
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.collegetransitions.com/dataverse/common-data-set-repository/",
+          "title": "Common Data Set Repository - College Transitions",
+          "score": 104
+        },
+        {
+          "url": "https://ncaaorg.s3.amazonaws.com/governance/d3/ann_rprt/2024-25D3Gov_AnnualReport.pdf",
+          "title": "[PDF] Division III 2024-25 Annual Report",
+          "score": 94
+        },
+        {
+          "url": "https://ccst.us/wp-content/uploads/CCST-Annual-Report-2024-25.pdf",
+          "title": "CCST Annual Report 2024-25",
+          "score": 90
+        },
+        {
+          "url": "https://www.progressivepolicy.org/wp-content/uploads/2026/03/PPI_The-Rise-of-Economic-Affirmative-Action.pdf",
+          "title": "[PDF] The Rise of Economic Affirmative Action: - Progressive Policy Institute",
+          "score": 64
+        },
+        {
+          "url": "https://aclanthology.org/2025.emnlp-main.1064.pdf",
+          "title": "[PDF] How do Large Language Models Contextualize Socioeconomic ...",
+          "score": 61
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+      "schoolName": "Savannah College of Art and Design",
+      "schoolNameNorm": "savannah college of art and design",
+      "usNewsRank": 6,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Savannah College of Art and Design\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://resources.finalsite.net/images/v1759238494/norfolkacademyorg/vylqcjun8qsge6bjr4gi/MatriculationList21-25updatedformat.pdf",
+          "title": "[PDF] college matriculation 2021 - 2025",
+          "score": 137
+        },
+        {
+          "url": "https://nacacnet.org/wp-content/uploads/2022/10/chart_finaid_kent.pdf",
+          "title": "[PDF] Financial Aid for Nonresident Alien Undergraduates (October 2018)",
+          "score": 135
+        },
+        {
+          "url": "https://studdertcollegeprep.com/wp-content/uploads/2020/04/Domestic-Undergraduate-Need-Based-and-Merit-Based-Aid2019.pdf",
+          "title": "[PDF] Domestic Undergraduate Need-Based and Merit Aid (August 2019)",
+          "score": 132
+        },
+        {
+          "url": "https://www.coastal.edu/media/2024siteassets/contentassets/documents/iraa/assessment/adding_assessment_results_full_guide.pdf",
+          "title": "[PDF] Adding Assessment Results - Coastal Carolina University",
+          "score": 114
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://www.scad.edu/sites/default/files/PDF/scad-2024-economic-impact-report.pdf",
+          "title": "[PDF] THE ECONOMIC IMPACT OF THE SAVANNAH COLLEGE OF ART ...",
+          "score": 90
+        },
+        {
+          "url": "https://www.scad.edu/sites/default/files/PDF/scad-2025-2026-accessible-catalog.pdf?update311",
+          "title": "[PDF] SCAD 2025-26 accessible catalog",
+          "score": 90
+        },
+        {
+          "url": "https://www.usnews.com/best-colleges/savannah-college-of-art-and-design-29258",
+          "title": "Savannah College of Art and Design - Profile, Rankings and Data | US News Best Colleges",
+          "score": 52
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iw1004sz0ti04r9dj3i",
+      "schoolName": "Maryland Institute College of Art",
+      "schoolNameNorm": "maryland institute college of art",
+      "usNewsRank": 7,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Maryland Institute College of Art\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://oiep.gmu.edu/wp-content/uploads/2025/02/2024-2025-CDS-Final.pdf",
+          "title": "[PDF] Common Data Set 2024-2025",
+          "score": 160
+        },
+        {
+          "url": "https://www.smcm.edu/app/uploads/sites/60/2025/03/CDS_2024-2025_final.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - St. Mary's College of Maryland",
+          "score": 155
+        },
+        {
+          "url": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+          "title": "[PDF] Common Data Set 2024-25 A1. Address Information - A. GENERAL ...",
+          "score": 155
+        },
+        {
+          "url": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/2024-2025%20(pdf,%20file%20size%20907KB).pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - New York University",
+          "score": 155
+        },
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 148
+        },
+        {
+          "url": "https://cloudtest2.usmd.edu/regents/agendas/20260129-EPSLS-PublicSession.pdf",
+          "title": "[PDF] Board of Regents Committee on Education Policy and Student Life ...",
+          "score": 116
+        },
+        {
+          "url": "https://catalog.sage.edu/sites/default/files/20242025-undergraduate-catalog.pdf",
+          "title": "[PDF] 2024-2025 Catalog",
+          "score": 114
+        },
+        {
+          "url": "https://mhec.maryland.gov/publications/Documents/Research/AnnualReports/2024PerfAccountability.pdf",
+          "title": "[PDF] 2024 Performance Accountability Report Maryland Public Colleges ...",
+          "score": 98
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iv00048z0tityzi3zx8",
+      "schoolName": "Middlebury College",
+      "schoolNameNorm": "middlebury college",
+      "usNewsRank": 7,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Middlebury College\" filetype:pdf",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Middlebury College",
+          "url": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+          "snippet": "Percent who had GPA between 3.75 and 3.99 Average high school GPA of all degree-seeking, first-time, first-year students who submitted GPA: Percent who had GPA between 3.25 and 3.49 Percent who had GPA between 3.00 and 3.24 Percent who had ",
+          "score": 156
+        },
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Middlebury College",
+          "url": "https://www.middlebury.edu/sites/default/files/2024-10/CDS%20Form%20B%20Prelim%202024-2025.pdf?fv=9gpdMXig",
+          "snippet": "Common Data Set 2024-2025 B1 Undergraduate Students: Full-Time Men Women Another Gender Unknown Degree-seeking, first-time first-year students 272 326 0 0 Other first-year, degree-seeking All other degree-seeking 990 1,129 2 0 Fall Transfer",
+          "score": 152
+        },
+        {
+          "title": "[PDF] A. General Information - Middlebury College",
+          "url": "https://www.middlebury.edu/sites/default/files/2024-05/CDS_2023_2024%20completed%205.15.24_0.pdf?fv=1KqsLYZg",
+          "snippet": "Liberal arts/general studies 5.0 1% 24 Library science 0.0 0% 25 Biological/life sciences 108.0 14% 26 Mathematics and statistics 31.0 4% 27 Military science and military technologies 0.0 0% 28 and 29 Interdisciplinary studies 6.0 1% 30 Par",
+          "score": 112
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.middlebury.edu/sites/default/files/2026-04/Fall%202025%20CDS%20FINAL.pdf?fv=WuqVl12_",
+          "title": "[PDF] A. General Information - Middlebury College",
+          "score": 156
+        },
+        {
+          "url": "https://www.middlebury.edu/sites/default/files/2026-02/Fall%202025%20CDS%20Preliminary.pdf?fv=v-bJmY2V",
+          "title": "[PDF] A. General Information - Middlebury College",
+          "score": 156
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+          "title": "[PDF] Swarthmore College Common Data Set 2024-2025",
+          "score": 140
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 91
+        },
+        {
+          "url": "http://go.middlebury.edu/anthronewsletter25",
+          "title": "[PDF] Field Notes 2025 draft - Middlebury College",
+          "score": 57
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iw3004tz0ti9nqf8ivd",
+      "schoolName": "California College of the Arts",
+      "schoolNameNorm": "california college of the arts",
+      "usNewsRank": 8,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"California College of the Arts\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.calstatela.edu/sites/default/files/CDS2425_0.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Cal State LA",
+          "score": 160
+        },
+        {
+          "url": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research Office - Caltech",
+          "score": 160
+        },
+        {
+          "url": "https://www.sincewhen.net/sites/default/files/CDS2425.pdf",
+          "title": "[PDF] Common Data Set 2024-2025",
+          "score": 160
+        },
+        {
+          "url": "https://www.cmc.edu/sites/default/files/CDS_2025-26.pdf",
+          "title": "[PDF] Common Data Set 2025-2026 - Claremont McKenna College",
+          "score": 155
+        },
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 148
+        },
+        {
+          "url": "https://californiacollege.asu.edu/sites/g/files/litvpz721/files/2024-09/2024_2025CaliforniaCollegeofASUInstitutionalCatalog_FINAL.pdf",
+          "title": "[PDF] 2024-2025 California College of ASU Institutional Catalog.docx",
+          "score": 110
+        },
+        {
+          "url": "https://www.cccco.edu/-/media/CCCCO-Website/docs/report/2024-25-compendium-of-allocations-and-resources.pdf",
+          "title": "[PDF] 2024-25-compendium-of-allocations-and-resources.pdf",
+          "score": 110
+        },
+        {
+          "url": "https://www.aep-arts.org/wp-content/uploads/Arts-Education-Data-and-Reporting-Initiatives-2024-1.pdf",
+          "title": "[PDF] Arts Education Data and Reporting Initiatives 2024",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iv20049z0ti4tahvum5",
+      "schoolName": "Carleton College",
+      "schoolNameNorm": "carleton college",
+      "usNewsRank": 8,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Carleton College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 148
+        },
+        {
+          "url": "https://calendar.carleton.ca/pdf/UNOFFICIAL%2024-25%20Carleton%20University%20Undergraduate%20Calendar.pdf",
+          "title": "[PDF] UNOFFICIAL 24-25 Carleton University Undergraduate Calendar",
+          "score": 110
+        },
+        {
+          "url": "https://www.the-attic.org/wp-content/uploads/2024/11/Program-Overview-2024-25.docx-2-1-1-1.pdf",
+          "title": "[PDF] Program Overview 2024-25.docx - The Attic Learning Community",
+          "score": 110
+        },
+        {
+          "url": "https://cdn.carleton.edu/uploads/sites/848/2024/10/Carleton_AcademicCatalog_2024-25_v2.pdf",
+          "title": "[PDF] Academic Course Catalog - Carleton College",
+          "score": 110
+        },
+        {
+          "url": "https://cdn.serc.carleton.edu/files/nagt/about/nagt_year_review_2025_final.pdf",
+          "title": "[PDF] 2025 IN REVIEW - Carleton College",
+          "score": 90
+        },
+        {
+          "url": "https://higheredstrategy.com/wp-content/uploads/2025/04/2025-04-04_SPEC-2024_v6_Publications-1.pdf",
+          "title": "[PDF] The State of Postsecondary Education in Canada 2024",
+          "score": 89
+        },
+        {
+          "url": "https://www.progressivepolicy.org/wp-content/uploads/2026/03/PPI_The-Rise-of-Economic-Affirmative-Action.pdf",
+          "title": "[PDF] The Rise of Economic Affirmative Action: - Progressive Policy Institute",
+          "score": 89
+        },
+        {
+          "url": "https://cgs.umd.edu/sites/default/files/2025-01/HultmanCV-Jan2025-Dist.pdf",
+          "title": "[PDF] NATHAN E. HULTMAN - Center for Global Sustainability",
+          "score": 88
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iv4004az0tioxjsp148",
+      "schoolName": "Claremont McKenna College",
+      "schoolNameNorm": "claremont mckenna college",
+      "usNewsRank": 9,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Claremont McKenna College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.cmc.edu/sites/default/files/Fact%20Sheet%202024-25.pdf",
+          "title": "[PDF] Undergraduate Fact Sheet 2024-2025 (as of fall 2024 census)",
+          "score": 168
+        },
+        {
+          "url": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf",
+          "title": "Common Data Set 2024-2025",
+          "score": 163
+        },
+        {
+          "url": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-25 - University of California, Riverside",
+          "score": 160
+        },
+        {
+          "url": "https://www.scrippscollege.edu/assessir/wp-content/uploads/sites/30/2024-25-CDS_12032024.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Scripps College",
+          "score": 155
+        },
+        {
+          "url": "https://www.cmc.edu/sites/default/files/CDS_2025-26.pdf",
+          "title": "[PDF] Common Data Set 2025-2026 - Claremont McKenna College",
+          "score": 135
+        },
+        {
+          "url": "https://www.cmc.edu/sites/default/files/Thesis%20Syllabus%202024-25.pdf",
+          "title": "[PDF] Senior Thesis Syllabus 2024-2025 - Claremont McKenna College",
+          "score": 110
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 110
+        },
+        {
+          "url": "https://scholarship.claremont.edu/cgi/viewcontent.cgi?article=5171&context=cmc_theses",
+          "title": "[PDF] Buying Wins? A Study of NIL Spending and Team Performance in ...",
+          "score": 50
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iv5004bz0ti94b7ow5h",
+      "schoolName": "Hamilton College",
+      "schoolNameNorm": "hamilton college",
+      "usNewsRank": 10,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Hamilton College\" filetype:pdf",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Hamilton College",
+          "url": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+          "snippet": "199 41.00% $14,667 C Institutional loan programs.\n31 6.00% $2,053 D State loan programs.\n0 0.00% $0 E Private student loans made by a bank or lender. [...] Require Recommend First-time, first-year wait-listed students If yes, please answer ",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_College_and_Columbia_Engineering_CDS.pdf",
+          "title": "[PDF] 2024–25 common data set - Columbia OPIR",
+          "score": 138
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 130
+        },
+        {
+          "url": "https://www.washcoll.edu/people_departments/offices/institutional-research/fact_books/fact-book-25-2026_v2.pdf",
+          "title": "[PDF] Fact Book 2025-2026 - Washington College",
+          "score": 121
+        },
+        {
+          "url": "https://deerfield.edu/wp-content/uploads/2024/08/2024-25-School-Profile-Aug-22-2024.pdf",
+          "title": "2024-25 School Profile",
+          "score": 92
+        },
+        {
+          "url": "https://www.hamilton.k12.wi.us/wp-content/uploads/2024/11/2024-2025-HHS-Course-Catalog-updated.pdf",
+          "title": "2024-2025 Course Catalog - Sussex",
+          "score": 83
+        },
+        {
+          "url": "https://www.hccc.edu/abouthccc/resources/documents/2024-2025-annual-report-to-board-of-trustees.pdf",
+          "title": "[PDF] 2024-25 Annual Report to the Hudson County Community College ...",
+          "score": 77
+        },
+        {
+          "url": "https://bulletin.yale.edu/sites/default/files/viewbook-2024-2025.pdf",
+          "title": "[PDF] Yale College Viewbook 2024–2025",
+          "score": 70
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iv7004cz0tiy7lyda2g",
+      "schoolName": "Haverford College",
+      "schoolNameNorm": "haverford college",
+      "usNewsRank": 11,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Haverford College\" filetype:pdf",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Haverford College",
+          "url": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+          "snippet": "of men who join fraternities 0 0 Percent of women who join sororities 0 0 Percent who live in college-owned, -operated, or -affiliated housing 99% 98% Percent who live off campus or commute 1% 2% Percent of students age 25 and older 0% 0% A",
+          "score": 151
+        },
+        {
+          "title": "[PDF] Common Data Set 2023-2024 - Haverford College",
+          "url": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2023-2034.pdf",
+          "snippet": "List the number of degree-seeking full-time and less-than-full-time undergraduates who had no financial need and who were awarded CDS-H Page 25 Common Data Set 2023-2024 H4. 2023 Undergraduate Class 337 H5. Number/Percent Borrowers and Aver",
+          "score": 117
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.brynmawr.edu/sites/default/files/media/documents/2024-12/CDS-2024-2025-Bryn%20Mawr%20Read%20Only.pdf",
+          "title": "Common Data Set 2024-2025",
+          "score": 145
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+          "title": "[PDF] Swarthmore College Common Data Set 2024-2025",
+          "score": 142
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025-excel-version.pdf",
+          "title": "[PDF] Swarthmore College Common Data Set 2024-2025",
+          "score": 142
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 91
+        },
+        {
+          "url": "https://go.boarddocs.com/pa/have/Board.nsf/files/CY3QM567BC34/$file/2024-2025%20Haverford%20High%20School%20Course%20Selection%20Guide%20-%20Google%20Docs.pdf",
+          "title": "[PDF] 2024-2025 Haverford High School Course Selection ... - BoardDocs",
+          "score": 88
+        },
+        {
+          "url": "https://www.haverford.edu/sites/default/files/Office/Communications/Winter2024-Haverford-For%20Web.pdf",
+          "title": "[PDF] Winter 2024 - Haverford College",
+          "score": 67
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iv9004dz0tirpo4zq16",
+      "schoolName": "Vassar College",
+      "schoolNameNorm": "vassar college",
+      "usNewsRank": 12,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Vassar College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://ncaaorg.s3.amazonaws.com/governance/d3/ann_rprt/2024-25D3Gov_AnnualReport.pdf",
+          "title": "[PDF] Division III 2024-25 Annual Report",
+          "score": 96
+        },
+        {
+          "url": "https://catalog.uopeople.edu/wp-content/uploads/2024/10/Grad-Catalog-AY2024-2025-Sept-Updates.pdf",
+          "title": "[PDF] 2024-25 graduate catalog - University of the People",
+          "score": 79
+        },
+        {
+          "url": "https://www.vassar.edu/sites/default/files/2024-06/2028_Vassar_FY_Handbook-v2.pdf",
+          "title": "[PDF] THE 2024/25 FIRST-YEAR HANDBOOK - Vassar College",
+          "score": 77
+        },
+        {
+          "url": "https://offices.vassar.edu/dean-of-the-faculty/wp-content/uploads/sites/36/2025/05/Governance-2024-25-Updated-5-29-25.pdf",
+          "title": "THE GOVERNANCE - offices.vassar.edu",
+          "score": 76
+        },
+        {
+          "url": "https://apps.weber.edu/wsuimages/ie/science%20results%20images/Physics/PR%202025-2026/Program%20Review%202025%20-%20Physics.pdf",
+          "title": "[PDF] WSU Five-Year Program Review Self-Study Cover Page",
+          "score": 74
+        },
+        {
+          "url": "https://www.wabash.edu/mybash/docs/2023_24DepartmentChairHandbook.pdf",
+          "title": "[PDF] Department Chair Handbook 2023-2024 - Wabash College",
+          "score": 73
+        },
+        {
+          "url": "https://www.swedishinstitute.edu/app/uploads/2024/05/SI_Course_Catalog1.pdf",
+          "title": "[PDF] Where healthy careers begin - Academic Catalog 2024",
+          "score": 53
+        },
+        {
+          "url": "https://catalog.fitnyc.edu/pdf/2026-27%20Graduate%20Catalog-032026.pdf",
+          "title": "[PDF] 2026-27 Graduate Catalog - Fashion Institute of Technology",
+          "score": 51
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivb004ez0tiduer8l0n",
+      "schoolName": "Grinnell College",
+      "schoolNameNorm": "grinnell college",
+      "usNewsRank": 13,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Grinnell College\" filetype:pdf",
+      "selectedUrl": "https://www.grinnell.edu/sites/default/files/docs/2024-10/Grinnell-College-Common-Data-Set-CDS-2023-2024.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2023-2024 - Grinnell College",
+          "url": "https://www.grinnell.edu/sites/default/files/docs/2024-10/Grinnell-College-Common-Data-Set-CDS-2023-2024.pdf",
+          "snippet": "-operated, or -affiliated housing available for undergraduates at your institution. ✔ ✔ ✔Coed residence halls Men’s residence halls Women’s residence dorms Apartments for married students Apartments for single students ✔Special housing for ",
+          "score": 149
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://irp.dpb.cornell.edu/wp-content/uploads/2025/07/CDS-2024-2025-v6-print.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research & Planning",
+          "score": 149
+        },
+        {
+          "url": "https://resources.finalsite.net/images/v1737540318/d128org/zn2n6tcswplqkie1lyct/2024-2025CollegeGuide.pdf",
+          "title": "[PDF] 2024-2025 College Guide",
+          "score": 104
+        },
+        {
+          "url": "https://cic.edu/wp-content/uploads/2025/09/CIC-2024-2025-Annual-Report-1.pdf",
+          "title": "[PDF] 2024-25 CIC Annual Report",
+          "score": 80
+        },
+        {
+          "url": "https://www.iowaregents.edu/media/cms/0226_ITEM_10__Graduation__Retention_E265CDDD72A5A.pdf",
+          "title": "[PDF] 0226 Graduation and Retention report - Iowa Board of Regents",
+          "score": 77
+        },
+        {
+          "url": "https://www.grinnell.edu/sites/default/files/docs/2025-02/2025_Grinnell_Lecture_Booklet.pdf",
+          "title": "[PDF] Grinnell Lecture 2025",
+          "score": 72
+        },
+        {
+          "url": "https://www.grinnell.edu/doc/grinnell-college-common-data-set-2024-2025",
+          "title": "[PDF] Question - Grinnell College",
+          "score": 66
+        },
+        {
+          "url": "https://www.reed.edu/accreditation/2025/supporting-materials/C.1.3b.pdf",
+          "title": "[PDF] Yield Rates - Reed College",
+          "score": 60
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+      "schoolName": "Colgate University",
+      "schoolNameNorm": "colgate university",
+      "usNewsRank": 14,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Colgate University\" filetype:pdf",
+      "selectedUrl": "https://www.colgate.edu/about/offices-centers-institutes/office-institutional-analysis/common-data-set",
+      "candidates": [
+        {
+          "title": "Common Data Set | Colgate University",
+          "url": "https://www.colgate.edu/about/offices-centers-institutes/office-institutional-analysis/common-data-set",
+          "snippet": "2024-25 Common Data Set (PDF)\n 2023-24 Common Data Set (PDF)\n 2022-23 Common Data Set (PDF)\n 2021-22 Common Data Set (PDF)\n 2020-21 Common Data Set (PDF)\")\n\n 2019-20 Common Data Set (PDF)\")\n 2018–19 Common Data Set (PDF)\")\n 2017-18 Common D",
+          "score": 105
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.colgate.edu/sites/default/files/2025-07/Colgate%202024-25%20CDS%20for%20Website_0.pdf",
+          "title": "[PDF] A. General Information - Colgate University",
+          "score": 155
+        },
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 152
+        },
+        {
+          "url": "https://aire.ku.edu/sites/air/files/files/CDS/KUCDS_2025_2026.pdf",
+          "title": "[PDF] Common Data Set Section A1. General Information 2025-2026 ...",
+          "score": 128
+        },
+        {
+          "url": "https://www.collegetransitions.com/dataverse/common-data-set-repository/",
+          "title": "Common Data Set Repository - College Transitions",
+          "score": 104
+        },
+        {
+          "url": "https://catalogue.colgate.edu/mime/media/view/14/778/2024-2025+Colgate+University+Catalog.pdf",
+          "title": "[PDF] 2024-2025 Colgate University Catalog",
+          "score": 102
+        },
+        {
+          "url": "https://www.fire.org/sites/default/files/2025/04/student-handbook-2024-25-101024%20%282%29.pdf",
+          "title": "[PDF] Colgate University Student Handbook 2024–2025 - FIRE",
+          "score": 94
+        },
+        {
+          "url": "https://www.colgate.edu/sites/default/files/2026-02/PRZ_2026_0031_President_s_Report_Text_F_508.pdf",
+          "title": "[PDF] President's Report 2026 - Colgate University",
+          "score": 82
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ive004gz0tihs1kxbek",
+      "schoolName": "Davidson College",
+      "schoolNameNorm": "davidson college",
+      "usNewsRank": 15,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Davidson College\" filetype:pdf",
+      "selectedUrl": "https://www.davidson.edu/offices-and-services/institutional-effectiveness/common-data-set",
+      "candidates": [
+        {
+          "title": "Common Data Set | Davidson",
+          "url": "https://www.davidson.edu/offices-and-services/institutional-effectiveness/common-data-set",
+          "snippet": "Davidson College participates in the Common Data Set Initiative, an effort within the higher education community to define uniform standards for statistical data.\n\nPer the Common Data Set website:\n\n\"The Common Data Set Initiative is a colla",
+          "score": 100
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 160
+        },
+        {
+          "url": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+          "title": "[PDF] 2023-2024 rutgers university – new brunswick - A. General Information",
+          "score": 148
+        },
+        {
+          "url": "https://www.collegetransitions.com/dataverse/common-data-set-repository/",
+          "title": "Common Data Set Repository - College Transitions",
+          "score": 123
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 118
+        },
+        {
+          "url": "https://www.umt.edu/office-student-success/annual-reports/2024-2025_annual_report.pdf",
+          "title": "[PDF] Office for Student Success 2024-2025 Annual Report",
+          "score": 110
+        },
+        {
+          "url": "https://wordpress.nccommunitycolleges.edu/wp-content/uploads/2024/08/FY2024-25-Budget-Package-FINAL.pdf",
+          "title": "[PDF] fy2024-25 state aid allocations and budget policies",
+          "score": 110
+        },
+        {
+          "url": "https://www.davidson.edu/offices-and-services/institutional-effectiveness",
+          "title": "Institutional Effectiveness | Davidson",
+          "score": 55
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivg004hz0ti8c1ggiw8",
+      "schoolName": "Smith College",
+      "schoolNameNorm": "smith college",
+      "usNewsRank": 16,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Smith College\" filetype:pdf",
+      "selectedUrl": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf",
+      "candidates": [
+        {
+          "title": "Smith College Common Data Set 2024-25 v2",
+          "url": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf",
+          "snippet": "by their second fall term is expected to be zero or very small. In exceptional cases when a first-time student does satisfy all degree requirements including full credit completion (e.g., typically 120 credit hours) and is awarded a bachelo",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 155
+        },
+        {
+          "url": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Hamilton College",
+          "score": 155
+        },
+        {
+          "url": "https://www.hsc.edu/Documents/Research/Fact%20Books%202017-/2024-25Factbook.pdf",
+          "title": "[PDF] Hampden-Sydney College 2024-2025 Factbook",
+          "score": 155
+        },
+        {
+          "url": "https://www.washcoll.edu/people_departments/offices/institutional-research/fact_books/fact-book-24-2025_use.pdf",
+          "title": "[PDF] FACT BOOK - 2 0 2 4 - Washington College",
+          "score": 153
+        },
+        {
+          "url": "https://www.smith.edu/sites/default/files/2025-08/SmithCollegeCatalog-2024-25.pdf",
+          "title": "Smith College 2024-25 Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://www.smith.edu/your-campus/offices-services/institutional-research/data-about-smith",
+          "title": "Smith College Institutional Research Data About Smith",
+          "score": 100
+        },
+        {
+          "url": "https://www.smith.edu/sites/default/files/2023-08/AY-FY24-Moneybook.pdf",
+          "title": "[PDF] Moneybook 2023-24 - Smith College",
+          "score": 98
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivi004iz0tinveg964v",
+      "schoolName": "Washington and Lee University",
+      "schoolNameNorm": "washington and lee university",
+      "usNewsRank": 17,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Washington and Lee University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.flbog.edu/wp-content/uploads/2021/09/2021_FAMU_Accountability_Plan_BOG_Approved.pdf",
+          "title": "[PDF] Florida A&M University",
+          "score": 152
+        },
+        {
+          "url": "https://commons.cri.uchicago.edu/wp-content/uploads/2025/12/D4CG-Annual-Report-2024-25.pdf",
+          "title": "[PDF] Discovery - Data for the Common Good",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/undergrad/Bulletin_2024-25_Undergraduate.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Undergraduate Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://www.mtsac.edu/catalog/pdf_ada/Mt_San_Antonio_College_PDF_24-25_Final_ADA.pdf",
+          "title": "[PDF] Mt. SAC 2024-25 Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://my.wlu.edu/document/2024-common-data-set",
+          "title": "[PDF] Common Data Set 2024-2025 - Washington and Lee University",
+          "score": 105
+        },
+        {
+          "url": "https://www.davisuwcscholars.org/sites/default/files/2025-03/DUWCSP_2025UTW_Annual_Report_v2.pdf?fv=yMFSuNx1",
+          "title": "[PDF] 2025 report - Davis UWC Scholars",
+          "score": 90
+        },
+        {
+          "url": "https://ospi.k12.wa.us/sites/default/files/2026-01/2025-pei-leg-report_0.pdf",
+          "title": "[PDF] 2025 Project Education Impact Legislative Report - OSPI",
+          "score": 89
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivj004jz0tij2m7ox54",
+      "schoolName": "Colby College",
+      "schoolNameNorm": "colby college",
+      "usNewsRank": 18,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Colby College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.uwyo.edu/oia/_files/cds/cds2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - University of Wyoming",
+          "score": 155
+        },
+        {
+          "url": "https://www.bowdoin.edu/ir/common-data/index.html",
+          "title": "Common Data Set | Bowdoin College",
+          "score": 128
+        },
+        {
+          "url": "https://www.collegetransitions.com/dataverse/common-data-set-repository/",
+          "title": "Common Data Set Repository - College Transitions",
+          "score": 123
+        },
+        {
+          "url": "https://www.aaup.org/sites/default/files/2025-07/ARES-2024-25-Bulletin.pdf",
+          "title": "[PDF] The Annual Report on the Economic Status of the Profession, 2024–25",
+          "score": 110
+        },
+        {
+          "url": "https://flute-rose-ymyc.squarespace.com/s/2024-25-College-Catalog5-27.pdf",
+          "title": "[PDF] 2024 25 College Catalog.5-27",
+          "score": 110
+        },
+        {
+          "url": "https://deerfield.edu/wp-content/uploads/2024/08/2024-25-School-Profile-Aug-22-2024.pdf",
+          "title": "[PDF] 2024-25 School Profile - Deerfield Academy",
+          "score": 110
+        },
+        {
+          "url": "https://www.colbycc.edu/student-life/housing/res-life-handbook.pdf",
+          "title": "[PDF] Challenge. Create. Connect. 2024-2025 Residence Life Handbook",
+          "score": 110
+        },
+        {
+          "url": "https://commondataset.org/",
+          "title": "Home - Common Data Set",
+          "score": 95
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivl004kz0tiv0vgf6c6",
+      "schoolName": "Bates College",
+      "schoolNameNorm": "bates college",
+      "usNewsRank": 19,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Bates College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 122
+        },
+        {
+          "url": "https://ir.princeton.edu/document/546",
+          "title": "Common Data Set 2024-2025 - A. General Information",
+          "score": 108
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2025/06/2023-2024-Fact-Book-Publisher-File-07.17.24-with-cover-pages.pdf",
+          "title": "[PDF] 2023-2024 FACT BOOK - New College of Florida",
+          "score": 103
+        },
+        {
+          "url": "https://www.bates.edu/harward/files/2025/09/2024-25AnnualReport-1.pdf",
+          "title": "[PDF] Civic Engagement at Bates 2024-2025",
+          "score": 100
+        },
+        {
+          "url": "https://catalog-archive.bates.edu/Bates_2024-2025_Catalog.pdf",
+          "title": "Bates College 2024–2025 Catalog",
+          "score": 98
+        },
+        {
+          "url": "https://www.wiche.edu/wp-content/uploads/2024/11/2024-Tuition-and-Fees-Report.pdf",
+          "title": "[PDF] 2024-Tuition-and-Fees-Report.pdf - WICHE",
+          "score": 88
+        },
+        {
+          "url": "https://www.bates.edu/harward/files/2024/10/2023-24AnnualReportFINAL-1.pdf",
+          "title": "Civic Engagement at Bates 2023-2024",
+          "score": 83
+        },
+        {
+          "url": "https://www.eastern.edu/sites/default/files/inline-files/Undergrad_Catalog_24-25.pdf",
+          "title": "[PDF] undergraduate - catalog 2024-2025 - Eastern University",
+          "score": 75
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ivm004lz0tio6m2uic4",
+      "schoolName": "Barnard College",
+      "schoolNameNorm": "barnard college",
+      "usNewsRank": 20,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Barnard College\" filetype:pdf",
+      "selectedUrl": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2023-2024 CDS-A Page 1 - Barnard College",
+          "url": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+          "snippet": "Common Data Set 2023-2024 CDS-H Page 30 D State loan programs.\n0 0.00% $0 E Private student loans made by a bank or lender. [...] • • • • • For each assessment listed below, report the score that represents the 25th percentile (the score th",
+          "score": 116
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://go.boarddocs.com/ct/nhps/Board.nsf/files/DJKN6H5E66D2/$file/Year%20in%20Review%202024-25.pptx%20(2).pdf",
+          "title": "Year in Review 2024-25.pptx - BoardDocs",
+          "score": 106
+        },
+        {
+          "url": "https://barnard.edu/sites/default/files/inline-files/Barnard%20CDS%202024-2025.pdf",
+          "title": "A. General Information",
+          "score": 101
+        },
+        {
+          "url": "https://www.jtsa.edu/wp-content/uploads/2024/10/Student-Information-and-Policies-AY-24-25.pdf",
+          "title": "[PDF] Student Information and Academic Policies AY 2024-2025",
+          "score": 96
+        },
+        {
+          "url": "https://ncaaorg.s3.amazonaws.com/championships/sports/softball/d1/2024-25D1WSB_PrechampsManual.pdf",
+          "title": "[PDF] 2024-25 NCAA Division I Softball Pre-Championship Manual",
+          "score": 87
+        },
+        {
+          "url": "https://catalog.uopeople.edu/wp-content/uploads/2024/10/Grad-Catalog-AY2024-2025-Sept-Updates.pdf",
+          "title": "[PDF] 2024-25 graduate catalog - University of the People",
+          "score": 82
+        },
+        {
+          "url": "https://grad-catalog.sage.edu/sites/default/files/202425-catalog-9-23-25.pdf",
+          "title": "[PDF] 2024-25 Catalog - Sage College",
+          "score": 80
+        },
+        {
+          "url": "https://iserp.columbia.edu/sites/iserp.columbia.edu/files/content/docs/Annual%20Report%20FY25%20-%20Web%20Version.pdf",
+          "title": "[PDF] annual report - 2024–2025",
+          "score": 74
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoa000kvqf2oqm36hw5",
+      "schoolName": "University of Michigan, Ann Arbor",
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "usNewsRank": 21,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Michigan, Ann Arbor\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+          "title": "[PDF] Common Data Set 2024-25 A1. Address Information - A. GENERAL ...",
+          "score": 146
+        },
+        {
+          "url": "https://www.legislature.mi.gov/documents/2025-2026/billanalysis/House/pdf/2025-HLA-4580-T97ZC4XY.pdf",
+          "title": "[PDF] FY 2025-26: HIGHER EDUCATION Summary - Michigan Legislature",
+          "score": 104
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2025-03/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest - Office of the Executive Vice President and Provost",
+          "score": 103
+        },
+        {
+          "url": "https://www.legislature.mi.gov/documents/2025-2026/billanalysis/House/pdf/2025-HLA-4580-NS2YW8BL.pdf",
+          "title": "[PDF] FY 2025-26: HIGHER EDUCATION Summary - Michigan Legislature",
+          "score": 103
+        },
+        {
+          "url": "https://oami.umich.edu/wp-content/uploads/2025/11/OAMI-Annual-Report-2024-25.pdf",
+          "title": "[PDF] OAMI Annual Report 2024-25 - Ann Arbor",
+          "score": 98
+        },
+        {
+          "url": "https://crlt.umich.edu/sites/default/files/Annual%20Reports/CRLT_Annual_Report_2024-2025.pdf",
+          "title": "[PDF] CRLT Annual Report 2024-2025 - University of Michigan",
+          "score": 96
+        },
+        {
+          "url": "https://btaa.org/docs/default-source/admissions-directors/feb-2025-transfer-student-webinar-resources/university-of-michigan-admissions-transfer-guide.pdf?sfvrsn=7dd94c8c_1",
+          "title": "[PDF] Transfer Students 2025",
+          "score": 82
+        },
+        {
+          "url": "https://allinchallenge.org/wp-content/uploads/University-of-Michigan-Ann-Arbor-2024-Action-Plan.pdf",
+          "title": "[PDF] University of Michigan - Ann Arbor 2024 Action Plan",
+          "score": 74
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoc000lvqf2s5pgbhxx",
+      "schoolName": "Georgetown University",
+      "schoolNameNorm": "georgetown university",
+      "usNewsRank": 22,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Georgetown University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - American University",
+          "score": 155
+        },
+        {
+          "url": "https://www.ihep.org/wp-content/uploads/2025/10/PSD-ACTS-Sign-on-Letter_10.14.25.pdf",
+          "title": "[PDF] October 14, 2025 Brian Fu U.S. Department of Education Office of ...",
+          "score": 113
+        },
+        {
+          "url": "https://catalog.georgetowncollege.edu/sites/default/files/pdf/pdf_generator/202425-pdf.pdf",
+          "title": "[PDF] 2024-25 PDF - Georgetown College Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://now.stevenson.edu/wp-content/uploads/2023-24-Graduating-Student-Report.pdf",
+          "title": "[PDF] 2023-24-Graduating-Student-Report.pdf - Stevenson University",
+          "score": 98
+        },
+        {
+          "url": "https://dm.education.wisc.edu/todle/pci/TaylorOdle_CV-9.pdf",
+          "title": "[PDF] Taylor K. Odle - University of Wisconsin–Madison",
+          "score": 91
+        },
+        {
+          "url": "https://nationalpress.org/wp-content/uploads/2025/04/NPF-Widening-the-Pipeline-Edunomics-Lab.pdf",
+          "title": "[PDF] Q: What's the most consequential ed finance issue of 2025? A ...",
+          "score": 90
+        },
+        {
+          "url": "https://www.law.georgetown.edu/wp-content/uploads/2018/10/Sukhatme-CV-11-1-23.pdf",
+          "title": "[PDF] Neel Sukhatme - Georgetown Law",
+          "score": 89
+        },
+        {
+          "url": "https://www.wiche.edu/wp-content/uploads/2024/12/2024-Knocking-at-the-College-Door-final.pdf",
+          "title": "[PDF] Projections of High School Graduates | December 2024 - WICHE",
+          "score": 87
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoe000mvqf2odaszvmk",
+      "schoolName": "University of North Carolina at Chapel Hill",
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "usNewsRank": 22,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of North Carolina at Chapel Hill\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - OIRA (unc.edu)",
+          "score": 153
+        },
+        {
+          "url": "https://guidance.svaga.net/wp-content/uploads/2025/11/Use-and-Abuse-of-Early-Decision-24-25.pdf",
+          "title": "[PDF] The Use and Abuse of Early Decision in College Admissions",
+          "score": 112
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 108
+        },
+        {
+          "url": "https://usuniversity.smartcatalogiq.com/-/media/institution/united-states-university/archived-catalogs/2024-2025/General%20Catalog%2020242025%20v10.pdf",
+          "title": "[PDF] General Catalog 2024-2025",
+          "score": 102
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 94
+        },
+        {
+          "url": "https://oira.unc.edu/wp-content/uploads/sites/297/2024/11/IPEDS_Institutional_Characteristics_2024-25.pdf",
+          "title": "[PDF] IPEDS Data Collection System - OIRA (unc.edu)",
+          "score": 94
+        },
+        {
+          "url": "https://www.northcarolina.edu/apps/bog/doc.php?id=67687&code=bog",
+          "title": "[PDF] THE UNIVERSITY OF NORTH CAROLINA 2023-24 Operating ...",
+          "score": 63
+        },
+        {
+          "url": "https://www.northcarolina.edu/apps/bog/doc.php?id=68692&code=bog",
+          "title": "[PDF] UNC SYSTEM WORKFORCE ALIGNMENT REPORT",
+          "score": 55
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoh000nvqf2uj3pjgxw",
+      "schoolName": "Carnegie Mellon University",
+      "schoolNameNorm": "carnegie mellon university",
+      "usNewsRank": 24,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Carnegie Mellon University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.cmu.edu/ira/CDS/pdf/cds_2024-25/common-data-set-2024-2025-21feb2025.pdf",
+          "title": "[PDF] Common Data Set for 2024-2025 - Carnegie Mellon University",
+          "score": 157
+        },
+        {
+          "url": "https://www.cmu.edu/ira/CDS/pdf/cds_2024-25/cds-2024-c-first-time-first-year-freshman-admission-21feb2025.pdf",
+          "title": "[PDF] c. first-time, first-year (freshman) admission—pittsburgh campus",
+          "score": 155
+        },
+        {
+          "url": "https://www.cmu.edu/ira/CDS/pdf/cds_2024-25/common-data-set-2024-2025-26jun2025.pdf",
+          "title": "Common Data Set 2024-2025",
+          "score": 154
+        },
+        {
+          "url": "https://www.ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_5.pdf",
+          "title": "[PDF] 2024-2025 Common Data Set - Institutional Research and Analytics",
+          "score": 153
+        },
+        {
+          "url": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+          "title": "[PDF] 2024-2025 Common Data Set Pittsburgh Campus",
+          "score": 145
+        },
+        {
+          "url": "https://accelerate.us/wp-content/uploads/2024/08/Accelerates-Community-of-Practice-Directory-2024-25-Google-Sheets.pdf",
+          "title": "[PDF] Accelerate's Community of Practice Directory 2024-25 - Google Sheets",
+          "score": 94
+        },
+        {
+          "url": "https://www.gcc.edu/Portals/0/2024-25-Catalog.pdf",
+          "title": "[PDF] 2024-25 Bulletin - Grove City College",
+          "score": 88
+        },
+        {
+          "url": "https://www.flbog.edu/wp-content/uploads/2023/06/SPC_03b_FAMU_2023_Accountability_Plan_CE.pdf",
+          "title": "2023 Accountability Plan",
+          "score": 87
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoj000ovqf226pta7or",
+      "schoolName": "Emory University",
+      "schoolNameNorm": "emory university",
+      "usNewsRank": 24,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Emory University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 155
+        },
+        {
+          "url": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+          "title": "[PDF] emory-common-data-set-2024-2025.pdf - Office of the Provost",
+          "score": 120
+        },
+        {
+          "url": "https://catalog.college.emory.edu/includes/documents/catalog-archives/2024-2025-catalog.pdf",
+          "title": "[PDF] Emory College Catalog 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://physics.emory.edu/documents/emory_physics_graduate_handbook_2024-2025.pdf",
+          "title": "[PDF] Guidelines and Program Information 2024-2025",
+          "score": 110
+        },
+        {
+          "url": "https://www.aaup.org/sites/default/files/2025-07/ARES-2024-25-Bulletin.pdf",
+          "title": "[PDF] The Annual Report on the Economic Status of the Profession, 2024–25",
+          "score": 110
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 110
+        },
+        {
+          "url": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/Emory-Common-Data-Set-2023-2024.pdf",
+          "title": "[PDF] Emory-Common-Data-Set-2023-2024.pdf",
+          "score": 98
+        },
+        {
+          "url": "https://www.medrxiv.org/content/10.64898/2026.01.08.26343704v1.full.pdf",
+          "title": "[PDF] Study protocol for estimating modern US social contact patterns",
+          "score": 89
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkom000pvqf2se90bue1",
+      "schoolName": "University of Virginia",
+      "schoolNameNorm": "university of virginia",
+      "usNewsRank": 24,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Virginia\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://irds.vcu.edu/media/decision-support/pdf/commondatasets/CommonDataSet2024-25.pdf",
+          "title": "[PDF] Virginia Commonwealth University Common Data Set 2024-2025",
+          "score": 145
+        },
+        {
+          "url": "https://www.leeuniversity.edu/wp-content/uploads/2024-2025-CDS.pdf",
+          "title": "[PDF] Common Data Set 2024-25 - Cleveland - Lee University",
+          "score": 135
+        },
+        {
+          "url": "https://guidance.svaga.net/wp-content/uploads/2025/11/Use-and-Abuse-of-Early-Decision-24-25.pdf",
+          "title": "[PDF] The Use and Abuse of Early Decision in College Admissions",
+          "score": 111
+        },
+        {
+          "url": "http://bov.virginia.edu/sites/bov/files/2025-09/Board%20Basics%202025%20Book%20-%20FINAL.pdf",
+          "title": "[PDF] BOARD BASICS",
+          "score": 104
+        },
+        {
+          "url": "http://bov.virginia.edu/sites/bov/files/2024-08/Board%20Basics%20Book.pdf",
+          "title": "[PDF] BOARD BASICS",
+          "score": 101
+        },
+        {
+          "url": "https://oiep.gmu.edu/wp-content/uploads/2024/02/CDS-2023_2024-Final-Excel-Export.pdf",
+          "title": "[PDF] CDS_NEW_2023_2024 FINAL.xlsx",
+          "score": 91
+        },
+        {
+          "url": "https://virginiaworks.gov/wp-content/uploads/2026/04/Virginia-State-Plan-Mod_-2026.pdf",
+          "title": "[PDF] VIRGINIA PYS 2024-2027 DRAFT - Virginia Works",
+          "score": 69
+        },
+        {
+          "url": "https://sheeo.org/wp-content/uploads/2025/06/Q2.25-Policy-Report.pdf",
+          "title": "[PDF] Quarterly Policy Review Spring 2025 - SHEEO",
+          "score": 67
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoo000qvqf2jgkrffw1",
+      "schoolName": "Washington University in St. Louis",
+      "schoolNameNorm": "washington university in st. louis",
+      "usNewsRank": 24,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Washington University in St. Louis\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://washu.edu/app/uploads/2025/06/2024-2025-WashU-CDS.pdf",
+          "title": "[PDF] A. GENERAL INFORMATION - WashU",
+          "score": 160
+        },
+        {
+          "url": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Hamilton College",
+          "score": 155
+        },
+        {
+          "url": "https://washu.edu/app/uploads/2024/12/WashU-CDS-2023-2024.pdf",
+          "title": "[PDF] Washington University in St. Louis Common Data Set 2023-2024",
+          "score": 148
+        },
+        {
+          "url": "https://bulletin.wustl.edu/about/prior/Bulletin_2024-25_CAPS.pdf",
+          "title": "[PDF] 2024-25 Bulletin",
+          "score": 110
+        },
+        {
+          "url": "https://bpb-us-e2.wpmucdn.com/sites.wustl.edu/dist/5/2478/files/2025/12/CRTV-9068-Endowment-Annual-Report-24-25-Digital.pdf",
+          "title": "[PDF] Endowment Annual Report 2024-25 - CDN",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/grad/Bulletin_2024-25_Brown.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Brown School",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/undergrad/Bulletin_2024-25_Undergraduate.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Undergraduate Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://www.medrxiv.org/content/10.64898/2026.03.01.26347258v1.full.pdf",
+          "title": "[PDF] Constructing a Literature-Derived Database for Benchmarking ...",
+          "score": 89
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkow000tvqf2qc5n3qhd",
+      "schoolName": "University of Florida",
+      "schoolNameNorm": "university of florida",
+      "usNewsRank": 28,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Florida\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - University of Florida",
+          "score": 155
+        },
+        {
+          "url": "https://www.cmc.edu/sites/default/files/CDS_2025-26.pdf",
+          "title": "[PDF] Common Data Set 2025-2026 - Claremont McKenna College",
+          "score": 155
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 153
+        },
+        {
+          "url": "https://www.flbog.edu/wp-content/uploads/2025/06/SPC_04e_2025_FPOLY_Accountability_Plan_hc.pdf",
+          "title": "[PDF] 2025 Accountability Plan - State University System of Florida",
+          "score": 153
+        },
+        {
+          "url": "https://www.unf.edu/provost/files/certified.rf.2024_UNF_Accountability_Plan_BOG_Approved_2024-06-28.pdf",
+          "title": "[PDF] 2024 Accountability Plan University of North Florida",
+          "score": 125
+        },
+        {
+          "url": "https://www.flbog.edu/wp-content/uploads/2025/06/SPC_04i_2025_UF_Accountability_Plan_al.pdf",
+          "title": "[PDF] 2025 University of Florida Accountability Plan",
+          "score": 118
+        },
+        {
+          "url": "https://data-apps.ir.aa.ufl.edu/public/ipeds/2024/Admissions%20-%20Main.pdf",
+          "title": "[PDF] Admissions 2024-25 - University of Florida",
+          "score": 115
+        },
+        {
+          "url": "https://ir.fsu.edu/pocketfactbooks/2024-25%20Pocket%20Fact%20Book.pdf",
+          "title": "[PDF] 2024-2025 Florida State University Pocket Fact Book",
+          "score": 110
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkoz000uvqf2rnozc3fe",
+      "schoolName": "University of Southern California",
+      "schoolNameNorm": "university of southern california",
+      "usNewsRank": 28,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Southern California\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research Office - Caltech",
+          "score": 160
+        },
+        {
+          "url": "https://www.cmc.edu/sites/default/files/CDS_2025-26.pdf",
+          "title": "[PDF] Common Data Set 2025-2026 - Claremont McKenna College",
+          "score": 160
+        },
+        {
+          "url": "https://www.calstatela.edu/sites/default/files/CDS2425_0.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Cal State LA",
+          "score": 155
+        },
+        {
+          "url": "https://www.oxy.edu/sites/default/files/assets/Institutional_Research/CDS%20Total_0.pdf",
+          "title": "[PDF] Common Data Set 2023-2024 - Occidental College",
+          "score": 143
+        },
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 143
+        },
+        {
+          "url": "https://dornsife.usc.edu/cesr/wp-content/uploads/sites/54/2026/03/Chronic-Absenteeism_Volume-II_v5.pdf",
+          "title": "[PDF] A Deep Exploration of Chronic Absenteeism: - USC Dornsife",
+          "score": 110
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://dornsife.usc.edu/cesr/wp-content/uploads/sites/54/2025/03/UAS_CARE_Agreement_Across_The_Aisle.pdf",
+          "title": "[PDF] Agreement Across the Aisle: - USC Dornsife",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkp1000vvqf2iogfyk82",
+      "schoolName": "University of Texas at Austin",
+      "schoolNameNorm": "university of texas at austin",
+      "usNewsRank": 32,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Texas at Austin\" filetype:pdf",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025",
+          "url": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+          "snippet": "social work, business, or public health in which faculty teach virtually only graduate level students. [...] undergraduates who had no financial need and who were awarded institutional non-need-based scholarship or grant aid. [...] C1-C2: A",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.uttyler.edu/offices/information-analysis/files/cds-2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - UT Tyler",
+          "score": 155
+        },
+        {
+          "url": "https://www.utsystem.edu/sites/default/files/documents/publication/2025/ut-system-smartbook/smartbook-2025-website-upload-october.pdf",
+          "title": "SmartBook 2025 Facts and Trends",
+          "score": 125
+        },
+        {
+          "url": "https://oir.uga.edu/wp-content/uploads/UGA_FactBook2024.pdf",
+          "title": "[PDF] Fact Book 2024 - UGA Office of Institutional Research",
+          "score": 111
+        },
+        {
+          "url": "https://catalog.utexas.edu/archive/2024-25/pdf/2024-26-undergraduate.pdf",
+          "title": "[PDF] The University of at Austin",
+          "score": 110
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 109
+        },
+        {
+          "url": "https://catalog.utexas.edu/pdf/2024-25-graduate.pdf",
+          "title": "PowerPoint Presentation",
+          "score": 103
+        },
+        {
+          "url": "https://morrisbrown.edu/wp-content/uploads/2024/07/MBC-Course-Catalog-07_2024-1.pdf",
+          "title": "[PDF] 2024 - 2025 CATALOG - Morris Brown College",
+          "score": 74
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkp4000wvqf2ah317ku6",
+      "schoolName": "Georgia Institute of Technology",
+      "schoolNameNorm": "georgia institute of technology",
+      "usNewsRank": 33,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Georgia Institute of Technology\" filetype:pdf",
+      "selectedUrl": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set - Georgia Southern University",
+          "url": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+          "snippet": "32 Common Data Set Definitions ............................................................................................................................................................... 33 Financial Aid Definitions.....................",
+          "score": 122
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research & Planning",
+          "score": 153
+        },
+        {
+          "url": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Provost | Emory University",
+          "score": 148
+        },
+        {
+          "url": "https://www.westga.edu/assets/iea/docs/CDS_f2024.pdf",
+          "title": "[PDF] University of West Georgia Common Data Set 2024-2025",
+          "score": 143
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 118
+        },
+        {
+          "url": "https://irout.gcsu.edu/factbook/Fact_Book_2025.pdf",
+          "title": "[PDF] Download/View - Georgia College",
+          "score": 93
+        },
+        {
+          "url": "https://oir.uga.edu/wp-content/uploads/UGA_FactBook2024.pdf",
+          "title": "[PDF] Fact Book 2024 - UGA Office of Institutional Research",
+          "score": 82
+        },
+        {
+          "url": "https://cse.gatech.edu/sites/default/files/documents/2024/Handbook-2024-08-06.pdf",
+          "title": "[PDF] 2024 – 2025 CSE Graduate Student Handbook",
+          "score": 75
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkp9000yvqf29pcl812t",
+      "schoolName": "New York University",
+      "schoolNameNorm": "new york university",
+      "usNewsRank": 35,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"New York University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.ccny.cuny.edu/sites/default/files/2025-03/20250324_FINAL%20CDS-2024-2025.pdf?srsltid=AfmBOoouaEvOJ8VmVGNJwARNwNPbsOEHL2sdV2ANGbcTVIpqcQIIPrlo",
+          "title": "[PDF] Common Data Set 2024-2025 - The City College of New York - CUNY",
+          "score": 154
+        },
+        {
+          "url": "https://www.ccny.cuny.edu/sites/default/files/2025-03/20250324_FINAL%20CDS-2024-2025.pdf?srsltid=AfmBOoqFRsoU24MtxucPtSFes4MfUcOssDFAtOdVYsonyrRof2akyPqb",
+          "title": "[PDF] Common Data Set 2024-2025 - The City College of New York - CUNY",
+          "score": 154
+        },
+        {
+          "url": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/2024-2025%20(pdf,%20file%20size%20907KB).pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - New York University",
+          "score": 152
+        },
+        {
+          "url": "https://irp.dpb.cornell.edu/wp-content/uploads/2025/07/CDS-2024-2025-v6-print.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research & Planning",
+          "score": 149
+        },
+        {
+          "url": "https://www.binghamton.edu/offices/oir/upload_data/cds20242025p.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Binghamton University",
+          "score": 147
+        },
+        {
+          "url": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - University at Buffalo",
+          "score": 141
+        },
+        {
+          "url": "https://accelerate.us/wp-content/uploads/2024/08/Accelerates-Community-of-Practice-Directory-2024-25-Google-Sheets.pdf",
+          "title": "[PDF] Accelerate's Community of Practice Directory 2024-25 - Google Sheets",
+          "score": 87
+        },
+        {
+          "url": "https://www.osc.ny.gov/files/reports/pdf/missing-school-ny-chronic-absenteeism.pdf",
+          "title": "Missing School New York’s Stubbornly High Rates of Chronic Absenteeism",
+          "score": 59
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpb000zvqf2645ltfg6",
+      "schoolName": "University of California, Santa Barbara",
+      "schoolNameNorm": "university of california, santa barbara",
+      "usNewsRank": 35,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of California, Santa Barbara\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://lao.ca.gov/reports/2024/4862/UC-Budget-022824.pdf",
+          "title": "[PDF] The 2024-25 Budget: University of California",
+          "score": 118
+        },
+        {
+          "url": "https://ucop.edu/operating-budget/_files/legreports/2526/uc_multi-year_compact_annual_legrpt.pdf",
+          "title": "[PDF] UC Multi-Year Compact Annual Report - UCOP",
+          "score": 118
+        },
+        {
+          "url": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/uc_2024_multi-year_compact_and_cost_associated_legrpt.pdf",
+          "title": "[PDF] 2024 Multi-Year Compact Annual and Cost Associated ... - UCOP",
+          "score": 110
+        },
+        {
+          "url": "https://engineering.ucsb.edu/sites/default/files/24-25_GEAR_DIGITAL.pdf",
+          "title": "[PDF] 2024-2025",
+          "score": 110
+        },
+        {
+          "url": "https://regents.universityofcalifornia.edu/regmeet/jan25/j1attach.pdf",
+          "title": "[PDF] 2024 Multi-Year Compact Annual and Cost Associated Legislative ...",
+          "score": 110
+        },
+        {
+          "url": "https://www.cccco.edu/-/media/CCCCO-Website/docs/report/2024-25-compendium-of-allocations-and-resources.pdf",
+          "title": "[PDF] 2024-25-compendium-of-allocations-and-resources.pdf",
+          "score": 110
+        },
+        {
+          "url": "https://www.ucop.edu/uc-controller/financial-reports/systemwide-reports/annual-financial-reports/24-25/annual-financial-report-2025.pdf",
+          "title": "[PDF] Annual Financial Report - University of California - UCOP",
+          "score": 90
+        },
+        {
+          "url": "https://regents.universityofcalifornia.edu/regmeet/nov25/f3attach1.pdf",
+          "title": "[PDF] Annual Financial Report - Regents of the University of California",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpe0010vqf2xzzjz779",
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "schoolNameNorm": "university of illinois urbana-champaign",
+      "usNewsRank": 35,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Illinois Urbana-Champaign\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025",
+          "score": 148
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://www.studentcode.illinois.edu/sites/default/files/2024-09/2024-Student-Code.pdf",
+          "title": "[PDF] Student Code 2024-2025 - University of Illinois",
+          "score": 100
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 93
+        },
+        {
+          "url": "https://www.uis.edu/sites/default/files/inline-images/Catalog%202024-2025.pdf",
+          "title": "[PDF] Catalog 2024-2025 - University of Illinois Springfield",
+          "score": 89
+        },
+        {
+          "url": "https://www.zelma.ai/data_documentation/EDC_technical_documentation_v3.0.pdf",
+          "title": "[PDF] Education Data Center December 2025 Version 3.0",
+          "score": 71
+        },
+        {
+          "url": "https://cloudtest2.usmd.edu/regents/agendas/20260129-EPSLS-PublicSession.pdf",
+          "title": "[PDF] Board of Regents Committee on Education Policy and Student Life ...",
+          "score": 69
+        },
+        {
+          "url": "https://www.ibhe.org/assets/files/Reports/IBHE_Y24_Revenues_and_Expenditures_Report_FINAL.pdf",
+          "title": "ANNUAL REPORT ON PUBLIC UNIVERSITY REVENUES ...",
+          "score": 65
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpi0011vqf28xmv4but",
+      "schoolName": "University of Wisconsin-Madison",
+      "schoolNameNorm": "university of wisconsin-madison",
+      "usNewsRank": 35,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Wisconsin-Madison\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 153
+        },
+        {
+          "url": "https://docs.legis.wisconsin.gov/misc/lfb/informational_papers/january_2025/0038_university_of_wisconsin_tuition_informational_paper_38.pdf",
+          "title": "[PDF] University of Wisconsin Tuition",
+          "score": 109
+        },
+        {
+          "url": "https://www.wisconsin.edu/budget-planning/download/budget_documents/annual_budget_documents/2024-25-UW-System-Annual-Budget-Document.pdf",
+          "title": "[PDF] 2024-25-UW-System-Annual-Budget-Document.pdf",
+          "score": 102
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 101
+        },
+        {
+          "url": "https://grad.wisc.edu/wp-content/uploads/sites/329/2025/08/Annual-Report-2024-2025.pdf",
+          "title": "Graduate School Annual Report 2024-2025",
+          "score": 98
+        },
+        {
+          "url": "https://stat.wisc.edu/wp-content/uploads/sites/870/2024/08/2024-25-MSDS-Handbook.pdf",
+          "title": "[PDF] 2024-25 MSDS Handbook.docx - Department of Statistics",
+          "score": 93
+        },
+        {
+          "url": "https://stat.wisc.edu/wp-content/uploads/sites/870/2024/08/2024-25-MS-Data-Science-Handbook.pdf",
+          "title": "[PDF] 2024-25 MS Data Science Handbook.docx - Department of Statistics",
+          "score": 88
+        },
+        {
+          "url": "https://docs.legis.wisconsin.gov/misc/lfb/informational_papers/january_2025/0037_university_of_wisconsin_system_overview_informational_paper_37.pdf",
+          "title": "~Title",
+          "score": 72
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpl0012vqf28whnvaoj",
+      "schoolName": "Boston College",
+      "schoolNameNorm": "boston college",
+      "usNewsRank": 39,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Boston College\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 153
+        },
+        {
+          "url": "https://www.babson.edu/media/babson/assets/rankings/babson-college-common-data-set.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Babson College",
+          "score": 152
+        },
+        {
+          "url": "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+          "title": "[PDF] CDS-2024-25.pdf - University Decision Support",
+          "score": 151
+        },
+        {
+          "url": "https://www.bu.edu/asir/files/2025/03/cds-2025.pdf",
+          "title": "[PDF] Fall 2024 - Boston UniversityCommon Data Set",
+          "score": 151
+        },
+        {
+          "url": "https://www.bu.edu/asir/files/2025/03/cds-2025-c.pdf",
+          "title": "Boston UniversityCommon Data Set",
+          "score": 146
+        },
+        {
+          "url": "https://www.bu.edu/asir/files/2025/03/cds-2025-h.pdf",
+          "title": "H. Financial Aid",
+          "score": 142
+        },
+        {
+          "url": "https://www.brandeis.edu/institutional-research/docs/cds-2024-25.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Brandeis University",
+          "score": 137
+        },
+        {
+          "url": "https://bentleydownloads.s3.amazonaws.com/general/2023-24+Common+Data+Set+(1).pdf",
+          "title": "[PDF] 2023-24+Common+Data+Set+(1).pdf",
+          "score": 91
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpo0013vqf2byqbw5mb",
+      "schoolName": "Rutgers University-New Brunswick",
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "usNewsRank": 40,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Rutgers University-New Brunswick\" filetype:pdf",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] 2023-2024 rutgers university – new brunswick - A. General Information",
+          "url": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+          "snippet": "X Marine Option (for Naval ROTC) ROTC (program offered in cooperation with Reserve Officers' Training Corps) Rutgers University - New Brunswick - August 2024 Page 18 Common Data Set 2023-2024 RUTGERS UNIVERSITY – NEW BRUNSWICK G0 Please pro",
+          "score": 163
+        },
+        {
+          "title": "[PDF] newark - Rutgers University",
+          "url": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf",
+          "snippet": "Rutgers University - Newark - August 2024 Page 22 Common Data Set 2023-2024 RUTGERS UNIVERSITY – NEWARK H2A H2A First-time Full-time First-Year Full-time Undergrad (Incl. First-Year) Less Than Full-time Undergrad H2A n) Number of students i",
+          "score": 163
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://accreditation.utah.edu/_resources/documents/2025/mid-cycle_self_evaluation_2-14-2025.pdf",
+          "title": "[PDF] Mid-Cycle Self-Evaluation Report for the Northwest Commission on ...",
+          "score": 124
+        },
+        {
+          "url": "https://dcs.rutgers.edu/wp-content/uploads/2025/10/DCS-Annual-Report-2024-25.pdf",
+          "title": "[PDF] 2024-25 ANNUAL REPORT - Digital Classroom Services",
+          "score": 110
+        },
+        {
+          "url": "https://nbfc.rutgers.edu/sites/default/files/pdf/nbfc-2024-25-annual-report--v9.8.25-.pdf",
+          "title": "[PDF] NBFC 2024-25 Annual Report - New Brunswick Faculty Council",
+          "score": 110
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://coursedog-pdfs-public-prod.s3.us-east-2.amazonaws.com/rutgers/catalog/8547415a-8dff-4860-a476-124bfd96a42e-rutgers-catalog-1762457029135.pdf",
+          "title": "[PDF] 2025-2026 New Brunswick Graduate Catalog - AWS",
+          "score": 90
+        },
+        {
+          "url": "https://obp.umich.edu/wp-content/uploads/pubdata/almanac/Almanac_20th_Edition.pdf",
+          "title": "[PDF] The Michigan Almanac - Office of Budget and Planning",
+          "score": 89
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpr0014vqf2w1o1nsyd",
+      "schoolName": "Tufts University",
+      "schoolNameNorm": "tufts university",
+      "usNewsRank": 40,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Tufts University\" filetype:pdf",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025",
+          "url": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+          "snippet": "degree that is considered the highest degree in a field: example, M. Arch (in architecture) and MFA (master of fine arts in art or theater). [...] Full-time Part-time C Exclude Include D Exclude Exclude E Include Exclude F Exclude Exclude G",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+          "title": "[PDF] Swarthmore College Common Data Set 2024-2025",
+          "score": 155
+        },
+        {
+          "url": "https://www.tuftsctsi.org/wp-content/uploads/2025/04/TuftsCTSI_2024AnnualReport_2025_Apr9-hyperlinked.pdf",
+          "title": "[PDF] REPORT 2024 - Tufts CTSI",
+          "score": 110
+        },
+        {
+          "url": "https://fletcher.tufts.edu/sites/g/files/lrezom941/files/2024-08/Fletcher%20Student%20Handbook%202024-2025.pdf",
+          "title": "[PDF] STUDENT HANDBOOK - The Fletcher School at Tufts University",
+          "score": 110
+        },
+        {
+          "url": "https://www.acmfrance.org/Content/Uploads/CMS/Images/ACM%20Catalog%202024-25%20-%20Updated%201-9-25.pdf",
+          "title": "[PDF] 2024-2025 Catalog Undergraduate and Graduate Programs",
+          "score": 109
+        },
+        {
+          "url": "https://now.stevenson.edu/wp-content/uploads/2023-24-Graduating-Student-Report.pdf",
+          "title": "[PDF] 2023-24-Graduating-Student-Report.pdf - Stevenson University",
+          "score": 98
+        },
+        {
+          "url": "https://www.adea.org/docs/default-source/annual-session/2025/2025-adea-annual-session-full-program.pdf",
+          "title": "[PDF] Friday, March 7, 2025 - ADEA",
+          "score": 89
+        },
+        {
+          "url": "https://psc.ky.gov/pscecf/2024-00370/byron%40kyrc.org/02202025075730/2025-02-20-JI-direct-ES-PUBLIC-REVISED.pdf",
+          "title": "[PDF] commonwealth of kentucky - KY PSC",
+          "score": 84
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpu0015vqf2kumhyv3t",
+      "schoolName": "University of Washington",
+      "schoolNameNorm": "university of washington",
+      "usNewsRank": 40,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Washington\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://wpcdn.web.wsu.edu/wsuwp/uploads/sites/3447/2025/04/CDS_2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Washington State University",
+          "score": 155
+        },
+        {
+          "url": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Provost | Emory University",
+          "score": 145
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 118
+        },
+        {
+          "url": "https://admit.washington.edu/wp-content/uploads/FIRST-YEAR_VIEWBOOK_WEB_25-26.pdf",
+          "title": "[PDF] Download the viewbook - Office of Admissions",
+          "score": 115
+        },
+        {
+          "url": "https://ospi.k12.wa.us/sites/default/files/2024-08/2024-25enrollmenthandbookfinal.pdf",
+          "title": "[PDF] Enrollment Reporting Handbook 2024–25 School Year - OSPI",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/undergrad/Bulletin_2024-25_Undergraduate.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Undergraduate Catalog",
+          "score": 110
+        },
+        {
+          "url": "https://admit.washington.edu/wp-content/uploads/University-of-Washington-2025-26-Transfer-Guidebook.pdf",
+          "title": "[PDF] 2025 - 2026 Transfer Student Guide - Office of Admissions",
+          "score": 95
+        },
+        {
+          "url": "https://finance.uw.edu/uwar/annualreport2024.pdf",
+          "title": "[PDF] 2024 FINANCIAL REPORT - UW Finance - University of Washington",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkpw0016vqf20t0lflxm",
+      "schoolName": "Boston University",
+      "schoolNameNorm": "boston university",
+      "usNewsRank": 43,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Boston University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.bu.edu/asir/files/2025/03/cds-2025.pdf",
+          "title": "[PDF] Fall 2024 - Boston UniversityCommon Data Set",
+          "score": 160
+        },
+        {
+          "url": "https://www.bu.edu/asir/files/2025/03/cds-2025-c.pdf",
+          "title": "[PDF] Boston UniversityCommon Data Set",
+          "score": 160
+        },
+        {
+          "url": "https://www.bu.edu/asir/files/2025/03/cds-2025-h.pdf",
+          "title": "[PDF] H. Financial Aid - Boston UniversityCommon Data Set",
+          "score": 160
+        },
+        {
+          "url": "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+          "title": "[PDF] CDS-2024-25.pdf - University Decision Support",
+          "score": 155
+        },
+        {
+          "url": "https://www.babson.edu/media/babson/assets/rankings/babson-college-common-data-set.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Babson College",
+          "score": 145
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 117
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 114
+        },
+        {
+          "url": "https://bentleydownloads.s3.amazonaws.com/general/2023-24+Common+Data+Set+(1).pdf",
+          "title": "[PDF] 2023-24+Common+Data+Set+(1).pdf",
+          "score": 98
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkq00017vqf245v5dk2j",
+      "schoolName": "Ohio State University",
+      "schoolNameNorm": "ohio state university",
+      "usNewsRank": 43,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Ohio State University\" filetype:pdf",
+      "selectedUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 202 - Institutional Research and Planning",
+          "url": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+          "snippet": "tt d Extracurricular activities (as admission factor): Special consideration in the admissions process given for participation in both school and nonschool-related activities of interest to the college, such as clubs, hobbies, student gover",
+          "score": 160
+        },
+        {
+          "title": "[PDF] CDS-2023-2024-The Ohio State University-Columbus.pdf",
+          "url": "https://irp.osu.edu/sites/default/files/documents/2025/07/CDS-2023-2024-The%20Ohio%20State%20University-Columbus.pdf",
+          "snippet": "- Include early decision, early action, and students who began studies during summer in this cohort. [...] table below, please report information about the size of classes and class sections offered in the Fall 2023 term. [...] -operated, o",
+          "score": 108
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.minotstateu.edu/instplan/_documents/common_data_set/Common-Data-Set-24-25.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Minot State University",
+          "score": 150
+        },
+        {
+          "url": "https://irp.osu.edu/sites/default/files/documents/2024/08/CDS_2023-2024-Marion_0.pdf",
+          "title": "[PDF] Common Data Set 2023-2024 Marion Campus",
+          "score": 143
+        },
+        {
+          "url": "https://www.ashland.edu/sites/default/files/2025-03/CDS%202023_2024.pdf",
+          "title": "2023-2024 Common Data Set",
+          "score": 143
+        },
+        {
+          "url": "https://irp.osu.edu/sites/default/files/documents/2023/09/CDS-2022-2023-Columbus.pdf",
+          "title": "[PDF] CDS 2022-23 Columbus - Institutional Research and Planning",
+          "score": 140
+        },
+        {
+          "url": "https://www.ohio.edu/iea/university-data",
+          "title": "University Data | Ohio University",
+          "score": 95
+        },
+        {
+          "url": "https://talk.collegeconfidential.com/t/common-data-set-for-2015-2016-for-the-ohio-state-university/1786252",
+          "title": "Common Data Set for 2015-2016 for the Ohio State University - Ohio State University - College Confidential Forums",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkq30018vqf2xt2csyoe",
+      "schoolName": "Purdue University",
+      "schoolNameNorm": "purdue university",
+      "usNewsRank": 43,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Purdue University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://owl.purdue.edu/writinglab/about/documents/annual-report-2025-2034/2025-annual-report.pdf",
+          "title": "[PDF] Purdue OWL Annual Report 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://business.purdue.edu/centers/purce/purce-annual-report_2024-25.pdf",
+          "title": "[PDF] PURCE Annual Report 2024-25 - Mitch Daniels School of Business",
+          "score": 110
+        },
+        {
+          "url": "https://www.purdueforlife.org/app/uploads/JPC-donor-guide-24-WEB-1.pdf",
+          "title": "[PDF] 2024-25 MEMBERSHIP INFORMATION - Purdue for Life Foundation",
+          "score": 110
+        },
+        {
+          "url": "https://www.purdue.edu/treasurer/finance/wp-content/uploads/2026/01/508_FY2025-Purdue-Financial-Report-BLENDED-FINAL.pdf",
+          "title": "[PDF] Financial Report 2025 - Purdue University",
+          "score": 90
+        },
+        {
+          "url": "https://www.purdue.edu/treasurer/finance/wp-content/uploads/2024/12/508_FY2024-Purdue-Financial-Report-BLENDED-FINAL-10_25_24.pdf",
+          "title": "[PDF] Financial Report 2024 - Purdue University",
+          "score": 90
+        },
+        {
+          "url": "https://www.purdue.edu/business/sps//pdf/single_audit/FY2025_Purdue_Final_Financial_and_Single_Audit_Reports.pdf",
+          "title": "[PDF] Financial Report 2025 - Purdue University",
+          "score": 90
+        },
+        {
+          "url": "https://datamine.purdue.edu/posters/TDM-Report_2024-4.pdf",
+          "title": "[PDF] TDM Report_2024 - The Data Mine",
+          "score": 90
+        },
+        {
+          "url": "https://www.pfw.edu/sites/default/files/documents-2025/04/083-EMSE-Impact-Report-2024-FINALv2.pdf",
+          "title": "[PDF] impact report 2023–24 - Purdue University Fort Wayne",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "schoolNameNorm": "university of maryland, college park",
+      "usNewsRank": 46,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Maryland, College Park\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://oiep.gmu.edu/wp-content/uploads/2025/02/2024-2025-CDS-Final.pdf",
+          "title": "[PDF] Common Data Set 2024-2025",
+          "score": 155
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 109
+        },
+        {
+          "url": "https://asset.findingschool.com/attachments/user_file/user212673_file/706edcab5a91b335ed6bbe4c7e65ff87.pdf",
+          "title": "[PDF] 2024-25 College Admission Profile - FindingSchool",
+          "score": 98
+        },
+        {
+          "url": "https://www.registrar.umd.edu/sites/default/files/2024-03/reg-guide-2024-25.pdf",
+          "title": "[PDF] Registration Guide 2024-2025 - University Registrar",
+          "score": 95
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 91
+        },
+        {
+          "url": "https://irpa.umd.edu/CampusCounts/Admissions/apps_ug.pdf",
+          "title": "[PDF] UMD Undergraduate Application Summary",
+          "score": 87
+        },
+        {
+          "url": "https://irpa.umd.edu/CampusCounts/Enrollments/stuprofile_allug.pdf",
+          "title": "[PDF] UMD Undergraduate Student Profile - Fall 2025",
+          "score": 86
+        },
+        {
+          "url": "https://irpa.umd.edu/CampusCounts/Enrollments/spring_enroll.pdf",
+          "title": "[PDF] spring 2024 - irpa@umd.edu",
+          "score": 72
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "schoolNameNorm": "lehigh university",
+      "usNewsRank": 47,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Lehigh University\" filetype:pdf",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Data @ Lehigh",
+          "url": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+          "snippet": "\u0014 Common Data Set 2024-2025 C9-C12: First-time, first-year Profile Provide information for ALL enrolled, degree-seeking, full-time and part-time, first-time, first-year students enrolled in Fall 2024, including students who began studies du",
+          "score": 156
+        },
+        {
+          "title": "[PDF] Common Data Set 2025-2026",
+          "url": "https://data.lehigh.edu/sites/data.lehigh.edu/files/1302026-CDS-2025-2026-FINAL.pdf",
+          "snippet": "Common Data Set 2025-2026 A0 Respondent Information (Not for Publication) First Name: Caroline Last Name: Seguin Title: Director of Institutional Research Office: Office of Institutional Research Address Line 1: 27 Memorial Dr West Address ",
+          "score": 130
+        },
+        {
+          "title": "[PDF] A0. Respondent Information (not for publication) A0A. Comments ...",
+          "url": "https://data.lehigh.edu/sites/data.lehigh.edu/files/Final_CDS_2023-2024_Revised_7.12.2024.pdf",
+          "snippet": "Associate Vice President for Institutional Data Office of Institutional Data 27 Memorial Drive West Bethlehem Pennsylvania 18015 United States (610) 758-5890 85890 data@lehigh.edu Are your responses to the CDS posted for reference on your i",
+          "score": 92
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.collegetransitions.com/dataverse/common-data-set-repository/",
+          "title": "Common Data Set Repository - College Transitions",
+          "score": 107
+        },
+        {
+          "url": "https://studentaffairs.lehigh.edu/sites/studentaffairs.lehigh.edu/files/offices/stuaff/docs/Student%20Affairs%20Annual%20Report_2024-25_FINAL.pdf",
+          "title": "[PDF] annual report 2024-2025 - Student Affairs - Lehigh University",
+          "score": 104
+        },
+        {
+          "url": "https://studentaffairs.lehigh.edu/sites/studentaffairs.lehigh.edu/files/offices/ofye/docs/2025%20Draft%20book_web%20printable1.pdf",
+          "title": "[PDF] Draft Book 2024-2025 - Student Affairs - Lehigh University",
+          "score": 98
+        },
+        {
+          "url": "https://www.csudh.edu/Assets/csudh-sites/university-catalog/docs/2024-25_CSU-Dominguez-Hills_University%20Catalog.pdf",
+          "title": "[PDF] 2024-25 University Catalog",
+          "score": 95
+        },
+        {
+          "url": "https://adminlb.imodules.com/s/1127/images/editor_documents/accessible_pdfs/fy26/campaign_impact_8.5x11_final_accessible_ua_edit5.pdf",
+          "title": "[PDF] 2025 Campaign Impact Report",
+          "score": 82
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkqc001bvqf22zfkx827",
+      "schoolName": "Texas A&M University",
+      "schoolNameNorm": "texas a&m university",
+      "usNewsRank": 47,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Texas A&M University\" filetype:pdf",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025",
+          "url": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+          "snippet": "or -affiliated housing available for undergraduates at your institution. [...] C11. Percentage of all enrolled, degree-seeking, first-time, first-year students who had high school grade-point averages within each of the following ranges (us",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.wtamu.edu/_files/docs/academics/Institutional%20Research/CDS.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - West Texas A&M University",
+          "score": 155
+        },
+        {
+          "url": "https://abpa.tamu.edu/getattachment/e2dfa8b4-62b8-4580-8b80-635400cb4865/Texas-A-M_CommonDataSet_2023_2024.pdf",
+          "title": "[PDF] Texas-A-M_CommonDataSet_2023_2024.pdf",
+          "score": 143
+        },
+        {
+          "url": "https://www.tamus.edu/assets/files/budgets-acct/pdf/lars/FY24-FY25/TAMUCT.pdf",
+          "title": "[PDF] Texas A&M University",
+          "score": 110
+        },
+        {
+          "url": "https://www.tamuct.edu/wp-content/uploads/2025/05/Student-Rules-2024-25.pdf",
+          "title": "[PDF] STUDENT RULES 2024-2025 - TAMUCT",
+          "score": 110
+        },
+        {
+          "url": "https://adelante.tamusa.edu/documents/Fall-2025-Issue.pdf",
+          "title": "[PDF] FALL 2025 - Adelante Magazine - Texas A&M University-San Antonio",
+          "score": 90
+        },
+        {
+          "url": "https://liberalarts.tamu.edu/resi/wp-content/uploads/sites/21/2025/09/24-25-RESI-Report.pdf",
+          "title": "24-25-RESI-Report.pdf - Texas A&M College of Liberal Arts",
+          "score": 90
+        },
+        {
+          "url": "https://www.tamus.edu/assets/files/budgets-acct/pdf/lars/FY26-FY27/TAMUCT.pdf",
+          "title": "[PDF] Texas A&M University−Central Texas",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkqf001cvqf2vdqpa1he",
+      "schoolName": "University of Georgia",
+      "schoolNameNorm": "university of georgia",
+      "usNewsRank": 47,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Georgia\" filetype:pdf",
+      "selectedUrl": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set - Georgia Southern University",
+          "url": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+          "snippet": "hour In‐state (out‐of‐district): $284.00 per semester hour Out‐of‐state: $1,160.00 per semester hour NONRESIDENT ALIENS: $1,160.00 per semester hour Current Distance Education ‐ Online Programs and Professional Program Rates are included on",
+          "score": 140
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Research & Planning",
+          "score": 160
+        },
+        {
+          "url": "https://www.westga.edu/assets/iea/docs/CDS_f2024.pdf",
+          "title": "[PDF] University of West Georgia Common Data Set 2024-2025",
+          "score": 160
+        },
+        {
+          "url": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+          "title": "[PDF] Rice University Common Data Set 2024-2025 A1 Address ...",
+          "score": 155
+        },
+        {
+          "url": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Provost | Emory University",
+          "score": 145
+        },
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 143
+        },
+        {
+          "url": "https://irp.osu.edu/sites/default/files/documents/2025/07/CDS-2023-2024-The%20Ohio%20State%20University-Columbus.pdf",
+          "title": "[PDF] CDS-2023-2024-The Ohio State University-Columbus.pdf",
+          "score": 108
+        },
+        {
+          "url": "https://oir.uga.edu/wp-content/uploads/UGA_FactBook2024.pdf",
+          "title": "[PDF] Fact Book 2024 - UGA Office of Institutional Research",
+          "score": 95
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+      "schoolName": "Wake Forest University",
+      "schoolNameNorm": "wake forest university",
+      "usNewsRank": 47,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Wake Forest University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+          "title": "Common Data Set 2024-2025",
+          "score": 155
+        },
+        {
+          "url": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2023/04/CDS_2022-2023.pdf",
+          "title": "[PDF] Common Data Set 2022-2023 - Wake Forest University",
+          "score": 135
+        },
+        {
+          "url": "https://bulletin.wfu.edu/pdf/Undergraduate%20Bulletin%202024-2025.pdf",
+          "title": "[PDF] Bulletin 2024-2025",
+          "score": 110
+        },
+        {
+          "url": "https://prod.cdn.business.wfu.edu/uploads/2024/07/WFUSB-Graduate-Student-2024-25-Handbook.pdf",
+          "title": "[PDF] Graduate Student Handbook 2024-2025 - Wake Forest University",
+          "score": 110
+        },
+        {
+          "url": "https://business.wfu.edu/wp-content/uploads/2024/11/Graduate-Student-Handbook.pdf",
+          "title": "[PDF] Graduate Student Handbook 2024-2025",
+          "score": 110
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://prod.wp.cdn.aws.wfu.edu/sites/43/2024/10/WF-Mag-Fall-2024_web.pdf",
+          "title": "[PDF] FALL 2024 - Wake Forest University",
+          "score": 90
+        },
+        {
+          "url": "https://cdn.atriumhealth.org/-/media/wakeforest/school/files/centers-and-institutes/center-for-artificial-intel/cair-quarterly_fall-25.pdf?rev=ca60d0ffb7c94d45b0413708be240ba8&hash=154044F8AF0FA0B7E7BD488CC4994F0C",
+          "title": "[PDF] CAIR Quarterly, Fall 2025 - Atrium Health",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ima0008z0ti358pkae1",
+      "schoolName": "University of Minnesota Twin Cities",
+      "schoolNameNorm": "university of minnesota twin cities",
+      "usNewsRank": 51,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Minnesota Twin Cities\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Data and Research (IDR)",
+          "score": 155
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 145
+        },
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 143
+        },
+        {
+          "url": "https://www.lrl.mn.gov/docs/2023/mandated/230132/higher-education-office.pdf",
+          "title": "[PDF] Minnesota Office of Higher Education 2024-25 Governor's Biennial ...",
+          "score": 110
+        },
+        {
+          "url": "https://mn.gov/mmb-stat/documents/budget/2024-25-biennial-budget-books/governors-revised-march/higher-education-office.pdf",
+          "title": "[PDF] Minnesota Office of Higher Education Revised 2024-25 Governor's ...",
+          "score": 110
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://regents.umn.edu/sites/regents.umn.edu/files/2025-06/docket-bor-jun182025.pdf",
+          "title": "docket-bor-jun182025.pdf",
+          "score": 110
+        },
+        {
+          "url": "https://regents.umn.edu/sites/regents.umn.edu/files/2024-05/docket-fin-may2024.pdf",
+          "title": "[PDF] Finance & Operations Committee",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ilt0000z0ticnudxg0y",
+      "schoolName": "University of Rochester",
+      "schoolNameNorm": "university of rochester",
+      "usNewsRank": 52,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Rochester\" filetype:pdf",
+      "selectedUrl": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] University of Rochester Common Data Set 2024-2025",
+          "url": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf",
+          "snippet": "collects and reports non-binary gender data, please use the \"Another Gender\" category. [...] Naval ROTC is offered: x Air Force ROTC is offered: x Rochester Institute of Technology F4 Housing: Check all types of college-owned, -operated, or",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.rochester.edu/bulletin/undergraduate-bulletin-pdf.pdf",
+          "title": "[PDF] Undergraduate Bulletin - University of Rochester",
+          "score": 125
+        },
+        {
+          "url": "https://www.rochester.edu/financial-aid/wp-content/uploads/2025/07/FA-Handbook-2025-26.pdf",
+          "title": "[PDF] UNDERGRADUATE FINANCIAL AID HANDBOOK",
+          "score": 110
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://download.hlcommission.org/institutional-examples/AssuranceArgument-DoaneUniversity_INF.pdf",
+          "title": "[PDF] Sample Assurance Argument: Doane University",
+          "score": 103
+        },
+        {
+          "url": "https://obp.umich.edu/wp-content/uploads/pubdata/almanac/Almanac_20th_Edition.pdf",
+          "title": "[PDF] The Michigan Almanac - Office of Budget and Planning",
+          "score": 94
+        },
+        {
+          "url": "https://www.rochester.edu/graduate-education/wp-content/uploads/2025/11/Grad-Bulletin-2025-2026.pdf",
+          "title": "[PDF] Graduate Education - University of Rochester",
+          "score": 90
+        },
+        {
+          "url": "https://go.boarddocs.com/il/newtrier/Board.nsf/files/DLFPAZ63B126/$file/6.%20A.%20Profile%20of%20the%20Class%20of%202025%20-%20BOE%20Memo.pdf",
+          "title": "[PDF] Profile of the Class of 2025: An Academic Perspective - BoardDocs",
+          "score": 87
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iun0041z0tin8tw3f6b",
+      "schoolName": "Villanova University",
+      "schoolNameNorm": "villanova university",
+      "usNewsRank": 52,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Villanova University\" filetype:pdf",
+      "selectedUrl": "https://www.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Villanova University Common Data Set 2024-25",
+          "url": "https://www.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf",
+          "snippet": "first-time, first-year students enrolled in Fall Percent Number C9 Percent and number of first-time, first-year students enrolled in Fall 2024 who submitted national standardized (SAT/ACT) test scores. [...] school grade-point averages with",
+          "score": 160
+        },
+        {
+          "title": "[PDF] A01 Name: Sarah Lodise A02 Title: Dir. of Data ... - Villanova University",
+          "url": "https://www.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v1.pdf",
+          "snippet": "GPA Range: Students who submitted Scores Total should = 100% GPA Range: Students who did not submit Scores Total should = 100% C11 Percent Percent Percent Page 26 Common Data Set 2024-2025 C1121 Percent who had GPA of 4.0 83% C1122 Percent ",
+          "score": 160
+        },
+        {
+          "title": "[PDF] CDS_2023_2024_v2.pdf - Villanova University",
+          "url": "https://www.villanova.edu/content/dam/villanova/provost/decision_support/CDS_2023_2024_v2.pdf",
+          "snippet": "A. Initial 2016 cohort of first-time, full-time, bachelor's (or equivalent) degree-seeking undergraduate students B. Of the Initial 2016 cohort, how many did not persist and did not graduate for any of the following reasons: (report total a",
+          "score": 143
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.widener.edu/sites/default/files/2024-04/WidenerU_CDS_23-24.pdf",
+          "title": "[PDF] COMMON DATA SET - Widener University",
+          "score": 148
+        },
+        {
+          "url": "https://gradclashandbook.villanova.edu/sites/default/files/pdf/pdf_generator/202425-pdf.pdf",
+          "title": "[PDF] 2024-25 PDF",
+          "score": 110
+        },
+        {
+          "url": "https://studenthandbook.villanova.edu/sites/default/files/student-handbook-20242025-8-1-25.pdf",
+          "title": "[PDF] Student Handbook 2024-2025 - Villanova University",
+          "score": 110
+        },
+        {
+          "url": "https://live-villanova-catalog.cleancatalog.io/sites/default/files/undergraduate-catalog-20242025-6-3-25.pdf",
+          "title": "Undergraduate Catalog 2024-2025 Villanova University",
+          "score": 110
+        },
+        {
+          "url": "https://www.vnc.qld.edu.au/wp-content/uploads/2025/06/2024-Annual-Report.pdf",
+          "title": "[PDF] Annual Report (2024) - Villanova College",
+          "score": 90
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ilz0002z0tiwrsmrdi7",
+      "schoolName": "Case Western Reserve University",
+      "schoolNameNorm": "case western reserve university",
+      "usNewsRank": 53,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Case Western Reserve University\" filetype:pdf",
+      "selectedUrl": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Case Western Reserve University",
+          "url": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf",
+          "snippet": "institutional and non-institutional student aid (grants, jobs, and loans). [...] H5. Number and percent of students in class (defined in H4 above) borrowing from federal, non-federal, and any loan sources, and the average (or mean) amount b",
+          "score": 155
+        },
+        {
+          "title": "[PDF] A. General Information 2025-26 Common Data Set Overall: 1",
+          "url": "https://case.edu/ir/sites/default/files/2026-02/CDS%202025-26%20Adjusted%20Final.pdf",
+          "snippet": "x Coed residence halls Men's residence halls Women's residence halls x x x Fraternity/sorority housing Cooperative housing x Theme housing Wellness housing x Living Learning Communities Other housing options (specify): Special housing for d",
+          "score": 135
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://case.edu/ir/sites/default/files/2025-05/CWRU%202024%20-%2025%20CDS%20ADJ.pdf",
+          "title": "[PDF] A. General Information - Case Western Reserve University",
+          "score": 160
+        },
+        {
+          "url": "https://www.wtamu.edu/_files/docs/academics/Institutional%20Research/CDS.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - West Texas A&M University",
+          "score": 155
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 153
+        },
+        {
+          "url": "https://www.bw.edu/about/offices/institutional-research-assessment/_files/common-data-set-2024-25.pdf",
+          "title": "[PDF] Common Data Set 2024-25 - Berea - Baldwin Wallace University",
+          "score": 145
+        },
+        {
+          "url": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf",
+          "title": "[PDF] 2023-2024 Common Data Set Template - AWS",
+          "score": 143
+        },
+        {
+          "url": "https://case.edu/law/sites/default/files/2024-12/2024-2025%20Student%20Handbook.pdf",
+          "title": "[PDF] Case Western Reserve University",
+          "score": 110
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8im30004z0tip77mx1gm",
+      "schoolName": "Northeastern University",
+      "schoolNameNorm": "northeastern university",
+      "usNewsRank": 53,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Northeastern University\" filetype:pdf",
+      "selectedUrl": "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] CDS-2024-25.pdf - University Decision Support",
+          "url": "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+          "snippet": "Early action closing date CDS-A Page 11 Common Data Set 2024-2025 D1-D2: Fall Applicants Yes No D1 X X D2 Transfer Admission Applicants Admitted Enrolled Men 1,703 361 175 Women 1,714 314 113 Another Gender Unknown 3 0 0 Total 3,420 675 288",
+          "score": 150
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 151
+        },
+        {
+          "url": "https://guidance.svaga.net/wp-content/uploads/2025/11/Use-and-Abuse-of-Early-Decision-24-25.pdf",
+          "title": "[PDF] The Use and Abuse of Early Decision in College Admissions",
+          "score": 110
+        },
+        {
+          "url": "https://cssh.northeastern.edu/english/wp-content/uploads/sites/6/2024/08/English-PhD-Guide-2024-2025_FINAL-Draft.pdf",
+          "title": "[PDF] DOCTORAL PROGRAM GUIDE 2024-2025",
+          "score": 89
+        },
+        {
+          "url": "https://northeast.edu/_documents/about-us/strategic-plan/2023-24-annualreport.pdf",
+          "title": "[PDF] 2023-2024 Northeast Annual Report",
+          "score": 89
+        },
+        {
+          "url": "https://www.neiu.edu/sites/default/files/documents/2025/06/17/2024.09.05.%20ASAET%20Com%20Mtg%20Matls_combined_.pdf",
+          "title": "1. Fall 2024 Updates from Academic Affairs",
+          "score": 77
+        },
+        {
+          "url": "https://www.umassp.edu/sites/default/files/publications/air-2025-v1.0.pdf",
+          "title": "2025 REPORT ON ANNUAL INDICATORS",
+          "score": 73
+        },
+        {
+          "url": "https://highered.colorado.gov/publications/Reports/Legislative/OER/OER_Report_2025_Final.pdf",
+          "title": "[PDF] 2025 Open Educational Resources Report",
+          "score": 68
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8im70006z0ti47aaywzj",
+      "schoolName": "Tulane University",
+      "schoolNameNorm": "tulane university",
+      "usNewsRank": 53,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Tulane University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://small.tulane.edu/wp-content/uploads/2025/10/Annual-Report_2024-2025_sm-1.pdf",
+          "title": "[PDF] ANNUAL REPORT",
+          "score": 100
+        },
+        {
+          "url": "https://law.tulane.edu/sites/default/files/images/documents/2024-25_Student_Handbook.pdf",
+          "title": "[PDF] TULANE LAW SCHOOL STUDENT HANDBOOK 2024-25",
+          "score": 96
+        },
+        {
+          "url": "https://studentaffairs.tcu.edu/wp-content/uploads/2025/11/Board-Book-2025-Spreads.pdf",
+          "title": "[PDF] HIGHLIGHTS - TCU Student Affairs",
+          "score": 93
+        },
+        {
+          "url": "https://financialaid.tulane.edu/sites/default/files/2025-04/GUIDE2526Grad%2004222025.pdf",
+          "title": "2025-2026 - Financial Aid, Tulane",
+          "score": 91
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 89
+        },
+        {
+          "url": "https://financialaid.tulane.edu/sites/default/files/2023-12/GUIDE2425Undergraduate%20112723.pdf",
+          "title": "A Comprehensive Guide to Undergraduate Financial Aid 2024 ...",
+          "score": 87
+        },
+        {
+          "url": "https://murphy.tulane.edu/sites/default/files/2025-11/The%20Exchange%202025%20-%20The%20Murphy%20Institute.pdf",
+          "title": "[PDF] The Exchange 2025 - The Murphy Institute.pdf - Tulane University",
+          "score": 71
+        },
+        {
+          "url": "https://medicine.tulane.edu/sites/default/files/2025-09/BMS-Policy-Handbook-2025-26.pdf",
+          "title": "[PDF] BMS Policy Handbook 2025-26 - Tulane School of Medicine",
+          "score": 59
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8itq003pz0tirhvysbdj",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "usNewsRank": 53,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Minnesota, Twin Cities\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Institutional Data and Research (IDR)",
+          "score": 142
+        },
+        {
+          "url": "https://www.ncf.edu/wp-content/uploads/2026/04/2024-2025-Fact-Book-Publisher-File-4.14.26.pdf",
+          "title": "[PDF] 2024-2025 FACT BOOK - New College of Florida",
+          "score": 129
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 107
+        },
+        {
+          "url": "https://regents.umn.edu/sites/regents.umn.edu/files/2024-05/docket-fin-may2024.pdf",
+          "title": "[PDF] Finance & Operations Committee",
+          "score": 100
+        },
+        {
+          "url": "https://www.lrl.mn.gov/docs/2023/mandated/230132/higher-education-office.pdf",
+          "title": "[PDF] Minnesota Office of Higher Education 2024-25 Governor's Biennial ...",
+          "score": 96
+        },
+        {
+          "url": "https://www.aaup.org/sites/default/files/2025-07/ARES-2024-25-Bulletin.pdf",
+          "title": "[PDF] The Annual Report on the Economic Status of the Profession, 2024–25",
+          "score": 93
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 92
+        },
+        {
+          "url": "https://mn.gov/mmb-stat/documents/budget/2024-25-biennial-budget-books/governors-revised-march/higher-education-office.pdf",
+          "title": "[PDF] Minnesota Office of Higher Education Revised 2024-25 Governor's ...",
+          "score": 91
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8imj000dz0tif3r9fq0l",
+      "schoolName": "University of Connecticut",
+      "schoolNameNorm": "university of connecticut",
+      "usNewsRank": 58,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"University of Connecticut\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+          "title": "[PDF] Common Data Set 2024-25 - Office of Institutional Research",
+          "score": 153
+        },
+        {
+          "url": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - UConn",
+          "score": 150
+        },
+        {
+          "url": "https://www.conncoll.edu/media/Common-Data-Set-2024-25.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Connecticut College",
+          "score": 149
+        },
+        {
+          "url": "https://www.easternct.edu/planning-and-institutional-research/_documents/cds2024-25_a.pdf",
+          "title": "[PDF] CDS 2024-25 Old Template.xlsx - Eastern Connecticut State University",
+          "score": 146
+        },
+        {
+          "url": "https://research.collegeboard.org/media/pdf/Trends-in-College-Pricing-and-Student-Aid-2024-ADA.pdf",
+          "title": "[PDF] Trends in College Pricing and Student Aid 2024",
+          "score": 96
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 95
+        },
+        {
+          "url": "https://www.aaup.org/sites/default/files/2025-06/aaup_FCS%20Report_4.pdf",
+          "title": "[PDF] The Annual Report on the Economic Status of the Profession, 2024–25",
+          "score": 71
+        },
+        {
+          "url": "https://sheeo.org/wp-content/uploads/2025/06/Q2.25-Policy-Report.pdf",
+          "title": "[PDF] Quarterly Policy Review Spring 2025 - SHEEO",
+          "score": 65
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8imc0009z0tie59yu85k",
+      "schoolName": "Virginia Tech",
+      "schoolNameNorm": "virginia tech",
+      "usNewsRank": 58,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Virginia Tech\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf",
+          "title": "[PDF] Common Data Set 2023-2024 - Analytics & Institutional Effectiveness",
+          "score": 143
+        },
+        {
+          "url": "https://www.registrar.vt.edu/content/dam/registrar_vt_edu/documents/2024-2025%20UG%20Catalog.pdf",
+          "title": "[PDF] 2024-2025 UG Catalog - VT Registrar's office",
+          "score": 115
+        },
+        {
+          "url": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/Digest_2024-25.pdf",
+          "title": "[PDF] Data Digest 2024-25",
+          "score": 110
+        },
+        {
+          "url": "https://www.zelma.ai/data_documentation/EDC_technical_documentation_v3.0.pdf",
+          "title": "[PDF] Education Data Center December 2025 Version 3.0",
+          "score": 110
+        },
+        {
+          "url": "https://www.king.edu/wp-content/uploads/2024/07/24-25-Catalog.pdf",
+          "title": "24-25-Catalog.pdf",
+          "score": 90
+        },
+        {
+          "url": "https://www.road2college.com/georgia-tech-common-data-set",
+          "title": "Georgia Tech Common Data Set",
+          "score": 84
+        },
+        {
+          "url": "https://rga.lis.virginia.gov/Published/2023/RD680/PDF",
+          "title": "Six-Year Plans (2023): 2024-25 through 2029-30",
+          "score": 69
+        },
+        {
+          "url": "https://rga.lis.virginia.gov/Published/2025/RD16/PDF",
+          "title": "[PDF] Virginia Polytechnic Institute and State University Six-Year Plans ...",
+          "score": 55
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "schoolNameNorm": "william & mary",
+      "usNewsRank": 58,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"William & Mary\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 148
+        },
+        {
+          "url": "https://www.umt.edu/office-student-success/annual-reports/2024-2025_annual_report.pdf",
+          "title": "[PDF] Office for Student Success 2024-2025 Annual Report",
+          "score": 98
+        },
+        {
+          "url": "https://www.acmfrance.org/Content/Uploads/CMS/Images/ACM%20Catalog%202024-25%20-%20Updated%201-9-25.pdf",
+          "title": "[PDF] 2024-2025 Catalog Undergraduate and Graduate Programs",
+          "score": 84
+        },
+        {
+          "url": "https://www.national.edu/wp-content/uploads/2025/02/2024-2025-NAU-Catalog-February-2025-1.pdf",
+          "title": "[PDF] 2024-25 Catalog - National American University",
+          "score": 83
+        },
+        {
+          "url": "https://tabor.edu/wp-content/uploads/2024/09/Academic-Catalog-24-25-FINAL.pdf",
+          "title": "[PDF] Academic Catalog 2024-2025 - Tabor College",
+          "score": 71
+        },
+        {
+          "url": "https://rga.lis.virginia.gov/Published/2023/RD663/PDF",
+          "title": "[PDF] William & Mary Six-Year Plans (2023): 2024-25 through 2029-30",
+          "score": 63
+        },
+        {
+          "url": "https://www.wm.edu/offices/revescenter/publications/worldminded/2024-fall/2024-fa-world-minded-website.pdf",
+          "title": "[PDF] Flourishing - William & Mary",
+          "score": 62
+        },
+        {
+          "url": "https://www.wm.edu/as/facultyresources/committees/facultyaffairs/documents/199-ad-hoc-committee-report-2019.pdf",
+          "title": "[PDF] REPORT OF THE AD HOC COMMITTEE ON COLL 199 ...",
+          "score": 52
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8im10003z0ti20a5qdxq",
+      "schoolName": "Brandeis University",
+      "schoolNameNorm": "brandeis university",
+      "usNewsRank": 60,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Brandeis University\" filetype:pdf",
+      "selectedUrl": "https://www.brandeis.edu/institutional-research/docs/cds-2024-25.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Brandeis University",
+          "url": "https://www.brandeis.edu/institutional-research/docs/cds-2024-25.pdf",
+          "snippet": "100% of financial need for its students with scholarship, need-based loan and work awards. We also announced the Brandeis Commitment which guarantees scholarship equal to at least full tuition for families with typical assets and total inco",
+          "score": 156
+        },
+        {
+          "title": "Common Data Set | Office of Institutional Research | Brandeis University",
+          "url": "https://www.brandeis.edu/institutional-research/common-data-set/index.html",
+          "snippet": "Popular Resources \n  + Campus Calendar\n  + Commencement\n  + Directories\n  + Employment\n  + Moodle\n  + News/Media\n  + Shuttle Schedules\n  + Support at Brandeis\n  + Workday\n  + Sites A-Z\n\n# Office of Institutional Research\n\n## Common Data Set",
+          "score": 121
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://harvardjewishalumni.org/wp-content/uploads/2026/03/HJAA_full_report_2026_03_15.pdf",
+          "title": "[PDF] Jewish Enrollment at Harvard and Its Peers",
+          "score": 118
+        },
+        {
+          "url": "https://www.collegetransitions.com/dataverse/common-data-set-repository/",
+          "title": "Common Data Set Repository - College Transitions",
+          "score": 105
+        },
+        {
+          "url": "https://www.brandeis.edu/sociology/pdfs/grad-handbooks/2024-25.pdf",
+          "title": "[PDF] GRADUATE STUDENT HANDBOOK - Brandeis University",
+          "score": 100
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 91
+        },
+        {
+          "url": "https://catalog.louisville.edu/professional/law-bulletin/past-bulletins/Student_Handbook_20242025-04162025.pdf",
+          "title": "[PDF] STUDENT 2024–25 - Academic Catalogs - University of Louisville",
+          "score": 71
+        },
+        {
+          "url": "https://www.goodgoblin.ai/blog/BrandeisAdmissionStatistics2025",
+          "title": "Brandeis 2025 Admission Stats | How to Write University Application",
+          "score": 47
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8img000bz0tiktbc3agu",
+      "schoolName": "George Washington University",
+      "schoolNameNorm": "george washington university",
+      "usNewsRank": 60,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"George Washington University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf",
+          "title": "[PDF] A. General Information - The George Washington University",
+          "score": 160
+        },
+        {
+          "url": "https://www.hsc.edu/Documents/Research/Fact%20Books%202017-/2024-25Factbook.pdf",
+          "title": "[PDF] Hampden-Sydney College 2024-2025 Factbook",
+          "score": 155
+        },
+        {
+          "url": "https://www.flbog.edu/wp-content/uploads/2025/06/UF-Accountability-Plan-1.pdf",
+          "title": "[PDF] ACCOUNTABILITY PLAN - State University System of Florida",
+          "score": 119
+        },
+        {
+          "url": "https://facultysenate.gwu.edu/sites/g/files/zaxdzs6626/files/2025-10/emg-jl-fsec_senate_reports_oct_2025.pdf",
+          "title": "[PDF] Friday, October 24, 2025 Given the t - GW Faculty Senate",
+          "score": 110
+        },
+        {
+          "url": "https://bulletin.wustl.edu/undergrad/Bulletin_2024-25_Undergraduate.pdf",
+          "title": "[PDF] 2024-25 Bulletin: Undergraduate Catalog",
+          "score": 109
+        },
+        {
+          "url": "https://www.shc.edu/wp-content/uploads/2024/08/2024-2025-Bulletin-of-Information-7.24-1.pdf",
+          "title": "[PDF] 2024-2025-Bulletin-of-Information-7.24-1.pdf - Spring Hill College",
+          "score": 103
+        },
+        {
+          "url": "https://tspppa.gwu.edu/sites/g/files/zaxdzs5331/files/2024-12/phd-handbook-2024%20Draft%202024_GN_12_7_2024%20%281%29.pdf",
+          "title": "[PDF] PH.D. IN PUBLIC POLICY AND PUBLIC ADMINISTRATION",
+          "score": 90
+        },
+        {
+          "url": "https://publichealth.gwu.edu/sites/g/files/zaxdzs4586/files/2025-04/abstract_booklet_2025_final3.pdf?utm_253c252fbody253e253c252fhtml253e=",
+          "title": "April 16, 2025 - George Washington University Milken Institute ...",
+          "score": 89
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+      "schoolName": "Pepperdine University",
+      "schoolNameNorm": "pepperdine university",
+      "usNewsRank": 60,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Pepperdine University\" filetype:pdf",
+      "selectedUrl": "https://www.pepperdine.edu/oie/institutional-research/common-data-set.htm",
+      "candidates": [
+        {
+          "title": "Common Data Set | Institutional Research | Pepperdine University",
+          "url": "https://www.pepperdine.edu/oie/institutional-research/common-data-set.htm",
+          "snippet": "+ Common Data Set for 2024-2025\n+ Common Data Set for 2023-2024\n+ Common Data Set for 2022-2023\n+ Common Data Set for 2021-2022\n+ Common Data Set for 2020-2021\n\n## Most Common Questions\n\nWhat is your student-to-faculty ratio?\n\n12 to 1\n\nCDS ",
+          "score": 118
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 152
+        },
+        {
+          "url": "https://community.pepperdine.edu/finance/content/finance-audited-financial-statements-2025.pdf",
+          "title": "[PDF] Audited Financial Statements 2024-2025 | Pepperdine Community",
+          "score": 103
+        },
+        {
+          "url": "https://gsep.pepperdine.edu/content/2024-2025-academic-catalog.pdf",
+          "title": "[PDF] 2024–2025 Academic Catalog | Pepperdine",
+          "score": 98
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 92
+        },
+        {
+          "url": "https://seaver.pepperdine.edu/academics/content/2024-seaver-catalog.pdf",
+          "title": "[PDF] 2024–2025 Academic Catalog - Seaver College",
+          "score": 80
+        },
+        {
+          "url": "https://seaver.pepperdine.edu/academics/content/seaver-catalog-2024-v6.pdf",
+          "title": "[PDF] 2024–2025 Academic Catalog - Seaver College",
+          "score": 80
+        },
+        {
+          "url": "https://www.bppe.ca.gov/webapplications/annualReports/2024/document/9594295b-bc44-4233-ac5f-c82ffe60fcc2",
+          "title": "[PDF] General Catalog 2024-2025 - BPPE",
+          "score": 53
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8im50005z0ti3z02fhjs",
+      "schoolName": "Santa Clara University",
+      "schoolNameNorm": "santa clara university",
+      "usNewsRank": 60,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Santa Clara University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf",
+          "title": "Common Data Set 2024-2025 Welcome to the 2024-2025 Common Data Set collection!",
+          "score": 160
+        },
+        {
+          "url": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf",
+          "title": "[PDF] Common Data Set 2024-2025",
+          "score": 145
+        },
+        {
+          "url": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/Common-Data-Set-2020-2021-rv05252021.pdf",
+          "title": "[PDF] Common Data Set 2020-2021 - Santa Clara University",
+          "score": 125
+        },
+        {
+          "url": "https://www.scu.edu/media/school-of-engineering/pdfs/graduate-engineering/EngineeringGraduateBulletin2024-25-1.pdf",
+          "title": "[PDF] Engineering Graduate Bulletin 2024-25 - Santa Clara University",
+          "score": 110
+        },
+        {
+          "url": "https://law.scu.edu/media/school-of-law/student-services/student-bulletin/2024-2025-School-of-Law-Bulletin-PDF-8-1-2024-1.pdf",
+          "title": "[PDF] 2024-2025 Bulletin - Santa Clara University School of Law",
+          "score": 110
+        },
+        {
+          "url": "https://www.scu.edu/media/offices/institutional-research/ipeds/finance/Cost-I-2024-2025.pdf",
+          "title": "[PDF] IPEDS Data Collection System - Santa Clara University",
+          "score": 110
+        },
+        {
+          "url": "https://www.scu.edu/media/offices/institutional-research/ipeds/completions/Completions-2024-2025.pdf",
+          "title": "[PDF] IPEDS Data Collection System - Santa Clara University",
+          "score": 110
+        },
+        {
+          "url": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2023-24.pdf",
+          "title": "[PDF] common-data-set-2023-24.pdf",
+          "score": 98
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8imi000cz0tifntjkili",
+      "schoolName": "Syracuse University",
+      "schoolNameNorm": "syracuse university",
+      "usNewsRank": 60,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:edu \"Common Data Set\" \"2024-25\" \"Syracuse University\" filetype:pdf",
+      "selectedUrl": null,
+      "candidates": [],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Hamilton College",
+          "score": 146
+        },
+        {
+          "url": "https://catalog.columbiagreene.edu/sites/default/files/2024-25-college-catalog-8-22-25.pdf",
+          "title": "[PDF] 2024-25 College Catalog",
+          "score": 100
+        },
+        {
+          "url": "https://www.syracusecityschools.com/tfiles/folder409/ITC%202024-25%20SCEP%20Approved%208-20-24.pdf",
+          "title": "[PDF] 2024-25 School Comprehensive Education Plan (SCEP)",
+          "score": 93
+        },
+        {
+          "url": "https://www.naceweb.org/docs/default-source/default-document-library/2025/publication/executive-summary/2025-nace-career-services-benchmarks-report-executive-summary.pdf?sfvrsn=2bb5294_3",
+          "title": "[PDF] NACE 2024-25 Career Services Benchmarks Report",
+          "score": 91
+        },
+        {
+          "url": "https://library.syracuse.edu/documents/24/Fall_2024_Connection_Accessible_Final.pdf",
+          "title": "[PDF] Connection: Fall 2024 - Syracuse University Libraries",
+          "score": 77
+        },
+        {
+          "url": "https://multiculturalalumni.syracuse.edu/news/syracuse-manuscript/Fall-2025-Manuscript.pdf",
+          "title": "Syracuse Manuscript Fall 2025",
+          "score": 76
+        },
+        {
+          "url": "https://artsandsciences.syracuse.edu/documents/1428/Fall-2024-Alumni-Magazine.pdf",
+          "title": "[PDF] Fall 2024 Alumni Magazine",
+          "score": 67
+        },
+        {
+          "url": "https://www.osc.ny.gov/files/reports/pdf/higher-education-nys.pdf",
+          "title": "[PDF] Higher Education in New York",
+          "score": 55
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

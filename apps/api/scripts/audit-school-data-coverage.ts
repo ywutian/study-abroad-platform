@@ -14,18 +14,13 @@ const US_COUNTRIES = ['US', 'United States', 'United States of America'];
 const DEFAULT_REQUIRED = [
   'acceptanceRate',
   'intlAcceptanceRate',
+  'oosAcceptanceRate',
   'sat25',
   'sat75',
   'testOptional',
   'needBlindInternational',
 ];
-const OPTIONAL_FIELDS = [
-  'oosAcceptanceRate',
-  'satAvg',
-  'act25',
-  'actAvg',
-  'act75',
-];
+const OPTIONAL_FIELDS = ['satAvg', 'act25', 'actAvg', 'act75'];
 
 function parseArgs() {
   const args = process.argv.slice(2);

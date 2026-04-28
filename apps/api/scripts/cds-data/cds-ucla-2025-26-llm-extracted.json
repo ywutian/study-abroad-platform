@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T04:10:05.963Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-4o-mini",
+    "input": "/tmp/ucla-cds-registry.json",
+    "success": 0,
+    "failures": 1
+  },
+  "schools": [],
+  "failures": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "sourceUrl": "https://apb.ucla.edu/file/d1ab04b3-ee89-4cf2-9124-8dc0471b5e5a",
+      "error": "C1 extraction returned no international admit-rate counts"
+    }
+  ]
+}

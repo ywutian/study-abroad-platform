@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T04:09:41.206Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-4o-mini",
+    "input": "/tmp/ucd-cds-registry.json",
+    "success": 1,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, davis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://aggiedata.ucdavis.edu/sites/g/files/dgvnsk1841/files/media/documents/CDS_UCD.pdf",
+      "applicants": {
+        "total": 98869,
+        "inState": 67710,
+        "outOfState": 12279,
+        "international": 18880
+      },
+      "admitted": {
+        "total": 41353,
+        "inState": 24746,
+        "outOfState": 7038,
+        "international": 9569
+      },
+      "enrolled": {
+        "total": 6804,
+        "inState": 5280,
+        "outOfState": 412,
+        "international": 1112
+      },
+      "rates": {
+        "acceptanceRate": 41.83,
+        "intlAcceptanceRate": 50.68,
+        "oosAcceptanceRate": 57.32,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    }
+  ],
+  "failures": []
+}

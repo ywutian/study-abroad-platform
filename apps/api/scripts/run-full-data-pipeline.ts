@@ -55,6 +55,47 @@ function deriveIntlRate(overallPercent: number, needBlind: boolean) {
   );
 }
 
+function deriveOosRate(
+  overallPercent: number,
+  isPrivate: boolean,
+  state: string | null | undefined,
+) {
+  if (isPrivate) return Math.round(overallPercent * 100) / 100;
+
+  const strongResidencyPreference = new Set([
+    'CA',
+    'MI',
+    'NC',
+    'VA',
+    'TX',
+    'FL',
+  ]);
+  const hasStrongPreference = state
+    ? strongResidencyPreference.has(state.trim().toUpperCase())
+    : false;
+  const multiplier =
+    overallPercent >= 50
+      ? 1.02
+      : overallPercent >= 40
+        ? 0.95
+        : overallPercent >= 20
+          ? hasStrongPreference
+            ? 0.75
+            : 0.85
+          : overallPercent >= 10
+            ? hasStrongPreference
+              ? 0.6
+              : 0.75
+            : hasStrongPreference
+              ? 0.5
+              : 0.7;
+
+  return Math.max(
+    0.1,
+    Math.min(98, Math.round(overallPercent * multiplier * 100) / 100),
+  );
+}
+
 function deriveSatBand(overallPercent: number) {
   if (overallPercent <= 5) return { sat25: 1510, satAvg: 1560, sat75: 1590 };
   if (overallPercent <= 10) return { sat25: 1460, satAvg: 1530, sat75: 1570 };
@@ -77,6 +118,7 @@ function coverageTotals(schools: any[]) {
   const fields = [
     'acceptanceRate',
     'intlAcceptanceRate',
+    'oosAcceptanceRate',
     'sat25',
     'sat75',
     'testOptional',
@@ -112,8 +154,11 @@ async function main() {
       id: true,
       name: true,
       country: true,
+      state: true,
+      isPrivate: true,
       acceptanceRate: true,
       intlAcceptanceRate: true,
+      oosAcceptanceRate: true,
       sat25: true,
       satAvg: true,
       sat75: true,
@@ -164,6 +209,15 @@ async function main() {
         school.needBlindInternational,
       );
       changedFields.push('intlAcceptanceRate');
+    }
+
+    if (canFill('oosAcceptanceRate', school.oosAcceptanceRate)) {
+      updates.oosAcceptanceRate = deriveOosRate(
+        overall,
+        school.isPrivate,
+        school.state,
+      );
+      changedFields.push('oosAcceptanceRate');
     }
 
     if (canFill('sat25', school.sat25) || canFill('sat75', school.sat75)) {

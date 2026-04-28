@@ -116,6 +116,20 @@ export class IpedsCsvRowDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
+  @Min(0)
+  @Max(500000)
+  totalEnrollment?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  intlStudentPct?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
   @Min(400)
   @Max(1600)
   sat25?: number;
