@@ -61,7 +61,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.1';
+export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.5';
 
 export interface CounselorFactor {
   name: string;

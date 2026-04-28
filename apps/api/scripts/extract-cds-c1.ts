@@ -243,12 +243,8 @@ async function callOpenAi(
   text: string,
   model: string,
 ) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const baseUrl = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
-  if (!apiKey)
-    throw new Error('OPENAI_API_KEY is required for CDS C1 extraction');
-
-  const prompt = `Extract Common Data Set section C1 from the PDF text for ${schoolName}.
+  const { callLlm } = await import('./lib/llm-call');
+  const userPrompt = `Extract Common Data Set section C1 from the PDF text for ${schoolName}.
 
 Return only JSON with this exact shape:
 {
@@ -270,39 +266,13 @@ Rules:
 PDF text:
 ${text}`;
 
-  const response = await fetch(
-    `${baseUrl.replace(/\/$/, '')}/chat/completions`,
-    {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0,
-        response_format: { type: 'json_object' },
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You extract official college admissions tables into strict JSON. Return no prose.',
-          },
-          { role: 'user', content: prompt },
-        ],
-      }),
-    },
-  );
-  const body = await response.text();
-  if (!response.ok) {
-    throw new Error(`OpenAI failed ${response.status}: ${body.slice(0, 500)}`);
-  }
-  const parsed = JSON.parse(body) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  return extractJson(
-    parsed.choices?.[0]?.message?.content ?? '',
-  ) as ExtractedC1;
+  return await callLlm<ExtractedC1>({
+    model,
+    systemPrompt:
+      'You extract official college admissions tables into strict JSON. Return no prose.',
+    userPrompt,
+    maxOutputTokens: 1024,
+  });
 }
 
 function toOutputRow(

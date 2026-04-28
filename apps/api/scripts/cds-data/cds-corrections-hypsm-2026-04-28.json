@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T00:00:00.000Z",
+    "source": "Manual corrections: MIT from official admissions page (mitadmissions.org/apply/process/stats), Stanford cleared (LLM hallucination)",
+    "notes": "MIT Class 2029: 6926 intl applied, 136 admitted = 1.96%. Stanford 8% was LLM error - cleared."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mitadmissions.org/apply/process/stats/",
+      "applicants": { "total": 29281, "international": 6926 },
+      "admitted": { "total": 1334, "international": 136 },
+      "enrolled": { "total": null },
+      "rates": {
+        "acceptanceRate": 4.55,
+        "intlAcceptanceRate": 1.96,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Official MIT admissions stats page. U.S./PR: 22355 applied, 1198 admitted. International: 6926 applied, 136 admitted = 1.96%."
+    }
+  ]
+}

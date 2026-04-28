@@ -651,7 +651,7 @@ function normalizeRate(raw: number | null | undefined): number | null {
  *        most state publics — intl admit rate ≈ overall per published CDS)
  *      - Moderately selective (20-40%): 0.85× need-blind / 0.7× need-aware
  *        — intl pool somewhat competitive (BU, USC, UCSD, UCD, UCI)
- *      - Highly selective (< 20%): 0.7× need-blind / 0.4× need-aware — the
+ *      - Highly selective (< 20%): 0.5× need-blind / 0.4× need-aware — the
  *        original peer-school calibration applies (HYPMSP, NYU, top T20)
  *   3. Unknown selectivity: assume highly-selective (conservative default)
  *
@@ -717,12 +717,13 @@ export function intlMultiplier(
   }
 
   // Highly selective (< 20% admit rate, or unknown selectivity).
+  // Calibrated from actual CDS data: MIT 0.43, Yale 0.53, Princeton 0.46 → ~0.47 avg.
   if (school.needBlindInternational) {
     return {
-      multiplier: 0.7,
+      multiplier: 0.5,
       label: 'International (need-blind school)',
       evidence:
-        'International pool sees ~0.7× the domestic admit rate at need-blind-for-intl schools (Harvard, MIT, Princeton, Yale, Amherst)',
+        'International pool sees ~0.5× the domestic admit rate at need-blind elite schools (calibrated from MIT 1.96%/4.55%, Yale 1.94%/3.65%, Princeton 2.11%/4.62%)',
       impact: 'negative',
     };
   }

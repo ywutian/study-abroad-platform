@@ -1062,6 +1062,16 @@ model School {
   // Transfer student info
   transferAcceptanceRate Decimal? @db.Decimal(5, 2) // Transfer admission rate %
 
+  // Early-round admit rates (from CDS C21 / institutional ED reports)
+  // Used by counselor roundMultiplier to scale ED/EA boost per school selectivity
+  edAcceptanceRate Decimal? @db.Decimal(5, 2) // Early Decision admit rate %
+  eaAcceptanceRate Decimal? @db.Decimal(5, 2) // Early Action / REA admit rate %
+
+  // School-specific enrolled freshman GPA distribution (from CDS C9)
+  // Shape: { "3.75-4.00": 0.91, "3.50-3.74": 0.07, "3.25-3.49": 0.02, "3.00-3.24": 0, "<3.00": 0 }
+  // Used by gpaBandMultiplier to compute applicant's percentile within this school's class
+  gpaDistribution Json?
+
   // Niche Grades (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
   nicheSafetyGrade  String? // Safety/Crime index
   nicheLifeGrade    String? // Student Life/Happiness index
