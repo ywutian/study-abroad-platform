@@ -10,7 +10,7 @@ const OFFICIAL_SOURCE_TOKENS = ['COLLEGE_SCORECARD', 'URBAN_INSTITUTE', 'IPEDS']
 const PARTNER_SOURCE_TOKENS = ['MANUAL_ADMIN', 'PARTNER'];
 const SCRAPED_SOURCE_TOKENS = ['BIGFUTURE', 'APPILY', 'SCRAPER', 'SCRAPE'];
 const COMMUNITY_SOURCE_TOKENS = ['COMMUNITY'];
-const INFERRED_SOURCE_TOKENS = ['INFERRED', 'AI_'];
+const INFERRED_SOURCE_TOKENS = ['INFERRED', 'HEURISTIC', 'AI_'];
 
 export const TRUST_TIER_PREDICTION_WEIGHT: Record<TrustTier, number> = {
   OFFICIAL: 1.0,
@@ -102,6 +102,9 @@ export function normalizeFieldProvenance(value: unknown, now = new Date()): Fiel
     fetchedAt,
     verifiedAt: typeof entry.verifiedAt === 'string' ? entry.verifiedAt : undefined,
     verifiedBy: typeof entry.verifiedBy === 'string' ? entry.verifiedBy : undefined,
+    sourceUrl: typeof entry.sourceUrl === 'string' ? entry.sourceUrl : undefined,
+    cycleYear: typeof entry.cycleYear === 'number' ? entry.cycleYear : undefined,
+    notes: typeof entry.notes === 'string' ? entry.notes : undefined,
     confidence: tier === 'INFERRED' ? confidence : undefined,
     staleness: deriveProvenanceStaleness(fetchedAt, now),
   };
@@ -130,6 +133,9 @@ export function serializeFieldProvenance(
     fetchedAt: provenance.fetchedAt,
     ...(provenance.verifiedAt ? { verifiedAt: provenance.verifiedAt } : {}),
     ...(provenance.verifiedBy ? { verifiedBy: provenance.verifiedBy } : {}),
+    ...(provenance.sourceUrl ? { sourceUrl: provenance.sourceUrl } : {}),
+    ...(typeof provenance.cycleYear === 'number' ? { cycleYear: provenance.cycleYear } : {}),
+    ...(provenance.notes ? { notes: provenance.notes } : {}),
     ...(provenance.tier === 'INFERRED' && typeof provenance.confidence === 'number'
       ? { confidence: provenance.confidence }
       : {}),
@@ -159,6 +165,9 @@ export function toSchoolFieldSource(
     fetchedAt: provenance.fetchedAt,
     ...(provenance.verifiedAt ? { verifiedAt: provenance.verifiedAt } : {}),
     ...(provenance.verifiedBy ? { verifiedBy: provenance.verifiedBy } : {}),
+    ...(provenance.sourceUrl ? { sourceUrl: provenance.sourceUrl } : {}),
+    ...(typeof provenance.cycleYear === 'number' ? { cycleYear: provenance.cycleYear } : {}),
+    ...(provenance.notes ? { notes: provenance.notes } : {}),
     ...(typeof provenance.confidence === 'number' ? { confidence: provenance.confidence } : {}),
     staleness,
     isVerified:

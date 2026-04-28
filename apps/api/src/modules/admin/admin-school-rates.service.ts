@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolWriteService } from '../school/school-write.service';
+import { buildFieldProvenanceRecord } from '../school/school-provenance.helpers';
 import {
   BulkUpdateSchoolRatesDto,
   BulkUpdateSchoolRateRowDto,
@@ -44,18 +45,8 @@ export interface BulkUpdateRowResult {
   schoolId: string;
   schoolName: string;
   changedFields: string[]; // empty when no diff (idempotent skip)
-  before: Partial<{
-    acceptanceRate: number | null;
-    intlAcceptanceRate: number | null;
-    transferAcceptanceRate: number | null;
-    needBlindInternational: boolean;
-  }>;
-  after: Partial<{
-    acceptanceRate: number;
-    intlAcceptanceRate: number;
-    transferAcceptanceRate: number;
-    needBlindInternational: boolean;
-  }>;
+  before: Record<string, number | boolean | null>;
+  after: Record<string, number | boolean>;
 }
 
 export interface BulkUpdateError {
@@ -80,6 +71,25 @@ export interface BulkUpdateSchoolRatesResult {
 }
 
 const PERCENT_THRESHOLD = 1.0;
+const RATE_FIELDS = [
+  'acceptanceRate',
+  'intlAcceptanceRate',
+  'oosAcceptanceRate',
+  'transferAcceptanceRate',
+] as const;
+const INTEGER_FIELDS = [
+  'sat25',
+  'satAvg',
+  'sat75',
+  'act25',
+  'actAvg',
+  'act75',
+] as const;
+const BOOLEAN_FIELDS = ['needBlindInternational', 'testOptional'] as const;
+
+type RateField = (typeof RATE_FIELDS)[number];
+type IntegerField = (typeof INTEGER_FIELDS)[number];
+type BooleanField = (typeof BOOLEAN_FIELDS)[number];
 
 @Injectable()
 export class AdminSchoolRatesService {
@@ -129,15 +139,13 @@ export class AdminSchoolRatesService {
         continue;
       }
       const hasAnyField =
-        row.acceptanceRate != null ||
-        row.intlAcceptanceRate != null ||
-        row.transferAcceptanceRate != null ||
-        row.needBlindInternational != null;
+        RATE_FIELDS.some((field) => row[field] != null) ||
+        INTEGER_FIELDS.some((field) => row[field] != null) ||
+        BOOLEAN_FIELDS.some((field) => row[field] != null);
       if (!hasAnyField) {
         result.errors.push({
           rowIndex: i,
-          reason:
-            'must provide at least one of: acceptanceRate, intlAcceptanceRate, transferAcceptanceRate, needBlindInternational',
+          reason: 'must provide at least one supported school data field',
           payload: row,
         });
       }
@@ -194,10 +202,7 @@ export class AdminSchoolRatesService {
       const after: BulkUpdateRowResult['after'] = {};
       const changedFields: string[] = [];
 
-      const tryField = (
-        key: 'acceptanceRate' | 'intlAcceptanceRate' | 'transferAcceptanceRate',
-        rawInput: number | undefined,
-      ) => {
+      const tryRateField = (key: RateField, rawInput: number | undefined) => {
         if (rawInput == null) return;
         const normalized = this.normalizePercent(rawInput);
         if (normalized == null) return;
@@ -216,20 +221,42 @@ export class AdminSchoolRatesService {
         changedFields.push(key);
       };
 
-      tryField('acceptanceRate', row.acceptanceRate);
-      tryField('intlAcceptanceRate', row.intlAcceptanceRate);
-      tryField('transferAcceptanceRate', row.transferAcceptanceRate);
-
-      if (row.needBlindInternational != null) {
-        if (school.needBlindInternational !== row.needBlindInternational) {
-          updates.needBlindInternational = row.needBlindInternational;
-          before.needBlindInternational = school.needBlindInternational;
-          after.needBlindInternational = row.needBlindInternational;
-          changedFields.push('needBlindInternational');
-        } else {
-          before.needBlindInternational = school.needBlindInternational;
+      const tryIntegerField = (
+        key: IntegerField,
+        rawInput: number | undefined,
+      ) => {
+        if (rawInput == null || !Number.isFinite(rawInput)) return;
+        const currentNum = (school as any)[key] as number | null;
+        const next = Math.round(rawInput);
+        if (currentNum != null && currentNum === next) {
+          before[key] = currentNum;
+          return;
         }
-      }
+        updates[key] = next;
+        before[key] = currentNum ?? null;
+        after[key] = next;
+        changedFields.push(key);
+      };
+
+      const tryBooleanField = (
+        key: BooleanField,
+        rawInput: boolean | undefined,
+      ) => {
+        if (rawInput == null) return;
+        const currentValue = (school as any)[key] as boolean | null;
+        if (currentValue === rawInput) {
+          before[key] = currentValue;
+          return;
+        }
+        updates[key] = rawInput;
+        before[key] = currentValue ?? null;
+        after[key] = rawInput;
+        changedFields.push(key);
+      };
+
+      for (const field of RATE_FIELDS) tryRateField(field, row[field]);
+      for (const field of INTEGER_FIELDS) tryIntegerField(field, row[field]);
+      for (const field of BOOLEAN_FIELDS) tryBooleanField(field, row[field]);
 
       const rowResult: BulkUpdateRowResult = {
         schoolId: school.id,
@@ -258,12 +285,14 @@ export class AdminSchoolRatesService {
       try {
         await this.schoolWrite.update(school.id, {
           fields: updates as Record<string, unknown>,
-          provenance: {
+          provenance: buildFieldProvenanceRecord(changedFields, {
             source: row.source,
             sourceUrl: row.sourceUrl,
             cycleYear: row.cycleYear,
-            actor: actorUserId,
-          } as any,
+            verifiedBy: actorUserId,
+            confidence: row.sourceConfidence,
+            notes: row.sourceNotes,
+          }),
         });
         try {
           await this.prisma.auditLog.create({
@@ -276,6 +305,8 @@ export class AdminSchoolRatesService {
                 source: row.source,
                 sourceUrl: row.sourceUrl,
                 cycleYear: row.cycleYear,
+                sourceConfidence: row.sourceConfidence,
+                sourceNotes: row.sourceNotes,
                 changedFields,
                 before,
                 after,
@@ -318,6 +349,14 @@ export class AdminSchoolRatesService {
       intlAcceptanceRate: true,
       transferAcceptanceRate: true,
       needBlindInternational: true,
+      oosAcceptanceRate: true,
+      sat25: true,
+      satAvg: true,
+      sat75: true,
+      act25: true,
+      actAvg: true,
+      act75: true,
+      testOptional: true,
     } satisfies Prisma.SchoolSelect;
   }
 }

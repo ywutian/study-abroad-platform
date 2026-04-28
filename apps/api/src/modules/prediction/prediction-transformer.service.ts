@@ -65,8 +65,16 @@ export class PredictionTransformerService {
       return { value: transform ? transform(value) : (value as unknown as R) };
     }
 
-    const weight = TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];
-    if (!isPredictionEligibleTrustTier(provenance.tier)) {
+    const isHeuristicFallback =
+      provenance.tier === 'INFERRED' &&
+      provenance.source.toUpperCase().includes('HEURISTIC');
+    const weight = isHeuristicFallback
+      ? (provenance.confidence ?? 0.55)
+      : TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];
+    if (
+      !isHeuristicFallback &&
+      !isPredictionEligibleTrustTier(provenance.tier)
+    ) {
       return { value: undefined, weight };
     }
 
@@ -258,6 +266,11 @@ export class PredictionTransformerService {
       intlAcceptanceRate: captureField(
         'intlAcceptanceRate',
         (school as any).intlAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      oosAcceptanceRate: captureField(
+        'oosAcceptanceRate',
+        (school as any).oosAcceptanceRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
       intlStudentPct: captureField(

@@ -443,6 +443,12 @@ export const adminRoutes = {
   // Data Sync
   dataSyncJobs: () => `${API_ROUTES.ADMIN}/data-sync/jobs`,
   dataSyncTrigger: () => `${API_ROUTES.ADMIN}/data-sync/trigger`,
+  schoolsDataCoverage: () => `${API_ROUTES.ADMIN}/schools/data-coverage`,
+  schoolsSyncIpedsAdmissions: () => `${API_ROUTES.ADMIN}/schools/sync/ipeds-admissions`,
+  schoolsImportIpedsCsv: () => `${API_ROUTES.ADMIN}/schools/import/ipeds-csv`,
+  schoolsCdsDiscover: () => `${API_ROUTES.ADMIN}/schools/cds/discover`,
+  schoolsCdsExtract: () => `${API_ROUTES.ADMIN}/schools/cds/extract`,
+  schoolsHeuristicFill: () => `${API_ROUTES.ADMIN}/schools/heuristic-fill`,
 
   // Activity Templates
   activityTemplates: () => `${API_ROUTES.ADMIN}/activity-templates`,

@@ -37,6 +37,7 @@ export const SCHOOL_TOP_LEVEL_PROVENANCE_FIELDS = [
   'needBlindInternational',
   'intlStudentPct',
   'intlAcceptanceRate',
+  'oosAcceptanceRate',
   'retentionRate',
   'studentFacultyRatio',
   'percentNeedMet',
@@ -349,6 +350,9 @@ export function createFieldProvenance(params: {
   fetchedAt?: string;
   verifiedAt?: string;
   verifiedBy?: string;
+  sourceUrl?: string;
+  cycleYear?: number;
+  notes?: string;
   confidence?: number;
 }): FieldProvenance {
   const tier = deriveTrustTierFromSource(params.source);
@@ -359,6 +363,11 @@ export function createFieldProvenance(params: {
     fetchedAt: params.fetchedAt ?? new Date().toISOString(),
     ...(params.verifiedAt ? { verifiedAt: params.verifiedAt } : {}),
     ...(params.verifiedBy ? { verifiedBy: params.verifiedBy } : {}),
+    ...(params.sourceUrl ? { sourceUrl: params.sourceUrl } : {}),
+    ...(typeof params.cycleYear === 'number'
+      ? { cycleYear: params.cycleYear }
+      : {}),
+    ...(params.notes ? { notes: params.notes } : {}),
     ...(tier === 'INFERRED' && typeof params.confidence === 'number'
       ? { confidence: params.confidence }
       : {}),
@@ -372,6 +381,9 @@ export function buildFieldProvenanceRecord(
     fetchedAt?: string;
     verifiedAt?: string;
     verifiedBy?: string;
+    sourceUrl?: string;
+    cycleYear?: number;
+    notes?: string;
     confidence?: number;
   },
 ): SchoolProvenance {

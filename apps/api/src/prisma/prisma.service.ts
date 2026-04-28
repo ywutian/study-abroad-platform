@@ -101,7 +101,7 @@ export class PrismaService
       const result = await this.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(*)::bigint as count
         FROM "_prisma_migrations"
-        WHERE "finished_at" IS NULL OR "rolled_back_at" IS NOT NULL
+        WHERE "finished_at" IS NULL AND "rolled_back_at" IS NULL
       `;
       const pendingCount = Number(result[0]?.count ?? 0);
       if (pendingCount > 0) {
