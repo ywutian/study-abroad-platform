@@ -16,6 +16,8 @@ import { AdminPredictionWorkflowController } from './admin-prediction-workflow.c
 import { AdminApplicationAnalysisWorkflowController } from './admin-application-analysis-workflow.controller';
 import { AdminSchoolRatesController } from './admin-school-rates.controller';
 import { AdminSchoolRatesService } from './admin-school-rates.service';
+import { AdminSchoolDataPipelineController } from './admin-school-data-pipeline.controller';
+import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -44,6 +46,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminPredictionWorkflowController,
     AdminApplicationAnalysisWorkflowController,
     AdminSchoolRatesController,
+    AdminSchoolDataPipelineController,
   ],
   providers: [
     AdminService,
@@ -53,6 +56,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminReviewService,
     AdminProgressGateway,
     AdminSchoolRatesService,
+    AdminSchoolDataCoverageService,
     PermissionGuard,
   ],
   exports: [AdminService, AdminReviewService],

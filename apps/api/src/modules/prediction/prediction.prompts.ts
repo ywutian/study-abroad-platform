@@ -81,6 +81,7 @@ export interface SchoolInput {
   isPrivate?: boolean;
   acceptanceRate?: number;
   intlAcceptanceRate?: number;
+  oosAcceptanceRate?: number;
   intlStudentPct?: number;
   needBlindInternational?: boolean;
   satAvg?: number;

@@ -1,0 +1,239 @@
+'use client';
+
+import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { BarChart3, RefreshCw, Wand2 } from 'lucide-react';
+import { adminRoutes } from '@study-abroad/shared';
+import { PageHeader } from '@/components/layout';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiClient, STALE_TIME } from '@/lib/api';
+
+interface CoverageField {
+  field: string;
+  value: unknown;
+  filled: boolean;
+  explicitUnknown: boolean;
+  source: string | null;
+  tier: string | null;
+  confidence: number | null;
+  staleness: string | null;
+  predictionEligible: boolean;
+  isHeuristic: boolean;
+}
+
+interface CoverageItem {
+  schoolId: string;
+  schoolName: string;
+  schoolNameZh?: string | null;
+  usNewsRank?: number | null;
+  criticalComplete: boolean;
+  missingCritical: string[];
+  heuristicCritical: string[];
+  fields: CoverageField[];
+}
+
+interface CoverageResponse {
+  generatedAt: string;
+  criticalFields: string[];
+  optionalFields: string[];
+  totals: {
+    schools: number;
+    criticalComplete: number;
+    missingAnyCritical: number;
+    heuristicOnlySchools: number;
+  };
+  fieldTotals: Record<
+    string,
+    {
+      total: number;
+      filled: number;
+      percent: number;
+      predictionEligible: number;
+      predictionEligiblePercent: number;
+      heuristic: number;
+      stale: number;
+    }
+  >;
+  items: CoverageItem[];
+}
+
+export default function AdminDataCoveragePage() {
+  const t = useTranslations('admin.dataCoverage');
+  const queryClient = useQueryClient();
+  const coverage = useQuery<CoverageResponse>({
+    queryKey: ['admin-school-data-coverage'],
+    queryFn: () => apiClient.get(adminRoutes.schoolsDataCoverage()),
+    staleTime: STALE_TIME.MODERATE,
+  });
+
+  const heuristicFill = useMutation({
+    mutationFn: (dryRun: boolean) =>
+      apiClient.post(adminRoutes.schoolsHeuristicFill(), {
+        dryRun,
+        limit: 500,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-school-data-coverage'] });
+    },
+  });
+
+  const rows = coverage.data?.items ?? [];
+  const problemRows = useMemo(
+    () =>
+      rows.filter((row) => !row.criticalComplete || row.heuristicCritical.length > 0).slice(0, 80),
+    [rows]
+  );
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        icon={BarChart3}
+        color="emerald"
+      />
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <MetricCard label={t('metrics.schools')} value={coverage.data?.totals.schools} />
+        <MetricCard label={t('metrics.complete')} value={coverage.data?.totals.criticalComplete} />
+        <MetricCard label={t('metrics.missing')} value={coverage.data?.totals.missingAnyCritical} />
+        <MetricCard
+          label={t('metrics.heuristic')}
+          value={coverage.data?.totals.heuristicOnlySchools}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle>{t('fieldCoverage')}</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => coverage.refetch()}
+                disabled={coverage.isFetching}
+              >
+                <RefreshCw
+                  className={`mr-2 h-4 w-4 ${coverage.isFetching ? 'animate-spin' : ''}`}
+                />
+                {t('refresh')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => heuristicFill.mutate(true)}
+                disabled={heuristicFill.isPending}
+              >
+                <Wand2 className="mr-2 h-4 w-4" />
+                {t('dryRunHeuristic')}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead className="bg-muted/60">
+                <tr>
+                  <th className="px-3 py-2 text-left">{t('table.field')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.filled')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.eligible')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.heuristic')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.stale')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(coverage.data?.fieldTotals ?? {}).map(([field, total]) => (
+                  <tr key={field} className="border-t">
+                    <td className="px-3 py-2 font-medium">{field}</td>
+                    <td className="px-3 py-2 text-right">
+                      {total.filled}/{total.total} ({total.percent}%)
+                    </td>
+                    <td className="px-3 py-2 text-right">{total.predictionEligiblePercent}%</td>
+                    <td className="px-3 py-2 text-right">{total.heuristic}</td>
+                    <td className="px-3 py-2 text-right">{total.stale}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {heuristicFill.data ? (
+            <pre className="mt-4 max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">
+              {JSON.stringify(heuristicFill.data, null, 2)}
+            </pre>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('schoolsNeedingWork')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full min-w-[960px] text-sm">
+              <thead className="bg-muted/60">
+                <tr>
+                  <th className="px-3 py-2 text-left">{t('table.school')}</th>
+                  <th className="px-3 py-2 text-left">{t('table.missing')}</th>
+                  <th className="px-3 py-2 text-left">{t('table.heuristicFields')}</th>
+                  <th className="px-3 py-2 text-left">{t('table.sources')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {problemRows.map((row) => (
+                  <tr key={row.schoolId} className="border-t align-top">
+                    <td className="px-3 py-2">
+                      <div className="font-medium">{row.schoolName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {row.usNewsRank ? `#${row.usNewsRank}` : row.schoolId}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={row.criticalComplete ? 'secondary' : 'destructive'}>
+                        {row.missingCritical.length ? row.missingCritical.join(', ') : t('none')}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2">
+                      {row.heuristicCritical.length ? row.heuristicCritical.join(', ') : t('none')}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {row.fields
+                          .filter((field) => field.filled)
+                          .slice(0, 8)
+                          .map((field) => (
+                            <Badge
+                              key={field.field}
+                              variant={field.isHeuristic ? 'outline' : 'secondary'}
+                            >
+                              {field.field}: {field.tier ?? t('unknown')}
+                            </Badge>
+                          ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value?: number | string }) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="text-sm text-muted-foreground">{label}</div>
+        <div className="mt-1 text-2xl font-semibold">{value ?? '-'}</div>
+      </CardContent>
+    </Card>
+  );
+}

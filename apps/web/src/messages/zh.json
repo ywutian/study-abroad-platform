@@ -6103,6 +6103,7 @@
       "predictionHealth": "预测数据健康",
       "predictionFeedback": "预测反馈",
       "cdsBands": "CDS 分位数据",
+      "dataCoverage": "数据覆盖",
       "applicationAnalysisWorkflow": "申请分析工作流",
       "activityTemplates": "活动模板",
       "highSchools": "高中管理",
@@ -6621,6 +6622,33 @@
         "FACTORS_WRONG": "因素不对",
         "NEVER_MOVES": "不随档案变化",
         "OTHER": "其他"
+      }
+    },
+    "dataCoverage": {
+      "title": "预测数据覆盖",
+      "description": "跟踪所有学校冷启动预测所需的数据覆盖、来源、过期字段和启发式兜底。",
+      "refresh": "刷新",
+      "dryRunHeuristic": "Dry-run 启发式填充",
+      "fieldCoverage": "字段覆盖",
+      "schoolsNeedingWork": "需要复核的学校",
+      "none": "无",
+      "unknown": "未知",
+      "metrics": {
+        "schools": "美国学校",
+        "complete": "已完整",
+        "missing": "缺关键字段",
+        "heuristic": "启发式来源"
+      },
+      "table": {
+        "field": "字段",
+        "filled": "已填充",
+        "eligible": "可用于预测",
+        "heuristic": "启发式",
+        "stale": "过期",
+        "school": "学校",
+        "missing": "缺失",
+        "heuristicFields": "启发式字段",
+        "sources": "来源"
       }
     },
     "cdsBands": {

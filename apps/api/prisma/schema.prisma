@@ -1057,6 +1057,7 @@ model School {
   needBlindInternational Boolean  @default(false)
   intlStudentPct         Decimal? @db.Decimal(5, 2)
   intlAcceptanceRate     Decimal? @db.Decimal(5, 2)
+  oosAcceptanceRate      Decimal? @db.Decimal(5, 2) // Out-of-state freshman admit rate %
 
   // Transfer student info
   transferAcceptanceRate Decimal? @db.Decimal(5, 2) // Transfer admission rate %

@@ -50,7 +50,10 @@
     "distillation:case-aggregates:backfill": "tsx scripts/backfill-case-aggregate-teachers.ts",
     "distillation:eval": "tsx scripts/eval-teacher-blend.ts",
     "gold:counselor": "ts-node --transpile-only scripts/run-counselor-gold-cases.ts",
-    "audit:counselor": "ts-node --transpile-only scripts/audit-counselor-distribution.ts"
+    "audit:counselor": "ts-node --transpile-only scripts/audit-counselor-distribution.ts",
+    "audit:coverage": "tsx scripts/audit-school-data-coverage.ts",
+    "import:ipeds-csv": "tsx scripts/import-ipeds-csv.ts",
+    "run:data-pipeline": "tsx scripts/run-full-data-pipeline.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",

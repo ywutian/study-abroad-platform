@@ -20,7 +20,7 @@ import { ApiProperty } from '@nestjs/swagger';
  *
  * Either `schoolId` (cuid) or `schoolNameNorm` (lowercased name) is required —
  * service prefers schoolId if both provided. Rate fields are optional individually
- * but at least one must be present (validated in service).
+ * but at least one prediction-critical field must be present (validated in service).
  *
  * Rate value convention: accept BOTH percentage (e.g. 41.8) and fraction (e.g.
  * 0.418). Service normalizes to the schema's `Decimal(5,2)` percentage storage.
@@ -75,6 +75,18 @@ export class BulkUpdateSchoolRateRowDto {
   intlAcceptanceRate?: number;
 
   @ApiProperty({
+    description: 'Out-of-state freshman admit rate. Accepts 0.X or X.',
+    required: false,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  oosAcceptanceRate?: number;
+
+  @ApiProperty({
     description: 'Transfer admit rate. Accepts 0.X or X. Same convention.',
     required: false,
     minimum: 0,
@@ -94,6 +106,87 @@ export class BulkUpdateSchoolRateRowDto {
   @IsOptional()
   @IsBoolean()
   needBlindInternational?: boolean;
+
+  @ApiProperty({
+    description: 'SAT 25th percentile total score.',
+    required: false,
+    minimum: 400,
+    maximum: 1600,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(400)
+  @Max(1600)
+  sat25?: number;
+
+  @ApiProperty({
+    description: 'SAT median/average total score.',
+    required: false,
+    minimum: 400,
+    maximum: 1600,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(400)
+  @Max(1600)
+  satAvg?: number;
+
+  @ApiProperty({
+    description: 'SAT 75th percentile total score.',
+    required: false,
+    minimum: 400,
+    maximum: 1600,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(400)
+  @Max(1600)
+  sat75?: number;
+
+  @ApiProperty({
+    description: 'ACT 25th percentile composite score.',
+    required: false,
+    minimum: 1,
+    maximum: 36,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  act25?: number;
+
+  @ApiProperty({
+    description: 'ACT median/average composite score.',
+    required: false,
+    minimum: 1,
+    maximum: 36,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  actAvg?: number;
+
+  @ApiProperty({
+    description: 'ACT 75th percentile composite score.',
+    required: false,
+    minimum: 1,
+    maximum: 36,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  act75?: number;
+
+  @ApiProperty({
+    description:
+      'Legacy boolean testing-policy indicator. Use only when a source explicitly publishes it.',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  testOptional?: boolean;
 
   @ApiProperty({
     description:
@@ -125,6 +218,28 @@ export class BulkUpdateSchoolRateRowDto {
   @Min(2000)
   @Max(2100)
   cycleYear?: number;
+
+  @ApiProperty({
+    description:
+      'Optional provenance confidence for inferred/heuristic rows, 0-1.',
+    required: false,
+    minimum: 0,
+    maximum: 1,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(1)
+  sourceConfidence?: number;
+
+  @ApiProperty({
+    description: 'Optional short provenance notes for this row.',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  sourceNotes?: string;
 }
 
 export class BulkUpdateSchoolRatesDto {

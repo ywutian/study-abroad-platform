@@ -8,6 +8,9 @@ export interface FieldProvenance {
   fetchedAt: string;
   verifiedAt?: string;
   verifiedBy?: string;
+  sourceUrl?: string;
+  cycleYear?: number;
+  notes?: string;
   confidence?: number;
   staleness?: ProvenanceStaleness;
 }
@@ -20,6 +23,9 @@ export interface SchoolFieldSource {
   fetchedAt: string;
   verifiedAt?: string;
   verifiedBy?: string;
+  sourceUrl?: string;
+  cycleYear?: number;
+  notes?: string;
   confidence?: number;
   staleness: ProvenanceStaleness;
   isVerified: boolean;
