@@ -291,8 +291,79 @@
         "transferAcceptanceRate": null
       },
       "notes": "REVERSE pattern from UCs: Yale intl admit (1.94%) is ~half of overall (3.65%). Validates that real-data approach works for both selective and less-selective schools."
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.brown.edu/sites/default/files/2025-08/CDS_2024-2025.pdf",
+      "applicants": {
+        "total": 48904,
+        "inState": 591,
+        "outOfState": 37382,
+        "international": 10919
+      },
+      "admitted": {
+        "total": 2638,
+        "inState": 59,
+        "outOfState": 2103,
+        "international": 475
+      },
+      "enrolled": {
+        "total": 1719,
+        "inState": 52,
+        "outOfState": 1362,
+        "international": 304
+      },
+      "rates": {
+        "acceptanceRate": 5.39,
+        "intlAcceptanceRate": 4.35,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Brown intl 4.35% vs overall 5.39% (ratio 0.81). Less aggressive elite-private pattern than Yale/Cornell — closer to overall."
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.adminplan.northwestern.edu/ir/data-book/v59/cds-2024-25-northwestern-final.pdf",
+      "applicants": {
+        "total": 51795,
+        "inState": 4748,
+        "outOfState": 31906,
+        "international": 15141
+      },
+      "admitted": {
+        "total": 2957,
+        "inState": 377,
+        "outOfState": 1995,
+        "international": 585
+      },
+      "enrolled": {
+        "total": 1740,
+        "inState": 267,
+        "outOfState": 1178,
+        "international": 295
+      },
+      "rates": {
+        "acceptanceRate": 5.71,
+        "intlAcceptanceRate": 3.86,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Northwestern intl 3.86% vs overall 5.71% (ratio 0.68). Classic elite-private penalty similar to Yale/Cornell."
     }
   ],
+  "_progress": {
+    "extracted": 12,
+    "totalDatabaseSchools": 234,
+    "remainingApprox": 222,
+    "estimatedHoursManual": "18-22 hours at ~5 min/school for batch WebFetch + PDF Read + JSON write",
+    "blockers": [
+      "Many CDS PDFs hosted as binary - WebFetch returns base64, must save+read",
+      "UCB CDS only in Excel; UCLA 2024-25 not yet published; UCSB no public PDF link",
+      "Some schools (Princeton, Penn) hit 403 or paywall",
+      "Top LACs and regional flagships often don't publish residency breakdown at all"
+    ],
+    "recommendation": "Build PR-15 self-serve admin curation UI so ops can fill in remaining ~220 schools over days using the existing PR-12 bulk-update endpoint"
+  },
   "pendingExtraction": [
     "university of california, berkeley (CDS in Excel format on opa.berkeley.edu — needs different scraping)",
     "university of california, los angeles (only 2025-26 PDF found; 2024-25 not published yet)",
@@ -301,9 +372,11 @@
     "massachusetts institute of technology (URL: https://ir.mit.edu/projects/2024-25-common-data-set/)",
     "stanford university (URL: https://irds.stanford.edu/data-findings/cds — needs direct PDF link)",
     "princeton university (URL: https://ir.princeton.edu/document/546)",
-    "university of pennsylvania, columbia university, brown university, cornell university, dartmouth college",
-    "duke, northwestern, johns hopkins, vanderbilt, notre dame, rice",
-    "university of michigan, university of virginia, university of north carolina, university of florida"
+    "university of pennsylvania, dartmouth college",
+    "duke (CDS PDF read, no residency breakdown found in C1)",
+    "johns hopkins, vanderbilt, notre dame, rice",
+    "university of michigan, university of virginia, university of north carolina (UNC PDF read - data extraction TBD), university of florida",
+    "~210 more US schools (regional flagships, T20 publics, mid-tier privates, LACs) — many won't have residency in CDS at all"
   ],
   "patterns": {
     "ucSystem": "Intl admit rate >= overall (UCD 1.21×, UCR 1.11×, UCSC 1.18×, UCI 1.50×). UCSD is exception (0.84×) — moderate selectivity. Pattern: UCs aggressively admit intl for full OOS tuition.",
