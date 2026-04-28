@@ -1,8 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { normalizeSchoolProvenance } from '@study-abroad/shared/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolWriteService } from '../school/school-write.service';
-import { buildFieldProvenanceRecord } from '../school/school-provenance.helpers';
+import {
+  buildFieldProvenanceRecord,
+  toRecord,
+} from '../school/school-provenance.helpers';
 import {
   BulkUpdateSchoolRatesDto,
   BulkUpdateSchoolRateRowDto,
@@ -201,6 +205,20 @@ export class AdminSchoolRatesService {
       const before: BulkUpdateRowResult['before'] = {};
       const after: BulkUpdateRowResult['after'] = {};
       const changedFields: string[] = [];
+      const provenance = normalizeSchoolProvenance(
+        toRecord(toRecord(school.metadata).provenance),
+      );
+      const incomingIsHeuristic = row.source
+        .toUpperCase()
+        .includes('HEURISTIC');
+      const shouldRefreshHeuristicProvenance = (key: string) => {
+        if (incomingIsHeuristic) return false;
+        const existing = provenance[key];
+        return (
+          existing?.tier === 'INFERRED' ||
+          existing?.source?.toUpperCase().includes('HEURISTIC')
+        );
+      };
 
       const tryRateField = (key: RateField, rawInput: number | undefined) => {
         if (rawInput == null) return;
@@ -211,8 +229,11 @@ export class AdminSchoolRatesService {
         // Round to 2 dp for comparison (storage is Decimal(5,2))
         const roundedNew = Math.round(normalized * 100) / 100;
         if (currentNum != null && Math.abs(currentNum - roundedNew) < 0.005) {
-          // No-op
           before[key] = currentNum;
+          if (shouldRefreshHeuristicProvenance(key)) {
+            after[key] = roundedNew;
+            changedFields.push(key);
+          }
           return;
         }
         updates[key] = new Prisma.Decimal(roundedNew);
@@ -230,6 +251,10 @@ export class AdminSchoolRatesService {
         const next = Math.round(rawInput);
         if (currentNum != null && currentNum === next) {
           before[key] = currentNum;
+          if (shouldRefreshHeuristicProvenance(key)) {
+            after[key] = next;
+            changedFields.push(key);
+          }
           return;
         }
         updates[key] = next;
@@ -246,6 +271,10 @@ export class AdminSchoolRatesService {
         const currentValue = (school as any)[key] as boolean | null;
         if (currentValue === rawInput) {
           before[key] = currentValue;
+          if (shouldRefreshHeuristicProvenance(key)) {
+            after[key] = rawInput;
+            changedFields.push(key);
+          }
           return;
         }
         updates[key] = rawInput;
@@ -357,6 +386,7 @@ export class AdminSchoolRatesService {
       actAvg: true,
       act75: true,
       testOptional: true,
+      metadata: true,
     } satisfies Prisma.SchoolSelect;
   }
 }

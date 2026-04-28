@@ -448,4 +448,59 @@ describe('AdminSchoolRatesService', () => {
       }),
     );
   });
+
+  it('refreshes HEURISTIC provenance when official source value is unchanged', async () => {
+    const heuristicSchool = {
+      ...ucd,
+      sat25: 1280,
+      metadata: {
+        provenance: {
+          sat25: {
+            tier: 'INFERRED',
+            source: 'HEURISTIC:PR-15',
+            fetchedAt: '2026-04-01T00:00:00.000Z',
+          },
+        },
+      },
+    };
+    prisma.school.findMany.mockImplementation(async (args: any) => {
+      if (args.where.id) return [heuristicSchool];
+      return [];
+    });
+
+    const result = await service.runBulkUpdate(
+      {
+        rows: [
+          {
+            schoolId: 'ucd-id',
+            sat25: 1280,
+            source: 'IPEDS_CSV:2023:unitid-110644',
+            sourceUrl: 'https://nces.ed.gov/ipeds/datacenter/data/ADM2023.zip',
+            cycleYear: 2023,
+          },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(result.updated).toBe(1);
+    expect(result.skippedNoChange).toBe(0);
+    expect(result.changes[0].changedFields).toEqual(['sat25']);
+    expect(result.changes[0].before.sat25).toBe(1280);
+    expect(result.changes[0].after.sat25).toBe(1280);
+    expect(schoolWrite.update).toHaveBeenCalledWith(
+      'ucd-id',
+      expect.objectContaining({
+        fields: {},
+        provenance: expect.objectContaining({
+          sat25: expect.objectContaining({
+            source: 'IPEDS_CSV:2023:unitid-110644',
+            sourceUrl: 'https://nces.ed.gov/ipeds/datacenter/data/ADM2023.zip',
+            cycleYear: 2023,
+          }),
+        }),
+      }),
+    );
+    expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
+  });
 });
