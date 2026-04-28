@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T04:08:45.366Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-4o-mini",
+    "input": "/tmp/usc-cds-registry.json",
+    "success": 0,
+    "failures": 1
+  },
+  "schools": [],
+  "failures": [
+    {
+      "schoolNameNorm": "university of southern california",
+      "schoolName": "University of Southern California",
+      "sourceUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/10/CDS_2024-2025_FINAL-3.pdf",
+      "error": "C1 extraction returned no international admit-rate counts"
+    }
+  ]
+}

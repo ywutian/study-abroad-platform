@@ -2,9 +2,32 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { normalizeSchoolName } from '@study-abroad/shared';
+import {
+  buildFieldProvenanceRecord,
+  deepMergeRecords,
+  toRecord,
+} from '../src/modules/school/school-provenance.helpers';
 
 type Row = Record<string, string>;
+
+function loadDotEnv() {
+  for (const file of [
+    path.join(process.cwd(), '.env'),
+    path.join(process.cwd(), 'apps/api/.env'),
+  ]) {
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, 'utf8');
+    for (const line of text.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(trimmed);
+      if (!match || process.env[match[1]] != null) continue;
+      process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, '');
+    }
+  }
+}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -21,6 +44,11 @@ function parseArgs() {
     token: get('token') ?? process.env.ADMIN_JWT,
     cycleYear: Number(get('cycle-year') ?? new Date().getFullYear()),
     live: has('live'),
+    directDb: has('direct-db'),
+    actorUserId:
+      get('actor-user-id') ??
+      process.env.ADMIN_USER_ID ??
+      'system-ipeds-import',
   };
 }
 
@@ -116,7 +144,128 @@ function pct(
   return Math.round((numerator / denominator) * 10000) / 100;
 }
 
+function hasColumn(rows: Row[], keys: string[]): boolean {
+  return rows.some((row) =>
+    keys.some((key) =>
+      Object.keys(row).some(
+        (candidate) => candidate.toLowerCase() === key.toLowerCase(),
+      ),
+    ),
+  );
+}
+
+function buildEfRaceEnrollmentPayloadRows(rows: Row[]) {
+  const preferred = new Map<string, any>();
+  const fallback = new Map<string, any>();
+
+  for (const row of rows) {
+    const unitid = first(row, ['unitid', 'UNITID']);
+    if (!unitid) continue;
+    const efalevel = num(first(row, ['EFALEVEL', 'efalevel']));
+    const total = num(first(row, ['EFTOTLT', 'eftotlt']));
+    const intl = num(first(row, ['EFNRALT', 'efnralt']));
+    if (total == null || total <= 0 || intl == null) continue;
+
+    const payload = {
+      unitid,
+      schoolNameNorm: first(row, [
+        'schoolNameNorm',
+        'nameNorm',
+        'Institution',
+        'INSTNM',
+      ])
+        ? normalizeSchoolName(
+            first(row, [
+              'schoolNameNorm',
+              'nameNorm',
+              'Institution',
+              'INSTNM',
+            ]) as string,
+          )
+        : undefined,
+      totalEnrollment: total,
+      intlStudentPct: pct(intl, total),
+    };
+
+    if (efalevel === 2) preferred.set(unitid, payload);
+    if (efalevel === 1) fallback.set(unitid, payload);
+  }
+
+  return Array.from(new Map([...fallback, ...preferred]).values()).filter(
+    (row: any) => row.intlStudentPct != null,
+  );
+}
+
+function buildEfResidencePayloadRows(rows: Row[]) {
+  const grouped = new Map<
+    string,
+    {
+      unitid: string;
+      schoolNameNorm?: string;
+      total?: number;
+      international?: number;
+    }
+  >();
+
+  for (const row of rows) {
+    const unitid = first(row, ['unitid', 'UNITID']);
+    if (!unitid) continue;
+    const state = num(first(row, ['EFCSTATE', 'efcstate']));
+    const count = num(first(row, ['EFRES01', 'efres01']));
+    if (state == null || count == null) continue;
+    const group =
+      grouped.get(unitid) ??
+      ({
+        unitid,
+        schoolNameNorm: first(row, [
+          'schoolNameNorm',
+          'nameNorm',
+          'Institution',
+          'INSTNM',
+        ])
+          ? normalizeSchoolName(
+              first(row, [
+                'schoolNameNorm',
+                'nameNorm',
+                'Institution',
+                'INSTNM',
+              ]) as string,
+            )
+          : undefined,
+      } satisfies {
+        unitid: string;
+        schoolNameNorm?: string;
+        total?: number;
+        international?: number;
+      });
+
+    if (state === 99) group.total = count;
+    if (state === 90) group.international = count;
+    grouped.set(unitid, group);
+  }
+
+  return Array.from(grouped.values())
+    .map((row) => ({
+      unitid: row.unitid,
+      schoolNameNorm: row.schoolNameNorm,
+      intlStudentPct: pct(row.international, row.total),
+    }))
+    .filter((row) => row.intlStudentPct != null);
+}
+
 export function buildPayloadRows(rows: Row[]) {
+  if (
+    hasColumn(rows, ['EFALEVEL']) &&
+    hasColumn(rows, ['EFTOTLT']) &&
+    hasColumn(rows, ['EFNRALT'])
+  ) {
+    return buildEfRaceEnrollmentPayloadRows(rows);
+  }
+
+  if (hasColumn(rows, ['EFCSTATE']) && hasColumn(rows, ['EFRES01'])) {
+    return buildEfResidencePayloadRows(rows);
+  }
+
   return rows
     .map((row) => {
       const unitid = first(row, ['unitid', 'UNITID']);
@@ -145,6 +294,10 @@ export function buildPayloadRows(rows: Row[]) {
       const oosAdmitted = num(
         first(row, ['oos_admitted', 'out_of_state_admitted']),
       );
+      const totalEnrollment = num(
+        first(row, ['totalEnrollment', 'total_enrollment', 'EFTOTLT']),
+      );
+      const intlEnrollment = num(first(row, ['EFNRALT', 'intl_enrollment']));
       const sat25 =
         num(first(row, ['sat25', 'sat_25'])) ??
         sum(num(first(row, ['SATVR25'])), num(first(row, ['SATMT25'])));
@@ -168,6 +321,15 @@ export function buildPayloadRows(rows: Row[]) {
         oosAcceptanceRate:
           num(first(row, ['oosAcceptanceRate', 'oos_admit_rate'])) ??
           pct(oosAdmitted, oosApplicants),
+        intlStudentPct:
+          num(
+            first(row, [
+              'intlStudentPct',
+              'intl_student_pct',
+              'international_student_pct',
+            ]),
+          ) ?? pct(intlEnrollment, totalEnrollment),
+        totalEnrollment,
         sat25,
         satAvg,
         sat75,
@@ -186,6 +348,8 @@ export function buildPayloadRows(rows: Row[]) {
         'acceptanceRate',
         'intlAcceptanceRate',
         'oosAcceptanceRate',
+        'intlStudentPct',
+        'totalEnrollment',
         'sat25',
         'satAvg',
         'sat75',
@@ -206,7 +370,198 @@ function readInputText(input: string): string {
   return fs.readFileSync(input, 'utf8');
 }
 
+function normalizePercent(input: number | undefined | null): number | null {
+  if (input == null || !Number.isFinite(input) || input < 0) return null;
+  const percent = input < 1 ? input * 100 : input;
+  return Math.round(percent * 100) / 100;
+}
+
+async function applyDirectDb(
+  rows: any[],
+  opts: {
+    dryRun: boolean;
+    cycleYear: number;
+    actorUserId: string;
+    input: string;
+  },
+) {
+  const prisma = new PrismaClient();
+  const startedAt = Date.now();
+  const result = {
+    dryRun: opts.dryRun,
+    scanned: rows.length,
+    updated: 0,
+    skippedNoChange: 0,
+    notFound: [] as Array<{
+      rowIndex: number;
+      unitid?: string;
+      schoolNameNorm?: string;
+    }>,
+    changes: [] as Array<{
+      schoolId: string;
+      schoolName: string;
+      changedFields: string[];
+      before: Record<string, number | null>;
+      after: Record<string, number>;
+    }>,
+    durationMs: 0,
+  };
+
+  try {
+    const unitids = rows.map((row) => row.unitid).filter(Boolean);
+    const norms = rows.map((row) => row.schoolNameNorm).filter(Boolean);
+    if (unitids.length === 0 && norms.length === 0) return result;
+    const schools = await prisma.school.findMany({
+      where: {
+        OR: [
+          unitids.length ? { ipedsId: { in: unitids } } : {},
+          norms.length ? { nameNorm: { in: norms } } : {},
+        ].filter((item) => Object.keys(item).length > 0),
+      },
+      select: {
+        id: true,
+        name: true,
+        nameNorm: true,
+        ipedsId: true,
+        acceptanceRate: true,
+        intlAcceptanceRate: true,
+        oosAcceptanceRate: true,
+        intlStudentPct: true,
+        totalEnrollment: true,
+        sat25: true,
+        satAvg: true,
+        sat75: true,
+        act25: true,
+        actAvg: true,
+        act75: true,
+        metadata: true,
+      },
+    });
+    const byUnitid = new Map(schools.map((school) => [school.ipedsId, school]));
+    const byName = new Map(schools.map((school) => [school.nameNorm, school]));
+    const rateFields = [
+      'acceptanceRate',
+      'intlAcceptanceRate',
+      'oosAcceptanceRate',
+    ] as const;
+    const percentPointFields = ['intlStudentPct'] as const;
+    const integerFields = [
+      'totalEnrollment',
+      'sat25',
+      'satAvg',
+      'sat75',
+      'act25',
+      'actAvg',
+      'act75',
+    ] as const;
+
+    for (let index = 0; index < rows.length; index += 1) {
+      const row = rows[index];
+      const school =
+        byUnitid.get(row.unitid) ??
+        (row.schoolNameNorm ? byName.get(row.schoolNameNorm) : undefined);
+      if (!school) {
+        result.notFound.push({
+          rowIndex: index,
+          unitid: row.unitid,
+          schoolNameNorm: row.schoolNameNorm,
+        });
+        continue;
+      }
+
+      const updates: Record<string, Prisma.Decimal | number> = {};
+      const before: Record<string, number | null> = {};
+      const after: Record<string, number> = {};
+      const changedFields: string[] = [];
+
+      for (const field of rateFields) {
+        const normalized = normalizePercent(row[field]);
+        if (normalized == null) continue;
+        const currentDecimal = school[field] as Prisma.Decimal | null;
+        const current = currentDecimal ? currentDecimal.toNumber() : null;
+        before[field] = current;
+        if (current != null && Math.abs(current - normalized) < 0.005) continue;
+        updates[field] = new Prisma.Decimal(normalized);
+        after[field] = normalized;
+        changedFields.push(field);
+      }
+
+      for (const field of percentPointFields) {
+        const raw = row[field];
+        if (raw == null || !Number.isFinite(raw) || raw < 0) continue;
+        const next = Math.round(raw * 100) / 100;
+        const currentDecimal = school[field] as Prisma.Decimal | null;
+        const current = currentDecimal ? currentDecimal.toNumber() : null;
+        before[field] = current;
+        if (current != null && Math.abs(current - next) < 0.005) continue;
+        updates[field] = new Prisma.Decimal(next);
+        after[field] = next;
+        changedFields.push(field);
+      }
+
+      for (const field of integerFields) {
+        const raw = row[field];
+        if (raw == null || !Number.isFinite(raw)) continue;
+        const next = Math.round(raw);
+        const current = school[field] as number | null;
+        before[field] = current ?? null;
+        if (current === next) continue;
+        updates[field] = next;
+        after[field] = next;
+        changedFields.push(field);
+      }
+
+      result.changes.push({
+        schoolId: school.id,
+        schoolName: school.name,
+        changedFields,
+        before,
+        after,
+      });
+
+      if (changedFields.length === 0) {
+        result.skippedNoChange += 1;
+        continue;
+      }
+      result.updated += 1;
+      if (opts.dryRun) continue;
+
+      const metadata = toRecord(school.metadata);
+      const nextMetadata = deepMergeRecords(metadata, {
+        provenance: deepMergeRecords(
+          toRecord(metadata.provenance),
+          buildFieldProvenanceRecord(changedFields, {
+            source: `IPEDS_CSV:${opts.cycleYear}:unitid-${row.unitid}`,
+            sourceUrl: `https://nces.ed.gov/ipeds/datacenter/data/EF${opts.cycleYear}${
+              /EF\d{4}C/i.test(opts.input) ? 'C' : 'A'
+            }.zip`,
+            cycleYear: opts.cycleYear,
+            verifiedBy: opts.actorUserId,
+            confidence: 0.95,
+            notes:
+              'Official IPEDS CSV import via scripts/import-ipeds-csv.ts --direct-db.',
+          }),
+        ),
+      });
+
+      await prisma.school.update({
+        where: { id: school.id },
+        data: {
+          ...updates,
+          metadata: nextMetadata as Prisma.InputJsonValue,
+        },
+      });
+    }
+  } finally {
+    result.durationMs = Date.now() - startedAt;
+    await prisma.$disconnect();
+  }
+
+  return result;
+}
+
 async function main() {
+  loadDotEnv();
   const opts = parseArgs();
   if (!opts.input) throw new Error('--input CSV file is required');
   const text = readInputText(opts.input);
@@ -233,6 +588,17 @@ async function main() {
   fs.writeFileSync(out, `${JSON.stringify(payload, null, 2)}\n`);
   console.log(`Built ${rows.length} IPEDS rows from ${opts.input}`);
   console.log(`Payload: ${out}`);
+
+  if (opts.directDb) {
+    const result = await applyDirectDb(rows, {
+      dryRun: !opts.live,
+      cycleYear: opts.cycleYear,
+      actorUserId: opts.actorUserId,
+      input: opts.input,
+    });
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
 
   if (!opts.base || !opts.token) {
     console.log('No --base/--token supplied; payload written only.');

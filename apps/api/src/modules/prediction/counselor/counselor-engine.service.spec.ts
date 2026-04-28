@@ -452,6 +452,31 @@ describe('CounselorEngineService', () => {
       expect(oosFactor).toBeUndefined();
     });
 
+    it('uses oosAcceptanceRate ratio for domestic out-of-state applicants when available', async () => {
+      const result = await service.compute(
+        profile({
+          gpa: 3.9,
+          testScores: [{ type: 'SAT', score: 1450 }],
+          isInternational: false,
+          highSchoolLocation: 'NY',
+        }),
+        school({
+          id: 'ucd',
+          name: 'University of California, Davis',
+          acceptanceRate: 0.418,
+          oosAcceptanceRate: 0.573,
+          sat25: 1280,
+          sat75: 1450,
+          isPrivate: false,
+          state: 'CA',
+        }),
+        'RD',
+      );
+
+      expect(result.modifierResults.geo.label).toContain('school data');
+      expect(result.modifierResults.geo.multiplier).toBeCloseTo(1.3, 2);
+    });
+
     it('Tier 1 (SAT cell): suppresses gpa+test modifiers — no double-counting', async () => {
       // Regression test for PR-10 architectural fix. When CDS C9 cell is for
       // (gpa=3.75-4.0, sat=1500-1600), the cell admit rate ALREADY reflects

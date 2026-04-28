@@ -1619,6 +1619,7 @@
       "title": "录取率明细",
       "overall": "总体录取率",
       "international": "国际生录取率",
+      "outOfState": "州外录取率",
       "contextualBaseline": "当前情境基线",
       "contextualBaselineWithRound": "{round} 情境基线",
       "contextualBaselineShort": "基线 {rate}%",
@@ -1641,6 +1642,7 @@
       "na": "暂无数据",
       "naIntl": "该校暂无国际生录取率数据",
       "naMajor": "该校暂无此专业数据",
+      "oosTooltip": "当前可用的州外新生录取率字段，可能来自官方数据、人工整理，或在数据覆盖后台明确标记为启发式估算。",
       "communityData": "社区数据（{count}份报告）",
       "communityTooltip": "基于{count}份已验证录取案例"
     },

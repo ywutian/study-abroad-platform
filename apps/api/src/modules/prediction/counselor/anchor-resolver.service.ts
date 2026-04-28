@@ -98,8 +98,8 @@ export class AnchorResolverService {
     admitRate: number;
     encodedDimensions: ReadonlySet<EncodedDimension>;
   } | null> {
-    const gpaBand = this.gpaToBand(profile.gpa, profile.gpaScale);
-    if (!gpaBand) return null;
+    const gpaBands = this.gpaToBands(profile.gpa, profile.gpaScale);
+    if (!gpaBands.length) return null;
 
     const candidates: Array<{ testType: string; testBand: string }> = [];
     const sat = profile.testScores?.find((t) => t.type === 'SAT')?.score;
@@ -114,40 +114,54 @@ export class AnchorResolverService {
     }
     candidates.push({ testType: 'GPA_ONLY', testBand: 'ANY' });
 
-    for (const candidate of candidates) {
-      const row = await this.prisma.schoolCdsAdmitBand.findFirst({
-        where: {
-          schoolId: school.id,
-          gpaBand,
-          testType: candidate.testType,
-          testBand: candidate.testBand,
-        },
-        orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
-        select: { admitRate: true },
-      });
-      if (!row) continue;
-      let rate = row.admitRate.toNumber();
-      if (rate >= 1) rate = rate / 100;
-      if (rate <= 0 || rate >= 1) continue;
-      const encoded: Set<EncodedDimension> = new Set(['gpa']);
-      if (candidate.testType !== 'GPA_ONLY') encoded.add('test');
-      return { admitRate: rate, encodedDimensions: encoded };
+    for (const gpaBand of gpaBands) {
+      for (const candidate of candidates) {
+        const row = await this.prisma.schoolCdsAdmitBand.findFirst({
+          where: {
+            schoolId: school.id,
+            gpaBand,
+            testType: candidate.testType,
+            testBand: candidate.testBand,
+          },
+          orderBy: [{ cycleYear: 'desc' }, { updatedAt: 'desc' }],
+          select: { admitRate: true },
+        });
+        if (!row) continue;
+        let rate = row.admitRate.toNumber();
+        if (rate >= 1) rate = rate / 100;
+        if (rate <= 0 || rate >= 1) continue;
+        const encoded: Set<EncodedDimension> = new Set(['gpa']);
+        if (candidate.testType !== 'GPA_ONLY') encoded.add('test');
+        return { admitRate: rate, encodedDimensions: encoded };
+      }
     }
     return null;
   }
 
-  private gpaToBand(
+  private gpaToBands(
     gpa: number | undefined,
     gpaScale: number | undefined,
-  ): string | null {
-    if (gpa == null || !Number.isFinite(gpa)) return null;
+  ): string[] {
+    if (gpa == null || !Number.isFinite(gpa)) return [];
     const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
+    const bands: string[] = [];
+
+    if (scale > 4.0) {
+      if (gpa >= 4.2) bands.push('4.20-4.40');
+      else if (gpa >= 4.0) bands.push('4.00-4.19');
+      else if (gpa >= 3.8) bands.push('3.80-3.99');
+      else if (gpa >= 3.6) bands.push('3.60-3.79');
+      else bands.push('<3.60');
+    }
+
     const gpa4 = (gpa / scale) * 4.0;
-    if (gpa4 >= 3.75) return '3.75-4.00';
-    if (gpa4 >= 3.5) return '3.50-3.74';
-    if (gpa4 >= 3.25) return '3.25-3.49';
-    if (gpa4 >= 3) return '3.00-3.24';
-    return '<3.00';
+    if (gpa4 >= 3.75) bands.push('3.75-4.00');
+    else if (gpa4 >= 3.5) bands.push('3.50-3.74');
+    else if (gpa4 >= 3.25) bands.push('3.25-3.49');
+    else if (gpa4 >= 3) bands.push('3.00-3.24');
+    else bands.push('<3.00');
+
+    return bands;
   }
 
   private satToBand(sat: number): string | null {

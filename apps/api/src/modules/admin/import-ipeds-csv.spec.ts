@@ -90,4 +90,40 @@ describe('import-ipeds-csv parser', () => {
       }),
     ]);
   });
+
+  it('derives undergraduate international student pct from official EF A rows', () => {
+    const rows = parseCsv(
+      [
+        'UNITID,EFALEVEL,EFTOTLT,EFNRALT',
+        '166683,1,11920,3505',
+        '166683,2,4576,505',
+      ].join('\n'),
+    );
+
+    expect(buildPayloadRows(rows)).toEqual([
+      expect.objectContaining({
+        unitid: '166683',
+        totalEnrollment: 4576,
+        intlStudentPct: 11.04,
+      }),
+    ]);
+  });
+
+  it('derives first-time freshman international pct from official EF C residence rows', () => {
+    const rows = parseCsv(
+      [
+        'UNITID,EFCSTATE,LINE,EFRES01',
+        '110644,6,6,5206',
+        '110644,90,90,1020',
+        '110644,99,99,6577',
+      ].join('\n'),
+    );
+
+    expect(buildPayloadRows(rows)).toEqual([
+      expect.objectContaining({
+        unitid: '110644',
+        intlStudentPct: 15.51,
+      }),
+    ]);
+  });
 });

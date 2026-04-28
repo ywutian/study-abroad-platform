@@ -25,14 +25,27 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { Prisma, PrismaClient } from '@prisma/client';
+import {
+  buildFieldProvenanceRecord,
+  deepMergeRecords,
+  toRecord,
+} from '../src/modules/school/school-provenance.helpers';
 
 interface CdsRow {
   schoolNameNorm: string;
   cycleYear: number;
   sourceUrl: string;
+  applicants?: {
+    outOfState?: number | null;
+  };
+  admitted?: {
+    outOfState?: number | null;
+  };
   rates: {
     acceptanceRate: number | null;
     intlAcceptanceRate: number | null;
+    oosAcceptanceRate?: number | null;
     transferAcceptanceRate: number | null;
   };
   notes?: string;
@@ -49,6 +62,7 @@ interface BulkUpdateRow {
   schoolNameNorm: string;
   acceptanceRate?: number;
   intlAcceptanceRate?: number;
+  oosAcceptanceRate?: number;
   transferAcceptanceRate?: number;
   source: string;
   sourceUrl: string;
@@ -77,6 +91,8 @@ function parseArgs(): {
   base: string;
   token: string;
   dryRun: boolean;
+  directDb: boolean;
+  actorUserId: string;
 } {
   const args = process.argv.slice(2);
   const get = (name: string): string | undefined => {
@@ -90,18 +106,42 @@ function parseArgs(): {
     path.join(process.cwd(), 'scripts/cds-data/cds-2024-25-extracted.json');
   const base = get('base') ?? process.env.API_BASE ?? '';
   const token = get('token') ?? process.env.ADMIN_JWT ?? '';
+  const directDb = has('direct-db');
+  const actorUserId =
+    get('actor-user-id') ?? process.env.ADMIN_USER_ID ?? 'system-cds-import';
   // Default is dry-run; --live flips to live
   const dryRun = !has('live');
 
-  if (!base) {
+  if (!directDb && !base) {
     throw new Error(
       '--base or API_BASE env required (e.g. https://study-abroad-api-1032896108391.us-central1.run.app)',
     );
   }
-  if (!token) {
+  if (!directDb && !token) {
     throw new Error('--token or ADMIN_JWT env required');
   }
-  return { input, base: base.replace(/\/$/, ''), token, dryRun };
+  return {
+    input,
+    base: base.replace(/\/$/, ''),
+    token,
+    dryRun,
+    directDb,
+    actorUserId,
+  };
+}
+
+function pct(
+  numerator: number | null | undefined,
+  denominator: number | null | undefined,
+): number | null {
+  if (numerator == null || denominator == null || denominator <= 0) return null;
+  return Math.round((numerator / denominator) * 10000) / 100;
+}
+
+function normalizePercent(value: number | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value) || value < 0) return null;
+  const percent = value < 1 ? value * 100 : value;
+  return Math.round(percent * 100) / 100;
 }
 
 function buildRows(cds: CdsFile): BulkUpdateRow[] {
@@ -112,6 +152,8 @@ function buildRows(cds: CdsFile): BulkUpdateRow[] {
     if (
       r.acceptanceRate == null &&
       r.intlAcceptanceRate == null &&
+      r.oosAcceptanceRate == null &&
+      pct(school.admitted?.outOfState, school.applicants?.outOfState) == null &&
       r.transferAcceptanceRate == null
     ) {
       continue;
@@ -125,11 +167,133 @@ function buildRows(cds: CdsFile): BulkUpdateRow[] {
     if (r.acceptanceRate != null) row.acceptanceRate = r.acceptanceRate;
     if (r.intlAcceptanceRate != null)
       row.intlAcceptanceRate = r.intlAcceptanceRate;
+    const oosRate =
+      r.oosAcceptanceRate ??
+      pct(school.admitted?.outOfState, school.applicants?.outOfState);
+    if (oosRate != null) row.oosAcceptanceRate = oosRate;
     if (r.transferAcceptanceRate != null)
       row.transferAcceptanceRate = r.transferAcceptanceRate;
     rows.push(row);
   }
   return rows;
+}
+
+async function applyDirectDb(
+  rows: BulkUpdateRow[],
+  dryRun: boolean,
+  actorUserId: string,
+): Promise<BulkUpdateResult> {
+  const prisma = new PrismaClient();
+  const startedAt = Date.now();
+  const result: BulkUpdateResult = {
+    dryRun,
+    scanned: rows.length,
+    updated: 0,
+    skippedNoChange: 0,
+    notFound: [],
+    errors: [],
+    changes: [],
+    durationMs: 0,
+  };
+
+  try {
+    const schools = await prisma.school.findMany({
+      where: { nameNorm: { in: rows.map((row) => row.schoolNameNorm) } },
+      select: {
+        id: true,
+        name: true,
+        nameNorm: true,
+        acceptanceRate: true,
+        intlAcceptanceRate: true,
+        oosAcceptanceRate: true,
+        transferAcceptanceRate: true,
+        metadata: true,
+      },
+    });
+    const byName = new Map(schools.map((school) => [school.nameNorm, school]));
+    const rateFields = [
+      'acceptanceRate',
+      'intlAcceptanceRate',
+      'oosAcceptanceRate',
+      'transferAcceptanceRate',
+    ] as const;
+
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows[i];
+      const school = byName.get(row.schoolNameNorm);
+      if (!school) {
+        result.notFound.push({
+          rowIndex: i,
+          schoolNameNorm: row.schoolNameNorm,
+        });
+        continue;
+      }
+
+      const updates: Record<string, Prisma.Decimal> = {};
+      const before: Record<string, number | null> = {};
+      const after: Record<string, number> = {};
+      const changedFields: string[] = [];
+
+      for (const field of rateFields) {
+        const normalized = normalizePercent(row[field]);
+        if (normalized == null) continue;
+        const currentDecimal = school[field] as Prisma.Decimal | null;
+        const current = currentDecimal ? currentDecimal.toNumber() : null;
+        before[field] = current;
+        if (current != null && Math.abs(current - normalized) < 0.005) {
+          continue;
+        }
+        updates[field] = new Prisma.Decimal(normalized);
+        after[field] = normalized;
+        changedFields.push(field);
+      }
+
+      result.changes.push({
+        schoolId: school.id,
+        schoolName: school.name,
+        changedFields,
+        before,
+        after,
+      });
+
+      if (changedFields.length === 0) {
+        result.skippedNoChange += 1;
+        continue;
+      }
+
+      result.updated += 1;
+      if (dryRun) continue;
+
+      const metadata = toRecord(school.metadata);
+      const nextMetadata = deepMergeRecords(metadata, {
+        provenance: deepMergeRecords(
+          toRecord(metadata.provenance),
+          buildFieldProvenanceRecord(changedFields, {
+            source: row.source,
+            sourceUrl: row.sourceUrl,
+            cycleYear: row.cycleYear,
+            verifiedBy: actorUserId,
+            confidence: 0.98,
+            notes:
+              'Official CDS C1 residency admit-rate import via scripts/import-cds-rates.ts --direct-db.',
+          }),
+        ),
+      });
+
+      await prisma.school.update({
+        where: { id: school.id },
+        data: {
+          ...updates,
+          metadata: nextMetadata as Prisma.InputJsonValue,
+        },
+      });
+    }
+  } finally {
+    result.durationMs = Date.now() - startedAt;
+    await prisma.$disconnect();
+  }
+
+  return result;
 }
 
 async function postBulkUpdate(
@@ -220,9 +384,13 @@ async function main() {
   }
 
   console.log(
-    `${opts.dryRun ? '[DRY-RUN]' : '[LIVE]'} POST → ${opts.base}/api/v1/admin/schools/bulk-update-acceptance-rates`,
+    opts.directDb
+      ? `${opts.dryRun ? '[DRY-RUN]' : '[LIVE]'} direct DB import`
+      : `${opts.dryRun ? '[DRY-RUN]' : '[LIVE]'} POST → ${opts.base}/api/v1/admin/schools/bulk-update-acceptance-rates`,
   );
-  const result = await postBulkUpdate(opts.base, opts.token, rows, opts.dryRun);
+  const result = opts.directDb
+    ? await applyDirectDb(rows, opts.dryRun, opts.actorUserId)
+    : await postBulkUpdate(opts.base, opts.token, rows, opts.dryRun);
   summarize(rows, result);
 
   if (result.errors.length > 0 || result.notFound.length > 0) {

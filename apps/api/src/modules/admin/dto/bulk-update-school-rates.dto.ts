@@ -100,6 +100,32 @@ export class BulkUpdateSchoolRateRowDto {
 
   @ApiProperty({
     description:
+      'International/nonresident student percentage in percentage points, e.g. 0.84 means 0.84%.',
+    required: false,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  intlStudentPct?: number;
+
+  @ApiProperty({
+    description:
+      'Enrollment count from an official source such as IPEDS. Integer count.',
+    required: false,
+    minimum: 0,
+    maximum: 500000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(500000)
+  totalEnrollment?: number;
+
+  @ApiProperty({
+    description:
       'Whether the school is need-blind for international applicants.',
     required: false,
   })

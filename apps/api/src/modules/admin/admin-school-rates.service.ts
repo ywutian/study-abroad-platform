@@ -81,7 +81,9 @@ const RATE_FIELDS = [
   'oosAcceptanceRate',
   'transferAcceptanceRate',
 ] as const;
+const PERCENT_POINT_FIELDS = ['intlStudentPct'] as const;
 const INTEGER_FIELDS = [
+  'totalEnrollment',
   'sat25',
   'satAvg',
   'sat75',
@@ -92,6 +94,7 @@ const INTEGER_FIELDS = [
 const BOOLEAN_FIELDS = ['needBlindInternational', 'testOptional'] as const;
 
 type RateField = (typeof RATE_FIELDS)[number];
+type PercentPointField = (typeof PERCENT_POINT_FIELDS)[number];
 type IntegerField = (typeof INTEGER_FIELDS)[number];
 type BooleanField = (typeof BOOLEAN_FIELDS)[number];
 
@@ -144,6 +147,7 @@ export class AdminSchoolRatesService {
       }
       const hasAnyField =
         RATE_FIELDS.some((field) => row[field] != null) ||
+        PERCENT_POINT_FIELDS.some((field) => row[field] != null) ||
         INTEGER_FIELDS.some((field) => row[field] != null) ||
         BOOLEAN_FIELDS.some((field) => row[field] != null);
       if (!hasAnyField) {
@@ -263,6 +267,29 @@ export class AdminSchoolRatesService {
         changedFields.push(key);
       };
 
+      const tryPercentPointField = (
+        key: PercentPointField,
+        rawInput: number | undefined,
+      ) => {
+        if (rawInput == null || !Number.isFinite(rawInput) || rawInput < 0)
+          return;
+        const currentDecimal = (school as any)[key] as Prisma.Decimal | null;
+        const currentNum = currentDecimal ? currentDecimal.toNumber() : null;
+        const roundedNew = Math.round(rawInput * 100) / 100;
+        if (currentNum != null && Math.abs(currentNum - roundedNew) < 0.005) {
+          before[key] = currentNum;
+          if (shouldRefreshHeuristicProvenance(key)) {
+            after[key] = roundedNew;
+            changedFields.push(key);
+          }
+          return;
+        }
+        updates[key] = new Prisma.Decimal(roundedNew);
+        before[key] = currentNum;
+        after[key] = roundedNew;
+        changedFields.push(key);
+      };
+
       const tryBooleanField = (
         key: BooleanField,
         rawInput: boolean | undefined,
@@ -284,6 +311,8 @@ export class AdminSchoolRatesService {
       };
 
       for (const field of RATE_FIELDS) tryRateField(field, row[field]);
+      for (const field of PERCENT_POINT_FIELDS)
+        tryPercentPointField(field, row[field]);
       for (const field of INTEGER_FIELDS) tryIntegerField(field, row[field]);
       for (const field of BOOLEAN_FIELDS) tryBooleanField(field, row[field]);
 
@@ -377,6 +406,8 @@ export class AdminSchoolRatesService {
       acceptanceRate: true,
       intlAcceptanceRate: true,
       transferAcceptanceRate: true,
+      intlStudentPct: true,
+      totalEnrollment: true,
       needBlindInternational: true,
       oosAcceptanceRate: true,
       sat25: true,

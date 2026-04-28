@@ -16,6 +16,7 @@ import { AdminPredictionWorkflowController } from './admin-prediction-workflow.c
 import { AdminApplicationAnalysisWorkflowController } from './admin-application-analysis-workflow.controller';
 import { AdminSchoolRatesController } from './admin-school-rates.controller';
 import { AdminSchoolRatesService } from './admin-school-rates.service';
+import { AdminCdsPipelineController } from './admin-cds-pipeline.controller';
 import { AdminSchoolDataPipelineController } from './admin-school-data-pipeline.controller';
 import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.service';
 import { PrismaModule } from '../../prisma/prisma.module';
@@ -46,6 +47,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminPredictionWorkflowController,
     AdminApplicationAnalysisWorkflowController,
     AdminSchoolRatesController,
+    AdminCdsPipelineController,
     AdminSchoolDataPipelineController,
   ],
   providers: [

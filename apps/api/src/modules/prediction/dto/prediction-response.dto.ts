@@ -300,6 +300,7 @@ export class PredictionResultDto {
     usNewsRank?: number;
     acceptanceRate?: number;
     intlAcceptanceRate?: number;
+    oosAcceptanceRate?: number;
     intlStudentPct?: number;
     needBlindInternational?: boolean;
     graduationRate?: number;

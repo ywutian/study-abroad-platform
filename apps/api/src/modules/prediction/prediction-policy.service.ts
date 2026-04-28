@@ -106,6 +106,7 @@ export class PredictionPolicyService {
     schoolMeta?: {
       acceptanceRate?: number;
       intlAcceptanceRate?: number;
+      oosAcceptanceRate?: number;
       usNewsRank?: number;
       graduationRate?: number;
     };

@@ -80,7 +80,12 @@ describe('AdminSchoolDataCoverageService', () => {
     expect(report.totals.schools).toBe(1);
     expect(report.totals.missingAnyCritical).toBe(1);
     expect(report.items[0].missingCritical).toEqual(
-      expect.arrayContaining(['intlAcceptanceRate', 'sat25', 'sat75']),
+      expect.arrayContaining([
+        'intlAcceptanceRate',
+        'oosAcceptanceRate',
+        'sat25',
+        'sat75',
+      ]),
     );
     expect(report.fieldTotals.acceptanceRate.filled).toBe(1);
   });
@@ -90,9 +95,15 @@ describe('AdminSchoolDataCoverageService', () => {
 
     expect(result.updated).toBe(1);
     expect(result.changes[0].changedFields).toEqual(
-      expect.arrayContaining(['intlAcceptanceRate', 'sat25', 'sat75']),
+      expect.arrayContaining([
+        'intlAcceptanceRate',
+        'oosAcceptanceRate',
+        'sat25',
+        'sat75',
+      ]),
     );
     expect(result.changes[0].after.intlAcceptanceRate).toBe(38);
+    expect(result.changes[0].after.oosAcceptanceRate).toBe(38);
     expect(schoolWrite.update).not.toHaveBeenCalled();
   });
 

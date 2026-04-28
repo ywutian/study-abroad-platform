@@ -25,18 +25,13 @@ const US_COUNTRIES = ['US', 'United States', 'United States of America'];
 const CRITICAL_FIELDS = [
   'acceptanceRate',
   'intlAcceptanceRate',
+  'oosAcceptanceRate',
   'sat25',
   'sat75',
   'testOptional',
   'needBlindInternational',
 ] as const;
-const OPTIONAL_FIELDS = [
-  'oosAcceptanceRate',
-  'satAvg',
-  'act25',
-  'actAvg',
-  'act75',
-] as const;
+const OPTIONAL_FIELDS = ['satAvg', 'act25', 'actAvg', 'act75'] as const;
 const HEURISTIC_SOURCE = 'HEURISTIC:PR-15';
 
 type CoverageField =
@@ -213,6 +208,14 @@ export class AdminSchoolDataCoverageService {
           school.needBlindInternational,
         );
         changedFields.push('intlAcceptanceRate');
+      }
+      if (canFill('oosAcceptanceRate', school.oosAcceptanceRate)) {
+        updates.oosAcceptanceRate = this.deriveOosRate(
+          overall,
+          school.isPrivate,
+          school.state,
+        );
+        changedFields.push('oosAcceptanceRate');
       }
       if (canFill('sat25', school.sat25) || canFill('sat75', school.sat75)) {
         const sat = this.deriveSatBand(overall);
@@ -545,6 +548,47 @@ export class AdminSchoolDataCoverageService {
           : needBlind
             ? 0.7
             : 0.4;
+    return Math.max(
+      0.1,
+      Math.min(98, Math.round(overallPercent * multiplier * 100) / 100),
+    );
+  }
+
+  private deriveOosRate(
+    overallPercent: number,
+    isPrivate: boolean,
+    state: string | null,
+  ): number {
+    if (isPrivate) return Math.round(overallPercent * 100) / 100;
+
+    const strongResidencyPreference = new Set([
+      'CA',
+      'MI',
+      'NC',
+      'VA',
+      'TX',
+      'FL',
+    ]);
+    const hasStrongPreference = state
+      ? strongResidencyPreference.has(state.trim().toUpperCase())
+      : false;
+    const multiplier =
+      overallPercent >= 50
+        ? 1.02
+        : overallPercent >= 40
+          ? 0.95
+          : overallPercent >= 20
+            ? hasStrongPreference
+              ? 0.75
+              : 0.85
+            : overallPercent >= 10
+              ? hasStrongPreference
+                ? 0.6
+                : 0.75
+              : hasStrongPreference
+                ? 0.5
+                : 0.7;
+
     return Math.max(
       0.1,
       Math.min(98, Math.round(overallPercent * multiplier * 100) / 100),
