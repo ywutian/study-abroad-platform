@@ -24,10 +24,46 @@ export async function callLlm<T>(args: CallArgs): Promise<T> {
   return callOpenAi(args);
 }
 
+/**
+ * Detect if model uses the newer chat/completions API contract:
+ *  - max_completion_tokens (not max_tokens)
+ *  - no temperature override (only default)
+ * Applies to gpt-5.x family, o-series (o1, o3, o4), gpt-4.1+ (per OpenAI docs).
+ */
+function isNewerOpenAiModel(model: string): boolean {
+  const m = model.toLowerCase();
+  return (
+    m.startsWith('gpt-5') ||
+    m.startsWith('o1') ||
+    m.startsWith('o3') ||
+    m.startsWith('o4') ||
+    m.startsWith('gpt-4.1') ||
+    m.startsWith('gpt-4.5')
+  );
+}
+
 async function callOpenAi<T>(args: CallArgs): Promise<T> {
   const apiKey = process.env.OPENAI_API_KEY;
   const baseUrl = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
   if (!apiKey) throw new Error('OPENAI_API_KEY required');
+
+  const isNewer = isNewerOpenAiModel(args.model);
+  const reqBody: Record<string, unknown> = {
+    model: args.model,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: args.systemPrompt },
+      { role: 'user', content: args.userPrompt },
+    ],
+  };
+  // Newer models (gpt-5, o-series) require max_completion_tokens and
+  // do not accept temperature override.
+  if (isNewer) {
+    reqBody.max_completion_tokens = args.maxOutputTokens;
+  } else {
+    reqBody.max_tokens = args.maxOutputTokens;
+    reqBody.temperature = 0;
+  }
 
   const r = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
     method: 'POST',
@@ -35,16 +71,7 @@ async function callOpenAi<T>(args: CallArgs): Promise<T> {
       authorization: `Bearer ${apiKey}`,
       'content-type': 'application/json',
     },
-    body: JSON.stringify({
-      model: args.model,
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      max_tokens: args.maxOutputTokens,
-      messages: [
-        { role: 'system', content: args.systemPrompt },
-        { role: 'user', content: args.userPrompt },
-      ],
-    }),
+    body: JSON.stringify(reqBody),
   });
   const body = await r.text();
   if (!r.ok)

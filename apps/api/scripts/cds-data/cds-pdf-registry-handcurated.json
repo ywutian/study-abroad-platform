@@ -1,0 +1,134 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-28T22:30:00.000Z",
+    "source": "hand-curated (Phase A — URLs discovered via WebSearch in earlier sessions)",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 20,
+    "selectedUrls": 20,
+    "note": "Phase A of PR-15.2: zero Tavily quota cost. URLs hand-verified during 4/27 evening session. Schools chosen for high CN-applicant query volume (T20 publics + privates not yet covered)."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "schoolName": "University of Michigan, Ann Arbor",
+      "selectedUrl": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of virginia",
+      "schoolName": "University of Virginia",
+      "selectedUrl": "https://ira.virginia.edu/sites/g/files/jsddwu1106/files/2025-03/CDS_2024-2025_508.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "schoolName": "Johns Hopkins University",
+      "selectedUrl": "https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "schoolName": "Rice University",
+      "selectedUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "schoolName": "University of Southern California",
+      "selectedUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/10/CDS_2024-2025_FINAL-3.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "new york university",
+      "schoolName": "New York University",
+      "selectedUrl": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/CDS_2024-2025_Final%20for%20Release_wo%20PART%20H%20(check%20back%20for%20for%20PART%20H).pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "schoolName": "California Institute of Technology",
+      "selectedUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "carnegie mellon university",
+      "schoolName": "Carnegie Mellon University",
+      "selectedUrl": "https://www.cmu.edu/ira/CDS/pdf/cds_2024-25/common-data-set-2024-2025-26jun2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "duke university",
+      "schoolName": "Duke University",
+      "selectedUrl": "https://oirap.duke.edu/sites/default/files/2024-11/Duke_CDS_2024-25.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "schoolName": "University of North Carolina at Chapel Hill",
+      "selectedUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/04/UNC-CDS_2024-2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "selectedUrl": "https://ir.aa.ufl.edu/media/iraaufledu/files/cds/UF-CDS-2024-2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "schoolName": "University of Pennsylvania",
+      "selectedUrl": "https://ira.upenn.edu/sites/default/files/2025-09/CDS%202024-25.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "emory university",
+      "schoolName": "Emory University",
+      "selectedUrl": "https://oirpe.emory.edu/_includes/documents/sections/dataset/cds-2024-25.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "washington university in st. louis",
+      "schoolName": "Washington University in St. Louis",
+      "selectedUrl": "https://provost.wustl.edu/wp-content/uploads/2025/03/Common-Data-Set-2024-25-Washington-University-in-St-Louis.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://oire.georgetown.edu/wp-content/uploads/2025/10/CDS_2024-25.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "schoolName": "University of Texas at Austin",
+      "selectedUrl": "https://reports.utexas.edu/sites/default/files/2025-04/CDS_2024-2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "schoolName": "Georgia Institute of Technology",
+      "selectedUrl": "https://lite.gatech.edu/sites/default/files/2025-04/2024-2025-cds.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of california, santa barbara",
+      "schoolName": "University of California, Santa Barbara",
+      "selectedUrl": "https://bap.ucsb.edu/institutional-research/common-data-set/cds_2024-2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of wisconsin-madison",
+      "schoolName": "University of Wisconsin-Madison",
+      "selectedUrl": "https://apir.wisc.edu/wp-content/uploads/sites/55/2025/05/CDS_2024-2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    }
+  ],
+  "failures": []
+}

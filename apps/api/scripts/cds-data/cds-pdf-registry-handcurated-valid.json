@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-28T22:35:00.000Z",
+    "source": "hand-curated, HEAD-validated",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 6,
+    "selectedUrls": 6,
+    "note": "Phase A subset — only URLs that returned 200 application/pdf on HEAD probe. 14 others returned 404/403/HTML/timeout and need re-discovery."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "schoolName": "University of Michigan, Ann Arbor",
+      "selectedUrl": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of virginia",
+      "schoolName": "University of Virginia",
+      "selectedUrl": "https://ira.virginia.edu/sites/g/files/jsddwu1106/files/2025-03/CDS_2024-2025_508.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "schoolName": "Rice University",
+      "selectedUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "schoolName": "University of Southern California",
+      "selectedUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/10/CDS_2024-2025_FINAL-3.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "schoolName": "California Institute of Technology",
+      "selectedUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    },
+    {
+      "schoolNameNorm": "carnegie mellon university",
+      "schoolName": "Carnegie Mellon University",
+      "selectedUrl": "https://www.cmu.edu/ira/CDS/pdf/cds_2024-25/common-data-set-2024-2025-26jun2025.pdf",
+      "missingField": "intlAcceptanceRate"
+    }
+  ],
+  "failures": []
+}
