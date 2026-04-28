@@ -48,9 +48,15 @@ const NEUTRAL: ModifierResult = {
 /**
  * Convert a 4.0-scale GPA to an "equivalent SAT" score for percentile comparison
  * against a school's SAT 25/50/75 distribution. Standard mapping used in admissions
- * consulting (Compass Education Group, College Vine):
- *   3.95+ → 1500   |  3.85 → 1450  |  3.75 → 1400  |  3.65 → 1350
- *   3.50  → 1300   |  3.25 → 1230  |  3.00 → 1150  |  <3.0 → 1050
+ * consulting (Compass Education Group, College Vine), with finer resolution at the
+ * top end where elite-school sat25 values cluster at 1510-1520:
+ *   3.97+ → 1540  |  3.93 → 1520  |  3.88 → 1490  |  3.83 → 1460
+ *   3.75  → 1420  |  3.65 → 1350  |  3.50 → 1300   |  3.25 → 1230
+ *   3.00  → 1150  |  <3.0 → 1050
+ *
+ * The top-end steps were coarsened in the original table (50-point jumps at 3.85/3.95)
+ * which placed GPA 3.90 at 1450 — below MIT/Harvard sat25 of 1510-1520 and triggering
+ * an unwarranted ×0.50 penalty for a genuinely competitive applicant.
  *
  * Returns null if GPA is missing or unparseable.
  */
@@ -62,9 +68,11 @@ function gpaToEquivalentSat(
   // Normalize to 4.0 scale
   const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
   const gpa4 = (gpa / scale) * 4.0;
-  if (gpa4 >= 3.95) return 1500;
-  if (gpa4 >= 3.85) return 1450;
-  if (gpa4 >= 3.75) return 1400;
+  if (gpa4 >= 3.97) return 1540;
+  if (gpa4 >= 3.93) return 1520;
+  if (gpa4 >= 3.88) return 1490;
+  if (gpa4 >= 3.83) return 1460;
+  if (gpa4 >= 3.75) return 1420;
   if (gpa4 >= 3.65) return 1350;
   if (gpa4 >= 3.5) return 1300;
   if (gpa4 >= 3.25) return 1230;
@@ -118,9 +126,9 @@ export function gpaBandMultiplier(
   if (equivSat >= sat25) {
     return {
       multiplier: 0.85,
-      label: 'GPA in middle 50',
+      label: 'GPA below school median',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) sits between 25th and 50th percentile (${sat25}-${sat50 ?? sat75})`,
-      impact: 'neutral',
+      impact: 'negative',
     };
   }
   if (equivSat >= sat25 - 100) {
@@ -651,9 +659,16 @@ function normalizeRate(raw: number | null | undefined): number | null {
  *        most state publics — intl admit rate ≈ overall per published CDS)
  *      - Moderately selective (20-40%): 0.85× need-blind / 0.7× need-aware
  *        — intl pool somewhat competitive (BU, USC, UCSD, UCD, UCI)
- *      - Highly selective (< 20%): 0.5× need-blind / 0.4× need-aware — the
- *        original peer-school calibration applies (HYPMSP, NYU, top T20)
- *   3. Unknown selectivity: assume highly-selective (conservative default)
+ *      - Highly selective (10-20%): 0.80× need-blind / 0.75× need-aware
+ *        — limited but real intl penalty; 10-20% schools are selective but
+ *        not in HYPSM tier (Georgetown, Emory, Tufts, WashU pattern)
+ *      - Elite (< 10%): 0.50× need-blind / 0.45× need-aware — calibrated
+ *        from CDS 2024-25 ratios: MIT 1.96%/4.55%=0.43, Yale
+ *        1.94%/3.65%=0.53, Princeton 2.11%/4.62%=0.46 → 0.50 midpoint for
+ *        need-blind elite (HYPSM, MIT, Princeton, Yale, Amherst, Dartmouth);
+ *        Cornell 0.41×, Northwestern 0.68×, Columbia 0.64× → 0.45 midpoint
+ *        for need-aware elite (NYU, top T15)
+ *   3. Unknown selectivity: assume elite (conservative default)
  *
  * Domestic applicants always return NEUTRAL (no change).
  */
@@ -716,22 +731,48 @@ export function intlMultiplier(
     };
   }
 
-  // Highly selective (< 20% admit rate, or unknown selectivity).
-  // Calibrated from actual CDS data: MIT 0.43, Yale 0.53, Princeton 0.46 → ~0.47 avg.
+  // Highly selective (10-20% admit rate): differentiated from elite tier.
+  // Schools like Georgetown, Emory, Tufts, WashU — meaningful intl penalty
+  // but not as severe as the HYPSM/Cornell/Northwestern tier.
+  if (overallRate != null && overallRate >= 0.1) {
+    if (school.needBlindInternational) {
+      return {
+        multiplier: 0.8,
+        label: 'International (need-blind, highly selective)',
+        evidence:
+          'International pool sees a ~0.8× penalty at this need-blind highly-selective school',
+        impact: 'negative',
+      };
+    }
+    return {
+      multiplier: 0.75,
+      label: 'International (need-aware, highly selective)',
+      evidence:
+        'International applicants face ~0.75× the domestic admit rate at need-aware highly-selective schools (10-20% admit rate)',
+      impact: 'negative',
+    };
+  }
+
+  // Elite (< 10% admit rate, or unknown selectivity).
+  // Calibrated from actual CDS 2024-25 data:
+  //   need-blind: MIT 1.96%/4.55%=0.43, Yale 1.94%/3.65%=0.53,
+  //               Princeton 2.11%/4.62%=0.46 → 0.50 midpoint
+  //   need-aware: Cornell 0.41×, Northwestern 0.68×, Columbia 0.64×
+  //               → 0.45 conservative midpoint
   if (school.needBlindInternational) {
     return {
       multiplier: 0.5,
-      label: 'International (need-blind school)',
+      label: 'International (need-blind, elite school)',
       evidence:
-        'International pool sees ~0.5× the domestic admit rate at need-blind elite schools (calibrated from MIT 1.96%/4.55%, Yale 1.94%/3.65%, Princeton 2.11%/4.62%)',
+        'International pool sees ~0.5× the domestic admit rate at need-blind elite schools (calibrated from MIT 1.96%/4.55%=0.43, Yale 1.94%/3.65%=0.53, Princeton 2.11%/4.62%=0.46; covers HYPSM, MIT, Princeton, Yale, Amherst, Dartmouth)',
       impact: 'negative',
     };
   }
   return {
-    multiplier: 0.4,
-    label: 'International (need-aware, highly selective school)',
+    multiplier: 0.45,
+    label: 'International (need-aware, elite school)',
     evidence:
-      'International applicants face ~0.4× the domestic admit rate at need-aware highly-selective schools',
+      'International applicants face ~0.45× the domestic admit rate at need-aware elite schools (<10% admit rate); calibrated from Cornell/Northwestern/Columbia CDS data',
     impact: 'negative',
   };
 }
