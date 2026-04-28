@@ -78,6 +78,7 @@ export const SCHOOL_PREDICTION_CONTEXT_SELECT = {
   ...SCHOOL_NAME_RANK_SELECT,
   acceptanceRate: true,
   intlAcceptanceRate: true,
+  oosAcceptanceRate: true,
   intlStudentPct: true,
   needBlindInternational: true,
 } as const satisfies Prisma.SchoolSelect;

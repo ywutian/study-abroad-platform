@@ -13,6 +13,7 @@ interface RateBreakdownPanelProps {
     usNewsRank?: number;
     acceptanceRate?: number;
     intlAcceptanceRate?: number;
+    oosAcceptanceRate?: number;
     intlStudentPct?: number;
     needBlindInternational?: boolean;
     graduationRate?: number;
@@ -123,6 +124,14 @@ export function RateBreakdownPanel({
             rate={schoolMeta?.intlAcceptanceRate}
             tooltip={schoolMeta?.intlAcceptanceRate == null ? t('rateBreakdown.naIntl') : undefined}
             na={t('rateBreakdown.na')}
+          />
+        )}
+
+        {!isInternational && schoolMeta?.oosAcceptanceRate != null && (
+          <RateBar
+            label={t('rateBreakdown.outOfState')}
+            rate={schoolMeta.oosAcceptanceRate}
+            tooltip={t('rateBreakdown.oosTooltip')}
           />
         )}
 

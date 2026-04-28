@@ -647,6 +647,7 @@ export class PredictionService {
         usNewsRank?: number;
         acceptanceRate?: number;
         intlAcceptanceRate?: number;
+        oosAcceptanceRate?: number;
         intlStudentPct?: number;
         needBlindInternational?: boolean;
         graduationRate?: number;
@@ -660,6 +661,7 @@ export class PredictionService {
         usNewsRank: s.usNewsRank ?? undefined,
         acceptanceRate: clampPercentRate(s.acceptanceRate),
         intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
+        oosAcceptanceRate: clampPercentRate((s as any).oosAcceptanceRate),
         intlStudentPct: (s as any).intlStudentPct
           ? Number((s as any).intlStudentPct)
           : undefined,
@@ -946,6 +948,7 @@ export class PredictionService {
         usNewsRank?: number;
         acceptanceRate?: number;
         intlAcceptanceRate?: number;
+        oosAcceptanceRate?: number;
         intlStudentPct?: number;
         needBlindInternational?: boolean;
         graduationRate?: number;
@@ -959,6 +962,7 @@ export class PredictionService {
         usNewsRank: s.usNewsRank ?? undefined,
         acceptanceRate: clampPercentRate(s.acceptanceRate),
         intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
+        oosAcceptanceRate: clampPercentRate((s as any).oosAcceptanceRate),
         intlStudentPct: (s as any).intlStudentPct
           ? Number((s as any).intlStudentPct)
           : undefined,
@@ -1772,6 +1776,7 @@ export class PredictionService {
         schoolMeta: {
           acceptanceRate: schoolInput.acceptanceRate,
           intlAcceptanceRate: schoolInput.intlAcceptanceRate,
+          oosAcceptanceRate: schoolInput.oosAcceptanceRate,
           usNewsRank: schoolInput.usNewsRank,
           graduationRate: schoolInput.graduationRate,
         },

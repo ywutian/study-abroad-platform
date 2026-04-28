@@ -542,7 +542,12 @@ const PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF = new Set([
 
 export function geoMultiplier(
   profile: ProfileInput,
-  school: SchoolInput & { state?: string | null; isPrivate?: boolean | null },
+  school: SchoolInput & {
+    state?: string | null;
+    isPrivate?: boolean | null;
+    acceptanceRate?: number | null;
+    oosAcceptanceRate?: number | null;
+  },
 ): ModifierResult {
   // Don't double-penalize international applicants — `intlMultiplier` already
   // captures the intl-vs-domestic delta. Without this guard, a CN applicant
@@ -568,6 +573,19 @@ export function geoMultiplier(
   const isInState = applicantLocation === schoolState;
   const strongPref =
     PUBLIC_FLAGSHIPS_WITH_STRONG_RESIDENCY_PREF.has(schoolState);
+
+  const overallRate = normalizeRate(school.acceptanceRate);
+  const oosRate = normalizeRate(school.oosAcceptanceRate);
+  if (!isInState && overallRate != null && oosRate != null) {
+    const ratio = Math.max(0.35, Math.min(1.3, oosRate / overallRate));
+    return {
+      multiplier: ratio,
+      label: 'Out-of-state (school data)',
+      evidence: `Out-of-state admit-rate data is ~${(oosRate * 100).toFixed(0)}% vs ~${(overallRate * 100).toFixed(0)}% overall (×${ratio.toFixed(2)})`,
+      impact: ratio >= 0.95 ? 'neutral' : 'negative',
+    };
+  }
+
   if (isInState && strongPref) {
     return {
       multiplier: 1.8,

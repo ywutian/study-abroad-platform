@@ -1635,6 +1635,7 @@
       "title": "Rate Breakdown",
       "overall": "Overall Acceptance Rate",
       "international": "Intl Student Rate",
+      "outOfState": "Out-of-State Rate",
       "contextualBaseline": "Contextual Baseline",
       "contextualBaselineWithRound": "{round} Context Baseline",
       "contextualBaselineShort": "Baseline {rate}%",
@@ -1657,6 +1658,7 @@
       "na": "No data available",
       "naIntl": "International rate not available for this school",
       "naMajor": "No program data for this major at this school",
+      "oosTooltip": "Best available out-of-state freshman admit-rate field. It may be official, curated, or explicitly marked heuristic in admin data coverage.",
       "communityData": "Community Data ({count} reports)",
       "communityTooltip": "Based on {count} verified admission cases"
     },

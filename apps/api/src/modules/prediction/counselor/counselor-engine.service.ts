@@ -127,6 +127,7 @@ export class CounselorEngineService {
       isPrivate?: boolean | null;
       needBlindInternational?: boolean;
       intlAcceptanceRate?: number | null;
+      oosAcceptanceRate?: number | null;
     },
     applicationRound?: string,
   ): Promise<CounselorResult> {
