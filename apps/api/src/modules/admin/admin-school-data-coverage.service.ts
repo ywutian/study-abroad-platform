@@ -303,18 +303,42 @@ export class AdminSchoolDataCoverageService {
 
   async importIpedsCsvRows(dto: ImportIpedsCsvDto, actorUserId: string) {
     const unitids = dto.rows.map((row) => row.unitid);
-    const schools = await this.prisma.school.findMany({
-      where: { ipedsId: { in: unitids } },
-      select: { id: true, ipedsId: true },
-    });
+    const nameNorms = dto.rows
+      .map((row) => row.schoolNameNorm)
+      .filter((nameNorm): nameNorm is string => Boolean(nameNorm));
+    const [schoolsByIpeds, schoolsByName] = await Promise.all([
+      this.prisma.school.findMany({
+        where: { ipedsId: { in: unitids } },
+        select: { id: true, ipedsId: true },
+      }),
+      nameNorms.length
+        ? this.prisma.school.findMany({
+            where: { nameNorm: { in: nameNorms } },
+            select: { id: true, nameNorm: true },
+          })
+        : Promise.resolve([]),
+    ]);
     const byUnitid = new Map(
-      schools.map((school) => [school.ipedsId, school.id]),
+      schoolsByIpeds.map((school) => [school.ipedsId, school.id]),
     );
-    const notFound: Array<{ rowIndex: number; unitid: string }> = [];
+    const byNameNorm = new Map(
+      schoolsByName.map((school) => [school.nameNorm, school.id]),
+    );
+    const notFound: Array<{
+      rowIndex: number;
+      unitid: string;
+      schoolNameNorm?: string;
+    }> = [];
     const rows = dto.rows.flatMap((row, rowIndex) => {
-      const schoolId = byUnitid.get(row.unitid);
+      const schoolId =
+        byUnitid.get(row.unitid) ??
+        (row.schoolNameNorm ? byNameNorm.get(row.schoolNameNorm) : undefined);
       if (!schoolId) {
-        notFound.push({ rowIndex, unitid: row.unitid });
+        notFound.push({
+          rowIndex,
+          unitid: row.unitid,
+          schoolNameNorm: row.schoolNameNorm,
+        });
         return [];
       }
       return [

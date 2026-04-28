@@ -76,6 +76,15 @@ export class IpedsCsvRowDto {
   @MaxLength(20)
   unitid!: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Optional normalized school name. Used as fallback when School.ipedsId is missing.',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  schoolNameNorm?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 4 })
@@ -131,6 +140,13 @@ export class IpedsCsvRowDto {
   @Min(1)
   @Max(36)
   act25?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(36)
+  actAvg?: number;
 
   @ApiPropertyOptional()
   @IsOptional()

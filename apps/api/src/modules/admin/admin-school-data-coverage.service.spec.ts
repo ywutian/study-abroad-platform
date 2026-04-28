@@ -112,4 +112,41 @@ describe('AdminSchoolDataCoverageService', () => {
       }),
     );
   });
+
+  it('falls back to schoolNameNorm when importing IPEDS rows without local ipedsId', async () => {
+    prisma.school.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { id: 'school-by-name', nameNorm: 'example university' },
+      ]);
+
+    await service.importIpedsCsvRows(
+      {
+        dryRun: true,
+        cycleYear: 2023,
+        rows: [
+          {
+            unitid: '999999',
+            schoolNameNorm: 'example university',
+            acceptanceRate: 42,
+          },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(schoolRates.runBulkUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dryRun: true,
+        rows: [
+          expect.objectContaining({
+            schoolId: 'school-by-name',
+            unitid: '999999',
+            source: 'IPEDS_CSV:2023:unitid-999999',
+          }),
+        ],
+      }),
+      'admin-1',
+    );
+  });
 });
