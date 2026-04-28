@@ -324,6 +324,20 @@ export class PredictionTransformerService {
         'hasEarlyDecision',
         (school as any).hasEarlyDecision,
       ),
+      edAcceptanceRate: captureField(
+        'edAcceptanceRate',
+        (school as any).edAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      eaAcceptanceRate: captureField(
+        'eaAcceptanceRate',
+        (school as any).eaAcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
+      gpaDistribution: captureField(
+        'gpaDistribution',
+        (school as any).gpaDistribution,
+      ),
       fieldTrustWeights,
       averagePredictionWeight:
         Object.keys(fieldTrustWeights).length > 0

@@ -61,7 +61,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.3';
+export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.6';
 
 export interface CounselorFactor {
   name: string;
@@ -196,7 +196,7 @@ export class CounselorEngineService {
       testBand: encodedDimensions.has('test')
         ? suppressed('Test score')
         : testBandMultiplier(profile, school),
-      round: roundMultiplier(resolvedRound),
+      round: roundMultiplier(resolvedRound, school),
       legacyHook: legacyHookMultiplier(profile, school),
       firstGen: firstGenMultiplier(profile),
       athlete: athleteMultiplier(profile),
@@ -231,13 +231,10 @@ export class CounselorEngineService {
       : modifierResults.gpaBand.multiplier *
         modifierResults.testBand.multiplier;
 
-    const product = Object.entries(modifierResults).reduce(
-      (acc, [key, m]) => {
-        if (key === 'gpaBand' || key === 'testBand') return acc;
-        return acc * m.multiplier;
-      },
-      academicProduct,
-    );
+    const product = Object.entries(modifierResults).reduce((acc, [key, m]) => {
+      if (key === 'gpaBand' || key === 'testBand') return acc;
+      return acc * m.multiplier;
+    }, academicProduct);
     const raw = anchor * product;
     // Anchored clip: never more than 2.5× or less than 0.3× the school baseline.
     const lowerBound = Math.max(0.02, anchor * 0.3);

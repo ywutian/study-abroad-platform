@@ -100,6 +100,12 @@ export interface SchoolInput {
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
   applicationRound?: string;
+  /** ED admit rate from CDS C21 (when published). Used for data-driven roundMultiplier. */
+  edAcceptanceRate?: number | null;
+  /** EA / REA admit rate from CDS C21. */
+  eaAcceptanceRate?: number | null;
+  /** Enrolled freshman GPA distribution from CDS C9, e.g. { "3.75-4.00": 0.91, ... }. */
+  gpaDistribution?: Record<string, number> | null;
   fieldTrustWeights?: Record<string, number>;
   averagePredictionWeight?: number;
 }

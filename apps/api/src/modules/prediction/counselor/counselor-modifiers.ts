@@ -88,10 +88,100 @@ function gpaToEquivalentSat(
  * GPA), but SAT 25/75 is universally reported. Mapping GPA → equivalent SAT lets
  * us reuse the well-populated distribution for comparison.
  */
+/**
+ * Compute applicant's GPA percentile within a school's enrolled freshman class
+ * given the CDS C9 distribution. Bands are interpolated linearly within their
+ * range. Returns the % of enrolled freshmen with a strictly LOWER GPA.
+ */
+function gpaPercentileFromDistribution(
+  applicantGpa: number,
+  distribution: Record<string, number>,
+): number | null {
+  // Canonical bands ordered from highest to lowest
+  const bands: Array<{ min: number; max: number; pct: number }> = [
+    { min: 3.75, max: 4.0, pct: Number(distribution['3.75-4.00']) || 0 },
+    { min: 3.5, max: 3.74, pct: Number(distribution['3.50-3.74']) || 0 },
+    { min: 3.25, max: 3.49, pct: Number(distribution['3.25-3.49']) || 0 },
+    { min: 3.0, max: 3.24, pct: Number(distribution['3.00-3.24']) || 0 },
+    { min: 0.0, max: 2.99, pct: Number(distribution['<3.00']) || 0 },
+  ];
+  // Total mass should be ~1.0; bail if not
+  const total = bands.reduce((a, b) => a + b.pct, 0);
+  if (total < 0.85 || total > 1.15) return null;
+
+  // Walk from lowest band up; accumulate mass below applicant
+  let cum = 0;
+  for (let i = bands.length - 1; i >= 0; i--) {
+    const b = bands[i];
+    if (applicantGpa < b.min) return cum * 100;
+    if (applicantGpa <= b.max) {
+      // Linear interpolation within band
+      const frac = (applicantGpa - b.min) / Math.max(b.max - b.min, 0.01);
+      return (cum + b.pct * frac) * 100;
+    }
+    cum += b.pct;
+  }
+  return cum * 100; // applicant >= top band
+}
+
 export function gpaBandMultiplier(
   profile: ProfileInput,
   school: SchoolInput,
 ): ModifierResult {
+  const gpa = profile.gpa;
+  const scale = profile.gpaScale && profile.gpaScale > 0 ? profile.gpaScale : 4.0;
+  const gpa4 = gpa != null ? (gpa / scale) * 4.0 : null;
+
+  // ── Data-driven path: school publishes its CDS C9 GPA distribution ────────
+  if (
+    gpa4 != null &&
+    school.gpaDistribution &&
+    Object.keys(school.gpaDistribution).length > 0
+  ) {
+    const pct = gpaPercentileFromDistribution(gpa4, school.gpaDistribution);
+    if (pct != null) {
+      if (pct >= 75) {
+        return {
+          multiplier: 1.3,
+          label: 'GPA above school 75th percentile (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} sits at the ~${pct.toFixed(0)}th percentile of this school's enrolled freshmen`,
+          impact: 'positive',
+        };
+      }
+      if (pct >= 50) {
+        return {
+          multiplier: 1.1,
+          label: 'GPA above school median (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+          impact: 'positive',
+        };
+      }
+      if (pct >= 25) {
+        return {
+          multiplier: 0.85,
+          label: 'GPA below school median (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+          impact: 'negative',
+        };
+      }
+      if (pct >= 10) {
+        return {
+          multiplier: 0.5,
+          label: 'GPA below school 25th percentile (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+          impact: 'negative',
+        };
+      }
+      return {
+        multiplier: 0.15,
+        label: 'GPA well below school distribution (school-published)',
+        evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+        impact: 'negative',
+      };
+    }
+  }
+
+  // ── Heuristic fallback: GPA → equivalent SAT against school sat25/75 ──────
   const equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
   if (equivSat == null) {
     return { ...NEUTRAL, label: 'GPA' };
@@ -366,12 +456,56 @@ export function testBandMultiplier(
 /**
  * Modifier #3: Application round.
  *
- * Multipliers from CDS Section C21 across ~40 schools that publish ED/EA/RD
- * splits separately. ED 2.5× is the typical Ivy/peer ratio (Penn 35% ED vs
- * 7% RD ≈ 5×, but average across all ED schools is ~2-3×). RD = 1.0 baseline.
+ * When the school publishes its own ED/EA admit rate (CDS Section C21), use
+ * the actual ratio `edRate / overallRate` (clamped to [1.0, 4.0]). This is
+ * the data-driven path — ED at HYPSM ~1.3-1.5×, T20 ED ~2-2.5×, T50 ED ~1.8×.
+ *
+ * Fallback heuristic multipliers from peer-school averages: ED 2.5× is the
+ * typical Ivy/peer ratio. RD = 1.0 baseline.
  */
-export function roundMultiplier(round: string | undefined): ModifierResult {
+export function roundMultiplier(
+  round: string | undefined,
+  school?: SchoolInput & {
+    edAcceptanceRate?: number | null;
+    eaAcceptanceRate?: number | null;
+    acceptanceRate?: number | null;
+  },
+): ModifierResult {
   const r = (round ?? 'RD').toUpperCase();
+  const overallRate = normalizeRate(school?.acceptanceRate);
+  const edRate = normalizeRate(school?.edAcceptanceRate);
+  const eaRate = normalizeRate(school?.eaAcceptanceRate);
+
+  // Data-driven path: school publishes its own ED/EA rate
+  if ((r === 'ED' || r === 'ED2') && edRate != null && overallRate != null) {
+    const ratio = edRate / overallRate;
+    const clamped = Math.max(1.0, Math.min(4.0, ratio));
+    return {
+      multiplier: clamped,
+      label: r === 'ED2' ? 'Early Decision 2 (school-published)' : 'Early Decision (school-published)',
+      evidence: `This school admits ${(edRate * 100).toFixed(1)}% of ED applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+      impact: 'positive',
+    };
+  }
+  if (
+    (r === 'EA' || r === 'REA' || r === 'SCEA') &&
+    eaRate != null &&
+    overallRate != null
+  ) {
+    const ratio = eaRate / overallRate;
+    const clamped = Math.max(1.0, Math.min(2.5, ratio));
+    return {
+      multiplier: clamped,
+      label:
+        r === 'EA'
+          ? 'Early Action (school-published)'
+          : 'Restrictive Early Action (school-published)',
+      evidence: `This school admits ${(eaRate * 100).toFixed(1)}% of ${r === 'EA' ? 'EA' : 'REA/SCEA'} applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+      impact: 'positive',
+    };
+  }
+
+  // Heuristic fallback (unchanged from v1.2)
   switch (r) {
     case 'ED':
       return {
