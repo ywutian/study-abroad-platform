@@ -61,7 +61,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.3';
+export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.4';
 
 export interface CounselorFactor {
   name: string;
@@ -195,7 +195,7 @@ export class CounselorEngineService {
       testBand: encodedDimensions.has('test')
         ? suppressed('Test score')
         : testBandMultiplier(profile, school),
-      round: roundMultiplier(resolvedRound),
+      round: roundMultiplier(resolvedRound, school),
       legacyHook: legacyHookMultiplier(profile, school),
       firstGen: firstGenMultiplier(profile),
       athlete: athleteMultiplier(profile),
