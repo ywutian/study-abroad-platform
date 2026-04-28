@@ -938,7 +938,7 @@ describe('PredictionService', () => {
       expect(output.results[0].modelVersion).toBe('v3-enterprise');
       expect(output.results[0].cohortKey).toBe('CN__CHINA_INTL');
       const persistedResult = (persistenceService.savePrediction as jest.Mock)
-        .mock.calls[0][2] as any;
+        .mock.calls[0][2];
       expect(persistedResult.servedTrace.distillation).toMatchObject({
         stage: 'DISTILLATION_LIVE',
         applyLiveBlend: true,
@@ -1005,7 +1005,7 @@ describe('PredictionService', () => {
         const output = await service.predict('profile-1', ['school-1'], true);
 
         const persistedResult = (persistenceService.savePrediction as jest.Mock)
-          .mock.calls[0][2] as any;
+          .mock.calls[0][2];
         const trace = persistedResult.servedTrace;
         expect(trace.engine).toBe('counselor');
         expect(trace.counselor).toBeDefined();

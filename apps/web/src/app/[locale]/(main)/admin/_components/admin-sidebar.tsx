@@ -190,6 +190,12 @@ export function AdminSidebar() {
           requiredPermission: 'system:calibration',
         },
         {
+          href: '/admin/data-coverage',
+          icon: BarChart3,
+          label: t('sidebar.dataCoverage'),
+          requiredPermission: 'data:health',
+        },
+        {
           href: '/admin/application-analysis-workflow',
           icon: ShieldCheck,
           label: t('sidebar.applicationAnalysisWorkflow'),

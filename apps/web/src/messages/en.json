@@ -1194,6 +1194,7 @@
       "needsFinancialAid": "I need financial aid",
       "firstGeneration": "First generation college student",
       "recruitedAthlete": "Recruited athlete",
+      "applyingTestOptional": "Applying test-optional (no SAT/ACT submitted)",
       "legacy": "Legacy (Alumni Connection)",
       "legacyPlaceholder": "e.g. Harvard, Stanford",
       "legacyHint": "Enter school names separated by commas if you have alumni connections",
@@ -6123,6 +6124,7 @@
       "predictionHealth": "Prediction Data Health",
       "predictionFeedback": "Prediction Feedback",
       "cdsBands": "CDS Bands",
+      "dataCoverage": "Data Coverage",
       "applicationAnalysisWorkflow": "Application Analysis Workflow",
       "activityTemplates": "Activity Templates",
       "highSchools": "High Schools",
@@ -6641,6 +6643,33 @@
         "FACTORS_WRONG": "Factors wrong",
         "NEVER_MOVES": "Doesn't move",
         "OTHER": "Other"
+      }
+    },
+    "dataCoverage": {
+      "title": "Prediction Data Coverage",
+      "description": "Track all-schools cold-start coverage, provenance, stale fields, and heuristic fallback for counselor predictions.",
+      "refresh": "Refresh",
+      "dryRunHeuristic": "Dry-run heuristic fill",
+      "fieldCoverage": "Field coverage",
+      "schoolsNeedingWork": "Schools needing review",
+      "none": "None",
+      "unknown": "Unknown",
+      "metrics": {
+        "schools": "US schools",
+        "complete": "Complete",
+        "missing": "Missing critical",
+        "heuristic": "Heuristic sources"
+      },
+      "table": {
+        "field": "Field",
+        "filled": "Filled",
+        "eligible": "Prediction eligible",
+        "heuristic": "Heuristic",
+        "stale": "Stale",
+        "school": "School",
+        "missing": "Missing",
+        "heuristicFields": "Heuristic fields",
+        "sources": "Sources"
       }
     },
     "cdsBands": {

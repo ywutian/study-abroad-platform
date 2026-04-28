@@ -32,8 +32,16 @@ describe('AdminSchoolRatesService', () => {
     nameNorm: 'university of california, davis',
     acceptanceRate: new Prisma.Decimal(37.0),
     intlAcceptanceRate: null,
+    oosAcceptanceRate: null,
     transferAcceptanceRate: null,
     needBlindInternational: false,
+    sat25: null,
+    satAvg: null,
+    sat75: null,
+    act25: null,
+    actAvg: null,
+    act75: null,
+    testOptional: null,
   };
 
   const ucm = {
@@ -42,8 +50,16 @@ describe('AdminSchoolRatesService', () => {
     nameNorm: 'university of california, merced',
     acceptanceRate: new Prisma.Decimal(88.0),
     intlAcceptanceRate: null,
+    oosAcceptanceRate: null,
     transferAcceptanceRate: null,
     needBlindInternational: false,
+    sat25: null,
+    satAvg: null,
+    sat75: null,
+    act25: null,
+    actAvg: null,
+    act75: null,
+    testOptional: null,
   };
 
   beforeEach(async () => {
@@ -265,7 +281,7 @@ describe('AdminSchoolRatesService', () => {
     );
 
     expect(result.errors).toHaveLength(1);
-    expect(result.errors[0].reason).toContain('at least one of');
+    expect(result.errors[0].reason).toContain('supported school data field');
     expect(result.updated).toBe(0);
   });
 
@@ -367,5 +383,124 @@ describe('AdminSchoolRatesService', () => {
     expect(result.updated).toBe(1); // UCD
     expect(result.skippedNoChange).toBe(1); // UCM
     expect(result.notFound).toHaveLength(1); // missing
+  });
+
+  it('updates OOS rate and SAT/ACT bands with field-level provenance', async () => {
+    prisma.school.findMany.mockImplementation(async (args: any) => {
+      if (args.where.id) return [ucd];
+      return [];
+    });
+
+    const result = await service.runBulkUpdate(
+      {
+        rows: [
+          {
+            schoolId: 'ucd-id',
+            oosAcceptanceRate: 57.3,
+            sat25: 1280,
+            satAvg: 1370,
+            sat75: 1460,
+            act25: 28,
+            act75: 33,
+            source: 'IPEDS_CSV:2024:unitid-110644',
+            sourceUrl: 'https://nces.ed.gov/ipeds/',
+            cycleYear: 2024,
+            sourceConfidence: 0.95,
+            sourceNotes: 'IPEDS CSV admission profile',
+          },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(result.updated).toBe(1);
+    expect(result.changes[0].changedFields).toEqual(
+      expect.arrayContaining([
+        'oosAcceptanceRate',
+        'sat25',
+        'sat75',
+        'act25',
+        'act75',
+      ]),
+    );
+    expect(schoolWrite.update).toHaveBeenCalledWith(
+      'ucd-id',
+      expect.objectContaining({
+        fields: expect.objectContaining({
+          oosAcceptanceRate: new Prisma.Decimal(57.3),
+          sat25: 1280,
+          satAvg: 1370,
+          sat75: 1460,
+          act25: 28,
+          act75: 33,
+        }),
+        provenance: expect.objectContaining({
+          oosAcceptanceRate: expect.objectContaining({
+            source: 'IPEDS_CSV:2024:unitid-110644',
+            sourceUrl: 'https://nces.ed.gov/ipeds/',
+            cycleYear: 2024,
+            verifiedBy: 'admin-1',
+          }),
+          sat25: expect.objectContaining({
+            source: 'IPEDS_CSV:2024:unitid-110644',
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('refreshes HEURISTIC provenance when official source value is unchanged', async () => {
+    const heuristicSchool = {
+      ...ucd,
+      sat25: 1280,
+      metadata: {
+        provenance: {
+          sat25: {
+            tier: 'INFERRED',
+            source: 'HEURISTIC:PR-15',
+            fetchedAt: '2026-04-01T00:00:00.000Z',
+          },
+        },
+      },
+    };
+    prisma.school.findMany.mockImplementation(async (args: any) => {
+      if (args.where.id) return [heuristicSchool];
+      return [];
+    });
+
+    const result = await service.runBulkUpdate(
+      {
+        rows: [
+          {
+            schoolId: 'ucd-id',
+            sat25: 1280,
+            source: 'IPEDS_CSV:2023:unitid-110644',
+            sourceUrl: 'https://nces.ed.gov/ipeds/datacenter/data/ADM2023.zip',
+            cycleYear: 2023,
+          },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(result.updated).toBe(1);
+    expect(result.skippedNoChange).toBe(0);
+    expect(result.changes[0].changedFields).toEqual(['sat25']);
+    expect(result.changes[0].before.sat25).toBe(1280);
+    expect(result.changes[0].after.sat25).toBe(1280);
+    expect(schoolWrite.update).toHaveBeenCalledWith(
+      'ucd-id',
+      expect.objectContaining({
+        fields: {},
+        provenance: expect.objectContaining({
+          sat25: expect.objectContaining({
+            source: 'IPEDS_CSV:2023:unitid-110644',
+            sourceUrl: 'https://nces.ed.gov/ipeds/datacenter/data/ADM2023.zip',
+            cycleYear: 2023,
+          }),
+        }),
+      }),
+    );
+    expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
   });
 });

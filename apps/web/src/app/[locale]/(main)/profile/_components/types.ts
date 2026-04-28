@@ -124,6 +124,7 @@ export interface ProfileData {
   needsFinancialAid?: boolean;
   firstGeneration?: boolean;
   recruitedAthlete?: boolean;
+  applyingTestOptional?: boolean;
   legacy?: string[];
   intendedMajor?: string;
   secondMajor?: string;
@@ -154,6 +155,7 @@ export interface ProfileUpdatePayload {
   needsFinancialAid?: boolean;
   firstGeneration?: boolean;
   recruitedAthlete?: boolean;
+  applyingTestOptional?: boolean;
   legacy?: string[];
   intendedMajor?: string;
   secondMajor?: string;

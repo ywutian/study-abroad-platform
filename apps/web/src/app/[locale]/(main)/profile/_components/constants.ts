@@ -191,6 +191,7 @@ export const FIELD_TO_TAB: Record<string, string> = {
   needsFinancialAid: 'demographics',
   firstGeneration: 'demographics',
   recruitedAthlete: 'demographics',
+  applyingTestOptional: 'demographics',
   legacy: 'demographics',
   intendedMajor: 'demographics',
   secondMajor: 'demographics',

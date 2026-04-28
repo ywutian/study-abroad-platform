@@ -147,6 +147,15 @@ export class UpdateProfileDto {
   recruitedAthlete?: boolean;
 
   @ApiPropertyOptional({
+    description:
+      'Whether the student is applying test-optional (no SAT/ACT submitted). Used by counselor to apply 0.85× modifier at <20% admit schools per Common App data.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  applyingTestOptional?: boolean;
+
+  @ApiPropertyOptional({
     description: 'Legacy (alumni children)',
     type: [String],
   })

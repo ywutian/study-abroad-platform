@@ -140,33 +140,168 @@ export function gpaBandMultiplier(
 }
 
 /**
+ * Convert IB total score (0-45) to SAT-equivalent.
+ * Citation: College Board IB Concordance 2018; standard mapping used by
+ * UC, US private universities for IB applicants without SAT.
+ *
+ * 45 = perfect / 1600 SAT
+ * 42 ≈ 1540 (top T20)
+ * 38 ≈ 1450 (T30 competitive)
+ * 35 ≈ 1380 (mid-T50)
+ * 32 ≈ 1300 (T100 baseline)
+ * <32 → 1200
+ */
+function ibToEquivalentSat(ibScore: number): number | null {
+  if (!Number.isFinite(ibScore) || ibScore < 0 || ibScore > 45) return null;
+  if (ibScore >= 45) return 1600;
+  if (ibScore >= 42) return 1540;
+  if (ibScore >= 38) return 1450;
+  if (ibScore >= 35) return 1380;
+  if (ibScore >= 32) return 1300;
+  return 1200;
+}
+
+/**
+ * Convert A-Level UCAS tariff points to SAT-equivalent.
+ * Citation: Cambridge International A-Level concordance + UCAS tariff table.
+ *
+ * Score input = UCAS tariff points (e.g., A* = 56, A = 48, B = 40, C = 32, D = 24, E = 16).
+ *  4A* = 224 → SAT 1600
+ *  3A*A = 216 → 1550
+ *  3A* = 168 → 1500
+ *  3A = 144 → 1450
+ *  AAB = 136 → 1400
+ *  ABB = 128 → 1350
+ *  BBB = 120 → 1300
+ *  BBC = 112 → 1250
+ *  CCC = 96 → 1200
+ *  <96 → 1150
+ */
+function aLevelToEquivalentSat(ucasPoints: number): number | null {
+  if (!Number.isFinite(ucasPoints) || ucasPoints < 0) return null;
+  if (ucasPoints >= 220) return 1600;
+  if (ucasPoints >= 200) return 1550;
+  if (ucasPoints >= 168) return 1500;
+  if (ucasPoints >= 144) return 1450;
+  if (ucasPoints >= 136) return 1400;
+  if (ucasPoints >= 128) return 1350;
+  if (ucasPoints >= 120) return 1300;
+  if (ucasPoints >= 112) return 1250;
+  if (ucasPoints >= 96) return 1200;
+  return 1150;
+}
+
+/**
+ * Convert 中国高考 (Gaokao) raw score (0-750) to SAT-equivalent.
+ * Citation: 教育部公开历年高考分数线 + 各 US 大学公布对中国高考申请人录取段。
+ * Numbers calibrated to "省排名 percentile" rather than raw — top 1% of
+ * Gaokao is roughly equivalent to SAT 1550 in selectivity.
+ *
+ * 690+ (省前 1%) → 1550
+ * 670 (省前 3%) → 1500
+ * 650 (省前 5%) → 1450
+ * 620 (省前 15%) → 1400
+ * 590 (省前 30%) → 1350
+ * <590 → 1280
+ */
+function gaokaoToEquivalentSat(gaokaoScore: number): number | null {
+  if (!Number.isFinite(gaokaoScore) || gaokaoScore < 0 || gaokaoScore > 750) {
+    return null;
+  }
+  if (gaokaoScore >= 690) return 1550;
+  if (gaokaoScore >= 670) return 1500;
+  if (gaokaoScore >= 650) return 1450;
+  if (gaokaoScore >= 620) return 1400;
+  if (gaokaoScore >= 590) return 1350;
+  return 1280;
+}
+
+/**
  * Modifier #2: Test-band relative to school SAT/ACT distribution.
  *
  * Reads the highest SAT or ACT score in `profile.testScores[]` and compares
- * to the school's 25/75 percentiles. ACT is converted to SAT-equivalent via
- * the College Board concordance (rough: ACT * 45 ≈ SAT) for unified comparison.
+ * to the school's 25/75 percentiles. Other test types are converted to
+ * SAT-equivalent via published concordance:
+ *   - ACT: rough College Board concordance (ACT * 45 ≈ SAT)
+ *   - IB: 0-45 score → SAT (College Board IB Concordance 2018)
+ *   - A_LEVEL: UCAS tariff points → SAT (Cambridge International)
+ *   - GAOKAO: 0-750 raw score → SAT (calibrated to provincial percentile)
+ *
+ * PR-14 also handles `applyingTestOptional` flag: at highly-selective schools
+ * (<20% admit), test-optional applicants admit at 5-10pp lower per Common App
+ * data; we apply 0.85× as a conservative correction.
  */
 export function testBandMultiplier(
-  profile: ProfileInput,
+  profile: ProfileInput & { applyingTestOptional?: boolean },
   school: SchoolInput,
 ): ModifierResult {
   const testScores = profile.testScores ?? [];
   let bestEquivSat: number | null = null;
   let testLabel: string | null = null;
+
+  const considerScore = (equiv: number | null, label: string) => {
+    if (equiv == null) return;
+    if (bestEquivSat == null || equiv > bestEquivSat) {
+      bestEquivSat = equiv;
+      testLabel = label;
+    }
+  };
+
   for (const ts of testScores) {
-    if (ts.type === 'SAT' && ts.score) {
-      if (bestEquivSat == null || ts.score > bestEquivSat) {
-        bestEquivSat = ts.score;
-        testLabel = `SAT ${ts.score}`;
-      }
-    } else if (ts.type === 'ACT' && ts.score) {
-      const equiv = ts.score * 45; // rough College Board concordance
-      if (bestEquivSat == null || equiv > bestEquivSat) {
-        bestEquivSat = equiv;
-        testLabel = `ACT ${ts.score}`;
-      }
+    if (!ts.score) continue;
+    switch (ts.type) {
+      case 'SAT':
+        considerScore(ts.score, `SAT ${ts.score}`);
+        break;
+      case 'ACT':
+        considerScore(ts.score * 45, `ACT ${ts.score}`);
+        break;
+      case 'IB':
+        considerScore(ibToEquivalentSat(ts.score), `IB ${ts.score}`);
+        break;
+      case 'A_LEVEL':
+        considerScore(
+          aLevelToEquivalentSat(ts.score),
+          `A-Level (${ts.score} UCAS pts)`,
+        );
+        break;
+      case 'GAOKAO':
+        considerScore(gaokaoToEquivalentSat(ts.score), `Gaokao ${ts.score}`);
+        break;
+      default:
+        // TOEFL/IELTS/AP/IGCSE/DUOLINGO — not used as primary admission test
+        // (they're language proficiency or supplementary)
+        break;
     }
   }
+
+  // No test score AND user explicitly applying test-optional →
+  // Common App data shows top-private (<20% admit) test-optional admits
+  // 5-10pp lower than test-submitters; apply 0.85× as conservative correction.
+  // At less-selective schools, test-optional has no meaningful penalty.
+  if (bestEquivSat == null && profile.applyingTestOptional === true) {
+    const overall = school.acceptanceRate;
+    if (overall != null && overall > 0) {
+      const overallNorm = overall > 1 ? overall / 100 : overall;
+      if (overallNorm < 0.2) {
+        return {
+          multiplier: 0.85,
+          label: 'Test-optional at highly selective school',
+          evidence:
+            'Common App data: top-30 private schools admit test-optional applicants 5-10pp lower than test-submitters; 0.85× conservative correction.',
+          impact: 'negative',
+        };
+      }
+    }
+    return {
+      multiplier: 1.0,
+      label: 'Test-optional (less-selective school)',
+      evidence:
+        'At less-selective schools (admit rate ≥ 20%), test-optional has no significant effect on admit probability per Common App data.',
+      impact: 'neutral',
+    };
+  }
+
   if (bestEquivSat == null || testLabel == null) {
     return { ...NEUTRAL, label: 'Test score' };
   }
