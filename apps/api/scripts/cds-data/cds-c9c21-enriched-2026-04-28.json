@@ -1,0 +1,209 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T11:22:39.256Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "claude-haiku-4-5-20251001",
+    "input": "scripts/cds-data/cds-c9c21-target-2026-04-28.json",
+    "success": 12,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "carnegie mellon university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmu.edu/ira/CDS/pdf/cds_2024-25/common-data-set-2024-2025-21feb2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.852,
+        "3.50-3.74": 0.113,
+        "3.25-3.49": 0.026,
+        "3.00-3.24": 0.003,
+        "<3.00": 0.006
+      },
+      "edAcceptanceRate": 13.84,
+      "eaAcceptanceRate": null,
+      "edApplied": 4423,
+      "edAdmitted": 612,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data from section C11. Combined 4.0 GPA (46.9%) and 3.75-3.99 (38.3%) into 3.75-4.00 band. C21 shows Early Decision only; Early Action explicitly stated as not offered (C22)."
+    },
+    {
+      "schoolNameNorm": "emory university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7579,
+        "3.50-3.74": 0.2124,
+        "3.25-3.49": 0.0253,
+        "3.00-3.24": 0.0044,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 23.23,
+      "eaAcceptanceRate": null,
+      "edApplied": 4193,
+      "edAdmitted": 974,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data from section C11 'Percent who had GPA of 4.0' (17.41%) + 'between 3.75 and 3.99' (58.38%) = 75.79% for 3.75-4.00 range. C21 shows Early Decision plan with two rounds: ED I (11/1 closing, 12/15 notification) and ED II (1/1 closing, 2/15 notification). Total ED applications: 4193, admitted: 974. Early Action plan marked 'No' in C22."
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data found in section C11 (not C9 as labeled in instructions). C11 reports: 4.0 GPA: 92.54%, 3.75-3.99: 5.26%, 3.50-3.74: 1.13%, 3.25-3.49: 0.33%, 3.00-3.24: 0.25%, below 3.00: 0.74%. C21 Early Decision section shows 'No' checkbox marked - institution does not offer ED plan. C22 Early Action shows 'Yes' with closing date 11/1 and notification date 1/31, but no applicant/admitted numbers provided in the PDF text supplied."
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 13.47,
+      "eaAcceptanceRate": null,
+      "edApplied": 2005,
+      "edAdmitted": 270,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C21 Early Decision data found: 2005 ED applications, 270 admitted. C9 GPA distribution table (C11) present in document but contains all zeros/blank cells with no actual percentage data reported. Institution does not report high school GPA distribution for enrolled students."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table (C11) shows all zeros and 0.00% - data not reported by institution. C21 Early Decision applications received (839) found, but admitted count and Early Action data are cut off in provided PDF text."
+    },
+    {
+      "schoolNameNorm": "smith college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.97,
+        "3.50-3.74": 0.03,
+        "3.25-3.49": 0.01,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 38.2,
+      "eaAcceptanceRate": null,
+      "edApplied": 924,
+      "edAdmitted": 353,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data extracted from C11 'All enrolled students' section (C1121-C1124). C21 shows Early Decision plan with two rounds: ED I (closing 11/15, notification mid-December) and ED II (closing 1/1, notification late January). Early Action plan (C22) is not offered (C2201=N)."
+    },
+    {
+      "schoolNameNorm": "princeton university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.princeton.edu/sites/g/files/toruqf2041/files/documents/CDS_2425_Princeton_v2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data found in section C11 (not C9 as labeled in request). C11 reports: 4.0=68.5%, 3.75-3.99=25.5%, 3.50-3.74=4.4%, 3.25-3.49=1.2%, 3.00-3.24=0.2%, below 3.0=0.2%. C21 Early Decision section shows 'No' checkbox marked - institution does not offer ED plan. C22 Early Action shows 'Yes' with closing date 11/1 and notification Mid-December, but specific applicant/admitted numbers are not provided in the PDF text."
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.harvard.edu/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.9461,
+        "3.50-3.74": 0.0411,
+        "3.25-3.49": 0.006,
+        "3.00-3.24": 0.0017,
+        "<3.00": 0.0051
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution found in section C11 (high school GPA ranges for enrolled first-time, first-year students). C21 shows Harvard does NOT offer Early Decision (marked 'No') and DOES offer Early Action with closing date 11/1 and notification date 12/16, but applicant and admitted numbers are not provided in the PDF text."
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table not found in provided text. Section C11 shows GPA ranges but all percentages are 0.0% with note 'Report information only for those students from whom you collected high school GPA.' C21 shows Yale does NOT offer Early Decision (checkbox 'No' is marked). C22 shows Early Action plan exists with closing date 11/1 and notification date 12/15, but specific applicant and admitted numbers are not provided in the text."
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table is present but contains no data values - all cells are empty. C21 Early Decision section shows checkboxes marked 'No' indicating no ED plan offered. C22 Early Action section shows checkboxes marked 'Yes' with closing date 11/1 and notification date 12/15, but no applicant or admitted numbers are provided in the document."
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.37,
+      "eaAcceptanceRate": null,
+      "edApplied": 967,
+      "edAdmitted": 226,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution not reported - institution states 'High school GPA data is not reported. GPAs come in a variety of scales and can be difficult to standardize. This is especially challenging with our sizable international population, whose transcripts are translated and often don't include GPA (or not on a 4-point scale).' C21 shows Early Decision data: 967 applications received, 226 admitted. No Early Action plan offered (C22 marked 'No')."
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.brown.edu/sites/default/files/2020-04/CDS_2024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 14.37,
+      "eaAcceptanceRate": null,
+      "edApplied": 6251,
+      "edAdmitted": 898,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table (C11) shows all cells empty with 0.00% total - no GPA data reported. C21 Early Decision data found: 6,251 applications, 898 admitted. C22 indicates no Early Action plan offered (marked 'No')."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "sourceUrl": "https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf",
+      "error": "Download failed 403: https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf"
+    },
+    {
+      "schoolNameNorm": "cornell university",
+      "sourceUrl": "https://irp.cornell.edu/wp-content/uploads/2025/05/CDS-2024-2025-v3.pdf",
+      "error": "Download failed 404: https://irp.cornell.edu/wp-content/uploads/2025/05/CDS-2024-2025-v3.pdf"
+    }
+  ]
+}

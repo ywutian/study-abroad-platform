@@ -18,6 +18,15 @@ type ExtractedC1 = {
   applicants?: Counts;
   admitted?: Counts;
   enrolled?: Counts;
+  // C9/C11: GPA distribution of enrolled freshmen (sums to ~1.0)
+  gpaDistribution?: Record<string, number>;
+  // C21: ED/EA admit rates (additive — the script extracts what's available)
+  edApplied?: number;
+  edAdmitted?: number;
+  edAcceptanceRate?: number;
+  eaApplied?: number;
+  eaAdmitted?: number;
+  eaAcceptanceRate?: number;
   notes?: string;
   confidence?: number;
 };
@@ -42,6 +51,13 @@ type CdsOutputRow = {
     oosAcceptanceRate: number | null;
     transferAcceptanceRate: null;
   };
+  gpaDistribution?: Record<string, number> | null;
+  edApplied?: number | null;
+  edAdmitted?: number | null;
+  edAcceptanceRate?: number | null;
+  eaApplied?: number | null;
+  eaAdmitted?: number | null;
+  eaAcceptanceRate?: number | null;
   notes?: string;
 };
 
@@ -244,7 +260,7 @@ async function callOpenAi(
   model: string,
 ) {
   const { callLlm } = await import('./lib/llm-call');
-  const userPrompt = `Extract Common Data Set section C1 from the PDF text for ${schoolName}.
+  const userPrompt = `Extract Common Data Set sections C1, C9/C11, and C21 from the PDF text for ${schoolName}.
 
 Return only JSON with this exact shape:
 {
@@ -252,15 +268,36 @@ Return only JSON with this exact shape:
   "applicants": {"total": number|null, "inState": number|null, "outOfState": number|null, "international": number|null},
   "admitted": {"total": number|null, "inState": number|null, "outOfState": number|null, "international": number|null},
   "enrolled": {"total": number|null, "inState": number|null, "outOfState": number|null, "international": number|null},
+  "gpaDistribution": {
+    "4.00": number|null,
+    "3.75-3.99": number|null,
+    "3.50-3.74": number|null,
+    "3.25-3.49": number|null,
+    "3.00-3.24": number|null,
+    "2.50-2.99": number|null,
+    "2.00-2.49": number|null,
+    "1.00-1.99": number|null,
+    "<1.00": number|null
+  },
+  "edApplied": number|null,
+  "edAdmitted": number|null,
+  "edAcceptanceRate": number|null,
+  "eaApplied": number|null,
+  "eaAdmitted": number|null,
+  "eaAcceptanceRate": number|null,
   "confidence": number,
   "notes": string
 }
 
 Rules:
-- Use C1 first-time, first-year, degree-seeking undergraduate counts only.
-- Do not use transfer, waitlist, SAT, or financial-aid tables.
-- Preserve null when a residency row is absent.
-- Do not infer counts from percentages.
+- C1: first-time, first-year, degree-seeking undergraduate counts only.
+- C9/C11 GPA distribution: percentage of ENROLLED freshmen with each GPA band.
+  Convert percentages to decimals (e.g., 51% -> 0.51). Sum should be ~1.0.
+  If the school uses different bands (e.g., "3.75-4.00" not "4.00"), map to closest standard band.
+- C21 ED/EA: number of applicants/admits via Early Decision and Early Action (separate from RD).
+  Compute edAcceptanceRate = edAdmitted/edApplied * 100 if both numbers present.
+- Do not include transfer, waitlist, SAT, or financial-aid data.
+- Use null where data is absent (do NOT invent or infer).
 - Source URL: ${sourceUrl}
 
 PDF text:
@@ -271,7 +308,7 @@ ${text}`;
     systemPrompt:
       'You extract official college admissions tables into strict JSON. Return no prose.',
     userPrompt,
-    maxOutputTokens: 1024,
+    maxOutputTokens: 2048,
   });
 }
 
@@ -284,6 +321,41 @@ function toOutputRow(
   const applicants = normalizeCounts(extracted.applicants);
   const admitted = normalizeCounts(extracted.admitted);
   const enrolled = normalizeCounts(extracted.enrolled);
+  // GPA distribution: sanity-check sum within [0.95, 1.05] (allow rounding)
+  let gpaDist: Record<string, number> | null = null;
+  if (extracted.gpaDistribution) {
+    const cleaned: Record<string, number> = {};
+    for (const [band, val] of Object.entries(extracted.gpaDistribution)) {
+      if (typeof val === 'number' && Number.isFinite(val) && val > 0) {
+        cleaned[band] = val > 1 ? val / 100 : val;
+      }
+    }
+    const sum = Object.values(cleaned).reduce((a, b) => a + b, 0);
+    if (sum >= 0.85 && sum <= 1.15 && Object.keys(cleaned).length >= 3) {
+      gpaDist = cleaned;
+    }
+  }
+  // ED/EA: prefer explicit rate, else derive
+  let edRate: number | null = null;
+  if (typeof extracted.edAcceptanceRate === 'number') {
+    edRate = extracted.edAcceptanceRate;
+  } else if (
+    typeof extracted.edApplied === 'number' &&
+    typeof extracted.edAdmitted === 'number' &&
+    extracted.edApplied > 0
+  ) {
+    edRate = (extracted.edAdmitted / extracted.edApplied) * 100;
+  }
+  let eaRate: number | null = null;
+  if (typeof extracted.eaAcceptanceRate === 'number') {
+    eaRate = extracted.eaAcceptanceRate;
+  } else if (
+    typeof extracted.eaApplied === 'number' &&
+    typeof extracted.eaAdmitted === 'number' &&
+    extracted.eaApplied > 0
+  ) {
+    eaRate = (extracted.eaAdmitted / extracted.eaApplied) * 100;
+  }
   return {
     schoolNameNorm: row.schoolNameNorm,
     cycleYear,
@@ -297,6 +369,13 @@ function toOutputRow(
       oosAcceptanceRate: pct(admitted.outOfState, applicants.outOfState),
       transferAcceptanceRate: null,
     },
+    gpaDistribution: gpaDist,
+    edApplied: extracted.edApplied ?? null,
+    edAdmitted: extracted.edAdmitted ?? null,
+    edAcceptanceRate: edRate,
+    eaApplied: extracted.eaApplied ?? null,
+    eaAdmitted: extracted.eaAdmitted ?? null,
+    eaAcceptanceRate: eaRate,
     notes: extracted.notes,
   };
 }

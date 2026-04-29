@@ -1,0 +1,159 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T12:15:00.000Z",
+    "source": "Manual official CDS C1 extraction for high-priority schools whose PDFs/XLSX were blocked or not covered by the batch extractor",
+    "notes": "Penn PDF is hosted on UPenn Box and linked from the official Penn IR&A CDS page. Vanderbilt publishes CDS 2024-2025 as XLSX."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf",
+      "applicants": {
+        "total": 45895,
+        "inState": 3851,
+        "outOfState": 31318,
+        "international": 10726
+      },
+      "admitted": {
+        "total": 2954,
+        "inState": 243,
+        "outOfState": 2227,
+        "international": 484
+      },
+      "enrolled": {
+        "total": 1389,
+        "inState": 150,
+        "outOfState": 1003,
+        "international": 236
+      },
+      "rates": {
+        "acceptanceRate": 6.44,
+        "intlAcceptanceRate": 4.51,
+        "oosAcceptanceRate": 7.11,
+        "transferAcceptanceRate": null
+      },
+      "notes": "CDS 2024-2025 C1 residency table: total/in-state/out-of-state/international applicants 45895/3851/31318/10726; admitted 2954/243/2227/484."
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "cycleYear": 2024,
+      "sourceUrl": "https://upenn.app.box.com/s/ckv4frz37rzxa4u6bdiv2h4yzykqm4ef",
+      "applicants": {
+        "total": 65236,
+        "inState": 5219,
+        "outOfState": 44290,
+        "international": 15727
+      },
+      "admitted": {
+        "total": 3523,
+        "inState": 440,
+        "outOfState": 2644,
+        "international": 439
+      },
+      "enrolled": {
+        "total": 2395,
+        "inState": 348,
+        "outOfState": 1733,
+        "international": 314
+      },
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": 2.79,
+        "oosAcceptanceRate": 5.97,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Official Penn IR&A page links to this Box PDF. CDS 2024-25 C1 residency table: total/in-state/out-of-state/international applicants 65236/5219/44290/15727; admitted 3523/440/2644/439."
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://cdn.vanderbilt.edu/vu-wpfsx/wp-content/uploads/sites/70/2025/11/CDS_2024-2025.xlsx",
+      "applicants": {
+        "total": 45409,
+        "inState": 2463,
+        "outOfState": 34605,
+        "international": 8341
+      },
+      "admitted": {
+        "total": 2662,
+        "inState": 266,
+        "outOfState": 2034,
+        "international": 362
+      },
+      "enrolled": {
+        "total": 1630,
+        "inState": 205,
+        "outOfState": 1226,
+        "international": 199
+      },
+      "rates": {
+        "acceptanceRate": 5.86,
+        "intlAcceptanceRate": 4.34,
+        "oosAcceptanceRate": 5.88,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Official Vanderbilt CDS 2024-2025 XLSX, sheet CDS-C rows 36-39."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "applicants": {
+        "total": 34779,
+        "inState": 5401,
+        "outOfState": 25661,
+        "international": 3696
+      },
+      "admitted": {
+        "total": 5632,
+        "inState": 896,
+        "outOfState": 4116,
+        "international": 618
+      },
+      "enrolled": {
+        "total": 2394,
+        "inState": 471,
+        "outOfState": 1708,
+        "international": 214
+      },
+      "rates": {
+        "acceptanceRate": 16.19,
+        "intlAcceptanceRate": 16.72,
+        "oosAcceptanceRate": 16.04,
+        "transferAcceptanceRate": null
+      },
+      "notes": "CDS 2024-2025 C1 residency table: total/in-state/out-of-state/international/unknown applicants 34779/5401/25661/3696/21; admitted 5632/896/4116/618/2."
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://georgetown.app.box.com/s/rp4p2ly4ej2tsikv827pl48psmb68quv",
+      "applicants": {
+        "total": 26131,
+        "inState": 244,
+        "outOfState": 22272,
+        "international": 3615
+      },
+      "admitted": {
+        "total": 3374,
+        "inState": 41,
+        "outOfState": 3053,
+        "international": 280
+      },
+      "enrolled": {
+        "total": 1575,
+        "inState": 31,
+        "outOfState": 1433,
+        "international": 111
+      },
+      "rates": {
+        "acceptanceRate": 12.91,
+        "intlAcceptanceRate": 7.75,
+        "oosAcceptanceRate": 13.71,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Official Georgetown OADS page links to this Box PDF. CDS 2024-2025 C1 residency table: total/in-state/out-of-state/international applicants 26131/244/22272/3615; admitted 3374/41/3053/280. C11 GPA and C22 EA applicant/admit counts are blank."
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T12:15:00.000Z",
+    "source": "Manual official CDS C9/C21 extraction for high-priority schools",
+    "notes": "GPA distributions are canonicalized into the app's 5 bands. For schools reporting GPA of exactly 4.0 and 3.75-3.99 separately, both are summed into 3.75-4.00."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.9235,
+        "3.50-3.74": 0.048,
+        "3.25-3.49": 0.0162,
+        "3.00-3.24": 0.0085,
+        "<3.00": 0.0039
+      },
+      "edAcceptanceRate": 11.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 7028,
+      "edAdmitted": 825,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "CDS 2024-2025 C11 all enrolled GPA percentages: 64.97%, 27.38%, 4.80%, 1.62%, 0.85%, 0.39%, 0%, 0%, 0%. C21: 7028 ED applications, 825 admitted."
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "cycleYear": 2024,
+      "sourceUrl": "https://upenn.app.box.com/s/ckv4frz37rzxa4u6bdiv2h4yzykqm4ef",
+      "gpaDistribution": {
+        "3.75-4.00": 0.9,
+        "3.50-3.74": 0.05,
+        "3.25-3.49": 0.05,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 14.22,
+      "eaAcceptanceRate": null,
+      "edApplied": 8683,
+      "edAdmitted": 1235,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official Penn IR&A page links to this Box PDF. CDS 2024-25 C11: 4.0=59%, 3.75-3.99=31%, 3.50-3.74=5%, 3.25-3.49=5%, 3.00-3.24=0%, lower bands 0%. C21: 8683 ED applications, 1235 admitted."
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://cdn.vanderbilt.edu/vu-wpfsx/wp-content/uploads/sites/70/2025/11/CDS_2024-2025.xlsx",
+      "gpaDistribution": {
+        "3.75-4.00": 0.89,
+        "3.50-3.74": 0.072,
+        "3.25-3.49": 0.022,
+        "3.00-3.24": 0.009,
+        "<3.00": 0.007
+      },
+      "edAcceptanceRate": 15.38,
+      "eaAcceptanceRate": null,
+      "edApplied": 5363,
+      "edAdmitted": 825,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official Vanderbilt CDS 2024-2025 XLSX, sheet CDS-C rows 242-252 and 323-336. C11 all enrolled: 35.9%, 53.1%, 7.2%, 2.2%, 0.9%, 0.6%, 0.1%, 0%, 0%. C21: 5363 ED applications, 825 admitted."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "CDS 2024-2025 C11 reports 0.0% / 0.00 for GPA distribution, so GPA distribution is intentionally left null. C21: 4288 ED applications, 1434 admitted."
+    }
+  ]
+}

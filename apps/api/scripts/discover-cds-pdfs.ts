@@ -14,6 +14,7 @@ type Args = {
   requireTavily: boolean;
   engine: 'auto' | 'google' | 'tavily';
   missingOnly: boolean;
+  maxStages: number;
 };
 
 type Candidate = {
@@ -70,6 +71,7 @@ function parseArgs(): Args {
       return value === 'google' || value === 'tavily' ? value : 'auto';
     })(),
     missingOnly: has('missing-only') || has('missing-fields-only'),
+    maxStages: Number(get('max-stages') ?? 1),
   };
 }
 
@@ -86,6 +88,26 @@ function fieldIsHeuristic(school: Record<string, unknown>, field: string) {
   return (
     provenance?.tier === 'INFERRED' ||
     Boolean(provenance?.source?.toUpperCase().includes('HEURISTIC'))
+  );
+}
+
+function fieldIsPermanentHeuristic(
+  school: Record<string, unknown>,
+  field: string,
+) {
+  const metadata = school.metadata as
+    | {
+        provenance?: Record<
+          string,
+          { source?: string; tier?: string; permanent?: boolean }
+        >;
+      }
+    | null
+    | undefined;
+  const provenance = metadata?.provenance?.[field];
+  return (
+    provenance?.permanent === true ||
+    provenance?.source === 'PERMANENT_HEURISTIC'
   );
 }
 
@@ -241,7 +263,8 @@ function loadTavilyPool(): KeyPool<TavilyKeyEntry> {
 
 function loadGooglePool(): KeyPool<GoogleKeyEntry> {
   const entries: GoogleKeyEntry[] = [];
-  const k0 = process.env.GOOGLE_SEARCH_API_KEY ?? process.env.GOOGLE_CSE_API_KEY;
+  const k0 =
+    process.env.GOOGLE_SEARCH_API_KEY ?? process.env.GOOGLE_CSE_API_KEY;
   const cx0 = process.env.GOOGLE_SEARCH_ENGINE_ID ?? process.env.GOOGLE_CSE_CX;
   if (k0 && cx0) entries.push({ apiKey: k0, cx: cx0 });
   for (let n = 1; ; n++) {
@@ -278,7 +301,9 @@ function createPoolRunner<T>(pool: KeyPool<T>, label: string) {
         /failed (429|432|quota)/i.test(msg) ||
         /usage limit|exceeds.*plan|rate.?limit/i.test(msg)
       ) {
-        console.error(`[search] ${label}[${idx + 1}/${total}] quota hit — marking exhausted`);
+        console.error(
+          `[search] ${label}[${idx + 1}/${total}] quota hit — marking exhausted`,
+        );
         pool.exhausted.add(idx);
         pool.index = (pool.index + 1) % total;
         return { results: [], exhausted: pool.exhausted.size >= total };
@@ -336,7 +361,6 @@ async function tavilySearch(
   maxResults: number,
   apiKey: string,
 ): Promise<Candidate[]> {
-
   const response = await fetch('https://api.tavily.com/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -404,21 +428,33 @@ async function main() {
     );
   }
   if (args.requireTavily && !hasTavily) {
-    throw new Error('Tavily env missing. Set TAVILY_API_KEY or TAVILY_API_KEY_1.');
+    throw new Error(
+      'Tavily env missing. Set TAVILY_API_KEY or TAVILY_API_KEY_1.',
+    );
   }
   if (args.engine === 'google' && !hasGoogle) {
-    throw new Error('--engine google requested but no Google CSE env vars found.');
+    throw new Error(
+      '--engine google requested but no Google CSE env vars found.',
+    );
   }
   if (args.engine === 'tavily' && !hasTavily) {
     throw new Error('--engine tavily requested but no TAVILY_API_KEY found.');
   }
 
   const engineLabel: 'tavily' | 'google-custom-search' | 'query-only' =
-    args.engine === 'tavily' ? 'tavily' :
-    args.engine === 'google' ? 'google-custom-search' :
-    hasTavily ? 'tavily' : hasGoogle ? 'google-custom-search' : 'query-only';
+    args.engine === 'tavily'
+      ? 'tavily'
+      : args.engine === 'google'
+        ? 'google-custom-search'
+        : hasTavily
+          ? 'tavily'
+          : hasGoogle
+            ? 'google-custom-search'
+            : 'query-only';
 
-  console.error(`[pool] tavily: ${tavilyPool.entries.length} key(s), google: ${googlePool.entries.length} key(s)`);
+  console.error(
+    `[pool] tavily: ${tavilyPool.entries.length} key(s), google: ${googlePool.entries.length} key(s)`,
+  );
 
   const schools = await prisma.school.findMany({
     where: {
@@ -443,6 +479,8 @@ async function main() {
   const targets = schools
     .filter((school) => {
       const record = school as Record<string, unknown>;
+      // Skip schools we know don't publish CDS (saves quota + avoids hammering)
+      if (fieldIsPermanentHeuristic(record, args.missingField)) return false;
       if (fieldIsMissing(record, args.missingField)) return true;
       return !args.missingOnly && fieldIsHeuristic(record, args.missingField);
     })
@@ -453,9 +491,56 @@ async function main() {
 
   const results = [];
   const failures = [];
+
+  // Build query stages per school. Smarter strategy:
+  //  S1: site:{root} "common data set" cycle filetype:pdf  (most precise)
+  //  S2: "{name}" inurl:cds OR inurl:institutional-research filetype:pdf
+  //  S3: site:{root} "common data set" filetype:pdf  (no year, accept older)
+  //  S4: "{name}" "common data set 2024-25" filetype:pdf  (no site restriction)
+  function rootDomain(website: string | null): string | null {
+    if (!website) return null;
+    try {
+      const host = new URL(website).hostname
+        .toLowerCase()
+        .replace(/^www\./, '');
+      return host.split('.').slice(-2).join('.');
+    } catch {
+      return null;
+    }
+  }
+  function buildStages(school: {
+    name: string;
+    website: string | null;
+  }): string[] {
+    const root = rootDomain(school.website);
+    const stages: string[] = [];
+    if (root) {
+      stages.push(
+        `site:${root} "common data set" "${args.cycleLabel}" filetype:pdf`,
+      );
+    }
+    stages.push(
+      `"${school.name}" "common data set" "${args.cycleLabel}" inurl:cds OR inurl:institutional-research filetype:pdf`,
+    );
+    if (root) {
+      stages.push(`site:${root} "common data set" filetype:pdf`);
+    }
+    stages.push(
+      `"${school.name}" "common data set ${args.cycleLabel}" filetype:pdf`,
+    );
+    return stages;
+  }
+
   for (const school of targets) {
-    const query = `site:edu "Common Data Set" "${args.cycleLabel}" "${school.name}" filetype:pdf`;
+    const stages =
+      args.maxStages > 1
+        ? buildStages(school)
+        : [
+            `site:edu "Common Data Set" "${args.cycleLabel}" "${school.name}" filetype:pdf`,
+          ];
     let rawCandidates: Candidate[] = [];
+    let queryUsed = stages[0];
+    let stageHit = -1;
     let didSearch = false;
 
     try {
@@ -468,35 +553,65 @@ async function main() {
         args.engine !== 'tavily' &&
         googlePool.exhausted.size < googlePool.entries.length;
 
-      if (wantTavily) {
-        const out = await runTavily((e) =>
-          tavilySearch(query, args.maxResults, e.apiKey),
-        );
-        rawCandidates = out.results;
-        didSearch = true;
-        if (out.exhausted && args.engine === 'tavily') {
-          failures.push({
-            schoolId: school.id,
-            schoolName: school.name,
-            query,
-            error: 'All Tavily keys exhausted',
-          });
-          continue;
-        }
-      }
+      const stageMax = Math.min(args.maxStages, stages.length);
+      for (let s = 0; s < stageMax; s++) {
+        const stageQuery = stages[s];
 
-      if (rawCandidates.length === 0 && wantGoogle) {
-        const out = await runGoogle((e) =>
-          googleSearch(query, args.maxResults, e),
-        );
-        rawCandidates = out.results;
-        didSearch = true;
+        if (wantTavily) {
+          const out = await runTavily((e) =>
+            tavilySearch(stageQuery, args.maxResults, e.apiKey),
+          );
+          if (out.exhausted && args.engine === 'tavily') {
+            failures.push({
+              schoolId: school.id,
+              schoolName: school.name,
+              query: stageQuery,
+              error: 'All Tavily keys exhausted',
+            });
+            break;
+          }
+          // Pre-filter against school here so empty filtered → try next stage
+          const filtered = out.results.filter((c) =>
+            candidateMatchesSchool(c, {
+              name: school.name,
+              nameNorm: school.nameNorm,
+              website: school.website,
+            }),
+          );
+          if (filtered.length > 0) {
+            rawCandidates = out.results;
+            queryUsed = stageQuery;
+            stageHit = s + 1;
+            didSearch = true;
+            break;
+          }
+          didSearch = true;
+        } else if (wantGoogle) {
+          const out = await runGoogle((e) =>
+            googleSearch(stageQuery, args.maxResults, e),
+          );
+          const filtered = out.results.filter((c) =>
+            candidateMatchesSchool(c, {
+              name: school.name,
+              nameNorm: school.nameNorm,
+              website: school.website,
+            }),
+          );
+          if (filtered.length > 0) {
+            rawCandidates = out.results;
+            queryUsed = stageQuery;
+            stageHit = s + 1;
+            didSearch = true;
+            break;
+          }
+          didSearch = true;
+        }
       }
     } catch (error) {
       failures.push({
         schoolId: school.id,
         schoolName: school.name,
-        query,
+        query: queryUsed,
         error: error instanceof Error ? error.message : String(error),
       });
       continue;
@@ -520,7 +635,8 @@ async function main() {
       schoolNameNorm: school.nameNorm,
       usNewsRank: school.usNewsRank,
       missingField: args.missingField,
-      query,
+      query: queryUsed,
+      stageHit,
       selectedUrl: filteredCandidates[0]?.url ?? null,
       candidates: filteredCandidates,
       rejectedCandidates: rejected.length > 0 ? rejected : undefined,

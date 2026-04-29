@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T11:34:30.915Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "claude-haiku-4-5-20251001",
+    "input": "apps/api/scripts/cds-data/cds-c9c21-batch2-target-2026-04-28.json",
+    "success": 3,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.dartmouth.edu/oir/pdfs/cds_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 19.18,
+      "eaAcceptanceRate": null,
+      "edApplied": 3551,
+      "edAdmitted": 681,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C21 Early Decision data found: 3551 applications, 681 admits. C9 GPA distribution table (C11) present but all cells show 0.00% with note 'Totals should = 100%' at 0.00%, indicating data was not reported or not populated in this CDS submission."
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table is present but contains all zeros (0.00%) with no actual data reported. C21 Early Decision section shows the plan exists but the specific numbers for 'Number of early decision applications received' and 'Number of applicants admitted under early decision plan' are blank/not provided in the PDF text. C22 Early Action plan is marked 'No' - institution does not offer EA."
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table not found in provided text. Section C11 shows GPA ranges but all percentages are 0.0% with note 'Totals should = 100% 0.0%', indicating no GPA data was reported. C21 shows Yale does NOT offer Early Decision (checkbox 'No' is marked). C22 shows Early Action plan exists with closing date 11/1 and notification date 12/15, but specific applicant and admitted numbers are not provided in the text."
+    }
+  ],
+  "failures": []
+}

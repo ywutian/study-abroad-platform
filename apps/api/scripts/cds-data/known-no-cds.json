@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-28T22:55:00Z",
+    "purpose": "Schools we have empirically confirmed do not publish CDS C1 with residency breakdown.",
+    "rule": "Discover/extract scripts skip these schools entirely; UI labels intl/oos as PERMANENT_HEURISTIC.",
+    "verifiedBy": "tavily-multistage-sweep + LLM extract attempts on 4/27-4/28",
+    "verifiedAt": "2026-04-28"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "rhode island school of design",
+      "reason": "Art school: CDS C1 lacks residency breakdown"
+    },
+    {
+      "schoolNameNorm": "the juilliard school",
+      "reason": "Music conservatory: no public CDS"
+    },
+    {
+      "schoolNameNorm": "berklee college of music",
+      "reason": "Music school: CDS landing page only, no PDF"
+    },
+    {
+      "schoolNameNorm": "cooper union",
+      "reason": "Small specialty school: no published C1 residency"
+    },
+    {
+      "schoolNameNorm": "pratt institute",
+      "reason": "Art school: stale 2022-23 only"
+    },
+    {
+      "schoolNameNorm": "curtis institute of music",
+      "reason": "Conservatory: no CDS"
+    },
+    {
+      "schoolNameNorm": "school of the art institute of chicago",
+      "reason": "Art school: no CDS"
+    },
+    {
+      "schoolNameNorm": "manhattan school of music",
+      "reason": "Conservatory: limited CDS"
+    },
+    {
+      "schoolNameNorm": "california institute of the arts",
+      "reason": "Art school: no CDS"
+    },
+    {
+      "schoolNameNorm": "new england conservatory",
+      "reason": "Conservatory: no CDS"
+    },
+    {
+      "schoolNameNorm": "maryland institute college of art",
+      "reason": "Art school: no CDS"
+    },
+    {
+      "schoolNameNorm": "california college of the arts",
+      "reason": "Art school: no CDS"
+    },
+    {
+      "schoolNameNorm": "artcenter college of design",
+      "reason": "Art school: no CDS"
+    },
+    {
+      "schoolNameNorm": "savannah college of art and design",
+      "reason": "Art school: no CDS"
+    },
+    {
+      "schoolNameNorm": "the new school",
+      "reason": "Returns commondataset.org template only"
+    },
+    {
+      "schoolNameNorm": "stanford university",
+      "reason": "Elite private: CDS C1 publishes no residency breakdown"
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "reason": "Elite private: CDS C1 no residency"
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "reason": "Elite private: CDS C1 no residency"
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "reason": "Elite tech: CDS C1 no residency"
+    },
+    {
+      "schoolNameNorm": "olin college of engineering",
+      "reason": "Specialty engineering school: no C1 residency"
+    },
+    {
+      "schoolNameNorm": "pomona college",
+      "reason": "Elite LAC: CDS year too old (2014-2015 only)"
+    }
+  ]
+}
