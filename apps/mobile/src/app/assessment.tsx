@@ -101,15 +101,15 @@ interface AssessmentResultDto {
 
 // ── Constants ────────────────────────────────────────────
 const TYPE_COLORS: Record<string, string> = {
-  MBTI: '#8b5cf6',
+  MBTI: '#6574ff',
   HOLLAND: '#f59e0b',
   MAJOR_MATCH: '#3b82f6',
 };
 const MBTI_DIM_COLORS: Record<string, string> = {
-  E: '#6366f1',
-  I: '#6366f1',
-  S: '#10b981',
-  N: '#10b981',
+  E: '#1d1813',
+  I: '#1d1813',
+  S: '#6f7b58',
+  N: '#6f7b58',
   T: '#f59e0b',
   F: '#f59e0b',
   J: '#ef4444',
@@ -118,8 +118,8 @@ const MBTI_DIM_COLORS: Record<string, string> = {
 const HOLLAND_COLORS: Record<string, string> = {
   R: '#ef4444',
   I: '#3b82f6',
-  A: '#8b5cf6',
-  S: '#10b981',
+  A: '#6574ff',
+  S: '#6f7b58',
   E: '#f59e0b',
   C: '#64748b',
 };

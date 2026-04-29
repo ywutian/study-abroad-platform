@@ -390,7 +390,7 @@ export default function SecurityScreen() {
                   setDeletePassword('');
                   setDeleteDialogVisible(true);
                 }}
-                leftIcon={<Ionicons name="warning-outline" size={18} color="#ffffff" />}
+                leftIcon={<Ionicons name="warning-outline" size={18} color="#fff9ef" />}
               >
                 {t('security.deleteMyAccount')}
               </AnimatedButton>

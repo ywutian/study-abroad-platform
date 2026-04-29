@@ -127,6 +127,10 @@ function num(value: string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+function firstNum(row: Row, keys: string[]): number | undefined {
+  return num(first(row, keys));
+}
+
 function sum(
   left: number | undefined,
   right: number | undefined,
@@ -298,6 +302,93 @@ export function buildPayloadRows(rows: Row[]) {
         first(row, ['totalEnrollment', 'total_enrollment', 'EFTOTLT']),
       );
       const intlEnrollment = num(first(row, ['EFNRALT', 'intl_enrollment']));
+      const studentCount = firstNum(row, [
+        'studentCount',
+        'student_count',
+        'UGDS',
+        'EFTOTLT',
+      ]);
+      const tuition = firstNum(row, [
+        'tuition',
+        'tuition_in_state',
+        'tuition_out_state',
+        'TUITION2',
+        'TUITION3',
+        'CHG2AY2',
+        'CHG2AY3',
+        'chg2ay3',
+      ]);
+      const avgSalary = firstNum(row, [
+        'avgSalary',
+        'avg_salary',
+        'MD_EARN_WNE_P10',
+        'EARN_MDN_HI_2YR',
+      ]);
+      const graduationRate = firstNum(row, [
+        'graduationRate',
+        'graduation_rate',
+        'GRRTTOT',
+        'DRVGR2024_GRRTTOT',
+        'C150_4',
+      ]);
+      const retentionRate = firstNum(row, [
+        'retentionRate',
+        'retention_rate',
+        'RET_FT4',
+        'RET_FTL4',
+        'RET_PCF',
+      ]);
+      const studentFacultyRatio = firstNum(row, [
+        'studentFacultyRatio',
+        'student_faculty_ratio',
+        'STUFACR',
+      ]);
+      const percentNeedMet = firstNum(row, [
+        'percentNeedMet',
+        'percent_need_met',
+        'PCT_NEED_MET',
+      ]);
+      const averageAidPackage = firstNum(row, [
+        'averageAidPackage',
+        'average_aid_package',
+        'AVG_AWARD',
+        'ANYAIDM',
+      ]);
+      const averageNetPrice = firstNum(row, [
+        'averageNetPrice',
+        'average_net_price',
+        'NPT4_PUB',
+        'NPT4_PRIV',
+        'NPT4_048_PUB',
+        'NPT4_048_PRIV',
+      ]);
+      const roomAndBoard = firstNum(row, [
+        'roomAndBoard',
+        'room_and_board',
+        'RMBRDAMT',
+        'ROOMBOARD',
+      ]);
+      const applicationFee = firstNum(row, [
+        'applicationFee',
+        'application_fee',
+        'APPLFEEU',
+        'APPFEE',
+      ]);
+      const salary6YrPostGrad = firstNum(row, [
+        'salary6YrPostGrad',
+        'salary_6yr_post_grad',
+        'MD_EARN_WNE_P6',
+      ]);
+      const loanDefaultRate = firstNum(row, [
+        'loanDefaultRate',
+        'loan_default_rate',
+        'CDR3',
+      ]);
+      const monthlyLoanPayment = firstNum(row, [
+        'monthlyLoanPayment',
+        'monthly_loan_payment',
+        'DEBT_MDN_SUPP',
+      ]);
       const sat25 =
         num(first(row, ['sat25', 'sat_25'])) ??
         sum(num(first(row, ['SATVR25'])), num(first(row, ['SATMT25'])));
@@ -330,6 +421,20 @@ export function buildPayloadRows(rows: Row[]) {
             ]),
           ) ?? pct(intlEnrollment, totalEnrollment),
         totalEnrollment,
+        studentCount,
+        tuition,
+        avgSalary,
+        graduationRate,
+        retentionRate,
+        studentFacultyRatio,
+        percentNeedMet,
+        averageAidPackage,
+        averageNetPrice,
+        roomAndBoard,
+        applicationFee,
+        salary6YrPostGrad,
+        loanDefaultRate,
+        monthlyLoanPayment,
         sat25,
         satAvg,
         sat75,
@@ -350,6 +455,20 @@ export function buildPayloadRows(rows: Row[]) {
         'oosAcceptanceRate',
         'intlStudentPct',
         'totalEnrollment',
+        'studentCount',
+        'tuition',
+        'avgSalary',
+        'graduationRate',
+        'retentionRate',
+        'studentFacultyRatio',
+        'percentNeedMet',
+        'averageAidPackage',
+        'averageNetPrice',
+        'roomAndBoard',
+        'applicationFee',
+        'salary6YrPostGrad',
+        'loanDefaultRate',
+        'monthlyLoanPayment',
         'sat25',
         'satAvg',
         'sat75',
@@ -374,6 +493,27 @@ function normalizePercent(input: number | undefined | null): number | null {
   if (input == null || !Number.isFinite(input) || input < 0) return null;
   const percent = input < 1 ? input * 100 : input;
   return Math.round(percent * 100) / 100;
+}
+
+function sourceUrlForInput(input: string, cycleYear: number): string {
+  const file = path.basename(input).toUpperCase();
+  const family = /^ADM/.test(file)
+    ? `ADM${cycleYear}`
+    : /^EF/.test(file)
+      ? (file.match(/^EF\d{4}[A-Z]?/)?.[0] ?? `EF${cycleYear}`)
+      : /^IC/.test(file)
+        ? `IC${cycleYear}`
+        : /^SFA/.test(file)
+          ? `SFA${cycleYear}`
+          : /^GR/.test(file)
+            ? `GR${cycleYear}`
+            : /^OM/.test(file)
+              ? `OM${cycleYear}`
+              : /^DRVADM/.test(file)
+                ? `DRVADM${cycleYear}`
+                : null;
+  if (!family) return 'https://nces.ed.gov/ipeds/use-the-data';
+  return `https://nces.ed.gov/ipeds/datacenter/data/${family}.zip`;
 }
 
 async function applyDirectDb(
@@ -428,6 +568,20 @@ async function applyDirectDb(
         oosAcceptanceRate: true,
         intlStudentPct: true,
         totalEnrollment: true,
+        studentCount: true,
+        tuition: true,
+        avgSalary: true,
+        graduationRate: true,
+        retentionRate: true,
+        studentFacultyRatio: true,
+        percentNeedMet: true,
+        averageAidPackage: true,
+        averageNetPrice: true,
+        roomAndBoard: true,
+        applicationFee: true,
+        salary6YrPostGrad: true,
+        loanDefaultRate: true,
+        monthlyLoanPayment: true,
         sat25: true,
         satAvg: true,
         sat75: true,
@@ -445,8 +599,24 @@ async function applyDirectDb(
       'oosAcceptanceRate',
     ] as const;
     const percentPointFields = ['intlStudentPct'] as const;
+    const decimalPercentFields = [
+      'graduationRate',
+      'retentionRate',
+      'percentNeedMet',
+      'loanDefaultRate',
+    ] as const;
     const integerFields = [
       'totalEnrollment',
+      'studentCount',
+      'tuition',
+      'avgSalary',
+      'studentFacultyRatio',
+      'averageAidPackage',
+      'averageNetPrice',
+      'roomAndBoard',
+      'applicationFee',
+      'salary6YrPostGrad',
+      'monthlyLoanPayment',
       'sat25',
       'satAvg',
       'sat75',
@@ -499,6 +669,18 @@ async function applyDirectDb(
         changedFields.push(field);
       }
 
+      for (const field of decimalPercentFields) {
+        const normalized = normalizePercent(row[field]);
+        if (normalized == null) continue;
+        const currentDecimal = school[field] as Prisma.Decimal | null;
+        const current = currentDecimal ? currentDecimal.toNumber() : null;
+        before[field] = current;
+        if (current != null && Math.abs(current - normalized) < 0.005) continue;
+        updates[field] = new Prisma.Decimal(normalized);
+        after[field] = normalized;
+        changedFields.push(field);
+      }
+
       for (const field of integerFields) {
         const raw = row[field];
         if (raw == null || !Number.isFinite(raw)) continue;
@@ -532,9 +714,7 @@ async function applyDirectDb(
           toRecord(metadata.provenance),
           buildFieldProvenanceRecord(changedFields, {
             source: `IPEDS_CSV:${opts.cycleYear}:unitid-${row.unitid}`,
-            sourceUrl: `https://nces.ed.gov/ipeds/datacenter/data/EF${opts.cycleYear}${
-              /EF\d{4}C/i.test(opts.input) ? 'C' : 'A'
-            }.zip`,
+            sourceUrl: sourceUrlForInput(opts.input, opts.cycleYear),
             cycleYear: opts.cycleYear,
             verifiedBy: opts.actorUserId,
             confidence: 0.95,

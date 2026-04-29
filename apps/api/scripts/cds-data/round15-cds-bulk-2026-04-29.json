@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T13:00:00Z",
+    "source": "Round 15 - Direct source verification (Harvard CDS PDF, MIT admissions stats, Purdue CDS PDF)",
+    "purpose": "Elite university residency admit rates from official primary sources",
+    "verifiedBy": "Direct PDF download + pdftotext extraction; MIT official admissions stats page",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.harvard.edu/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 3.65,
+        "intlAcceptanceRate": 1.94,
+        "oosAcceptanceRate": 4.03,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 8.74,
+      "notes": "Harvard CDS 2024-25 C1 (PDF): applied 54,008 (in-state 3,032 / oos 34,216 / intl 16,760), admitted 1,970 (in-state 265 / oos 1,380 / intl 325). Intl 1.94% markedly lower than domestic (4-9%). Elite school with very limited intl capacity relative to demand."
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mitadmissions.org/apply/process/stats/",
+      "rates": {
+        "acceptanceRate": 4.55,
+        "intlAcceptanceRate": 1.96,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": null,
+      "notes": "MIT Admissions Stats (official page): applied 29,281 total / intl 6,926, admitted 1,334 total / intl 136. Intl 1.96% vs overall 4.55%. U.S./PR: 22,355 applied / 1,198 admitted = 5.36%. MIT does not publish in-state vs OOS breakdown separately."
+    },
+    {
+      "schoolNameNorm": "purdue university",
+      "cycleYear": 2025,
+      "sourceUrl": "https://www.purdue.edu/idata/wp-content/uploads/2026/01/CDS_2025-2026.pdf",
+      "rates": {
+        "acceptanceRate": 43.43,
+        "intlAcceptanceRate": 22.49,
+        "oosAcceptanceRate": 43.58,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 71.09,
+      "notes": "Purdue CDS 2025-26 C1 (Fall 2025 data): applied 87,220 (in-state 12,040 / oos 58,853 / intl 16,327), admitted 37,881 (in-state 8,559 / oos 25,650 / intl 3,672). Intl 22.5% notably lower than domestic. OOS nearly same as overall (dominant applicant pool). In-state very high at 71%."
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T08:54:12.652Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-discover-chunk1-2026-04-29.json",
+    "success": 3,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "applicants": {
+        "total": 427,
+        "inState": null,
+        "outOfState": null,
+        "international": 49
+      },
+      "admitted": {
+        "total": 427,
+        "inState": null,
+        "outOfState": null,
+        "international": 49
+      },
+      "enrolled": {
+        "total": 427,
+        "inState": null,
+        "outOfState": null,
+        "international": 49
+      },
+      "rates": {
+        "acceptanceRate": 100,
+        "intlAcceptanceRate": 100,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 extracted from B101/B102 first-time first-year degree-seeking full-time counts: 203 men and 224 women, total 427. The provided text excerpt does not include Common Data Set C9/C11 GPA distribution or C21 early decision/early action data."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "applicants": {
+        "total": 12540,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1348,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 598,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 10.75,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from first-time, first-year applicants/admits/enrollees. Residency breakdowns were not provided in the text. C9/C11 GPA distribution not present in the supplied excerpt; only the start of C9 SAT submission appears, so GPA bands are null. No C21 ED/EA data appears in the supplied excerpt."
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "applicants": {
+        "total": 38631,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1849,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1626,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 4.79,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals computed from gender totals: applicants 17373+21249+9=38631; admitted 994+855+0=1849; enrolled 885+741+0=1626. Residency breakdown not provided. C9 shows test score submission and SAT/ACT ranges only; no GPA distribution appears in provided text. C21 not present in provided text."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    }
+  ]
+}

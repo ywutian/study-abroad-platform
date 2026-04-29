@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ╔══════════════════════════════════════════════╗
-# ║  Study Abroad Platform — Mobile 开发环境       ║
+# ║  Lumni — Mobile 开发环境                       ║
 # ║                                              ║
 # ║  用法:                                       ║
 # ║    ./dev-mobile.sh              iOS 真机      ║

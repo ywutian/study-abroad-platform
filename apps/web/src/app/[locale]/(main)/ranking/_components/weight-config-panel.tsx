@@ -156,7 +156,7 @@ export function WeightConfigPanel({
           <div className="pt-2">
             <Button
               onClick={onCalculate}
-              className="w-full gap-2 h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25 dark:shadow-amber-500/15"
+              className="w-full gap-2 h-11 bg-warning text-warning-foreground hover:bg-warning/90 shadow-md"
               disabled={isCalculating}
             >
               <Play className="h-4 w-4" />

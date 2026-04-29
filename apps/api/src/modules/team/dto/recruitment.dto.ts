@@ -281,6 +281,21 @@ export class UpdateRecruitmentMemberProfileDto {
   @IsBoolean()
   showAwards?: boolean;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  showAcademics?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  showExperiences?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  showPersonality?: boolean;
+
   @ApiPropertyOptional({
     description: 'Confirm current display settings for publishing',
   })

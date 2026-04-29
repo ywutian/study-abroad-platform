@@ -137,7 +137,7 @@ function FeatureCard({
     >
       <Link
         href={href}
-        className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-card)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--landing-border-strong)] hover:shadow-[var(--landing-shadow-elevated)]"
+        className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-card)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--landing-border-strong)] hover:shadow-[var(--landing-shadow-elevated)]"
       >
         <div className="flex h-full flex-col gap-6 p-6 lg:p-7">
           <div className="flex items-start justify-between gap-4">
@@ -181,7 +181,7 @@ function MatchingVisual() {
   const copy = t.raw('features.visuals.matching') as MatchingVisualCopy;
 
   return (
-    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
       <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
         {copy.label}
       </div>
@@ -220,7 +220,7 @@ function EssayVisual() {
   const copy = t.raw('features.visuals.essay') as EssayVisualCopy;
 
   return (
-    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
       <div className="flex items-center justify-between text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
         <span>{copy.kicker}</span>
         <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -253,7 +253,7 @@ function TimelineVisual() {
   const copy = t.raw('features.visuals.timeline') as TimelineVisualCopy;
 
   return (
-    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
       <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
         <Clock3 className="h-3.5 w-3.5 text-primary" />
         <span>{copy.label}</span>
@@ -284,7 +284,7 @@ function ProbabilityVisual() {
   const copy = t.raw('features.visuals.probability') as ProbabilityVisualCopy;
 
   return (
-    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
       <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
         <BarChart3 className="h-3.5 w-3.5 text-primary" />
         <span>{copy.label}</span>
@@ -310,7 +310,7 @@ function TeamVisual() {
   const copy = t.raw('features.visuals.team') as TeamVisualCopy;
 
   return (
-    <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
+    <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
       <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
         <Users className="h-3.5 w-3.5 text-primary" />
         <span>{copy.label}</span>
@@ -341,8 +341,8 @@ function MentorVisual() {
   const copy = t.raw('features.visuals.mentor') as MentorVisualCopy;
 
   return (
-    <div className="grid gap-4 rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4 lg:grid-cols-[0.95fr_1.05fr]">
-      <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-5 py-5 shadow-[var(--landing-shadow-card)]">
+    <div className="grid gap-4 rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4 lg:grid-cols-[0.95fr_1.05fr]">
+      <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-5 py-5 shadow-[var(--landing-shadow-card)]">
         <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
           <Shield className="h-3.5 w-3.5 text-primary" />
           <span>{copy.label}</span>

@@ -20,6 +20,29 @@ export type RecruitmentVisibility = 'PUBLIC' | 'PRIVATE' | (string & {});
 
 export type RecruitmentContextSourceType = 'OFFICIAL' | 'COMMUNITY' | (string & {});
 
+export type RecruitmentHighlightTone = 'neutral' | 'success' | 'warning' | 'danger';
+
+export type RecruitmentHighlightSource =
+  | 'PROFILE'
+  | 'TEST_SCORE'
+  | 'AWARD'
+  | 'ACTIVITY'
+  | 'RESUME'
+  | 'ASSESSMENT';
+
+export interface RecruitmentHighlightChipDto {
+  label: string;
+  tone: RecruitmentHighlightTone;
+  source: RecruitmentHighlightSource;
+  sourceId?: string;
+}
+
+export interface RecruitmentMemberHighlightsDto {
+  academics: RecruitmentHighlightChipDto[];
+  experiences: RecruitmentHighlightChipDto[];
+  personality: RecruitmentHighlightChipDto[];
+}
+
 export interface RecruitmentCompetitionDto {
   id: string;
   name: string;
@@ -139,9 +162,13 @@ export interface TeamRecruitmentMemberDto {
   showSchool?: boolean;
   showGrade?: boolean;
   showAwards?: boolean;
+  showAcademics?: boolean;
+  showExperiences?: boolean;
+  showPersonality?: boolean;
   school?: string | null;
   grade?: string | null;
   targetMajor?: string | null;
+  highlights?: RecruitmentMemberHighlightsDto;
   consentConfirmedAt?: string | Date | null;
   resume?: {
     id: string;

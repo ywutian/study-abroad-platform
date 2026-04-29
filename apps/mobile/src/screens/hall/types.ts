@@ -134,7 +134,7 @@ export type Colors = ReturnType<typeof useColors>;
 export const SCORE_LABELS = ['academic', 'test', 'activity', 'award', 'overall'] as const;
 
 export const PERCENTILE_COLORS = {
-  top10: '#10b981',
+  top10: '#6f7b58',
   top25: '#3b82f6',
   top50: '#f59e0b',
   bottom: '#ef4444',
@@ -171,7 +171,7 @@ export function averageScore(r: Review): number {
 }
 
 export function getScoreColor(score: number): string {
-  if (score >= 8) return '#10b981';
+  if (score >= 8) return '#6f7b58';
   if (score >= 6) return '#3b82f6';
   if (score >= 4) return '#f59e0b';
   return '#ef4444';

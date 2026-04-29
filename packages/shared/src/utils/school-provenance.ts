@@ -1,12 +1,30 @@
 import type {
   FieldProvenance,
   ProvenanceStaleness,
+  RealDataStatus,
   SchoolFieldSource,
   SchoolProvenance,
   TrustTier,
 } from '../types/school-provenance';
 
-const OFFICIAL_SOURCE_TOKENS = ['COLLEGE_SCORECARD', 'URBAN_INSTITUTE', 'IPEDS'];
+const UNAVAILABLE_SOURCE_TOKENS = [
+  'OFFICIAL_BLANK',
+  'OFFICIAL_BLOCKED',
+  'NO_PUBLIC_REAL_DATA',
+  'MANUAL_REVIEW',
+  'UNAVAILABLE',
+];
+const OFFICIAL_SOURCE_TOKENS = [
+  'COLLEGE_SCORECARD',
+  'URBAN_INSTITUTE',
+  'IPEDS',
+  'CDS_OFFICIAL',
+  'CDS_PDF',
+  'CDS_LLM_EXTRACT',
+  'OFFICIAL_FACTBOOK',
+  'OFFICIAL_ADMISSIONS_PROFILE',
+  'OFFICIAL_STATE_DASHBOARD',
+];
 const PARTNER_SOURCE_TOKENS = ['MANUAL_ADMIN', 'PARTNER'];
 const SCRAPED_SOURCE_TOKENS = ['BIGFUTURE', 'APPILY', 'SCRAPER', 'SCRAPE'];
 const COMMUNITY_SOURCE_TOKENS = ['COMMUNITY'];
@@ -19,6 +37,7 @@ export const TRUST_TIER_PREDICTION_WEIGHT: Record<TrustTier, number> = {
   SEED: 0.7,
   COMMUNITY: 0,
   INFERRED: 0,
+  UNAVAILABLE: 0,
 };
 
 export function isPredictionEligibleTrustTier(tier: TrustTier): boolean {
@@ -28,6 +47,9 @@ export function isPredictionEligibleTrustTier(tier: TrustTier): boolean {
 export function deriveTrustTierFromSource(source: string): TrustTier {
   const normalized = source.trim().toUpperCase();
 
+  if (UNAVAILABLE_SOURCE_TOKENS.some((token) => normalized.includes(token))) {
+    return 'UNAVAILABLE';
+  }
   if (OFFICIAL_SOURCE_TOKENS.some((token) => normalized.includes(token))) {
     return 'OFFICIAL';
   }
@@ -48,6 +70,40 @@ export function deriveTrustTierFromSource(source: string): TrustTier {
   }
 
   return 'SEED';
+}
+
+function normalizeTrustTier(value: unknown, source: string): TrustTier {
+  if (typeof value !== 'string') return deriveTrustTierFromSource(source);
+  const normalized = value.trim().toUpperCase();
+  if (
+    normalized === 'OFFICIAL' ||
+    normalized === 'PARTNER' ||
+    normalized === 'SCRAPED' ||
+    normalized === 'SEED' ||
+    normalized === 'COMMUNITY' ||
+    normalized === 'INFERRED' ||
+    normalized === 'UNAVAILABLE'
+  ) {
+    return normalized;
+  }
+  return deriveTrustTierFromSource(source);
+}
+
+function normalizeRealDataStatus(value: unknown): RealDataStatus | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toUpperCase();
+  if (
+    normalized === 'VERIFIED_REAL' ||
+    normalized === 'PARTIAL_REAL' ||
+    normalized === 'OFFICIAL_BLANK' ||
+    normalized === 'OFFICIAL_BLOCKED' ||
+    normalized === 'NO_PUBLIC_REAL_DATA' ||
+    normalized === 'MANUAL_REVIEW' ||
+    normalized === 'PERMANENT_HEURISTIC'
+  ) {
+    return normalized;
+  }
+  return undefined;
 }
 
 export function deriveProvenanceStaleness(
@@ -83,18 +139,18 @@ export function normalizeFieldProvenance(value: unknown, now = new Date()): Fiel
       ? entry.fetchedAt
       : typeof entry.at === 'string'
         ? entry.at
-        : undefined;
+        : typeof entry.verifiedAt === 'string'
+          ? entry.verifiedAt
+          : undefined;
 
   if (!source || !fetchedAt) {
     return null;
   }
 
-  const tier =
-    typeof entry.tier === 'string'
-      ? (entry.tier.toUpperCase() as TrustTier)
-      : deriveTrustTierFromSource(source);
+  const tier = normalizeTrustTier(entry.tier, source);
   const confidence =
     typeof entry.confidence === 'number' ? Math.min(1, Math.max(0, entry.confidence)) : undefined;
+  const realDataStatus = normalizeRealDataStatus(entry.realDataStatus);
 
   return {
     tier,
@@ -104,9 +160,24 @@ export function normalizeFieldProvenance(value: unknown, now = new Date()): Fiel
     verifiedBy: typeof entry.verifiedBy === 'string' ? entry.verifiedBy : undefined,
     sourceUrl: typeof entry.sourceUrl === 'string' ? entry.sourceUrl : undefined,
     cycleYear: typeof entry.cycleYear === 'number' ? entry.cycleYear : undefined,
-    notes: typeof entry.notes === 'string' ? entry.notes : undefined,
-    confidence: tier === 'INFERRED' ? confidence : undefined,
+    notes:
+      typeof entry.notes === 'string'
+        ? entry.notes
+        : typeof entry.note === 'string'
+          ? entry.note
+          : undefined,
+    confidence,
     staleness: deriveProvenanceStaleness(fetchedAt, now),
+    ...(realDataStatus ? { realDataStatus } : {}),
+    ...(typeof entry.validatorCount === 'number' ? { validatorCount: entry.validatorCount } : {}),
+    ...(typeof entry.originalFormula === 'string'
+      ? { originalFormula: entry.originalFormula }
+      : {}),
+    ...(typeof entry.extractionMethod === 'string'
+      ? { extractionMethod: entry.extractionMethod }
+      : {}),
+    ...(typeof entry.reason === 'string' ? { reason: entry.reason } : {}),
+    ...(typeof entry.permanent === 'boolean' ? { permanent: entry.permanent } : {}),
   };
 }
 
@@ -136,9 +207,15 @@ export function serializeFieldProvenance(
     ...(provenance.sourceUrl ? { sourceUrl: provenance.sourceUrl } : {}),
     ...(typeof provenance.cycleYear === 'number' ? { cycleYear: provenance.cycleYear } : {}),
     ...(provenance.notes ? { notes: provenance.notes } : {}),
-    ...(provenance.tier === 'INFERRED' && typeof provenance.confidence === 'number'
-      ? { confidence: provenance.confidence }
+    ...(typeof provenance.confidence === 'number' ? { confidence: provenance.confidence } : {}),
+    ...(provenance.realDataStatus ? { realDataStatus: provenance.realDataStatus } : {}),
+    ...(typeof provenance.validatorCount === 'number'
+      ? { validatorCount: provenance.validatorCount }
       : {}),
+    ...(provenance.originalFormula ? { originalFormula: provenance.originalFormula } : {}),
+    ...(provenance.extractionMethod ? { extractionMethod: provenance.extractionMethod } : {}),
+    ...(provenance.reason ? { reason: provenance.reason } : {}),
+    ...(typeof provenance.permanent === 'boolean' ? { permanent: provenance.permanent } : {}),
   };
 }
 
@@ -169,6 +246,14 @@ export function toSchoolFieldSource(
     ...(typeof provenance.cycleYear === 'number' ? { cycleYear: provenance.cycleYear } : {}),
     ...(provenance.notes ? { notes: provenance.notes } : {}),
     ...(typeof provenance.confidence === 'number' ? { confidence: provenance.confidence } : {}),
+    ...(provenance.realDataStatus ? { realDataStatus: provenance.realDataStatus } : {}),
+    ...(typeof provenance.validatorCount === 'number'
+      ? { validatorCount: provenance.validatorCount }
+      : {}),
+    ...(provenance.originalFormula ? { originalFormula: provenance.originalFormula } : {}),
+    ...(provenance.extractionMethod ? { extractionMethod: provenance.extractionMethod } : {}),
+    ...(provenance.reason ? { reason: provenance.reason } : {}),
+    ...(typeof provenance.permanent === 'boolean' ? { permanent: provenance.permanent } : {}),
     staleness,
     isVerified:
       Boolean(provenance.verifiedAt || provenance.verifiedBy) ||

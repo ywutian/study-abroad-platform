@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T11:00:00Z",
+    "source": "Round 13 - Direct CDS PDF extraction (SCU, LMU, ODU, Towson)",
+    "purpose": "Private and regional university residency admit rates from official CDS PDFs",
+    "verifiedBy": "Direct PDF download + pdftotext extraction",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "santa clara university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-01152026.pdf",
+      "rates": {
+        "acceptanceRate": 47.9,
+        "intlAcceptanceRate": 30.1,
+        "oosAcceptanceRate": 53.0,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 48.5,
+      "notes": "SCU CDS 2024-25 C1: applied 18970 (in-state 9358 / oos 7310 / intl 2302), admitted 9105 (in-state 4536 / oos 3875 / intl 694). Intl 30.1% notably lower than domestic (~48-53%). OOS slightly higher than in-state."
+    },
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://academics.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/Legacy-CDS_2024-2025_06112025.pdf",
+      "rates": {
+        "acceptanceRate": 45.1,
+        "intlAcceptanceRate": 6.2,
+        "oosAcceptanceRate": 48.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 50.9,
+      "notes": "LMU CDS 2024-25 C1: applied 23089 (in-state 12431 / oos 8141 / intl 2517), admitted 10409 (in-state 6332 / oos 3921 / intl 156). Intl EXTREMELY selective at 6.2% vs domestic 49-51%. LMU has limited intl capacity relative to demand."
+    },
+    {
+      "schoolNameNorm": "old dominion university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.odu.edu/sites/default/files/2025/documents/common-data-set-2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 90.4,
+        "intlAcceptanceRate": 93.9,
+        "oosAcceptanceRate": 81.1,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 93.4,
+      "notes": "ODU CDS 2024-25: applied 15100 (in-state 11074 / oos 3765 / intl 261), admitted 13645 (in-state 10345 / oos 3055 / intl 245). Near-open admissions; intl 93.9% and in-state 93.4% nearly identical. OOS slightly lower at 81.1%."
+    },
+    {
+      "schoolNameNorm": "towson university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.towson.edu/ir/documents/cds_all_2425.pdf",
+      "rates": {
+        "acceptanceRate": 81.9,
+        "intlAcceptanceRate": 85.4,
+        "oosAcceptanceRate": 79.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 82.7,
+      "notes": "Towson CDS 2024-25 C1: applied in-state 14591 / oos 4748 / intl 438, admitted in-state 12066 / oos 3772 / intl 374. Near-open admissions; all groups 79-86%. Intl 85.4% slightly higher than in-state 82.7%."
+    }
+  ]
+}

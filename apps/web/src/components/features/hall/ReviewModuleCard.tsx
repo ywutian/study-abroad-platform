@@ -321,7 +321,8 @@ export function ReviewModuleCard({
   const [score, setScore] = useState(5);
   const [comment, setComment] = useState('');
 
-  const t = useTranslations('hall');
+  const hallT = useTranslations('hall');
+  const t = useTranslations('hall.moduleReview');
   const moduleConfig = MODULES.find((m) => m.key === moduleType)!;
   const ModuleIcon = moduleConfig.icon;
 
@@ -344,8 +345,10 @@ export function ReviewModuleCard({
             <ModuleIcon className="h-6 w-6" />
           </div>
           <div>
-            <CardTitle>{t(`modules.${moduleConfig.labelKey}`)}</CardTitle>
-            <p className="text-sm text-muted-foreground">{t(`modules.${moduleConfig.descKey}`)}</p>
+            <CardTitle>{hallT(`modules.${moduleConfig.labelKey}`)}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {hallT(`modules.${moduleConfig.descKey}`)}
+            </p>
           </div>
         </div>
       </CardHeader>

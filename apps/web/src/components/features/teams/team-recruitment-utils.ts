@@ -14,6 +14,9 @@ export interface CurrentMemberDisplaySettings {
   showSchool: boolean;
   showGrade: boolean;
   showAwards: boolean;
+  showAcademics: boolean;
+  showExperiences: boolean;
+  showPersonality: boolean;
 }
 
 export function getCurrentMemberDisplaySettings(
@@ -28,6 +31,9 @@ export function getCurrentMemberDisplaySettings(
     showSchool: member?.showSchool ?? false,
     showGrade: member?.showGrade ?? false,
     showAwards: member?.showAwards ?? false,
+    showAcademics: member?.showAcademics ?? false,
+    showExperiences: member?.showExperiences ?? false,
+    showPersonality: member?.showPersonality ?? false,
   };
 }
 

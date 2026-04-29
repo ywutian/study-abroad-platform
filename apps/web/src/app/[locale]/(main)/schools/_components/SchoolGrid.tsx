@@ -61,6 +61,15 @@ function CommunityMetric({ label, value }: { label: string; value: number }) {
   );
 }
 
+function NicheGradePill({ label, grade }: { label: string; grade: string }) {
+  return (
+    <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-2xs font-medium">
+      <span className="text-muted-foreground">{label}</span>{' '}
+      <span className="text-foreground">{grade}</span>
+    </div>
+  );
+}
+
 export function SchoolGrid({
   schools,
   total,
@@ -172,6 +181,13 @@ export function SchoolGrid({
             const hasSupplementalRanking = Boolean(
               school.usNewsRank || school.qsRank || school.rankings?.length
             );
+            const nicheTags = [
+              { key: 'partyScene', label: t('niche.partyScene'), grade: school.nicheLifeGrade },
+              { key: 'campusFood', label: t('niche.campusFood'), grade: school.nicheFoodGrade },
+              { key: 'safety', label: t('niche.safety'), grade: school.nicheSafetyGrade },
+            ].filter((tag): tag is { key: string; label: string; grade: string } =>
+              Boolean(tag.grade)
+            );
 
             return (
               <motion.div
@@ -228,6 +244,11 @@ export function SchoolGrid({
                               usNewsRank={school.usNewsRank}
                               variant="amber"
                             />
+                            {school.fitScore != null && (
+                              <Badge variant="outline" className="shrink-0 text-2xs">
+                                {t('fitScore', { score: Math.round(school.fitScore) })}
+                              </Badge>
+                            )}
                           </div>
                           {getSchoolSubName(school, locale) && (
                             <p className="text-xs text-muted-foreground truncate mt-0.5">
@@ -306,7 +327,13 @@ export function SchoolGrid({
 
                     <div className="mt-3 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        {communityRatingSummary.isPublic ? (
+                        {nicheTags.length > 0 ? (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {nicheTags.map((tag) => (
+                              <NicheGradePill key={tag.key} label={tag.label} grade={tag.grade} />
+                            ))}
+                          </div>
+                        ) : communityRatingSummary.isPublic ? (
                           <div className="flex flex-wrap items-center gap-2">
                             {communityRatingSummary.safetyAvg != null && (
                               <CommunityMetric

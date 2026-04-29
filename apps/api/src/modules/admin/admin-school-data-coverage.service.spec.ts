@@ -88,6 +88,44 @@ describe('AdminSchoolDataCoverageService', () => {
       ]),
     );
     expect(report.fieldTotals.acceptanceRate.filled).toBe(1);
+    expect(report.fieldTotals.acceptanceRate.official).toBe(1);
+    expect(report.totals.officialFields).toBeGreaterThanOrEqual(1);
+  });
+
+  it('buckets terminal unavailable fields without treating them as missing', async () => {
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        ...school,
+        metadata: {
+          provenance: {
+            ...((school.metadata as any).provenance ?? {}),
+            intlAcceptanceRate: {
+              source: 'OFFICIAL_BLOCKED',
+              fetchedAt: '2026-01-03T00:00:00.000Z',
+              tier: 'UNAVAILABLE',
+              realDataStatus: 'OFFICIAL_BLOCKED',
+              reason: 'Official IR page blocks automated access.',
+            },
+          },
+        },
+      },
+    ]);
+
+    const report = await service.getCoverage();
+    const terminalField = report.items[0].fields.find(
+      (field) => field.field === 'intlAcceptanceRate',
+    );
+
+    expect(report.items[0].missingCritical).not.toContain('intlAcceptanceRate');
+    expect(report.items[0].terminalCritical).toContain('intlAcceptanceRate');
+    expect(report.fieldTotals.intlAcceptanceRate.terminal).toBe(1);
+    expect(terminalField).toEqual(
+      expect.objectContaining({
+        bucket: 'terminal',
+        isTerminal: true,
+        terminalStatus: 'OFFICIAL_BLOCKED',
+      }),
+    );
   });
 
   it('dry-runs heuristic fallback without writing', async () => {
@@ -154,10 +192,74 @@ describe('AdminSchoolDataCoverageService', () => {
             schoolId: 'school-by-name',
             unitid: '999999',
             source: 'IPEDS_CSV:2023:unitid-999999',
+            sourceUrl: 'https://nces.ed.gov/ipeds/use-the-data',
           }),
         ],
       }),
       'admin-1',
+    );
+  });
+
+  it('returns coverage diff after a live IPEDS import', async () => {
+    const beforeSchool = {
+      ...school,
+      intlAcceptanceRate: new Prisma.Decimal(38),
+      metadata: {
+        provenance: {
+          ...((school.metadata as any).provenance ?? {}),
+          intlAcceptanceRate: {
+            source: 'HEURISTIC:PR-15',
+            fetchedAt: '2026-01-01T00:00:00.000Z',
+            tier: 'INFERRED',
+            confidence: 0.55,
+          },
+        },
+      },
+    };
+    const afterSchool = {
+      ...beforeSchool,
+      metadata: {
+        provenance: {
+          ...((beforeSchool.metadata as any).provenance ?? {}),
+          intlAcceptanceRate: {
+            source: 'IPEDS_CSV:2024:unitid-456',
+            sourceUrl: 'https://nces.ed.gov/ipeds/use-the-data',
+            fetchedAt: '2026-01-02T00:00:00.000Z',
+            tier: 'OFFICIAL',
+            cycleYear: 2024,
+          },
+        },
+      },
+    };
+
+    prisma.school.findMany
+      .mockResolvedValueOnce([beforeSchool])
+      .mockResolvedValueOnce([{ id: 'school-1', ipedsId: '456' }])
+      .mockResolvedValueOnce([afterSchool]);
+    schoolRates.runBulkUpdate.mockResolvedValueOnce({ updated: 1 });
+
+    const result = await service.importIpedsCsvRows(
+      {
+        dryRun: false,
+        cycleYear: 2024,
+        rows: [{ unitid: '456', intlAcceptanceRate: 38 }],
+      },
+      'admin-1',
+    );
+
+    expect(result.coverageDiff).toEqual(
+      expect.objectContaining({
+        totals: expect.objectContaining({
+          officialFields: 1,
+          heuristicFields: -1,
+        }),
+      }),
+    );
+    expect(result.coverageDiff?.fields.intlAcceptanceRate).toEqual(
+      expect.objectContaining({
+        official: 1,
+        heuristic: -1,
+      }),
     );
   });
 });

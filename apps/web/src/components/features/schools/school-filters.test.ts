@@ -22,6 +22,14 @@ describe('school-filters', () => {
         rankMax: 20,
         acceptanceMax: 15,
         tuitionMin: 5,
+        salaryMin: 8,
+      },
+      sortBy: 'weighted',
+      weights: {
+        ranking: 30,
+        acceptanceRate: 20,
+        tuition: 25,
+        salary: 25,
       },
     });
 
@@ -36,6 +44,12 @@ describe('school-filters', () => {
       rankMax: '20',
       acceptanceMax: '15',
       tuitionMin: '50000',
+      salaryMin: '80000',
+      sortBy: 'weighted',
+      weightRank: '30',
+      weightAcceptance: '20',
+      weightTuition: '25',
+      weightSalary: '25',
     });
     expect(params).not.toHaveProperty('isPrivate');
   });
@@ -58,6 +72,8 @@ describe('school-filters', () => {
       tuitionMax: undefined,
       sizeMin: undefined,
       sizeMax: undefined,
+      salaryMin: undefined,
+      salaryMax: undefined,
     });
   });
 
@@ -97,6 +113,7 @@ describe('school-filters', () => {
       schoolType: 'private',
       tuitionMin: 4,
       tuitionMax: 6,
+      salaryMax: 12,
       testOptional: true,
     };
 
@@ -105,13 +122,14 @@ describe('school-filters', () => {
       filters,
     });
 
-    expect(countActiveSchoolFilters(filters, 'US')).toBe(4);
+    expect(countActiveSchoolFilters(filters, 'US')).toBe(5);
     expect(params).toMatchObject({
       pageSize: String(SCHOOL_BROWSE_PAGE_SIZE),
       state: 'CA',
       schoolType: 'private',
       tuitionMin: '40000',
       tuitionMax: '60000',
+      salaryMax: '120000',
       testOptional: 'true',
     });
   });

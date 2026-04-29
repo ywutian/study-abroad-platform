@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { memo, useRef, useEffect } from 'react';
+import { memo, useRef, useEffect, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,8 @@ import {
   Brain,
   BookOpen,
   Info,
+  Database,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn, formatAcceptanceRate } from '@/lib/utils';
 import { AgentType } from '@study-abroad/shared';
@@ -163,6 +165,10 @@ export const PredictionResultCard = memo(
       result.confidenceReason ||
       uncertaintyReasons.length
     );
+    const dataQuality = result.schoolMeta?.dataQuality;
+    const hasDataQualityWarning = Boolean(
+      dataQuality && dataQuality.summary !== 'strong' && dataQuality.impactedFields.length > 0
+    );
     const probabilityRange =
       result.probabilityLow !== undefined && result.probabilityHigh !== undefined
         ? `${(result.probabilityLow * 100).toFixed(0)}-${(result.probabilityHigh * 100).toFixed(0)}%`
@@ -208,7 +214,8 @@ export const PredictionResultCard = memo(
       result.suggestions.length > 0 ||
       result.comparison ||
       result.engineScores ||
-      hasPredictionContext;
+      hasPredictionContext ||
+      hasDataQualityWarning;
 
     // Accuracy badge
     const accuracyBadge = result.actualResult
@@ -295,6 +302,12 @@ export const PredictionResultCard = memo(
                   <span>
                     {t('range')}: {probabilityRange}
                   </span>
+                )}
+                {hasDataQualityWarning && dataQuality && (
+                  <Badge variant="outline" className="text-xs py-0 gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    {t(`dataQuality.summary.${dataQuality.summary}`)}
+                  </Badge>
                 )}
                 {/* Cache: show relative time or "Cached" fallback */}
                 {result.fromCache && (
@@ -444,223 +457,291 @@ export const PredictionResultCard = memo(
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden outline-none"
               >
-                <div className="space-y-5 pt-3">
-                  {hasPredictionContext && (
-                    <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
-                      <p className="text-overline text-muted-foreground flex items-center gap-1.5">
-                        <Info className="h-3.5 w-3.5" />
-                        {t('predictionContextTitle')}
-                      </p>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {result.roundContext && (
-                          <div className="space-y-1">
-                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                              {t('roundContextLabel')}
-                            </p>
-                            <p className="text-sm font-medium">
-                              {humanizeMachineLabel(result.roundContext)}
-                            </p>
+                <div className="space-y-4 pt-3">
+                  {(hasPredictionContext || isCounselorEstimate || result.schoolMeta) && (
+                    <PredictionDetailSection title={t('detailSections.assessment')}>
+                      {hasDataQualityWarning && dataQuality && (
+                        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-3">
+                          <p className="text-overline text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                            <Database className="h-3.5 w-3.5" />
+                            {t('dataQuality.title')}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {t('dataQuality.description')}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            <Badge variant="secondary" className="text-xs">
+                              {t('dataQuality.official', {
+                                count: dataQuality.officialFields.length,
+                              })}
+                            </Badge>
+                            {dataQuality.heuristicFields.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {t('dataQuality.heuristic', {
+                                  count: dataQuality.heuristicFields.length,
+                                })}
+                              </Badge>
+                            )}
+                            {dataQuality.terminalFields.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {t('dataQuality.terminal', {
+                                  count: dataQuality.terminalFields.length,
+                                })}
+                              </Badge>
+                            )}
+                            {dataQuality.staleFields.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {t('dataQuality.stale', {
+                                  count: dataQuality.staleFields.length,
+                                })}
+                              </Badge>
+                            )}
                           </div>
-                        )}
-                        {result.cohortKey && (
                           <div className="space-y-1">
                             <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                              {t('cohortKeyLabel')}
-                            </p>
-                            <p className="text-sm font-medium">
-                              {humanizeMachineLabel(result.cohortKey)}
-                            </p>
-                          </div>
-                        )}
-                        {normalizedSourceSummary.primary && (
-                          <div className="space-y-1">
-                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                              {t('sourceSummaryLabel')}
-                            </p>
-                            <p className="text-sm font-medium">{normalizedSourceSummary.primary}</p>
-                          </div>
-                        )}
-                        {result.confidenceReason && (
-                          <div className="space-y-1">
-                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                              {t('confidenceReasonLabel')}
-                            </p>
-                            <p className="text-sm font-medium">{result.confidenceReason}</p>
-                          </div>
-                        )}
-                      </div>
-                      {normalizedSourceSummary.secondary &&
-                        normalizedSourceSummary.secondary.length > 0 && (
-                          <div className="space-y-1">
-                            <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                              {t('sourceSummarySecondaryLabel')}
+                              {t('dataQuality.impactedFields')}
                             </p>
                             <div className="flex flex-wrap gap-1.5">
-                              {normalizedSourceSummary.secondary.map((item) => (
-                                <Badge key={item} variant="outline" className="text-xs">
-                                  {item}
+                              {dataQuality.impactedFields.slice(0, 8).map((field) => (
+                                <Badge key={field} variant="outline" className="text-xs">
+                                  {field}
                                 </Badge>
                               ))}
                             </div>
                           </div>
-                        )}
-                      {uncertaintyReasons.length > 0 && (
-                        <div className="space-y-1.5">
-                          <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                            {t('uncertaintyReasonsLabel')}
-                          </p>
-                          <ul className="space-y-1 text-sm text-muted-foreground">
-                            {uncertaintyReasons.map((reason, index) => (
-                              <li
-                                key={`${result.schoolId}-uncertainty-${index}`}
-                                className="flex gap-2"
-                              >
-                                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
-                                <span>{reason}</span>
-                              </li>
-                            ))}
-                          </ul>
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {isCounselorEstimate && (
-                    <div className="rounded-lg border bg-primary/5 border-primary/15 p-3 space-y-3">
-                      <div className="space-y-1">
-                        <p className="text-overline text-primary flex items-center gap-1.5">
-                          <Info className="h-3.5 w-3.5" />
-                          {t('counselor.howWeComputed')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('counselor.disclaimerBody')}
-                        </p>
-                      </div>
-                      {result.factors.length > 0 && (
-                        <div className="space-y-2">
-                          {result.factors.map((factor) => (
-                            <div
-                              key={`${result.schoolId}-counselor-${factor.name}`}
-                              className="flex items-start justify-between gap-3 text-sm"
-                            >
-                              <div className="min-w-0">
-                                <p className="font-medium">{factor.name}</p>
-                                <p className="text-xs text-muted-foreground">{factor.detail}</p>
+                      {hasPredictionContext && (
+                        <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+                          <p className="text-overline text-muted-foreground flex items-center gap-1.5">
+                            <Info className="h-3.5 w-3.5" />
+                            {t('predictionContextTitle')}
+                          </p>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {result.roundContext && (
+                              <div className="space-y-1">
+                                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                                  {t('roundContextLabel')}
+                                </p>
+                                <p className="text-sm font-medium">
+                                  {humanizeMachineLabel(result.roundContext)}
+                                </p>
                               </div>
-                              {typeof factor.weight === 'number' &&
-                                factor.weight > 0 &&
-                                factor.impact !== 'neutral' && (
-                                  <Badge variant="outline" className="shrink-0 text-xs">
-                                    {factor.impact === 'negative'
-                                      ? '-'
-                                      : factor.impact === 'positive'
-                                        ? '+'
-                                        : ''}
-                                    {(factor.weight * 100).toFixed(0)}%
-                                  </Badge>
-                                )}
+                            )}
+                            {result.cohortKey && (
+                              <div className="space-y-1">
+                                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                                  {t('cohortKeyLabel')}
+                                </p>
+                                <p className="text-sm font-medium">
+                                  {humanizeMachineLabel(result.cohortKey)}
+                                </p>
+                              </div>
+                            )}
+                            {normalizedSourceSummary.primary && (
+                              <div className="space-y-1">
+                                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                                  {t('sourceSummaryLabel')}
+                                </p>
+                                <p className="text-sm font-medium">
+                                  {normalizedSourceSummary.primary}
+                                </p>
+                              </div>
+                            )}
+                            {result.confidenceReason && (
+                              <div className="space-y-1">
+                                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                                  {t('confidenceReasonLabel')}
+                                </p>
+                                <p className="text-sm font-medium">{result.confidenceReason}</p>
+                              </div>
+                            )}
+                          </div>
+                          {normalizedSourceSummary.secondary &&
+                            normalizedSourceSummary.secondary.length > 0 && (
+                              <div className="space-y-1">
+                                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                                  {t('sourceSummarySecondaryLabel')}
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {normalizedSourceSummary.secondary.map((item) => (
+                                    <Badge key={item} variant="outline" className="text-xs">
+                                      {item}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          {uncertaintyReasons.length > 0 && (
+                            <div className="space-y-1.5">
+                              <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                                {t('uncertaintyReasonsLabel')}
+                              </p>
+                              <ul className="space-y-1 text-sm text-muted-foreground">
+                                {uncertaintyReasons.map((reason, index) => (
+                                  <li
+                                    key={`${result.schoolId}-uncertainty-${index}`}
+                                    className="flex gap-2"
+                                  >
+                                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-muted-foreground/60 shrink-0" />
+                                    <span>{reason}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                          ))}
+                          )}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {/* School stats overview */}
-                  {result.schoolMeta && (
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {result.schoolMeta.acceptanceRate != null && (
-                          <div className="text-center p-2 rounded-lg bg-muted/30">
-                            <p className="text-xs text-muted-foreground">
-                              {t('schoolAcceptanceRateLabel', { rate: '' }).replace(': ', '')}
+                      {isCounselorEstimate && (
+                        <div className="rounded-lg border bg-primary/5 border-primary/15 p-3 space-y-3">
+                          <div className="space-y-1">
+                            <p className="text-overline text-primary flex items-center gap-1.5">
+                              <Info className="h-3.5 w-3.5" />
+                              {t('counselor.howWeComputed')}
                             </p>
-                            <p className="font-semibold text-sm">
-                              {formatAcceptanceRate(result.schoolMeta.acceptanceRate)}
+                            <p className="text-sm text-muted-foreground">
+                              {t('counselor.disclaimerBody')}
                             </p>
                           </div>
-                        )}
-                        {result.schoolMeta.usNewsRank != null && (
-                          <div className="text-center p-2 rounded-lg bg-muted/30">
-                            <p className="text-xs text-muted-foreground">US News</p>
-                            <p className="font-semibold text-sm">#{result.schoolMeta.usNewsRank}</p>
-                          </div>
-                        )}
-                        {result.schoolMeta.satAvg != null && (
-                          <div className="text-center p-2 rounded-lg bg-muted/30">
-                            <p className="text-xs text-muted-foreground">SAT Avg</p>
-                            <p className="font-semibold text-sm">{result.schoolMeta.satAvg}</p>
-                          </div>
-                        )}
-                        <div className="text-center p-2 rounded-lg bg-primary/5 border border-primary/10">
-                          <p className="text-xs text-muted-foreground">
-                            {t('estimatedProbabilityLabel')}
-                          </p>
-                          <p
-                            className={cn(
-                              'font-semibold text-sm',
-                              getProbabilityColor(result.probability)
-                            )}
-                          >
-                            {probPercent}%
-                          </p>
+                          {result.factors.length > 0 && (
+                            <div className="space-y-2">
+                              {result.factors.map((factor) => (
+                                <div
+                                  key={`${result.schoolId}-counselor-${factor.name}`}
+                                  className="flex items-start justify-between gap-3 text-sm"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="font-medium">{factor.name}</p>
+                                    <p className="text-xs text-muted-foreground">{factor.detail}</p>
+                                  </div>
+                                  {typeof factor.weight === 'number' &&
+                                    factor.weight > 0 &&
+                                    factor.impact !== 'neutral' && (
+                                      <Badge variant="outline" className="shrink-0 text-xs">
+                                        {factor.impact === 'negative'
+                                          ? '-'
+                                          : factor.impact === 'positive'
+                                            ? '+'
+                                            : ''}
+                                        {(factor.weight * 100).toFixed(0)}%
+                                      </Badge>
+                                    )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <RateBreakdownPanel
-                        schoolMeta={result.schoolMeta}
-                        majorBreakdown={(result as any).majorBreakdown}
-                        communityInsight={(result as any).communityInsight}
-                        probability={result.probability}
-                        isInternational={isInternational ?? false}
-                        roundContext={result.roundContext}
-                      />
-                    </div>
+                      )}
+
+                      {/* School stats overview */}
+                      {result.schoolMeta && (
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {result.schoolMeta.acceptanceRate != null && (
+                              <div className="text-center p-2 rounded-lg bg-muted/30">
+                                <p className="text-xs text-muted-foreground">
+                                  {t('schoolAcceptanceRateLabel', { rate: '' }).replace(': ', '')}
+                                </p>
+                                <p className="font-semibold text-sm">
+                                  {formatAcceptanceRate(result.schoolMeta.acceptanceRate)}
+                                </p>
+                              </div>
+                            )}
+                            {result.schoolMeta.usNewsRank != null && (
+                              <div className="text-center p-2 rounded-lg bg-muted/30">
+                                <p className="text-xs text-muted-foreground">US News</p>
+                                <p className="font-semibold text-sm">
+                                  #{result.schoolMeta.usNewsRank}
+                                </p>
+                              </div>
+                            )}
+                            {result.schoolMeta.satAvg != null && (
+                              <div className="text-center p-2 rounded-lg bg-muted/30">
+                                <p className="text-xs text-muted-foreground">SAT Avg</p>
+                                <p className="font-semibold text-sm">{result.schoolMeta.satAvg}</p>
+                              </div>
+                            )}
+                            <div className="text-center p-2 rounded-lg bg-primary/5 border border-primary/10">
+                              <p className="text-xs text-muted-foreground">
+                                {t('estimatedProbabilityLabel')}
+                              </p>
+                              <p
+                                className={cn(
+                                  'font-semibold text-sm',
+                                  getProbabilityColor(result.probability)
+                                )}
+                              >
+                                {probPercent}%
+                              </p>
+                            </div>
+                          </div>
+                          <RateBreakdownPanel
+                            schoolMeta={result.schoolMeta}
+                            majorBreakdown={(result as any).majorBreakdown}
+                            communityInsight={(result as any).communityInsight}
+                            probability={result.probability}
+                            isInternational={isInternational ?? false}
+                            roundContext={result.roundContext}
+                          />
+                        </div>
+                      )}
+                    </PredictionDetailSection>
                   )}
 
                   {/* Impact factors */}
-                  {result.factors.length > 0 && !isCounselorEstimate && (
-                    <FactorsPanel factors={result.factors} />
-                  )}
+                  {(result.factors.length > 0 || result.comparison) && (
+                    <PredictionDetailSection title={t('detailSections.why')}>
+                      {result.factors.length > 0 && !isCounselorEstimate && (
+                        <FactorsPanel factors={result.factors} />
+                      )}
 
-                  {/* Applicant comparison */}
-                  {result.comparison && <ComparisonPanel comparison={result.comparison} />}
+                      {/* Applicant comparison */}
+                      {result.comparison && <ComparisonPanel comparison={result.comparison} />}
+                    </PredictionDetailSection>
+                  )}
 
                   {/* Suggestions */}
                   {result.suggestions.length > 0 && (
-                    <SuggestionsPanel
-                      suggestions={result.suggestions}
-                      dataCompleteness={dataCompleteness}
-                    />
+                    <PredictionDetailSection title={t('detailSections.improve')}>
+                      <SuggestionsPanel
+                        suggestions={result.suggestions}
+                        dataCompleteness={dataCompleteness}
+                      />
+                    </PredictionDetailSection>
                   )}
 
-                  {/* Prediction history trend */}
-                  <PredictionHistoryPanel schoolId={result.schoolId} />
+                  <PredictionDetailSection title={t('detailSections.understanding')}>
+                    {/* Prediction history trend */}
+                    <PredictionHistoryPanel schoolId={result.schoolId} />
 
-                  {/* Report actual result */}
-                  <ResultFeedbackButtons
-                    schoolId={result.schoolId}
-                    actualResult={result.latestOutcomeLabel?.result ?? result.actualResult}
-                    onResultReported={onResultReported}
-                  />
+                    {/* Report actual result */}
+                    <ResultFeedbackButtons
+                      schoolId={result.schoolId}
+                      actualResult={result.latestOutcomeLabel?.result ?? result.actualResult}
+                      onResultReported={onResultReported}
+                    />
 
-                  <PredictionFeedbackWidget predictionResultId={result.id} />
+                    <PredictionFeedbackWidget predictionResultId={result.id} />
 
-                  {/* AI deep analysis link */}
-                  <button
-                    onClick={() => {
-                      openFloatingAgentChat({
-                        message: t('detailedAnalysisPrompt', {
-                          schoolName: result.schoolName,
-                        }),
-                        context: predictionContext,
-                        agentHint: AgentType.SCHOOL,
-                      });
-                    }}
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <Bot className="h-3.5 w-3.5" />
-                    {t('detailedAnalysis')}
-                  </button>
+                    {/* AI deep analysis link */}
+                    <button
+                      onClick={() => {
+                        openFloatingAgentChat({
+                          message: t('detailedAnalysisPrompt', {
+                            schoolName: result.schoolName,
+                          }),
+                          context: predictionContext,
+                          agentHint: AgentType.SCHOOL,
+                        });
+                      }}
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
+                    >
+                      <Bot className="h-3.5 w-3.5" />
+                      {t('detailedAnalysis')}
+                    </button>
+                  </PredictionDetailSection>
                 </div>
               </motion.div>
             )}
@@ -674,3 +755,12 @@ export const PredictionResultCard = memo(
     prev.isExpanded === next.isExpanded &&
     prev.isRefreshing === next.isRefreshing
 );
+
+function PredictionDetailSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-3 rounded-lg border bg-background p-3">
+      <h4 className="text-sm font-semibold">{title}</h4>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}

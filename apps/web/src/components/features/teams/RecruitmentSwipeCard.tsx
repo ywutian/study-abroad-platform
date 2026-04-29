@@ -1,11 +1,11 @@
 'use client';
 
-import { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Clock3, Globe, MapPin, Wifi, Users, Sparkles } from 'lucide-react';
+import { Clock3, Globe, MapPin, Wifi, Sparkles } from 'lucide-react';
 import type { TeamRecruitmentCardFrontDto } from '@study-abroad/shared';
 import { getRecruitmentContextLabel, getRecruitmentContextMeta } from './team-recruitment-utils';
 import { CardQualityPill, TrustBadge } from './TrustBadge';
@@ -56,6 +56,21 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
     const isNetworking = card.intentMode === 'NETWORKING_ONLY';
     const contextLabel = getRecruitmentContextLabel(card, locale);
     const contextMeta = getRecruitmentContextMeta(card, locale);
+    const primaryMember = card.members[0];
+    const isSingleMember = card.members.length <= 1;
+    const title = isSingleMember ? primaryMember?.displayName || card.team.name : card.team.name;
+    const secondaryMeta = [primaryMember?.grade, primaryMember?.school, card.city].filter(Boolean);
+    const visibleMembers = card.members.slice(0, isSingleMember ? 1 : 2);
+    const statusLabel = isNetworking ? t('intentMode.networkingOnly') : t(`status.${card.status}`);
+    const highlights = mergeMemberHighlights(visibleMembers);
+    const hasHighlights =
+      highlights.academics.length > 0 ||
+      highlights.experiences.length > 0 ||
+      highlights.personality.length > 0;
+    const hasCoordinationDetails =
+      Boolean(
+        card.availabilityBand || card.collaborationMode || card.timezone || card.detailNote
+      ) || card.languages.length > 0;
 
     return (
       <motion.div
@@ -78,7 +93,9 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
             className="absolute top-6 right-6 z-10 rotate-12 border-4 border-green-500 rounded-lg px-4 py-1"
             style={{ opacity: likeStampOpacity }}
           >
-            <span className="text-2xl font-black text-green-500 tracking-wider">LIKE</span>
+            <span className="text-2xl font-black text-green-500 tracking-wider">
+              {t('swipeDeck.like')}
+            </span>
           </motion.div>
         )}
 
@@ -88,7 +105,9 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
             className="absolute top-6 left-6 z-10 -rotate-12 border-4 border-red-500 rounded-lg px-4 py-1"
             style={{ opacity: passStampOpacity }}
           >
-            <span className="text-2xl font-black text-red-500 tracking-wider">PASS</span>
+            <span className="text-2xl font-black text-red-500 tracking-wider">
+              {t('swipeDeck.pass')}
+            </span>
           </motion.div>
         )}
 
@@ -125,7 +144,20 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
                     {contextLabel}
                   </p>
                 ) : null}
-                <h3 className="text-xl font-bold mt-1 truncate">{card.team.name}</h3>
+                <h3 className="text-3xl font-bold mt-1 truncate tracking-normal">{title}</h3>
+                {secondaryMeta.length > 0 ? (
+                  <p className="mt-1 truncate text-sm text-muted-foreground">
+                    {secondaryMeta.join(' · ')}
+                  </p>
+                ) : null}
+                {!isSingleMember && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t('card.memberCount', {
+                      current: card.team.currentSize,
+                      max: card.team.targetSize,
+                    })}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{card.headline}</p>
                 {card.qualitySignal === 'thin' ? (
                   <div className="mt-1.5">
@@ -141,7 +173,7 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
                     'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0'
                 )}
               >
-                {isNetworking ? t('intentMode.networkingOnly') : card.status}
+                {statusLabel}
               </Badge>
             </div>
 
@@ -158,29 +190,18 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
             )}
           </div>
 
-          {/* Meta badges */}
-          <div className="px-5 flex flex-wrap gap-1.5">
-            <Badge variant="outline" className="gap-1">
-              <Users className="h-3 w-3" />
-              {card.team.currentSize}/{card.team.targetSize}
-            </Badge>
-            {card.availabilityBand && (
-              <Badge variant="outline" className="gap-1">
-                <Clock3 className="h-3 w-3" />
-                {t(`availability.${card.availabilityBand}`)}
-              </Badge>
-            )}
-            {card.collaborationMode && (
-              <Badge variant="outline" className="gap-1">
-                <CollabIcon className="h-3 w-3" />
-                {t(`option.${card.collaborationMode.toLowerCase()}`)}
-              </Badge>
-            )}
-            {card.city && (
-              <Badge variant="outline" className="gap-1">
-                <MapPin className="h-3 w-3" />
-                {card.city}
-              </Badge>
+          {/* High-signal profile summary */}
+          <div className="px-5 space-y-3">
+            {hasHighlights ? (
+              <>
+                <HighlightChipBlock title={t('card.academics')} chips={highlights.academics} />
+                <ExperienceBlock title={t('card.experience')} items={highlights.experiences} />
+                <HighlightChipBlock title={t('card.personality')} chips={highlights.personality} />
+              </>
+            ) : (
+              <div className="rounded-xl border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+                {t('card.noHighlights')}
+              </div>
             )}
           </div>
 
@@ -208,16 +229,10 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
             )}
           </div>
 
-          {/* Detail note */}
-          {card.detailNote ? (
-            <RecruitmentDetailNote cardId={card.id} text={card.detailNote} />
-          ) : null}
-
-          {/* Members preview */}
-          {card.members.length > 0 && (
-            <div className="px-5 pb-5">
+          {!isSingleMember && visibleMembers.length > 0 ? (
+            <div className="px-5 pb-4">
               <div className="flex flex-wrap items-center gap-2">
-                {card.members.slice(0, 3).map((m) => (
+                {visibleMembers.map((m) => (
                   <div
                     key={m.userId}
                     className="flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1"
@@ -236,20 +251,30 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
                     ) : null}
                   </div>
                 ))}
-                {card.members.length > 3 && (
-                  <span className="text-xs text-muted-foreground">+{card.members.length - 3}</span>
+                {card.members.length > visibleMembers.length && (
+                  <span className="text-xs text-muted-foreground">
+                    +{card.members.length - visibleMembers.length}
+                  </span>
                 )}
               </div>
             </div>
-          )}
+          ) : null}
 
-          {/* Languages bar */}
-          {card.languages.length > 0 && (
-            <div className="border-t px-5 py-2.5 flex items-center gap-2">
-              <Globe className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-xs text-muted-foreground">{card.languages.join(' · ')}</span>
-            </div>
-          )}
+          {hasCoordinationDetails ? (
+            <CoordinationDetails
+              cardId={card.id}
+              availability={
+                card.availabilityBand ? t(`availability.${card.availabilityBand}`) : null
+              }
+              collaboration={
+                card.collaborationMode ? t(`option.${card.collaborationMode.toLowerCase()}`) : null
+              }
+              timezone={card.timezone}
+              languages={card.languages}
+              detailNote={card.detailNote}
+              CollabIcon={CollabIcon}
+            />
+          ) : null}
         </div>
       </motion.div>
     );
@@ -258,46 +283,137 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
 
 RecruitmentSwipeCard.displayName = 'RecruitmentSwipeCard';
 
-function RecruitmentDetailNote({ cardId, text }: { cardId: string; text: string }) {
+type RecruitmentMember = TeamRecruitmentCardFrontDto['members'][number];
+type RecruitmentHighlight = NonNullable<RecruitmentMember['highlights']>['academics'][number];
+
+function mergeMemberHighlights(members: RecruitmentMember[]) {
+  return {
+    academics: members.flatMap((member) => member.highlights?.academics ?? []).slice(0, 8),
+    experiences: members.flatMap((member) => member.highlights?.experiences ?? []).slice(0, 3),
+    personality: members.flatMap((member) => member.highlights?.personality ?? []).slice(0, 6),
+  };
+}
+
+function getHighlightToneClass(tone: RecruitmentHighlight['tone']) {
+  switch (tone) {
+    case 'success':
+      return 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400';
+    case 'warning':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300';
+    case 'danger':
+      return 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400';
+    default:
+      return 'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300';
+  }
+}
+
+function HighlightChipBlock({ title, chips }: { title: string; chips: RecruitmentHighlight[] }) {
+  if (chips.length === 0) return null;
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted-foreground mb-1.5">{title}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {chips.map((chip, index) => (
+          <span
+            key={`${chip.source}-${chip.sourceId ?? chip.label}-${index}`}
+            className={cn(
+              'rounded-full px-2.5 py-0.5 text-xs font-medium',
+              getHighlightToneClass(chip.tone)
+            )}
+          >
+            {chip.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ExperienceBlock({ title, items }: { title: string; items: RecruitmentHighlight[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted-foreground mb-1.5">{title}</p>
+      <ul className="space-y-0.5">
+        {items.map((item, index) => (
+          <li
+            key={`${item.source}-${item.sourceId ?? item.label}-${index}`}
+            className="text-sm leading-snug text-foreground"
+          >
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function CoordinationDetails({
+  cardId,
+  availability,
+  collaboration,
+  timezone,
+  languages,
+  detailNote,
+  CollabIcon,
+}: {
+  cardId: string;
+  availability: string | null;
+  collaboration: string | null;
+  timezone?: string | null;
+  languages: string[];
+  detailNote?: string | null;
+  CollabIcon: typeof Globe;
+}) {
   const t = useTranslations('teams.recruitment');
   const [expanded, setExpanded] = useState(false);
-  const [isTruncatable, setIsTruncatable] = useState(false);
-  const paragraphRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     setExpanded(false);
   }, [cardId]);
 
-  useLayoutEffect(() => {
-    if (expanded) return;
-    const el = paragraphRef.current;
-    if (!el) return;
-    setIsTruncatable(el.scrollHeight > el.clientHeight + 2);
-  }, [cardId, text, expanded]);
-
   return (
-    <div className="px-5 pb-4">
-      <div className="rounded-xl bg-muted/50 p-3 overflow-hidden">
-        <p
-          ref={paragraphRef}
-          className={cn(
-            'text-sm text-muted-foreground break-words m-0',
-            expanded ? 'whitespace-pre-line' : 'line-clamp-5'
-          )}
+    <div className="border-t px-5 py-2.5">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between text-xs font-medium text-muted-foreground"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setExpanded((value) => !value)}
+      >
+        <span>{t('card.coordination')}</span>
+        <span>{expanded ? t('card.detailCollapse') : t('card.detailExpand')}</span>
+      </button>
+      {expanded ? (
+        <div
+          className="mt-2 space-y-2 text-xs text-muted-foreground"
+          onPointerDown={(e) => e.stopPropagation()}
         >
-          {text}
-        </p>
-        {isTruncatable ? (
-          <button
-            type="button"
-            className="mt-1.5 text-xs font-medium text-primary underline-offset-2 hover:underline"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => setExpanded((v) => !v)}
-          >
-            {expanded ? t('card.detailCollapse') : t('card.detailExpand')}
-          </button>
-        ) : null}
-      </div>
+          <div className="flex flex-wrap gap-1.5">
+            {availability ? (
+              <Badge variant="outline" className="gap-1">
+                <Clock3 className="h-3 w-3" />
+                {availability}
+              </Badge>
+            ) : null}
+            {collaboration ? (
+              <Badge variant="outline" className="gap-1">
+                <CollabIcon className="h-3 w-3" />
+                {collaboration}
+              </Badge>
+            ) : null}
+            {timezone ? <Badge variant="outline">{timezone}</Badge> : null}
+            {languages.length > 0 ? (
+              <Badge variant="outline" className="gap-1">
+                <Globe className="h-3 w-3" />
+                {languages.join(' · ')}
+              </Badge>
+            ) : null}
+          </div>
+          {detailNote ? <p className="whitespace-pre-line break-words">{detailNote}</p> : null}
+        </div>
+      ) : null}
     </div>
   );
 }

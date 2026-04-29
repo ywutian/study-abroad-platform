@@ -224,7 +224,7 @@ export default function HomeScreen() {
   const profileGrade = useMemo(() => {
     const pct = profileCompletion;
     if (pct >= 90) return { grade: 'A', color: colors.success };
-    if (pct >= 80) return { grade: 'B+', color: '#10b981' };
+    if (pct >= 80) return { grade: 'B+', color: '#6f7b58' };
     if (pct >= 70) return { grade: 'B', color: colors.info };
     if (pct >= 50) return { grade: 'C', color: colors.warning };
     return { grade: 'D', color: colors.error };

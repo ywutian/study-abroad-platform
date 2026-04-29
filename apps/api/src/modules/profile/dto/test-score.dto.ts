@@ -4,8 +4,10 @@ import {
   IsIn,
   IsObject,
   IsDateString,
+  IsString,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -35,6 +37,16 @@ export class CreateTestScoreDto {
   score: number;
 
   @ApiPropertyOptional({
+    description:
+      'Subject name for subject-based scores such as AP / IB / A-Level',
+    example: 'Calculus BC',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  subject?: string;
+
+  @ApiPropertyOptional({
     description: 'Sub-scores',
     example: { reading: 750, math: 750 },
   })
@@ -61,6 +73,15 @@ export class UpdateTestScoreDto {
   @Min(0)
   @Max(2000)
   score?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Subject name for subject-based scores such as AP / IB / A-Level',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  subject?: string;
 
   @ApiPropertyOptional({ description: 'Sub-scores' })
   @IsOptional()

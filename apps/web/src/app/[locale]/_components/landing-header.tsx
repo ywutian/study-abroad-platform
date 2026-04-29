@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useReducedMotion } from 'framer-motion';
+import { COLOR_PALETTES, getColorThemeLabel, type ColorPalette } from '@study-abroad/shared';
 import { ArrowUpRight, Globe, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,12 +13,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ColorPaletteMenu } from '@/components/ui/color-palette-menu';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { LumniMark } from '@/components/ui/lumni-mark';
 import { PageContainer } from '@/components/layout/page-container';
 import { type Locale } from '@/lib/i18n/config';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
+import { useColorPalette } from '@/hooks/use-color-palette';
 import { useHomeContent } from './home-content';
 
 const localeCodes: Record<Locale, string> = {
@@ -33,12 +38,15 @@ type NavItem = {
 export function LandingHeader() {
   const { user } = useAuthStore();
   const home = useHomeContent();
+  const tPalette = useTranslations('ui.colorPalette');
+  const { palette, setPalette } = useColorPalette();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as Locale;
   const prefersReducedMotion = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
 
   const navItems: NavItem[] = [
     { label: home.nav.product, href: '#features', anchor: true },
@@ -87,15 +95,13 @@ export function LandingHeader() {
               className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] text-sm font-semibold tracking-[0.18em] text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]">
-                  S
-                </span>
+                <LumniMark className="h-10 w-10" iconClassName="h-5 w-5" />
                 <span className="hidden sm:flex sm:flex-col">
                   <span className="text-lg font-semibold leading-none tracking-[-0.02em] text-[var(--landing-fg)]">
                     {home.brand}
                   </span>
                   <span className="mt-1 text-2xs uppercase tracking-[0.24em] text-[var(--landing-subtle)]">
-                    AI Admissions Workbench
+                    {home.hero.statLabel}
                   </span>
                 </span>
               </div>
@@ -138,7 +144,8 @@ export function LandingHeader() {
               </Link>
             </div>
 
-            <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
+            <ColorPaletteMenu className="shrink-0 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]" />
+            <ThemeToggle className="shrink-0 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -187,7 +194,7 @@ export function LandingHeader() {
 
       <div
         className={cn(
-          /* §7 Tooling 层:导航覆盖层降级圆角 rounded-3xl → rounded-lg (marketing 层才使用 xl/3xl) */
+          /* §7 Tooling 层:导航覆盖层降级圆角 rounded-xl → rounded-lg (marketing 层控制在 xl 以内) */
           'fixed inset-x-4 top-[78px] z-40 origin-top rounded-lg border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/95 px-4 py-4 shadow-[var(--landing-shadow-elevated)] backdrop-blur-xl transition duration-300 lg:hidden',
           mobileMenuOpen
             ? 'pointer-events-auto translate-y-0 opacity-100'
@@ -233,6 +240,36 @@ export function LandingHeader() {
               {home.nav.getStarted}
             </Button>
           </Link>
+        </div>
+
+        <div className="mt-4 border-t border-[color:var(--landing-border)] pt-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--landing-subtle)]">
+            {tPalette('menuLabel')}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {COLOR_PALETTES.map((id: ColorPalette) => (
+              <Button
+                key={id}
+                type="button"
+                variant="outline"
+                size="sm"
+                className={cn(
+                  'rounded-full border-[color:var(--landing-border)] text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]',
+                  palette === id &&
+                    'border-transparent bg-[var(--landing-fg)] text-[var(--landing-bg)] hover:bg-[var(--landing-fg)]/90'
+                )}
+                onClick={() => {
+                  setPalette(id);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {getColorThemeLabel(id, labelLocale)}
+              </Button>
+            ))}
+          </div>
+          <div className="mt-3 flex justify-end">
+            <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
+          </div>
         </div>
       </div>
     </>

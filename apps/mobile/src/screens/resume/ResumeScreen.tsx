@@ -24,7 +24,7 @@ export default function ResumeScreen() {
         title={t('resume.title')}
         description={t('resume.description')}
         icon="document-text-outline"
-        color="#6366f1"
+        color="#1d1813"
       />
       {isLoading ? (
         <Loading />

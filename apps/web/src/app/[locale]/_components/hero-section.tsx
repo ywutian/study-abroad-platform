@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
-import { ArrowRight, ChevronRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { COLOR_PALETTES, getColorThemeLabel, type ColorPalette } from '@study-abroad/shared';
+import { ArrowRight, CheckCircle2, ChevronRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { AdmissionTierBadge, AIDisclosure, StatusDot } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
+import { LumniMark } from '@/components/ui/lumni-mark';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useColorPalette } from '@/hooks/use-color-palette';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useHomeContent } from './home-content';
@@ -20,6 +24,9 @@ type ConsoleRow = {
 
 type HeroConsoleCopy = {
   workspace: string;
+  signalLabel: string;
+  symbolLabel: string;
+  workflowLine: string;
   profileLabel: string;
   profileMeta: string;
   termLabel: string;
@@ -37,30 +44,33 @@ type HeroConsoleCopy = {
 
 export function HeroSection() {
   const home = useHomeContent();
+  const tPalette = useTranslations('ui.colorPalette');
+  const locale = useLocale();
+  const { palette, setPalette } = useColorPalette();
   const prefersReducedMotion = useReducedMotion();
+  const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
 
   return (
     <section className="landing-hero-shell relative overflow-hidden pt-32 pb-20 sm:pt-36 lg:pt-44 lg:pb-28">
       <div className="landing-canvas-texture" />
-      <div className="landing-grid-mask absolute inset-0 opacity-40" />
+      <div className="landing-grid-mask absolute inset-0 opacity-35" />
 
       <PageContainer variant="marketing" className="relative">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-10"
           >
-            {/* @design-system-ignore-next-line */}
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/10 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 px-4 py-2 text-xs uppercase tracking-[0.16em] text-[var(--landing-fg)] dark:from-indigo-500/10 dark:to-purple-500/10">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <div className="landing-eyebrow-pill">
+              <Sparkles className="h-3.5 w-3.5 text-[var(--lumni-gold-ink)]" />
               <span>{home.hero.eyebrow}</span>
             </div>
 
-            <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] tracking-[-0.04em] text-[var(--landing-fg)]">
+            <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
               <span className="block text-balance">{home.hero.headline[0]}</span>
-              <span className="mt-2 block text-balance italic font-medium bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+              <span className="landing-hero-accent mt-2 block text-balance">
                 {home.hero.headline[1]}
               </span>
             </h1>
@@ -69,11 +79,13 @@ export function HeroSection() {
               {home.hero.subtitle}
             </p>
 
+            <MobileLumniCommandPreview />
+
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="h-12 min-w-[160px] rounded-full bg-zinc-950 px-7 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
+                  className="h-12 min-w-[160px] rounded-full bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] transition-colors hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
                 >
                   {home.hero.primaryCta}
                   <ArrowRight className="h-4 w-4" />
@@ -83,17 +95,46 @@ export function HeroSection() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-12 min-w-[140px] rounded-full border-[color:var(--landing-border-strong)] bg-transparent px-7 text-sm text-[var(--landing-fg)] transition-colors hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[160px] sm:px-8 sm:text-base"
+                  className="h-12 min-w-[140px] rounded-full border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/52 px-7 text-sm text-[var(--landing-fg)] transition-colors hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[160px] sm:px-8 sm:text-base"
                 >
                   {home.hero.secondaryCta}
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-y-3 gap-x-6 sm:grid-cols-2 text-sm text-[var(--landing-muted)] max-w-lg">
+            <div className="mt-8 max-w-xl rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/45 p-4 backdrop-blur-sm">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--landing-subtle)]">
+                {tPalette('menuLabel')}
+              </p>
+              <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {COLOR_PALETTES.map((id: ColorPalette) => (
+                    <Button
+                      key={id}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        'rounded-full border-[color:var(--landing-border-strong)] bg-transparent text-sm text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]',
+                        palette === id &&
+                          'border-transparent bg-[var(--landing-fg)] text-[var(--landing-bg)] hover:bg-[var(--landing-fg)]/90'
+                      )}
+                      onClick={() => setPalette(id)}
+                    >
+                      {getColorThemeLabel(id, labelLocale)}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 border-t border-[color:var(--landing-border)] pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:border-[color:var(--landing-border)] sm:pl-4">
+                  <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-y-3 gap-x-6 text-sm text-[var(--landing-muted)] sm:grid-cols-2 max-w-lg">
               {home.hero.features.map((feature) => (
                 <div key={feature} className="flex items-center gap-2.5">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/5 text-primary">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--lumni-gold-ink)]">
                     <ChevronRight className="h-3 w-3" />
                   </span>
                   <span>{feature}</span>
@@ -108,26 +149,19 @@ export function HeroSection() {
               </div>
               <div className="hidden h-8 w-px bg-[color:var(--landing-border)] sm:block" />
               <div className="flex items-center gap-3 text-xs leading-relaxed text-[var(--landing-subtle)]">
-                <Zap className="h-4 w-4 shrink-0 text-primary/70" />
+                <Zap className="h-4 w-4 shrink-0 text-[var(--lumni-gold-ink)]" />
                 <span className="max-w-[200px]">{home.hero.statLabel}</span>
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 32 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
+            className="hidden lg:block"
           >
-            {/* Ambient Glow (Aurora) */}
-            <div className="absolute left-1/2 top-1/2 -z-10 h-[100%] w-[100%] -translate-x-1/2 -translate-y-1/2">
-              <div className="absolute left-0 top-0 h-[60%] w-[60%] rounded-full bg-primary/30 blur-[100px]" />
-              <div className="absolute bottom-0 right-0 h-[60%] w-[60%] rounded-full bg-blue-400/20 blur-[100px]" />
-              <div className="absolute bottom-1/4 left-1/4 h-[50%] w-[50%] animate-pulse rounded-full bg-purple-400/20 blur-[100px]" />
-            </div>
-            <div className="landing-console-backdrop" />
-            <HeroConsole reduced={!!prefersReducedMotion} disclosure={home.hero.aiDisclosure} />
+            <LumniHeroScene reduced={!!prefersReducedMotion} disclosure={home.hero.aiDisclosure} />
           </motion.div>
         </div>
       </PageContainer>
@@ -135,7 +169,62 @@ export function HeroSection() {
   );
 }
 
-function HeroConsole({
+function MobileLumniCommandPreview() {
+  const t = useTranslations('home');
+  const copy = t.raw('hero.console') as HeroConsoleCopy;
+  const primaryRow = copy.rows[0];
+
+  return (
+    <div className="relative mt-7 overflow-hidden rounded-lg border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-ink)] p-3 text-[#f6edde] shadow-[var(--landing-shadow-soft)] lg:hidden">
+      <div className="lumni-night-grid pointer-events-none absolute inset-0 opacity-60" />
+      <div className="relative flex items-center justify-between gap-3 rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] px-3 py-2.5">
+        <div>
+          <div className="text-2xs uppercase tracking-[0.2em] text-[#a99b88]">{copy.workspace}</div>
+          <div className="mt-0.5 text-xs text-[#d8c8b2]">{copy.workflowLine}</div>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-full border border-[color:var(--lumni-hero-line)] px-2 py-1 text-2xs uppercase tracking-[0.14em] text-[#d8c8b2]">
+          <StatusDot status="success" pulse />
+          {copy.statusReady}
+        </div>
+      </div>
+
+      <div className="relative mt-3 grid grid-cols-[104px_1fr] gap-3">
+        <div className="flex min-h-[150px] items-center justify-center rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]">
+          <div className="relative flex h-24 w-24 items-center justify-center">
+            <div className="absolute h-20 w-20 rounded-full bg-[var(--lumni-moon)]" />
+            <LumniMark
+              showDisc={false}
+              showMoon={false}
+              className="relative h-24 w-24 text-[var(--lumni-hero-ink)]"
+              iconClassName="h-full w-full"
+            />
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-3">
+          <div className="text-2xs uppercase tracking-[0.2em] text-[#a99b88]">{copy.termLabel}</div>
+          <div className="mt-1 text-base font-semibold tracking-tight text-[#f6edde]">
+            {copy.title}
+          </div>
+          <div className="mt-3 rounded-md border border-[color:var(--lumni-moon)] bg-white/10 px-2.5 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="truncate text-sm font-medium">{primaryRow.name}</span>
+              <span className="shrink-0 rounded-full bg-[#fff4e2] px-2 py-0.5 text-2xs font-medium text-[#8a5f12]">
+                {primaryRow.status} {primaryRow.probability}%
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-start gap-2 text-xs leading-5 text-[#d8c8b2]">
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--lumni-moon)]" />
+            <span>{copy.tasks[0]}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LumniHeroScene({
   reduced,
   disclosure,
 }: {
@@ -149,229 +238,158 @@ function HeroConsole({
 }) {
   const t = useTranslations('home');
   const copy = t.raw('hero.console') as HeroConsoleCopy;
-  const [typedMessage, setTypedMessage] = useState(
-    reduced ? copy.assistantMessages[0] : copy.assistantMessages[0].slice(0, 0)
-  );
-  const [messageIndex, setMessageIndex] = useState(0);
+  const [activeRow, setActiveRow] = useState(0);
   const [activeTask, setActiveTask] = useState(0);
 
   useEffect(() => {
-    if (reduced) {
-      setTypedMessage(copy.assistantMessages[0]);
-      return;
-    }
+    if (reduced) return;
 
-    const message = copy.assistantMessages[messageIndex];
-    setTypedMessage('');
+    const interval = window.setInterval(() => {
+      setActiveRow((prev) => (prev + 1) % copy.rows.length);
+      setActiveTask((prev) => (prev + 1) % copy.tasks.length);
+    }, 2600);
 
-    let current = 0;
-    const typing = window.setInterval(() => {
-      current += 1;
-      setTypedMessage(message.slice(0, current));
+    return () => window.clearInterval(interval);
+  }, [copy.rows.length, copy.tasks.length, reduced]);
 
-      if (current >= message.length) {
-        window.clearInterval(typing);
-        window.setTimeout(() => {
-          setMessageIndex((prev) => (prev + 1) % copy.assistantMessages.length);
-          setActiveTask((prev) => (prev + 1) % copy.tasks.length);
-        }, 2200);
-      }
-    }, 24);
-
-    return () => window.clearInterval(typing);
-  }, [copy.assistantMessages, copy.tasks.length, messageIndex, reduced]);
+  const activeMessage = copy.assistantMessages[activeTask % copy.assistantMessages.length];
 
   return (
-    <div className="relative mx-auto w-full max-w-[480px] lg:max-w-[520px] xl:max-w-[560px] lg:ml-16 xl:ml-24">
-      {/* Main Window */}
-      <div className="relative z-10 rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/70 shadow-xl shadow-primary/10 ring-1 ring-inset ring-white/40 dark:ring-white/10 backdrop-blur-2xl">
-        <div className="flex items-center justify-between border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/85 px-5 py-4 rounded-t-3xl">
-          <div className="flex items-center gap-2">
-            <StatusDot status="danger" />
-            <StatusDot status="warning" />
-            <StatusDot status="success" />
+    <div className="relative mx-auto w-full max-w-[660px] lg:ml-4 xl:ml-10">
+      <div className="group relative overflow-hidden rounded-xl border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-ink)] p-3 text-[#f6edde] shadow-[var(--landing-shadow-elevated)] sm:p-4">
+        <div className="lumni-night-grid absolute inset-0 opacity-70" />
+
+        <div className="relative mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] px-4 py-3">
+          <div>
+            <div className="text-2xs uppercase tracking-[0.22em] text-[#a99b88]">
+              {copy.workspace}
+            </div>
+            <div className="mt-1 text-sm text-[#d8c8b2]">{copy.workflowLine}</div>
           </div>
-          <span className="text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
-            {copy.workspace}
-          </span>
+          <div className="flex items-center gap-2 rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1.5 text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+            <StatusDot status="success" pulse />
+            {copy.statusReady}
+          </div>
         </div>
 
-        <div className="flex flex-col gap-4 px-4 py-5 sm:px-5 lg:px-6 lg:py-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
-                {copy.termLabel}
+        <div className="relative grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="flex min-h-[360px] flex-col justify-between rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-2xs uppercase tracking-[0.22em] text-[#d8c8b2]">
+                {copy.signalLabel}
               </div>
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[var(--landing-fg)]">
-                {copy.title}
-              </h2>
+              <div className="text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+                {copy.symbolLabel}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <AdmissionTierBadge tier="reach" showBand />
-              <AdmissionTierBadge tier="target" showBand />
-              <AdmissionTierBadge tier="safety" showBand />
+
+            <div className="relative mx-auto my-8 flex h-52 w-full max-w-[260px] items-center justify-center sm:h-60">
+              <div className="absolute h-36 w-36 rounded-full bg-[var(--lumni-moon)] shadow-[0_0_0_1px_rgba(255,255,255,0.18)] sm:h-40 sm:w-40" />
+              <div className="absolute h-44 w-44 rounded-full border border-white/10 sm:h-52 sm:w-52" />
+              <LumniMark
+                showDisc={false}
+                showMoon={false}
+                className="relative h-48 w-48 text-[var(--lumni-hero-ink)] sm:h-56 sm:w-56"
+                iconClassName="h-full w-full"
+              />
+            </div>
+
+            <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-black/15 px-4 py-4">
+              <div className="text-2xs uppercase tracking-[0.22em] text-[#a99b88]">
+                {copy.workspace}
+              </div>
+              <div className="mt-2 text-xl font-semibold tracking-tight text-[#f6edde]">
+                {copy.profileLabel}
+              </div>
+              <div className="mt-1 text-sm text-[#d8c8b2]">{copy.profileMeta}</div>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {copy.rows.map((row) => (
-              <div
-                key={row.name}
-                className="grid gap-2 rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-4 py-2.5 shadow-[var(--landing-shadow-card)] sm:grid-cols-[1.4fr_auto_1fr_auto] sm:items-center"
-              >
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium text-[var(--landing-fg)]">
-                    {row.name}
+          <div className="flex flex-col gap-4">
+            <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-2xs uppercase tracking-[0.22em] text-[#a99b88]">
+                    {copy.termLabel}
                   </div>
-                  <div className="text-xs text-[var(--landing-subtle)]">{row.status}</div>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#f6edde]">
+                    {copy.title}
+                  </h2>
                 </div>
-                <AdmissionTierBadge tier={row.tone} probability={row.probability} />
-                <div className="flex items-center gap-3">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--landing-border)]">
-                    <div
-                      className={cn(
-                        'h-full rounded-full bg-gradient-to-r',
-                        row.tone === 'reach' &&
-                          'from-[color:var(--ds-status-reach)] to-[color:var(--ds-status-reach)]/70',
-                        row.tone === 'target' &&
-                          'from-[color:var(--ds-status-target)] to-[color:var(--ds-status-target)]/70',
-                        row.tone === 'safety' &&
-                          'from-[color:var(--ds-status-safety)] to-[color:var(--ds-status-safety)]/70'
-                      )}
-                      style={{ width: `${row.probability}%` }}
-                    />
-                  </div>
-                  <span className="w-10 text-right font-mono text-xs text-[var(--landing-muted)]">
-                    {row.probability}%
-                  </span>
+                <div className="rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1 text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+                  {copy.statusLive}
                 </div>
-                <span className="text-right text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-                  {row.status}
-                </span>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-2 flex items-center justify-between border-t border-dashed border-[color:var(--landing-border)] pt-4">
-            <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-              <StatusDot status="success" pulse />
-              {copy.statusLive}
+              <div className="mt-4 space-y-2.5">
+                {copy.rows.slice(0, 4).map((row, index) => (
+                  <div
+                    key={row.name}
+                    className={cn(
+                      'grid gap-3 rounded-lg border px-3 py-3 transition duration-300 sm:grid-cols-[1fr_auto] sm:items-center',
+                      activeRow === index
+                        ? 'border-[color:var(--lumni-moon)] bg-white/10'
+                        : 'border-[color:var(--lumni-hero-line)] bg-black/10'
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-[#f6edde]">{row.name}</div>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-[#a99b88]">
+                        <span>{row.status}</span>
+                        <span className="h-1 w-1 rounded-full bg-[#a99b88]" />
+                        <span className="font-mono">{row.probability}%</span>
+                      </div>
+                    </div>
+                    <AdmissionTierBadge tier={row.tone} probability={row.probability} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-              {copy.statusReady}
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
+                <div className="text-2xs uppercase tracking-[0.18em] text-[#a99b88]">
+                  {copy.tasksLabel}
+                </div>
+                <div className="mt-3 space-y-2.5">
+                  {copy.tasks.map((task, index) => (
+                    <div key={task} className="flex items-start gap-2.5 text-sm text-[#d8c8b2]">
+                      <CheckCircle2
+                        className={cn(
+                          'mt-0.5 h-4 w-4 shrink-0',
+                          index <= activeTask ? 'text-[var(--lumni-moon)]' : 'text-[#9a8c79]'
+                        )}
+                      />
+                      <span className={cn(index < activeTask && 'text-[#9a8c79] line-through')}>
+                        {task}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
+                <div className="inline-flex items-center gap-2 rounded-md border border-[color:var(--lumni-hero-line)] px-2.5 py-1.5 text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+                  <StatusDot status="ai" />
+                  {copy.assistantBadge}
+                </div>
+                <p className="mt-3 min-h-[72px] text-sm leading-7 text-[#f6edde]">
+                  {activeMessage}
+                </p>
+                <div className="lumni-disclosure-on-ink mt-3 border-t border-dashed border-[color:var(--lumni-hero-line)] pt-3">
+                  <AIDisclosure
+                    inputs={disclosure.inputs}
+                    confidence={disclosure.confidence}
+                    limitations={disclosure.limitations}
+                  >
+                    {disclosure.trigger}
+                  </AIDisclosure>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Floating Widget: AI Assistant */}
-      <motion.div
-        initial={reduced ? false : { opacity: 0, x: 20, y: -10 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute -right-6 -top-6 z-30 hidden lg:block xl:-right-12 2xl:-right-16"
-      >
-        <div className="w-[280px] rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/70 p-5 shadow-2xl shadow-primary/10 ring-1 ring-inset ring-white/40 dark:ring-white/10 backdrop-blur-2xl animate-float animation-delay-300">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3 py-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-muted)]">
-            <StatusDot status="ai" />
-            {copy.assistantBadge}
-          </div>
-
-          <div className="mt-4 min-h-[88px] rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-4 text-sm leading-7 text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]">
-            {typedMessage}
-            {!reduced && typedMessage.length < copy.assistantMessages[messageIndex].length ? (
-              <span className="ml-1 inline-block h-4 w-0.5 animate-[landingBlink_1s_steps(2)_infinite] bg-primary align-middle" />
-            ) : null}
-          </div>
-
-          <div className="mt-4 border-t border-dashed border-[color:var(--landing-border)] pt-4">
-            <AIDisclosure
-              inputs={disclosure.inputs}
-              confidence={disclosure.confidence}
-              limitations={disclosure.limitations}
-            >
-              {disclosure.trigger}
-            </AIDisclosure>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Floating Widget: Tasks */}
-      <motion.div
-        initial={reduced ? false : { opacity: 0, x: 20, y: 10 }}
-        animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute -bottom-8 -right-4 z-20 hidden lg:block xl:-right-8 2xl:-right-12"
-      >
-        <div className="w-[260px] rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/70 p-5 shadow-2xl shadow-primary/10 ring-1 ring-inset ring-white/40 dark:ring-white/10 backdrop-blur-2xl animate-float animation-delay-500">
-          <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
-            {copy.tasksLabel}
-          </div>
-          <div className="mt-4 space-y-3">
-            {copy.tasks.map((task, index) => {
-              const completed = index < activeTask;
-
-              return (
-                <div
-                  key={task}
-                  className="flex items-start gap-3 text-sm text-[var(--landing-muted)]"
-                >
-                  <span
-                    className={cn(
-                      'mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-2xs',
-                      completed
-                        ? 'border-primary bg-primary/12 text-primary'
-                        : index === activeTask
-                          ? 'border-primary text-primary'
-                          : 'border-[color:var(--landing-border)] text-[var(--landing-subtle)]'
-                    )}
-                  >
-                    {completed ? '✓' : '○'}
-                  </span>
-                  <span className={cn(completed && 'line-through text-[var(--landing-subtle)]')}>
-                    {task}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <button className="mt-5 flex w-full items-center justify-center rounded-full bg-[var(--landing-fg)] px-4 py-2.5 text-sm font-medium text-[var(--landing-bg)] transition hover:bg-[var(--landing-fg)]/92">
-            {copy.askAnything}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Floating Widget: Profile & Nav */}
-      <motion.div
-        initial={reduced ? false : { opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute -left-6 top-16 z-20 hidden lg:block xl:-left-12 2xl:-left-16"
-      >
-        <div className="flex w-[180px] flex-col gap-4 rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/70 p-4 shadow-2xl shadow-primary/10 ring-1 ring-inset ring-white/40 dark:ring-white/10 backdrop-blur-2xl animate-float">
-          <div className="rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4 py-3 shadow-[var(--landing-shadow-card)]">
-            <div className="text-sm font-medium text-[var(--landing-fg)]">{copy.profileLabel}</div>
-            <div className="mt-1 text-xs text-[var(--landing-muted)]">{copy.profileMeta}</div>
-          </div>
-
-          <div className="space-y-1">
-            {copy.sections.map((section, index) => (
-              <div
-                key={section}
-                className={cn(
-                  'rounded-xl px-3 py-2.5 text-sm transition',
-                  index === 0
-                    ? 'border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]'
-                    : 'text-[var(--landing-muted)]'
-                )}
-              >
-                {section}
-              </div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
     </div>
   );
 }

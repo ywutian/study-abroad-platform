@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T12:00:00Z",
+    "source": "Round 14 - Direct CDS PDF extraction (UTK, Ball State, USD, WMU)",
+    "purpose": "State university residency admit rates from official CDS PDFs",
+    "verifiedBy": "Direct PDF download + pdftotext extraction",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of tennessee",
+      "cycleYear": 2024,
+      "sourceUrl": "http://irsa.utk.edu/wp-content/uploads/sites/107/2025/07/CDS_2024-2025_Full.pdf",
+      "rates": {
+        "acceptanceRate": 41.6,
+        "intlAcceptanceRate": 28.6,
+        "oosAcceptanceRate": 33.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 70.1,
+      "notes": "UTK CDS 2024-25 C1: applied 59,764 (in-state 13,520 / oos 45,233 / intl 1,011), admitted 24,863 (in-state 9,478 / oos 15,096 / intl 289). Record 60k+ applications confirmed by UTK press release. Highly selective OOS policy; in-state 70.1% vs OOS 33.4% vs intl 28.6%."
+    },
+    {
+      "schoolNameNorm": "ball state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf",
+      "rates": {
+        "acceptanceRate": 85.5,
+        "intlAcceptanceRate": 100.0,
+        "oosAcceptanceRate": 56.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 100.0,
+      "notes": "Ball State CDS 2024-25 C1: applied 21,093 (in-state 13,010 / oos 7,018 / intl 1,065), admitted 18,034 (in-state 13,008 / oos 3,961 / intl 1,065). Near-open admissions for in-state (≈100%) and intl (100%); OOS notably selective at 56.4%."
+    },
+    {
+      "schoolNameNorm": "university of south dakota",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.usd.edu/-/media/Project/USD/DotEdu/About/Departments-Offices-and-Resources/Institutional-Research-Planning-and-Assessment/USD-Common-Data-Set.pdf?rev=1ddcb14196e140a9bec776ebd5bc7b88&hash=F12AD65AC125F221B48CB947AD4702C0",
+      "rates": {
+        "acceptanceRate": 98.8,
+        "intlAcceptanceRate": 97.5,
+        "oosAcceptanceRate": 99.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 99.3,
+      "notes": "USD CDS 2024-25 C1: applied 5,965 (in-state 2,025 / oos 2,088 / intl 1,852), admitted 5,892 (in-state 2,011 / oos 2,075 / intl 1,806). Near-open admissions for all residency groups (97-99%). High intl applicant share (31% of applicants)."
+    },
+    {
+      "schoolNameNorm": "western michigan university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://files.wmich.edu/s3fs-public/2025-02/wmu_cds_2024-25_0.pdf",
+      "rates": {
+        "acceptanceRate": 84.6,
+        "intlAcceptanceRate": 32.2,
+        "oosAcceptanceRate": 88.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 86.0,
+      "notes": "WMU CDS 2024-25 C1: applied 21,701 (in-state 14,718 / oos 6,153 / intl 830), admitted 18,359 (in-state 12,653 / oos 5,439 / intl 267). Intl notably lower at 32.2% vs domestic 86-88%. OOS slightly higher than in-state."
+    }
+  ]
+}

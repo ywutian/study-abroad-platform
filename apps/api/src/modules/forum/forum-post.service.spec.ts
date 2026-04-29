@@ -35,9 +35,23 @@ describe('ForumPostService', () => {
     isActive: true,
   };
 
+  const mockCommunity = {
+    id: 'community-1',
+    slug: 'general',
+    name: 'General',
+    description: null,
+    postCount: 1,
+    followerCount: 0,
+    isOfficial: true,
+    isActive: true,
+    createdAt: new Date(),
+    followers: [],
+  };
+
   const mockPost = {
     id: 'post-1',
     categoryId: 'cat-1',
+    communityId: 'community-1',
     authorId: 'user-1',
     title: 'Test Post',
     content: 'Test content',
@@ -56,7 +70,9 @@ describe('ForumPostService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     category: mockCategory,
+    community: mockCommunity,
     author: mockAuthor,
+    images: [],
     likes: [],
     _count: { comments: 2 },
   };
@@ -79,6 +95,13 @@ describe('ForumPostService', () => {
               },
               forumCategory: {
                 findUnique: jest.fn(),
+              },
+              forumCommunity: {
+                findUnique: jest.fn(),
+                update: jest.fn(),
+              },
+              forumCommunityFollow: {
+                findMany: jest.fn().mockResolvedValue([]),
               },
               forumLike: {
                 findUnique: jest.fn(),
@@ -234,6 +257,7 @@ describe('ForumPostService', () => {
   describe('createPost', () => {
     const createDto = {
       categoryId: 'cat-1',
+      communityId: 'community-1',
       title: 'New Post',
       content: 'New content',
       tags: ['test'],
@@ -246,6 +270,9 @@ describe('ForumPostService', () => {
       });
       (prisma.forumCategory.findUnique as jest.Mock).mockResolvedValue(
         mockCategory,
+      );
+      (prisma.forumCommunity.findUnique as jest.Mock).mockResolvedValue(
+        mockCommunity,
       );
       (prisma.forumPost.create as jest.Mock).mockResolvedValue({
         ...mockPost,
@@ -285,6 +312,9 @@ describe('ForumPostService', () => {
       });
       (prisma.forumCategory.findUnique as jest.Mock).mockResolvedValue(
         mockCategory,
+      );
+      (prisma.forumCommunity.findUnique as jest.Mock).mockResolvedValue(
+        mockCommunity,
       );
       (prisma.forumPost.create as jest.Mock).mockResolvedValue({
         ...mockPost,

@@ -43,6 +43,15 @@ export interface PredictionSourceSummary {
   detail?: string;
 }
 
+export interface SchoolPredictionDataQuality {
+  officialFields: string[];
+  heuristicFields: string[];
+  terminalFields: string[];
+  staleFields: string[];
+  impactedFields: string[];
+  summary: 'strong' | 'mixed' | 'limited';
+}
+
 export interface PredictionOutcomeLabel {
   id: string;
   result:
@@ -136,6 +145,7 @@ export interface PredictionResult {
     satAvg?: number;
     sat25?: number;
     sat75?: number;
+    dataQuality?: SchoolPredictionDataQuality;
   };
   majorBreakdown?: MajorBreakdown;
   communityInsight?: {

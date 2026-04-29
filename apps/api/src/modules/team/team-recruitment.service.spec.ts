@@ -187,6 +187,7 @@ describe('TeamRecruitmentService', () => {
         update: jest.fn(),
       },
       teamRecruitmentCard: {
+        findMany: jest.fn(),
         findUnique: jest.fn(),
       },
       teamRecruitmentSwipe: {
@@ -346,6 +347,118 @@ describe('TeamRecruitmentService', () => {
         trackId: 'track-1',
       }),
     );
+  });
+
+  it('serializes opted-in recruitment highlights for public deck previews', async () => {
+    const card = makeCard({
+      id: 'card-highlight',
+      teamId: 'team-highlight',
+      teamName: 'Highlights',
+      memberIds: ['owner-highlight'],
+    });
+    const memberUser = card.team.members[0].user;
+    memberUser.profile.testScores = [
+      { id: 'sat-1', type: 'SAT', score: 1580 },
+      { id: 'ap-1', type: 'AP', subject: 'Lang', score: 5 },
+      { id: 'ap-2', type: 'AP', subject: 'Statistics', score: 3 },
+      { id: 'ap-3', type: 'AP', subject: 'Calc BC', score: 2 },
+    ];
+    memberUser.profile.awards = [
+      {
+        id: 'award-1',
+        name: 'WUDC Semi-finalist',
+        level: 'INTERNATIONAL',
+        year: 2025,
+      },
+    ];
+    memberUser.profile.activities = [
+      { id: 'activity-1', name: 'Debate Club', role: 'Captain' },
+    ];
+    memberUser.assessmentResults = [
+      { id: 'mbti-1', assessment: { type: 'MBTI' }, result: { type: 'entp' } },
+    ];
+    card.memberProfiles = [
+      {
+        teamRecruitmentCardId: card.id,
+        userId: 'owner-highlight',
+        introLine: null,
+        selectedResumeId: null,
+        selectedResume: null,
+        showSchool: false,
+        showGrade: false,
+        showAwards: false,
+        showAcademics: true,
+        showExperiences: true,
+        showPersonality: true,
+        consentConfirmedAt: new Date('2026-04-29T00:00:00.000Z'),
+        user: memberUser,
+      },
+    ];
+    (prisma.teamRecruitmentCard.findMany as jest.Mock).mockResolvedValue([
+      card,
+    ]);
+
+    const result = await service.getDeckPreview({ limit: 20 });
+    const member = result.items[0].members[0];
+
+    expect(member.showAcademics).toBe(true);
+    expect(member.highlights.academics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: 'SAT 1580', tone: 'neutral' }),
+        expect.objectContaining({ label: 'AP Lang 5', tone: 'success' }),
+        expect.objectContaining({ label: 'AP Statistics 3', tone: 'warning' }),
+        expect.objectContaining({ label: 'AP Calc BC 2', tone: 'danger' }),
+      ]),
+    );
+    expect(member.highlights.experiences[0]).toEqual(
+      expect.objectContaining({ label: '2025 WUDC Semi-finalist' }),
+    );
+    expect(member.highlights.personality).toEqual([
+      expect.objectContaining({ label: 'ENTP' }),
+    ]);
+  });
+
+  it('does not expose profile highlights before member consent in public decks', async () => {
+    const card = makeCard({
+      id: 'card-private',
+      teamId: 'team-private',
+      teamName: 'Private',
+      memberIds: ['owner-private'],
+    });
+    const memberUser = card.team.members[0].user;
+    memberUser.profile.testScores = [{ id: 'sat-1', type: 'SAT', score: 1580 }];
+    card.memberProfiles = [
+      {
+        teamRecruitmentCardId: card.id,
+        userId: 'owner-private',
+        introLine: null,
+        selectedResumeId: null,
+        selectedResume: null,
+        showSchool: false,
+        showGrade: false,
+        showAwards: false,
+        showAcademics: true,
+        showExperiences: true,
+        showPersonality: true,
+        consentConfirmedAt: null,
+        user: memberUser,
+      },
+    ];
+    (prisma.teamRecruitmentCard.findMany as jest.Mock).mockResolvedValue([
+      card,
+    ]);
+
+    const result = await service.getDeckPreview({ limit: 20 });
+    const member = result.items[0].members[0];
+
+    expect(member.showAcademics).toBe(false);
+    expect(member.showExperiences).toBe(false);
+    expect(member.showPersonality).toBe(false);
+    expect(member.highlights).toEqual({
+      academics: [],
+      experiences: [],
+      personality: [],
+    });
   });
 
   it('prevents rejected community contexts from being published', async () => {

@@ -47,6 +47,7 @@ export {
   ProfileSkeleton,
 } from './loading-state';
 export * from './logo';
+export * from './lumni-mark';
 export * from './motion';
 // motion-button exports are included via motion.tsx
 export * from './offline-indicator';
@@ -58,6 +59,7 @@ export * from './sortable-list';
 export * from './status-badge';
 export * from './stepper';
 export * from './theme-toggle';
+export * from './color-palette-menu';
 export * from './tilt-card';
 export * from './touch-card';
 export * from './unsaved-changes-dialog';

@@ -1,13 +1,13 @@
 {
   "meta": {
     "home": {
-      "title": "StudyAI Home | The AI Admissions Workbench",
-      "description": "StudyAI brings school matching, essay collaboration, timelines, and real admissions data into one AI-native workflow for ambitious families.",
-      "keywords": "StudyAI,AI admissions,college application,school matching,essay workbench,admissions data,timeline planning,student teams"
+      "title": "Lumni Home | The AI Admissions Workbench",
+      "description": "Lumni brings school matching, essay collaboration, timelines, and real admissions data into one AI-native workflow for ambitious families.",
+      "keywords": "Lumni,AI admissions,college application,school matching,essay workbench,admissions data,timeline planning,student teams"
     }
   },
   "common": {
-    "appName": "Study Abroad Platform",
+    "appName": "Lumni",
     "save": "Save",
     "cancel": "Cancel",
     "submit": "Submit",
@@ -194,18 +194,98 @@
       "remaining": "{count} items remaining"
     },
     "quickExperience": {
-      "title": "Welcome to Study Abroad Platform!",
+      "title": "Welcome to Lumni!",
       "subtitle": "Your smart companion for college applications. Let's get you set up in just a few steps.",
       "step1": "Complete your profile with grades, test scores, and activities",
       "step2": "Explore school rankings and build your school list",
       "step3": "Get AI-powered admission predictions and recommendations",
       "getStarted": "Get Started",
       "skip": "Skip for now",
-      "letsGo": "Let's set up your profile"
+      "letsGo": "Let's set up your profile",
+      "wizardTitle": "Quick application setup",
+      "wizardSubtitle": "Add the few signals predictions need most. You can refine the full profile later.",
+      "back": "Back",
+      "next": "Next",
+      "saveAndPredict": "Save and predict",
+      "saved": "Setup saved. Running your predictions next.",
+      "minimumRequired": "Add the required basics before continuing.",
+      "schoolsRequired": "Add at least one target school to run predictions.",
+      "activitiesTitle": "Core activities",
+      "awardsTitle": "Awards",
+      "activityLabel": "Activity {index}",
+      "awardLabel": "Award {index}",
+      "rankLabel": "US News #{rank}",
+      "noSchoolsFound": "No schools found",
+      "schoolEmpty": "Search for at least one school to predict your admission chances.",
+      "steps": {
+        "profile": "Profile",
+        "scores": "Scores",
+        "story": "Activities",
+        "schools": "Schools"
+      },
+      "fields": {
+        "grade": "Grade",
+        "educationSystem": "Curriculum",
+        "currentSchool": "Current school",
+        "targetMajor": "Target major",
+        "nationality": "Nationality",
+        "countryOfResidence": "Residence",
+        "citizenship": "Citizenship",
+        "applicationRound": "Default round",
+        "needsFinancialAid": "Needs financial aid",
+        "applyingTestOptional": "Applying test optional",
+        "gpa": "GPA",
+        "gpaScale": "GPA scale"
+      },
+      "placeholders": {
+        "grade": "Select grade",
+        "educationSystem": "Select curriculum",
+        "currentSchool": "High school name",
+        "targetMajor": "Computer Science, Economics...",
+        "countryCode": "CN, US...",
+        "activityName": "Debate Society",
+        "role": "President",
+        "awardName": "AMC 12 Distinction",
+        "shortDescription": "One concise sentence is enough",
+        "schoolSearch": "Search universities"
+      },
+      "grades": {
+        "FRESHMAN": "Freshman",
+        "SOPHOMORE": "Sophomore",
+        "JUNIOR": "Junior",
+        "SENIOR": "Senior",
+        "GAP_YEAR": "Gap year"
+      },
+      "educationSystems": {
+        "AP": "AP",
+        "IB": "IB",
+        "A_LEVEL": "A-Level",
+        "GAOKAO": "Gaokao",
+        "CANADIAN": "Canadian",
+        "AUSTRALIAN": "Australian",
+        "OTHER": "Other"
+      },
+      "activityCategories": {
+        "LEADERSHIP": "Leadership",
+        "RESEARCH": "Research",
+        "ACADEMIC": "Academic",
+        "COMMUNITY_SERVICE": "Service",
+        "ARTS": "Arts",
+        "ATHLETICS": "Athletics",
+        "WORK": "Work",
+        "OTHER": "Other"
+      },
+      "awardLevels": {
+        "SCHOOL": "School",
+        "REGIONAL": "Regional",
+        "STATE": "State",
+        "NATIONAL": "National",
+        "INTERNATIONAL": "International"
+      }
     }
   },
   "home": {
-    "brand": "StudyAI",
+    "brand": "Lumni",
     "nav": {
       "product": "Product",
       "cases": "Cases",
@@ -216,13 +296,13 @@
       "getStarted": "Get started"
     },
     "hero": {
-      "eyebrow": "Powered by GPT-5 · 3,000+ global schools tracked",
-      "headline": ["Rebuild your admissions strategy", "with AI that can actually reason"],
-      "subtitle": "Expert AI capabilities, real admissions data, and a peer network that moves with you. What used to feel chaotic becomes a workflow with priorities, pace, and signal.",
+      "eyebrow": "Lumni Command Center · Powered by GPT-5",
+      "headline": ["Illuminate your", "admissions route"],
+      "subtitle": "From school lists and essays to timelines and submission, Lumni turns a complex application season into a clear plan calibrated by real admissions data.",
       "features": [
-        "Generate the first school matrix in 2 minutes",
-        "Keep essays, timelines, and tasks in one surface",
-        "Use human advisors for the decisions that matter"
+        "Generate the first admissions route in 2 minutes",
+        "Move schools, essays, and timelines together",
+        "Keep human advisors for the decisions that matter"
       ],
       "trustLine": "Trusted by 12,400+ families · 2,100+ Top-30 offers",
       "primaryCta": "Get started free",
@@ -248,12 +328,15 @@
         ]
       },
       "console": {
-        "workspace": "Workspace",
+        "workspace": "Command Center",
+        "signalLabel": "Lumni Signal",
+        "symbolLabel": "Moonlit route",
+        "workflowLine": "Schools · Essays · Timeline · Submit",
         "profileLabel": "Amy Z. · Senior",
         "profileMeta": "GPA 3.92 · SAT 1540 · CS",
         "termLabel": "Fall 2026 · CS",
         "sections": ["Overview", "Schools · 6", "Essays · 14", "Timeline", "Teams"],
-        "title": "My Application Matrix",
+        "title": "Admissions Route Hub",
         "assistantBadge": "AI Copilot",
         "assistantMessages": [
           "Your CMU essay overlaps too closely with MIT. Tighten the second proof point.",
@@ -571,7 +654,7 @@
         }
       ],
       "dashboard": {
-        "eyebrow": "StudyAI dashboard",
+        "eyebrow": "Lumni dashboard",
         "title": "One surface for list strategy, essays, and pacing",
         "note": "School matrix · essay sprint · AI review",
         "cards": ["School list", "Essay sprint", "Team signals"],
@@ -643,7 +726,7 @@
       "trust": "No card required · Cancel anytime · Privacy first"
     },
     "footer": {
-      "description": "StudyAI brings school matching, essay collaboration, timelines, and real admissions data into one operating surface so ambitious families can move with clarity.",
+      "description": "Lumni brings school matching, essay collaboration, timelines, and real admissions data into one operating surface so ambitious families can move with clarity.",
       "columns": [
         {
           "title": "Product",
@@ -662,7 +745,7 @@
           "links": ["Privacy policy", "Terms of service", "Help docs"]
         }
       ],
-      "copyright": "© 2026 StudyAI · Admissions, no longer a black box.",
+      "copyright": "© 2026 Lumni · Admissions, no longer a black box.",
       "note": "Made with clarity"
     }
   },
@@ -791,7 +874,7 @@
       }
     },
     "layout": {
-      "subtitle": "AI-Powered Smart Study Abroad Platform",
+      "subtitle": "AI-powered Lumni workbench",
       "heroTitle": "Start Your",
       "heroHighlight": "Study Abroad Journey",
       "heroDesc": "Smart school selection, accurate predictions, case sharing\nMake your application journey clear",
@@ -1627,6 +1710,21 @@
     "ucExpandedDesc": "Since you selected a UC school, we automatically included all 9 UC campuses for comparison. UC schools share the same application system, so you can see which campuses are most likely to admit you.",
     "ucCollapseToOriginal": "Show only my original selection",
     "lowDataWarning": "Your profile is missing key data (GPA, test scores). Predictions may be less accurate. Complete your profile for better results.",
+    "dataChecklistTitle": "Predictions can run now, but these details improve accuracy.",
+    "dataChecklistDesc": "Fill the missing items when you can; the result below will still be usable as a first read.",
+    "dataChecklist": {
+      "gpa": "GPA",
+      "testScores": "Tests or test optional",
+      "activities": "Activities",
+      "awards": "Awards",
+      "major": "Major"
+    },
+    "detailSections": {
+      "assessment": "Assessment",
+      "why": "Why this result",
+      "improve": "Improve chances",
+      "understanding": "Understanding your chances"
+    },
     "completeProfile": "Complete Profile",
     "recommendedSchoolsTitle": "You may also like",
     "recommendedSchoolsLoading": "Loading recommendations...",
@@ -1710,6 +1808,20 @@
     "detailedAnalysisPrompt": "Please analyze my chances for {schoolName} like a professional admissions counselor. Clearly distinguish the school's overall acceptance rate from my profile-based personal estimate, then explain key factors and next steps.",
     "dataCompleteness": "Profile Completeness",
     "dataCompletenessLow": "Complete your profile for more accurate predictions",
+    "dataQuality": {
+      "title": "School data quality",
+      "description": "This estimate still runs, but these school fields can affect precision until official data replaces heuristics or stale values.",
+      "official": "{count} official",
+      "heuristic": "{count} heuristic",
+      "terminal": "{count} terminal",
+      "stale": "{count} stale",
+      "impactedFields": "Accuracy-affected fields",
+      "summary": {
+        "strong": "Strong school data",
+        "mixed": "Mixed school data",
+        "limited": "Limited school data"
+      }
+    },
     "fromCache": "Cached",
     "expand": "Show Details",
     "collapse": "Hide Details",
@@ -2373,6 +2485,8 @@
       "securityDesc": "Manage password and security options",
       "darkMode": "Dark Mode",
       "darkModeDesc": "Toggle dark/light theme",
+      "colorTheme": "Site colors",
+      "colorThemeDesc": "Warm ivory or slate indigo across the whole site",
       "language": "Language",
       "languageDesc": "Choose interface language",
       "pushNotification": "Push Notifications",
@@ -2521,6 +2635,13 @@
       "dark": "Dark",
       "light": "Light",
       "system": "System"
+    },
+    "colorPalette": {
+      "menuLabel": "Site color theme",
+      "warm": "Warm ivory",
+      "slate": "Slate indigo",
+      "warmDesc": "Cream surfaces and gold accents",
+      "slateDesc": "Cool gray and indigo for a focused SaaS look"
     },
     "empty": {
       "loadFailed": "Failed to Load",
@@ -2757,7 +2878,7 @@
   },
   "welcome": {
     "welcome": {
-      "title": "Welcome to StudyAbroad",
+      "title": "Welcome to Lumni",
       "description": "Your AI-powered study abroad assistant, helping you find your dream school"
     },
     "schools": {
@@ -2784,7 +2905,7 @@
     "resetButton": "Reset Tour",
     "steps": {
       "welcome": {
-        "title": "Welcome to Study Abroad Platform",
+        "title": "Welcome to Lumni",
         "desc": "Explore your path abroad and discover the best schools and programs"
       },
       "schools": {
@@ -2929,7 +3050,8 @@
     "sort": {
       "rank": "By Rank",
       "name": "By Name",
-      "acceptance": "By Acceptance Rate"
+      "acceptance": "By Acceptance Rate",
+      "salary": "By Post-Grad Salary"
     },
     "sortBy": "Sort By",
     "advancedFilter": "Advanced Filter",
@@ -2976,6 +3098,12 @@
     "tabAiRecommend": "AI Recommendation",
     "allFilters": "All Filters",
     "filterOptions": "Filter Options",
+    "filterOptionsDesc": "Narrow schools by location, cost, admissions policy, and outcomes.",
+    "niche": {
+      "partyScene": "Party Scene",
+      "campusFood": "Campus Food",
+      "safety": "Safety"
+    },
     "schoolType": "School Type",
     "public": "Public",
     "private": "Private",
@@ -2990,6 +3118,40 @@
     },
     "resetFilters": "Reset Filters",
     "weightSort": "Sort by Weight",
+    "weightControls": {
+      "title": "Sort Weights",
+      "description": "Tune ranking, acceptance rate, tuition, and post-grad salary to reorder schools.",
+      "presets": {
+        "balanced": "Balanced",
+        "prestige": "Prestige",
+        "affordability": "Affordability",
+        "career": "Career"
+      },
+      "weights": {
+        "ranking": "Ranking",
+        "acceptanceRate": "Acceptance Rate",
+        "tuition": "Tuition",
+        "salary": "Salary / ROI"
+      }
+    },
+    "fitSort": "Fit Match",
+    "fitScore": "Fit {score}",
+    "fit": {
+      "title": "Fit Match weights",
+      "description": "Use a small set of signals to rank schools without overloading the search.",
+      "presets": {
+        "balanced": "Balanced",
+        "prestige": "Prestige",
+        "affordability": "Affordability",
+        "career": "Career"
+      },
+      "weights": {
+        "ranking": "Ranking",
+        "selectivity": "Selectivity",
+        "affordability": "Cost and aid",
+        "outcomes": "Career outcomes"
+      }
+    },
     "presets": {
       "title": "Sort Presets",
       "description": "Choose a sorting strategy or create custom rankings",
@@ -3408,7 +3570,7 @@
     "introduction": "Please read the following terms of service carefully. By using our service, you agree to be bound by these terms.",
     "acceptance": {
       "title": "Acceptance of Terms",
-      "content": "By accessing or using the Study Abroad Platform, you agree to comply with these Terms of Service. If you do not agree to these terms, please do not use our services."
+      "content": "By accessing or using the Lumni, you agree to comply with these Terms of Service. If you do not agree to these terms, please do not use our services."
     },
     "services": {
       "title": "Service Description",
@@ -3501,7 +3663,7 @@
   },
   "about": {
     "badge": "About Us",
-    "title": "Study Abroad Platform",
+    "title": "Lumni",
     "subtitle": "Making every study abroad dream come true",
     "stats": {
       "users": "Registered Users",
@@ -3511,7 +3673,7 @@
     },
     "story": {
       "title": "Our Story",
-      "content": "The Study Abroad Platform was born from the pursuit of educational equity by a group of entrepreneurs who studied abroad. We understand the challenges of information asymmetry in the application process, so we are committed to providing professional, transparent, and efficient services through technology."
+      "content": "The Lumni was born from the pursuit of educational equity by a group of entrepreneurs who studied abroad. We understand the challenges of information asymmetry in the application process, so we are committed to providing professional, transparent, and efficient services through technology."
     },
     "vision": {
       "title": "Our Vision",
@@ -4756,7 +4918,8 @@
         "SCRAPED": "Scraped",
         "SEED": "Seed",
         "COMMUNITY": "Community",
-        "INFERRED": "AI"
+        "INFERRED": "AI",
+        "UNAVAILABLE": "Unavailable"
       },
       "tiers": {
         "OFFICIAL": "Official source",
@@ -4764,7 +4927,8 @@
         "SCRAPED": "Publicly scraped",
         "SEED": "Seeded data",
         "COMMUNITY": "Community provided",
-        "INFERRED": "AI inferred"
+        "INFERRED": "AI inferred",
+        "UNAVAILABLE": "Unavailable"
       },
       "staleness": {
         "FRESH": "Fresh",
@@ -5466,6 +5630,38 @@
     "activeLabel": "active",
     "teamSectionDesc": "Create or join team posts for competitions, application season support, and more",
     "viewAllTeamPosts": "View all team posts",
+    "redditForumDescription": "Follow communities you care about and browse recent conversations on applications, essays, competitions, and campus life.",
+    "feedPopular": "Popular",
+    "feedNews": "News",
+    "feedHome": "Home",
+    "feedLabel": {
+      "popular": "Popular",
+      "home": "Home",
+      "latest": "News"
+    },
+    "openCommunities": "Open community navigation",
+    "startCommunity": "Start a community",
+    "myCommunities": "My Communities",
+    "recommendedCommunities": "Recommended Communities",
+    "noFollowedCommunities": "You are not following any communities yet. Pick a few from recommendations.",
+    "communityLabel": "Community",
+    "communitySearchPlaceholder": "Search or create a community...",
+    "communityPostCount": "{count} posts",
+    "communityCount": "{count} communities",
+    "communities": "Communities",
+    "createCommunityNamed": "Create r/{name}",
+    "followCommunity": "Follow community",
+    "unfollowCommunity": "Unfollow community",
+    "officialCommunity": "Official",
+    "loginToFollow": "Please log in to follow communities",
+    "loginToReact": "Please log in to react",
+    "postedBy": "posted by {name}",
+    "imageUploadLabel": "Images",
+    "imageUploadAction": "Upload images",
+    "imageUploadHint": "Up to {count}; JPG, PNG, WEBP, or GIF",
+    "imageLimitError": "You can upload up to {count} images",
+    "imageTypeSizeError": "Use JPG, PNG, WEBP, or GIF images under 10MB",
+    "removeImage": "Remove image",
     "aiActions": {
       "searchPosts": "Search Discussions",
       "searchPostsPrompt": "Please help me search for popular discussions about study abroad applications, especially about school selection and essays.",
@@ -5694,6 +5890,12 @@
         "teamUp": "Team up",
         "networkingOnly": "Networking only"
       },
+      "status": {
+        "LOOKING": "Looking",
+        "ALMOST_FULL": "Almost full",
+        "NETWORKING_ONLY": "Networking",
+        "CLOSED": "Closed"
+      },
       "availability": {
         "LESS_THAN_5_HOURS": "<5h/wk",
         "FIVE_TO_TEN_HOURS": "5-10h/wk",
@@ -5723,6 +5925,12 @@
         "showSchool": "Show school",
         "showGrade": "Show grade",
         "showAwards": "Show awards",
+        "showAcademics": "Show academics",
+        "showExperiences": "Show experience",
+        "showPersonality": "Show personality",
+        "completeProfileHint": "Highlights are generated from Profile scores, awards, activities, resumes, and assessments.",
+        "completeProfile": "Complete profile",
+        "completeAssessment": "Take assessment",
         "save": "Save",
         "confirmConsent": "Confirm consent"
       },
@@ -5731,6 +5939,12 @@
         "need": "Need",
         "skills": "Skills",
         "members": "Members",
+        "academics": "Academics",
+        "experience": "Experience",
+        "personality": "Personality",
+        "noHighlights": "No confirmed profile highlights yet",
+        "memberCount": "{current}/{max} members",
+        "coordination": "Coordination details",
         "confirmed": "Confirmed",
         "detailExpand": "Show full description",
         "detailCollapse": "Show less"
@@ -5934,6 +6148,7 @@
       "ranking": "Ranking Range",
       "acceptance": "Acceptance Rate",
       "tuition": "Tuition Range",
+      "salary": "Salary / ROI",
       "type": "School Type",
       "special": "Special Conditions"
     },
@@ -5944,6 +6159,7 @@
       "usNewsRanking": "US News Ranking",
       "acceptanceRange": "Acceptance Rate Range",
       "annualTuition": "Annual Tuition (10k USD)",
+      "postGradSalary": "Post-Grad Salary (10k USD)",
       "publicPrivate": "Public/Private",
       "schoolSize": "School Size (Students)"
     },
@@ -6660,18 +6876,24 @@
         "schools": "US schools",
         "complete": "Complete",
         "missing": "Missing critical",
-        "heuristic": "Heuristic sources"
+        "heuristic": "Heuristic fields",
+        "official": "Official fields",
+        "terminal": "Terminal fields"
       },
       "table": {
         "field": "Field",
         "filled": "Filled",
+        "official": "Official",
         "eligible": "Prediction eligible",
         "heuristic": "Heuristic",
+        "terminal": "Terminal",
         "stale": "Stale",
         "school": "School",
         "missing": "Missing",
         "heuristicFields": "Heuristic fields",
-        "sources": "Sources"
+        "qualityFields": "Quality flags",
+        "sources": "Sources",
+        "validators": "{count} validators"
       }
     },
     "cdsBands": {
@@ -9179,15 +9401,15 @@
       "email": "Email",
       "twitter": "X / Twitter"
     },
-    "emailSubject": "Join me on StudyAbroad Platform",
-    "emailBody": "Hey! I've been using this amazing study abroad platform. Sign up with my referral code {code} and we'll both earn 50 points! {link}"
+    "emailSubject": "Join me on Lumni",
+    "emailBody": "Hey! I've been using Lumni to plan my study abroad applications. Sign up with my referral code {code} and we'll both earn 50 points! {link}"
   },
   "tour": {
     "next": "Next",
     "previous": "Previous",
     "done": "Done",
     "welcome": {
-      "title": "Welcome to Study Abroad Platform",
+      "title": "Welcome to Lumni",
       "description": "This is your homepage where you can quickly access platform features and latest updates.",
       "schools": "Schools",
       "schoolsDesc": "Browse information about top universities worldwide, learn about admission requirements and deadlines.",

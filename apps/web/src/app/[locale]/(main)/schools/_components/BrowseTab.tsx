@@ -9,6 +9,8 @@ import {
   buildSchoolQueryParams,
   countActiveSchoolFilters,
   SCHOOL_BROWSE_PAGE_SIZE,
+  type SchoolSortBy,
+  type SchoolWeightParams,
   type SchoolFilters,
 } from '@/components/features/schools/school-filters';
 import { useRouter } from '@/lib/i18n/navigation';
@@ -22,17 +24,11 @@ import { SchoolFilterBar } from './SchoolFilterBar';
 import { SchoolGrid } from './SchoolGrid';
 import { type School } from './schools-types';
 
-interface WeightPreset {
-  ranking: number;
-  salary: number;
-  tuition: number;
-  acceptanceRate: number;
-}
-
-const WEIGHT_PRESETS: Record<string, WeightPreset> = {
-  selectivity: { ranking: 50, acceptanceRate: 30, tuition: 10, salary: 10 },
-  affordability: { ranking: 15, acceptanceRate: 10, tuition: 50, salary: 25 },
-  employment: { ranking: 20, acceptanceRate: 10, tuition: 15, salary: 55 },
+const WEIGHT_PRESETS: Record<string, SchoolWeightParams> = {
+  balanced: { ranking: 30, acceptanceRate: 25, tuition: 25, salary: 20 },
+  prestige: { ranking: 55, acceptanceRate: 25, tuition: 10, salary: 10 },
+  affordability: { ranking: 15, acceptanceRate: 10, tuition: 60, salary: 15 },
+  career: { ranking: 20, acceptanceRate: 10, tuition: 20, salary: 50 },
 };
 
 const defaultAdvancedFilters: SchoolFilters = {};
@@ -46,9 +42,10 @@ export function BrowseTab() {
   // Filter state
   const [search, setSearch] = useState('');
   const [country, setCountry] = useState('ALL');
-  const [sortBy, setSortBy] = useState<'rank' | 'name' | 'acceptance' | 'weighted'>('rank');
+  const [sortBy, setSortBy] = useState<SchoolSortBy>('rank');
   const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(defaultAdvancedFilters);
-  const [activePreset, setActivePreset] = useState<string>('selectivity');
+  const [activePreset, setActivePreset] = useState<string>('balanced');
+  const [fitWeights, setFitWeights] = useState<SchoolWeightParams>(WEIGHT_PRESETS.balanced);
 
   // Selection state
   const [addedSchools, setAddedSchools] = useState<Set<string>>(new Set());
@@ -71,7 +68,7 @@ export function BrowseTab() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['schools', search, country, advancedFilters],
+    queryKey: ['schools', search, country, advancedFilters, sortBy, fitWeights],
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: buildSchoolQueryParams({
@@ -79,6 +76,8 @@ export function BrowseTab() {
           country,
           filters: advancedFilters,
           pageSize: SCHOOL_BROWSE_PAGE_SIZE,
+          sortBy,
+          weights: fitWeights,
         }),
       }),
     staleTime: STALE_TIME.DYNAMIC,
@@ -161,54 +160,8 @@ export function BrowseTab() {
     },
   });
 
-  // Sorted schools
   const schools = useMemo(() => schoolsData?.items || [], [schoolsData?.items]);
   const total = schoolsData?.total || 0;
-
-  const sortedSchools = useMemo(() => {
-    if (!schools.length) return [];
-    const sorted = [...schools];
-
-    if (sortBy === 'weighted') {
-      const weights = WEIGHT_PRESETS[activePreset] || WEIGHT_PRESETS.selectivity;
-      return sorted.sort((a, b) => {
-        const getScore = (school: School) => {
-          let score = 0;
-          const totalWeight =
-            weights.ranking + weights.salary + weights.tuition + weights.acceptanceRate;
-          if (school.usNewsRank && weights.ranking > 0) {
-            const rankScore = Math.max(0, 100 - (school.usNewsRank - 1));
-            score += (rankScore * weights.ranking) / totalWeight;
-          }
-          if (school.avgSalary && weights.salary > 0) {
-            const salaryScore = Math.min(100, school.avgSalary / 1500);
-            score += (salaryScore * weights.salary) / totalWeight;
-          }
-          if (school.tuition && weights.tuition > 0) {
-            const tuitionScore = Math.max(0, 100 - school.tuition / 800);
-            score += (tuitionScore * weights.tuition) / totalWeight;
-          }
-          if (school.acceptanceRate && weights.acceptanceRate > 0) {
-            const acceptScore = Number(school.acceptanceRate);
-            score += (acceptScore * weights.acceptanceRate) / totalWeight;
-          }
-          return score;
-        };
-        return getScore(b) - getScore(a);
-      });
-    }
-
-    switch (sortBy) {
-      case 'rank':
-        return sorted.sort((a, b) => (a.usNewsRank || 999) - (b.usNewsRank || 999));
-      case 'name':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      case 'acceptance':
-        return sorted.sort((a, b) => (a.acceptanceRate || 100) - (b.acceptanceRate || 100));
-      default:
-        return sorted;
-    }
-  }, [schools, sortBy, activePreset]);
 
   // Callbacks
   const toggleSchoolSelection = useCallback((school: School, checked: boolean) => {
@@ -252,44 +205,58 @@ export function BrowseTab() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <SchoolFilterBar
-        search={search}
-        onSearchChange={setSearch}
-        country={country}
-        onCountryChange={handleCountryChange}
-        sortBy={sortBy}
-        onSortByChange={(v) => setSortBy(v as any)}
-        advancedFilters={advancedFilters}
-        onAdvancedFiltersChange={setAdvancedFilters}
-        onResetAdvancedFilters={() => setAdvancedFilters(defaultAdvancedFilters)}
-        activeAdvancedFilterCount={activeAdvancedFilterCount}
-        activeFilterCount={activeFilterCount}
-        activePreset={activePreset}
-        onActivePresetChange={setActivePreset}
-        weightPresetKeys={Object.keys(WEIGHT_PRESETS)}
-      />
+    <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <SchoolFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          country={country}
+          onCountryChange={handleCountryChange}
+          sortBy={sortBy}
+          onSortByChange={(v) => setSortBy(v as SchoolSortBy)}
+          advancedFilters={advancedFilters}
+          onAdvancedFiltersChange={setAdvancedFilters}
+          onResetAdvancedFilters={() => setAdvancedFilters(defaultAdvancedFilters)}
+          activeAdvancedFilterCount={activeAdvancedFilterCount}
+          activeFilterCount={activeFilterCount}
+          activePreset={activePreset}
+          onActivePresetChange={(preset) => {
+            setActivePreset(preset);
+            setFitWeights(WEIGHT_PRESETS[preset] ?? fitWeights);
+            setSortBy('weighted');
+          }}
+          weightPresetKeys={Object.keys(WEIGHT_PRESETS)}
+          fitWeights={fitWeights}
+          onFitWeightsChange={(weights) => {
+            setActivePreset('custom');
+            setFitWeights(weights);
+            setSortBy('weighted');
+          }}
+        />
+      </aside>
 
-      <SchoolGrid
-        schools={sortedSchools}
-        total={total}
-        isLoading={isLoading}
-        isError={isError}
-        onRefetch={() => refetch()}
-        hasAuth={!!accessToken}
-        selectedSchools={selectedSchools}
-        onToggleSelection={toggleSchoolSelection}
-        isSchoolSelected={isSchoolSelected}
-        addedSchools={addedSchools}
-        onAddToList={(schoolId, round) => addToListMutation.mutate({ schoolId, round })}
-        isAddingToList={addToListMutation.isPending}
-        hasFilters={hasFilters}
-        onResetAllFilters={resetAllFilters}
-        onBatchAdd={handleBatchAdd}
-        onRemoveSelected={(id) => setSelectedSchools((prev) => prev.filter((s) => s.id !== id))}
-        onClearSelected={() => setSelectedSchools([])}
-        isBatchAdding={batchAddMutation.isPending}
-      />
+      <section className="min-w-0">
+        <SchoolGrid
+          schools={schools}
+          total={total}
+          isLoading={isLoading}
+          isError={isError}
+          onRefetch={() => refetch()}
+          hasAuth={!!accessToken}
+          selectedSchools={selectedSchools}
+          onToggleSelection={toggleSchoolSelection}
+          isSchoolSelected={isSchoolSelected}
+          addedSchools={addedSchools}
+          onAddToList={(schoolId, round) => addToListMutation.mutate({ schoolId, round })}
+          isAddingToList={addToListMutation.isPending}
+          hasFilters={hasFilters}
+          onResetAllFilters={resetAllFilters}
+          onBatchAdd={handleBatchAdd}
+          onRemoveSelected={(id) => setSelectedSchools((prev) => prev.filter((s) => s.id !== id))}
+          onClearSelected={() => setSelectedSchools([])}
+          isBatchAdding={batchAddMutation.isPending}
+        />
+      </section>
     </div>
   );
 }

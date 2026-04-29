@@ -103,7 +103,7 @@ async function download(url: string, dest: string) {
   const r = await fetch(url, {
     headers: {
       'user-agent':
-        'Mozilla/5.0 (compatible; StudyAbroadDataBot/1.0; +https://studyabroad.app)',
+        'Mozilla/5.0 (compatible; LumniDataBot/1.0; +https://lumni.app)',
     },
   });
   if (!r.ok) throw new Error(`Download failed ${r.status}: ${url}`);

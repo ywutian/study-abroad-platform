@@ -28,6 +28,9 @@ vi.mock('@/stores/auth', () => ({
 }));
 
 vi.mock('@/lib/i18n/navigation', () => ({
+  Link: ({ href, children }: { href: string; children: ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
   useRouter: () => ({ push }),
 }));
 
@@ -410,6 +413,28 @@ describe('TeamsPageClient', () => {
       );
     });
     expect(toastSuccess).toHaveBeenCalledWith('toast.linkCopied');
+  });
+
+  it('submits profile highlight consent settings from My Team', async () => {
+    renderPage();
+
+    fireEvent.click(await screen.findByRole('tab', { name: 'recruitment.copy.myTeamTab' }));
+    fireEvent.click(await screen.findByText('recruitment.display.showAcademics'));
+    fireEvent.click(screen.getByText('recruitment.display.showExperiences'));
+    fireEvent.click(screen.getByText('recruitment.display.showPersonality'));
+    fireEvent.click(screen.getByRole('button', { name: 'recruitment.display.confirmConsent' }));
+
+    await waitFor(() => {
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        teamRoutes.recruitmentMemberProfile('my-card'),
+        expect.objectContaining({
+          showAcademics: true,
+          showExperiences: true,
+          showPersonality: true,
+          consentConfirmed: true,
+        })
+      );
+    });
   });
 
   it('loads public browse data for guests and blocks private tabs', async () => {

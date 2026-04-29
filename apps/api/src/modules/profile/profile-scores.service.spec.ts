@@ -131,6 +131,48 @@ describe('ProfileScoresService', () => {
       });
     });
 
+    it('should persist explicit subject for subject-based scores', async () => {
+      mockPrisma.testScore.findMany.mockResolvedValue([]);
+      mockPrisma.testScore.create.mockResolvedValue({ id: 'ts-ap' });
+
+      await service.createTestScore('user-1', {
+        type: 'AP',
+        score: 5,
+        subject: 'Calculus BC',
+      } as any);
+
+      expect(mockPrisma.testScore.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            subject: 'Calculus BC',
+          }),
+        }),
+      );
+      expect(mockPrisma.testScore.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          subject: 'Calculus BC',
+        }),
+      });
+    });
+
+    it('should extract legacy subject from subScores when subject is absent', async () => {
+      mockPrisma.testScore.findMany.mockResolvedValue([]);
+      mockPrisma.testScore.create.mockResolvedValue({ id: 'ts-legacy-ap' });
+
+      await service.createTestScore('user-1', {
+        type: 'AP',
+        score: 4,
+        subScores: { subject: 'US History' },
+      } as any);
+
+      expect(mockPrisma.testScore.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          subject: 'US History',
+          subScores: { subject: 'US History' },
+        }),
+      });
+    });
+
     it('should reuse an identical existing score on retry', async () => {
       const existing = {
         id: 'ts-1',

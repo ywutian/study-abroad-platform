@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T10:00:00Z",
+    "source": "Round 12 - Direct CDS PDF extraction (WVU, UNM, Wyoming, WSU, UNH, URI)",
+    "purpose": "State university residency admit rates from official CDS PDFs",
+    "verifiedBy": "Direct PDF download + pdftotext extraction",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "west virginia university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://dataoffice.wvu.edu/files/d/d0809710-b583-4b08-8214-e297d97326d5/cds-2024-2025-wvu-final.pdf",
+      "rates": {
+        "acceptanceRate": 77.3,
+        "intlAcceptanceRate": 36.4,
+        "oosAcceptanceRate": 80.7,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 73.8,
+      "notes": "WVU CDS 2024-25 C1: applied 20150 (in-state 3485 / oos 15652 / intl 1013), admitted 15570 (in-state 2572 / oos 12629 / intl 369). OOS rate HIGHER than in-state (WV is small state, school recruits nationally). Intl 36.4%."
+    },
+    {
+      "schoolNameNorm": "university of new mexico",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oia.unm.edu/resources/cds_24-25_pdf.pdf",
+      "rates": {
+        "acceptanceRate": 79.5,
+        "intlAcceptanceRate": 31.6,
+        "oosAcceptanceRate": 83.5,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 81.6,
+      "notes": "UNM CDS 2024-25 C1: applied 13125 (in-state 6502 / oos 5851 / intl 772), admitted 10431 (in-state 5304 / oos 4883 / intl 244). Intl notably lower (31.6%) vs domestic (81-84%)."
+    },
+    {
+      "schoolNameNorm": "university of wyoming",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uwyo.edu/oia/_files/cds/cds2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 96.9,
+        "intlAcceptanceRate": 96.5,
+        "oosAcceptanceRate": 96.8,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 97.3,
+      "notes": "Wyoming CDS 2024-25 C1: applied in-state 1670 / oos 4316 / intl 230, admitted in-state 1625 / oos 4176 / intl 222. Near-open admissions for all groups (96-97%)."
+    },
+    {
+      "schoolNameNorm": "washington state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://wpcdn.web.wsu.edu/wsuwp/uploads/sites/3447/2025/04/CDS_2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 86.6,
+        "intlAcceptanceRate": 82.0,
+        "oosAcceptanceRate": 87.8,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 86.2,
+      "notes": "WSU CDS 2024-25 C1: applied 25462 (in-state 15085 / oos 9598 / intl 779), admitted 22060 (in-state 12996 / oos 8425 / intl 639). All groups ~82-88%, slightly open admissions."
+    },
+    {
+      "schoolNameNorm": "university of new hampshire",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.unh.edu/institutional-research/sites/default/files/media/2025-02/cds-2024-2025-2.12.25_0.pdf",
+      "rates": {
+        "acceptanceRate": 88.2,
+        "intlAcceptanceRate": 85.8,
+        "oosAcceptanceRate": 88.8,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 86.1,
+      "notes": "UNH CDS 2024-25 C1: applied 21175 (in-state 4499 / oos 16189 / intl 487), admitted 18667 (in-state 3873 / oos 14376 / intl 418). Near-open admissions; OOS 88.8%, intl 85.8%."
+    },
+    {
+      "schoolNameNorm": "university of rhode island",
+      "cycleYear": 2023,
+      "sourceUrl": "https://web.uri.edu/ir/wp-content/uploads/sites/276/URI_CDS_2023-2024Final20250211-PTFNumbersUpdated.pdf",
+      "rates": {
+        "acceptanceRate": 77.1,
+        "intlAcceptanceRate": 72.8,
+        "oosAcceptanceRate": 77.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 75.9,
+      "notes": "URI CDS 2023-24 C1 (most recent available): applied in-state 4330 / oos 20634 / intl 427, admitted in-state 3286 / oos 15971 / intl 311. Intl 72.8%, similar to domestic rates. 2023-24 cycle."
+    }
+  ]
+}

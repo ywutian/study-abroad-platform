@@ -96,7 +96,7 @@ async function fetchHtml(url: string): Promise<string> {
   const r = await fetch(url, {
     headers: {
       'user-agent':
-        'Mozilla/5.0 (compatible; StudyAbroadDataBot/1.0; +https://studyabroad.app)',
+        'Mozilla/5.0 (compatible; LumniDataBot/1.0; +https://lumni.app)',
       accept: 'text/html,application/xhtml+xml',
     },
     redirect: 'follow',

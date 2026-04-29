@@ -80,9 +80,11 @@ export class ProfileScoresService {
         profileId,
         type: data.type as any,
         score: data.score,
+        subject:
+          data.subject?.trim() || this.extractLegacySubject(data.subScores),
         subScores: data.subScores as any,
         testDate,
-      },
+      } as any,
     });
 
     await this.cacheInvalidation.onProfileChange(userId);
@@ -100,8 +102,10 @@ export class ProfileScoresService {
         profileId,
         type: data.type as any,
         score: data.score,
+        subject:
+          data.subject?.trim() || this.extractLegacySubject(data.subScores),
         testDate,
-      },
+      } as any,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -134,6 +138,18 @@ export class ProfileScoresService {
     );
   }
 
+  private extractLegacySubject(subScores: unknown): string | undefined {
+    if (
+      !subScores ||
+      typeof subScores !== 'object' ||
+      Array.isArray(subScores)
+    ) {
+      return undefined;
+    }
+    const value = (subScores as Record<string, unknown>).subject;
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
   /**
    * Update an existing test score after verifying ownership.
    *
@@ -163,9 +179,13 @@ export class ProfileScoresService {
       data: {
         type: data.type as any,
         score: data.score,
+        subject:
+          data.subject !== undefined
+            ? data.subject?.trim() || null
+            : this.extractLegacySubject(data.subScores),
         subScores: data.subScores as any,
         testDate: data.testDate ? new Date(data.testDate) : undefined,
-      },
+      } as any,
     });
     await this.cacheInvalidation.onProfileChange(userId);
     return result;

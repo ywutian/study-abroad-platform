@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "streamdown/styles.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'streamdown/styles.css';
 
 @source "../../../../node_modules/streamdown/dist/*.js";
 
@@ -10,8 +10,13 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* 企业级字体栈 — Geist (Vercel) + 系统中文字体 (Ant Design 方案) */
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", sans-serif;
-  --font-mono: var(--font-geist-mono), "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-sans:
+    var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC',
+    'WenQuanYi Micro Hei', sans-serif;
+  --font-mono:
+    var(--font-geist-mono), 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
   /* 扩展字号阶梯：2xs — WCAG 最小可读 12px */
   --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
@@ -58,7 +63,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-  
+
   /* Auth 主题变量映射 */
   --color-auth-bg: var(--auth-bg);
   --color-auth-card-bg: var(--auth-card-bg);
@@ -84,57 +89,7 @@
    🎨 设计系统 - 亮色主题
    ======================================== */
 :root {
-  /* =========================================
-     ⚓ DS v2.1 单一事实来源 (Light mode ground truth)
-     详见 docs/DESIGN_SYSTEM.md §色彩系统/阴影/圆角
-     Phase 0 临时位置;Phase 1 将迁移到 packages/shared/src/design/tokens.ts
-     ========================================= */
-  --ds-radius: 0.75rem;
-  --ds-primary: oklch(0.58 0.22 255);
-  --ds-primary-foreground: oklch(0.99 0 0);
-  --ds-secondary: oklch(0.965 0.008 260);
-  --ds-secondary-foreground: oklch(0.30 0.04 260);
-  --ds-success: oklch(0.68 0.18 155);
-  --ds-success-foreground: oklch(0.99 0 0);
-  --ds-warning: oklch(0.78 0.15 75);
-  --ds-warning-foreground: oklch(0.20 0 0);
-  --ds-destructive: oklch(0.60 0.20 25);
-  --ds-destructive-foreground: oklch(0.99 0 0);
-  --ds-info: oklch(0.62 0.16 200);
-  --ds-info-foreground: oklch(0.99 0 0);
-  --ds-info-surface: oklch(0.96 0.04 200);
-  --ds-background: oklch(0.988 0.002 260);
-  --ds-foreground: oklch(0.12 0.02 260);
-  --ds-card: oklch(1 0 0);
-  --ds-card-foreground: oklch(0.12 0.02 260);
-  --ds-popover: oklch(1 0 0);
-  --ds-popover-foreground: oklch(0.12 0.02 260);
-  --ds-muted: oklch(0.965 0.005 260);
-  --ds-muted-foreground: oklch(0.48 0.02 260);
-  --ds-accent: oklch(0.96 0.015 260);
-  --ds-accent-foreground: oklch(0.20 0.08 260);
-  --ds-surface-muted: oklch(0.972 0.007 260);
-  --ds-surface-subtle: oklch(0.985 0.004 260);
-  --ds-border: oklch(0.92 0.008 260);
-  --ds-border-strong: oklch(0.85 0.012 260);
-  --ds-input: oklch(0.92 0.008 260);
-  --ds-ring: oklch(0.58 0.22 255);
-  --ds-shadow-card: 0 1px 2px oklch(0 0 0 / 5%);
-  --ds-shadow-elevated: 0 2px 8px oklch(0 0 0 / 8%);
-
-  /* Admission Tier = DS 语义 token 别名 (UI_LANGUAGE_RESEARCH §8 CollegeVine tier chip) */
-  --ds-status-reach: var(--ds-destructive);
-  --ds-status-reach-bg: color-mix(in oklab, var(--ds-destructive) 12%, var(--ds-card));
-  --ds-status-reach-fg: color-mix(in oklab, var(--ds-destructive) 72%, var(--ds-foreground));
-  --ds-status-target: var(--ds-warning);
-  --ds-status-target-bg: color-mix(in oklab, var(--ds-warning) 14%, var(--ds-card));
-  --ds-status-target-fg: color-mix(in oklab, var(--ds-warning) 68%, var(--ds-foreground));
-  --ds-status-safety: var(--ds-success);
-  --ds-status-safety-bg: color-mix(in oklab, var(--ds-success) 12%, var(--ds-card));
-  --ds-status-safety-fg: color-mix(in oklab, var(--ds-success) 70%, var(--ds-foreground));
-  --ds-status-likely: var(--ds-primary);
-  --ds-status-likely-bg: color-mix(in oklab, var(--ds-primary) 10%, var(--ds-card));
-  --ds-status-likely-fg: color-mix(in oklab, var(--ds-primary) 72%, var(--ds-foreground));
+  /* --ds-* 由 layout 内联 getThemeCssText() 注入（packages/shared），随 color-palette 切换 */
 
   /* ========== 语义别名层 (existing) ========== */
   --radius: var(--ds-radius);
@@ -142,11 +97,11 @@
   /* 🔵 品牌色 - 现代蓝 */
   --primary: var(--ds-primary);
   --primary-foreground: var(--ds-primary-foreground);
-  
+
   /* ⚪ 次要色 - 柔和灰蓝 */
   --secondary: var(--ds-secondary);
   --secondary-foreground: var(--ds-secondary-foreground);
-  
+
   /* ✅ 成功色 - 翠绿 */
   --success: var(--ds-success);
   --success-foreground: var(--ds-success-foreground);
@@ -166,192 +121,148 @@
   /* 📄 背景 */
   --background: var(--ds-background);
   --foreground: var(--ds-foreground);
-  
+
   /* 🎴 卡片 - 纯白带微光 */
   --card: var(--ds-card);
   --card-foreground: var(--ds-card-foreground);
-  
+
   /* 💬 弹出层 */
   --popover: var(--ds-popover);
   --popover-foreground: var(--ds-popover-foreground);
-  
+
   /* 🔇 静音色 */
   --muted: var(--ds-muted);
   --muted-foreground: var(--ds-muted-foreground);
-  
+
   /* ✨ 强调色 */
   --accent: var(--ds-accent);
   --accent-foreground: var(--ds-accent-foreground);
-  
+
   /* 🔲 边框和输入 */
   --border: var(--ds-border);
   --input: var(--ds-input);
   --ring: var(--ds-ring);
-  
-  /* 📊 图表色 - 现代渐变系 */
+
+  /* 📊 图表色 - 暖米黑金系 */
   --chart-1: var(--ds-primary);
   --chart-2: var(--ds-success);
   --chart-3: var(--ds-info);
   --chart-4: var(--ds-warning);
-  --chart-5: oklch(0.68 0.18 320);
-  
+  --chart-5: color-mix(in oklab, var(--ds-destructive) 35%, var(--ds-info) 65%);
+
   /* 📱 侧边栏 */
-  --sidebar: oklch(0.985 0.004 260);
-  --sidebar-foreground: oklch(0.12 0.02 260);
-  --sidebar-primary: oklch(0.58 0.22 255);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.015 260);
-  --sidebar-accent-foreground: oklch(0.20 0.08 260);
-  --sidebar-border: oklch(0.92 0.008 260);
-  --sidebar-ring: oklch(0.58 0.22 255);
-  
+  --sidebar: var(--ds-surface-subtle);
+  --sidebar-foreground: var(--ds-foreground);
+  --sidebar-primary: var(--ds-primary);
+  --sidebar-primary-foreground: var(--ds-primary-foreground);
+  --sidebar-accent: var(--ds-accent);
+  --sidebar-accent-foreground: var(--ds-accent-foreground);
+  --sidebar-border: var(--ds-border);
+  --sidebar-ring: var(--ds-ring);
+
   /* 🔐 Auth 页面专用 - 亮色 */
-  --auth-bg: oklch(0.97 0.008 260);
-  --auth-card-bg: oklch(1 0 0);
-  --auth-card-border: oklch(0.90 0.01 260);
-  --auth-text: oklch(0.15 0.02 260);
-  --auth-text-muted: oklch(0.45 0.02 260);
-  --auth-text-subtle: oklch(0.60 0.015 260);
-  --auth-input-bg: oklch(0.98 0.005 260);
-  --auth-input-border: oklch(0.88 0.01 260);
-  --auth-input-text: oklch(0.15 0.02 260);
-  --auth-input-placeholder: oklch(0.60 0.015 260);
-  --auth-glow-1: oklch(0.58 0.22 255 / 15%);
-  --auth-glow-2: oklch(0.55 0.20 200 / 10%);
-  --auth-glow-3: oklch(0.60 0.18 290 / 8%);
-  --auth-grid: oklch(0.58 0.22 255 / 5%);
-  --auth-divider: oklch(0.90 0.008 260);
-  --auth-icon: oklch(0.55 0.02 260);
-  --auth-icon-focus: oklch(0.58 0.22 255);
-  --auth-star: oklch(0.65 0.015 260);
-  --auth-focus-border: oklch(0.58 0.22 255 / 50%);
-  --auth-focus-ring: oklch(0.58 0.22 255 / 20%);
-  --auth-icon-bg: oklch(0.58 0.22 255 / 10%);
-  --auth-icon-ring: oklch(0.58 0.22 255 / 20%);
-  --auth-accent: oklch(0.60 0.20 255);
-  --auth-checkbox-checked: oklch(0.58 0.22 255);
-  --auth-link: oklch(0.60 0.20 255);
-  --auth-link-hover: oklch(0.70 0.18 255);
-  --auth-pulse-dot: oklch(0.60 0.20 255);
-  --auth-error: oklch(0.65 0.20 25);
-  --auth-error-bg: oklch(0.65 0.20 25 / 10%);
-  --auth-error-ring: oklch(0.65 0.20 25 / 20%);
-  
+  --auth-bg: var(--ds-background);
+  --auth-card-bg: var(--ds-card);
+  --auth-card-border: var(--ds-border);
+  --auth-text: var(--ds-foreground);
+  --auth-text-muted: var(--ds-muted-foreground);
+  --auth-text-subtle: color-mix(in oklab, var(--ds-muted-foreground) 88%, var(--ds-foreground) 12%);
+  --auth-input-bg: var(--ds-surface-subtle);
+  --auth-input-border: var(--ds-border);
+  --auth-input-text: var(--ds-foreground);
+  --auth-input-placeholder: var(--ds-muted-foreground);
+  --auth-glow-1: color-mix(in oklab, var(--ds-primary) 16%, transparent);
+  --auth-glow-2: color-mix(in oklab, var(--ds-warning) 12%, transparent);
+  --auth-glow-3: color-mix(in oklab, var(--ds-info) 10%, transparent);
+  --auth-grid: color-mix(in oklab, var(--ds-foreground) 7%, transparent);
+  --auth-divider: var(--ds-border);
+  --auth-icon: color-mix(in oklab, var(--ds-muted-foreground) 92%, var(--ds-foreground) 8%);
+  --auth-icon-focus: var(--ds-primary);
+  --auth-star: var(--ds-warning);
+  --auth-focus-border: color-mix(in oklab, var(--ds-primary) 55%, transparent);
+  --auth-focus-ring: color-mix(in oklab, var(--ds-primary) 22%, transparent);
+  --auth-icon-bg: color-mix(in oklab, var(--ds-primary) 12%, transparent);
+  --auth-icon-ring: color-mix(in oklab, var(--ds-primary) 22%, transparent);
+  --auth-accent: var(--ds-primary);
+  --auth-checkbox-checked: var(--ds-primary);
+  --auth-link: var(--ds-primary);
+  --auth-link-hover: var(--ds-warning);
+  --auth-pulse-dot: var(--ds-primary);
+  --auth-error: var(--ds-destructive);
+  --auth-error-bg: color-mix(in oklab, var(--ds-destructive) 12%, transparent);
+  --auth-error-ring: color-mix(in oklab, var(--ds-destructive) 22%, transparent);
+
   /* 🌈 Hero 区域 - 亮色 */
-  --hero-bg: linear-gradient(135deg, oklch(0.97 0.01 260) 0%, oklch(0.94 0.02 255) 100%);
-  --hero-text: oklch(0.15 0.02 260);
-  --hero-text-muted: oklch(0.45 0.02 260);
-  
+  --hero-bg: linear-gradient(
+    135deg,
+    var(--ds-background) 0%,
+    color-mix(in oklab, var(--ds-background) 88%, var(--ds-accent) 12%) 100%
+  );
+  --hero-text: var(--ds-foreground);
+  --hero-text-muted: var(--ds-muted-foreground);
+
   /* 📊 Stats 卡片 - 亮色 */
-  --stat-card-bg: oklch(1 0 0);
-  --stat-card-border: oklch(0.90 0.01 260);
-  --stat-card-text: oklch(0.15 0.02 260);
-  --stat-card-text-muted: oklch(0.50 0.02 260);
-  
+  --stat-card-bg: var(--ds-card);
+  --stat-card-border: var(--ds-border);
+  --stat-card-text: var(--ds-foreground);
+  --stat-card-text-muted: var(--ds-muted-foreground);
+
   /* 🔘 按钮 - 亮色 outline */
-  --btn-outline-border: oklch(0.75 0.02 260);
-  --btn-outline-text: oklch(0.25 0.02 260);
-  --btn-outline-hover-bg: oklch(0.95 0.005 260);
-  
+  --btn-outline-border: var(--ds-border-strong);
+  --btn-outline-text: var(--ds-foreground);
+  --btn-outline-hover-bg: var(--ds-muted);
+
   /* 🏠 Hero 区域详细变量 - 亮色 */
-  --hero-badge-text: oklch(0.35 0.15 200);
-  --hero-subtitle: oklch(0.40 0.02 260);
-  --hero-feature-text: oklch(0.50 0.02 260);
-  --hero-scroll-text: oklch(0.50 0.02 260);
-  --hero-scroll-border: oklch(0.70 0.02 260);
-  --hero-scroll-dot: oklch(0.55 0.02 260);
-  
+  --hero-badge-text: var(--ds-warning);
+  --hero-subtitle: color-mix(in oklab, var(--ds-foreground) 78%, var(--ds-muted-foreground) 22%);
+  --hero-feature-text: var(--ds-muted-foreground);
+  --hero-scroll-text: var(--ds-muted-foreground);
+  --hero-scroll-border: var(--ds-border-strong);
+  --hero-scroll-dot: var(--ds-primary);
+
   /* 🎯 CTA 区域 - 亮色 */
-  --cta-badge-border: oklch(0.85 0.01 260);
-  --cta-badge-bg: oklch(0.96 0.005 260);
-  --cta-badge-text: oklch(0.40 0.02 260);
-  --cta-title: oklch(0.15 0.02 260);
-  --cta-subtitle: oklch(0.45 0.02 260);
-  --cta-feature-text: oklch(0.55 0.02 260);
-  
+  --cta-badge-border: var(--ds-border);
+  --cta-badge-bg: var(--ds-muted);
+  --cta-badge-text: color-mix(in oklab, var(--ds-foreground) 72%, var(--ds-muted-foreground) 28%);
+  --cta-title: var(--ds-foreground);
+  --cta-subtitle: var(--ds-muted-foreground);
+  --cta-feature-text: color-mix(in oklab, var(--ds-muted-foreground) 92%, var(--ds-foreground) 8%);
+
   /* 📦 下拉菜单 - 亮色 */
-  --dropdown-bg: oklch(1 0 0 / 95%);
-  --dropdown-border: oklch(0.90 0.01 260);
-  --dropdown-text: oklch(0.25 0.02 260);
-  --dropdown-text-muted: oklch(0.50 0.02 260);
-  --dropdown-hover-bg: oklch(0.96 0.005 260);
+  --dropdown-bg: color-mix(in oklab, var(--ds-card) 96%, transparent);
+  --dropdown-border: var(--ds-border);
+  --dropdown-text: var(--ds-foreground);
+  --dropdown-text-muted: var(--ds-muted-foreground);
+  --dropdown-hover-bg: var(--ds-muted);
 }
 
 /* ========================================
    🌙 设计系统 - 暗色主题
    ======================================== */
 .dark {
-  /* =========================================
-     ⚓ DS v2.1 单一事实来源 (Dark mode ground truth)
-     详见 docs/DESIGN_SYSTEM.md §暗色模式
-     ========================================= */
-  --ds-primary: oklch(0.68 0.20 255);
-  --ds-primary-foreground: oklch(0.12 0.02 260);
-  --ds-secondary: oklch(0.20 0.015 260);
-  --ds-secondary-foreground: oklch(0.90 0.01 260);
-  --ds-success: oklch(0.72 0.16 155);
-  --ds-success-foreground: oklch(0.10 0.015 260);
-  --ds-warning: oklch(0.80 0.14 75);
-  --ds-warning-foreground: oklch(0.10 0.015 260);
-  --ds-destructive: oklch(0.65 0.18 25);
-  --ds-destructive-foreground: oklch(0.99 0 0);
-  --ds-info: oklch(0.72 0.14 200);
-  --ds-info-foreground: oklch(0.10 0.015 260);
-  --ds-info-surface: oklch(0.22 0.04 200);
-  --ds-background: oklch(0.11 0.015 260);
-  --ds-foreground: oklch(0.96 0.008 260);
-  --ds-card: oklch(0.16 0.018 260);
-  --ds-card-foreground: oklch(0.96 0.008 260);
-  --ds-popover: oklch(0.16 0.018 260);
-  --ds-popover-foreground: oklch(0.96 0.008 260);
-  --ds-muted: oklch(0.20 0.015 260);
-  --ds-muted-foreground: oklch(0.70 0.012 260);
-  --ds-accent: oklch(0.24 0.02 260);
-  --ds-accent-foreground: oklch(0.90 0.01 260);
-  --ds-surface-muted: oklch(0.18 0.018 260);
-  --ds-surface-subtle: oklch(0.14 0.016 260);
-  --ds-border: oklch(0.22 0.01 260);
-  --ds-border-strong: oklch(0.32 0.012 260);
-  --ds-input: oklch(0.22 0.01 260);
-  --ds-ring: oklch(0.68 0.20 255);
-  --ds-shadow-card: 0 1px 2px oklch(0 0 0 / 30%);
-  --ds-shadow-elevated: 0 2px 8px oklch(0 0 0 / 35%);
-
-  /* Admission Tier 暗色自动跟随 (color-mix 读取暗色 --ds-card/--ds-foreground) */
-  --ds-status-reach: var(--ds-destructive);
-  --ds-status-reach-bg: color-mix(in oklab, var(--ds-destructive) 18%, var(--ds-card));
-  --ds-status-reach-fg: color-mix(in oklab, var(--ds-destructive) 45%, var(--ds-foreground));
-  --ds-status-target: var(--ds-warning);
-  --ds-status-target-bg: color-mix(in oklab, var(--ds-warning) 18%, var(--ds-card));
-  --ds-status-target-fg: color-mix(in oklab, var(--ds-warning) 45%, var(--ds-foreground));
-  --ds-status-safety: var(--ds-success);
-  --ds-status-safety-bg: color-mix(in oklab, var(--ds-success) 18%, var(--ds-card));
-  --ds-status-safety-fg: color-mix(in oklab, var(--ds-success) 45%, var(--ds-foreground));
-  --ds-status-likely: var(--ds-primary);
-  --ds-status-likely-bg: color-mix(in oklab, var(--ds-primary) 16%, var(--ds-card));
-  --ds-status-likely-fg: color-mix(in oklab, var(--ds-primary) 48%, var(--ds-foreground));
+  /* --ds-* 由内联 getThemeCssText() 注入 */
 
   /* ========== 语义别名层 (existing) ========== */
   /* 📄 背景 - 深邃夜空 */
   --background: var(--ds-background);
   --foreground: var(--ds-foreground);
-  
+
   /* 🎴 卡片 - 深色玻璃 */
   --card: var(--ds-card);
   --card-foreground: var(--ds-card-foreground);
-  
+
   /* 💬 弹出层 */
   --popover: var(--ds-popover);
   --popover-foreground: var(--ds-popover-foreground);
-  
+
   /* 🔵 品牌色 - 明亮蓝 */
   --primary: var(--ds-primary);
   --primary-foreground: var(--ds-primary-foreground);
-  
+
   /* ⚪ 次要色 */
   --secondary: var(--ds-secondary);
   --secondary-foreground: var(--ds-secondary-foreground);
-  
+
   /* ✅ 成功色 */
   --success: var(--ds-success);
   --success-foreground: var(--ds-success-foreground);
@@ -359,15 +270,15 @@
   /* ⚠️ 警示色 */
   --warning: var(--ds-warning);
   --warning-foreground: var(--ds-warning-foreground);
-  
+
   /* 🔇 静音色 - 优化对比度 */
   --muted: var(--ds-muted);
   --muted-foreground: var(--ds-muted-foreground);
-  
+
   /* ✨ 强调色 */
   --accent: var(--ds-accent);
   --accent-foreground: var(--ds-accent-foreground);
-  
+
   /* 🔴 危险色 */
   --destructive: var(--ds-destructive);
   --destructive-foreground: var(--ds-destructive-foreground);
@@ -386,88 +297,92 @@
   --chart-2: var(--ds-success);
   --chart-3: var(--ds-info);
   --chart-4: var(--ds-warning);
-  --chart-5: oklch(0.72 0.16 320);
-  
+  --chart-5: color-mix(in oklab, var(--ds-destructive) 40%, var(--ds-info) 60%);
+
   /* 📱 侧边栏 */
-  --sidebar: oklch(0.14 0.015 260);
-  --sidebar-foreground: oklch(0.96 0.008 260);
-  --sidebar-primary: oklch(0.68 0.20 255);
-  --sidebar-primary-foreground: oklch(0.10 0.015 260);
-  --sidebar-accent: oklch(0.24 0.02 260);
-  --sidebar-accent-foreground: oklch(0.96 0.008 260);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.20 255);
-  
+  --sidebar: var(--ds-surface-subtle);
+  --sidebar-foreground: var(--ds-foreground);
+  --sidebar-primary: var(--ds-primary);
+  --sidebar-primary-foreground: var(--ds-primary-foreground);
+  --sidebar-accent: var(--ds-accent);
+  --sidebar-accent-foreground: var(--ds-accent-foreground);
+  --sidebar-border: color-mix(in oklab, var(--ds-foreground) 10%, transparent);
+  --sidebar-ring: var(--ds-ring);
+
   /* 🔐 Auth 页面专用 - 暗色 */
-  --auth-bg: oklch(0.10 0.015 260);
-  --auth-card-bg: oklch(0.13 0.018 260 / 90%);
-  --auth-card-border: oklch(1 0 0 / 8%);
-  --auth-text: oklch(0.98 0.005 260);
-  --auth-text-muted: oklch(0.70 0.01 260);
-  --auth-text-subtle: oklch(0.58 0.01 260);
-  --auth-input-bg: oklch(1 0 0 / 4%);
-  --auth-input-border: oklch(1 0 0 / 10%);
-  --auth-input-text: oklch(0.98 0.005 260);
-  --auth-input-placeholder: oklch(0.55 0.01 260);
-  --auth-glow-1: oklch(0.58 0.22 255 / 20%);
-  --auth-glow-2: oklch(0.55 0.20 200 / 15%);
-  --auth-glow-3: oklch(0.60 0.18 290 / 10%);
-  --auth-grid: oklch(0.58 0.22 255 / 3%);
-  --auth-divider: oklch(1 0 0 / 6%);
-  --auth-icon: oklch(0.50 0.01 260);
-  --auth-icon-focus: oklch(0.65 0.20 255);
-  --auth-star: oklch(0.40 0.01 260);
-  --auth-focus-border: oklch(0.65 0.20 255 / 50%);
-  --auth-focus-ring: oklch(0.65 0.20 255 / 20%);
-  --auth-icon-bg: oklch(0.65 0.20 255 / 10%);
-  --auth-icon-ring: oklch(0.65 0.20 255 / 20%);
-  --auth-accent: oklch(0.65 0.20 255);
-  --auth-checkbox-checked: oklch(0.65 0.20 255);
-  --auth-link: oklch(0.65 0.18 255);
-  --auth-link-hover: oklch(0.75 0.16 255);
-  --auth-pulse-dot: oklch(0.65 0.18 255);
-  --auth-error: oklch(0.70 0.18 25);
-  --auth-error-bg: oklch(0.65 0.18 25 / 10%);
-  --auth-error-ring: oklch(0.65 0.18 25 / 20%);
-  
+  --auth-bg: var(--ds-background);
+  --auth-card-bg: color-mix(in oklab, var(--ds-card) 92%, transparent);
+  --auth-card-border: color-mix(in oklab, var(--ds-foreground) 10%, transparent);
+  --auth-text: var(--ds-foreground);
+  --auth-text-muted: var(--ds-muted-foreground);
+  --auth-text-subtle: color-mix(in oklab, var(--ds-muted-foreground) 94%, var(--ds-foreground) 6%);
+  --auth-input-bg: color-mix(in oklab, var(--ds-foreground) 5%, transparent);
+  --auth-input-border: color-mix(in oklab, var(--ds-foreground) 11%, transparent);
+  --auth-input-text: var(--ds-foreground);
+  --auth-input-placeholder: var(--ds-muted-foreground);
+  --auth-glow-1: color-mix(in oklab, var(--ds-primary) 20%, transparent);
+  --auth-glow-2: color-mix(in oklab, var(--ds-primary) 14%, transparent);
+  --auth-glow-3: color-mix(in oklab, var(--ds-info) 12%, transparent);
+  --auth-grid: color-mix(in oklab, var(--ds-primary) 5%, transparent);
+  --auth-divider: color-mix(in oklab, var(--ds-foreground) 8%, transparent);
+  --auth-icon: var(--ds-muted-foreground);
+  --auth-icon-focus: var(--ds-primary);
+  --auth-star: var(--ds-warning);
+  --auth-focus-border: color-mix(in oklab, var(--ds-primary) 55%, transparent);
+  --auth-focus-ring: color-mix(in oklab, var(--ds-primary) 22%, transparent);
+  --auth-icon-bg: color-mix(in oklab, var(--ds-primary) 13%, transparent);
+  --auth-icon-ring: color-mix(in oklab, var(--ds-primary) 22%, transparent);
+  --auth-accent: var(--ds-primary);
+  --auth-checkbox-checked: var(--ds-primary);
+  --auth-link: var(--ds-primary);
+  --auth-link-hover: color-mix(in oklab, var(--ds-primary) 78%, var(--ds-foreground) 22%);
+  --auth-pulse-dot: var(--ds-primary);
+  --auth-error: var(--ds-destructive);
+  --auth-error-bg: color-mix(in oklab, var(--ds-destructive) 12%, transparent);
+  --auth-error-ring: color-mix(in oklab, var(--ds-destructive) 22%, transparent);
+
   /* 🌈 Hero 区域 - 暗色 */
-  --hero-bg: linear-gradient(135deg, oklch(0.12 0.02 260) 0%, oklch(0.10 0.025 255) 100%);
-  --hero-text: oklch(0.98 0.005 260);
-  --hero-text-muted: oklch(0.70 0.01 260);
-  
+  --hero-bg: linear-gradient(
+    135deg,
+    var(--ds-background) 0%,
+    color-mix(in oklab, var(--ds-background) 55%, var(--ds-card) 45%) 100%
+  );
+  --hero-text: var(--ds-foreground);
+  --hero-text-muted: var(--ds-muted-foreground);
+
   /* 📊 Stats 卡片 - 暗色 */
-  --stat-card-bg: oklch(0.18 0.02 260 / 50%);
-  --stat-card-border: oklch(0.35 0.02 260);
-  --stat-card-text: oklch(0.98 0.005 260);
-  --stat-card-text-muted: oklch(0.60 0.015 260);
-  
+  --stat-card-bg: color-mix(in oklab, var(--ds-card) 60%, transparent);
+  --stat-card-border: var(--ds-border);
+  --stat-card-text: var(--ds-foreground);
+  --stat-card-text-muted: var(--ds-muted-foreground);
+
   /* 🔘 按钮 - 暗色 outline */
-  --btn-outline-border: oklch(0.45 0.02 260);
-  --btn-outline-text: oklch(0.98 0.005 260);
-  --btn-outline-hover-bg: oklch(1 0 0 / 10%);
-  
+  --btn-outline-border: var(--ds-border-strong);
+  --btn-outline-text: var(--ds-foreground);
+  --btn-outline-hover-bg: color-mix(in oklab, var(--ds-foreground) 9%, transparent);
+
   /* 🏠 Hero 区域详细变量 - 暗色 */
-  --hero-badge-text: oklch(0.85 0.08 200);
-  --hero-subtitle: oklch(0.75 0.01 260);
-  --hero-feature-text: oklch(0.60 0.015 260);
-  --hero-scroll-text: oklch(0.60 0.015 260);
-  --hero-scroll-border: oklch(0.45 0.02 260);
-  --hero-scroll-dot: oklch(0.60 0.015 260);
-  
+  --hero-badge-text: color-mix(in oklab, var(--ds-success) 55%, var(--ds-foreground) 45%);
+  --hero-subtitle: var(--ds-muted-foreground);
+  --hero-feature-text: var(--ds-muted-foreground);
+  --hero-scroll-text: var(--ds-muted-foreground);
+  --hero-scroll-border: var(--ds-border-strong);
+  --hero-scroll-dot: var(--ds-primary);
+
   /* 🎯 CTA 区域 - 暗色 */
-  --cta-badge-border: oklch(1 0 0 / 10%);
-  --cta-badge-bg: oklch(1 0 0 / 5%);
-  --cta-badge-text: oklch(0.70 0.01 260);
-  --cta-title: oklch(0.98 0.005 260);
-  --cta-subtitle: oklch(0.60 0.01 260);
-  --cta-feature-text: oklch(0.50 0.01 260);
-  
+  --cta-badge-border: color-mix(in oklab, var(--ds-foreground) 10%, transparent);
+  --cta-badge-bg: color-mix(in oklab, var(--ds-foreground) 5%, transparent);
+  --cta-badge-text: var(--ds-muted-foreground);
+  --cta-title: var(--ds-foreground);
+  --cta-subtitle: var(--ds-muted-foreground);
+  --cta-feature-text: color-mix(in oklab, var(--ds-muted-foreground) 92%, var(--ds-foreground) 8%);
+
   /* 📦 下拉菜单 - 暗色 */
-  --dropdown-bg: oklch(0.14 0.02 260 / 95%);
-  --dropdown-border: oklch(0.30 0.02 260);
-  --dropdown-text: oklch(0.90 0.005 260);
-  --dropdown-text-muted: oklch(0.70 0.01 260);
-  --dropdown-hover-bg: oklch(1 0 0 / 10%);
+  --dropdown-bg: color-mix(in oklab, var(--ds-card) 96%, transparent);
+  --dropdown-border: var(--ds-border);
+  --dropdown-text: var(--ds-foreground);
+  --dropdown-text-muted: var(--ds-muted-foreground);
+  --dropdown-hover-bg: color-mix(in oklab, var(--ds-foreground) 9%, transparent);
 }
 
 /* ========================================
@@ -477,7 +392,7 @@
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -492,7 +407,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
     font-optical-sizing: auto;
     line-height: 1.625;
     letter-spacing: -0.011em;
@@ -508,16 +425,21 @@
      行高公式: fontSize + 8px（Ant Design 标准）
      字重: 400(正文) / 500(中等) / 600(半粗) / 700(粗)
      ======================================== */
-  
+
   /* 标题通用样式 */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-weight: 600;
     line-height: 1.3;
     letter-spacing: -0.02em;
     text-wrap: balance;
     color: var(--foreground);
   }
-  
+
   /* Display / Hero — 38~46px */
   h1 {
     font-size: clamp(1.875rem, 3.5vw + 0.5rem, 2.875rem);
@@ -525,7 +447,7 @@
     letter-spacing: -0.025em;
     line-height: 1.2;
   }
-  
+
   /* Page Title — 30px */
   h2 {
     font-size: clamp(1.5rem, 2.5vw + 0.25rem, 1.875rem);
@@ -533,21 +455,21 @@
     letter-spacing: -0.02em;
     line-height: 1.267;
   }
-  
+
   /* Section Title — 24px */
   h3 {
     font-size: clamp(1.25rem, 2vw, 1.5rem);
     letter-spacing: -0.017em;
     line-height: 1.333;
   }
-  
+
   /* Sub-section — 20px */
   h4 {
     font-size: 1.25rem;
     letter-spacing: -0.012em;
     line-height: 1.4;
   }
-  
+
   /* Emphasized — 16px bold */
   h5 {
     font-size: 1rem;
@@ -555,7 +477,7 @@
     letter-spacing: -0.006em;
     line-height: 1.5;
   }
-  
+
   /* Label heading — 14px bold */
   h6 {
     font-size: 0.875rem;
@@ -563,26 +485,30 @@
     letter-spacing: 0;
     line-height: 1.571;
   }
-  
+
   /* 正文段落 — 16px / 26px */
   p {
     line-height: 1.625;
     text-wrap: pretty;
   }
-  
+
   /* 小字体 — 14px / 22px */
   small {
     font-size: 0.875rem;
     line-height: 1.571;
   }
-  
+
   /* 强调文本 */
-  strong, b {
+  strong,
+  b {
     font-weight: 600;
   }
-  
+
   /* 代码 */
-  code, kbd, samp, pre {
+  code,
+  kbd,
+  samp,
+  pre {
     font-family: var(--font-mono);
     font-size: 0.875em;
   }
@@ -595,32 +521,38 @@
   td {
     font-variant-numeric: tabular-nums;
   }
-  
+
   /* 链接 */
   a {
     text-underline-offset: 0.15em;
     text-decoration-thickness: 1px;
   }
-  
+
   /* ========================================
      🀄 中文排版优化
      参考：Ant Design、Apple 中文排版指南
      ======================================== */
-  
+
   /* 中文环境：加大行高，正向字间距，防止溢出 */
-  :lang(zh), :lang(zh-CN), :lang(zh-Hans) {
+  :lang(zh),
+  :lang(zh-CN),
+  :lang(zh-Hans) {
     letter-spacing: 0.01em;
     line-height: 1.7;
     word-break: break-all;
     overflow-wrap: break-word;
   }
-  
-  :lang(zh) h1, :lang(zh) h2, :lang(zh) h3,
-  :lang(zh) h4, :lang(zh) h5, :lang(zh) h6 {
+
+  :lang(zh) h1,
+  :lang(zh) h2,
+  :lang(zh) h3,
+  :lang(zh) h4,
+  :lang(zh) h5,
+  :lang(zh) h6 {
     letter-spacing: -0.01em;
     line-height: 1.3;
   }
-  
+
   /* 针对超大展示标题的中文特调（极其重要） */
   :lang(zh) .text-display-hero,
   :lang(zh) .text-display-section,
@@ -629,42 +561,38 @@
     letter-spacing: -0.02em; /* 稍微放松一点字间距，因为字号变小了 */
     line-height: 1.2 !important; /* 稍微增加一点行高，让多行标题更有呼吸感 */
   }
-  
+
   :lang(zh) p {
     line-height: 1.75;
     letter-spacing: 0.01em;
   }
-  
+
   /* 主题切换过渡 */
   :root {
-    --theme-transition: 
-      background-color 0.25s ease,
-      color 0.2s ease,
-      border-color 0.2s ease,
-      box-shadow 0.2s ease,
-      fill 0.2s ease,
-      stroke 0.2s ease;
+    --theme-transition:
+      background-color 0.25s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+      fill 0.2s ease, stroke 0.2s ease;
   }
-  
+
   html.theme-transition,
   html.theme-transition *,
   html.theme-transition *::before,
   html.theme-transition *::after {
     transition: var(--theme-transition) !important;
   }
-  
+
   /* 选中文本样式 */
   ::selection {
-    background: oklch(0.58 0.22 255 / 25%);
+    background: color-mix(in oklab, var(--ds-primary) 25%, transparent);
   }
-  
+
   .dark ::selection {
-    background: oklch(0.68 0.20 255 / 30%);
+    background: color-mix(in oklab, var(--ds-primary) 30%, transparent);
   }
-  
+
   /* 聚焦可见环 — 使用 primary 色保证在所有 zone 背景上可见 */
   :focus-visible {
-    outline: 2px solid oklch(0.58 0.22 255);
+    outline: 2px solid var(--ds-primary);
     outline-offset: 2px;
   }
 }
@@ -673,104 +601,203 @@
    🎬 动画系统
    ======================================== */
 @keyframes toast-slide-in {
-  0% { opacity: 0; transform: translateY(-16px) scale(0.96); }
-  60% { opacity: 1; transform: translateY(2px) scale(1.01); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fade-in-down {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(12px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-12px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes pulse-glow {
-  /* @design-system-ignore-next-line */
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.58 0.22 255 / 40%); }
-  /* @design-system-ignore-next-line */
-  50% { box-shadow: 0 0 20px 4px oklch(0.58 0.22 255 / 20%); }
+  0%,
+  100% {
+    box-shadow: var(--shadow-card);
+  }
+  50% {
+    box-shadow: var(--shadow-elevated);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes gradient-x {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 聊天消息入场动画 */
 @keyframes message-in-left {
-  from { opacity: 0; transform: translateX(-12px) scale(0.97); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
 @keyframes message-in-right {
-  from { opacity: 0; transform: translateX(12px) scale(0.97); }
-  to { opacity: 1; transform: translateX(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateX(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
 /* 无限横向滚动 Marquee */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* SVG 圆形仪表盘 */
 @keyframes gauge-fill {
-  from { stroke-dashoffset: var(--gauge-circumference, 283); }
-  to { stroke-dashoffset: var(--gauge-offset, 0); }
+  from {
+    stroke-dashoffset: var(--gauge-circumference, 283);
+  }
+  to {
+    stroke-dashoffset: var(--gauge-offset, 0);
+  }
 }
 
 /* 渐变文字动画 */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Aurora 背景漂移 */
 @keyframes aurora-drift {
-  0%, 100% { background-position: 0% 0%; }
-  25% { background-position: 100% 50%; }
-  50% { background-position: 50% 100%; }
-  75% { background-position: 0% 50%; }
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  75% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ========================================
@@ -778,28 +805,64 @@
    ======================================== */
 @layer utilities {
   /* 动画类 */
-  .animate-toast-slide-in { animation: toast-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-  .animate-fade-in { animation: fade-in 0.35s ease-out forwards; }
-  .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
-  .animate-fade-in-down { animation: fade-in-down 0.4s ease-out forwards; }
-  .animate-scale-in { animation: scale-in 0.25s ease-out forwards; }
-  .animate-slide-in-right { animation: slide-in-right 0.35s ease-out forwards; }
-  .animate-slide-in-left { animation: slide-in-left 0.35s ease-out forwards; }
-  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
-  .animate-float { animation: float 3s ease-in-out infinite; }
-  .animate-gradient { animation: gradient-x 3s ease infinite; background-size: 200% 200%; }
-  .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-  .animate-message-in-left { animation: message-in-left 0.25s ease-out forwards; }
-  .animate-message-in-right { animation: message-in-right 0.25s ease-out forwards; }
-  .animate-marquee { animation: marquee 40s linear infinite; }
-  .animate-marquee:hover { animation-play-state: paused; }
-  
+  .animate-toast-slide-in {
+    animation: toast-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .animate-fade-in {
+    animation: fade-in 0.35s ease-out forwards;
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 0.4s ease-out forwards;
+  }
+  .animate-fade-in-down {
+    animation: fade-in-down 0.4s ease-out forwards;
+  }
+  .animate-scale-in {
+    animation: scale-in 0.25s ease-out forwards;
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.35s ease-out forwards;
+  }
+  .animate-slide-in-left {
+    animation: slide-in-left 0.35s ease-out forwards;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  .animate-gradient {
+    animation: gradient-x 3s ease infinite;
+    background-size: 200% 200%;
+  }
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
+  .animate-message-in-left {
+    animation: message-in-left 0.25s ease-out forwards;
+  }
+  .animate-message-in-right {
+    animation: message-in-right 0.25s ease-out forwards;
+  }
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
   .animate-shimmer {
-    background: linear-gradient(90deg, transparent 0%, oklch(0.95 0.01 260 / 60%) 50%, transparent 100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(0.95 0.01 260 / 60%) 50%,
+      transparent 100%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
-  
+
   /* 横向滚动隐藏滚动条 */
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -810,32 +873,52 @@
   }
 
   /* 延迟 */
-  .animation-delay-75 { animation-delay: 75ms; }
-  .animation-delay-100 { animation-delay: 100ms; }
-  .animation-delay-150 { animation-delay: 150ms; }
-  .animation-delay-200 { animation-delay: 200ms; }
-  .animation-delay-300 { animation-delay: 300ms; }
-  .animation-delay-400 { animation-delay: 400ms; }
-  .animation-delay-500 { animation-delay: 500ms; }
-  
-  .animate-initial { opacity: 0; }
-  
+  .animation-delay-75 {
+    animation-delay: 75ms;
+  }
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .animate-initial {
+    opacity: 0;
+  }
+
   /* ========================================
      🌈 渐变系统
      ======================================== */
-  
+
   /* 文字渐变 */
   .text-gradient-primary {
-    background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.55 0.20 220));
+    background: linear-gradient(135deg, var(--ds-primary), var(--ds-info));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .text-gradient-animated {
-    background: linear-gradient(90deg,
-      oklch(0.55 0.24 255), oklch(0.62 0.22 280),
-      oklch(0.68 0.18 200), oklch(0.55 0.24 255));
+    background: linear-gradient(
+      90deg,
+      var(--ds-primary),
+      var(--ds-warning),
+      var(--ds-info),
+      var(--ds-primary)
+    );
     background-size: 300% 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -844,277 +927,300 @@
   }
 
   .dark .text-gradient-animated {
-    background: linear-gradient(90deg,
-      oklch(0.75 0.18 255), oklch(0.80 0.16 280),
-      oklch(0.85 0.12 200), oklch(0.75 0.18 255));
+    background: linear-gradient(
+      90deg,
+      var(--ds-primary),
+      var(--ds-warning),
+      var(--ds-info),
+      var(--ds-primary)
+    );
     background-size: 300% 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .text-gradient-success {
-    background: linear-gradient(135deg, oklch(0.68 0.18 155), oklch(0.60 0.16 175));
+    background: linear-gradient(135deg, var(--ds-success), var(--ds-primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .text-gradient-warm {
-    background: linear-gradient(135deg, oklch(0.70 0.18 40), oklch(0.78 0.15 75));
+    background: linear-gradient(135deg, #b85c58, var(--ds-warning));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .text-gradient-purple {
-    background: linear-gradient(135deg, oklch(0.60 0.20 290), oklch(0.55 0.22 320));
+    background: linear-gradient(135deg, #6574ff, #e76f8a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   /* 背景渐变 */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.52 0.20 235));
+    background: linear-gradient(135deg, var(--ds-primary), var(--ds-info));
   }
-  
+
   .bg-gradient-subtle {
-    background: linear-gradient(180deg, var(--background), oklch(0.97 0.006 260));
+    background: linear-gradient(180deg, var(--background), var(--ds-surface-subtle));
   }
-  
+
   .dark .bg-gradient-subtle {
-    background: linear-gradient(180deg, var(--background), oklch(0.13 0.018 260));
+    background: linear-gradient(180deg, var(--background), var(--ds-surface-subtle));
   }
-  
+
   .bg-gradient-radial-primary {
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.58 0.22 255 / 8%), transparent);
+    background: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      oklch(0.58 0.22 255 / 8%),
+      transparent
+    );
   }
-  
+
   .dark .bg-gradient-radial-primary {
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.58 0.22 255 / 12%), transparent);
+    background: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      oklch(0.58 0.22 255 / 12%),
+      transparent
+    );
   }
-  
+
   .bg-gradient-mesh {
-    background: 
+    background:
       radial-gradient(at 20% 30%, oklch(0.58 0.22 255 / 6%) 0%, transparent 50%),
       radial-gradient(at 80% 70%, oklch(0.68 0.18 155 / 4%) 0%, transparent 50%),
-      radial-gradient(at 50% 100%, oklch(0.60 0.20 290 / 4%) 0%, transparent 50%);
+      radial-gradient(at 50% 100%, oklch(0.6 0.2 290 / 4%) 0%, transparent 50%);
   }
-  
+
   .dark .bg-gradient-mesh {
-    background: 
+    background:
       radial-gradient(at 20% 30%, oklch(0.58 0.22 255 / 10%) 0%, transparent 50%),
       radial-gradient(at 80% 70%, oklch(0.68 0.18 155 / 6%) 0%, transparent 50%),
-      radial-gradient(at 50% 100%, oklch(0.60 0.20 290 / 6%) 0%, transparent 50%);
+      radial-gradient(at 50% 100%, oklch(0.6 0.2 290 / 6%) 0%, transparent 50%);
   }
-  
+
   /* Auth 页面渐变背景 */
   .bg-gradient-hero {
     background:
       radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.58 0.22 255 / 0.14), transparent 60%),
       radial-gradient(ellipse 60% 40% at 80% 20%, oklch(0.65 0.18 200 / 0.08), transparent 50%),
-      linear-gradient(160deg, oklch(0.96 0.025 260) 0%, oklch(0.90 0.04 255) 35%, oklch(0.92 0.045 200) 65%, oklch(0.96 0.03 280) 100%);
+      linear-gradient(
+        160deg,
+        oklch(0.96 0.025 260) 0%,
+        oklch(0.9 0.04 255) 35%,
+        oklch(0.92 0.045 200) 65%,
+        oklch(0.96 0.03 280) 100%
+      );
   }
 
   .dark .bg-gradient-hero {
     background:
-      radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.45 0.22 255 / 0.10), transparent 60%),
-      linear-gradient(160deg, oklch(0.09 0.025 260) 0%, oklch(0.07 0.03 255) 40%, oklch(0.10 0.025 220) 70%, oklch(0.08 0.02 280) 100%);
+      radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.45 0.22 255 / 0.1), transparent 60%),
+      linear-gradient(
+        160deg,
+        oklch(0.09 0.025 260) 0%,
+        oklch(0.07 0.03 255) 40%,
+        oklch(0.1 0.025 220) 70%,
+        oklch(0.08 0.02 280) 100%
+      );
   }
-  
+
   .bg-auth-page {
     background-color: var(--auth-bg);
   }
-  
+
   .bg-auth-card {
     background-color: var(--auth-card-bg);
     border-color: var(--auth-card-border);
   }
-  
+
   .text-auth {
     color: var(--auth-text);
   }
-  
+
   .text-auth-muted {
     color: var(--auth-text-muted);
   }
-  
+
   .text-auth-subtle {
     color: var(--auth-text-subtle);
   }
-  
+
   .bg-auth-input-bg {
     background-color: var(--auth-input-bg);
   }
-  
+
   .border-auth-input-border {
     border-color: var(--auth-input-border);
   }
-  
+
   .text-auth-input-text {
     color: var(--auth-input-text);
   }
-  
+
   .text-auth-input-placeholder {
     color: var(--auth-input-placeholder);
   }
-  
+
   .text-auth-icon {
     color: var(--auth-icon);
   }
-  
+
   .text-auth-icon-focus {
     color: var(--auth-icon-focus);
   }
-  
+
   .text-auth-star {
     color: var(--auth-star);
   }
-  
+
   .text-auth-error {
     color: var(--auth-error);
   }
-  
+
   .bg-auth-error-bg {
     background-color: var(--auth-error-bg);
   }
-  
+
   .ring-auth-error-ring {
     --tw-ring-color: var(--auth-error-ring);
   }
-  
+
   .text-auth-accent {
     color: var(--auth-accent);
   }
-  
+
   .bg-auth-icon-bg {
     background-color: var(--auth-icon-bg);
   }
-  
+
   .ring-auth-icon-ring {
     --tw-ring-color: var(--auth-icon-ring);
   }
-  
+
   .border-auth-focus-border {
     border-color: var(--auth-focus-border);
   }
-  
+
   .ring-auth-focus-ring {
     --tw-ring-color: var(--auth-focus-ring);
   }
-  
+
   .border-auth-divider {
     border-color: var(--auth-divider);
   }
-  
+
   .bg-auth-card-bg {
     background-color: var(--auth-card-bg);
   }
-  
+
   /* Stats 卡片主题工具类 */
   .bg-stat-card {
     background-color: var(--stat-card-bg);
   }
-  
+
   .border-stat-card {
     border-color: var(--stat-card-border);
   }
-  
+
   .text-stat-card {
     color: var(--stat-card-text);
   }
-  
+
   .text-stat-card-muted {
     color: var(--stat-card-text-muted);
   }
-  
+
   /* Hero 区域主题工具类 */
   .text-hero {
     color: var(--hero-text);
   }
-  
+
   .text-hero-muted {
     color: var(--hero-text-muted);
   }
-  
+
   /* Outline 按钮主题工具类 */
   .border-btn-outline {
     border-color: var(--btn-outline-border);
   }
-  
+
   .text-btn-outline {
     color: var(--btn-outline-text);
   }
-  
+
   /* Hero 区域详细主题工具类 */
   .text-hero-badge {
     color: var(--hero-badge-text);
   }
-  
+
   .text-hero-subtitle {
     color: var(--hero-subtitle);
   }
-  
+
   .text-hero-feature {
     color: var(--hero-feature-text);
   }
-  
+
   .text-hero-scroll {
     color: var(--hero-scroll-text);
   }
-  
+
   .border-hero-scroll {
     border-color: var(--hero-scroll-border);
   }
-  
+
   .bg-hero-scroll-dot {
     background-color: var(--hero-scroll-dot);
   }
-  
+
   /* CTA 区域主题工具类 */
   .border-cta-badge {
     border-color: var(--cta-badge-border);
   }
-  
+
   .bg-cta-badge {
     background-color: var(--cta-badge-bg);
   }
-  
+
   .text-cta-badge {
     color: var(--cta-badge-text);
   }
-  
+
   .text-cta-title {
     color: var(--cta-title);
   }
-  
+
   .text-cta-subtitle {
     color: var(--cta-subtitle);
   }
-  
+
   .text-cta-feature {
     color: var(--cta-feature-text);
   }
-  
+
   /* 下拉菜单主题工具类 */
   .bg-dropdown {
     background-color: var(--dropdown-bg);
   }
-  
+
   .border-dropdown {
     border-color: var(--dropdown-border);
   }
-  
+
   .text-dropdown {
     color: var(--dropdown-text);
   }
-  
+
   .text-dropdown-muted {
     color: var(--dropdown-text-muted);
   }
-  
-  
+
   /* ========================================
      🪟 玻璃效果
      ======================================== */
@@ -1123,12 +1229,12 @@
     backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid oklch(1 0 0 / 15%);
   }
-  
+
   .dark .glass {
     background: oklch(0.16 0.018 260 / 75%);
     border: 1px solid oklch(1 0 0 / 8%);
   }
-  
+
   .glass-heavy {
     background: oklch(1 0 0 / 90%);
     backdrop-filter: blur(24px) saturate(200%);
@@ -1155,77 +1261,80 @@
       inset 0 1px 0 oklch(1 0 0 / 15%),
       0 8px 32px oklch(0 0 0 / 0.24);
   }
-  
+
   /* ========================================
      📐 背景图案
      ======================================== */
   .bg-grid {
-    background-image: 
+    background-image:
       linear-gradient(oklch(0.5 0.08 260 / 4%) 1px, transparent 1px),
       linear-gradient(90deg, oklch(0.5 0.08 260 / 4%) 1px, transparent 1px);
     background-size: 32px 32px;
   }
-  
+
   .dark .bg-grid {
-    background-image: 
+    background-image:
       linear-gradient(oklch(0.8 0.08 260 / 4%) 1px, transparent 1px),
       linear-gradient(90deg, oklch(0.8 0.08 260 / 4%) 1px, transparent 1px);
   }
-  
+
   .bg-grid-dense {
-    background-image: 
+    background-image:
       linear-gradient(oklch(0.5 0.08 260 / 3%) 1px, transparent 1px),
       linear-gradient(90deg, oklch(0.5 0.08 260 / 3%) 1px, transparent 1px);
     background-size: 16px 16px;
   }
-  
+
   .bg-dots {
     background-image: radial-gradient(oklch(0.5 0.08 260 / 12%) 1.5px, transparent 1.5px);
     background-size: 24px 24px;
   }
-  
+
   .dark .bg-dots {
     background-image: radial-gradient(oklch(0.8 0.08 260 / 8%) 1.5px, transparent 1.5px);
   }
-  
+
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
   }
-  
+
   /* ========================================
      🎴 卡片效果
      ======================================== */
   .card-elevated {
-    box-shadow: 
+    box-shadow:
       0 1px 3px oklch(0 0 0 / 4%),
       0 4px 12px oklch(0 0 0 / 3%);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   .card-elevated:hover {
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
       0 4px 12px oklch(0 0 0 / 6%),
       0 12px 32px oklch(0 0 0 / 8%);
   }
-  
+
   .dark .card-elevated {
-    box-shadow: 
+    box-shadow:
       0 1px 3px oklch(0 0 0 / 20%),
       0 4px 12px oklch(0 0 0 / 15%);
   }
-  
+
   .dark .card-elevated:hover {
-    box-shadow: 
+    box-shadow:
       0 4px 12px oklch(0 0 0 / 25%),
       0 12px 32px oklch(0 0 0 / 30%);
   }
-  
+
   .card-glow {
     position: relative;
-    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      border-color 0.3s ease,
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
   }
-  
+
   /* ========================================
      🔘 按钮效果
      ======================================== */
@@ -1233,7 +1342,7 @@
     position: relative;
     overflow: hidden;
   }
-  
+
   .btn-glow::before {
     content: '';
     position: absolute;
@@ -1244,16 +1353,18 @@
     background: linear-gradient(90deg, transparent, oklch(1 0 0 / 15%), transparent);
     transition: left 0.5s ease;
   }
-  
+
   .btn-glow:hover::before {
     left: 100%;
   }
-  
+
   /* .btn-elegant-glow — DS v2.1: shine overlay removed (§5 禁止 glow 装饰)
      保留基础 hover 态(提升 + 阴影),按 docs/UI_LANGUAGE_RESEARCH §7 §8.4 "克制动效" */
   .btn-elegant-glow {
     position: relative;
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
   }
 
   .btn-elegant-glow:hover {
@@ -1262,10 +1373,10 @@
   }
 
   .btn-gradient-primary {
-    background: linear-gradient(135deg, oklch(0.58 0.22 255), oklch(0.52 0.20 240));
-    color: white;
+    background: linear-gradient(135deg, var(--ds-primary), var(--ds-info));
+    color: var(--ds-primary-foreground);
     /* @design-system-ignore-next-line */
-    box-shadow: 0 4px 16px oklch(0.58 0.22 255 / 30%);
+    box-shadow: 0 4px 16px color-mix(in oklab, var(--ds-primary) 24%, transparent);
     transition: all 0.25s ease;
   }
 
@@ -1279,7 +1390,7 @@
     /* @design-system-ignore-next-line */
     box-shadow: 0 4px 20px oklch(0.58 0.22 255 / 35%);
   }
-  
+
   /* ========================================
      📝 输入框效果
      ======================================== */
@@ -1290,9 +1401,9 @@
 
   .dark .input-glow:focus {
     /* @design-system-ignore-next-line */
-    box-shadow: 0 0 0 3px oklch(0.68 0.20 255 / 20%);
+    box-shadow: 0 0 0 3px oklch(0.68 0.2 255 / 20%);
   }
-  
+
   /* ========================================
      📜 滚动条
      ======================================== */
@@ -1300,38 +1411,38 @@
     width: 10px;
     height: 10px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background: oklch(0.75 0.015 260);
     border-radius: 5px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     background: oklch(0.65 0.015 260);
     background-clip: content-box;
   }
-  
+
   .dark ::-webkit-scrollbar-thumb {
     background: oklch(0.32 0.015 260);
     background-clip: content-box;
   }
-  
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background: oklch(0.42 0.015 260);
     background-clip: content-box;
   }
-  
+
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -1372,7 +1483,7 @@
   .scrollbar-track-transparent::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   /* ========================================
      📱 响应式工具
      ======================================== */
@@ -1380,42 +1491,67 @@
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   @media (hover: none) and (pointer: coarse) {
     .touch-target-mobile {
       min-height: 48px;
       min-width: 48px;
     }
   }
-  
-  .safe-area-inset-top { padding-top: env(safe-area-inset-top); }
-  .safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
   .safe-area-inset-x {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
-  
-  .h-dvh { height: 100dvh; }
-  .min-h-dvh { min-height: 100dvh; }
-  
+
+  .h-dvh {
+    height: 100dvh;
+  }
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+
   /* ========================================
      🎭 悬停和交互
      ======================================== */
   @media (hover: hover) {
-    .hover-lift:hover { transform: translateY(-2px); }
-    .hover-scale:hover { transform: scale(1.02); }
-    .hover-brightness:hover { filter: brightness(1.05); }
+    .hover-lift:hover {
+      transform: translateY(-2px);
+    }
+    .hover-scale:hover {
+      transform: scale(1.02);
+    }
+    .hover-brightness:hover {
+      filter: brightness(1.05);
+    }
   }
-  
+
   @media (hover: none) and (pointer: coarse) {
-    .active-scale:active { transform: scale(0.98); }
-    .active-dim:active { opacity: 0.85; }
+    .active-scale:active {
+      transform: scale(0.98);
+    }
+    .active-dim:active {
+      opacity: 0.85;
+    }
   }
-  
-  .tap-highlight { -webkit-tap-highlight-color: oklch(0.58 0.22 255 / 10%); }
-  .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
-  .no-select { -webkit-user-select: none; user-select: none; }
-  
+
+  .tap-highlight {
+    -webkit-tap-highlight-color: oklch(0.58 0.22 255 / 10%);
+  }
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
   /* ========================================
      ♿ 可访问性
      ======================================== */
@@ -1428,31 +1564,45 @@
       transition-duration: 0.01ms !important;
     }
   }
-  
+
   @media (prefers-contrast: high) {
-    .card { border-width: 2px; }
-    .btn { border-width: 2px; }
+    .card {
+      border-width: 2px;
+    }
+    .btn {
+      border-width: 2px;
+    }
   }
-  
+
   .focus-visible-ring:focus-visible {
-    outline: 2px solid oklch(0.58 0.22 255);
+    outline: 2px solid var(--ds-primary);
     outline-offset: 2px;
   }
-  
+
   /* ========================================
      🦴 骨架屏
      ======================================== */
   .skeleton {
-    background: linear-gradient(90deg, var(--muted) 0%, oklch(0.92 0.008 260) 50%, var(--muted) 100%);
+    background: linear-gradient(
+      90deg,
+      var(--muted) 0%,
+      oklch(0.92 0.008 260) 50%,
+      var(--muted) 100%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }
-  
+
   .dark .skeleton {
-    background: linear-gradient(90deg, var(--muted) 0%, oklch(0.24 0.015 260) 50%, var(--muted) 100%);
+    background: linear-gradient(
+      90deg,
+      var(--muted) 0%,
+      oklch(0.24 0.015 260) 50%,
+      var(--muted) 100%
+    );
     background-size: 200% 100%;
   }
-  
+
   /* ========================================
      🏷️ 徽章发光
      ======================================== */
@@ -1470,7 +1620,7 @@
     /* @design-system-ignore-next-line */
     box-shadow: 0 0 12px oklch(0.78 0.15 75 / 40%);
   }
-  
+
   /* ========================================
      📝 排版工具类
      字号阶梯 (px): 12 / 14 / 16 / 20 / 24 / 30 / 38 / 46
@@ -1478,7 +1628,7 @@
      ======================================== */
 
   /* ---- 标题排版 ---- */
-  
+
   /* 超大展示标题 — 46px/54px */
   .text-display {
     font-size: clamp(2.375rem, 4vw, 2.875rem);
@@ -1487,7 +1637,7 @@
     letter-spacing: -0.025em;
     text-wrap: balance;
   }
-  
+
   /* 大标题 — 38px/46px */
   .text-title-lg {
     font-size: clamp(1.875rem, 3vw, 2.375rem);
@@ -1496,7 +1646,7 @@
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
-  
+
   /* 标题 — 30px/38px */
   .text-title {
     font-size: clamp(1.5rem, 2.5vw, 1.875rem);
@@ -1505,7 +1655,7 @@
     letter-spacing: -0.017em;
     text-wrap: balance;
   }
-  
+
   /* 副标题 — 24px/32px */
   .text-subtitle {
     font-size: 1.5rem;
@@ -1513,45 +1663,45 @@
     line-height: 1.333;
     letter-spacing: -0.012em;
   }
-  
+
   /* ---- 正文排版 ---- */
-  
+
   /* 大正文 — 20px/28px */
   .text-body-lg {
     font-size: 1.25rem;
     line-height: 1.4;
     letter-spacing: -0.006em;
   }
-  
+
   /* 正文 — 16px/26px (默认) */
   .text-body {
     font-size: 1rem;
     line-height: 1.625;
     letter-spacing: -0.011em;
   }
-  
+
   /* 小正文 — 14px/22px */
   .text-body-sm {
     font-size: 0.875rem;
     line-height: 1.571;
   }
-  
+
   /* ---- 辅助文字 ---- */
-  
+
   /* 标签 — 14px/22px medium */
   .text-label {
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.571;
   }
-  
+
   /* 注释 — 12px/20px */
   .text-caption {
     font-size: 0.75rem;
     line-height: 1.667;
     color: var(--muted-foreground);
   }
-  
+
   /* 上标签 — 12px uppercase */
   .text-overline {
     font-size: 0.75rem;
@@ -1560,22 +1710,22 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
-  
+
   /* ---- 数据展示 ---- */
-  
+
   /* 指标数字 */
   .text-metric {
     font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum" 1;
+    font-feature-settings: 'tnum' 1;
     letter-spacing: -0.02em;
     font-weight: 700;
   }
-  
+
   /* 大指标数字 — 38~46px */
   .text-metric-lg {
     font-size: clamp(2rem, 3.5vw, 2.875rem);
     font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum" 1;
+    font-feature-settings: 'tnum' 1;
     letter-spacing: -0.025em;
     font-weight: 700;
     line-height: 1.15;
@@ -1588,7 +1738,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .text-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -1600,85 +1750,9 @@
      📦 容器查询
      ======================================== */
   @supports (container-type: inline-size) {
-    .container-query { container-type: inline-size; }
-  }
-
-  /* Aurora 背景 */
-  /* @design-system-ignore-next-line */
-  .aurora-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.58 0.22 255 / 0.35), transparent 50%),
-      radial-gradient(ellipse 60% 40% at 80% 60%, oklch(0.65 0.20 280 / 0.30), transparent 50%),
-      radial-gradient(ellipse 70% 60% at 40% 80%, oklch(0.72 0.16 200 / 0.25), transparent 60%),
-      radial-gradient(ellipse 50% 50% at 60% 20%, oklch(0.68 0.18 155 / 0.20), transparent 50%);
-    background-size: 200% 200%;
-    animation: aurora-drift 15s ease-in-out infinite;
-    filter: blur(60px);
-  }
-
-  /* @design-system-ignore-next-line */
-  .dark .aurora-bg {
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.45 0.22 255 / 0.35), transparent 50%),
-      radial-gradient(ellipse 60% 40% at 80% 60%, oklch(0.50 0.20 280 / 0.30), transparent 50%),
-      radial-gradient(ellipse 70% 60% at 40% 80%, oklch(0.55 0.16 200 / 0.25), transparent 60%),
-      radial-gradient(ellipse 50% 50% at 60% 20%, oklch(0.52 0.18 155 / 0.20), transparent 50%);
-    background-size: 200% 200%;
-  }
-
-  /* Hero 标题光晕 */
-  .hero-title-glow {
-    position: relative;
-  }
-  .hero-title-glow::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 120%;
-    height: 200%;
-    background: radial-gradient(ellipse 50% 40% at 50% 50%, oklch(0.58 0.22 255 / 0.18), transparent 70%);
-    pointer-events: none;
-    z-index: -1;
-  }
-  .dark .hero-title-glow::before {
-    background: radial-gradient(ellipse 50% 40% at 50% 50%, oklch(0.58 0.22 255 / 0.18), transparent 70%);
-  }
-
-  /* Hero 浮动装饰球 */
-  .hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(40px);
-    pointer-events: none;
-  }
-  .hero-orb-1 {
-    width: clamp(120px, 24vw, 400px); height: clamp(120px, 24vw, 400px);
-    top: 10%; right: -5%;
-    background: oklch(0.65 0.20 280 / 0.28);
-    animation: float 8s ease-in-out infinite;
-  }
-  .hero-orb-2 {
-    width: clamp(80px, 18vw, 250px); height: clamp(80px, 18vw, 250px);
-    bottom: 20%; left: -3%;
-    background: oklch(0.72 0.16 200 / 0.22);
-    animation: float 10s ease-in-out infinite reverse;
-  }
-  .hero-orb-3 {
-    width: clamp(60px, 12vw, 180px); height: clamp(60px, 12vw, 180px);
-    top: 30%; left: 15%;
-    background: oklch(0.58 0.22 255 / 0.15);
-    animation: float 12s ease-in-out infinite 2s;
-  }
-  .dark .hero-orb-1 { background: oklch(0.70 0.20 280 / 0.45); }
-  .dark .hero-orb-2 { background: oklch(0.75 0.16 200 / 0.40); }
-  .dark .hero-orb-3 { background: oklch(0.65 0.22 255 / 0.35); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-orb { animation: none; }
+    .container-query {
+      container-type: inline-size;
+    }
   }
 
   /* Header 渐变底边 */
@@ -1697,7 +1771,9 @@
   }
 
   /* 性能优化 */
-  .will-change-transform { will-change: transform, opacity; }
+  .will-change-transform {
+    will-change: transform, opacity;
+  }
 
   .content-lazy {
     content-visibility: auto;
@@ -1706,28 +1782,32 @@
 
   /* 减少动效 */
   @media (prefers-reduced-motion: reduce) {
-    .text-gradient-animated { animation: none; }
-    /* @design-system-ignore-next-line */
-    .aurora-bg { animation: none; }
+    .text-gradient-animated {
+      animation: none;
+    }
   }
 
   /* ========================================
      🎨 Zone 区域背景系统 (明暗交替节奏)
      ======================================== */
   .zone-tinted {
-    background: oklch(0.96 0.02 260);
-    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.58 0.22 255 / 0.03), transparent 60%);
+    background: var(--ds-surface-subtle);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--ds-primary) 5%, transparent),
+      transparent 60%
+    );
   }
   .dark .zone-tinted {
-    background: oklch(0.17 0.035 260);
+    background: var(--ds-surface-subtle);
   }
 
   .zone-dark {
-    --zone-bg: oklch(0.13 0.025 260);
-    --zone-fg: oklch(0.93 0.005 260);
-    --zone-muted: oklch(0.55 0.015 260);
-    --zone-border: oklch(0.22 0.02 260);
-    --zone-card: oklch(0.16 0.02 260 / 0.6);
+    --zone-bg: #0f0d0a;
+    --zone-fg: #f6edde;
+    --zone-muted: #a99b88;
+    --zone-border: #3b3026;
+    --zone-card: color-mix(in oklab, #f6edde 8%, transparent);
     background: var(--zone-bg);
     color: var(--zone-fg);
     position: relative;
@@ -1741,14 +1821,17 @@
     pointer-events: none;
     z-index: 0;
   }
-  .zone-dark > * { position: relative; z-index: 1; }
+  .zone-dark > * {
+    position: relative;
+    z-index: 1;
+  }
 
   .dark .zone-dark {
-    --zone-bg: oklch(0.08 0.025 260);
-    --zone-fg: oklch(0.93 0.005 260);
-    --zone-muted: oklch(0.50 0.015 260);
-    --zone-border: oklch(0.18 0.02 260);
-    --zone-card: oklch(0.12 0.02 260 / 0.6);
+    --zone-bg: #0d100d;
+    --zone-fg: #f6edde;
+    --zone-muted: #cdbca4;
+    --zone-border: #3b3026;
+    --zone-card: color-mix(in oklab, #f6edde 7%, transparent);
     background: var(--zone-bg);
   }
 
@@ -1777,22 +1860,42 @@
   /* ========================================
      📐 间距节奏系统 (3 Tier Responsive)
      ======================================== */
-  .section-compact   { padding-block: 2rem; }
-  .section-normal    { padding-block: 3rem; }
-  .section-expansive { padding-block: 4rem; }
+  .section-compact {
+    padding-block: 2rem;
+  }
+  .section-normal {
+    padding-block: 3rem;
+  }
+  .section-expansive {
+    padding-block: 4rem;
+  }
 
   @media (min-width: 640px) {
-    .section-compact   { padding-block: 3rem; }
-    .section-normal    { padding-block: 5rem; }
-    .section-expansive { padding-block: 6rem; }
+    .section-compact {
+      padding-block: 3rem;
+    }
+    .section-normal {
+      padding-block: 5rem;
+    }
+    .section-expansive {
+      padding-block: 6rem;
+    }
   }
   @media (min-width: 1024px) {
-    .section-compact   { padding-block: 3.5rem; }
-    .section-normal    { padding-block: 6rem; }
-    .section-expansive { padding-block: 8rem; }
+    .section-compact {
+      padding-block: 3.5rem;
+    }
+    .section-normal {
+      padding-block: 6rem;
+    }
+    .section-expansive {
+      padding-block: 8rem;
+    }
   }
   @media (min-width: 1280px) {
-    .section-expansive { padding-block: 10rem; }
+    .section-expansive {
+      padding-block: 10rem;
+    }
   }
 
   /* ========================================
@@ -1800,39 +1903,54 @@
      ======================================== */
   .zone-transition-to-dark {
     height: 4rem;
-    background: linear-gradient(to bottom, var(--background), oklch(0.13 0.025 260));
+    background: linear-gradient(to bottom, var(--background), #0f0d0a);
   }
   .zone-transition-from-dark {
     height: 4rem;
-    background: linear-gradient(to bottom, oklch(0.13 0.025 260), var(--background));
+    background: linear-gradient(to bottom, #0f0d0a, var(--background));
   }
   .dark .zone-transition-to-dark {
-    background: linear-gradient(to bottom, var(--background), oklch(0.08 0.025 260));
+    background: linear-gradient(to bottom, var(--background), #0d100d);
   }
   .dark .zone-transition-from-dark {
-    background: linear-gradient(to bottom, oklch(0.08 0.025 260), var(--background));
+    background: linear-gradient(to bottom, #0d100d, var(--background));
   }
 
   @media (min-width: 640px) {
     .zone-transition-to-dark,
-    .zone-transition-from-dark { height: 6rem; }
+    .zone-transition-from-dark {
+      height: 6rem;
+    }
   }
   @media (min-width: 1024px) {
     .zone-transition-to-dark,
-    .zone-transition-from-dark { height: 8rem; }
+    .zone-transition-from-dark {
+      height: 8rem;
+    }
   }
 
   /* ========================================
      Landing Premium 首页专属样式
      ======================================== */
   @keyframes landingFloat {
-    0%, 100% { transform: translate3d(0, 0, 0); }
-    50% { transform: translate3d(0, -12px, 0); }
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -12px, 0);
+    }
   }
 
   @keyframes landingBlink {
-    0%, 45% { opacity: 1; }
-    46%, 100% { opacity: 0; }
+    0%,
+    45% {
+      opacity: 1;
+    }
+    46%,
+    100% {
+      opacity: 0;
+    }
   }
 
   .landing-premium {
@@ -1843,10 +1961,18 @@
     --landing-border: var(--ds-border);
     --landing-border-strong: var(--ds-border-strong);
     --landing-muted: var(--ds-muted-foreground);
-    --landing-subtle: color-mix(in oklch, var(--ds-muted-foreground) 80%, white 20%);
-    --landing-glass: oklch(0.988 0.002 260 / 0.84);
+    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 84%, white 16%);
+    --landing-glass: color-mix(in oklab, var(--landing-surface) 88%, transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
+    --lumni-hero-ink: #0f0d0a;
+    --lumni-hero-panel: color-mix(in oklab, #f6edde 9%, transparent);
+    --lumni-hero-line: color-mix(in oklab, #f6edde 15%, transparent);
+    --lumni-moon: #ddb85a;
+    --lumni-moon-soft: color-mix(in oklab, #ddb85a 18%, transparent);
+    --lumni-gold-ink: #7a581a;
+    --lumni-rose: #e76f8a;
+    --lumni-violet: #6574ff;
     --status-reach: var(--ds-status-reach);
     --status-reach-bg: var(--ds-status-reach-bg);
     --status-reach-fg: var(--ds-status-reach-fg);
@@ -1859,7 +1985,18 @@
     --status-likely: var(--ds-status-likely);
     --status-likely-bg: var(--ds-status-likely-bg);
     --status-likely-fg: var(--ds-status-likely-fg);
-    background: linear-gradient(180deg, oklch(0.993 0.002 260) 0%, oklch(0.985 0.004 260) 100%);
+    background:
+      radial-gradient(
+        circle at 78% 16%,
+        color-mix(in oklab, #ddb85a 12%, transparent),
+        transparent 34rem
+      ),
+      radial-gradient(
+        circle at 18% 12%,
+        color-mix(in oklab, #e76f8a 7%, transparent),
+        transparent 30rem
+      ),
+      linear-gradient(180deg, #f7f1e6 0%, #fff9ef 48%, #f3e7d6 100%);
   }
 
   .dark .landing-premium {
@@ -1870,10 +2007,18 @@
     --landing-border: var(--ds-border);
     --landing-border-strong: var(--ds-border-strong);
     --landing-muted: var(--ds-muted-foreground);
-    --landing-subtle: color-mix(in oklch, var(--ds-muted-foreground) 86%, white 14%);
-    --landing-glass: oklch(0.12 0.016 260 / 0.82);
+    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 88%, white 12%);
+    --landing-glass: color-mix(in oklab, var(--landing-surface) 86%, transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
+    --lumni-hero-ink: #0f0d0a;
+    --lumni-hero-panel: color-mix(in oklab, #f6edde 7%, transparent);
+    --lumni-hero-line: color-mix(in oklab, #f6edde 13%, transparent);
+    --lumni-moon: #ddc170;
+    --lumni-moon-soft: color-mix(in oklab, #ddc170 16%, transparent);
+    --lumni-gold-ink: #ddc170;
+    --lumni-rose: #f09ab0;
+    --lumni-violet: #8d96ff;
     --status-reach: var(--ds-status-reach);
     --status-reach-bg: var(--ds-status-reach-bg);
     --status-reach-fg: var(--ds-status-reach-fg);
@@ -1886,15 +2031,19 @@
     --status-likely: var(--ds-status-likely);
     --status-likely-bg: var(--ds-status-likely-bg);
     --status-likely-fg: var(--ds-status-likely-fg);
-    background: linear-gradient(180deg, oklch(0.12 0.016 260) 0%, oklch(0.10 0.016 260) 100%);
+    background: linear-gradient(180deg, #0f0d0a 0%, #15110d 54%, #191510 100%);
   }
 
   .landing-glass-edge {
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 25px 50px -12px color-mix(in oklch, var(--primary) 10%, transparent);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.4),
+      0 25px 50px -12px color-mix(in oklch, var(--primary) 10%, transparent);
   }
 
   .dark .landing-glass-edge {
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 25px 50px -12px color-mix(in oklch, var(--primary) 10%, transparent);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.1),
+      0 25px 50px -12px color-mix(in oklch, var(--primary) 10%, transparent);
   }
 
   .landing-section {
@@ -1908,7 +2057,7 @@
     padding: 0.6rem 1rem;
     border: 1px solid var(--landing-border);
     border-radius: 999px;
-    background: color-mix(in oklch, var(--landing-surface) 92%, var(--primary) 8%);
+    background: color-mix(in oklab, var(--landing-surface) 88%, var(--lumni-moon) 12%);
     color: var(--landing-subtle);
     font-size: 0.6875rem;
     letter-spacing: 0.24em;
@@ -1919,9 +2068,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.625rem;
-    border: 1px solid color-mix(in oklch, var(--primary) 8%, transparent);
+    border: 1px solid color-mix(in oklch, var(--lumni-moon) 24%, var(--landing-border));
     border-radius: 999px;
-    background: linear-gradient(to right, color-mix(in oklch, var(--primary) 6%, transparent), color-mix(in oklch, var(--primary) 1%, transparent));
+    background: color-mix(in oklab, var(--landing-surface) 84%, var(--lumni-moon) 16%);
     padding: 0.5rem 1rem;
     color: var(--landing-fg);
     font-size: 0.75rem;
@@ -1929,10 +2078,14 @@
     text-transform: uppercase;
   }
 
+  .landing-eyebrow-pill svg {
+    color: var(--lumni-gold-ink);
+  }
+
   .landing-hero-accent {
-    font-style: italic;
-    font-weight: 400;
-    color: var(--ds-primary);
+    font-style: normal;
+    font-weight: 650;
+    color: var(--lumni-gold-ink);
   }
 
   .landing-nav-link {
@@ -1943,7 +2096,9 @@
     border-radius: 999px;
     color: var(--landing-muted);
     font-size: 0.875rem;
-    transition: color 160ms ease, background-color 160ms ease;
+    transition:
+      color 160ms ease,
+      background-color 160ms ease;
   }
 
   .landing-nav-link:hover {
@@ -1955,20 +2110,26 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: radial-gradient(oklch(0.24 0.02 260 / 0.04) 1px, transparent 1px);
+    background-image: radial-gradient(
+      color-mix(in oklab, #1d1813 7%, transparent) 1px,
+      transparent 1px
+    );
     background-size: 32px 32px;
     mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent 70%);
     -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, black, transparent 70%);
   }
 
   .dark .landing-canvas-texture {
-    background-image: radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px);
+    background-image: radial-gradient(
+      color-mix(in oklab, #ddb85a 12%, transparent) 1px,
+      transparent 1px
+    );
   }
 
   .landing-grid-mask {
     background-image:
-      linear-gradient(oklch(0.24 0.02 260 / 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.24 0.02 260 / 0.06) 1px, transparent 1px);
+      linear-gradient(color-mix(in oklab, #1d1813 6%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, #1d1813 6%, transparent) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
@@ -1976,8 +2137,27 @@
 
   .dark .landing-grid-mask {
     background-image:
-      linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px);
+      linear-gradient(color-mix(in oklab, #ddb85a 8%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, #ddb85a 8%, transparent) 1px, transparent 1px);
+  }
+
+  .lumni-night-grid {
+    background-image:
+      linear-gradient(color-mix(in oklab, #f6edde 7%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, #f6edde 7%, transparent) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(135deg, black 0%, black 58%, transparent 100%);
+    -webkit-mask-image: linear-gradient(135deg, black 0%, black 58%, transparent 100%);
+  }
+
+  .lumni-disclosure-on-ink {
+    --landing-fg: #f6edde;
+    --landing-muted: #d8c8b2;
+    --landing-subtle: #a99b88;
+    --landing-surface: color-mix(in oklab, #f6edde 8%, transparent);
+    --landing-surface-muted: color-mix(in oklab, #f6edde 10%, transparent);
+    --landing-border: color-mix(in oklab, #f6edde 14%, transparent);
+    --landing-border-strong: color-mix(in oklab, #f6edde 20%, transparent);
   }
 
   /* DS v2.1 §装饰规则:移除 rotate(-2deg)(非必要装饰性旋转) */

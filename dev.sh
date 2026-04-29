@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ╔══════════════════════════════════════════════╗
-# ║  Study Abroad Platform — 一键启动开发环境      ║
+# ║  Lumni — 一键启动开发环境                    ║
 # ║                                              ║
 # ║  用法:                                       ║
 # ║    ./dev.sh          快速启动                 ║
@@ -112,7 +112,7 @@ fi
 
 echo ""
 echo "╔══════════════════════════════════════╗"
-echo "║   Study Abroad Platform — Dev Env    ║"
+echo "║   Lumni — Dev Env                    ║"
 echo "╚══════════════════════════════════════╝"
 echo ""
 

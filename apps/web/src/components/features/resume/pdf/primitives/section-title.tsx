@@ -76,7 +76,7 @@ function getStyles(theme: ResumeTheme) {
       fontFamily: theme.fontFamily.heading,
       fontSize: theme.fontSize.sectionTitle,
       fontWeight: 700,
-      color: '#ffffff',
+      color: '#fff9ef',
     },
 
     // Border-left style

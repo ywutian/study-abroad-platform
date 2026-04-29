@@ -1,0 +1,583 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T19:15:20.296Z",
+    "dryRun": false,
+    "updated": 64,
+    "noData": 10,
+    "insane": 0,
+    "errors": 0,
+    "activeKeys": 19
+  },
+  "results": [
+    {
+      "schoolId": "cmnwr8itq003pz0tirhvysbdj",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "status": "updated",
+      "sat25": 1320,
+      "sat75": 1470,
+      "sourceUrl": "https://bigfuture.collegeboard.org/colleges/university-of-minnesota-twin-cities/admissions"
+    },
+    {
+      "schoolId": "cmnwr8iwx0059z0tilcfiwj80",
+      "schoolName": "University of Texas at Dallas",
+      "status": "updated",
+      "sat25": 1170,
+      "sat75": 1390,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/UT-Dallas-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iqf0024z0tiy29w0e1z",
+      "schoolName": "Missouri University of Science and Technology",
+      "status": "updated",
+      "sat25": 1220,
+      "sat75": 1400,
+      "sourceUrl": "https://www.clastify.com/blog/score-requirements/missouri-university-of-science-and-technology"
+    },
+    {
+      "schoolId": "cmnwr8ioo001hz0tim3isqwz9",
+      "schoolName": "Clarkson University",
+      "status": "updated",
+      "sat25": 1215,
+      "sat75": 1370,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Clarkson-University-admission-requirements"
+    },
+    {
+      "schoolId": "cmnwr8ipz001xz0ti9f4tlagk",
+      "schoolName": "George Mason University",
+      "status": "updated",
+      "sat25": 1170,
+      "sat75": 1350,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/George-Mason-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iqp0029z0ti2wbplonv",
+      "schoolName": "Hofstra University",
+      "status": "updated",
+      "sat25": 1190,
+      "sat75": 1370,
+      "sourceUrl": "https://www.cogn-iq.org/admissions/hofstra-university/"
+    },
+    {
+      "schoolId": "cmnwr8isc0033z0tibp1hnmdi",
+      "schoolName": "University of Massachusetts Lowell",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8ipt001uz0tivghae5e1",
+      "schoolName": "University of Cincinnati",
+      "status": "updated",
+      "sat25": 1160,
+      "sat75": 1350,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/university-of-cincinnati"
+    },
+    {
+      "schoolId": "cmnwr8ip7001nz0ti6qy76djw",
+      "schoolName": "University of Missouri",
+      "status": "updated",
+      "sat25": 1150,
+      "sat75": 1330,
+      "sourceUrl": "https://www.usnews.com/best-colleges/university-of-missouri-2516/applying"
+    },
+    {
+      "schoolId": "cmnwr8ipf001qz0ti3d3001d9",
+      "schoolName": "University of Tennessee",
+      "status": "updated",
+      "sat25": 1210,
+      "sat75": 1360,
+      "sourceUrl": "https://www.collegetransitions.com/blog/university-of-tennessee-acceptance-rate/"
+    },
+    {
+      "schoolId": "cmnwr8ioi001fz0tivlt104p7",
+      "schoolName": "Seton Hall University",
+      "status": "updated",
+      "sat25": 1240,
+      "sat75": 1380,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Seton-Hall-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iwn0053z0tiokrlwt8f",
+      "schoolName": "Appalachian State University",
+      "status": "updated",
+      "sat25": 1140,
+      "sat75": 1270,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Appalachian-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iwp0054z0tic1mh49ba",
+      "schoolName": "James Madison University",
+      "status": "updated",
+      "sat25": 1140,
+      "sat75": 1320,
+      "sourceUrl": "https://www.cogn-iq.org/admissions/james-madison-university/"
+    },
+    {
+      "schoolId": "cmnwr8iq1001yz0ti1jb6g7hi",
+      "schoolName": "Louisiana State University",
+      "status": "updated",
+      "sat25": 1180,
+      "sat75": 1320,
+      "sourceUrl": "https://score-smart.com/lsu-sat-scores-requirements/"
+    },
+    {
+      "schoolId": "cmnwr8ip1001lz0ti51lr5gad",
+      "schoolName": "University of Alabama",
+      "status": "updated",
+      "sat25": 1110,
+      "sat75": 1360,
+      "sourceUrl": "https://bigfuture.collegeboard.org/colleges/university-of-alabama/admissions"
+    },
+    {
+      "schoolId": "cmnwr8ipc001pz0tiz0bgth66",
+      "schoolName": "Iowa State University",
+      "status": "updated",
+      "sat25": 1130,
+      "sat75": 1350,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Iowa-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+      "schoolName": "Oregon State University",
+      "status": "no_data"
+    },
+    {
+      "schoolId": "cmnwr8ipr001tz0ti8x7z840u",
+      "schoolName": "University of New Hampshire",
+      "status": "updated",
+      "sat25": 1100,
+      "sat75": 1320,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/UNH-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ipj001rz0tipapk15or",
+      "schoolName": "University of Nebraska-Lincoln",
+      "status": "updated",
+      "sat25": 1100,
+      "sat75": 1310,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/University-of-Nebraska---Lincoln-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+      "schoolName": "University of North Carolina Wilmington",
+      "status": "updated",
+      "sat25": 1230,
+      "sat75": 1340,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/UNCW-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ip3001mz0til7q2dopw",
+      "schoolName": "University of Oklahoma",
+      "status": "updated",
+      "sat25": 1160,
+      "sat75": 1320,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/University-of-Oklahoma-OU-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ipv001vz0tiqnippgu6",
+      "schoolName": "Colorado State University",
+      "status": "updated",
+      "sat25": 1140,
+      "sat75": 1280,
+      "sourceUrl": "https://prepexpert.com/colorado-state-acceptance-rate/"
+    },
+    {
+      "schoolId": "cmnwr8iqt002bz0ti5efot7m8",
+      "schoolName": "Adelphi University",
+      "status": "updated",
+      "sat25": 1060,
+      "sat75": 1250,
+      "sourceUrl": "https://www.acceptancerate.com/schools/adelphi-university"
+    },
+    {
+      "schoolId": "cmnwr8iq40020z0tif8l8dxxu",
+      "schoolName": "University of Arkansas",
+      "status": "updated",
+      "sat25": 1100,
+      "sat75": 1290,
+      "sourceUrl": "https://plexuss.com/u/university-of-arkansas-uark/stats"
+    },
+    {
+      "schoolId": "cmnwr8ior001iz0tibsba6d2o",
+      "schoolName": "University of Kentucky",
+      "status": "updated",
+      "sat25": 1070,
+      "sat75": 1270,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/University-of-Kentucky-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iqa0022z0ti9ad68xp2",
+      "schoolName": "University of Rhode Island",
+      "status": "updated",
+      "sat25": 1020,
+      "sat75": 1280,
+      "sourceUrl": "https://edurank.org/uni/university-of-rhode-island/"
+    },
+    {
+      "schoolId": "cmnwr8iqr002az0ti1une85dx",
+      "schoolName": "Rowan University",
+      "status": "updated",
+      "sat25": 1120,
+      "sat75": 1310,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Rowan-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8irh002mz0tik8qulubb",
+      "schoolName": "Montana State University",
+      "status": "updated",
+      "sat25": 1075,
+      "sat75": 1270,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Montana-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iq70021z0titshta238",
+      "schoolName": "University of Hawaii at Manoa",
+      "status": "updated",
+      "sat25": 1050,
+      "sat75": 1240,
+      "sourceUrl": "https://plexuss.com/u/university-of-hawaii-at-manoa-uh/stats"
+    },
+    {
+      "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+      "schoolName": "Savannah College of Art and Design",
+      "status": "updated",
+      "sat25": 1140,
+      "sat75": 1400,
+      "sourceUrl": "https://testbook.com/en-us/college/savannah-college-of-art-and-design-admissions"
+    },
+    {
+      "schoolId": "cmnwr8ite003jz0tijg7j0avf",
+      "schoolName": "University of Massachusetts Boston",
+      "status": "updated",
+      "sat25": 1090,
+      "sat75": 1290,
+      "sourceUrl": "https://collegeiq.com/colleges/university-of-massachusetts-boston/admissions"
+    },
+    {
+      "schoolId": "cmnwr8irj002nz0tief4railh",
+      "schoolName": "University of Nevada, Reno",
+      "status": "no_data",
+      "notes": "The provided search results show SAT/ACT policy information but do not include actual SAT percentile scores or the percentage of freshmen submitting SAT scores for University of Nevada, Reno."
+    },
+    {
+      "schoolId": "cmnwr8ir7002iz0ti11f0voua",
+      "schoolName": "University of Wyoming",
+      "status": "updated",
+      "sat25": 1040,
+      "sat75": 1280,
+      "sourceUrl": "https://www.princetonreview.com/college/university-wyoming-1023692"
+    },
+    {
+      "schoolId": "cmnwr8is3002yz0ti9qk8f21x",
+      "schoolName": "North Dakota State University",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8ise0034z0tiwz772kaw",
+      "schoolName": "Oklahoma State University",
+      "status": "updated",
+      "sat25": 1040,
+      "sat75": 1240,
+      "sourceUrl": "https://www.clastify.com/blog/score-requirements/oklahoma-state-university"
+    },
+    {
+      "schoolId": "cmnwr8iqc0023z0ti60klqjhy",
+      "schoolName": "Kansas State University",
+      "status": "no_data",
+      "notes": "The provided search results show SAT/ACT policy information for Kansas State University but do not include actual SAT 25th/75th percentile scores or SAT submission percentage."
+    },
+    {
+      "schoolId": "cmnwr8isu003dz0tijwn1m0s0",
+      "schoolName": "University of Texas at Arlington",
+      "status": "updated",
+      "sat25": 1000,
+      "sat75": 1250,
+      "sourceUrl": "https://testbook.com/en-us/college/university-of-arlington-admissions"
+    },
+    {
+      "schoolId": "cmnwr8irq002rz0ti2ejl7chb",
+      "schoolName": "University of North Texas",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8iro002qz0tiayclu6c9",
+      "schoolName": "University of Idaho",
+      "status": "updated",
+      "sat25": 950,
+      "sat75": 1200,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/university-of-idaho"
+    },
+    {
+      "schoolId": "cmnwr8iqi0026z0tin3vtpw1p",
+      "schoolName": "University of Maine",
+      "status": "updated",
+      "sat25": 1060,
+      "sat75": 1280,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/University-of-Maine-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iqy002ez0tizit8vwvw",
+      "schoolName": "Ohio University",
+      "status": "updated",
+      "sat25": 1100,
+      "sat75": 1280,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Ohio-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iqh0025z0ti7z1ynz4s",
+      "schoolName": "Washington State University",
+      "status": "updated",
+      "sat25": 1010,
+      "sat75": 1280,
+      "sourceUrl": "https://wpcdn.web.wsu.edu/wsuwp/uploads/sites/3447/2025/04/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolId": "cmnwr8iw3004tz0ti9nqf8ivd",
+      "schoolName": "California College of the Arts",
+      "status": "updated",
+      "sat25": 1010,
+      "sat75": 1310,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/California-College-of-the-Arts-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ird002kz0tifunyipf1",
+      "schoolName": "University of North Dakota",
+      "status": "updated",
+      "sat25": 1130,
+      "sat75": 1270,
+      "sourceUrl": "https://testbook.com/en-us/college/university-of-north-dakota-admissions"
+    },
+    {
+      "schoolId": "cmnwr8isa0032z0tiytg48wsw",
+      "schoolName": "Wayne State University",
+      "status": "updated",
+      "sat25": 1060,
+      "sat75": 1260,
+      "sourceUrl": "https://collegeiq.com/colleges/wayne-state-university/admissions"
+    },
+    {
+      "schoolId": "cmnwr8iwt0057z0ti6f0z2hsc",
+      "schoolName": "Towson University",
+      "status": "updated",
+      "sat25": 950,
+      "sat75": 1230,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Towson-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8itm003nz0tiqazikwxi",
+      "schoolName": "Indiana University-Purdue University Indianapolis",
+      "status": "updated",
+      "sat25": 1050,
+      "sat75": 1230,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/indiana-university-purdue-university-at-indianapolis"
+    },
+    {
+      "schoolId": "cmnwr8is4002zz0ti7l7rukwt",
+      "schoolName": "South Dakota State University",
+      "status": "updated",
+      "sat25": 1070,
+      "sat75": 1220,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/South-Dakota-State-University-admission-requirements"
+    },
+    {
+      "schoolId": "cmnwr8iqm0028z0ti63txqxzg",
+      "schoolName": "Illinois State University",
+      "status": "updated",
+      "sat25": 1030,
+      "sat75": 1220,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/illinois-state-university"
+    },
+    {
+      "schoolId": "cmnwr8iso003az0tilgsdacqo",
+      "schoolName": "University of Wisconsin-Milwaukee",
+      "status": "updated",
+      "sat25": 990,
+      "sat75": 1180,
+      "sourceUrl": "https://www.reddit.com/r/UWMilwaukee/comments/1ah2rzw/what_is_the_correct_acceptance_rate_of_uwm/"
+    },
+    {
+      "schoolId": "cmnwr8is80031z0tizosa0sa8",
+      "schoolName": "University of Toledo",
+      "status": "updated",
+      "sat25": 1040,
+      "sat75": 1260,
+      "sourceUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf"
+    },
+    {
+      "schoolId": "cmnwr8ira002jz0tib0nkhdsx",
+      "schoolName": "West Virginia University",
+      "status": "updated",
+      "sat25": 1010,
+      "sat75": 1220,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/WVU-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ir2002gz0tih2v6dubi",
+      "schoolName": "University of New Mexico",
+      "status": "no_data"
+    },
+    {
+      "schoolId": "cmnwr8iws0056z0tial92bfrt",
+      "schoolName": "Grand Valley State University",
+      "status": "updated",
+      "sat25": 940,
+      "sat75": 1180,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Grand-Valley-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ir4002hz0tibdz0myoo",
+      "schoolName": "Ball State University",
+      "status": "updated",
+      "sat25": 1080,
+      "sat75": 1240,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/ball-state-university"
+    },
+    {
+      "schoolId": "cmnwr8ir0002fz0tiuxlv8v32",
+      "schoolName": "Kent State University",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8isz003fz0tisq77swxo",
+      "schoolName": "University of Texas at San Antonio",
+      "status": "updated",
+      "sat25": 1010,
+      "sat75": 1220,
+      "sourceUrl": "https://www.cogn-iq.org/admissions/the-university-of-texas-at-san-antonio/"
+    },
+    {
+      "schoolId": "cmnwr8irs002sz0ti22brcgol",
+      "schoolName": "University of Nevada, Las Vegas",
+      "status": "updated",
+      "sat25": 1000,
+      "sat75": 1220,
+      "sourceUrl": "https://www.cogn-iq.org/admissions/university-of-nevada-las-vegas/"
+    },
+    {
+      "schoolId": "cmnwr8is60030z0timvbtgjwa",
+      "schoolName": "University of Akron",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8ito003oz0tiyojti719",
+      "schoolName": "Wichita State University",
+      "status": "updated",
+      "sat25": 913,
+      "sat75": 1240,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Wichita-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8irf002lz0titpd5mufz",
+      "schoolName": "University of South Dakota",
+      "status": "updated",
+      "sat25": 1145,
+      "sat75": 1260,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/University-of-South-Dakota-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8isv003ez0timrhbjznd",
+      "schoolName": "University of Memphis",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8it2003gz0tixy0e9ok2",
+      "schoolName": "Cleveland State University",
+      "status": "updated",
+      "sat25": 970,
+      "sat75": 1210,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Cleveland-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8irl002oz0tiyc5w37jx",
+      "schoolName": "Portland State University",
+      "status": "updated",
+      "sat25": 1100,
+      "sat75": 1290,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Portland-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8isr003bz0ti1h6j1c5s",
+      "schoolName": "Western Michigan University",
+      "status": "updated",
+      "sat25": 980,
+      "sat75": 1200,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Western-Michigan-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iti003lz0ti0z9hwm3s",
+      "schoolName": "Wright State University",
+      "status": "updated",
+      "sat25": 913,
+      "sat75": 1240,
+      "sourceUrl": "https://collegeiq.com/colleges/wright-state-university/admissions"
+    },
+    {
+      "schoolId": "cmnwr8itg003kz0tikwvhzllw",
+      "schoolName": "Old Dominion University",
+      "status": "updated",
+      "sat25": 1120,
+      "sat75": 1280,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/old-dominion-university"
+    },
+    {
+      "schoolId": "cmnwr8irv002uz0tic1bpn6g4",
+      "schoolName": "Bowling Green State University",
+      "status": "updated",
+      "sat25": 1020,
+      "sat75": 1300,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Bowling-Green-State-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8isj0037z0tihc4cw8ue",
+      "schoolName": "University of Southern Mississippi",
+      "status": "updated",
+      "sat25": 990,
+      "sat75": 1190,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/University-of-Southern-Mississippi-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8iss003cz0tia71q9qy1",
+      "schoolName": "Idaho State University",
+      "status": "updated",
+      "sat25": 890,
+      "sat75": 1140,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/idaho-state-university"
+    },
+    {
+      "schoolId": "cmnwr8itk003mz0tirfyu068c",
+      "schoolName": "Central Michigan University",
+      "status": "updated",
+      "sat25": 970,
+      "sat75": 1200,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Central-Michigan-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8isf0035z0tixudqprxr",
+      "schoolName": "New Mexico State University",
+      "status": "updated",
+      "sat25": 885,
+      "sat75": 1110,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/new-mexico-state-university"
+    },
+    {
+      "schoolId": "cmnwr8iwv0058z0tivh6huv4n",
+      "schoolName": "California State University, Sacramento",
+      "status": "updated",
+      "sat25": 880,
+      "sat75": 1100,
+      "sourceUrl": "https://bigfuture.collegeboard.org/colleges/california-state-university-sacramento/admissions"
+    },
+    {
+      "schoolId": "cmnwr8isn0039z0tik49prelk",
+      "schoolName": "Eastern Michigan University",
+      "status": "updated",
+      "sat25": 930,
+      "sat75": 1150,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Eastern-Michigan-University-sat-scores-GPA"
+    }
+  ]
+}

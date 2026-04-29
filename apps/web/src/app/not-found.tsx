@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 // Translations for 404 page
 const translations = {
   zh: {
-    title: '页面未找到 - 留学申请平台',
+    title: '页面未找到 - Lumni',
     heading: '页面未找到',
     message: '抱歉，您访问的页面不存在或已被移动。请检查链接是否正确，或返回首页。',
     goHome: '返回首页',
@@ -14,10 +14,10 @@ const translations = {
     casesLib: '案例库',
     ranking: '学校榜单',
     prediction: '录取预测',
-    copyright: '© 2026 留学申请平台',
+    copyright: '© 2026 Lumni',
   },
   en: {
-    title: 'Page Not Found - Study Abroad Platform',
+    title: 'Page Not Found - Lumni',
     heading: 'Page Not Found',
     message:
       'Sorry, the page you are looking for does not exist or has been moved. Please check the link or return to the homepage.',
@@ -26,7 +26,7 @@ const translations = {
     casesLib: 'Case Library',
     ranking: 'School Rankings',
     prediction: 'Admission Prediction',
-    copyright: '© 2026 Study Abroad Platform',
+    copyright: '© 2026 Lumni',
   },
 };
 
@@ -53,7 +53,7 @@ export default function NotFound() {
       <body
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+          background: 'linear-gradient(180deg, #f7f1e6 0%, #fff9ef 55%, #f3e7d6 100%)',
           display: 'flex',
           flexDirection: 'column',
           fontFamily:
@@ -79,11 +79,11 @@ export default function NotFound() {
                 fontSize: 'clamp(8rem, 20vw, 12rem)',
                 fontWeight: 'bold',
                 lineHeight: 1,
-                background: 'linear-gradient(135deg, #60a5fa, #22d3ee, #2dd4bf)',
+                background: 'linear-gradient(135deg, #1d1813, #ddb85a, #e76f8a)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                opacity: 0.3,
+                opacity: 0.36,
                 marginBottom: '2rem',
               }}
             >
@@ -95,7 +95,7 @@ export default function NotFound() {
               style={{
                 fontSize: '1.875rem',
                 fontWeight: 'bold',
-                color: 'white',
+                color: '#1d1813',
                 marginBottom: '1rem',
               }}
             >
@@ -103,7 +103,7 @@ export default function NotFound() {
             </h2>
             <p
               style={{
-                color: '#94a3b8',
+                color: '#6f665b',
                 marginBottom: '2rem',
                 fontSize: '1.125rem',
                 lineHeight: 1.6,
@@ -120,9 +120,9 @@ export default function NotFound() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '0.5rem',
-                background: 'linear-gradient(135deg, #3b82f6, #06b6d4)',
+                background: '#1d1813',
                 padding: '0.75rem 1.5rem',
-                color: 'white',
+                color: '#fff7ea',
                 fontWeight: 500,
                 textDecoration: 'none',
                 transition: 'opacity 0.2s',
@@ -136,13 +136,13 @@ export default function NotFound() {
               style={{
                 marginTop: '3rem',
                 paddingTop: '2rem',
-                borderTop: '1px solid #334155',
+                borderTop: '1px solid #d8c8b2',
               }}
             >
               <p
                 style={{
                   fontSize: '0.875rem',
-                  color: '#64748b',
+                  color: '#6f665b',
                   marginBottom: '1rem',
                 }}
               >
@@ -158,19 +158,19 @@ export default function NotFound() {
               >
                 <Link
                   href={`/${locale}/cases`}
-                  style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}
+                  style={{ color: '#6f665b', textDecoration: 'none', fontSize: '0.875rem' }}
                 >
                   {t.casesLib}
                 </Link>
                 <Link
                   href={`/${locale}/ranking`}
-                  style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}
+                  style={{ color: '#6f665b', textDecoration: 'none', fontSize: '0.875rem' }}
                 >
                   {t.ranking}
                 </Link>
                 <Link
                   href={`/${locale}/prediction`}
-                  style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.875rem' }}
+                  style={{ color: '#6f665b', textDecoration: 'none', fontSize: '0.875rem' }}
                 >
                   {t.prediction}
                 </Link>
@@ -189,7 +189,7 @@ export default function NotFound() {
           <p
             style={{
               fontSize: '0.875rem',
-              color: '#64748b',
+              color: '#6f665b',
               margin: 0,
             }}
           >

@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 // Reddit API 配置
 const REDDIT_BASE_URL = 'https://www.reddit.com';
 const SUBREDDIT = 'collegeresults';
-const USER_AGENT = 'StudyAbroadPlatform/1.0 (Educational Research)';
+const USER_AGENT = 'Lumni/1.0 (Educational Research)';
 
 // School name aliases are now centralized in common/constants/school-aliases.ts
 

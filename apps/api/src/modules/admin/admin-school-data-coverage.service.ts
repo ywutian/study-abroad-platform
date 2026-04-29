@@ -33,10 +33,24 @@ const CRITICAL_FIELDS = [
 ] as const;
 const OPTIONAL_FIELDS = ['satAvg', 'act25', 'actAvg', 'act75'] as const;
 const HEURISTIC_SOURCE = 'HEURISTIC:PR-15';
+const TERMINAL_REAL_DATA_STATUSES = new Set([
+  'OFFICIAL_BLANK',
+  'OFFICIAL_BLOCKED',
+  'NO_PUBLIC_REAL_DATA',
+  'MANUAL_REVIEW',
+  'PERMANENT_HEURISTIC',
+]);
 
 type CoverageField =
   | (typeof CRITICAL_FIELDS)[number]
   | (typeof OPTIONAL_FIELDS)[number];
+type CoverageBucket =
+  | 'official'
+  | 'heuristic'
+  | 'terminal'
+  | 'stale'
+  | 'other'
+  | 'missing';
 
 interface SchoolForCoverage {
   id: string;
@@ -81,6 +95,14 @@ export class AdminSchoolDataCoverageService {
     const fieldTotals = this.emptyFieldTotals();
     const sourceCounts: Record<string, number> = {};
     const tierCounts: Record<string, number> = {};
+    const bucketCounts: Record<CoverageBucket, number> = {
+      official: 0,
+      heuristic: 0,
+      terminal: 0,
+      stale: 0,
+      other: 0,
+      missing: 0,
+    };
 
     const items = schools.map((school) => {
       const provenance = buildNormalizedSchoolProvenance(school as any);
@@ -90,8 +112,11 @@ export class AdminSchoolDataCoverageService {
         total.total += 1;
         if (status.filled) total.filled += 1;
         if (status.predictionEligible) total.predictionEligible += 1;
+        if (status.isOfficial) total.official += 1;
         if (status.isHeuristic) total.heuristic += 1;
+        if (status.isTerminal) total.terminal += 1;
         if (status.staleness === 'STALE') total.stale += 1;
+        bucketCounts[status.bucket] += 1;
         if (status.source)
           sourceCounts[status.source] = (sourceCounts[status.source] ?? 0) + 1;
         if (status.tier)
@@ -108,6 +133,12 @@ export class AdminSchoolDataCoverageService {
       const heuristicCritical = critical
         .filter((field) => field.isHeuristic)
         .map((field) => field.field);
+      const terminalCritical = critical
+        .filter((field) => field.isTerminal)
+        .map((field) => field.field);
+      const staleCritical = critical
+        .filter((field) => field.staleness === 'STALE')
+        .map((field) => field.field);
 
       return {
         schoolId: school.id,
@@ -121,6 +152,8 @@ export class AdminSchoolDataCoverageService {
         criticalComplete: missingCritical.length === 0,
         missingCritical,
         heuristicCritical,
+        terminalCritical,
+        staleCritical,
         fields,
       };
     });
@@ -149,8 +182,31 @@ export class AdminSchoolDataCoverageService {
         heuristicOnlySchools: items.filter(
           (item) => item.heuristicCritical.length > 0,
         ).length,
+        terminalStatusSchools: items.filter(
+          (item) => item.terminalCritical.length > 0,
+        ).length,
+        staleCriticalSchools: items.filter(
+          (item) => item.staleCritical.length > 0,
+        ).length,
+        officialFields: Object.values(fieldTotals).reduce(
+          (sum, total) => sum + total.official,
+          0,
+        ),
+        heuristicFields: Object.values(fieldTotals).reduce(
+          (sum, total) => sum + total.heuristic,
+          0,
+        ),
+        terminalFields: Object.values(fieldTotals).reduce(
+          (sum, total) => sum + total.terminal,
+          0,
+        ),
+        staleFields: Object.values(fieldTotals).reduce(
+          (sum, total) => sum + total.stale,
+          0,
+        ),
       },
       fieldTotals,
+      bucketCounts,
       sourceCounts,
       tierCounts,
       items,
@@ -305,6 +361,8 @@ export class AdminSchoolDataCoverageService {
   }
 
   async importIpedsCsvRows(dto: ImportIpedsCsvDto, actorUserId: string) {
+    const beforeCoverage =
+      dto.dryRun === false ? await this.getCoverage() : null;
     const unitids = dto.rows.map((row) => row.unitid);
     const nameNorms = dto.rows
       .map((row) => row.schoolNameNorm)
@@ -349,6 +407,7 @@ export class AdminSchoolDataCoverageService {
           ...row,
           schoolId,
           source: `IPEDS_CSV:${dto.cycleYear ?? new Date().getFullYear()}:unitid-${row.unitid}`,
+          sourceUrl: 'https://nces.ed.gov/ipeds/use-the-data',
           cycleYear: dto.cycleYear,
           sourceConfidence: 0.95,
           sourceNotes: 'IPEDS CSV import via PR-15 all-schools data pipeline.',
@@ -362,10 +421,15 @@ export class AdminSchoolDataCoverageService {
       },
       actorUserId,
     );
+    const afterCoverage = beforeCoverage ? await this.getCoverage() : null;
     return {
       ...bulkResult,
       scannedIpedsRows: dto.rows.length,
       ipedsNotFound: notFound,
+      coverageDiff:
+        beforeCoverage && afterCoverage
+          ? this.computeCoverageDiff(beforeCoverage, afterCoverage)
+          : undefined,
     };
   }
 
@@ -397,7 +461,9 @@ export class AdminSchoolDataCoverageService {
   }
 
   async extractCdsRows(dto: CdsExtractDto, actorUserId: string) {
-    return this.schoolRates.runBulkUpdate(
+    const beforeCoverage =
+      dto.dryRun === false ? await this.getCoverage() : null;
+    const bulkResult = await this.schoolRates.runBulkUpdate(
       {
         dryRun: dto.dryRun ?? true,
         rows: dto.rows.map((row) => ({
@@ -413,6 +479,14 @@ export class AdminSchoolDataCoverageService {
       },
       actorUserId,
     );
+    const afterCoverage = beforeCoverage ? await this.getCoverage() : null;
+    return {
+      ...bulkResult,
+      coverageDiff:
+        beforeCoverage && afterCoverage
+          ? this.computeCoverageDiff(beforeCoverage, afterCoverage)
+          : undefined,
+    };
   }
 
   private async findCoverageSchools(options?: {
@@ -463,13 +537,32 @@ export class AdminSchoolDataCoverageService {
       field === 'testOptional' &&
       rawValue == null &&
       school.testingPolicy === 'UNKNOWN';
-    const filled = rawValue != null || explicitUnknown;
     const source = provenance[field]
       ? toSchoolFieldSource(provenance[field])
       : null;
     const isHeuristic =
       source?.tier === 'INFERRED' ||
       Boolean(source?.source?.toUpperCase().includes('HEURISTIC'));
+    const isTerminal =
+      source?.tier === 'UNAVAILABLE' ||
+      Boolean(
+        source?.realDataStatus &&
+        TERMINAL_REAL_DATA_STATUSES.has(source.realDataStatus),
+      );
+    const isOfficial =
+      source?.tier === 'OFFICIAL' || source?.tier === 'PARTNER';
+    const filled = rawValue != null || explicitUnknown || isTerminal;
+    const bucket: CoverageBucket = isTerminal
+      ? 'terminal'
+      : isHeuristic
+        ? 'heuristic'
+        : isOfficial
+          ? 'official'
+          : source?.staleness === 'STALE'
+            ? 'stale'
+            : source
+              ? 'other'
+              : 'missing';
     return {
       field,
       value: rawValue,
@@ -482,9 +575,21 @@ export class AdminSchoolDataCoverageService {
       sourceUrl: source?.sourceUrl ?? null,
       cycleYear: source?.cycleYear ?? null,
       notes: source?.notes ?? null,
+      validatorCount: source?.validatorCount ?? null,
+      originalFormula: source?.originalFormula ?? null,
+      realDataStatus: source?.realDataStatus ?? null,
+      terminalStatus: isTerminal
+        ? (source?.realDataStatus ?? source?.source)
+        : null,
+      extractionMethod: source?.extractionMethod ?? null,
+      reason: source?.reason ?? null,
+      permanent: source?.permanent ?? null,
       staleness: source?.staleness ?? null,
       predictionEligible: (source?.predictionEligible ?? false) || isHeuristic,
+      isOfficial,
       isHeuristic,
+      isTerminal,
+      bucket,
     };
   }
 
@@ -510,6 +615,8 @@ export class AdminSchoolDataCoverageService {
         predictionEligible: number;
         predictionEligiblePercent: number;
         heuristic: number;
+        official: number;
+        terminal: number;
         stale: number;
       }
     >;
@@ -520,11 +627,64 @@ export class AdminSchoolDataCoverageService {
         percent: 0,
         predictionEligible: 0,
         predictionEligiblePercent: 0,
+        official: 0,
         heuristic: 0,
+        terminal: 0,
         stale: 0,
       };
     }
     return totals;
+  }
+
+  private computeCoverageDiff(
+    before: Awaited<ReturnType<AdminSchoolDataCoverageService['getCoverage']>>,
+    after: Awaited<ReturnType<AdminSchoolDataCoverageService['getCoverage']>>,
+  ) {
+    const fields = [...CRITICAL_FIELDS, ...OPTIONAL_FIELDS];
+    const fieldDiffs = Object.fromEntries(
+      fields.map((field) => {
+        const b = before.fieldTotals[field];
+        const a = after.fieldTotals[field];
+        return [
+          field,
+          {
+            filled: a.filled - b.filled,
+            official: a.official - b.official,
+            heuristic: a.heuristic - b.heuristic,
+            terminal: a.terminal - b.terminal,
+            stale: a.stale - b.stale,
+            predictionEligible: a.predictionEligible - b.predictionEligible,
+            predictionEligiblePercent:
+              Math.round(
+                (a.predictionEligiblePercent - b.predictionEligiblePercent) *
+                  10,
+              ) / 10,
+          },
+        ];
+      }),
+    );
+
+    return {
+      generatedAt: new Date().toISOString(),
+      totals: {
+        officialFields:
+          (after.totals.officialFields ?? 0) -
+          (before.totals.officialFields ?? 0),
+        heuristicFields:
+          (after.totals.heuristicFields ?? 0) -
+          (before.totals.heuristicFields ?? 0),
+        terminalFields:
+          (after.totals.terminalFields ?? 0) -
+          (before.totals.terminalFields ?? 0),
+        staleFields:
+          (after.totals.staleFields ?? 0) - (before.totals.staleFields ?? 0),
+        criticalComplete:
+          after.totals.criticalComplete - before.totals.criticalComplete,
+        missingAnyCritical:
+          after.totals.missingAnyCritical - before.totals.missingAnyCritical,
+      },
+      fields: fieldDiffs,
+    };
   }
 
   private toPercent(

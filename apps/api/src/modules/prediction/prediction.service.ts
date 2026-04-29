@@ -70,12 +70,31 @@ import {
   type DistillationEvaluationInput,
 } from './distillation/types';
 import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
+import type { SchoolPredictionDataQuality } from '@study-abroad/shared';
+import { buildNormalizedSchoolProvenance } from '../school/school-provenance.helpers';
 
 // ============================================
 // Constants
 // ============================================
 
 const MODEL_VERSION = 'v3-enterprise';
+const SCHOOL_META_QUALITY_FIELDS = [
+  'acceptanceRate',
+  'intlAcceptanceRate',
+  'oosAcceptanceRate',
+  'sat25',
+  'sat75',
+  'act25',
+  'act75',
+  'graduationRate',
+] as const;
+const TERMINAL_REAL_DATA_STATUSES = new Set([
+  'OFFICIAL_BLANK',
+  'OFFICIAL_BLOCKED',
+  'NO_PUBLIC_REAL_DATA',
+  'MANUAL_REVIEW',
+  'PERMANENT_HEURISTIC',
+]);
 
 /** 置信区间宽度 (根据 confidence level) — kept locally for Platt recalibration */
 const CONFIDENCE_INTERVAL_WIDTH = {
@@ -293,6 +312,83 @@ export class PredictionService {
   /** @deprecated Use PredictionTransformerService.schoolToInput() directly */
   private schoolToInput(school: any): SchoolInput {
     return this.transformer.schoolToInput(school);
+  }
+
+  private buildPredictionSchoolMeta(school: any) {
+    return {
+      usNewsRank: school.usNewsRank ?? undefined,
+      acceptanceRate: clampPercentRate(school.acceptanceRate),
+      intlAcceptanceRate: clampPercentRate(school.intlAcceptanceRate),
+      oosAcceptanceRate: clampPercentRate(school.oosAcceptanceRate),
+      intlStudentPct: school.intlStudentPct
+        ? Number(school.intlStudentPct)
+        : undefined,
+      needBlindInternational: school.needBlindInternational || undefined,
+      graduationRate: clampPercentRate(school.graduationRate),
+      satAvg: school.satAvg ?? undefined,
+      sat25: school.sat25 ?? undefined,
+      sat75: school.sat75 ?? undefined,
+      dataQuality: this.buildSchoolDataQuality(school),
+    };
+  }
+
+  private buildSchoolDataQuality(school: any): SchoolPredictionDataQuality {
+    const provenance = buildNormalizedSchoolProvenance(school);
+    const officialFields: string[] = [];
+    const heuristicFields: string[] = [];
+    const terminalFields: string[] = [];
+    const staleFields: string[] = [];
+    const missingFields: string[] = [];
+
+    for (const field of SCHOOL_META_QUALITY_FIELDS) {
+      const value = school[field];
+      const isMissing = value == null;
+      if (isMissing) missingFields.push(field);
+
+      const source = provenance[field];
+      if (!source) continue;
+      const isTerminal =
+        source.tier === 'UNAVAILABLE' ||
+        Boolean(
+          source.realDataStatus &&
+          TERMINAL_REAL_DATA_STATUSES.has(source.realDataStatus),
+        );
+      const isHeuristic =
+        source.tier === 'INFERRED' ||
+        source.source.toUpperCase().includes('HEURISTIC');
+      const isOfficial =
+        source.tier === 'OFFICIAL' || source.tier === 'PARTNER';
+
+      if (isTerminal) terminalFields.push(field);
+      else if (isHeuristic) heuristicFields.push(field);
+      else if (isOfficial) officialFields.push(field);
+
+      if (source.staleness === 'STALE') staleFields.push(field);
+    }
+
+    const impactedFields = Array.from(
+      new Set([
+        ...missingFields,
+        ...heuristicFields,
+        ...terminalFields,
+        ...staleFields,
+      ]),
+    );
+    const summary: SchoolPredictionDataQuality['summary'] =
+      impactedFields.length === 0 && officialFields.length >= 4
+        ? 'strong'
+        : impactedFields.length >= 4 || officialFields.length <= 1
+          ? 'limited'
+          : 'mixed';
+
+    return {
+      officialFields,
+      heuristicFields,
+      terminalFields,
+      staleFields,
+      impactedFields,
+      summary,
+    };
   }
 
   /** @deprecated Use PredictionTransformerService.extractProfileMetrics() directly */
@@ -643,34 +739,10 @@ export class PredictionService {
 
     const schoolMetaMap = new Map<
       string,
-      {
-        usNewsRank?: number;
-        acceptanceRate?: number;
-        intlAcceptanceRate?: number;
-        oosAcceptanceRate?: number;
-        intlStudentPct?: number;
-        needBlindInternational?: boolean;
-        graduationRate?: number;
-        satAvg?: number;
-        sat25?: number;
-        sat75?: number;
-      }
+      ReturnType<PredictionService['buildPredictionSchoolMeta']>
     >();
     for (const s of schools) {
-      schoolMetaMap.set(s.id, {
-        usNewsRank: s.usNewsRank ?? undefined,
-        acceptanceRate: clampPercentRate(s.acceptanceRate),
-        intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
-        oosAcceptanceRate: clampPercentRate((s as any).oosAcceptanceRate),
-        intlStudentPct: (s as any).intlStudentPct
-          ? Number((s as any).intlStudentPct)
-          : undefined,
-        needBlindInternational: (s as any).needBlindInternational || undefined,
-        graduationRate: clampPercentRate(s.graduationRate),
-        satAvg: s.satAvg ?? undefined,
-        sat25: s.sat25 ?? undefined,
-        sat75: s.sat75 ?? undefined,
-      });
+      schoolMetaMap.set(s.id, this.buildPredictionSchoolMeta(s));
     }
 
     // Serial execution — preview is used by CLI tools where determinism
@@ -944,34 +1016,10 @@ export class PredictionService {
     // Build schoolMeta lookup (includes fields needed for selectivity index)
     const schoolMetaMap = new Map<
       string,
-      {
-        usNewsRank?: number;
-        acceptanceRate?: number;
-        intlAcceptanceRate?: number;
-        oosAcceptanceRate?: number;
-        intlStudentPct?: number;
-        needBlindInternational?: boolean;
-        graduationRate?: number;
-        satAvg?: number;
-        sat25?: number;
-        sat75?: number;
-      }
+      ReturnType<PredictionService['buildPredictionSchoolMeta']>
     >();
     for (const s of schools) {
-      schoolMetaMap.set(s.id, {
-        usNewsRank: s.usNewsRank ?? undefined,
-        acceptanceRate: clampPercentRate(s.acceptanceRate),
-        intlAcceptanceRate: clampPercentRate((s as any).intlAcceptanceRate),
-        oosAcceptanceRate: clampPercentRate((s as any).oosAcceptanceRate),
-        intlStudentPct: (s as any).intlStudentPct
-          ? Number((s as any).intlStudentPct)
-          : undefined,
-        needBlindInternational: (s as any).needBlindInternational || undefined,
-        graduationRate: clampPercentRate(s.graduationRate),
-        satAvg: s.satAvg ?? undefined,
-        sat25: s.sat25 ?? undefined,
-        sat75: s.sat75 ?? undefined,
-      });
+      schoolMetaMap.set(s.id, this.buildPredictionSchoolMeta(s));
     }
 
     // Pre-compute feature flags once per prediction request. `profileId` is a

@@ -29,7 +29,7 @@ export function TrustBar() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.4 }}
                 transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/86 px-5 py-5 shadow-[var(--landing-shadow-card)]"
+                className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/86 px-5 py-5 shadow-[var(--landing-shadow-card)]"
               >
                 <div className="text-4xl font-semibold leading-none tracking-[-0.04em] text-[var(--landing-fg)] sm:text-5xl">
                   {stat.value}

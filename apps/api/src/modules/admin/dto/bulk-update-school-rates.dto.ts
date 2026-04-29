@@ -125,6 +125,140 @@ export class BulkUpdateSchoolRateRowDto {
   totalEnrollment?: number;
 
   @ApiProperty({
+    description: 'Student count from College Scorecard/IPEDS. Integer count.',
+    required: false,
+    minimum: 0,
+    maximum: 500000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(500000)
+  studentCount?: number;
+
+  @ApiProperty({
+    description: 'Annual tuition in USD from official source.',
+    required: false,
+    minimum: 0,
+    maximum: 200000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(200000)
+  tuition?: number;
+
+  @ApiProperty({
+    description: 'Average salary after graduation in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 500000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(500000)
+  avgSalary?: number;
+
+  @ApiProperty({
+    description: 'Graduation rate percentage. Accepts fraction or percent.',
+    required: false,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  graduationRate?: number;
+
+  @ApiProperty({
+    description:
+      'First-year retention rate percentage. Accepts fraction or percent.',
+    required: false,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  retentionRate?: number;
+
+  @ApiProperty({
+    description: 'Student-faculty ratio, e.g. 6 means 6:1.',
+    required: false,
+    minimum: 1,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  studentFacultyRatio?: number;
+
+  @ApiProperty({
+    description:
+      'Percentage of demonstrated need met. Accepts fraction or percent.',
+    required: false,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  percentNeedMet?: number;
+
+  @ApiProperty({
+    description: 'Average financial aid package in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 200000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(200000)
+  averageAidPackage?: number;
+
+  @ApiProperty({
+    description: 'Average annual net price in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 200000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(200000)
+  averageNetPrice?: number;
+
+  @ApiProperty({
+    description: 'Annual room and board cost in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 100000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100000)
+  roomAndBoard?: number;
+
+  @ApiProperty({
+    description: 'Application fee in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 500,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(500)
+  applicationFee?: number;
+
+  @ApiProperty({
     description:
       'Whether the school is need-blind for international applicants.',
     required: false,
@@ -213,6 +347,75 @@ export class BulkUpdateSchoolRateRowDto {
   @IsOptional()
   @IsBoolean()
   testOptional?: boolean;
+
+  @ApiProperty({
+    description: 'Whether application fee waivers are available.',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  feeWaiverAvailable?: boolean;
+
+  @ApiProperty({
+    description: 'Whether the school accepts Common App.',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  acceptsCommonApp?: boolean;
+
+  @ApiProperty({
+    description: 'Whether the school accepts Coalition App.',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  acceptsCoalition?: boolean;
+
+  @ApiProperty({
+    description: 'Whether the school offers Early Decision.',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  hasEarlyDecision?: boolean;
+
+  @ApiProperty({
+    description: 'Median salary 6 years after graduation in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 500000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(500000)
+  salary6YrPostGrad?: number;
+
+  @ApiProperty({
+    description:
+      'Federal loan default rate percentage. Accepts fraction or percent.',
+    required: false,
+    minimum: 0,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @Min(0)
+  @Max(100)
+  loanDefaultRate?: number;
+
+  @ApiProperty({
+    description: 'Median monthly loan payment in USD.',
+    required: false,
+    minimum: 0,
+    maximum: 5000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(5000)
+  monthlyLoanPayment?: number;
 
   @ApiProperty({
     description:

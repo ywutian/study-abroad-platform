@@ -43,7 +43,8 @@ export interface TestScore {
   profileId: string;
   type: TestType;
   score: number;
-  subScores?: Record<string, number>;
+  subject?: string;
+  subScores?: Record<string, number | string>;
   testDate?: Date;
 }
 

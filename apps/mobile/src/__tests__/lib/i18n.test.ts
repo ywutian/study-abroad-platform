@@ -131,7 +131,7 @@ describe('i18n', () => {
       });
 
       it('resolves common.appName', () => {
-        expect(i18n.t('common.appName')).toBe('Study Abroad Platform');
+        expect(i18n.t('common.appName')).toBe('Lumni');
       });
 
       it('resolves common.save', () => {
@@ -175,7 +175,7 @@ describe('i18n', () => {
       });
 
       it('resolves common.appName', () => {
-        expect(i18n.t('common.appName')).toBe('留学申请平台');
+        expect(i18n.t('common.appName')).toBe('Lumni');
       });
 
       it('resolves common.save', () => {
@@ -238,10 +238,10 @@ describe('i18n', () => {
 
     it('translates correctly after language change', async () => {
       await changeLanguage('zh');
-      expect(i18n.t('common.appName')).toBe('留学申请平台');
+      expect(i18n.t('common.appName')).toBe('Lumni');
 
       await changeLanguage('en');
-      expect(i18n.t('common.appName')).toBe('Study Abroad Platform');
+      expect(i18n.t('common.appName')).toBe('Lumni');
     });
   });
 
@@ -270,7 +270,7 @@ describe('i18n', () => {
       // If we set language to something invalid, i18next falls back to zh
       await i18n.changeLanguage('zh');
       // Verify a zh translation works as fallback proof
-      expect(i18n.t('common.appName')).toBe('留学申请平台');
+      expect(i18n.t('common.appName')).toBe('Lumni');
     });
   });
 });

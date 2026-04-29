@@ -65,6 +65,13 @@ describe('ForumController', () => {
             }),
             getCategories: jest.fn().mockResolvedValue([mockCategory]),
             createCategory: jest.fn().mockResolvedValue(mockCategory),
+            getCommunities: jest.fn().mockResolvedValue([]),
+            createCommunity: jest.fn().mockResolvedValue({ id: 'community-1' }),
+            followCommunity: jest.fn().mockResolvedValue({ id: 'community-1' }),
+            unfollowCommunity: jest
+              .fn()
+              .mockResolvedValue({ id: 'community-1' }),
+            uploadImages: jest.fn().mockResolvedValue([]),
             getPosts: jest.fn().mockResolvedValue(mockPostListResponse),
             getPostById: jest.fn().mockResolvedValue(mockPostDetail),
             createPost: jest.fn().mockResolvedValue(mockPost),

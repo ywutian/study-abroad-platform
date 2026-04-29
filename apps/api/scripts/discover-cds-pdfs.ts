@@ -15,6 +15,10 @@ type Args = {
   engine: 'auto' | 'google' | 'tavily';
   missingOnly: boolean;
   maxStages: number;
+  /** Cap Tavily key pool size (plan: 15-key stop). */
+  tavilyKeyLimit: number | null;
+  /** Comma-separated school IDs — only these schools are scanned (chunk mode). */
+  schoolIds: string[] | null;
 };
 
 type Candidate = {
@@ -72,7 +76,51 @@ function parseArgs(): Args {
     })(),
     missingOnly: has('missing-only') || has('missing-fields-only'),
     maxStages: Number(get('max-stages') ?? 1),
+    tavilyKeyLimit: (() => {
+      const v = get('tavily-key-limit');
+      if (v == null || v === '') return null;
+      const n = Number(v);
+      return Number.isFinite(n) && n > 0 ? Math.floor(n) : null;
+    })(),
+    schoolIds: (() => {
+      const v = get('school-ids');
+      if (!v?.trim()) return null;
+      return v
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    })(),
   };
+}
+
+/** nameNorm values to skip (no C1 residency published — do not burn search quota). */
+function loadKnownNoCdsNameNorms(): Set<string> {
+  const set = new Set<string>();
+  for (const base of [
+    path.join(process.cwd(), 'scripts', 'cds-data', 'known-no-cds.json'),
+    path.join(
+      process.cwd(),
+      'apps',
+      'api',
+      'scripts',
+      'cds-data',
+      'known-no-cds.json',
+    ),
+  ]) {
+    try {
+      if (!fs.existsSync(base)) continue;
+      const raw = JSON.parse(fs.readFileSync(base, 'utf8')) as {
+        schools?: { schoolNameNorm: string }[];
+      };
+      for (const row of raw.schools ?? []) {
+        if (row.schoolNameNorm) set.add(row.schoolNameNorm.toLowerCase());
+      }
+      break;
+    } catch {
+      /* ignore */
+    }
+  }
+  return set;
 }
 
 function fieldIsMissing(school: Record<string, unknown>, field: string) {
@@ -418,6 +466,15 @@ async function main() {
   loadDotEnv();
   const args = parseArgs();
   const tavilyPool = loadTavilyPool();
+  if (
+    args.tavilyKeyLimit != null &&
+    tavilyPool.entries.length > args.tavilyKeyLimit
+  ) {
+    tavilyPool.entries = tavilyPool.entries.slice(0, args.tavilyKeyLimit);
+    console.error(
+      `[pool] tavily keys capped to ${args.tavilyKeyLimit} via --tavily-key-limit`,
+    );
+  }
   const googlePool = loadGooglePool();
   const hasTavily = tavilyPool.entries.length > 0;
   const hasGoogle = googlePool.entries.length > 0;
@@ -476,15 +533,30 @@ async function main() {
     orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
   });
 
-  const targets = schools
-    .filter((school) => {
-      const record = school as Record<string, unknown>;
-      // Skip schools we know don't publish CDS (saves quota + avoids hammering)
-      if (fieldIsPermanentHeuristic(record, args.missingField)) return false;
-      if (fieldIsMissing(record, args.missingField)) return true;
-      return !args.missingOnly && fieldIsHeuristic(record, args.missingField);
-    })
-    .slice(0, args.limit);
+  const knownNoCds = loadKnownNoCdsNameNorms();
+
+  let targets = schools.filter((school) => {
+    const record = school as Record<string, unknown>;
+    if (knownNoCds.has(String(school.nameNorm).toLowerCase())) return false;
+    // Skip schools we know don't publish CDS (saves quota + avoids hammering)
+    if (fieldIsPermanentHeuristic(record, args.missingField)) return false;
+    if (fieldIsMissing(record, args.missingField)) return true;
+    // missing-only: still target heuristic-filled fields (need real CDS), not only NULLs
+    if (args.missingOnly) return fieldIsHeuristic(record, args.missingField);
+    return fieldIsHeuristic(record, args.missingField);
+  });
+
+  if (args.schoolIds?.length) {
+    const byId = new Map(targets.map((s) => [s.id, s]));
+    const ordered: typeof targets = [];
+    for (const id of args.schoolIds) {
+      const row = byId.get(id);
+      if (row) ordered.push(row);
+    }
+    targets = ordered;
+  }
+
+  targets = targets.slice(0, args.limit);
 
   const runTavily = hasTavily ? createPoolRunner(tavilyPool, 'tavily') : null;
   const runGoogle = hasGoogle ? createPoolRunner(googlePool, 'google') : null;
@@ -532,6 +604,17 @@ async function main() {
   }
 
   for (const school of targets) {
+    if (
+      args.engine === 'tavily' &&
+      tavilyPool.exhausted.size >= tavilyPool.entries.length &&
+      tavilyPool.entries.length > 0
+    ) {
+      console.error(
+        '[search] all Tavily keys exhausted — stopping discover loop early',
+      );
+      break;
+    }
+
     const stages =
       args.maxStages > 1
         ? buildStages(school)

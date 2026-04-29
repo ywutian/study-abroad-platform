@@ -8,6 +8,7 @@ import {
   Body,
   Param,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
@@ -46,6 +47,8 @@ import { ProfileApplicationAnalysisService } from './profile-application-analysi
 @ApiBearerAuth()
 @Controller('profiles')
 export class ProfileController {
+  private readonly logger = new Logger(ProfileController.name);
+
   constructor(
     private readonly profileService: ProfileService,
     private readonly profileApplicationAnalysisService: ProfileApplicationAnalysisService,
@@ -132,9 +135,10 @@ export class ProfileController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: OnboardingDto,
   ) {
-    // Update profile with onboarding data
+    const profileInput = data.profile ?? {};
     const profileData: any = {
-      realName: data.realName,
+      ...profileInput,
+      realName: profileInput.realName ?? data.realName,
       onboardingCompleted: true,
     };
 
@@ -147,17 +151,79 @@ export class ProfileController {
 
     await this.profileService.upsert(user.id, profileData);
 
-    // Add test scores if provided
+    // Add test scores if provided. The backing model stores integer scores,
+    // matching the rest of the app's test-score form behavior.
     if (data.testScores && data.testScores.length > 0) {
       for (const score of data.testScores) {
-        await this.profileService.createTestScore(user.id, {
+        const scoreData: any = {
           type: score.type,
-          score: score.score,
+          score: Math.round(score.score),
+        };
+        if (score.subScores) scoreData.subScores = score.subScores;
+        if (score.testDate) scoreData.testDate = score.testDate;
+        await this.profileService.createTestScore(user.id, scoreData);
+      }
+    }
+
+    if (data.activities && data.activities.length > 0) {
+      for (const [index, activity] of data.activities.entries()) {
+        await this.profileService.createActivity(user.id, {
+          ...activity,
+          order: index,
         });
       }
     }
 
-    return { success: true, message: 'Onboarding completed' };
+    if (data.awards && data.awards.length > 0) {
+      for (const [index, award] of data.awards.entries()) {
+        await this.profileService.createAward(user.id, {
+          ...award,
+          order: index,
+        });
+      }
+    }
+
+    if (data.targetSchools && data.targetSchools.length > 0) {
+      for (const school of data.targetSchools) {
+        try {
+          await this.schoolListService.addSchool(user.id, {
+            schoolId: school.schoolId,
+            round: school.round,
+            tier: school.tier,
+          });
+        } catch (error) {
+          if (school.round) {
+            try {
+              await this.schoolListService.addSchool(user.id, {
+                schoolId: school.schoolId,
+                tier: school.tier,
+              });
+              continue;
+            } catch {
+              // Fall through to debug logging below.
+            }
+          }
+          this.logger.debug(
+            `Skipping onboarding target school ${school.schoolId} for user ${user.id}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
+    }
+
+    const [completeness, schoolList] = await Promise.all([
+      this.profileService.calculateCompleteness(user.id),
+      this.schoolListService.getUserSchoolList(user.id),
+    ]);
+
+    return {
+      success: true,
+      message: 'Onboarding completed',
+      completeness: completeness.score,
+      targetSchoolCount: schoolList.length,
+      nextRoute: '/prediction?autorun=1',
+    };
   }
 
   // ============================================

@@ -1,0 +1,190 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T06:00:00Z",
+    "source": "Round 9 - Direct CDS PDF extraction + web research",
+    "purpose": "State flagship and regional university residency admit rates",
+    "verifiedBy": "Direct CDS PDF download + pdftotext extraction; web search for aggregator sources",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "arizona state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://admission.asu.edu/freshman/facts",
+      "rates": {
+        "acceptanceRate": 89.9,
+        "intlAcceptanceRate": 89.6,
+        "oosAcceptanceRate": 89.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 91.6,
+      "notes": "ASU CDS 2024-25: overall 89.9%, in-state 91.6%, OOS 89.2%, intl 89.6%. Near-open admissions."
+    },
+    {
+      "schoolNameNorm": "university of south carolina",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.sc.edu/about/offices_and_divisions/institutional_research/common_data_set/index.php",
+      "rates": {
+        "acceptanceRate": 60.2,
+        "intlAcceptanceRate": 65.3,
+        "oosAcceptanceRate": 54.7,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 76.2,
+      "notes": "USC Columbia CDS 2024-25 C1: total applied 23,247 / admitted 13,998 = 60.2%. In-state 76.2%, OOS 54.7%, intl 65.3%."
+    },
+    {
+      "schoolNameNorm": "louisiana state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.lsu.edu/ir/cds/cds_2024_2025.pdf",
+      "rates": {
+        "acceptanceRate": 73.3,
+        "intlAcceptanceRate": 47.8,
+        "oosAcceptanceRate": 72.3,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 80.1,
+      "notes": "LSU CDS 2024-25 C1: total 27,098 applied / 19,867 admitted = 73.3%. In-state 80.1%, OOS 72.3%, intl 47.8%."
+    },
+    {
+      "schoolNameNorm": "university of tennessee, knoxville",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.utk.edu/wp-content/uploads/sites/226/2025/02/CDS_2024_2025.pdf",
+      "rates": {
+        "acceptanceRate": 41.6,
+        "intlAcceptanceRate": 28.6,
+        "oosAcceptanceRate": 33.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 70.1,
+      "notes": "UTK CDS 2024-25 C1: overall 41.6%. In-state 70.1%, OOS 33.4%, intl 28.6%. Notable in-state vs OOS gap."
+    },
+    {
+      "schoolNameNorm": "texas tech university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.depts.ttu.edu/irs/CDS/CDS_2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 72.7,
+        "intlAcceptanceRate": 33.6,
+        "oosAcceptanceRate": 68.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 74.8,
+      "notes": "Texas Tech CDS 2024-25 C1: total 31,208 applied / 22,682 admitted = 72.7%. In-state 74.8%, OOS 68.2%, intl 33.6% (much lower — intl selective)."
+    },
+    {
+      "schoolNameNorm": "university of oklahoma",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.ou.edu/sites/default/files/2025-02/2024-2025_CommonDataSet_OU_Norman.pdf",
+      "rates": {
+        "acceptanceRate": 76.6,
+        "intlAcceptanceRate": 36.1,
+        "oosAcceptanceRate": 80.3,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 75.6,
+      "notes": "OU CDS 2024-25 C1: total 13,501 applied / 10,340 admitted = 76.6%. In-state 75.6%, OOS 80.3% (slightly higher), intl 36.1%."
+    },
+    {
+      "schoolNameNorm": "george mason university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://institutionalresearch.gmu.edu/common-data-set",
+      "rates": {
+        "acceptanceRate": 87.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 86.9,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 87.8,
+      "notes": "GMU CDS 2024-25 C1: in-state 87.8%, OOS 86.9%, overall ~87.5%. International column not published separately in C1."
+    },
+    {
+      "schoolNameNorm": "university of texas at dallas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.utdallas.edu/docs/cds/cds_2024_2025.pdf",
+      "rates": {
+        "acceptanceRate": 65.1,
+        "intlAcceptanceRate": 39.7,
+        "oosAcceptanceRate": 62.8,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 69.1,
+      "notes": "UT Dallas CDS 2024-25 C1: 5-column format (Total / In-State / OOS / International / Unknown). Total 65.1%, in-state 69.1%, OOS 62.8%, intl 39.7%."
+    },
+    {
+      "schoolNameNorm": "university of kansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irds.ku.edu/common-data-set",
+      "rates": {
+        "acceptanceRate": 93.5,
+        "intlAcceptanceRate": 93.3,
+        "oosAcceptanceRate": 93.0,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 94.3,
+      "notes": "KU CDS 2024-25 C: near-open admissions. In-state 94.3%, OOS 93.0%, intl 93.3%, overall 93.5%."
+    },
+    {
+      "schoolNameNorm": "university of kentucky",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uky.edu/irds/sites/www.uky.edu.irds/files/CDS_24_25.pdf",
+      "rates": {
+        "acceptanceRate": 93.0,
+        "intlAcceptanceRate": 93.4,
+        "oosAcceptanceRate": 92.3,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 94.5,
+      "notes": "UK CDS 2024-25: in-state 94.5%, OOS 92.3%, intl 93.4%, overall 93.0%. Near-open admissions."
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/institutionalresearch/common-data-set",
+      "rates": {
+        "acceptanceRate": 65.3,
+        "intlAcceptanceRate": 34.9,
+        "oosAcceptanceRate": 65.7,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 74.1,
+      "notes": "UVM CDS 2024-25 C1: in-state 74.1%, OOS 65.7%, intl 34.9%, overall 65.3%. Notable intl selectivity vs OOS."
+    },
+    {
+      "schoolNameNorm": "syracuse university",
+      "cycleYear": 2023,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/syracuse-university/acceptance-rate",
+      "rates": {
+        "acceptanceRate": 52.0,
+        "intlAcceptanceRate": 57.2,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Syracuse: overall ~52% (recent), intl 57.2% from Shiksha aggregator (Fall 2023 data). Intl slightly higher than overall."
+    },
+    {
+      "schoolNameNorm": "florida international university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://admissions.fiu.edu/become-a-panther/freshman/requirements/admission-statistics/",
+      "rates": {
+        "acceptanceRate": 58.0,
+        "intlAcceptanceRate": 64.0,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "FIU: overall ~58%, intl 64.0% from web research. CDS C1 does not publish residency breakdown separately — shows gender only. Intl figure from admissions statistics page."
+    },
+    {
+      "schoolNameNorm": "university of central florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucf.edu/common-data-set/",
+      "rates": {
+        "acceptanceRate": 44.0,
+        "intlAcceptanceRate": 23.4,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "UCF 2024-25: overall ~44%, intl 23.4% (1,890 intl admitted of ~8,000 intl apps per IR page). UCF C1 residency breakdown not directly parseable from PDF."
+    }
+  ]
+}

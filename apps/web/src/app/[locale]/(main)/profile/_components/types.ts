@@ -4,7 +4,8 @@ export interface TestScore {
   id: string;
   type: string;
   score: number;
-  subScores?: Record<string, number>;
+  subject?: string;
+  subScores?: Record<string, number | string>;
   testDate?: string;
 }
 

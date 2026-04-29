@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "留学申请平台",
+    "appName": "Lumni",
     "save": "保存",
     "cancel": "取消",
     "submit": "提交",
@@ -81,14 +81,14 @@
     "more": "更多"
   },
   "home": {
-    "title": "留学申请平台",
+    "title": "Lumni",
     "subtitle": "智能选校、录取预测、案例分享",
     "quickActions": "快捷操作",
     "recentCases": "最新案例",
     "topSchools": "热门学校",
     "viewAll": "查看全部",
     "welcomeBack": "欢迎回来",
-    "guestWelcome": "欢迎使用留学申请平台",
+    "guestWelcome": "欢迎使用 Lumni",
     "loginPrompt": "登录后享受更多功能",
     "stats": {
       "cases": "录取案例",
@@ -818,7 +818,7 @@
     "types": {
       "personal_statement": "个人陈述",
       "supplemental": "补充文书",
-      "why_school": "Why School",
+      "why_school": "Why School 文书",
       "activity": "活动描述",
       "other": "其他"
     },
@@ -1088,9 +1088,9 @@
       "needAid": "需要助学金",
       "firstGeneration": "第一代大学生",
       "legacy": "存在 legacy 背景",
-      "gapYear": "Gap Year",
+      "gapYear": "间隔年",
       "testSubmit": "走提交标化路径",
-      "testOptional": "走 test-optional 路径"
+      "testOptional": "走免标化路径"
     },
     "testStrategy": {
       "title": "标化策略",
@@ -1398,7 +1398,7 @@
       "commonApp": "Common App",
       "uc": "UC PIQ",
       "supplemental": "补充文书",
-      "whySchool": "Why School",
+      "whySchool": "Why School 文书",
       "other": "其他"
     },
     "results": {
@@ -1777,6 +1777,99 @@
     "empty": {
       "title": "未找到团队",
       "description": "浏览或创建团队与他人协作"
+    },
+    "recruitment": {
+      "description": "比赛组队匹配工作台",
+      "tab": {
+        "match": "匹配",
+        "matches": "已匹配",
+        "myTeam": "我的队伍"
+      },
+      "swipeDeck": {
+        "pass": "跳过",
+        "like": "喜欢"
+      },
+      "empty": {
+        "noCard": "先在我的队伍创建组队卡",
+        "deckEmpty": "当前没有可划的卡",
+        "noMatches": "还没有匹配"
+      },
+      "editor": {
+        "title": "组队卡编辑器"
+      },
+      "field": {
+        "backingTeam": "绑定队伍",
+        "createSoloTeam": "新建个人队伍",
+        "competitionTrack": "比赛赛道",
+        "soloTeamName": "个人队伍名",
+        "headline": "摘要",
+        "detailNote": "详细说明",
+        "offerRoles": "我能提供",
+        "needRoles": "我需要",
+        "skillTags": "技能标签",
+        "targetSize": "目标人数"
+      },
+      "display": {
+        "title": "我的展示配置",
+        "introLine": "一句话介绍",
+        "selectedResume": "展示简历",
+        "noResume": "不展示简历",
+        "showAcademics": "展示成绩亮点",
+        "showExperiences": "展示经历亮点",
+        "showPersonality": "展示性格标签",
+        "completeProfileHint": "亮点会从 Profile 成绩、奖项、活动、简历和测评结果自动生成。",
+        "save": "仅保存",
+        "confirmConsent": "确认同意展示"
+      },
+      "card": {
+        "teamFallback": "TEAM",
+        "offer": "我能提供",
+        "need": "我需要",
+        "skills": "技能",
+        "academics": "Academics",
+        "experience": "Experience",
+        "personality": "Personality",
+        "noHighlights": "还没有确认展示的资料亮点",
+        "memberCount": "{{current}}/{{max}} 名成员",
+        "coordination": "协作细节"
+      },
+      "status": {
+        "LOOKING": "招募中",
+        "ALMOST_FULL": "即将满员",
+        "NETWORKING_ONLY": "仅交流",
+        "CLOSED": "已关闭"
+      },
+      "matchKind": {
+        "teamUp": "可组队",
+        "networking": "交流"
+      },
+      "intentMode": {
+        "networkingOnly": "仅交流"
+      },
+      "availability": {
+        "LESS_THAN_5_HOURS": "<5小时/周",
+        "FIVE_TO_TEN_HOURS": "5-10小时/周",
+        "TEN_PLUS_HOURS": "10小时+/周",
+        "WEEKENDS_ONLY": "仅周末"
+      },
+      "option": {
+        "online": "线上",
+        "offline": "线下",
+        "hybrid": "混合"
+      },
+      "action": {
+        "saveCard": "保存",
+        "createCard": "创建",
+        "publish": "发布"
+      },
+      "toast": {
+        "cardCreated": "组队卡已创建",
+        "cardUpdated": "组队卡已更新",
+        "cardPublished": "组队卡已发布",
+        "displayUpdated": "展示配置已更新",
+        "matched": "匹配成功，已创建群聊",
+        "swipeRecorded": "已记录划卡"
+      }
     }
   },
   "points": {

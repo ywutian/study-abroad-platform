@@ -22,6 +22,13 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Prisma, PrismaClient } from '@prisma/client';
+import {
+  buildVerifiedFieldProvenance,
+  validateVerifiedCdsRow,
+  type CdsRateField,
+  type CdsVerification,
+  type VerifiedRateField,
+} from './lib/cds-real-validation';
 
 function loadDotEnv() {
   for (const file of [
@@ -74,6 +81,7 @@ interface BundleRow {
   eaApplied?: number | null;
   eaAdmitted?: number | null;
   notes?: string;
+  verification?: CdsVerification;
 }
 
 function parseArgs() {
@@ -88,6 +96,7 @@ function parseArgs() {
     live: has('live'),
     directDb: has('direct-db'),
     actorUserId: get('actor-user-id') ?? 'system-pr15-bundle-import',
+    requireVerifiedReal: !has('allow-unverified'),
   };
 }
 
@@ -132,6 +141,7 @@ async function importBundle(
   rows: BundleRow[],
   live: boolean,
   actorUserId: string,
+  requireVerifiedReal: boolean,
 ) {
   const results: PerSchoolResult[] = [];
   let totalChanged = 0;
@@ -168,6 +178,25 @@ async function importBundle(
       continue;
     }
 
+    const rowValidation = requireVerifiedReal
+      ? validateVerifiedCdsRow(row)
+      : null;
+    if (rowValidation && !rowValidation.importable) {
+      results.push({
+        schoolNameNorm: row.schoolNameNorm,
+        schoolName: school.name,
+        matched: true,
+        changedRates: [],
+        changedExtras: [],
+        notFound: false,
+        error: `verified-real validation failed: ${rowValidation.errors.join('; ')}`,
+      });
+      continue;
+    }
+    const verifiedRateFields = new Map<CdsRateField, VerifiedRateField>(
+      (rowValidation?.verifiedRateFields ?? []).map((f) => [f.field, f]),
+    );
+
     // Determine what to update
     const changedRates: string[] = [];
     const changedExtras: string[] = [];
@@ -181,6 +210,7 @@ async function importBundle(
       'transferAcceptanceRate',
     ] as const;
     for (const f of rateFields) {
+      if (requireVerifiedReal && !verifiedRateFields.has(f)) continue;
       const norm = normalizePercent(row.rates?.[f]);
       if (norm == null) continue;
       const cur = (school as any)[f] as Prisma.Decimal | null;
@@ -214,17 +244,36 @@ async function importBundle(
       const oldMeta = (school.metadata as Record<string, unknown>) ?? {};
       const oldProv = (oldMeta.provenance as Record<string, unknown>) ?? {};
       const provUpdate: Record<string, unknown> = {};
-      const provInfo = {
-        source: sourceLabel,
-        tier: 'OFFICIAL',
-        cycleYear: row.cycleYear ?? 2024,
-        sourceUrl: row.sourceUrl ?? null,
-        verifiedBy: actorUserId,
-        confidence: 0.95,
-        verifiedAt: new Date().toISOString(),
-      };
-      for (const f of [...changedRates, ...changedExtras]) {
-        provUpdate[f] = provInfo;
+      if (requireVerifiedReal) {
+        for (const f of changedRates) {
+          provUpdate[f] = buildVerifiedFieldProvenance(
+            row,
+            f,
+            verifiedRateFields.get(f as CdsRateField),
+            actorUserId,
+          );
+        }
+        for (const f of changedExtras) {
+          provUpdate[f] = buildVerifiedFieldProvenance(
+            row,
+            f,
+            undefined,
+            actorUserId,
+          );
+        }
+      } else {
+        const provInfo = {
+          source: sourceLabel,
+          tier: 'OFFICIAL',
+          cycleYear: row.cycleYear ?? 2024,
+          sourceUrl: row.sourceUrl ?? null,
+          verifiedBy: actorUserId,
+          confidence: 0.95,
+          verifiedAt: new Date().toISOString(),
+        };
+        for (const f of [...changedRates, ...changedExtras]) {
+          provUpdate[f] = provInfo;
+        }
       }
       const newMeta = deepMerge(oldMeta, {
         provenance: deepMerge(oldProv as Record<string, unknown>, provUpdate),
@@ -338,6 +387,7 @@ async function main() {
     rows,
     args.live,
     args.actorUserId,
+    args.requireVerifiedReal,
   );
 
   const matched = results.filter((r) => r.matched).length;
@@ -359,6 +409,9 @@ async function main() {
   console.log(`Total schools updated:  ${totalChanged}`);
   console.log(`Errors:               ${errors}`);
   console.log(`Duration:             ${durationMs}ms`);
+  console.log(
+    `Verified-real gate:   ${args.requireVerifiedReal ? 'ON' : 'OFF (--allow-unverified)'}`,
+  );
 
   if (errors > 0) {
     console.log('\nErrors:');

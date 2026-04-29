@@ -116,7 +116,7 @@ async function probeUrl(
       signal: controller.signal,
       headers: {
         'user-agent':
-          'Mozilla/5.0 (compatible; StudyAbroadDataBot/1.0; +https://studyabroad.app)',
+          'Mozilla/5.0 (compatible; LumniDataBot/1.0; +https://lumni.app)',
       },
     });
     clearTimeout(timer);

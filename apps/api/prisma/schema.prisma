@@ -444,6 +444,8 @@ model User {
   // Forum relations
   forumPosts              ForumPost[]
   forumComments           ForumComment[]
+  createdForumCommunities ForumCommunity[]       @relation("ForumCommunityCreator")
+  forumCommunityFollows   ForumCommunityFollow[]
   teamMemberships         TeamMember[]
   teamApplicationsApplied TeamApplication[]
 
@@ -673,6 +675,7 @@ model TestScore {
 
   type      TestType
   score     Int
+  subject   String?
   subScores Json? // { reading: 800, math: 800 } or { listening: 30, reading: 29 }
   testDate  DateTime?
 
@@ -1925,6 +1928,9 @@ model TeamRecruitmentMemberProfile {
   showSchool            Boolean             @default(false)
   showGrade             Boolean             @default(false)
   showAwards            Boolean             @default(false)
+  showAcademics         Boolean             @default(false)
+  showExperiences       Boolean             @default(false)
+  showPersonality       Boolean             @default(false)
   consentConfirmedAt    DateTime?
 
   createdAt DateTime @default(now())
@@ -2942,12 +2948,56 @@ model ForumCategory {
   @@index([sortOrder])
 }
 
+model ForumCommunity {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String? @db.Text
+  createdById String?
+  createdBy   User?   @relation("ForumCommunityCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  postCount     Int     @default(0)
+  followerCount Int     @default(0)
+  isOfficial    Boolean @default(false)
+  isActive      Boolean @default(true)
+
+  posts     ForumPost[]
+  followers ForumCommunityFollow[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdById])
+  @@index([isActive])
+  @@index([isOfficial])
+  @@index([postCount])
+  @@index([followerCount])
+}
+
+model ForumCommunityFollow {
+  id          String @id @default(cuid())
+  userId      String
+  communityId String
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community ForumCommunity @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, communityId])
+  @@index([userId])
+  @@index([communityId])
+}
+
 model ForumPost {
-  id         String        @id @default(cuid())
-  categoryId String
-  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  authorId   String
-  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  id          String          @id @default(cuid())
+  categoryId  String
+  category    ForumCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  communityId String?
+  community   ForumCommunity? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  authorId    String
+  author      User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   title   String
   content String        @db.Text
@@ -2974,6 +3024,7 @@ model ForumPost {
   // Relations
   comments         ForumComment[]
   likes            ForumLike[]
+  images           ForumPostImage[]
   teamMembers      TeamMember[]
   teamApplications TeamApplication[]
 
@@ -2981,13 +3032,34 @@ model ForumPost {
   updatedAt DateTime @updatedAt
 
   @@index([categoryId])
+  @@index([communityId])
   @@index([authorId])
   @@index([isTeamPost])
   @@index([postTag])
   @@index([createdAt])
   @@index([likeCount])
   @@index([categoryId, createdAt])
+  @@index([communityId, createdAt])
   @@index([authorId, createdAt])
+}
+
+model ForumPostImage {
+  id     String    @id @default(cuid())
+  postId String
+  post   ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  key       String
+  url       String
+  mimeType  String
+  size      Int
+  width     Int?
+  height    Int?
+  sortOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([key])
 }
 
 model ForumComment {

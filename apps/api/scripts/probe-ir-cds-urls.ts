@@ -43,6 +43,8 @@ type Args = {
   perRequestDelayMs: number;
   perHostDelayMs: number;
   timeoutMs: number;
+  /** Max HEAD attempts per school (candidate list can be 500+). */
+  maxCandidates: number;
 };
 
 function parseArgs(): Args {
@@ -64,6 +66,7 @@ function parseArgs(): Args {
     perRequestDelayMs: Number(get('per-request-delay-ms') ?? 100),
     perHostDelayMs: Number(get('per-host-delay-ms') ?? 250),
     timeoutMs: Number(get('timeout-ms') ?? 6000),
+    maxCandidates: Number(get('max-candidates') ?? 80),
   };
 }
 
@@ -248,8 +251,38 @@ async function probeUrl(url: string, timeoutMs: number): Promise<ProbeResult> {
   }
 }
 
+function mergeKnownNoCdsFileIntoSkipSet(): void {
+  const paths = [
+    path.join(process.cwd(), 'scripts', 'cds-data', 'known-no-cds.json'),
+    path.join(
+      process.cwd(),
+      'apps',
+      'api',
+      'scripts',
+      'cds-data',
+      'known-no-cds.json',
+    ),
+  ];
+  for (const p of paths) {
+    try {
+      if (!fs.existsSync(p)) continue;
+      const raw = JSON.parse(fs.readFileSync(p, 'utf8')) as {
+        schools?: { schoolNameNorm: string }[];
+      };
+      for (const row of raw.schools ?? []) {
+        if (row.schoolNameNorm)
+          KNOWN_NO_CDS_PUBLISHED.add(row.schoolNameNorm.toLowerCase());
+      }
+      return;
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 async function main() {
   const args = parseArgs();
+  mergeKnownNoCdsFileIntoSkipSet();
 
   const schools = await prisma.school.findMany({
     where: {
@@ -316,7 +349,7 @@ async function main() {
     const probed: ProbeResult[] = [];
     let selected: string | null = null;
 
-    for (const url of candidates) {
+    for (const url of candidates.slice(0, args.maxCandidates)) {
       // Per-host throttle: if same host was hit within perHostDelayMs, sleep
       const host = new URL(url).hostname;
       const last = lastHostHit.get(host) ?? 0;

@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T15:00:11.286Z",
+    "dryRun": true,
+    "updated": 3,
+    "noData": 2,
+    "insane": 0,
+    "errors": 0,
+    "activeKeys": 19
+  },
+  "results": [
+    {
+      "schoolId": "cmnwr8itq003pz0tirhvysbdj",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "status": "no_data"
+    },
+    {
+      "schoolId": "cmnwr8iwx0059z0tilcfiwj80",
+      "schoolName": "University of Texas at Dallas",
+      "status": "updated",
+      "sat25": 1170,
+      "sat75": 1390,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/ut-dallas"
+    },
+    {
+      "schoolId": "cmnwr8iqf0024z0tiy29w0e1z",
+      "schoolName": "Missouri University of Science and Technology",
+      "status": "no_data",
+      "notes": "TimeoutError: The operation was aborted due to timeout"
+    },
+    {
+      "schoolId": "cmnwr8ioo001hz0tim3isqwz9",
+      "schoolName": "Clarkson University",
+      "status": "updated",
+      "sat25": 1215,
+      "sat75": 1370,
+      "sourceUrl": "https://www.prepscholar.com/sat/s/colleges/Clarkson-University-sat-scores-GPA"
+    },
+    {
+      "schoolId": "cmnwr8ipz001xz0ti9f4tlagk",
+      "schoolName": "George Mason University",
+      "status": "updated",
+      "sat25": 1170,
+      "sat75": 1350,
+      "sourceUrl": "https://bigfuture.collegeboard.org/colleges/george-mason-university/admissions"
+    }
+  ]
+}

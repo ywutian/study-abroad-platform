@@ -21,6 +21,9 @@ describe('team-recruitment-utils', () => {
           showSchool: true,
           showGrade: false,
           showAwards: true,
+          showAcademics: true,
+          showExperiences: true,
+          showPersonality: false,
           resume: {
             id: 'resume-1',
             title: 'Main Resume',
@@ -37,6 +40,9 @@ describe('team-recruitment-utils', () => {
       showSchool: true,
       showGrade: false,
       showAwards: true,
+      showAcademics: true,
+      showExperiences: true,
+      showPersonality: false,
     });
   });
 
@@ -47,6 +53,9 @@ describe('team-recruitment-utils', () => {
       showSchool: false,
       showGrade: false,
       showAwards: false,
+      showAcademics: false,
+      showExperiences: false,
+      showPersonality: false,
     });
   });
 

@@ -8,25 +8,33 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
   ForbiddenException,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { ForumService } from './forum.service';
 import {
   CreateCategoryDto,
+  CreateCommunityDto,
   CreatePostDto,
   UpdatePostDto,
   CreateCommentDto,
+  CommunityQueryDto,
   PostQueryDto,
   TeamApplicationDto,
   ReviewApplicationDto,
   CreateReportDto,
   CategoryDto,
+  CommunityDto,
+  ForumImageInputDto,
   PostDto,
   PostDetailResponseDto,
   PostListResponseDto,
@@ -77,6 +85,74 @@ export class ForumController {
   @ApiResponse({ status: 201, type: CategoryDto })
   async createCategory(@Body() data: CreateCategoryDto): Promise<CategoryDto> {
     return this.forumService.createCategory(data);
+  }
+
+  // ============================================
+  // Communities
+  // ============================================
+
+  @Get('communities')
+  @Public()
+  @ApiOperation({ summary: 'Get forum communities' })
+  @ApiResponse({ status: 200, type: [CommunityDto] })
+  async getCommunities(
+    @CurrentUser() user: CurrentUserPayload | null,
+    @Query() query: CommunityQueryDto,
+  ): Promise<CommunityDto[]> {
+    return this.forumService.getCommunities(user?.id || null, query);
+  }
+
+  @Post('communities')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a forum community' })
+  @ApiResponse({ status: 201, type: CommunityDto })
+  async createCommunity(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() data: CreateCommunityDto,
+  ): Promise<CommunityDto> {
+    return this.forumService.createCommunity(user.id, data);
+  }
+
+  @Post('communities/:id/follow')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Follow a forum community' })
+  @ApiResponse({ status: 200, type: CommunityDto })
+  async followCommunity(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') communityId: string,
+  ): Promise<CommunityDto> {
+    return this.forumService.followCommunity(user.id, communityId);
+  }
+
+  @Delete('communities/:id/follow')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Unfollow a forum community' })
+  @ApiResponse({ status: 200, type: CommunityDto })
+  async unfollowCommunity(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') communityId: string,
+  ): Promise<CommunityDto> {
+    return this.forumService.unfollowCommunity(user.id, communityId);
+  }
+
+  @Post('uploads/images')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FilesInterceptor('images', 6, {
+      limits: { files: 6, fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  @ApiOperation({ summary: 'Upload forum post images' })
+  async uploadImages(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<ForumImageInputDto[]> {
+    return this.forumService.uploadImages(user.id, files);
   }
 
   // ============================================

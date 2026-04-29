@@ -361,6 +361,11 @@ export default function RegisterPage() {
       }
 
       toast.success(t('auth.register.success'));
+      try {
+        localStorage.setItem('showQuickExperience', 'true');
+      } catch {
+        /* private browsing */
+      }
       const callbackUrl = searchParams.get('callbackUrl');
       const rawPath = callbackUrl?.replace(/^\/(zh|en)/, '') || '';
       const targetPath =

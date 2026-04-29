@@ -307,6 +307,14 @@ export class PredictionResultDto {
     satAvg?: number;
     sat25?: number;
     sat75?: number;
+    dataQuality?: {
+      officialFields: string[];
+      heuristicFields: string[];
+      terminalFields: string[];
+      staleFields: string[];
+      impactedFields: string[];
+      summary: 'strong' | 'mixed' | 'limited';
+    };
   };
 
   @ApiPropertyOptional({ description: 'Major competitiveness analysis' })

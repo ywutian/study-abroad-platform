@@ -30,7 +30,7 @@ export function SocialProof() {
           ) : null}
         </motion.div>
 
-        <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-[color:var(--landing-border)] bg-[var(--landing-border)] sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-[color:var(--landing-border)] bg-[var(--landing-border)] sm:grid-cols-2 xl:grid-cols-4">
           {home.social.stats.map((stat, index) => (
             <motion.div
               key={`${stat.value}-${stat.label}`}
@@ -58,7 +58,7 @@ export function SocialProof() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.24 }}
               transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="relative overflow-hidden rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-6 shadow-[var(--landing-shadow-card)]"
+              className="relative overflow-hidden rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-6 shadow-[var(--landing-shadow-card)]"
             >
               <Quote className="absolute right-6 top-6 h-10 w-10 text-primary/12" />
 

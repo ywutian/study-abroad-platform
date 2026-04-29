@@ -1,13 +1,13 @@
 {
   "meta": {
     "home": {
-      "title": "StudyAI 首页｜AI 留学申请工作台",
-      "description": "StudyAI 用 AI 选校、文书协作、时间线管理与真实录取数据，帮助家庭把复杂留学申请变成清晰流程。",
-      "keywords": "StudyAI,AI留学,留学申请,选校矩阵,录取预测,文书工作台,留学规划,申请社区"
+      "title": "Lumni 首页｜AI 留学申请工作台",
+      "description": "Lumni 用 AI 选校、文书协作、时间线管理与真实录取数据，帮助家庭把复杂留学申请变成清晰流程。",
+      "keywords": "Lumni,AI留学,留学申请,选校矩阵,录取预测,文书工作台,留学规划,申请社区"
     }
   },
   "common": {
-    "appName": "留学申请平台",
+    "appName": "Lumni",
     "save": "保存",
     "cancel": "取消",
     "submit": "提交",
@@ -194,18 +194,98 @@
       "remaining": "还有 {count} 项待完善"
     },
     "quickExperience": {
-      "title": "欢迎来到留学平台！",
+      "title": "欢迎来到 Lumni！",
       "subtitle": "你的智能申请助手，让我们用几步快速上手。",
       "step1": "完善你的档案：成绩、标化分数和课外活动",
       "step2": "浏览学校排名，建立你的选校清单",
       "step3": "获取 AI 驱动的录取预测和推荐",
       "getStarted": "开始设置",
       "skip": "暂时跳过",
-      "letsGo": "去完善档案"
+      "letsGo": "去完善档案",
+      "wizardTitle": "快速申请信息设置",
+      "wizardSubtitle": "先填写预测最需要的信息，完整档案之后可以慢慢补。",
+      "back": "上一步",
+      "next": "下一步",
+      "saveAndPredict": "保存并预测",
+      "saved": "信息已保存，接下来为你运行预测。",
+      "minimumRequired": "请先填写必要基础信息。",
+      "schoolsRequired": "请至少添加一所目标学校再运行预测。",
+      "activitiesTitle": "核心活动",
+      "awardsTitle": "奖项",
+      "activityLabel": "活动 {index}",
+      "awardLabel": "奖项 {index}",
+      "rankLabel": "US News 第 {rank} 名",
+      "noSchoolsFound": "没有找到学校",
+      "schoolEmpty": "搜索并添加至少一所学校，用来预测录取概率。",
+      "steps": {
+        "profile": "背景",
+        "scores": "成绩",
+        "story": "活动",
+        "schools": "学校"
+      },
+      "fields": {
+        "grade": "年级",
+        "educationSystem": "课程体系",
+        "currentSchool": "当前学校",
+        "targetMajor": "目标专业",
+        "nationality": "国籍",
+        "countryOfResidence": "居住地",
+        "citizenship": "公民身份",
+        "applicationRound": "默认轮次",
+        "needsFinancialAid": "需要助学金",
+        "applyingTestOptional": "免标化申请",
+        "gpa": "GPA",
+        "gpaScale": "GPA 满分"
+      },
+      "placeholders": {
+        "grade": "选择年级",
+        "educationSystem": "选择课程体系",
+        "currentSchool": "高中名称",
+        "targetMajor": "计算机、经济学等",
+        "countryCode": "CN, US...",
+        "activityName": "辩论社",
+        "role": "社长",
+        "awardName": "如：AMC 12 荣誉奖",
+        "shortDescription": "一句话描述即可",
+        "schoolSearch": "搜索大学"
+      },
+      "grades": {
+        "FRESHMAN": "9 年级",
+        "SOPHOMORE": "10 年级",
+        "JUNIOR": "11 年级",
+        "SENIOR": "12 年级",
+        "GAP_YEAR": "间隔年"
+      },
+      "educationSystems": {
+        "AP": "AP",
+        "IB": "IB",
+        "A_LEVEL": "A-Level",
+        "GAOKAO": "高考",
+        "CANADIAN": "加拿大体系",
+        "AUSTRALIAN": "澳洲体系",
+        "OTHER": "其他"
+      },
+      "activityCategories": {
+        "LEADERSHIP": "领导力",
+        "RESEARCH": "科研",
+        "ACADEMIC": "学术",
+        "COMMUNITY_SERVICE": "公益",
+        "ARTS": "艺术",
+        "ATHLETICS": "体育",
+        "WORK": "工作",
+        "OTHER": "其他"
+      },
+      "awardLevels": {
+        "SCHOOL": "校级",
+        "REGIONAL": "地区级",
+        "STATE": "州级",
+        "NATIONAL": "国家级",
+        "INTERNATIONAL": "国际级"
+      }
     }
   },
   "home": {
-    "brand": "StudyAI",
+    "brand": "Lumni",
     "nav": {
       "product": "产品",
       "cases": "学员案例",
@@ -216,13 +296,13 @@
       "getStarted": "免费开始"
     },
     "hero": {
-      "eyebrow": "GPT-5 驱动 · 全球 3,000+ 院校数据",
-      "headline": ["用 AI 重建", "你的留学申请流程"],
-      "subtitle": "专业 AI 能力 × 真实录取数据 × 同行组队社区。把原本漫长而混乱的留学申请，压缩成一个更清晰、更可执行的工作流。",
+      "eyebrow": "Lumni Command Center · GPT-5 驱动",
+      "headline": ["照亮你的", "录取路线"],
+      "subtitle": "从选校、文书、时间线到提交，Lumni 把复杂申请拆成清晰、可执行的计划，并用真实录取数据持续校准每一步。",
       "features": [
-        "2 分钟生成首版选校矩阵",
-        "文书、时间线与任务同步推进",
-        "关键节点由真人顾问把关"
+        "2 分钟生成首版录取路线图",
+        "选校、文书、时间线同步推进",
+        "关键节点保留真人顾问把关"
       ],
       "trustLine": "已服务 12,400+ 学生家庭 · 累计 Top30 录取 2,100+ 封",
       "primaryCta": "免费开始",
@@ -243,12 +323,15 @@
         ]
       },
       "console": {
-        "workspace": "工作台",
+        "workspace": "申请中枢",
+        "signalLabel": "Lumni 信号",
+        "symbolLabel": "月光路线",
+        "workflowLine": "选校 · 文书 · 时间线 · 提交",
         "profileLabel": "Amy Z. · Senior",
         "profileMeta": "GPA 3.92 · SAT 1540 · CS",
         "termLabel": "2026 秋季 · CS",
         "sections": ["总览", "选校 · 6", "文书 · 14", "时间线", "组队"],
-        "title": "我的申请矩阵",
+        "title": "录取路线中枢",
         "assistantBadge": "AI 助理",
         "assistantMessages": [
           "CMU 文书与 MIT 的第二段论证重合偏高，建议压缩重复案例。",
@@ -454,7 +537,7 @@
           ]
         },
         "essay": {
-          "kicker": "Common App · Prompt 1",
+          "kicker": "Common App · 题目 1",
           "lines": [
             "Growing up in my grandmother’s kitchen, I learned that",
             "patience is a virtue",
@@ -555,7 +638,7 @@
         }
       ],
       "dashboard": {
-        "eyebrow": "StudyAI 工作台",
+        "eyebrow": "Lumni 工作台",
         "title": "从资料到递交，一屏看清优先级",
         "note": "申请矩阵 · 文书任务 · AI 追踪",
         "cards": ["选校清单", "文书排期", "协作提醒"],
@@ -627,7 +710,7 @@
       "trust": "无需信用卡 · 随时退出 · 隐私保护"
     },
     "footer": {
-      "description": "StudyAI 把 AI 选校、文书协作、时间线管理和真实录取数据放进同一套申请工作台，让复杂留学流程变成可以被执行的系统。",
+      "description": "Lumni 把 AI 选校、文书协作、时间线管理和真实录取数据放进同一套申请工作台，让复杂留学流程变成可以被执行的系统。",
       "columns": [
         {
           "title": "产品",
@@ -646,7 +729,7 @@
           "links": ["隐私政策", "服务条款", "帮助文档"]
         }
       ],
-      "copyright": "© 2026 StudyAI · Admissions, no longer a black box.",
+      "copyright": "© 2026 Lumni · 让录取不再是黑箱。",
       "note": "以清晰构建"
     }
   },
@@ -775,7 +858,7 @@
       }
     },
     "layout": {
-      "subtitle": "AI 驱动的智能留学平台",
+      "subtitle": "AI 驱动的 Lumni 申请工作台",
       "heroTitle": "开启你的",
       "heroHighlight": "留学之旅",
       "heroDesc": "智能选校、精准预测、案例分享\n让留学申请不再迷茫",
@@ -1115,7 +1198,7 @@
       },
       "essayType": {
         "PERSONAL_STATEMENT": "个人陈述",
-        "WHY_SCHOOL": "Why School",
+        "WHY_SCHOOL": "Why School 文书",
         "SUPPLEMENTAL": "补充文书",
         "SHORT_ANSWER": "简答",
         "ACTIVITY": "活动",
@@ -1178,7 +1261,7 @@
       "needsFinancialAid": "我需要助学金",
       "firstGeneration": "第一代大学生",
       "recruitedAthlete": "校队招募运动员",
-      "applyingTestOptional": "申请 test-optional（不提交 SAT/ACT）",
+      "applyingTestOptional": "按免标化申请（不提交 SAT/ACT）",
       "legacy": "校友关系 (Legacy)",
       "legacyPlaceholder": "例如：哈佛、斯坦福",
       "legacyHint": "如有校友关系，请输入学校名称，用逗号分隔",
@@ -1220,7 +1303,7 @@
       "sophomore": "高二 / 大二",
       "junior": "高三 / 大三",
       "senior": "大四",
-      "gapYear": "Gap Year"
+      "gapYear": "间隔年"
     },
     "budgetTiers": {
       "low": "50万以下/年",
@@ -1611,6 +1694,21 @@
     "ucExpandedDesc": "因为你选了 UC 学校，我们自动加入了全部 9 所 UC 校区进行对比。UC 各校使用同一套申请系统，这样你可以看到哪些校区最有可能录取你。",
     "ucCollapseToOriginal": "只看我原来选的学校",
     "lowDataWarning": "你的档案缺少关键数据（GPA、考试成绩），预测可能不够准确。完善档案可提高预测质量。",
+    "dataChecklistTitle": "现在可以先运行预测，但补全这些信息会更准确。",
+    "dataChecklistDesc": "缺失项之后再补也可以；下面的结果可作为第一版参考。",
+    "dataChecklist": {
+      "gpa": "GPA",
+      "testScores": "标化成绩或免标化",
+      "activities": "活动",
+      "awards": "奖项",
+      "major": "专业"
+    },
+    "detailSections": {
+      "assessment": "综合判断",
+      "why": "为什么是这个结果",
+      "improve": "提升录取机会",
+      "understanding": "如何理解概率"
+    },
     "completeProfile": "完善档案",
     "recommendedSchoolsTitle": "你也可能感兴趣的学校",
     "recommendedSchoolsLoading": "加载推荐中...",
@@ -1694,6 +1792,20 @@
     "detailedAnalysisPrompt": "请用留学顾问的口吻详细分析我申请{schoolName}的机会，明确区分学校整体录取率与我基于当前档案的个人预估，并给出提升建议。",
     "dataCompleteness": "档案完整度",
     "dataCompletenessLow": "完善档案以获得更准确的预测结果",
+    "dataQuality": {
+      "title": "学校数据质量",
+      "description": "预测仍会继续运行，但这些学校字段会影响精度；后续用官方数据替换启发式或过期值后会更稳。",
+      "official": "{count} 个官方字段",
+      "heuristic": "{count} 个启发式字段",
+      "terminal": "{count} 个终态不可得",
+      "stale": "{count} 个过期字段",
+      "impactedFields": "影响准确度的字段",
+      "summary": {
+        "strong": "学校数据充分",
+        "mixed": "学校数据混合",
+        "limited": "学校数据有限"
+      }
+    },
     "fromCache": "缓存",
     "expand": "展开详情",
     "collapse": "收起详情",
@@ -1871,7 +1983,7 @@
       "activityListTitle": "活动与亮点",
       "share": "分享",
       "report": "举报",
-      "relatedCases": "同校其他案例",
+      "relatedCases": "{school} 的其他案例",
       "viewMoreCases": "查看更多 {school} 的申请案例...",
       "decision": "录取结果",
       "essayContent": "文书内容",
@@ -2357,6 +2469,8 @@
       "securityDesc": "管理密码和安全选项",
       "darkMode": "深色模式",
       "darkModeDesc": "切换深色/浅色主题",
+      "colorTheme": "全站配色",
+      "colorThemeDesc": "暖米金或冷灰靛蓝，全站统一",
       "language": "语言",
       "languageDesc": "选择界面语言",
       "pushNotification": "推送通知",
@@ -2429,7 +2543,7 @@
       "transfer": "转学生",
       "homeschool": "在家教育",
       "military": "军人家庭",
-      "gap_year": "Gap Year"
+      "gap_year": "间隔年"
     },
     "narrativeLabel": "申请故事",
     "narrativePlaceholder": "分享你的申请经历、特殊情况和建议...",
@@ -2501,10 +2615,17 @@
     },
     "theme": {
       "switchToDark": "切换到深色模式",
-      "switchToLight": "切换到浅色模式",
+      "switchToLight": "切换到亮色模式",
       "dark": "暗色",
       "light": "亮色",
       "system": "跟随系统"
+    },
+    "colorPalette": {
+      "menuLabel": "全站配色",
+      "warm": "暖米金",
+      "slate": "冷灰靛蓝",
+      "warmDesc": "纸感米色与金色点缀",
+      "slateDesc": "冷灰与靛蓝，偏专业工具感"
     },
     "empty": {
       "loadFailed": "加载失败",
@@ -2741,7 +2862,7 @@
   },
   "welcome": {
     "welcome": {
-      "title": "欢迎来到 StudyAbroad",
+      "title": "欢迎来到 Lumni",
       "description": "您的 AI 留学助手，帮助您找到梦想学校"
     },
     "schools": {
@@ -2768,7 +2889,7 @@
     "resetButton": "重置引导",
     "steps": {
       "welcome": {
-        "title": "欢迎使用留学平台",
+        "title": "欢迎使用 Lumni",
         "desc": "探索你的留学之路，发现最适合的学校和专业"
       },
       "schools": {
@@ -2913,7 +3034,8 @@
     "sort": {
       "rank": "按排名",
       "name": "按名称",
-      "acceptance": "按录取率"
+      "acceptance": "按录取率",
+      "salary": "按毕业薪资"
     },
     "sortBy": "排序方式",
     "advancedFilter": "高级筛选",
@@ -2960,6 +3082,12 @@
     "tabAiRecommend": "AI 推荐",
     "allFilters": "全部筛选",
     "filterOptions": "筛选选项",
+    "filterOptionsDesc": "按位置、费用、录取政策和结果缩小学校范围。",
+    "niche": {
+      "partyScene": "Party Scene",
+      "campusFood": "Campus Food",
+      "safety": "Safety"
+    },
     "schoolType": "学校类型",
     "public": "公立",
     "private": "私立",
@@ -2974,6 +3102,40 @@
     },
     "resetFilters": "重置筛选",
     "weightSort": "权重排序",
+    "weightControls": {
+      "title": "排序权重",
+      "description": "调节排名、录取率、学费和毕业薪资权重来重排学校。",
+      "presets": {
+        "balanced": "均衡",
+        "prestige": "声望优先",
+        "affordability": "费用优先",
+        "career": "就业优先"
+      },
+      "weights": {
+        "ranking": "排名",
+        "acceptanceRate": "录取率",
+        "tuition": "学费",
+        "salary": "毕业薪资 / ROI"
+      }
+    },
+    "fitSort": "匹配排序",
+    "fitScore": "匹配度 {score}",
+    "fit": {
+      "title": "匹配排序权重",
+      "description": "用少量高价值信号排序学校，避免筛选项过载。",
+      "presets": {
+        "balanced": "均衡",
+        "prestige": "声望优先",
+        "affordability": "费用优先",
+        "career": "就业优先"
+      },
+      "weights": {
+        "ranking": "排名/声望",
+        "selectivity": "录取难度",
+        "affordability": "费用与助学金",
+        "outcomes": "就业回报"
+      }
+    },
     "presets": {
       "title": "排序预设",
       "description": "选择排序策略或创建自定义排名",
@@ -3114,9 +3276,9 @@
       "needAid": "需要助学金",
       "firstGeneration": "第一代大学生",
       "legacy": "存在校友子女背景",
-      "gapYear": "Gap Year",
+      "gapYear": "间隔年",
       "testSubmit": "走提交标化路径",
-      "testOptional": "走 test-optional 路径"
+      "testOptional": "走免标化路径"
     },
     "testStrategy": {
       "title": "标化策略",
@@ -3392,7 +3554,7 @@
     "introduction": "请仔细阅读以下服务条款。使用我们的服务即表示您同意受这些条款的约束。",
     "acceptance": {
       "title": "接受条款",
-      "content": "通过访问或使用留学申请平台，您同意遵守本服务条款。如果您不同意这些条款，请勿使用我们的服务。"
+      "content": "通过访问或使用 Lumni，您同意遵守本服务条款。如果您不同意这些条款，请勿使用我们的服务。"
     },
     "services": {
       "title": "服务描述",
@@ -3485,7 +3647,7 @@
   },
   "about": {
     "badge": "关于我们",
-    "title": "留学申请平台",
+    "title": "Lumni",
     "subtitle": "让每一个留学梦想都能实现",
     "stats": {
       "users": "注册用户",
@@ -3495,7 +3657,7 @@
     },
     "story": {
       "title": "我们的故事",
-      "content": "留学申请平台诞生于一群留学归来的创业者对教育公平的追求。我们深知留学申请过程中信息不对称带来的困扰，因此致力于用技术手段为每一位申请者提供专业、透明、高效的服务。"
+      "content": "Lumni 诞生于一群留学归来的创业者对教育公平的追求。我们深知留学申请过程中信息不对称带来的困扰，因此致力于用技术手段为每一位申请者提供专业、透明、高效的服务。"
     },
     "vision": {
       "title": "我们的愿景",
@@ -3878,7 +4040,7 @@
       "noPrompts": "该学校暂无已验证的文书题目",
       "types": {
         "PERSONAL_STATEMENT": "个人陈述",
-        "WHY_SCHOOL": "Why School",
+        "WHY_SCHOOL": "Why School 文书",
         "SUPPLEMENTAL": "补充文书",
         "SHORT_ANSWER": "简答题",
         "ACTIVITY": "活动文书",
@@ -4426,8 +4588,8 @@
       "common_app": "Common App",
       "uc": "UC 文书",
       "supplemental": "补充文书",
-      "whySchool": "Why School",
-      "why_school": "Why School"
+      "whySchool": "Why School 文书",
+      "why_school": "Why School 文书"
     },
     "yearFilter": "申请年份",
     "allYears": "全部年份",
@@ -4735,7 +4897,8 @@
         "SCRAPED": "抓取",
         "SEED": "初始",
         "COMMUNITY": "社区",
-        "INFERRED": "AI"
+        "INFERRED": "AI",
+        "UNAVAILABLE": "不可用"
       },
       "tiers": {
         "OFFICIAL": "官方来源",
@@ -4743,7 +4906,8 @@
         "SCRAPED": "公开抓取",
         "SEED": "初始数据",
         "COMMUNITY": "社区提供",
-        "INFERRED": "AI 推断"
+        "INFERRED": "AI 推断",
+        "UNAVAILABLE": "暂无可用来源"
       },
       "staleness": {
         "FRESH": "新鲜",
@@ -5445,6 +5609,38 @@
     "activeLabel": "进行中",
     "teamSectionDesc": "发布或加入竞赛、申请季互助等组队帖，找到志同道合的伙伴",
     "viewAllTeamPosts": "查看全部组队帖",
+    "redditForumDescription": "关注你感兴趣的社区，浏览大家最近在讨论的申请、文书、竞赛和校园话题。",
+    "feedPopular": "Popular",
+    "feedNews": "News",
+    "feedHome": "Home",
+    "feedLabel": {
+      "popular": "Popular",
+      "home": "Home",
+      "latest": "News"
+    },
+    "openCommunities": "打开社区导航",
+    "startCommunity": "创建社区",
+    "myCommunities": "我的 Communities",
+    "recommendedCommunities": "推荐 Communities",
+    "noFollowedCommunities": "还没有关注的 community，先从推荐里挑几个。",
+    "communityLabel": "Community",
+    "communitySearchPlaceholder": "搜索或创建 community...",
+    "communityPostCount": "{count} 个帖子",
+    "communityCount": "{count} 个 communities",
+    "communities": "Communities",
+    "createCommunityNamed": "创建 r/{name}",
+    "followCommunity": "关注 community",
+    "unfollowCommunity": "取消关注 community",
+    "officialCommunity": "官方",
+    "loginToFollow": "请先登录再关注 community",
+    "loginToReact": "请先登录再互动",
+    "postedBy": "由 {name} 发布",
+    "imageUploadLabel": "图片",
+    "imageUploadAction": "上传图片",
+    "imageUploadHint": "最多 {count} 张，支持 JPG、PNG、WEBP、GIF",
+    "imageLimitError": "最多只能上传 {count} 张图片",
+    "imageTypeSizeError": "只支持 10MB 以内的 JPG、PNG、WEBP、GIF",
+    "removeImage": "移除图片",
     "aiActions": {
       "searchPosts": "搜索论坛讨论",
       "searchPostsPrompt": "请帮我搜索论坛中关于留学申请的热门讨论，特别是关于选校和文书的内容。",
@@ -5673,6 +5869,12 @@
         "teamUp": "正式组队",
         "networkingOnly": "仅交流"
       },
+      "status": {
+        "LOOKING": "招募中",
+        "ALMOST_FULL": "即将满员",
+        "NETWORKING_ONLY": "仅交流",
+        "CLOSED": "已关闭"
+      },
       "availability": {
         "LESS_THAN_5_HOURS": "<5小时/周",
         "FIVE_TO_TEN_HOURS": "5-10小时/周",
@@ -5702,6 +5904,12 @@
         "showSchool": "展示学校",
         "showGrade": "展示年级",
         "showAwards": "展示奖项",
+        "showAcademics": "展示成绩亮点",
+        "showExperiences": "展示经历亮点",
+        "showPersonality": "展示性格标签",
+        "completeProfileHint": "亮点会从 Profile 成绩、奖项、活动、简历和测评结果自动生成。",
+        "completeProfile": "补全 Profile",
+        "completeAssessment": "完成测评",
         "save": "仅保存",
         "confirmConsent": "确认并同意展示"
       },
@@ -5710,6 +5918,12 @@
         "need": "我需要",
         "skills": "技能",
         "members": "成员摘要",
+        "academics": "学术亮点",
+        "experience": "经历亮点",
+        "personality": "性格标签",
+        "noHighlights": "还没有确认展示的资料亮点",
+        "memberCount": "{current}/{max} 名成员",
+        "coordination": "协作细节",
         "confirmed": "已确认",
         "detailExpand": "展开全文",
         "detailCollapse": "收起"
@@ -5913,6 +6127,7 @@
       "ranking": "排名范围",
       "acceptance": "录取率",
       "tuition": "学费范围",
+      "salary": "毕业薪资 / ROI",
       "type": "学校类型",
       "special": "特殊条件"
     },
@@ -5923,6 +6138,7 @@
       "usNewsRanking": "US News 排名",
       "acceptanceRange": "录取率范围",
       "annualTuition": "年学费 (万美元)",
+      "postGradSalary": "毕业后年薪 (万美元)",
       "publicPrivate": "公立/私立",
       "schoolSize": "学校规模 (学生人数)"
     },
@@ -6407,7 +6623,7 @@
       "goToDataUpdates": "数据更新",
       "goToDataUpdatesDesc": "Scorecard 等数据同步已统一在「数据更新」页操作。",
       "statusDesc": "数据管理状态",
-      "logo": "Logo",
+      "logo": "标识",
       "actions": "操作",
       "schoolName": "学校名称",
       "rank": "排名",
@@ -6482,8 +6698,8 @@
         "resultsTable": "PredictionResult 表",
         "snapshotsTable": "PredictionSnapshot 表",
         "total": "总计",
-        "authoritative": "Authoritative",
-        "preview": "Preview",
+        "authoritative": "权威结果",
+        "preview": "预览结果",
         "nullCount": "NULL",
         "invariantChecks": "不变式检查",
         "resultNullOk": "Result NULL 数 = 0",
@@ -6639,18 +6855,24 @@
         "schools": "美国学校",
         "complete": "已完整",
         "missing": "缺关键字段",
-        "heuristic": "启发式来源"
+        "heuristic": "启发式字段",
+        "official": "官方字段",
+        "terminal": "终态字段"
       },
       "table": {
         "field": "字段",
         "filled": "已填充",
+        "official": "官方",
         "eligible": "可用于预测",
         "heuristic": "启发式",
+        "terminal": "终态",
         "stale": "过期",
         "school": "学校",
         "missing": "缺失",
         "heuristicFields": "启发式字段",
-        "sources": "来源"
+        "qualityFields": "质量标记",
+        "sources": "来源",
+        "validators": "{count} 个校验器"
       }
     },
     "cdsBands": {
@@ -6751,7 +6973,7 @@
       "benchmark": {
         "introTitle": "外部竞品录取率 Benchmark（Pilot）",
         "introDescription": "把我们的录取率预测与竞品页面上的百分比做逐校对比。若竞品没有明确百分比，该行会保留为 tier-only，但不会计入 MAE。",
-        "profileTitle": "Benchmark Profile",
+        "profileTitle": "基准画像",
         "profileDescription": "创建可复用的标准化申请者快照，用于竞品跑数。",
         "profileSelect": "已保存 Profile",
         "profileSelectPlaceholder": "选择一个 benchmark profile",
@@ -6807,7 +7029,7 @@
           "ours": "我们的录取率",
           "theirs": "竞品录取率",
           "delta": "差值",
-          "tier": "Tier",
+          "tier": "分层",
           "status": "状态"
         }
       },
@@ -6820,7 +7042,7 @@
         },
         "chinaGates": {
           "title": "中国 Cohort 上线门禁",
-          "cohort": "Cohort",
+          "cohort": "群组",
           "status": "状态",
           "ready": "已达标",
           "blocked": "未达标",
@@ -6832,8 +7054,8 @@
         },
         "teacherStats": {
           "title": "Teacher 日级聚合",
-          "teacher": "Teacher",
-          "cohort": "Cohort",
+          "teacher": "Teacher 模型",
+          "cohort": "群组",
           "stage": "阶段",
           "predictions": "预测数",
           "activeSignals": "激活信号数",
@@ -6845,7 +7067,7 @@
         "schools": {
           "title": "学校覆盖快照",
           "school": "学校",
-          "cohort": "Cohort",
+          "cohort": "群组",
           "coverageTier": "覆盖层级",
           "predictions": "预测数",
           "resolved": "已解析结果数",
@@ -6966,9 +7188,9 @@
         "saveReview": "保存审核",
         "activeSignalsTitle": "激活信号快照",
         "selectPolicyHint": "选择一个策略版本，查看当前的 prior、drift 和 relationship 信号。",
-        "priors": "Priors",
-        "driftSignals": "Drift Signals",
-        "relationshipSignals": "Relationship Signals"
+        "priors": "先验信号",
+        "driftSignals": "漂移信号",
+        "relationshipSignals": "关系信号"
       },
       "policies": {
         "title": "策略版本控制",
@@ -6988,7 +7210,7 @@
         "activateSuccess": "策略已激活",
         "rollbackSuccess": "已回滚到上一个 active 策略",
         "gateSummary": "升级门禁摘要",
-        "shadowPredictions": "Shadow Predictions",
+        "shadowPredictions": "影子预测",
         "resolvedLabels": "已解析标签",
         "ready": "可发布",
         "blocked": "阻塞",
@@ -6996,7 +7218,7 @@
         "failures": "门禁失败项",
         "noFailures": "当前没有阻塞失败项。",
         "releaseControls": "发布控制",
-        "bucket": "Bucket",
+        "bucket": "分桶",
         "count": "数量",
         "actualRate": "实际录取率"
       },
@@ -7051,7 +7273,7 @@
         "fixtureHint": "Fixture evidence 只用于 CI/nightly 治理，不代表 production 可信度；生产仍然只认已审核真实证据。",
         "modeFilter": "证据模式",
         "modeAll": "全部",
-        "modeFixture": "Fixture",
+        "modeFixture": "Fixture 数据",
         "modeReal": "真实",
         "schoolId": "学校 ID",
         "dimension": "政策维度",
@@ -7120,7 +7342,7 @@
         "reportPath": "报告",
         "reportJsonPath": "报告 JSON",
         "workflowRunUrl": "工作流",
-        "liveReplayId": "Live Replay",
+        "liveReplayId": "实时回放",
         "failures": "失败项",
         "empty": "还没有回放运行记录。"
       },
@@ -7300,7 +7522,7 @@
         "loading": "加载中...",
         "empty": "暂无 LLM 调用记录",
         "time": "时间",
-        "agent": "Agent",
+        "agent": "智能体",
         "model": "模型",
         "tokens": "Token 数",
         "cost": "成本",
@@ -7349,7 +7571,7 @@
       "metricErrorRate": "错误率",
       "metricActiveReqs": "活跃请求",
       "metricRateLimits": "限流触发",
-      "metricPromptTokens": "Prompt Token",
+      "metricPromptTokens": "提示词 Token",
       "metricRoutingFallback": "路由回退率",
       "metricCritiqueRate": "反思通过率",
       "noTraces": "暂无追踪数据",
@@ -7441,8 +7663,8 @@
       "conversationsDesc": "浏览 AI Agent 对话记录",
       "viewMessages": "对话消息",
       "msgRole": "角色",
-      "msgAgent": "Agent",
-      "msgTokens": "Token",
+      "msgAgent": "智能体",
+      "msgTokens": "Token 数",
       "msgLatency": "延迟",
       "entities": "实体浏览器",
       "entitiesDesc": "查看提取的实体知识（学校、人物、事件、话题）",
@@ -7827,7 +8049,7 @@
           "transfer": "转学生",
           "homeschool": "在家教育",
           "military": "军人家庭",
-          "gap_year": "Gap Year"
+          "gap_year": "间隔年"
         },
         "result": {
           "ADMITTED": "录取",
@@ -7872,7 +8094,7 @@
           "SUPPLEMENTAL": "补充文书",
           "SHORT_ANSWER": "简答题",
           "PERSONAL_STATEMENT": "个人陈述",
-          "WHY_SCHOOL": "Why School",
+          "WHY_SCHOOL": "Why School 文书",
           "ACTIVITY": "活动描述",
           "OPTIONAL": "选做题",
           "OTHER": "其他"
@@ -9158,15 +9380,15 @@
       "email": "邮件",
       "twitter": "X（推特）"
     },
-    "emailSubject": "和我一起使用留学平台",
-    "emailBody": "嗨！我一直在用这个很棒的留学平台。用我的邀请码 {code} 注册，我们都能获得50积分！{link}"
+    "emailSubject": "和我一起使用 Lumni",
+    "emailBody": "嗨！我一直在用 Lumni 做留学申请规划。用我的邀请码 {code} 注册，我们都能获得 50 积分！{link}"
   },
   "tour": {
     "next": "下一步",
     "previous": "上一步",
     "done": "完成",
     "welcome": {
-      "title": "欢迎来到留学平台",
+      "title": "欢迎来到 Lumni",
       "description": "这是你的主页，可以快速访问平台功能和最新动态。",
       "schools": "学校",
       "schoolsDesc": "浏览全球顶尖大学信息，了解录取要求和截止日期。",

@@ -18,7 +18,7 @@ let cachedProfile: UserProfile | null = null;
  * 初始化 content script
  */
 function initialize(): void {
-  console.log('[StudyAbroad Extension] Content script loaded on CommonApp');
+  console.log('[Lumni Extension] Content script loaded on CommonApp');
 
   // 注入浮动按钮
   injectFloatingButton();
@@ -55,7 +55,7 @@ function injectFloatingButton(): void {
     </div>
     <div id="studyabroad-menu" class="studyabroad-menu hidden">
       <div class="studyabroad-menu-header">
-        <span class="studyabroad-logo">📚 StudyAbroad</span>
+        <span class="studyabroad-logo">Lumni</span>
         <button id="studyabroad-close" class="studyabroad-close">&times;</button>
       </div>
       <div class="studyabroad-menu-body">

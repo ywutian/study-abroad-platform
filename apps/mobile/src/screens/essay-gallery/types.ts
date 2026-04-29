@@ -91,14 +91,14 @@ export type Colors = ReturnType<typeof useColors>;
 // ---------------------------------------------------------------------------
 
 export const RESULT_COLORS: Record<string, string> = {
-  ADMITTED: '#10b981',
+  ADMITTED: '#6f7b58',
   REJECTED: '#ef4444',
   WAITLISTED: '#f59e0b',
   DEFERRED: '#3b82f6',
 };
 
 export const STATUS_COLORS: Record<string, string> = {
-  excellent: '#10b981',
+  excellent: '#6f7b58',
   good: '#3b82f6',
   needs_work: '#f59e0b',
 };

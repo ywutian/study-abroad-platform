@@ -76,8 +76,8 @@ type AITool = 'review' | 'polish' | 'brainstorm' | 'continue' | 'opening' | 'rew
 
 const AI_TOOLS: { id: AITool; icon: string; color: string }[] = [
   { id: 'review', icon: 'star', color: '#f59e0b' },
-  { id: 'polish', icon: 'sparkles', color: '#8b5cf6' },
-  { id: 'brainstorm', icon: 'bulb', color: '#10b981' },
+  { id: 'polish', icon: 'sparkles', color: '#6574ff' },
+  { id: 'brainstorm', icon: 'bulb', color: '#6f7b58' },
   { id: 'continue', icon: 'arrow-forward', color: '#3b82f6' },
   { id: 'opening', icon: 'flag', color: '#ec4899' },
   { id: 'rewrite', icon: 'refresh', color: '#ef4444' },

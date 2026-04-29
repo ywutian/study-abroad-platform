@@ -937,7 +937,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterBadgeText: {
-    color: '#ffffff',
+    color: '#fff9ef',
     fontSize: 10,
     fontWeight: fontWeight.bold,
   },

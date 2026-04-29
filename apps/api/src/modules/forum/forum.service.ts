@@ -4,15 +4,21 @@ import { ForumPostService } from './forum-post.service';
 import { ForumCommentService } from './forum-comment.service';
 import { ForumTeamService } from './forum-team.service';
 import { ForumReportService } from './forum-report.service';
+import { ForumCommunityService } from './forum-community.service';
+import { ForumUploadService } from './forum-upload.service';
 import {
   CreateCategoryDto,
   CreatePostDto,
   UpdatePostDto,
   CreateCommentDto,
+  CreateCommunityDto,
+  CommunityQueryDto,
   PostQueryDto,
   TeamApplicationDto,
   ReviewApplicationDto,
   CategoryDto,
+  CommunityDto,
+  ForumImageInputDto,
   PostDto,
   PostDetailResponseDto,
   PostListResponseDto,
@@ -27,6 +33,8 @@ export class ForumService {
     private commentService: ForumCommentService,
     private teamService: ForumTeamService,
     private reportService: ForumReportService,
+    private communityService: ForumCommunityService,
+    private uploadService: ForumUploadService,
   ) {}
 
   // ============================================
@@ -52,6 +60,45 @@ export class ForumService {
 
   async createCategory(data: CreateCategoryDto): Promise<CategoryDto> {
     return this.categoryService.createCategory(data);
+  }
+
+  // ============================================
+  // Communities
+  // ============================================
+
+  async getCommunities(
+    userId: string | null,
+    query: CommunityQueryDto,
+  ): Promise<CommunityDto[]> {
+    return this.communityService.getCommunities(userId, query);
+  }
+
+  async createCommunity(
+    userId: string,
+    data: CreateCommunityDto,
+  ): Promise<CommunityDto> {
+    return this.communityService.createCommunity(userId, data);
+  }
+
+  async followCommunity(
+    userId: string,
+    communityId: string,
+  ): Promise<CommunityDto> {
+    return this.communityService.followCommunity(userId, communityId);
+  }
+
+  async unfollowCommunity(
+    userId: string,
+    communityId: string,
+  ): Promise<CommunityDto> {
+    return this.communityService.unfollowCommunity(userId, communityId);
+  }
+
+  async uploadImages(
+    userId: string,
+    files: Express.Multer.File[],
+  ): Promise<ForumImageInputDto[]> {
+    return this.uploadService.uploadImages(userId, files);
   }
 
   // ============================================

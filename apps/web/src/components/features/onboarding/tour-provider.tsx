@@ -257,7 +257,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         }
 
         .driver-active-element {
-          box-shadow: 0 0 0 4px oklch(0.55 0.22 265 / 30%) !important;
+          box-shadow: 0 0 0 4px var(--border) !important;
         }
 
         /* 响应式 */

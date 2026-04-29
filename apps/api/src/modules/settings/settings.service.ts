@@ -52,7 +52,7 @@ const DEFAULT_SETTINGS: Record<
     category: 'notification',
   },
   [SETTING_KEYS.SITE_NAME]: {
-    value: 'Study Abroad Platform',
+    value: 'Lumni',
     description: 'Site name',
     category: 'general',
   },

@@ -10,7 +10,6 @@ import {
   Home,
 } from 'lucide-react';
 import { createElement } from 'react';
-import DOMPurify from 'isomorphic-dompurify';
 
 // Types
 export interface Category {
@@ -24,11 +23,43 @@ export interface Category {
   postCount: number;
 }
 
+export interface Community {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  postCount: number;
+  followerCount: number;
+  isOfficial: boolean;
+  isFollowing: boolean;
+  createdAt: string;
+}
+
 export interface Author {
   id: string;
   name?: string;
   avatar?: string;
   isVerified: boolean;
+}
+
+export interface ForumImage {
+  id: string;
+  key: string;
+  url: string;
+  mimeType: string;
+  size: number;
+  width?: number;
+  height?: number;
+  sortOrder: number;
+}
+
+export interface ForumImageInput {
+  key: string;
+  url: string;
+  mimeType: string;
+  size: number;
+  width?: number;
+  height?: number;
 }
 
 export interface Post {
@@ -37,7 +68,10 @@ export interface Post {
   content: string;
   categoryId: string;
   category: Category;
+  communityId?: string;
+  community?: Community;
   author: Author;
+  images: ForumImage[];
   isTeamPost: boolean;
   teamSize?: number;
   currentSize?: number;
@@ -108,21 +142,16 @@ export const getCategoryColorStyle = (
     return { style: { background: category.color } };
   }
   const nameLC = (category.name || category.nameZh || '').toLowerCase();
-  if (nameLC.includes('team') || nameLC.includes('组队'))
-    return { className: 'bg-gradient-to-r from-amber-500 to-orange-500' };
+  if (nameLC.includes('team') || nameLC.includes('组队')) return { className: 'bg-amber-500' };
   if (nameLC.includes('activity') || nameLC.includes('活动')) return { className: 'bg-primary' };
   if (nameLC.includes('experience') || nameLC.includes('经验'))
-    return { className: 'bg-gradient-to-r from-emerald-500 to-teal-500' };
+    return { className: 'bg-emerald-500' };
   if (nameLC.includes('question') || nameLC.includes('问答') || nameLC.includes('q&a'))
-    return { className: 'bg-gradient-to-r from-pink-500 to-rose-500' };
-  if (nameLC.includes('resource') || nameLC.includes('资源'))
-    return { className: 'bg-gradient-to-r from-violet-500 to-purple-500' };
-  if (nameLC.includes('life') || nameLC.includes('生活'))
-    return { className: 'bg-gradient-to-r from-orange-400 to-amber-500' };
-  if (nameLC.includes('essay') || nameLC.includes('文书'))
-    return { className: 'bg-gradient-to-r from-blue-500 to-cyan-500' };
-  if (nameLC.includes('school') || nameLC.includes('选校'))
-    return { className: 'bg-gradient-to-r from-teal-500 to-emerald-500' };
+    return { className: 'bg-pink-500' };
+  if (nameLC.includes('resource') || nameLC.includes('资源')) return { className: 'bg-violet-500' };
+  if (nameLC.includes('life') || nameLC.includes('生活')) return { className: 'bg-orange-500' };
+  if (nameLC.includes('essay') || nameLC.includes('文书')) return { className: 'bg-blue-500' };
+  if (nameLC.includes('school') || nameLC.includes('选校')) return { className: 'bg-teal-500' };
   return { className: 'bg-gray-500 dark:bg-gray-600' };
 };
 
@@ -141,16 +170,21 @@ export const stripMarkdown = (content: string): string => {
 };
 
 export const renderMarkdown = (content: string): React.ReactNode => {
-  const sanitize = (html: string): string => {
-    return DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: ['strong', 'em', 'a', 'code'],
-      ALLOWED_ATTR: ['href', 'target', 'rel'],
-    });
+  const renderInlineMarkdown = (text: string): string => {
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    return escaped
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`(.*?)`/g, '<code>$1</code>');
   };
 
   const lines = content.split('\n');
   return lines.map((line, i) => {
-    line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     if (line.startsWith('# ')) {
       return createElement(
         'h2',
@@ -169,14 +203,14 @@ export const renderMarkdown = (content: string): React.ReactNode => {
       return createElement('li', {
         key: i,
         className: 'ml-4 list-disc',
-        dangerouslySetInnerHTML: { __html: sanitize(line.slice(2)) },
+        dangerouslySetInnerHTML: { __html: renderInlineMarkdown(line.slice(2)) },
       });
     }
     if (/^\d+\.\s/.test(line)) {
       return createElement('li', {
         key: i,
         className: 'ml-4 list-decimal',
-        dangerouslySetInnerHTML: { __html: sanitize(line.replace(/^\d+\.\s/, '')) },
+        dangerouslySetInnerHTML: { __html: renderInlineMarkdown(line.replace(/^\d+\.\s/, '')) },
       });
     }
     if (!line.trim()) {
@@ -185,7 +219,7 @@ export const renderMarkdown = (content: string): React.ReactNode => {
     return createElement('p', {
       key: i,
       className: 'mb-1',
-      dangerouslySetInnerHTML: { __html: sanitize(line) },
+      dangerouslySetInnerHTML: { __html: renderInlineMarkdown(line) },
     });
   });
 };

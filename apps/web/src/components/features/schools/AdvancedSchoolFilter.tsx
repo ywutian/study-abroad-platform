@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,20 +50,63 @@ interface AdvancedSchoolFilterProps {
   onChange: (filters: SchoolFilters) => void;
   onReset: () => void;
   activeCount: number;
+  variant?: 'sheet' | 'inline';
+  className?: string;
 }
 
 const US_STATES = [
-  { value: 'all', labelKey: 'all' },
-  { value: 'CA', labelKey: 'CA' },
-  { value: 'NY', labelKey: 'NY' },
-  { value: 'MA', labelKey: 'MA' },
-  { value: 'TX', labelKey: 'TX' },
-  { value: 'PA', labelKey: 'PA' },
-  { value: 'IL', labelKey: 'IL' },
-  { value: 'FL', labelKey: 'FL' },
-  { value: 'NC', labelKey: 'NC' },
-  { value: 'GA', labelKey: 'GA' },
-  { value: 'OH', labelKey: 'OH' },
+  { value: 'all', label: 'All states' },
+  { value: 'AL', label: 'AL' },
+  { value: 'AK', label: 'AK' },
+  { value: 'AZ', label: 'AZ' },
+  { value: 'AR', label: 'AR' },
+  { value: 'CA', label: 'CA' },
+  { value: 'CO', label: 'CO' },
+  { value: 'CT', label: 'CT' },
+  { value: 'DE', label: 'DE' },
+  { value: 'DC', label: 'DC' },
+  { value: 'FL', label: 'FL' },
+  { value: 'GA', label: 'GA' },
+  { value: 'HI', label: 'HI' },
+  { value: 'ID', label: 'ID' },
+  { value: 'IL', label: 'IL' },
+  { value: 'IN', label: 'IN' },
+  { value: 'IA', label: 'IA' },
+  { value: 'KS', label: 'KS' },
+  { value: 'KY', label: 'KY' },
+  { value: 'LA', label: 'LA' },
+  { value: 'ME', label: 'ME' },
+  { value: 'MD', label: 'MD' },
+  { value: 'MA', label: 'MA' },
+  { value: 'MI', label: 'MI' },
+  { value: 'MN', label: 'MN' },
+  { value: 'MS', label: 'MS' },
+  { value: 'MO', label: 'MO' },
+  { value: 'MT', label: 'MT' },
+  { value: 'NE', label: 'NE' },
+  { value: 'NV', label: 'NV' },
+  { value: 'NH', label: 'NH' },
+  { value: 'NJ', label: 'NJ' },
+  { value: 'NM', label: 'NM' },
+  { value: 'NY', label: 'NY' },
+  { value: 'NC', label: 'NC' },
+  { value: 'ND', label: 'ND' },
+  { value: 'OH', label: 'OH' },
+  { value: 'OK', label: 'OK' },
+  { value: 'OR', label: 'OR' },
+  { value: 'PA', label: 'PA' },
+  { value: 'RI', label: 'RI' },
+  { value: 'SC', label: 'SC' },
+  { value: 'SD', label: 'SD' },
+  { value: 'TN', label: 'TN' },
+  { value: 'TX', label: 'TX' },
+  { value: 'UT', label: 'UT' },
+  { value: 'VT', label: 'VT' },
+  { value: 'VA', label: 'VA' },
+  { value: 'WA', label: 'WA' },
+  { value: 'WV', label: 'WV' },
+  { value: 'WI', label: 'WI' },
+  { value: 'WY', label: 'WY' },
 ];
 
 export function AdvancedSchoolFilter({
@@ -71,13 +115,20 @@ export function AdvancedSchoolFilter({
   onChange,
   onReset,
   activeCount,
+  variant = 'sheet',
+  className,
 }: AdvancedSchoolFilterProps) {
   const t = useTranslations('schoolFilter');
   const format = useFormatter();
   const [open, setOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(['ranking', 'acceptance']);
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    'location',
+    'ranking',
+    'acceptance',
+    'salary',
+  ]);
 
-  const REGIONS = [
+  const regions = [
     { value: 'all', label: t('regions.all') },
     { value: 'northeast', label: t('regions.northeast') },
     { value: 'midwest', label: t('regions.midwest') },
@@ -110,6 +161,367 @@ export function AdvancedSchoolFilter({
     });
   };
 
+  const content = (
+    <div className={cn('space-y-4', variant === 'sheet' && 'mt-6')}>
+      {country === 'US' && (
+        <FilterSection
+          title={t('sections.location')}
+          icon={MapPin}
+          expanded={expandedSections.includes('location')}
+          onToggle={() => toggleSection('location')}
+        >
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm">{t('labels.state')}</Label>
+              <Select
+                value={filters.state || 'all'}
+                onValueChange={(value) =>
+                  onChange({
+                    ...filters,
+                    state: value === 'all' ? undefined : value,
+                    region: undefined,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('placeholders.selectState')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {US_STATES.map((state) => (
+                    <SelectItem key={state.value} value={state.value}>
+                      {state.value === 'all' ? t('states.all') : state.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm">{t('labels.region')}</Label>
+              <Select
+                value={filters.region || 'all'}
+                onValueChange={(value) =>
+                  onChange({
+                    ...filters,
+                    state: undefined,
+                    region: value === 'all' ? undefined : value,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('placeholders.selectRegion')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {regions.map((region) => (
+                    <SelectItem key={region.value} value={region.value}>
+                      {region.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </FilterSection>
+      )}
+
+      <FilterSection
+        title={t('sections.ranking')}
+        icon={Trophy}
+        expanded={expandedSections.includes('ranking')}
+        onToggle={() => toggleSection('ranking')}
+        badge={
+          filters.rankMin || filters.rankMax
+            ? `#${filters.rankMin || 1}-${filters.rankMax || 100}`
+            : undefined
+        }
+      >
+        <div className="space-y-4">
+          <RangeLabel
+            label={t('labels.usNewsRanking')}
+            value={`#${filters.rankMin || 1} - #${filters.rankMax || 100}`}
+          />
+          <Slider
+            value={[
+              filters.rankMin ?? SCHOOL_FILTER_DEFAULTS.rankMin,
+              filters.rankMax ?? SCHOOL_FILTER_DEFAULTS.rankMax,
+            ]}
+            onValueChange={([min, max]) =>
+              updateRange(
+                'rankMin',
+                'rankMax',
+                min,
+                max,
+                SCHOOL_FILTER_DEFAULTS.rankMin,
+                SCHOOL_FILTER_DEFAULTS.rankMax
+              )
+            }
+            min={SCHOOL_FILTER_DEFAULTS.rankMin}
+            max={SCHOOL_FILTER_DEFAULTS.rankMax}
+            step={1}
+          />
+          <PresetButtons
+            presets={[
+              { key: 'top10', min: 1, max: 10 },
+              { key: 'top30', min: 1, max: 30 },
+              { key: 'top50', min: 1, max: 50 },
+              { key: 'range30To50', min: 30, max: 50 },
+              { key: 'range50To100', min: 50, max: 100 },
+            ]}
+            activeMin={filters.rankMin}
+            activeMax={filters.rankMax}
+            label={(key) => t(`rankingPresets.${key}`)}
+            onSelect={(min, max) => {
+              updateFilter('rankMin', min);
+              updateFilter('rankMax', max);
+            }}
+          />
+        </div>
+      </FilterSection>
+
+      <FilterSection
+        title={t('sections.acceptance')}
+        icon={Users}
+        expanded={expandedSections.includes('acceptance')}
+        onToggle={() => toggleSection('acceptance')}
+        badge={
+          filters.acceptanceMin || filters.acceptanceMax
+            ? `${filters.acceptanceMin || 0}%-${filters.acceptanceMax || 100}%`
+            : undefined
+        }
+      >
+        <div className="space-y-4">
+          <RangeLabel
+            label={t('labels.acceptanceRange')}
+            value={`${filters.acceptanceMin || 0}% - ${filters.acceptanceMax || 100}%`}
+          />
+          <Slider
+            value={[
+              filters.acceptanceMin ?? SCHOOL_FILTER_DEFAULTS.acceptanceMin,
+              filters.acceptanceMax ?? SCHOOL_FILTER_DEFAULTS.acceptanceMax,
+            ]}
+            onValueChange={([min, max]) =>
+              updateRange(
+                'acceptanceMin',
+                'acceptanceMax',
+                min,
+                max,
+                SCHOOL_FILTER_DEFAULTS.acceptanceMin,
+                SCHOOL_FILTER_DEFAULTS.acceptanceMax
+              )
+            }
+            min={SCHOOL_FILTER_DEFAULTS.acceptanceMin}
+            max={SCHOOL_FILTER_DEFAULTS.acceptanceMax}
+            step={5}
+          />
+          <PresetButtons
+            presets={[
+              { key: 'veryHard', min: 0, max: 10 },
+              { key: 'hard', min: 10, max: 20 },
+              { key: 'medium', min: 20, max: 40 },
+              { key: 'easy', min: 40, max: 100 },
+            ]}
+            activeMin={filters.acceptanceMin}
+            activeMax={filters.acceptanceMax}
+            label={(key) => t(`acceptancePresets.${key}`)}
+            onSelect={(min, max) => {
+              updateFilter('acceptanceMin', min);
+              updateFilter('acceptanceMax', max);
+            }}
+          />
+        </div>
+      </FilterSection>
+
+      <FilterSection
+        title={t('sections.tuition')}
+        icon={DollarSign}
+        expanded={expandedSections.includes('tuition')}
+        onToggle={() => toggleSection('tuition')}
+        badge={
+          filters.tuitionMin || filters.tuitionMax
+            ? `$${filters.tuitionMin || 0}0k-${filters.tuitionMax || 8}0k`
+            : undefined
+        }
+      >
+        <div className="space-y-4">
+          <RangeLabel
+            label={t('labels.annualTuition')}
+            value={`$${filters.tuitionMin || 0}0k - $${filters.tuitionMax || 8}0k`}
+          />
+          <Slider
+            value={[
+              filters.tuitionMin ?? SCHOOL_FILTER_DEFAULTS.tuitionMin,
+              filters.tuitionMax ?? SCHOOL_FILTER_DEFAULTS.tuitionMax,
+            ]}
+            onValueChange={([min, max]) =>
+              updateRange(
+                'tuitionMin',
+                'tuitionMax',
+                min,
+                max,
+                SCHOOL_FILTER_DEFAULTS.tuitionMin,
+                SCHOOL_FILTER_DEFAULTS.tuitionMax
+              )
+            }
+            min={SCHOOL_FILTER_DEFAULTS.tuitionMin}
+            max={SCHOOL_FILTER_DEFAULTS.tuitionMax}
+            step={0.5}
+          />
+          <PresetButtons
+            presets={[
+              { key: 'budget', min: 0, max: 3 },
+              { key: 'moderate', min: 3, max: 5 },
+              { key: 'high', min: 5, max: 7 },
+              { key: 'noLimit', min: 0, max: 8 },
+            ]}
+            activeMin={filters.tuitionMin}
+            activeMax={filters.tuitionMax}
+            label={(key) => t(`tuitionPresets.${key}`)}
+            onSelect={(min, max) => {
+              updateFilter('tuitionMin', min);
+              updateFilter('tuitionMax', max);
+            }}
+          />
+        </div>
+      </FilterSection>
+
+      <FilterSection
+        title={t('sections.salary')}
+        icon={TrendingUp}
+        expanded={expandedSections.includes('salary')}
+        onToggle={() => toggleSection('salary')}
+        badge={
+          filters.salaryMin || filters.salaryMax
+            ? `$${filters.salaryMin || 0}0k-${filters.salaryMax || 20}0k`
+            : undefined
+        }
+      >
+        <div className="space-y-4">
+          <RangeLabel
+            label={t('labels.postGradSalary')}
+            value={`$${filters.salaryMin || 0}0k - $${filters.salaryMax || 20}0k`}
+          />
+          <Slider
+            value={[
+              filters.salaryMin ?? SCHOOL_FILTER_DEFAULTS.salaryMin,
+              filters.salaryMax ?? SCHOOL_FILTER_DEFAULTS.salaryMax,
+            ]}
+            onValueChange={([min, max]) =>
+              updateRange(
+                'salaryMin',
+                'salaryMax',
+                min,
+                max,
+                SCHOOL_FILTER_DEFAULTS.salaryMin,
+                SCHOOL_FILTER_DEFAULTS.salaryMax
+              )
+            }
+            min={SCHOOL_FILTER_DEFAULTS.salaryMin}
+            max={SCHOOL_FILTER_DEFAULTS.salaryMax}
+            step={1}
+          />
+        </div>
+      </FilterSection>
+
+      <FilterSection
+        title={t('sections.type')}
+        icon={Building2}
+        expanded={expandedSections.includes('type')}
+        onToggle={() => toggleSection('type')}
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-sm">{t('labels.publicPrivate')}</Label>
+            <Select
+              value={filters.schoolType || 'all'}
+              onValueChange={(v) =>
+                updateFilter('schoolType', v === 'all' ? undefined : (v as any))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('placeholders.selectType')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('schoolTypes.all')}</SelectItem>
+                <SelectItem value="public">{t('schoolTypes.public')}</SelectItem>
+                <SelectItem value="private">{t('schoolTypes.private')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-4">
+            <Label className="text-sm">{t('labels.schoolSize')}</Label>
+            <RangeLabel
+              label=""
+              value={`${format.number(filters.sizeMin || 0, 'standard')} - ${format.number(
+                filters.sizeMax || 50000,
+                'standard'
+              )}`}
+            />
+            <Slider
+              value={[
+                filters.sizeMin ?? SCHOOL_FILTER_DEFAULTS.sizeMin,
+                filters.sizeMax ?? SCHOOL_FILTER_DEFAULTS.sizeMax,
+              ]}
+              onValueChange={([min, max]) =>
+                updateRange(
+                  'sizeMin',
+                  'sizeMax',
+                  min,
+                  max,
+                  SCHOOL_FILTER_DEFAULTS.sizeMin,
+                  SCHOOL_FILTER_DEFAULTS.sizeMax
+                )
+              }
+              min={SCHOOL_FILTER_DEFAULTS.sizeMin}
+              max={SCHOOL_FILTER_DEFAULTS.sizeMax}
+              step={1000}
+            />
+          </div>
+        </div>
+      </FilterSection>
+
+      <FilterSection
+        title={t('sections.special')}
+        icon={Sparkles}
+        expanded={expandedSections.includes('special')}
+        onToggle={() => toggleSection('special')}
+      >
+        <div className="space-y-4">
+          <SwitchRow
+            label={t('specialConditions.testOptional')}
+            description={t('specialConditions.testOptionalDesc')}
+            checked={filters.testOptional || false}
+            onCheckedChange={(checked) => updateFilter('testOptional', checked || undefined)}
+          />
+          <SwitchRow
+            label={t('specialConditions.needBlind')}
+            description={t('specialConditions.needBlindDesc')}
+            checked={filters.needBlind || false}
+            onCheckedChange={(checked) => updateFilter('needBlind', checked || undefined)}
+          />
+          <SwitchRow
+            label={t('specialConditions.hasED')}
+            description={t('specialConditions.hasEDDesc')}
+            checked={filters.hasEarlyDecision || false}
+            onCheckedChange={(checked) => updateFilter('hasEarlyDecision', checked || undefined)}
+          />
+        </div>
+      </FilterSection>
+    </div>
+  );
+
+  if (variant === 'inline') {
+    return (
+      <div className={cn('space-y-4', className)}>
+        {content}
+        <Button variant="outline" onClick={onReset} className="w-full gap-2">
+          <RotateCcw className="h-4 w-4" />
+          {t('reset')}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -133,403 +545,7 @@ export function AdvancedSchoolFilter({
           <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-4">
-          {country === 'US' && (
-            <FilterSection
-              title={t('sections.location')}
-              icon={MapPin}
-              expanded={expandedSections.includes('location')}
-              onToggle={() => toggleSection('location')}
-            >
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm">{t('labels.state')}</Label>
-                  <Select
-                    value={filters.state || 'all'}
-                    onValueChange={(value) =>
-                      onChange({
-                        ...filters,
-                        state: value === 'all' ? undefined : value,
-                        region: undefined,
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('placeholders.selectState')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {US_STATES.map((state) => (
-                        <SelectItem key={state.value} value={state.value}>
-                          {t(`states.${state.labelKey}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm">{t('labels.region')}</Label>
-                  <Select
-                    value={filters.region || 'all'}
-                    onValueChange={(value) =>
-                      onChange({
-                        ...filters,
-                        state: undefined,
-                        region: value === 'all' ? undefined : value,
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('placeholders.selectRegion')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {REGIONS.map((region) => (
-                        <SelectItem key={region.value} value={region.value}>
-                          {region.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </FilterSection>
-          )}
-
-          {/* 排名范围 */}
-          <FilterSection
-            title={t('sections.ranking')}
-            icon={Trophy}
-            expanded={expandedSections.includes('ranking')}
-            onToggle={() => toggleSection('ranking')}
-            badge={
-              filters.rankMin || filters.rankMax
-                ? `#${filters.rankMin || 1}-${filters.rankMax || 100}`
-                : undefined
-            }
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('labels.usNewsRanking')}</span>
-                <span className="font-medium">
-                  #{filters.rankMin || 1} - #{filters.rankMax || 100}
-                </span>
-              </div>
-              <div className="px-2">
-                <Slider
-                  value={[
-                    filters.rankMin || SCHOOL_FILTER_DEFAULTS.rankMin,
-                    filters.rankMax || SCHOOL_FILTER_DEFAULTS.rankMax,
-                  ]}
-                  onValueChange={([min, max]) =>
-                    updateRange(
-                      'rankMin',
-                      'rankMax',
-                      min,
-                      max,
-                      SCHOOL_FILTER_DEFAULTS.rankMin,
-                      SCHOOL_FILTER_DEFAULTS.rankMax
-                    )
-                  }
-                  min={SCHOOL_FILTER_DEFAULTS.rankMin}
-                  max={SCHOOL_FILTER_DEFAULTS.rankMax}
-                  step={1}
-                  className="cursor-pointer"
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{t('rankingPresets.top1')}</span>
-                <span>{t('rankingPresets.top100')}</span>
-              </div>
-
-              {/* 快捷选择 */}
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'top10', min: 1, max: 10 },
-                  { key: 'top30', min: 1, max: 30 },
-                  { key: 'top50', min: 1, max: 50 },
-                  { key: 'range30To50', min: 30, max: 50 },
-                  { key: 'range50To100', min: 50, max: 100 },
-                ].map((preset) => (
-                  <Button
-                    key={preset.key}
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      'text-xs',
-                      filters.rankMin === preset.min &&
-                        filters.rankMax === preset.max &&
-                        'border-primary bg-primary/5'
-                    )}
-                    onClick={() => {
-                      updateFilter('rankMin', preset.min);
-                      updateFilter('rankMax', preset.max);
-                    }}
-                  >
-                    {t(`rankingPresets.${preset.key}`)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </FilterSection>
-
-          {/* 录取率 */}
-          <FilterSection
-            title={t('sections.acceptance')}
-            icon={Users}
-            expanded={expandedSections.includes('acceptance')}
-            onToggle={() => toggleSection('acceptance')}
-            badge={
-              filters.acceptanceMin || filters.acceptanceMax
-                ? `${filters.acceptanceMin || 0}%-${filters.acceptanceMax || 100}%`
-                : undefined
-            }
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('labels.acceptanceRange')}</span>
-                <span className="font-medium">
-                  {filters.acceptanceMin || 0}% - {filters.acceptanceMax || 100}%
-                </span>
-              </div>
-              <div className="px-2">
-                <Slider
-                  value={[
-                    filters.acceptanceMin || SCHOOL_FILTER_DEFAULTS.acceptanceMin,
-                    filters.acceptanceMax || SCHOOL_FILTER_DEFAULTS.acceptanceMax,
-                  ]}
-                  onValueChange={([min, max]) =>
-                    updateRange(
-                      'acceptanceMin',
-                      'acceptanceMax',
-                      min,
-                      max,
-                      SCHOOL_FILTER_DEFAULTS.acceptanceMin,
-                      SCHOOL_FILTER_DEFAULTS.acceptanceMax
-                    )
-                  }
-                  min={SCHOOL_FILTER_DEFAULTS.acceptanceMin}
-                  max={SCHOOL_FILTER_DEFAULTS.acceptanceMax}
-                  step={5}
-                  className="cursor-pointer"
-                />
-              </div>
-
-              {/* 快捷选择 */}
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'veryHard', min: 0, max: 10 },
-                  { key: 'hard', min: 10, max: 20 },
-                  { key: 'medium', min: 20, max: 40 },
-                  { key: 'easy', min: 40, max: 100 },
-                ].map((preset) => (
-                  <Button
-                    key={preset.key}
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      'text-xs',
-                      filters.acceptanceMin === preset.min &&
-                        filters.acceptanceMax === preset.max &&
-                        'border-primary bg-primary/5'
-                    )}
-                    onClick={() => {
-                      updateFilter('acceptanceMin', preset.min);
-                      updateFilter('acceptanceMax', preset.max);
-                    }}
-                  >
-                    {t(`acceptancePresets.${preset.key}`)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </FilterSection>
-
-          {/* 学费范围 */}
-          <FilterSection
-            title={t('sections.tuition')}
-            icon={DollarSign}
-            expanded={expandedSections.includes('tuition')}
-            onToggle={() => toggleSection('tuition')}
-            badge={
-              filters.tuitionMin || filters.tuitionMax
-                ? `$${filters.tuitionMin || 0}0k-${filters.tuitionMax || 8}0k`
-                : undefined
-            }
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('labels.annualTuition')}</span>
-                <span className="font-medium">
-                  ${filters.tuitionMin || 0}0k - ${filters.tuitionMax || 8}0k
-                </span>
-              </div>
-              <div className="px-2">
-                <Slider
-                  value={[
-                    filters.tuitionMin || SCHOOL_FILTER_DEFAULTS.tuitionMin,
-                    filters.tuitionMax || SCHOOL_FILTER_DEFAULTS.tuitionMax,
-                  ]}
-                  onValueChange={([min, max]) =>
-                    updateRange(
-                      'tuitionMin',
-                      'tuitionMax',
-                      min,
-                      max,
-                      SCHOOL_FILTER_DEFAULTS.tuitionMin,
-                      SCHOOL_FILTER_DEFAULTS.tuitionMax
-                    )
-                  }
-                  min={SCHOOL_FILTER_DEFAULTS.tuitionMin}
-                  max={SCHOOL_FILTER_DEFAULTS.tuitionMax}
-                  step={0.5}
-                  className="cursor-pointer"
-                />
-              </div>
-
-              {/* 快捷选择 */}
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: 'budget', min: 0, max: 3 },
-                  { key: 'moderate', min: 3, max: 5 },
-                  { key: 'high', min: 5, max: 7 },
-                  { key: 'noLimit', min: 0, max: 8 },
-                ].map((preset) => (
-                  <Button
-                    key={preset.key}
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      'text-xs',
-                      filters.tuitionMin === preset.min &&
-                        filters.tuitionMax === preset.max &&
-                        'border-primary bg-primary/5'
-                    )}
-                    onClick={() => {
-                      updateFilter('tuitionMin', preset.min);
-                      updateFilter('tuitionMax', preset.max);
-                    }}
-                  >
-                    {t(`tuitionPresets.${preset.key}`)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </FilterSection>
-
-          {/* 学校类型 */}
-          <FilterSection
-            title={t('sections.type')}
-            icon={Building2}
-            expanded={expandedSections.includes('type')}
-            onToggle={() => toggleSection('type')}
-          >
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm">{t('labels.publicPrivate')}</Label>
-                <Select
-                  value={filters.schoolType || 'all'}
-                  onValueChange={(v) =>
-                    updateFilter('schoolType', v === 'all' ? undefined : (v as any))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('placeholders.selectType')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('schoolTypes.all')}</SelectItem>
-                    <SelectItem value="public">{t('schoolTypes.public')}</SelectItem>
-                    <SelectItem value="private">{t('schoolTypes.private')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-sm">{t('labels.schoolSize')}</Label>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {format.number(filters.sizeMin || 0, 'standard')} -{' '}
-                    {format.number(filters.sizeMax || 50000, 'standard')}
-                  </span>
-                </div>
-                <div className="px-2">
-                  <Slider
-                    value={[
-                      filters.sizeMin || SCHOOL_FILTER_DEFAULTS.sizeMin,
-                      filters.sizeMax || SCHOOL_FILTER_DEFAULTS.sizeMax,
-                    ]}
-                    onValueChange={([min, max]) =>
-                      updateRange(
-                        'sizeMin',
-                        'sizeMax',
-                        min,
-                        max,
-                        SCHOOL_FILTER_DEFAULTS.sizeMin,
-                        SCHOOL_FILTER_DEFAULTS.sizeMax
-                      )
-                    }
-                    min={SCHOOL_FILTER_DEFAULTS.sizeMin}
-                    max={SCHOOL_FILTER_DEFAULTS.sizeMax}
-                    step={1000}
-                    className="cursor-pointer"
-                  />
-                </div>
-              </div>
-            </div>
-          </FilterSection>
-
-          {/* 特殊条件 */}
-          <FilterSection
-            title={t('sections.special')}
-            icon={Sparkles}
-            expanded={expandedSections.includes('special')}
-            onToggle={() => toggleSection('special')}
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">
-                    {t('specialConditions.testOptional')}
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t('specialConditions.testOptionalDesc')}
-                  </p>
-                </div>
-                <Switch
-                  checked={filters.testOptional || false}
-                  onCheckedChange={(checked) => updateFilter('testOptional', checked || undefined)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">{t('specialConditions.needBlind')}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t('specialConditions.needBlindDesc')}
-                  </p>
-                </div>
-                <Switch
-                  checked={filters.needBlind || false}
-                  onCheckedChange={(checked) => updateFilter('needBlind', checked || undefined)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">{t('specialConditions.hasED')}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {t('specialConditions.hasEDDesc')}
-                  </p>
-                </div>
-                <Switch
-                  checked={filters.hasEarlyDecision || false}
-                  onCheckedChange={(checked) =>
-                    updateFilter('hasEarlyDecision', checked || undefined)
-                  }
-                />
-              </div>
-            </div>
-          </FilterSection>
-        </div>
+        {content}
 
         <SheetFooter className="mt-6 flex gap-2">
           <Button variant="outline" onClick={onReset} className="flex-1 gap-2">
@@ -549,7 +565,70 @@ export function AdvancedSchoolFilter({
   );
 }
 
-// 筛选器分组组件
+function RangeLabel({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-sm">
+      {label ? <span className="text-muted-foreground">{label}</span> : <span />}
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+function PresetButtons({
+  presets,
+  activeMin,
+  activeMax,
+  label,
+  onSelect,
+}: {
+  presets: Array<{ key: string; min: number; max: number }>;
+  activeMin?: number;
+  activeMax?: number;
+  label: (key: string) => string;
+  onSelect: (min: number, max: number) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {presets.map((preset) => (
+        <Button
+          key={preset.key}
+          variant="outline"
+          size="sm"
+          className={cn(
+            'text-xs',
+            activeMin === preset.min && activeMax === preset.max && 'border-primary bg-primary/5'
+          )}
+          onClick={() => onSelect(preset.min, preset.max)}
+        >
+          {label(preset.key)}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+function SwitchRow({
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="space-y-0.5">
+        <Label className="text-sm font-medium">{label}</Label>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+    </div>
+  );
+}
+
 function FilterSection({
   title,
   icon: Icon,
@@ -568,22 +647,22 @@ function FilterSection({
   return (
     <Collapsible open={expanded} onOpenChange={onToggle}>
       <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background">
+        <button className="w-full flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background">
               <Icon className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="font-medium text-sm">{title}</span>
+            <span className="truncate text-sm font-medium">{title}</span>
             {badge && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="shrink-0 text-xs">
                 {badge}
               </Badge>
             )}
           </div>
           {expanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
         </button>
       </CollapsibleTrigger>

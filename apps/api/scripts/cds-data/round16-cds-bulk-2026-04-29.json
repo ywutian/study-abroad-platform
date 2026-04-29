@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T14:00:00Z",
+    "source": "Round 16 - Direct CDS PDF extraction (SJSU, Portland State, CSULB, GMU, Dartmouth)",
+    "purpose": "State university and Dartmouth residency admit rates from official CDS PDFs",
+    "verifiedBy": "Direct PDF download + pdftotext extraction",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "san jose state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www2.sjsu.edu/irsa/docs/cds/20250411_CDS_2024-2025%20FINAL.pdf",
+      "rates": {
+        "acceptanceRate": 84.6,
+        "intlAcceptanceRate": 74.0,
+        "oosAcceptanceRate": 77.6,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 85.1,
+      "notes": "SJSU CDS 2024-25 C1: applied 37,132 (in-state 35,162 / oos 1,197 / intl 773), admitted 31,419 (in-state 29,918 / oos 929 / intl 572). CSU school with high admit rates across all groups. Intl 74.0% notably lower than in-state 85.1%."
+    },
+    {
+      "schoolNameNorm": "portland state university",
+      "cycleYear": 2023,
+      "sourceUrl": "https://www.pdx.edu/research-planning/sites/researchplanning.web.wdt.pdx.edu/files/2024-05/CDS_2023-2024%20%28Updated%205-8-24%20AM%29.pdf",
+      "rates": {
+        "acceptanceRate": 90.9,
+        "intlAcceptanceRate": 93.6,
+        "oosAcceptanceRate": 90.0,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 91.6,
+      "notes": "Portland State CDS 2023-24 C1: applied 8,877 (in-state 4,312 / oos 4,267 / intl 298), admitted 8,070 (in-state 3,951 / oos 3,840 / intl 279). Near-open admissions for all groups. Intl 93.6% slightly higher than domestic ~91%."
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20%28PDF%29.pdf",
+      "rates": {
+        "acceptanceRate": 46.3,
+        "intlAcceptanceRate": 35.6,
+        "oosAcceptanceRate": 73.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 45.9,
+      "notes": "CSULB CDS 2024-25 C1: applied 83,951 (in-state 80,445 / oos 1,900 / intl 1,606), admitted 38,854 (in-state 36,892 / oos 1,390 / intl 572). Large CSU campus. Intl 35.6% notably lower than in-state 45.9%. OOS 73.2% higher than in-state (self-selected applicants)."
+    },
+    {
+      "schoolNameNorm": "george mason university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oiep.gmu.edu/wp-content/uploads/2025/02/2024-2025-CDS-Final.pdf",
+      "rates": {
+        "acceptanceRate": 87.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 86.9,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 87.8,
+      "notes": "GMU CDS 2024-25 C1: applied 25,234 (in-state 15,473 / oos 9,761 — intl not provided separately), admitted 22,074 (in-state 13,589 / oos 8,485). Enrolled 4,464 (in-state 3,610 / oos 660 / intl 194). OOS 86.9%, in-state 87.8% — very similar rates. Intl not reported in applied/admitted breakdown."
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.dartmouth.edu/oir/pdfs/cds_2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 4.66,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 5.34,
+      "notes": "Dartmouth CDS 2024-25 C1: applied 31,656 (in-state 468 / oos 21,220 / intl 9,968), admitted 1,710 total. Table shows oos admitted ~988 (4.66% OOS rate) and unknown 170. In-state applied 468, enrolled 25 (~5.3% derived). Intl admit breakdown ambiguous from PDF extraction — not reported. Overall 5.40% (1710/31656)."
+    }
+  ]
+}

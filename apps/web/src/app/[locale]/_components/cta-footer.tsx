@@ -3,6 +3,7 @@
 import { ArrowRight } from 'lucide-react';
 import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
+import { LumniMark } from '@/components/ui/lumni-mark';
 import { Link } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores';
 import { useHomeContent } from './home-content';
@@ -29,7 +30,7 @@ export function CTAFooter() {
             <div className="landing-kicker justify-center">{home.cta.eyebrow}</div>
             <h2 className="mt-5 text-display-hero font-bold leading-[0.96] tracking-tight text-[var(--landing-fg)]">
               <span className="block text-balance">{home.cta.title[0]}</span>
-              <span className="mt-2 block text-balance italic font-medium bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+              <span className="landing-hero-accent mt-2 block text-balance">
                 {home.cta.title[1]}
               </span>
             </h2>
@@ -70,9 +71,7 @@ export function CTAFooter() {
           <div className="grid gap-10 lg:grid-cols-[1.8fr_repeat(4,minmax(0,1fr))]">
             <div>
               <Link href={user ? '/dashboard' : '/'} className="inline-flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] text-sm font-semibold tracking-[0.18em] text-[var(--landing-fg)] shadow-[var(--landing-shadow-card)]">
-                  S
-                </span>
+                <LumniMark className="h-11 w-11" iconClassName="h-5 w-5" />
                 <span className="text-2xl font-semibold tracking-[-0.02em] text-[var(--landing-fg)]">
                   {home.brand}
                 </span>

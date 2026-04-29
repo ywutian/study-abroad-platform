@@ -449,6 +449,70 @@ describe('AdminSchoolRatesService', () => {
     );
   });
 
+  it('updates official IPEDS cost, aid, outcome, and retention fields', async () => {
+    prisma.school.findMany.mockImplementation(async (args: any) => {
+      if (args.where.id) return [ucd];
+      return [];
+    });
+
+    const result = await service.runBulkUpdate(
+      {
+        rows: [
+          {
+            schoolId: 'ucd-id',
+            tuition: 46200,
+            averageNetPrice: 18750,
+            graduationRate: 0.86,
+            retentionRate: 92,
+            studentFacultyRatio: 19,
+            salary6YrPostGrad: 72500,
+            loanDefaultRate: 0.017,
+            source: 'IPEDS_CSV:2024:unitid-110644',
+            sourceUrl:
+              'https://nces.ed.gov/ipeds/datacenter/data/DRVADM2024.zip',
+            cycleYear: 2024,
+          },
+        ],
+      },
+      'admin-1',
+    );
+
+    expect(result.updated).toBe(1);
+    expect(result.changes[0].changedFields).toEqual(
+      expect.arrayContaining([
+        'tuition',
+        'averageNetPrice',
+        'graduationRate',
+        'retentionRate',
+        'studentFacultyRatio',
+        'salary6YrPostGrad',
+        'loanDefaultRate',
+      ]),
+    );
+    expect(schoolWrite.update).toHaveBeenCalledWith(
+      'ucd-id',
+      expect.objectContaining({
+        fields: expect.objectContaining({
+          tuition: 46200,
+          averageNetPrice: 18750,
+          graduationRate: new Prisma.Decimal(86),
+          retentionRate: new Prisma.Decimal(92),
+          studentFacultyRatio: 19,
+          salary6YrPostGrad: 72500,
+          loanDefaultRate: new Prisma.Decimal(1.7),
+        }),
+        provenance: expect.objectContaining({
+          tuition: expect.objectContaining({
+            source: 'IPEDS_CSV:2024:unitid-110644',
+            sourceUrl:
+              'https://nces.ed.gov/ipeds/datacenter/data/DRVADM2024.zip',
+            cycleYear: 2024,
+          }),
+        }),
+      }),
+    );
+  });
+
   it('refreshes HEURISTIC provenance when official source value is unchanged', async () => {
     const heuristicSchool = {
       ...ucd,

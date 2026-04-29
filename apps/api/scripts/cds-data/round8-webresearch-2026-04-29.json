@@ -1,0 +1,252 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T02:00:00Z",
+    "source": "Round 8 - WebSearch + NextGenAdmit + CollegeTransitions + Shiksha",
+    "purpose": "Targeted intl/oos/in-state admit rates for ~30 heuristic schools",
+    "verifiedBy": "Cross-referenced multiple sources per school",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of illinois urbana-champaign",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/university-of-illinois-urbana-champaign-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 42.4,
+        "intlAcceptanceRate": 33.5,
+        "oosAcceptanceRate": 36.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 54.4,
+      "notes": "UIUC Class 2028: overall 42.4%, intl 33.5%, OOS 36.2%, in-state 54.4%"
+    },
+    {
+      "schoolNameNorm": "pennsylvania state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/pennsylvania-state-university-university-park/acceptance-rate",
+      "rates": {
+        "acceptanceRate": 60.0,
+        "intlAcceptanceRate": 64.3,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Penn State Class 2028: overall 60%, intl 64.3% (6,639/10,314 intl apps)"
+    },
+    {
+      "schoolNameNorm": "university of washington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.crimsoneducation.org/us/blog/uw-acceptance-rate-class-of-2028",
+      "rates": {
+        "acceptanceRate": 43.0,
+        "intlAcceptanceRate": 38.3,
+        "oosAcceptanceRate": 36.0,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 48.0,
+      "notes": "UW Seattle Class 2028: overall ~43%, intl 38.3%, OOS 36%, in-state 48%"
+    },
+    {
+      "schoolNameNorm": "tulane university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/tulane-university-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 14.7,
+        "intlAcceptanceRate": 15.8,
+        "oosAcceptanceRate": 12.84,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 26.1,
+      "notes": "Tulane Class 2028: overall ~14.7%, intl 15.8%, OOS 12.84%, in-state 26.1% (CDS)"
+    },
+    {
+      "schoolNameNorm": "university of wisconsin-madison",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/university-of-wisconsin-madison-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 45.2,
+        "intlAcceptanceRate": 31.6,
+        "oosAcceptanceRate": 40.3,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 56.4,
+      "notes": "UW-Madison: Class 2028 overall 45.2%, nearby data (Class 2029 CDS): intl 31.6%, OOS 40.3%, in-state 56.4%"
+    },
+    {
+      "schoolNameNorm": "michigan state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/michigan-state-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 81.3,
+        "intlAcceptanceRate": 88.1,
+        "oosAcceptanceRate": 84.4,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 84.4,
+      "notes": "MSU Class 2028: overall 81.3%, intl 88.1% (higher than domestic), in-state 84.4%, OOS 84.4%"
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/university-of-connecticut-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 52.4,
+        "intlAcceptanceRate": 69.1,
+        "oosAcceptanceRate": 56.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 44.9,
+      "notes": "UConn Class 2028: overall 52.4%, intl 69.1%, OOS 56.2%, in-state 44.9%"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/stony-brook-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 48.2,
+        "intlAcceptanceRate": 73.0,
+        "oosAcceptanceRate": 61.7,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 41.6,
+      "notes": "Stony Brook Class 2028: intl 73% (4700/6400), in-state 41.6%, OOS 61.7%, overall ~49%"
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/the-george-washington-university-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 47.1,
+        "intlAcceptanceRate": 35.7,
+        "oosAcceptanceRate": 49.2,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 33.5,
+      "notes": "GWU Class 2028: overall 47.1%, intl 35.7% (1279/3578), in-state 33.5%, OOS 49.2% (CDS 2024-2025)"
+    },
+    {
+      "schoolNameNorm": "southern methodist university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/southern-methodist-university/acceptance-rate",
+      "rates": {
+        "acceptanceRate": 52.0,
+        "intlAcceptanceRate": 38.3,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "SMU Class 2028: overall ~52%, intl ~38.3% (349/898 intl applicants, from historical data)"
+    },
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/university-of-minnesota-twin-cities-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 79.75,
+        "intlAcceptanceRate": 82.1,
+        "oosAcceptanceRate": 83.58,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 75.46,
+      "notes": "UMN Twin Cities Class 2028: overall 79.75%, intl 82.1% (1071/1305), OOS 83.6%, in-state 75.5%"
+    },
+    {
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/university-of-minnesota-twin-cities-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 79.75,
+        "intlAcceptanceRate": 82.1,
+        "oosAcceptanceRate": 83.58,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 75.46,
+      "notes": "UMN Twin Cities Class 2028: overall 79.75%, intl 82.1% (1071/1305), OOS 83.6%, in-state 75.5%"
+    },
+    {
+      "schoolNameNorm": "clemson university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://admissionsight.com/clemson-acceptance-rate/",
+      "rates": {
+        "acceptanceRate": 38.0,
+        "intlAcceptanceRate": 35.0,
+        "oosAcceptanceRate": 35.0,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 56.0,
+      "notes": "Clemson Class 2028: overall 38%, intl 35%, OOS 35%, in-state 56%. Intl enrollment: 50 students from 29 countries"
+    },
+    {
+      "schoolNameNorm": "north carolina state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/north-carolina-state-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 39.5,
+        "intlAcceptanceRate": 22.8,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 45.2,
+      "notes": "NC State Class 2028: overall 39.5%, intl 22.8% (600/~3000), in-state 45.2%, OOS+intl combined 33.6%"
+    },
+    {
+      "schoolNameNorm": "indiana university bloomington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/indiana-university/acceptance-rate",
+      "rates": {
+        "acceptanceRate": 80.0,
+        "intlAcceptanceRate": 70.6,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "IU Bloomington Class 2028: overall ~78-80%, intl 70.6% (3398/4810 intl apps)"
+    },
+    {
+      "schoolNameNorm": "university of delaware",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/university-of-delaware/acceptance-rate",
+      "rates": {
+        "acceptanceRate": 39.4,
+        "intlAcceptanceRate": 69.0,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "University of Delaware: overall 39.4%, intl 69% (from Fall 2024 data)"
+    },
+    {
+      "schoolNameNorm": "florida state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/florida-state-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 24.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 13.36,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 33.82,
+      "notes": "FSU Class 2028: overall 24%, in-state 31% (2028) / 33.82% (2029), OOS 13.36% (2029 CDS). Intl 5.24% (2029) - suspiciously low, treating OOS as proxy"
+    },
+    {
+      "schoolNameNorm": "fordham university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/fordham-university-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 43.0,
+        "intlAcceptanceRate": 41.4,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fordham Class 2028: overall ~43%, intl ~41.4% (1900/4500 intl apps from 2023-24 data)"
+    },
+    {
+      "schoolNameNorm": "pepperdine university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://nextgenadmit.com/pepperdine-university-admission-statistics/",
+      "rates": {
+        "acceptanceRate": 63.0,
+        "intlAcceptanceRate": 50.0,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Pepperdine Class 2028: overall 63%, intl 50%"
+    }
+  ]
+}
