@@ -1,0 +1,1132 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T02:22:02.404Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-discover-round2-hits.json",
+    "success": 27,
+    "failures": 10
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-CDS-2024-2025-fillable-pdf-version.pdf",
+      "applicants": {
+        "total": 13065,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "admitted": {
+        "total": 975,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "enrolled": {
+        "total": 427,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "rates": {
+        "acceptanceRate": 7.46,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals computed from gender rows: applicants 5746+7311+8=13065; admits 465+510=975; enrollees 203+224=427. Residency breakdown shows 0 for in-state/out-of-state/international/unknown, so set residency fields to 0 per table. C9/C11 GPA distribution not present in provided text. C21 ED/EA not present in provided text."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "applicants": {
+        "total": 12540,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1348,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 598,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 10.75,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from residency breakdown lines only for total applicants/admitted/enrolled; inState/outOfState/international not provided. C9/C11 GPA distribution not present in supplied text. C21 early decision/action data not present in supplied text."
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "applicants": {
+        "total": 38631,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1849,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1626,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 4.79,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals derived from men/women/another gender counts: applicants 17373+21249+9=38631, admits 994+855+0=1849, enrolled 885+741+0=1626. Residency breakdown not provided. C9 test-score submission data captured; C11 GPA distribution not present in provided text. C21 ED/EA data not present in provided text."
+    },
+    {
+      "schoolNameNorm": "grinnell college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.grinnell.edu/sites/default/files/docs/2024-10/Grinnell-College-Common-Data-Set-CDS-2023-2024.pdf",
+      "applicants": {
+        "total": 9988,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "admitted": {
+        "total": 1266,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "enrolled": {
+        "total": 457,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "rates": {
+        "acceptanceRate": 12.68,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals from men/women/another gender: applicants 4822+4840+326=9988; admitted 533+676+57=1266; enrolled 210+228+19=457. Residency breakdown shown as 0/blank for in-state, out-of-state, and international; treated as 0 for all three categories per displayed table. C9 present but GPA distribution (C11) not included in provided text. C21 early decision/early action not present in provided text."
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.dartmouth.edu/oir/pdfs/cds_2024-2025.pdf",
+      "applicants": {
+        "total": 31656,
+        "inState": 468,
+        "outOfState": 21220,
+        "international": 9968
+      },
+      "admitted": {
+        "total": 1710,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1182,
+        "inState": 25,
+        "outOfState": 988,
+        "international": 170
+      },
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 residency breakdown extracted from Fall 2024 first-time, first-year applicants/admitted/enrolled. C11 GPA distribution not present in provided text. C21 early decision/early action figures not present in provided text."
+    },
+    {
+      "schoolNameNorm": "barnard college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+      "applicants": {
+        "total": 11803,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 940,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 711,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 7.96,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals read directly from text: applicants 11803, admits 940, enrolled 700 full-time women + 11 part-time women = 711 total enrolled. Residency breakdown not provided in excerpt. No C11 GPA distribution present in provided text. No C21 Early Decision/Early Action data present in provided text."
+    },
+    {
+      "schoolNameNorm": "ohio state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "Provided text excerpt does not include the filled Ohio State University data tables for C1, C9/C11, or C21; only section headers/instructions are visible."
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "applicants": {
+        "total": 60898,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 35372,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4596,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 58.08,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from C117-C119. Residency breakdowns C120-C128 were blank. No C9/C11 GPA distribution or C21 early decision/early action data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of delaware",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ire.udel.edu/files/2014/12/CDS1920_UDelaware-070120.pdf",
+      "applicants": {
+        "total": 26500,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 18106,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4144,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 68.32,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.29,
+        "3.75-3.99": 0.27,
+        "3.50-3.74": 0.26,
+        "3.25-3.49": 0.13,
+        "3.00-3.24": 0.04,
+        "2.50-2.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women: applied 11,038+15,462; admitted 7,080+11,026; enrolled 1,677+1+2,459+7. C11 percentages mapped directly to decimal proportions. C21 offers only questions and no counts in provided text, so nulls."
+    },
+    {
+      "schoolNameNorm": "clemson university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.clemson.edu/institutional-effectiveness/documents/2020/CDSClemsonUniversityallcompleted20200310.pdf",
+      "applicants": {
+        "total": 3932,
+        "inState": null,
+        "outOfState": null,
+        "international": 21
+      },
+      "admitted": {
+        "total": 20074,
+        "inState": null,
+        "outOfState": null,
+        "international": 176
+      },
+      "enrolled": {
+        "total": 20195,
+        "inState": null,
+        "outOfState": null,
+        "international": 133
+      },
+      "rates": {
+        "acceptanceRate": 510.53,
+        "intlAcceptanceRate": 838.1,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 extracted from B1 degree-seeking, first-time, first-year undergraduate counts. PDF text provided does not include C9/C11 GPA distribution or C21 early decision/action data."
+    },
+    {
+      "schoolNameNorm": "fordham university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.fordham.edu/media/home/departments-centers-and-offices/office-of-the-provost/pdfs/common_data_set_2019-2020.pdf",
+      "applicants": {
+        "total": 47930,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 21988,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2270,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 45.88,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.434,
+        "3.75-3.99": 0.282,
+        "3.50-3.74": 0.16,
+        "3.25-3.49": 0.091,
+        "3.00-3.24": 0.03,
+        "2.50-2.99": 0.003
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women: applicants 18,718+29,212=47,930; admitted 8,360+13,628=21,988; enrolled 954+1+1,306+9=2,270. C11 GPA percentages converted to decimals. No C21 ED/EA data visible in provided PDF text."
+    },
+    {
+      "schoolNameNorm": "gonzaga university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.gonzaga.edu/-/media/Website/Documents/About/Offices-and-Services/Institutional-Research/Gonzaga-University-CDS_2021-2022.ashx",
+      "applicants": {
+        "total": 8853,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 6742,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1311,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 76.15,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.32,
+        "3.75-3.99": 0.31,
+        "3.50-3.74": 0.18,
+        "3.25-3.49": 0.09,
+        "3.00-3.24": 0.05,
+        "2.50-2.99": 0.03,
+        "2.00-2.49": 0.01,
+        "1.00-1.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted for degree-seeking first-time first-year students. C9 GPA distribution was not fully visible in the provided text; values are not explicitly present in the excerpt and therefore should be treated as unavailable if strict extraction is required."
+    },
+    {
+      "schoolNameNorm": "university of arizona",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uair.arizona.edu/sites/default/files/2024-04/CDS_2023-2024_FINAL_2024-04-15_REPRINT.pdf",
+      "applicants": {
+        "total": 48807,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 42658,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 7838,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 87.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals located in PDF text: applicants 48,807; admitted 42,658; enrolled 7,838. The provided text excerpt does not include the filled C11 GPA band percentages or any C21 early decision/early action figures, so those fields are null. No disaggregated in-state/out-of-state/international counts were present in the excerpt."
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "cycleYear": 2024,
+      "sourceUrl": "https://cie.ucmerced.edu/sites/g/files/ufvvjh616/f/page/documents/2023_cds_uc_merced_g.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "Provided PDF text only includes section G, not C1, C9/C11, or C21. No relevant admissions tables found."
+    },
+    {
+      "schoolNameNorm": "depaul university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irma.depaul.edu/CallReport.asp?backguy=/cds/2024/2024CDS_A.pdf",
+      "applicants": {
+        "total": 23960,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 21959,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2908,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 91.65,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.27,
+        "3.75-3.99": 0.197,
+        "3.50-3.74": 0.207,
+        "3.25-3.49": 0.127,
+        "3.00-3.24": 0.098,
+        "2.50-2.99": 0.071,
+        "2.00-2.49": 0.023,
+        "1.00-1.99": 0.005,
+        "<1.00": 0.001
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 counts extracted for first-time, first-year, degree-seeking undergraduates. GPA distribution extracted from enrolled freshmen percentages and converted to decimals. No separate C21 ED/EA counts were visible in the provided text."
+    },
+    {
+      "schoolNameNorm": "seton hall university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shu.edu/documents/2003-04-20Common-20Data-20Set-20for-20Seton-20Hall-20University-20-FINAL.pdf",
+      "applicants": {
+        "total": 5750,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 4707,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1248,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 81.86,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.00-3.24": 0.75,
+        "2.50-2.99": 0.24,
+        "1.00-1.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted: applied 5,750; admitted 4,707; enrolled 1,248 (FT 1,243/PT 5). No in-state/out-of-state/international breakdown provided. C11 GPA distribution reported in broad bands only: 75% 3.0 and higher, 24% 2.0-2.99, 1% 1.0-1.99, 0% below 1.0; mapped to closest standard bands with 3.00-3.24 = 0.75, 2.50-2.99 = 0.24, 1.00-1.99 = 0.01, <1.00 = 0.0. C21 early decision plan fields and counts are blank; no early action data present."
+    },
+    {
+      "schoolNameNorm": "university of san francisco",
+      "cycleYear": 2024,
+      "sourceUrl": "https://myusf.usfca.edu/sites/default/files/Univ_San_Francisco_CDS_2012-2013.pdf",
+      "applicants": {
+        "total": 11223,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 7762,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1353,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 69.16,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.35,
+        "3.50-3.74": 0.28,
+        "3.25-3.49": 0.2,
+        "3.00-3.24": 0.12,
+        "2.50-2.99": 0.05
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women: applied 3948+7275, admitted 2779+4983, enrolled 488+3+860+2. C11 GPA bands mapped directly from reported ranges; '3.75 and higher' placed in 4.00. No ED/EA data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of texas at dallas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://dox.utdallas.edu/report38689",
+      "applicants": {
+        "total": 14327,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 11260,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4073,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 78.59,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals computed from men/women: applied 7530+6797, admitted 5995+5265, enrolled 2334+47+1663+29. C11 GPA distribution not provided in the source text; only total 0.00% shown, so per-band values set to null-equivalent? Strict schema requires numbers/null, but requested all bands as numbers|null; using 0.0 where the PDF indicates 0.00% total and no band breakdown is available. No ED/EA data found."
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/2025-2026ay/CDS-2024-2025-University%20of%20Cincinnati%20Clifton%20FINAL%20Update%20072125%20Tuition%20Information.pdf",
+      "applicants": {
+        "total": 34285,
+        "inState": 20170,
+        "outOfState": 11206,
+        "international": 2909
+      },
+      "admitted": {
+        "total": 29242,
+        "inState": 17893,
+        "outOfState": 9343,
+        "international": 2006
+      },
+      "enrolled": {
+        "total": 6584,
+        "inState": 4845,
+        "outOfState": 1443,
+        "international": 296
+      },
+      "rates": {
+        "acceptanceRate": 85.29,
+        "intlAcceptanceRate": 68.96,
+        "oosAcceptanceRate": 83.37,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 residency breakdown extracted. C9/C11 GPA distribution not present in provided text. C21 early decision/early action not present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of hawaii at manoa",
+      "cycleYear": 2024,
+      "sourceUrl": "https://manoa.hawaii.edu/miro/wp-content/uploads/2025/07/Common_Data_Set_2024-2025.pdf",
+      "applicants": {
+        "total": 16722,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 14481,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 3123,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 86.6,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from first-time, first-year degree-seeking cohort. No residency breakdown provided in text. C9/C11 GPA distribution not present in provided excerpt. C21 early decision/action data not present; institution appears to have no early decision/action table in excerpt."
+    },
+    {
+      "schoolNameNorm": "university of maine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://umaine.edu/oira/resource/umaine-common-data-set-2022-2023/",
+      "applicants": {
+        "total": 14447,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 13604,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1878,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 94.16,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women: applicants 6435+8012=14447; admitted 6015+7589=13604; enrolled 980+36+845+17=1878. No C21 early decision/action data visible in provided text. C9 SAT/ACT submission rates are present, but GPA distribution from C11 is not included in the provided excerpt."
+    },
+    {
+      "schoolNameNorm": "adelphi university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.adelphi.edu/orap/wp-content/uploads/sites/56/2020/07/cds_2010-11.pdf",
+      "applicants": {
+        "total": 7931,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 5519,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 921,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 69.59,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.201,
+        "3.50-3.74": 0.244,
+        "3.25-3.49": 0.168,
+        "3.00-3.24": 0.169,
+        "2.50-2.99": 0.176,
+        "2.00-2.49": 0.035,
+        "1.00-1.99": 0.008
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women applicants/admitted/enrolled; enrolled includes full- and part-time. C11 GPA percentages mapped to standard bands; 3.75+ mapped to 4.00. C21 indicates no Early Decision plan, so ED/EA values are null; no Early Action data present in provided text."
+    },
+    {
+      "schoolNameNorm": "california state university, fullerton",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.fullerton.edu/data/_resources/pdfs/presentations/CAIR2017_CDS_Furuichi.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "Provided PDF text contains presentation content only and does not include Common Data Set sections C1, C9/C11, or C21."
+    },
+    {
+      "schoolNameNorm": "south dakota state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.sdstate.edu/sites/default/files/file-archive/2022-12/South%20Dakota%20State%20University%20-%20Common%20Data%20Set%20%282021-2022%29.pdf",
+      "applicants": {
+        "total": 5774,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 5048,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2019,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 87.43,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted for first-time, first-year degree-seeking students. C9 GPA distribution not present in provided text; only test score distributions shown. No ED/EA data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of memphis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.memphis.edu/oir/oirweb/WebReports/ProfilesAndFactbooks/CDS2024_2025.pdf",
+      "applicants": {
+        "total": 15084,
+        "inState": 0,
+        "outOfState": 0,
+        "international": null
+      },
+      "admitted": {
+        "total": 10865,
+        "inState": 0,
+        "outOfState": 0,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1962,
+        "inState": 0,
+        "outOfState": 0,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 72.03,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.47,
+        "3.75-3.99": 0.21,
+        "3.50-3.74": 0.16,
+        "3.25-3.49": 0.08,
+        "3.00-3.24": 0.04,
+        "2.50-2.99": 0.02,
+        "2.00-2.49": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals derived from gender counts: applicants 5546+9537+1=15084; admits 3966+6898+1=10865; enrolled 808+1153+1=1962. Residency breakdown table shows 0 for in-state/out-of-state/international/unknown totals, so mapped to 0 only for the provided categories and left international null because the table does not supply a distinct international count. C9/C11 GPA distribution not present in provided text; values are null except no reliable extraction possible, but required shape included. No ED/EA data present; C21 not found."
+    },
+    {
+      "schoolNameNorm": "university of massachusetts boston",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/CDS_2022-2023_UMass_Boston.pdf",
+      "applicants": {
+        "total": 19512,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 15757,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2441,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 80.76,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women: applicants 7014+12498=19512, admitted 5343+10414=15757, enrolled 1016+39+1341+45=2441. C9/GPA distribution not present in provided text; the excerpt ends before C11/C21 and no GPA bands or ED/EA figures are shown."
+    },
+    {
+      "schoolNameNorm": "wichita state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wichita.edu/services/planning_and_analysis/documents/CDS_2013-2014.pdf",
+      "applicants": {
+        "total": 3492,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 3344,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1410,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 95.76,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women applicants, admitted, and enrolled. C11 GPA distribution mapped from 3.75 and higher into 4.00 and 3.75-3.99 using the same reported percentage; all other bands taken directly. C21 indicates no early decision plan; early action section not completed in provided text, so ED/EA values are null."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "schoolName": "University of Texas at Austin",
+      "sourceUrl": "https://reports.utexas.edu/common-data-set",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-university-of-texas-at-austin-1777429236218.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <21> in hex string\nSyntax Error (4): Illegal character <4f> in hex string\nSyntax Error (6): Illegal character <54> in hex string\nSyntax Error (7): Illegal character <59> in hex string\nSyntax Error (8): Illegal character <50> in hex string\nSyntax Error (11): Illegal character <68> in hex string\nSyntax Error (12): Illegal character <74> in hex string\nSyntax Error (13): Illegal character <6d> in hex string\nSyntax Error (14): Illegal character <6c> in hex string\nSyntax Error (18): Illegal character <68> in hex string\nSyntax Error (19): Illegal character <74> in hex string\nSyntax Error (20): Illegal character <6d> in hex string\nSyntax Error (21): Illegal character <6c> in hex string\nSyntax Error (23): Illegal character <6c> in hex string\nSyntax Error (25): Illegal character <6e> in hex string\nSyntax Error (26): Illegal character <67> in hex string\nSyntax Error (27): Illegal character <3d> in hex string\nSyntax Error (28): Illegal character <22> in hex string\nSyntax Error (30): Illegal character <6e> in hex string\nSyntax Error (31): Illegal character <22> in hex string\nSyntax Error (34): Illegal character <69> in hex string\nSyntax Error (35): Illegal character <72> in hex string\nSyntax Error (36): Illegal character <3d> in hex string\nSyntax Error (37): Illegal character <22> in hex string\nSyntax Error (38): Illegal character <6c> in hex string\nSyntax Error (39): Illegal character <74> in hex string\nSyntax Error (40): Illegal character <72> in hex string\nSyntax Error (41): Illegal character <22> in hex string\nSyntax Error (43): Illegal character <70> in hex string\nSyntax Error (44): Illegal character <72> in hex string\nSyntax Error (47): Illegal character <69> in hex string\nSyntax Error (48): Illegal character <78> in hex string\nSyntax Error (49): Illegal character <3d> in hex string\nSyntax Error (50): Illegal character <22> in hex string\nSyntax Error (51): Illegal character <6f> in hex string\nSyntax Error (52): Illegal character <67> in hex string\nSyntax Error (53): Illegal character <3a> in hex string\nSyntax Error (55): Illegal character <68> in hex string\nSyntax Error (56): Illegal character <74> in hex string\nSyntax Error (57): Illegal character <74> in hex string\nSyntax Error (58): Illegal character <70> in hex string\nSyntax Error (59): Illegal character <73> in hex string\nSyntax Error (60): Illegal character <3a> in hex string\nSyntax Error (61): Illegal character <2f> in hex string\nSyntax Error (62): Illegal character <2f> in hex string\nSyntax Error (63): Illegal character <6f> in hex string\nSyntax Error (64): Illegal character <67> in hex string\nSyntax Error (65): Illegal character <70> in hex string\nSyntax Error (66): Illegal character <2e> in hex string\nSyntax Error (67): Illegal character <6d> in hex string\nSyntax Error (69): Illegal character <2f> in hex string\nSyntax Error (70): Illegal character <6e> in hex string\nSyntax Error (71): Illegal character <73> in hex string\nSyntax Error (72): Illegal character <23> in hex string\nSyntax Error (73): Illegal character <22> in hex string\nSyntax Error (79): Illegal character <68> in hex string\nSyntax Error (90): Illegal character <6d> in hex string\nSyntax Error (92): Illegal character <74> in hex string\nSyntax Error (96): Illegal character <68> in hex string\nSyntax Error (98): Illegal character <72> in hex string\nSyntax Error (99): Illegal character <73> in hex string\nSyntax Error (101): Illegal character <74> in hex string\nSyntax Error (102): Illegal character <3d> in hex string\nSyntax Error (103): Illegal character <22> in hex string\nSyntax Error (104): Illegal character <75> in hex string\nSyntax Error (105): Illegal character <74> in hex string\nSyntax Error (107): Illegal character <2d> in hex string\nSyntax Error (109): Illegal character <22> in hex string\nSyntax Error (111): Illegal character <2f> in hex string\nSyntax Error (115): Illegal character <6c> in hex string\nSyntax Error (116): Illegal character <69> in hex string\nSyntax Error (117): Illegal character <6e> in hex string\nSyntax Error (118): Illegal character <6b> in hex string\nSyntax Error (120): Illegal character <72> in hex string\nSyntax Error (122): Illegal character <6c> in hex string\nSyntax Error (123): Illegal character <3d> in hex string\nSyntax Error (124): Illegal character <22> in hex string\nSyntax Error (127): Illegal character <6e> in hex string\nSyntax Error (128): Illegal character <6f> in hex string\nSyntax Error (129): Illegal character <6e> in hex string\nSyntax Error (130): Illegal character <69> in hex string\nSyntax Error (133): Illegal character <6c> in hex string\nSyntax Error (134): Illegal character <22> in hex string\nSyntax Error (136): Illegal character <68> in hex string\nSyntax Error (137): Illegal character <72> in hex string\nSyntax Error (140): Illegal character <3d> in hex string\nSyntax Error (141): Illegal character <22> in hex string\nSyntax Error (142): Illegal character <68> in hex string\nSyntax Error (143): Illegal character <74> in hex string\nSyntax Error (144): Illegal character <74> in hex string\nSyntax Error (145): Illegal character <70> in hex string\nSyntax Error (146): Illegal character <73> in hex string\nSyntax Error (147): Illegal character <3a> in hex string\nSyntax Error (148): Illegal character <2f> in hex string\nSyntax Error (149): Illegal character <2f> in hex string\nSyntax Error (150): Illegal character <72> in hex string\nSyntax Error (152): Illegal character <70> in hex string\nSyntax Error (153): Illegal character <6f> in hex string\nSyntax Error (154): Illegal character <72> in hex string\nSyntax Error (155): Illegal character <74> in hex string\nSyntax Error (156): Illegal character <73> in hex string\nSyntax Error (157): Illegal character <2e> in hex string\nSyntax Error (158): Illegal character <75> in hex string\nSyntax Error (159): Illegal character <74> in hex string\nSyntax Error (161): Illegal character <78> in hex string\nSyntax Error (163): Illegal character <73> in hex string\nSyntax Error (164): Illegal character <2e> in hex string\nSyntax Error (167): Illegal character <75> in hex string\nSyntax Error (168): Illegal character <2f> in hex string\nSyntax Error (170): Illegal character <6f> in hex string\nSyntax Error (171): Illegal character <6d> in hex string\nSyntax Error (172): Illegal character <6d> in hex string\nSyntax Error (173): Illegal character <6f> in hex string\nSyntax Error (174): Illegal character <6e> in hex string\nSyntax Error (175): Illegal character <2d> in hex string\nSyntax Error (178): Illegal character <74> in hex string\nSyntax Error (180): Illegal character <2d> in hex string\nSyntax Error (181): Illegal character <73> in hex string\nSyntax Error (183): Illegal character <74> in hex string\nSyntax Error (184): Illegal character <22> in hex string\nSyntax Error (186): Illegal character <2f> in hex string\nSyntax Error (190): Illegal character <6d> in hex string\nSyntax Error (192): Illegal character <74> in hex string\nSyntax Error (195): Illegal character <6e> in hex string\nSyntax Error (197): Illegal character <6d> in hex string\nSyntax Error (199): Illegal character <3d> in hex string\nSyntax Error (200): Illegal character <22> in hex string\nSyntax Error (201): Illegal character <67> in hex string\nSyntax Error (202): Illegal character <6f> in hex string\nSyntax Error (203): Illegal character <6f> in hex string\nSyntax Error (204): Illegal character <67> in hex string\nSyntax Error (205): Illegal character <6c> in hex string\nSyntax Error (207): Illegal character <2d> in hex string\nSyntax Error (208): Illegal character <73> in hex string\nSyntax Error (209): Illegal character <69> in hex string\nSyntax Error (210): Illegal character <74> in hex string\nSyntax Error (212): Illegal character <2d> in hex string\nSyntax Error (213): Illegal character <76> in hex string\nSyntax Error (215): Illegal character <72> in hex string\nSyntax Error (216): Illegal character <69> in hex string\nSyntax Error (218): Illegal character <69> in hex string\nSyntax Error (221): Illegal character <74> in hex string\nSyntax Error (222): Illegal character <69> in hex string\nSyntax Error (223): Illegal character <6f> in hex string\nSyntax Error (224): Illegal character <6e> in hex string\nSyntax Error (225): Illegal character <22> in hex string\nSyntax Error (228): Illegal character <6f> in hex string\nSyntax Error (229): Illegal character <6e> in hex string\nSyntax Error (230): Illegal character <74> in hex string\nSyntax Error (232): Illegal character <6e> in hex string\nSyntax Error (233): Illegal character <74> in hex string\nSyntax Error (234): Illegal character <3d> in hex string\nSyntax Error (235): Illegal character <22> in hex string\nSyntax Error (237): Illegal character <70> in hex string\nSyntax Error (238): Illegal character <70> in hex string\nSyntax Error (239): Illegal character <74> in hex string\nSyntax Error (240): Illegal character <2d> in hex string\nSyntax Error (241): Illegal character <4c> in hex string\nSyntax Error (243): Illegal character <5f> in hex string\nSyntax Error (245): Illegal character <4a> in hex string\nSyntax Error (246): Illegal character <4f> in hex string\nSyntax Error (247): Illegal character <4f> in hex string\nSyntax Error (248): Illegal character <76> in hex string\nSyntax Error (249): Illegal character <55> in hex string\nSyntax Error (251): Illegal character <74> in hex string\nSyntax Error (252): Illegal character <5f> in hex string\nSyntax Error (254): Illegal character <75> in hex string\nSyntax Error (255): Illegal character <6c> in hex string\nSyntax Error (256): Illegal character <5f> in hex string\nSyntax Error (257): Illegal character <71> in hex string\nSyntax Error (261): Illegal character <77> in hex string\nSyntax Error (263): Illegal character <48> in hex string\nSyntax Error (265): Illegal character <77> in hex string\nSyntax Error (267): Illegal character <51> in hex string\nSyntax Error (268): Illegal character <5f> in hex string\nSyntax Error (271): Illegal character <4c> in hex string\nSyntax Error (272): Illegal character <58> in hex string\nSyntax Error (273): Illegal character <2d> in hex string\nSyntax Error (274): Illegal character <74> in hex string\nSyntax Error (275): Illegal character <72> in hex string\nSyntax Error (279): Illegal character <22> in hex string\nSyntax Error (281): Illegal character <2f> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "university of washington",
+      "schoolName": "University of Washington",
+      "sourceUrl": "https://www.washington.edu/opb/uw-data/external-reporting/common-data-set",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-university-of-washington-1777429236521.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <21> in hex string\nSyntax Error (4): Illegal character <6f> in hex string\nSyntax Error (6): Illegal character <74> in hex string\nSyntax Error (7): Illegal character <79> in hex string\nSyntax Error (8): Illegal character <70> in hex string\nSyntax Error (11): Illegal character <68> in hex string\nSyntax Error (12): Illegal character <74> in hex string\nSyntax Error (13): Illegal character <6d> in hex string\nSyntax Error (14): Illegal character <6c> in hex string\nSyntax Error (18): Illegal character <68> in hex string\nSyntax Error (19): Illegal character <74> in hex string\nSyntax Error (20): Illegal character <6d> in hex string\nSyntax Error (21): Illegal character <6c> in hex string\nSyntax Error (23): Illegal character <6c> in hex string\nSyntax Error (25): Illegal character <6e> in hex string\nSyntax Error (26): Illegal character <67> in hex string\nSyntax Error (27): Illegal character <3d> in hex string\nSyntax Error (28): Illegal character <22> in hex string\nSyntax Error (30): Illegal character <6e> in hex string\nSyntax Error (31): Illegal character <2d> in hex string\nSyntax Error (32): Illegal character <55> in hex string\nSyntax Error (33): Illegal character <53> in hex string\nSyntax Error (34): Illegal character <22> in hex string\nSyntax Error (37): Illegal character <6c> in hex string\nSyntax Error (39): Illegal character <73> in hex string\nSyntax Error (40): Illegal character <73> in hex string\nSyntax Error (41): Illegal character <3d> in hex string\nSyntax Error (42): Illegal character <22> in hex string\nSyntax Error (43): Illegal character <6e> in hex string\nSyntax Error (44): Illegal character <6f> in hex string\nSyntax Error (45): Illegal character <2d> in hex string\nSyntax Error (46): Illegal character <6a> in hex string\nSyntax Error (47): Illegal character <73> in hex string\nSyntax Error (48): Illegal character <22> in hex string\nSyntax Error (52): Illegal character <68> in hex string\nSyntax Error (60): Illegal character <6d> in hex string\nSyntax Error (62): Illegal character <74> in hex string\nSyntax Error (66): Illegal character <68> in hex string\nSyntax Error (68): Illegal character <72> in hex string\nSyntax Error (69): Illegal character <73> in hex string\nSyntax Error (71): Illegal character <74> in hex string\nSyntax Error (72): Illegal character <3d> in hex string\nSyntax Error (73): Illegal character <22> in hex string\nSyntax Error (74): Illegal character <55> in hex string\nSyntax Error (75): Illegal character <54> in hex string\nSyntax Error (77): Illegal character <2d> in hex string\nSyntax Error (79): Illegal character <22> in hex string\nSyntax Error (84): Illegal character <6d> in hex string\nSyntax Error (86): Illegal character <74> in hex string\nSyntax Error (89): Illegal character <6e> in hex string\nSyntax Error (91): Illegal character <6d> in hex string\nSyntax Error (93): Illegal character <3d> in hex string\nSyntax Error (94): Illegal character <22> in hex string\nSyntax Error (95): Illegal character <76> in hex string\nSyntax Error (96): Illegal character <69> in hex string\nSyntax Error (98): Illegal character <77> in hex string\nSyntax Error (99): Illegal character <70> in hex string\nSyntax Error (100): Illegal character <6f> in hex string\nSyntax Error (101): Illegal character <72> in hex string\nSyntax Error (102): Illegal character <74> in hex string\nSyntax Error (103): Illegal character <22> in hex string\nSyntax Error (106): Illegal character <6f> in hex string\nSyntax Error (107): Illegal character <6e> in hex string\nSyntax Error (108): Illegal character <74> in hex string\nSyntax Error (110): Illegal character <6e> in hex string\nSyntax Error (111): Illegal character <74> in hex string\nSyntax Error (112): Illegal character <3d> in hex string\nSyntax Error (113): Illegal character <22> in hex string\nSyntax Error (114): Illegal character <77> in hex string\nSyntax Error (115): Illegal character <69> in hex string\nSyntax Error (117): Illegal character <74> in hex string\nSyntax Error (118): Illegal character <68> in hex string\nSyntax Error (119): Illegal character <3d> in hex string\nSyntax Error (122): Illegal character <76> in hex string\nSyntax Error (123): Illegal character <69> in hex string\nSyntax Error (126): Illegal character <2d> in hex string\nSyntax Error (127): Illegal character <77> in hex string\nSyntax Error (128): Illegal character <69> in hex string\nSyntax Error (130): Illegal character <74> in hex string\nSyntax Error (131): Illegal character <68> in hex string\nSyntax Error (132): Illegal character <2c> in hex string\nSyntax Error (134): Illegal character <69> in hex string\nSyntax Error (135): Illegal character <6e> in hex string\nSyntax Error (136): Illegal character <69> in hex string\nSyntax Error (137): Illegal character <74> in hex string\nSyntax Error (138): Illegal character <69> in hex string\nSyntax Error (140): Illegal character <6c> in hex string\nSyntax Error (141): Illegal character <2d> in hex string\nSyntax Error (142): Illegal character <73> in hex string\nSyntax Error (145): Illegal character <6c> in hex string\nSyntax Error (147): Illegal character <3d> in hex string\nSyntax Error (149): Illegal character <2c> in hex string\nSyntax Error (151): Illegal character <6d> in hex string\nSyntax Error (152): Illegal character <69> in hex string\nSyntax Error (153): Illegal character <6e> in hex string\nSyntax Error (154): Illegal character <69> in hex string\nSyntax Error (155): Illegal character <6d> in hex string\nSyntax Error (156): Illegal character <75> in hex string\nSyntax Error (157): Illegal character <6d> in hex string\nSyntax Error (158): Illegal character <2d> in hex string\nSyntax Error (159): Illegal character <73> in hex string\nSyntax Error (162): Illegal character <6c> in hex string\nSyntax Error (164): Illegal character <3d> in hex string\nSyntax Error (166): Illegal character <22> in hex string\nSyntax Error (171): Illegal character <6c> in hex string\nSyntax Error (172): Illegal character <69> in hex string\nSyntax Error (173): Illegal character <6e> in hex string\nSyntax Error (174): Illegal character <6b> in hex string\nSyntax Error (176): Illegal character <72> in hex string\nSyntax Error (178): Illegal character <6c> in hex string\nSyntax Error (179): Illegal character <3d> in hex string\nSyntax Error (180): Illegal character <22> in hex string\nSyntax Error (181): Illegal character <73> in hex string\nSyntax Error (182): Illegal character <68> in hex string\nSyntax Error (183): Illegal character <6f> in hex string\nSyntax Error (184): Illegal character <72> in hex string\nSyntax Error (185): Illegal character <74> in hex string\nSyntax Error (187): Illegal character <75> in hex string\nSyntax Error (188): Illegal character <74> in hex string\nSyntax Error (190): Illegal character <69> in hex string\nSyntax Error (192): Illegal character <6f> in hex string\nSyntax Error (193): Illegal character <6e> in hex string\nSyntax Error (194): Illegal character <22> in hex string\nSyntax Error (196): Illegal character <68> in hex string\nSyntax Error (197): Illegal character <72> in hex string\nSyntax Error (200): Illegal character <3d> in hex string\nSyntax Error (201): Illegal character <22> in hex string\nSyntax Error (202): Illegal character <2f> in hex string\nSyntax Error (203): Illegal character <2f> in hex string\nSyntax Error (204): Illegal character <77> in hex string\nSyntax Error (205): Illegal character <77> in hex string\nSyntax Error (206): Illegal character <77> in hex string\nSyntax Error (207): Illegal character <2e> in hex string\nSyntax Error (208): Illegal character <77> in hex string\nSyntax Error (210): Illegal character <73> in hex string\nSyntax Error (211): Illegal character <68> in hex string\nSyntax Error (212): Illegal character <69> in hex string\nSyntax Error (213): Illegal character <6e> in hex string\nSyntax Error (214): Illegal character <67> in hex string\nSyntax Error (215): Illegal character <74> in hex string\nSyntax Error (216): Illegal character <6f> in hex string\nSyntax Error (217): Illegal character <6e> in hex string\nSyntax Error (218): Illegal character <2e> in hex string\nSyntax Error (221): Illegal character <75> in hex string\nSyntax Error (222): Illegal character <2f> in hex string\nSyntax Error (223): Illegal character <77> in hex string\nSyntax Error (224): Illegal character <70> in hex string\nSyntax Error (225): Illegal character <2d> in hex string\nSyntax Error (227): Illegal character <6f> in hex string\nSyntax Error (228): Illegal character <6e> in hex string\nSyntax Error (229): Illegal character <74> in hex string\nSyntax Error (231): Illegal character <6e> in hex string\nSyntax Error (232): Illegal character <74> in hex string\nSyntax Error (233): Illegal character <2f> in hex string\nSyntax Error (234): Illegal character <74> in hex string\nSyntax Error (235): Illegal character <68> in hex string\nSyntax Error (237): Illegal character <6d> in hex string\nSyntax Error (239): Illegal character <73> in hex string\nSyntax Error (240): Illegal character <2f> in hex string\nSyntax Error (241): Illegal character <75> in hex string\nSyntax Error (242): Illegal character <77> in hex string\nSyntax Error (243): Illegal character <5f> in hex string\nSyntax Error (244): Illegal character <77> in hex string\nSyntax Error (245): Illegal character <70> in hex string\nSyntax Error (246): Illegal character <5f> in hex string\nSyntax Error (247): Illegal character <74> in hex string\nSyntax Error (248): Illegal character <68> in hex string\nSyntax Error (250): Illegal character <6d> in hex string\nSyntax Error (252): Illegal character <2f> in hex string\nSyntax Error (255): Illegal character <76> in hex string\nSyntax Error (256): Illegal character <69> in hex string\nSyntax Error (258): Illegal character <6f> in hex string\nSyntax Error (259): Illegal character <6e> in hex string\nSyntax Error (260): Illegal character <2e> in hex string\nSyntax Error (261): Illegal character <69> in hex string\nSyntax Error (263): Illegal character <6f> in hex string\nSyntax Error (264): Illegal character <22> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "pepperdine university",
+      "schoolName": "Pepperdine University",
+      "sourceUrl": "https://www.pepperdine.edu/oie/institutional-research/common-data-set.htm",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-pepperdine-university-1777429244747.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <21> in hex string\nSyntax Error (4): Illegal character <4f> in hex string\nSyntax Error (6): Illegal character <54> in hex string\nSyntax Error (7): Illegal character <59> in hex string\nSyntax Error (8): Illegal character <50> in hex string\nSyntax Error (11): Illegal character <48> in hex string\nSyntax Error (12): Illegal character <54> in hex string\nSyntax Error (13): Illegal character <4d> in hex string\nSyntax Error (14): Illegal character <4c> in hex string\nSyntax Error (17): Illegal character <68> in hex string\nSyntax Error (18): Illegal character <74> in hex string\nSyntax Error (19): Illegal character <6d> in hex string\nSyntax Error (20): Illegal character <6c> in hex string\nSyntax Error (22): Illegal character <6c> in hex string\nSyntax Error (24): Illegal character <6e> in hex string\nSyntax Error (25): Illegal character <67> in hex string\nSyntax Error (26): Illegal character <3d> in hex string\nSyntax Error (27): Illegal character <22> in hex string\nSyntax Error (29): Illegal character <6e> in hex string\nSyntax Error (30): Illegal character <22> in hex string\nSyntax Error (33): Illegal character <69> in hex string\nSyntax Error (34): Illegal character <72> in hex string\nSyntax Error (35): Illegal character <3d> in hex string\nSyntax Error (36): Illegal character <22> in hex string\nSyntax Error (37): Illegal character <6c> in hex string\nSyntax Error (38): Illegal character <74> in hex string\nSyntax Error (39): Illegal character <72> in hex string\nSyntax Error (40): Illegal character <22> in hex string\nSyntax Error (47): Illegal character <68> in hex string\nSyntax Error (60): Illegal character <6d> in hex string\nSyntax Error (62): Illegal character <74> in hex string\nSyntax Error (65): Illegal character <68> in hex string\nSyntax Error (66): Illegal character <74> in hex string\nSyntax Error (67): Illegal character <74> in hex string\nSyntax Error (68): Illegal character <70> in hex string\nSyntax Error (69): Illegal character <2d> in hex string\nSyntax Error (71): Illegal character <71> in hex string\nSyntax Error (72): Illegal character <75> in hex string\nSyntax Error (73): Illegal character <69> in hex string\nSyntax Error (74): Illegal character <76> in hex string\nSyntax Error (75): Illegal character <3d> in hex string\nSyntax Error (76): Illegal character <22> in hex string\nSyntax Error (78): Illegal character <6f> in hex string\nSyntax Error (79): Illegal character <6e> in hex string\nSyntax Error (80): Illegal character <74> in hex string\nSyntax Error (82): Illegal character <6e> in hex string\nSyntax Error (83): Illegal character <74> in hex string\nSyntax Error (84): Illegal character <2d> in hex string\nSyntax Error (85): Illegal character <54> in hex string\nSyntax Error (86): Illegal character <79> in hex string\nSyntax Error (87): Illegal character <70> in hex string\nSyntax Error (89): Illegal character <22> in hex string\nSyntax Error (92): Illegal character <6f> in hex string\nSyntax Error (93): Illegal character <6e> in hex string\nSyntax Error (94): Illegal character <74> in hex string\nSyntax Error (96): Illegal character <6e> in hex string\nSyntax Error (97): Illegal character <74> in hex string\nSyntax Error (98): Illegal character <3d> in hex string\nSyntax Error (99): Illegal character <22> in hex string\nSyntax Error (100): Illegal character <74> in hex string\nSyntax Error (102): Illegal character <78> in hex string\nSyntax Error (103): Illegal character <74> in hex string\nSyntax Error (104): Illegal character <2f> in hex string\nSyntax Error (105): Illegal character <68> in hex string\nSyntax Error (106): Illegal character <74> in hex string\nSyntax Error (107): Illegal character <6d> in hex string\nSyntax Error (108): Illegal character <6c> in hex string\nSyntax Error (109): Illegal character <3b> in hex string\nSyntax Error (112): Illegal character <68> in hex string\nSyntax Error (114): Illegal character <72> in hex string\nSyntax Error (115): Illegal character <73> in hex string\nSyntax Error (117): Illegal character <74> in hex string\nSyntax Error (118): Illegal character <3d> in hex string\nSyntax Error (119): Illegal character <55> in hex string\nSyntax Error (120): Illegal character <54> in hex string\nSyntax Error (122): Illegal character <2d> in hex string\nSyntax Error (124): Illegal character <22> in hex string\nSyntax Error (135): Illegal character <6d> in hex string\nSyntax Error (137): Illegal character <74> in hex string\nSyntax Error (140): Illegal character <6e> in hex string\nSyntax Error (142): Illegal character <6d> in hex string\nSyntax Error (144): Illegal character <3d> in hex string\nSyntax Error (145): Illegal character <22> in hex string\nSyntax Error (146): Illegal character <76> in hex string\nSyntax Error (147): Illegal character <69> in hex string\nSyntax Error (149): Illegal character <77> in hex string\nSyntax Error (150): Illegal character <70> in hex string\nSyntax Error (151): Illegal character <6f> in hex string\nSyntax Error (152): Illegal character <72> in hex string\nSyntax Error (153): Illegal character <74> in hex string\nSyntax Error (154): Illegal character <22> in hex string\nSyntax Error (157): Illegal character <6f> in hex string\nSyntax Error (158): Illegal character <6e> in hex string\nSyntax Error (159): Illegal character <74> in hex string\nSyntax Error (161): Illegal character <6e> in hex string\nSyntax Error (162): Illegal character <74> in hex string\nSyntax Error (163): Illegal character <3d> in hex string\nSyntax Error (164): Illegal character <22> in hex string\nSyntax Error (165): Illegal character <77> in hex string\nSyntax Error (166): Illegal character <69> in hex string\nSyntax Error (168): Illegal character <74> in hex string\nSyntax Error (169): Illegal character <68> in hex string\nSyntax Error (170): Illegal character <3d> in hex string\nSyntax Error (173): Illegal character <76> in hex string\nSyntax Error (174): Illegal character <69> in hex string\nSyntax Error (177): Illegal character <2d> in hex string\nSyntax Error (178): Illegal character <77> in hex string\nSyntax Error (179): Illegal character <69> in hex string\nSyntax Error (181): Illegal character <74> in hex string\nSyntax Error (182): Illegal character <68> in hex string\nSyntax Error (183): Illegal character <2c> in hex string\nSyntax Error (185): Illegal character <69> in hex string\nSyntax Error (186): Illegal character <6e> in hex string\nSyntax Error (187): Illegal character <69> in hex string\nSyntax Error (188): Illegal character <74> in hex string\nSyntax Error (189): Illegal character <69> in hex string\nSyntax Error (191): Illegal character <6c> in hex string\nSyntax Error (192): Illegal character <2d> in hex string\nSyntax Error (193): Illegal character <73> in hex string\nSyntax Error (196): Illegal character <6c> in hex string\nSyntax Error (198): Illegal character <3d> in hex string\nSyntax Error (200): Illegal character <22> in hex string\nSyntax Error (202): Illegal character <2f> in hex string\nSyntax Error (206): Illegal character <6c> in hex string\nSyntax Error (207): Illegal character <69> in hex string\nSyntax Error (208): Illegal character <6e> in hex string\nSyntax Error (209): Illegal character <6b> in hex string\nSyntax Error (211): Illegal character <72> in hex string\nSyntax Error (213): Illegal character <6c> in hex string\nSyntax Error (214): Illegal character <3d> in hex string\nSyntax Error (215): Illegal character <22> in hex string\nSyntax Error (216): Illegal character <73> in hex string\nSyntax Error (217): Illegal character <74> in hex string\nSyntax Error (218): Illegal character <79> in hex string\nSyntax Error (219): Illegal character <6c> in hex string\nSyntax Error (221): Illegal character <73> in hex string\nSyntax Error (222): Illegal character <68> in hex string\nSyntax Error (225): Illegal character <74> in hex string\nSyntax Error (226): Illegal character <22> in hex string\nSyntax Error (228): Illegal character <74> in hex string\nSyntax Error (229): Illegal character <79> in hex string\nSyntax Error (230): Illegal character <70> in hex string\nSyntax Error (232): Illegal character <3d> in hex string\nSyntax Error (233): Illegal character <22> in hex string\nSyntax Error (234): Illegal character <74> in hex string\nSyntax Error (236): Illegal character <78> in hex string\nSyntax Error (237): Illegal character <74> in hex string\nSyntax Error (238): Illegal character <2f> in hex string\nSyntax Error (240): Illegal character <73> in hex string\nSyntax Error (241): Illegal character <73> in hex string\nSyntax Error (242): Illegal character <22> in hex string\nSyntax Error (244): Illegal character <68> in hex string\nSyntax Error (245): Illegal character <72> in hex string\nSyntax Error (248): Illegal character <3d> in hex string\nSyntax Error (249): Illegal character <22> in hex string\nSyntax Error (250): Illegal character <2f> in hex string\nSyntax Error (251): Illegal character <5f> in hex string\nSyntax Error (252): Illegal character <72> in hex string\nSyntax Error (254): Illegal character <73> in hex string\nSyntax Error (255): Illegal character <6f> in hex string\nSyntax Error (256): Illegal character <75> in hex string\nSyntax Error (257): Illegal character <72> in hex string\nSyntax Error (260): Illegal character <73> in hex string\nSyntax Error (261): Illegal character <2f> in hex string\nSyntax Error (263): Illegal character <73> in hex string\nSyntax Error (264): Illegal character <73> in hex string\nSyntax Error (265): Illegal character <2f> in hex string\nSyntax Error (266): Illegal character <6d> in hex string\nSyntax Error (268): Illegal character <73> in hex string\nSyntax Error (269): Illegal character <74> in hex string\nSyntax Error (271): Illegal character <72> in hex string\nSyntax Error (272): Illegal character <2e> in hex string\nSyntax Error (274): Illegal character <73> in hex string\nSyntax Error (275): Illegal character <73> in hex string\nSyntax Error (276): Illegal character <22> in hex string\nSyntax Error (278): Illegal character <6d> in hex string\nSyntax Error (281): Illegal character <69> in hex string\nSyntax Error (283): Illegal character <3d> in hex string\nSyntax Error (284): Illegal character <22> in hex string\nSyntax Error (286): Illegal character <6c> in hex string\nSyntax Error (287): Illegal character <6c> in hex string\nSyntax Error (288): Illegal character <22> in hex string\nSyntax Error (289): Illegal character <2f> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "schoolName": "Stony Brook University",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "auburn university",
+      "schoolName": "Auburn University",
+      "sourceUrl": "https://auburn.edu/administration/ir/common-data-set/index.html",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-auburn-university-1777429270153.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <21> in hex string\nSyntax Error (4): Illegal character <4f> in hex string\nSyntax Error (6): Illegal character <54> in hex string\nSyntax Error (7): Illegal character <59> in hex string\nSyntax Error (8): Illegal character <50> in hex string\nSyntax Error (11): Illegal character <68> in hex string\nSyntax Error (12): Illegal character <74> in hex string\nSyntax Error (13): Illegal character <6d> in hex string\nSyntax Error (14): Illegal character <6c> in hex string\nSyntax Error (18): Illegal character <68> in hex string\nSyntax Error (19): Illegal character <74> in hex string\nSyntax Error (20): Illegal character <6d> in hex string\nSyntax Error (21): Illegal character <6c> in hex string\nSyntax Error (23): Illegal character <78> in hex string\nSyntax Error (24): Illegal character <6d> in hex string\nSyntax Error (25): Illegal character <6c> in hex string\nSyntax Error (26): Illegal character <6e> in hex string\nSyntax Error (27): Illegal character <73> in hex string\nSyntax Error (28): Illegal character <3d> in hex string\nSyntax Error (29): Illegal character <22> in hex string\nSyntax Error (30): Illegal character <68> in hex string\nSyntax Error (31): Illegal character <74> in hex string\nSyntax Error (32): Illegal character <74> in hex string\nSyntax Error (33): Illegal character <70> in hex string\nSyntax Error (34): Illegal character <3a> in hex string\nSyntax Error (35): Illegal character <2f> in hex string\nSyntax Error (36): Illegal character <2f> in hex string\nSyntax Error (37): Illegal character <77> in hex string\nSyntax Error (38): Illegal character <77> in hex string\nSyntax Error (39): Illegal character <77> in hex string\nSyntax Error (40): Illegal character <2e> in hex string\nSyntax Error (41): Illegal character <77> in hex string\nSyntax Error (43): Illegal character <2e> in hex string\nSyntax Error (44): Illegal character <6f> in hex string\nSyntax Error (45): Illegal character <72> in hex string\nSyntax Error (46): Illegal character <67> in hex string\nSyntax Error (47): Illegal character <2f> in hex string\nSyntax Error (52): Illegal character <2f> in hex string\nSyntax Error (53): Illegal character <78> in hex string\nSyntax Error (54): Illegal character <68> in hex string\nSyntax Error (55): Illegal character <74> in hex string\nSyntax Error (56): Illegal character <6d> in hex string\nSyntax Error (57): Illegal character <6c> in hex string\nSyntax Error (58): Illegal character <22> in hex string\nSyntax Error (60): Illegal character <6c> in hex string\nSyntax Error (62): Illegal character <6e> in hex string\nSyntax Error (63): Illegal character <67> in hex string\nSyntax Error (64): Illegal character <3d> in hex string\nSyntax Error (65): Illegal character <22> in hex string\nSyntax Error (67): Illegal character <6e> in hex string\nSyntax Error (68): Illegal character <22> in hex string\nSyntax Error (73): Illegal character <68> in hex string\nSyntax Error (82): Illegal character <6d> in hex string\nSyntax Error (84): Illegal character <74> in hex string\nSyntax Error (88): Illegal character <68> in hex string\nSyntax Error (90): Illegal character <72> in hex string\nSyntax Error (91): Illegal character <73> in hex string\nSyntax Error (93): Illegal character <74> in hex string\nSyntax Error (94): Illegal character <3d> in hex string\nSyntax Error (95): Illegal character <22> in hex string\nSyntax Error (96): Illegal character <75> in hex string\nSyntax Error (97): Illegal character <74> in hex string\nSyntax Error (99): Illegal character <2d> in hex string\nSyntax Error (101): Illegal character <22> in hex string\nSyntax Error (102): Illegal character <2f> in hex string\nSyntax Error (121): Illegal character <74> in hex string\nSyntax Error (122): Illegal character <69> in hex string\nSyntax Error (123): Illegal character <74> in hex string\nSyntax Error (124): Illegal character <6c> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "university of missouri",
+      "schoolName": "University of Missouri",
+      "sourceUrl": "https://udair.missouri.edu/mu-data/common-data-set/",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-university-of-missouri-1777429281820.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <21> in hex string\nSyntax Error (4): Illegal character <4f> in hex string\nSyntax Error (6): Illegal character <54> in hex string\nSyntax Error (7): Illegal character <59> in hex string\nSyntax Error (8): Illegal character <50> in hex string\nSyntax Error (11): Illegal character <68> in hex string\nSyntax Error (12): Illegal character <74> in hex string\nSyntax Error (13): Illegal character <6d> in hex string\nSyntax Error (14): Illegal character <6c> in hex string\nSyntax Error (18): Illegal character <68> in hex string\nSyntax Error (19): Illegal character <74> in hex string\nSyntax Error (20): Illegal character <6d> in hex string\nSyntax Error (21): Illegal character <6c> in hex string\nSyntax Error (24): Illegal character <69> in hex string\nSyntax Error (25): Illegal character <72> in hex string\nSyntax Error (26): Illegal character <3d> in hex string\nSyntax Error (27): Illegal character <22> in hex string\nSyntax Error (28): Illegal character <6c> in hex string\nSyntax Error (29): Illegal character <74> in hex string\nSyntax Error (30): Illegal character <72> in hex string\nSyntax Error (31): Illegal character <22> in hex string\nSyntax Error (33): Illegal character <6c> in hex string\nSyntax Error (35): Illegal character <6e> in hex string\nSyntax Error (36): Illegal character <67> in hex string\nSyntax Error (37): Illegal character <3d> in hex string\nSyntax Error (38): Illegal character <22> in hex string\nSyntax Error (40): Illegal character <6e> in hex string\nSyntax Error (41): Illegal character <2d> in hex string\nSyntax Error (42): Illegal character <55> in hex string\nSyntax Error (43): Illegal character <53> in hex string\nSyntax Error (44): Illegal character <22> in hex string\nSyntax Error (46): Illegal character <70> in hex string\nSyntax Error (47): Illegal character <72> in hex string\nSyntax Error (50): Illegal character <69> in hex string\nSyntax Error (51): Illegal character <78> in hex string\nSyntax Error (52): Illegal character <3d> in hex string\nSyntax Error (53): Illegal character <22> in hex string\nSyntax Error (54): Illegal character <6f> in hex string\nSyntax Error (55): Illegal character <67> in hex string\nSyntax Error (56): Illegal character <3a> in hex string\nSyntax Error (58): Illegal character <68> in hex string\nSyntax Error (59): Illegal character <74> in hex string\nSyntax Error (60): Illegal character <74> in hex string\nSyntax Error (61): Illegal character <70> in hex string\nSyntax Error (62): Illegal character <73> in hex string\nSyntax Error (63): Illegal character <3a> in hex string\nSyntax Error (64): Illegal character <2f> in hex string\nSyntax Error (65): Illegal character <2f> in hex string\nSyntax Error (66): Illegal character <6f> in hex string\nSyntax Error (67): Illegal character <67> in hex string\nSyntax Error (68): Illegal character <70> in hex string\nSyntax Error (69): Illegal character <2e> in hex string\nSyntax Error (70): Illegal character <6d> in hex string\nSyntax Error (72): Illegal character <2f> in hex string\nSyntax Error (73): Illegal character <6e> in hex string\nSyntax Error (74): Illegal character <73> in hex string\nSyntax Error (75): Illegal character <23> in hex string\nSyntax Error (76): Illegal character <22> in hex string\nSyntax Error (82): Illegal character <68> in hex string\nSyntax Error (93): Illegal character <21> in hex string\nSyntax Error (94): Illegal character <2d> in hex string\nSyntax Error (95): Illegal character <2d> in hex string\nSyntax Error (99): Illegal character <73> in hex string\nSyntax Error (102): Illegal character <6d> in hex string\nSyntax Error (104): Illegal character <74> in hex string\nSyntax Error (107): Illegal character <2d> in hex string\nSyntax Error (108): Illegal character <2d> in hex string\nSyntax Error (120): Illegal character <6d> in hex string\nSyntax Error (122): Illegal character <74> in hex string\nSyntax Error (126): Illegal character <68> in hex string\nSyntax Error (128): Illegal character <72> in hex string\nSyntax Error (129): Illegal character <73> in hex string\nSyntax Error (131): Illegal character <74> in hex string\nSyntax Error (132): Illegal character <3d> in hex string\nSyntax Error (133): Illegal character <22> in hex string\nSyntax Error (134): Illegal character <55> in hex string\nSyntax Error (135): Illegal character <54> in hex string\nSyntax Error (137): Illegal character <2d> in hex string\nSyntax Error (139): Illegal character <22> in hex string\nSyntax Error (151): Illegal character <6d> in hex string\nSyntax Error (153): Illegal character <74> in hex string\nSyntax Error (156): Illegal character <68> in hex string\nSyntax Error (157): Illegal character <74> in hex string\nSyntax Error (158): Illegal character <74> in hex string\nSyntax Error (159): Illegal character <70> in hex string\nSyntax Error (160): Illegal character <2d> in hex string\nSyntax Error (162): Illegal character <71> in hex string\nSyntax Error (163): Illegal character <75> in hex string\nSyntax Error (164): Illegal character <69> in hex string\nSyntax Error (165): Illegal character <76> in hex string\nSyntax Error (166): Illegal character <3d> in hex string\nSyntax Error (167): Illegal character <22> in hex string\nSyntax Error (168): Illegal character <78> in hex string\nSyntax Error (169): Illegal character <2d> in hex string\nSyntax Error (170): Illegal character <75> in hex string\nSyntax Error (172): Illegal character <2d> in hex string\nSyntax Error (174): Illegal character <6f> in hex string\nSyntax Error (175): Illegal character <6d> in hex string\nSyntax Error (176): Illegal character <70> in hex string\nSyntax Error (178): Illegal character <74> in hex string\nSyntax Error (179): Illegal character <69> in hex string\nSyntax Error (181): Illegal character <6c> in hex string\nSyntax Error (183): Illegal character <22> in hex string\nSyntax Error (186): Illegal character <6f> in hex string\nSyntax Error (187): Illegal character <6e> in hex string\nSyntax Error (188): Illegal character <74> in hex string\nSyntax Error (190): Illegal character <6e> in hex string\nSyntax Error (191): Illegal character <74> in hex string\nSyntax Error (192): Illegal character <3d> in hex string\nSyntax Error (193): Illegal character <22> in hex string\nSyntax Error (194): Illegal character <69> in hex string\nSyntax Error (196): Illegal character <3d> in hex string\nSyntax Error (199): Illegal character <67> in hex string\nSyntax Error (201): Illegal character <22> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "ohio university",
+      "schoolName": "Ohio University",
+      "sourceUrl": "https://www.ohio.edu/iea/historical-data/historic-common-data-set-reports",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-ohio-university-1777429303316.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (3): Illegal character <21> in hex string\nSyntax Error (5): Illegal character <4f> in hex string\nSyntax Error (7): Illegal character <54> in hex string\nSyntax Error (8): Illegal character <59> in hex string\nSyntax Error (9): Illegal character <50> in hex string\nSyntax Error (12): Illegal character <68> in hex string\nSyntax Error (13): Illegal character <74> in hex string\nSyntax Error (14): Illegal character <6d> in hex string\nSyntax Error (15): Illegal character <6c> in hex string\nSyntax Error (19): Illegal character <68> in hex string\nSyntax Error (20): Illegal character <74> in hex string\nSyntax Error (21): Illegal character <6d> in hex string\nSyntax Error (22): Illegal character <6c> in hex string\nSyntax Error (24): Illegal character <6c> in hex string\nSyntax Error (26): Illegal character <6e> in hex string\nSyntax Error (27): Illegal character <67> in hex string\nSyntax Error (28): Illegal character <3d> in hex string\nSyntax Error (29): Illegal character <22> in hex string\nSyntax Error (31): Illegal character <6e> in hex string\nSyntax Error (32): Illegal character <22> in hex string\nSyntax Error (35): Illegal character <69> in hex string\nSyntax Error (36): Illegal character <72> in hex string\nSyntax Error (37): Illegal character <3d> in hex string\nSyntax Error (38): Illegal character <22> in hex string\nSyntax Error (39): Illegal character <6c> in hex string\nSyntax Error (40): Illegal character <74> in hex string\nSyntax Error (41): Illegal character <72> in hex string\nSyntax Error (42): Illegal character <22> in hex string\nSyntax Error (44): Illegal character <70> in hex string\nSyntax Error (45): Illegal character <72> in hex string\nSyntax Error (48): Illegal character <69> in hex string\nSyntax Error (49): Illegal character <78> in hex string\nSyntax Error (50): Illegal character <3d> in hex string\nSyntax Error (51): Illegal character <22> in hex string\nSyntax Error (53): Illegal character <6f> in hex string\nSyntax Error (54): Illegal character <6e> in hex string\nSyntax Error (55): Illegal character <74> in hex string\nSyntax Error (57): Illegal character <6e> in hex string\nSyntax Error (58): Illegal character <74> in hex string\nSyntax Error (59): Illegal character <3a> in hex string\nSyntax Error (61): Illegal character <68> in hex string\nSyntax Error (62): Illegal character <74> in hex string\nSyntax Error (63): Illegal character <74> in hex string\nSyntax Error (64): Illegal character <70> in hex string\nSyntax Error (65): Illegal character <3a> in hex string\nSyntax Error (66): Illegal character <2f> in hex string\nSyntax Error (67): Illegal character <2f> in hex string\nSyntax Error (68): Illegal character <70> in hex string\nSyntax Error (69): Illegal character <75> in hex string\nSyntax Error (70): Illegal character <72> in hex string\nSyntax Error (71): Illegal character <6c> in hex string\nSyntax Error (72): Illegal character <2e> in hex string\nSyntax Error (73): Illegal character <6f> in hex string\nSyntax Error (74): Illegal character <72> in hex string\nSyntax Error (75): Illegal character <67> in hex string\nSyntax Error (76): Illegal character <2f> in hex string\nSyntax Error (77): Illegal character <72> in hex string\nSyntax Error (78): Illegal character <73> in hex string\nSyntax Error (79): Illegal character <73> in hex string\nSyntax Error (80): Illegal character <2f> in hex string\nSyntax Error (82): Illegal character <2e> in hex string\nSyntax Error (84): Illegal character <2f> in hex string\nSyntax Error (85): Illegal character <6d> in hex string\nSyntax Error (86): Illegal character <6f> in hex string\nSyntax Error (88): Illegal character <75> in hex string\nSyntax Error (89): Illegal character <6c> in hex string\nSyntax Error (91): Illegal character <73> in hex string\nSyntax Error (92): Illegal character <2f> in hex string\nSyntax Error (94): Illegal character <6f> in hex string\nSyntax Error (95): Illegal character <6e> in hex string\nSyntax Error (96): Illegal character <74> in hex string\nSyntax Error (98): Illegal character <6e> in hex string\nSyntax Error (99): Illegal character <74> in hex string\nSyntax Error (100): Illegal character <2f> in hex string\nSyntax Error (105): Illegal character <3a> in hex string\nSyntax Error (107): Illegal character <68> in hex string\nSyntax Error (108): Illegal character <74> in hex string\nSyntax Error (109): Illegal character <74> in hex string\nSyntax Error (110): Illegal character <70> in hex string\nSyntax Error (111): Illegal character <3a> in hex string\nSyntax Error (112): Illegal character <2f> in hex string\nSyntax Error (113): Illegal character <2f> in hex string\nSyntax Error (114): Illegal character <70> in hex string\nSyntax Error (115): Illegal character <75> in hex string\nSyntax Error (116): Illegal character <72> in hex string\nSyntax Error (117): Illegal character <6c> in hex string\nSyntax Error (118): Illegal character <2e> in hex string\nSyntax Error (119): Illegal character <6f> in hex string\nSyntax Error (120): Illegal character <72> in hex string\nSyntax Error (121): Illegal character <67> in hex string\nSyntax Error (122): Illegal character <2f> in hex string\nSyntax Error (125): Illegal character <2f> in hex string\nSyntax Error (126): Illegal character <74> in hex string\nSyntax Error (128): Illegal character <72> in hex string\nSyntax Error (129): Illegal character <6d> in hex string\nSyntax Error (130): Illegal character <73> in hex string\nSyntax Error (131): Illegal character <2f> in hex string\nSyntax Error (135): Illegal character <6f> in hex string\nSyntax Error (138): Illegal character <3a> in hex string\nSyntax Error (140): Illegal character <68> in hex string\nSyntax Error (141): Illegal character <74> in hex string\nSyntax Error (142): Illegal character <74> in hex string\nSyntax Error (143): Illegal character <70> in hex string\nSyntax Error (144): Illegal character <3a> in hex string\nSyntax Error (145): Illegal character <2f> in hex string\nSyntax Error (146): Illegal character <2f> in hex string\nSyntax Error (147): Illegal character <78> in hex string\nSyntax Error (148): Illegal character <6d> in hex string\nSyntax Error (149): Illegal character <6c> in hex string\nSyntax Error (150): Illegal character <6e> in hex string\nSyntax Error (151): Illegal character <73> in hex string\nSyntax Error (152): Illegal character <2e> in hex string\nSyntax Error (154): Illegal character <6f> in hex string\nSyntax Error (155): Illegal character <6d> in hex string\nSyntax Error (156): Illegal character <2f> in hex string\nSyntax Error (158): Illegal character <6f> in hex string\nSyntax Error (161): Illegal character <2f> in hex string\nSyntax Error (163): Illegal character <2e> in hex string\nSyntax Error (165): Illegal character <2f> in hex string\nSyntax Error (168): Illegal character <6f> in hex string\nSyntax Error (169): Illegal character <67> in hex string\nSyntax Error (170): Illegal character <3a> in hex string\nSyntax Error (172): Illegal character <68> in hex string\nSyntax Error (173): Illegal character <74> in hex string\nSyntax Error (174): Illegal character <74> in hex string\nSyntax Error (175): Illegal character <70> in hex string\nSyntax Error (176): Illegal character <3a> in hex string\nSyntax Error (177): Illegal character <2f> in hex string\nSyntax Error (178): Illegal character <2f> in hex string\nSyntax Error (179): Illegal character <6f> in hex string\nSyntax Error (180): Illegal character <67> in hex string\nSyntax Error (181): Illegal character <70> in hex string\nSyntax Error (182): Illegal character <2e> in hex string\nSyntax Error (183): Illegal character <6d> in hex string\nSyntax Error (185): Illegal character <2f> in hex string\nSyntax Error (186): Illegal character <6e> in hex string\nSyntax Error (187): Illegal character <73> in hex string\nSyntax Error (188): Illegal character <23> in hex string\nSyntax Error (191): Illegal character <72> in hex string\nSyntax Error (194): Illegal character <73> in hex string\nSyntax Error (195): Illegal character <3a> in hex string\nSyntax Error (197): Illegal character <68> in hex string\nSyntax Error (198): Illegal character <74> in hex string\nSyntax Error (199): Illegal character <74> in hex string\nSyntax Error (200): Illegal character <70> in hex string\nSyntax Error (201): Illegal character <3a> in hex string\nSyntax Error (202): Illegal character <2f> in hex string\nSyntax Error (203): Illegal character <2f> in hex string\nSyntax Error (204): Illegal character <77> in hex string\nSyntax Error (205): Illegal character <77> in hex string\nSyntax Error (206): Illegal character <77> in hex string\nSyntax Error (207): Illegal character <2e> in hex string\nSyntax Error (208): Illegal character <77> in hex string\nSyntax Error (210): Illegal character <2e> in hex string\nSyntax Error (211): Illegal character <6f> in hex string\nSyntax Error (212): Illegal character <72> in hex string\nSyntax Error (213): Illegal character <67> in hex string\nSyntax Error (214): Illegal character <2f> in hex string\nSyntax Error (219): Illegal character <2f> in hex string\nSyntax Error (222): Illegal character <2f> in hex string\nSyntax Error (223): Illegal character <72> in hex string\nSyntax Error (226): Illegal character <2d> in hex string\nSyntax Error (227): Illegal character <73> in hex string\nSyntax Error (229): Illegal character <68> in hex string\nSyntax Error (231): Illegal character <6d> in hex string\nSyntax Error (233): Illegal character <23> in hex string\nSyntax Error (236): Illegal character <73> in hex string\nSyntax Error (238): Illegal character <68> in hex string\nSyntax Error (240): Illegal character <6d> in hex string\nSyntax Error (242): Illegal character <3a> in hex string\nSyntax Error (244): Illegal character <68> in hex string\nSyntax Error (245): Illegal character <74> in hex string\nSyntax Error (246): Illegal character <74> in hex string\nSyntax Error (247): Illegal character <70> in hex string\nSyntax Error (248): Illegal character <3a> in hex string\nSyntax Error (249): Illegal character <2f> in hex string\nSyntax Error (250): Illegal character <2f> in hex string\nSyntax Error (251): Illegal character <73> in hex string\nSyntax Error (253): Illegal character <68> in hex string\nSyntax Error (255): Illegal character <6d> in hex string\nSyntax Error (257): Illegal character <2e> in hex string\nSyntax Error (258): Illegal character <6f> in hex string\nSyntax Error (259): Illegal character <72> in hex string\nSyntax Error (260): Illegal character <67> in hex string\nSyntax Error (261): Illegal character <2f> in hex string\nSyntax Error (264): Illegal character <73> in hex string\nSyntax Error (265): Illegal character <69> in hex string\nSyntax Error (266): Illegal character <6f> in hex string\nSyntax Error (268): Illegal character <3a> in hex string\nSyntax Error (270): Illegal character <68> in hex string\nSyntax Error (271): Illegal character <74> in hex string\nSyntax Error (272): Illegal character <74> in hex string\nSyntax Error (273): Illegal character <70> in hex string\nSyntax Error (274): Illegal character <3a> in hex string\nSyntax Error (275): Illegal character <2f> in hex string\nSyntax Error (276): Illegal character <2f> in hex string\nSyntax Error (277): Illegal character <72> in hex string\nSyntax Error (280): Illegal character <73> in hex string\nSyntax Error (281): Illegal character <2e> in hex string\nSyntax Error (282): Illegal character <6f> in hex string\nSyntax Error (283): Illegal character <72> in hex string\nSyntax Error (284): Illegal character <67> in hex string\nSyntax Error (285): Illegal character <2f> in hex string\nSyntax Error (286): Illegal character <73> in hex string\nSyntax Error (287): Illegal character <69> in hex string\nSyntax Error (288): Illegal character <6f> in hex string\nSyntax Error (290): Illegal character <2f> in hex string\nSyntax Error (291): Illegal character <6e> in hex string\nSyntax Error (292): Illegal character <73> in hex string\nSyntax Error (293): Illegal character <23> in hex string\nSyntax Error (296): Illegal character <73> in hex string\nSyntax Error (297): Illegal character <69> in hex string\nSyntax Error (298): Illegal character <6f> in hex string\nSyntax Error (300): Illegal character <74> in hex string\nSyntax Error (301): Illegal character <3a> in hex string\nSyntax Error (303): Illegal character <68> in hex string\nSyntax Error (304): Illegal character <74> in hex string\nSyntax Error (305): Illegal character <74> in hex string\nSyntax Error (306): Illegal character <70> in hex string\nSyntax Error (307): Illegal character <3a> in hex string\nSyntax Error (308): Illegal character <2f> in hex string\nSyntax Error (309): Illegal character <2f> in hex string\nSyntax Error (310): Illegal character <72> in hex string\nSyntax Error (313): Illegal character <73> in hex string\nSyntax Error (314): Illegal character <2e> in hex string\nSyntax Error (315): Illegal character <6f> in hex string\nSyntax Error (316): Illegal character <72> in hex string\nSyntax Error (317): Illegal character <67> in hex string\nSyntax Error (318): Illegal character <2f> in hex string\nSyntax Error (319): Illegal character <73> in hex string\nSyntax Error (320): Illegal character <69> in hex string\nSyntax Error (321): Illegal character <6f> in hex string\nSyntax Error (323): Illegal character <2f> in hex string\nSyntax Error (324): Illegal character <74> in hex string\nSyntax Error (325): Illegal character <79> in hex string\nSyntax Error (326): Illegal character <70> in hex string\nSyntax Error (328): Illegal character <73> in hex string\nSyntax Error (329): Illegal character <23> in hex string\nSyntax Error (332): Illegal character <73> in hex string\nSyntax Error (333): Illegal character <6b> in hex string\nSyntax Error (334): Illegal character <6f> in hex string\nSyntax Error (335): Illegal character <73> in hex string\nSyntax Error (336): Illegal character <3a> in hex string\nSyntax Error (338): Illegal character <68> in hex string\nSyntax Error (339): Illegal character <74> in hex string\nSyntax Error (340): Illegal character <74> in hex string\nSyntax Error (341): Illegal character <70> in hex string\nSyntax Error (342): Illegal character <3a> in hex string\nSyntax Error (343): Illegal character <2f> in hex string\nSyntax Error (344): Illegal character <2f> in hex string\nSyntax Error (345): Illegal character <77> in hex string\nSyntax Error (346): Illegal character <77> in hex string\nSyntax Error (347): Illegal character <77> in hex string\nSyntax Error (348): Illegal character <2e> in hex string\nSyntax Error (349): Illegal character <77> in hex string\nSyntax Error (351): Illegal character <2e> in hex string\nSyntax Error (352): Illegal character <6f> in hex string\nSyntax Error (353): Illegal character <72> in hex string\nSyntax Error (354): Illegal character <67> in hex string\nSyntax Error (355): Illegal character <2f> in hex string\nSyntax Error (360): Illegal character <2f> in hex string\nSyntax Error (363): Illegal character <2f> in hex string\nSyntax Error (364): Illegal character <73> in hex string\nSyntax Error (365): Illegal character <6b> in hex string\nSyntax Error (366): Illegal character <6f> in hex string\nSyntax Error (367): Illegal character <73> in hex string\nSyntax Error (368): Illegal character <2f> in hex string\nSyntax Error (370): Illegal character <6f> in hex string\nSyntax Error (371): Illegal character <72> in hex string\nSyntax Error (373): Illegal character <23> in hex string\nSyntax Error (376): Illegal character <78> in hex string\nSyntax Error (377): Illegal character <73> in hex string\nSyntax Error (379): Illegal character <3a> in hex string\nSyntax Error (381): Illegal character <68> in hex string\nSyntax Error (382): Illegal character <74> in hex string\nSyntax Error (383): Illegal character <74> in hex string\nSyntax Error (384): Illegal character <70> in hex string\nSyntax Error (385): Illegal character <3a> in hex string\nSyntax Error (386): Illegal character <2f> in hex string\nSyntax Error (387): Illegal character <2f> in hex string\nSyntax Error (388): Illegal character <77> in hex string\nSyntax Error (389): Illegal character <77> in hex string\nSyntax Error (390): Illegal character <77> in hex string\nSyntax Error (391): Illegal character <2e> in hex string\nSyntax Error (392): Illegal character <77> in hex string\nSyntax Error (394): Illegal character <2e> in hex string\nSyntax Error (395): Illegal character <6f> in hex string\nSyntax Error (396): Illegal character <72> in hex string\nSyntax Error (397): Illegal character <67> in hex string\nSyntax Error (398): Illegal character <2f> in hex string\nSyntax Error (403): Illegal character <2f> in hex string\nSyntax Error (404): Illegal character <58> in hex string\nSyntax Error (405): Illegal character <4d> in hex string\nSyntax Error (406): Illegal character <4c> in hex string\nSyntax Error (407): Illegal character <53> in hex string\nSyntax Error (409): Illegal character <68> in hex string\nSyntax Error (411): Illegal character <6d> in hex string\nSyntax Error (413): Illegal character <23> in hex string\nSyntax Error (415): Illegal character <22> in hex string\nSyntax Error (421): Illegal character <68> in hex string\nSyntax Error (432): Illegal character <6d> in hex string\nSyntax Error (434): Illegal character <74> in hex string\nSyntax Error (437): Illegal character <68> in hex string\nSyntax Error (438): Illegal character <74> in hex string\nSyntax Error (439): Illegal character <74> in hex string\nSyntax Error (440): Illegal character <70> in hex string\nSyntax Error (441): Illegal character <2d> in hex string\nSyntax Error (443): Illegal character <71> in hex string\nSyntax Error (444): Illegal character <75> in hex string\nSyntax Error (445): Illegal character <69> in hex string\nSyntax Error (446): Illegal character <76> in hex string\nSyntax Error (447): Illegal character <3d> in hex string\nSyntax Error (448): Illegal character <22> in hex string\nSyntax Error (449): Illegal character <58> in hex string\nSyntax Error (450): Illegal character <2d> in hex string\nSyntax Error (451): Illegal character <55> in hex string\nSyntax Error (453): Illegal character <2d> in hex string\nSyntax Error (455): Illegal character <6f> in hex string\nSyntax Error (456): Illegal character <6d> in hex string\nSyntax Error (457): Illegal character <70> in hex string\nSyntax Error (459): Illegal character <74> in hex string\nSyntax Error (460): Illegal character <69> in hex string\nSyntax Error (462): Illegal character <6c> in hex string\nSyntax Error (464): Illegal character <22> in hex string\nSyntax Error (467): Illegal character <6f> in hex string\nSyntax Error (468): Illegal character <6e> in hex string\nSyntax Error (469): Illegal character <74> in hex string\nSyntax Error (471): Illegal character <6e> in hex string\nSyntax Error (472): Illegal character <74> in hex string\nSyntax Error (473): Illegal character <3d> in hex string\nSyntax Error (474): Illegal character <22> in hex string\nSyntax Error (475): Illegal character <49> in hex string\nSyntax Error (477): Illegal character <3d> in hex string\nSyntax Error (480): Illegal character <67> in hex string\nSyntax Error (482): Illegal character <22> in hex string\nSyntax Error (490): Illegal character <6d> in hex string\nSyntax Error (492): Illegal character <74> in hex string\nSyntax Error (495): Illegal character <6e> in hex string\nSyntax Error (497): Illegal character <6d> in hex string\nSyntax Error (499): Illegal character <3d> in hex string\nSyntax Error (500): Illegal character <22> in hex string\nSyntax Error (501): Illegal character <74> in hex string\nSyntax Error (502): Illegal character <68> in hex string\nSyntax Error (504): Illegal character <6d> in hex string\nSyntax Error (506): Illegal character <2d> in hex string\nSyntax Error (508): Illegal character <6f> in hex string\nSyntax Error (509): Illegal character <6c> in hex string\nSyntax Error (510): Illegal character <6f> in hex string\nSyntax Error (511): Illegal character <72> in hex string\nSyntax Error (512): Illegal character <22> in hex string\nSyntax Error (515): Illegal character <6f> in hex string\nSyntax Error (516): Illegal character <6e> in hex string\nSyntax Error (517): Illegal character <74> in hex string\nSyntax Error (519): Illegal character <6e> in hex string\nSyntax Error (520): Illegal character <74> in hex string\nSyntax Error (521): Illegal character <3d> in hex string\nSyntax Error (522): Illegal character <22> in hex string\nSyntax Error (523): Illegal character <23> in hex string\nSyntax Error (530): Illegal character <22> in hex string\nSyntax Error (532): Illegal character <2f> in hex string\nSyntax Error (540): Illegal character <6c> in hex string\nSyntax Error (541): Illegal character <69> in hex string\nSyntax Error (542): Illegal character <6e> in hex string\nSyntax Error (543): Illegal character <6b> in hex string\nSyntax Error (545): Illegal character <72> in hex string\nSyntax Error (547): Illegal character <6c> in hex string\nSyntax Error (548): Illegal character <3d> in hex string\nSyntax Error (549): Illegal character <22> in hex string\nSyntax Error (550): Illegal character <69> in hex string\nSyntax Error (552): Illegal character <6f> in hex string\nSyntax Error (553): Illegal character <6e> in hex string\nSyntax Error (554): Illegal character <22> in hex string\nSyntax Error (556): Illegal character <74> in hex string\nSyntax Error (557): Illegal character <79> in hex string\nSyntax Error (558): Illegal character <70> in hex string\nSyntax Error (560): Illegal character <3d> in hex string\nSyntax Error (561): Illegal character <22> in hex string\nSyntax Error (562): Illegal character <69> in hex string\nSyntax Error (563): Illegal character <6d> in hex string\nSyntax Error (565): Illegal character <67> in hex string\nSyntax Error (567): Illegal character <2f> in hex string\nSyntax Error (568): Illegal character <78> in hex string\nSyntax Error (569): Illegal character <2d> in hex string\nSyntax Error (570): Illegal character <69> in hex string\nSyntax Error (572): Illegal character <6f> in hex string\nSyntax Error (573): Illegal character <6e> in hex string\nSyntax Error (574): Illegal character <22> in hex string\nSyntax Error (576): Illegal character <73> in hex string\nSyntax Error (577): Illegal character <69> in hex string\nSyntax Error (578): Illegal character <7a> in hex string\nSyntax Error (580): Illegal character <73> in hex string\nSyntax Error (581): Illegal character <3d> in hex string\nSyntax Error (582): Illegal character <22> in hex string\nSyntax Error (585): Illegal character <78> in hex string\nSyntax Error (588): Illegal character <22> in hex string\nSyntax Error (590): Illegal character <68> in hex string\nSyntax Error (591): Illegal character <72> in hex string\nSyntax Error (594): Illegal character <3d> in hex string\nSyntax Error (595): Illegal character <22> in hex string\nSyntax Error (596): Illegal character <2f> in hex string\nSyntax Error (597): Illegal character <74> in hex string\nSyntax Error (598): Illegal character <68> in hex string\nSyntax Error (600): Illegal character <6d> in hex string\nSyntax Error (602): Illegal character <73> in hex string\nSyntax Error (603): Illegal character <2f> in hex string\nSyntax Error (605): Illegal character <75> in hex string\nSyntax Error (606): Illegal character <73> in hex string\nSyntax Error (607): Illegal character <74> in hex string\nSyntax Error (608): Illegal character <6f> in hex string\nSyntax Error (609): Illegal character <6d> in hex string\nSyntax Error (610): Illegal character <2f> in hex string\nSyntax Error (611): Illegal character <6f> in hex string\nSyntax Error (612): Illegal character <68> in hex string\nSyntax Error (613): Illegal character <69> in hex string\nSyntax Error (614): Illegal character <6f> in hex string\nSyntax Error (615): Illegal character <5f> in hex string\nSyntax Error (616): Illegal character <74> in hex string\nSyntax Error (617): Illegal character <68> in hex string\nSyntax Error (619): Illegal character <6d> in hex string\nSyntax Error (621): Illegal character <2f> in hex string\nSyntax Error (624): Illegal character <76> in hex string\nSyntax Error (625): Illegal character <69> in hex string\nSyntax Error (627): Illegal character <6f> in hex string\nSyntax Error (628): Illegal character <6e> in hex string\nSyntax Error (629): Illegal character <2d> in hex string\nSyntax Error (632): Illegal character <78> in hex string\nSyntax Error (635): Illegal character <2e> in hex string\nSyntax Error (636): Illegal character <69> in hex string\nSyntax Error (638): Illegal character <6f> in hex string\nSyntax Error (639): Illegal character <22> in hex string\nSyntax Error (641): Illegal character <2f> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "university of akron",
+      "schoolName": "University of Akron",
+      "sourceUrl": "https://www.uakron.edu/ir/common-data-set.dot",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-university-of-akron-1777429310761.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (1330): Illegal character <21> in hex string\nSyntax Error (1332): Illegal character <4f> in hex string\nSyntax Error (1334): Illegal character <54> in hex string\nSyntax Error (1335): Illegal character <59> in hex string\nSyntax Error (1336): Illegal character <50> in hex string\nSyntax Error (1339): Illegal character <68> in hex string\nSyntax Error (1340): Illegal character <74> in hex string\nSyntax Error (1341): Illegal character <6d> in hex string\nSyntax Error (1342): Illegal character <6c> in hex string\nSyntax Error (1346): Illegal character <21> in hex string\nSyntax Error (1347): Illegal character <2d> in hex string\nSyntax Error (1348): Illegal character <2d> in hex string\nSyntax Error (1349): Illegal character <53> in hex string\nSyntax Error (1350): Illegal character <74> in hex string\nSyntax Error (1352): Illegal character <72> in hex string\nSyntax Error (1353): Illegal character <74> in hex string\nSyntax Error (1355): Illegal character <47> in hex string\nSyntax Error (1356): Illegal character <6c> in hex string\nSyntax Error (1357): Illegal character <6f> in hex string\nSyntax Error (1360): Illegal character <6c> in hex string\nSyntax Error (1362): Illegal character <57> in hex string\nSyntax Error (1363): Illegal character <68> in hex string\nSyntax Error (1364): Illegal character <69> in hex string\nSyntax Error (1365): Illegal character <74> in hex string\nSyntax Error (1368): Illegal character <48> in hex string\nSyntax Error (1373): Illegal character <72> in hex string\nSyntax Error (1374): Illegal character <2d> in hex string\nSyntax Error (1375): Illegal character <2d> in hex string\nSyntax Error (1379): Illegal character <68> in hex string\nSyntax Error (1380): Illegal character <74> in hex string\nSyntax Error (1381): Illegal character <6d> in hex string\nSyntax Error (1382): Illegal character <6c> in hex string\nSyntax Error (1384): Illegal character <6c> in hex string\nSyntax Error (1386): Illegal character <6e> in hex string\nSyntax Error (1387): Illegal character <67> in hex string\nSyntax Error (1388): Illegal character <3d> in hex string\nSyntax Error (1389): Illegal character <22> in hex string\nSyntax Error (1391): Illegal character <6e> in hex string\nSyntax Error (1392): Illegal character <2d> in hex string\nSyntax Error (1393): Illegal character <75> in hex string\nSyntax Error (1394): Illegal character <73> in hex string\nSyntax Error (1395): Illegal character <22> in hex string\nSyntax Error (1397): Illegal character <68> in hex string\nSyntax Error (1398): Illegal character <72> in hex string\nSyntax Error (1401): Illegal character <6c> in hex string\nSyntax Error (1403): Illegal character <6e> in hex string\nSyntax Error (1404): Illegal character <67> in hex string\nSyntax Error (1405): Illegal character <3d> in hex string\nSyntax Error (1406): Illegal character <22> in hex string\nSyntax Error (1408): Illegal character <6e> in hex string\nSyntax Error (1409): Illegal character <2d> in hex string\nSyntax Error (1410): Illegal character <75> in hex string\nSyntax Error (1411): Illegal character <73> in hex string\nSyntax Error (1412): Illegal character <22> in hex string\nSyntax Error (1415): Illegal character <6c> in hex string\nSyntax Error (1417): Illegal character <73> in hex string\nSyntax Error (1418): Illegal character <73> in hex string\nSyntax Error (1419): Illegal character <3d> in hex string\nSyntax Error (1420): Illegal character <22> in hex string\nSyntax Error (1421): Illegal character <6e> in hex string\nSyntax Error (1422): Illegal character <6f> in hex string\nSyntax Error (1423): Illegal character <2d> in hex string\nSyntax Error (1424): Illegal character <6a> in hex string\nSyntax Error (1425): Illegal character <73> in hex string\nSyntax Error (1426): Illegal character <22> in hex string\nSyntax Error (1428): Illegal character <70> in hex string\nSyntax Error (1429): Illegal character <72> in hex string\nSyntax Error (1432): Illegal character <69> in hex string\nSyntax Error (1433): Illegal character <78> in hex string\nSyntax Error (1434): Illegal character <3d> in hex string\nSyntax Error (1435): Illegal character <22> in hex string\nSyntax Error (1436): Illegal character <6f> in hex string\nSyntax Error (1437): Illegal character <67> in hex string\nSyntax Error (1438): Illegal character <3a> in hex string\nSyntax Error (1440): Illegal character <68> in hex string\nSyntax Error (1441): Illegal character <74> in hex string\nSyntax Error (1442): Illegal character <74> in hex string\nSyntax Error (1443): Illegal character <70> in hex string\nSyntax Error (1444): Illegal character <3a> in hex string\nSyntax Error (1445): Illegal character <2f> in hex string\nSyntax Error (1446): Illegal character <2f> in hex string\nSyntax Error (1447): Illegal character <6f> in hex string\nSyntax Error (1448): Illegal character <67> in hex string\nSyntax Error (1449): Illegal character <70> in hex string\nSyntax Error (1450): Illegal character <2e> in hex string\nSyntax Error (1451): Illegal character <6d> in hex string\nSyntax Error (1453): Illegal character <2f> in hex string\nSyntax Error (1454): Illegal character <6e> in hex string\nSyntax Error (1455): Illegal character <73> in hex string\nSyntax Error (1456): Illegal character <23> in hex string\nSyntax Error (1459): Illegal character <6f> in hex string\nSyntax Error (1460): Illegal character <6e> in hex string\nSyntax Error (1461): Illegal character <74> in hex string\nSyntax Error (1463): Illegal character <6e> in hex string\nSyntax Error (1464): Illegal character <74> in hex string\nSyntax Error (1465): Illegal character <3a> in hex string\nSyntax Error (1467): Illegal character <68> in hex string\nSyntax Error (1468): Illegal character <74> in hex string\nSyntax Error (1469): Illegal character <74> in hex string\nSyntax Error (1470): Illegal character <70> in hex string\nSyntax Error (1471): Illegal character <3a> in hex string\nSyntax Error (1472): Illegal character <2f> in hex string\nSyntax Error (1473): Illegal character <2f> in hex string\nSyntax Error (1474): Illegal character <70> in hex string\nSyntax Error (1475): Illegal character <75> in hex string\nSyntax Error (1476): Illegal character <72> in hex string\nSyntax Error (1477): Illegal character <6c> in hex string\nSyntax Error (1478): Illegal character <2e> in hex string\nSyntax Error (1479): Illegal character <6f> in hex string\nSyntax Error (1480): Illegal character <72> in hex string\nSyntax Error (1481): Illegal character <67> in hex string\nSyntax Error (1482): Illegal character <2f> in hex string\nSyntax Error (1483): Illegal character <72> in hex string\nSyntax Error (1484): Illegal character <73> in hex string\nSyntax Error (1485): Illegal character <73> in hex string\nSyntax Error (1486): Illegal character <2f> in hex string\nSyntax Error (1488): Illegal character <2e> in hex string\nSyntax Error (1490): Illegal character <2f> in hex string\nSyntax Error (1491): Illegal character <6d> in hex string\nSyntax Error (1492): Illegal character <6f> in hex string\nSyntax Error (1494): Illegal character <75> in hex string\nSyntax Error (1495): Illegal character <6c> in hex string\nSyntax Error (1497): Illegal character <73> in hex string\nSyntax Error (1498): Illegal character <2f> in hex string\nSyntax Error (1500): Illegal character <6f> in hex string\nSyntax Error (1501): Illegal character <6e> in hex string\nSyntax Error (1502): Illegal character <74> in hex string\nSyntax Error (1504): Illegal character <6e> in hex string\nSyntax Error (1505): Illegal character <74> in hex string\nSyntax Error (1506): Illegal character <2f> in hex string\nSyntax Error (1510): Illegal character <3a> in hex string\nSyntax Error (1512): Illegal character <68> in hex string\nSyntax Error (1513): Illegal character <74> in hex string\nSyntax Error (1514): Illegal character <74> in hex string\nSyntax Error (1515): Illegal character <70> in hex string\nSyntax Error (1516): Illegal character <3a> in hex string\nSyntax Error (1517): Illegal character <2f> in hex string\nSyntax Error (1518): Illegal character <2f> in hex string\nSyntax Error (1519): Illegal character <70> in hex string\nSyntax Error (1520): Illegal character <75> in hex string\nSyntax Error (1521): Illegal character <72> in hex string\nSyntax Error (1522): Illegal character <6c> in hex string\nSyntax Error (1523): Illegal character <2e> in hex string\nSyntax Error (1524): Illegal character <6f> in hex string\nSyntax Error (1525): Illegal character <72> in hex string\nSyntax Error (1526): Illegal character <67> in hex string\nSyntax Error (1527): Illegal character <2f> in hex string\nSyntax Error (1530): Illegal character <2f> in hex string\nSyntax Error (1531): Illegal character <74> in hex string\nSyntax Error (1533): Illegal character <72> in hex string\nSyntax Error (1534): Illegal character <6d> in hex string\nSyntax Error (1535): Illegal character <73> in hex string\nSyntax Error (1536): Illegal character <2f> in hex string\nSyntax Error (1539): Illegal character <6f> in hex string\nSyntax Error (1542): Illegal character <3a> in hex string\nSyntax Error (1544): Illegal character <68> in hex string\nSyntax Error (1545): Illegal character <74> in hex string\nSyntax Error (1546): Illegal character <74> in hex string\nSyntax Error (1547): Illegal character <70> in hex string\nSyntax Error (1548): Illegal character <3a> in hex string\nSyntax Error (1549): Illegal character <2f> in hex string\nSyntax Error (1550): Illegal character <2f> in hex string\nSyntax Error (1551): Illegal character <78> in hex string\nSyntax Error (1552): Illegal character <6d> in hex string\nSyntax Error (1553): Illegal character <6c> in hex string\nSyntax Error (1554): Illegal character <6e> in hex string\nSyntax Error (1555): Illegal character <73> in hex string\nSyntax Error (1556): Illegal character <2e> in hex string\nSyntax Error (1558): Illegal character <6f> in hex string\nSyntax Error (1559): Illegal character <6d> in hex string\nSyntax Error (1560): Illegal character <2f> in hex string\nSyntax Error (1562): Illegal character <6f> in hex string\nSyntax Error (1565): Illegal character <2f> in hex string\nSyntax Error (1567): Illegal character <2e> in hex string\nSyntax Error (1569): Illegal character <2f> in hex string\nSyntax Error (1571): Illegal character <72> in hex string\nSyntax Error (1574): Illegal character <73> in hex string\nSyntax Error (1575): Illegal character <3a> in hex string\nSyntax Error (1577): Illegal character <68> in hex string\nSyntax Error (1578): Illegal character <74> in hex string\nSyntax Error (1579): Illegal character <74> in hex string\nSyntax Error (1580): Illegal character <70> in hex string\nSyntax Error (1581): Illegal character <3a> in hex string\nSyntax Error (1582): Illegal character <2f> in hex string\nSyntax Error (1583): Illegal character <2f> in hex string\nSyntax Error (1584): Illegal character <77> in hex string\nSyntax Error (1585): Illegal character <77> in hex string\nSyntax Error (1586): Illegal character <77> in hex string\nSyntax Error (1587): Illegal character <2e> in hex string\nSyntax Error (1588): Illegal character <77> in hex string\nSyntax Error (1590): Illegal character <2e> in hex string\nSyntax Error (1591): Illegal character <6f> in hex string\nSyntax Error (1592): Illegal character <72> in hex string\nSyntax Error (1593): Illegal character <67> in hex string\nSyntax Error (1594): Illegal character <2f> in hex string\nSyntax Error (1599): Illegal character <2f> in hex string\nSyntax Error (1602): Illegal character <2f> in hex string\nSyntax Error (1603): Illegal character <72> in hex string\nSyntax Error (1606): Illegal character <2d> in hex string\nSyntax Error (1607): Illegal character <73> in hex string\nSyntax Error (1609): Illegal character <68> in hex string\nSyntax Error (1611): Illegal character <6d> in hex string\nSyntax Error (1613): Illegal character <23> in hex string\nSyntax Error (1615): Illegal character <73> in hex string\nSyntax Error (1617): Illegal character <68> in hex string\nSyntax Error (1619): Illegal character <6d> in hex string\nSyntax Error (1621): Illegal character <3a> in hex string\nSyntax Error (1623): Illegal character <68> in hex string\nSyntax Error (1624): Illegal character <74> in hex string\nSyntax Error (1625): Illegal character <74> in hex string\nSyntax Error (1626): Illegal character <70> in hex string\nSyntax Error (1627): Illegal character <3a> in hex string\nSyntax Error (1628): Illegal character <2f> in hex string\nSyntax Error (1629): Illegal character <2f> in hex string\nSyntax Error (1630): Illegal character <73> in hex string\nSyntax Error (1632): Illegal character <68> in hex string\nSyntax Error (1634): Illegal character <6d> in hex string\nSyntax Error (1636): Illegal character <2e> in hex string\nSyntax Error (1637): Illegal character <6f> in hex string\nSyntax Error (1638): Illegal character <72> in hex string\nSyntax Error (1639): Illegal character <67> in hex string\nSyntax Error (1640): Illegal character <2f> in hex string\nSyntax Error (1642): Illegal character <73> in hex string\nSyntax Error (1643): Illegal character <69> in hex string\nSyntax Error (1644): Illegal character <6f> in hex string\nSyntax Error (1646): Illegal character <3a> in hex string\nSyntax Error (1648): Illegal character <68> in hex string\nSyntax Error (1649): Illegal character <74> in hex string\nSyntax Error (1650): Illegal character <74> in hex string\nSyntax Error (1651): Illegal character <70> in hex string\nSyntax Error (1652): Illegal character <3a> in hex string\nSyntax Error (1653): Illegal character <2f> in hex string\nSyntax Error (1654): Illegal character <2f> in hex string\nSyntax Error (1655): Illegal character <72> in hex string\nSyntax Error (1658): Illegal character <73> in hex string\nSyntax Error (1659): Illegal character <2e> in hex string\nSyntax Error (1660): Illegal character <6f> in hex string\nSyntax Error (1661): Illegal character <72> in hex string\nSyntax Error (1662): Illegal character <67> in hex string\nSyntax Error (1663): Illegal character <2f> in hex string\nSyntax Error (1664): Illegal character <73> in hex string\nSyntax Error (1665): Illegal character <69> in hex string\nSyntax Error (1666): Illegal character <6f> in hex string\nSyntax Error (1668): Illegal character <2f> in hex string\nSyntax Error (1669): Illegal character <6e> in hex string\nSyntax Error (1670): Illegal character <73> in hex string\nSyntax Error (1671): Illegal character <23> in hex string\nSyntax Error (1673): Illegal character <73> in hex string\nSyntax Error (1674): Illegal character <69> in hex string\nSyntax Error (1675): Illegal character <6f> in hex string\nSyntax Error (1677): Illegal character <74> in hex string\nSyntax Error (1678): Illegal character <3a> in hex string\nSyntax Error (1680): Illegal character <68> in hex string\nSyntax Error (1681): Illegal character <74> in hex string\nSyntax Error (1682): Illegal character <74> in hex string\nSyntax Error (1683): Illegal character <70> in hex string\nSyntax Error (1684): Illegal character <3a> in hex string\nSyntax Error (1685): Illegal character <2f> in hex string\nSyntax Error (1686): Illegal character <2f> in hex string\nSyntax Error (1687): Illegal character <72> in hex string\nSyntax Error (1690): Illegal character <73> in hex string\nSyntax Error (1691): Illegal character <2e> in hex string\nSyntax Error (1692): Illegal character <6f> in hex string\nSyntax Error (1693): Illegal character <72> in hex string\nSyntax Error (1694): Illegal character <67> in hex string\nSyntax Error (1695): Illegal character <2f> in hex string\nSyntax Error (1696): Illegal character <73> in hex string\nSyntax Error (1697): Illegal character <69> in hex string\nSyntax Error (1698): Illegal character <6f> in hex string\nSyntax Error (1700): Illegal character <2f> in hex string\nSyntax Error (1701): Illegal character <74> in hex string\nSyntax Error (1702): Illegal character <79> in hex string\nSyntax Error (1703): Illegal character <70> in hex string\nSyntax Error (1705): Illegal character <73> in hex string\nSyntax Error (1706): Illegal character <23> in hex string\nSyntax Error (1708): Illegal character <73> in hex string\nSyntax Error (1709): Illegal character <6b> in hex string\nSyntax Error (1710): Illegal character <6f> in hex string\nSyntax Error (1711): Illegal character <73> in hex string\nSyntax Error (1712): Illegal character <3a> in hex string\nSyntax Error (1714): Illegal character <68> in hex string\nSyntax Error (1715): Illegal character <74> in hex string\nSyntax Error (1716): Illegal character <74> in hex string\nSyntax Error (1717): Illegal character <70> in hex string\nSyntax Error (1718): Illegal character <3a> in hex string\nSyntax Error (1719): Illegal character <2f> in hex string\nSyntax Error (1720): Illegal character <2f> in hex string\nSyntax Error (1721): Illegal character <77> in hex string\nSyntax Error (1722): Illegal character <77> in hex string\nSyntax Error (1723): Illegal character <77> in hex string\nSyntax Error (1724): Illegal character <2e> in hex string\nSyntax Error (1725): Illegal character <77> in hex string\nSyntax Error (1727): Illegal character <2e> in hex string\nSyntax Error (1728): Illegal character <6f> in hex string\nSyntax Error (1729): Illegal character <72> in hex string\nSyntax Error (1730): Illegal character <67> in hex string\nSyntax Error (1731): Illegal character <2f> in hex string\nSyntax Error (1736): Illegal character <2f> in hex string\nSyntax Error (1739): Illegal character <2f> in hex string\nSyntax Error (1740): Illegal character <73> in hex string\nSyntax Error (1741): Illegal character <6b> in hex string\nSyntax Error (1742): Illegal character <6f> in hex string\nSyntax Error (1743): Illegal character <73> in hex string\nSyntax Error (1744): Illegal character <2f> in hex string\nSyntax Error (1746): Illegal character <6f> in hex string\nSyntax Error (1747): Illegal character <72> in hex string\nSyntax Error (1749): Illegal character <23> in hex string\nSyntax Error (1751): Illegal character <78> in hex string\nSyntax Error (1752): Illegal character <73> in hex string\nSyntax Error (1754): Illegal character <3a> in hex string\nSyntax Error (1756): Illegal character <68> in hex string\nSyntax Error (1757): Illegal character <74> in hex string\nSyntax Error (1758): Illegal character <74> in hex string\nSyntax Error (1759): Illegal character <70> in hex string\nSyntax Error (1760): Illegal character <3a> in hex string\nSyntax Error (1761): Illegal character <2f> in hex string\nSyntax Error (1762): Illegal character <2f> in hex string\nSyntax Error (1763): Illegal character <77> in hex string\nSyntax Error (1764): Illegal character <77> in hex string\nSyntax Error (1765): Illegal character <77> in hex string\nSyntax Error (1766): Illegal character <2e> in hex string\nSyntax Error (1767): Illegal character <77> in hex string\nSyntax Error (1769): Illegal character <2e> in hex string\nSyntax Error (1770): Illegal character <6f> in hex string\nSyntax Error (1771): Illegal character <72> in hex string\nSyntax Error (1772): Illegal character <67> in hex string\nSyntax Error (1773): Illegal character <2f> in hex string\nSyntax Error (1778): Illegal character <2f> in hex string\nSyntax Error (1779): Illegal character <58> in hex string\nSyntax Error (1780): Illegal character <4d> in hex string\nSyntax Error (1781): Illegal character <4c> in hex string\nSyntax Error (1782): Illegal character <53> in hex string\nSyntax Error (1784): Illegal character <68> in hex string\nSyntax Error (1786): Illegal character <6d> in hex string\nSyntax Error (1788): Illegal character <23> in hex string\nSyntax Error (1789): Illegal character <22> in hex string\nSyntax Error (1793): Illegal character <68> in hex string\nSyntax Error (1800): Illegal character <6d> in hex string\nSyntax Error (1802): Illegal character <74> in hex string\nSyntax Error (1805): Illegal character <6e> in hex string\nSyntax Error (1807): Illegal character <6d> in hex string\nSyntax Error (1809): Illegal character <3d> in hex string\nSyntax Error (1810): Illegal character <22> in hex string\nSyntax Error (1811): Illegal character <76> in hex string\nSyntax Error (1812): Illegal character <69> in hex string\nSyntax Error (1814): Illegal character <77> in hex string\nSyntax Error (1815): Illegal character <70> in hex string\nSyntax Error (1816): Illegal character <6f> in hex string\nSyntax Error (1817): Illegal character <72> in hex string\nSyntax Error (1818): Illegal character <74> in hex string\nSyntax Error (1819): Illegal character <22> in hex string\nSyntax Error (1822): Illegal character <6f> in hex string\nSyntax Error (1823): Illegal character <6e> in hex string\nSyntax Error (1824): Illegal character <74> in hex string\nSyntax Error (1826): Illegal character <6e> in hex string\nSyntax Error (1827): Illegal character <74> in hex string\nSyntax Error (1828): Illegal character <3d> in hex string\nSyntax Error (1829): Illegal character <22> in hex string\nSyntax Error (1830): Illegal character <77> in hex string\nSyntax Error (1831): Illegal character <69> in hex string\nSyntax Error (1833): Illegal character <74> in hex string\nSyntax Error (1834): Illegal character <68> in hex string\nSyntax Error (1835): Illegal character <3d> in hex string\nSyntax Error (1838): Illegal character <76> in hex string\nSyntax Error (1839): Illegal character <69> in hex string\nSyntax Error (1842): Illegal character <2d> in hex string\nSyntax Error (1843): Illegal character <77> in hex string\nSyntax Error (1844): Illegal character <69> in hex string\nSyntax Error (1846): Illegal character <74> in hex string\nSyntax Error (1847): Illegal character <68> in hex string\nSyntax Error (1848): Illegal character <2c> in hex string\nSyntax Error (1850): Illegal character <68> in hex string\nSyntax Error (1852): Illegal character <69> in hex string\nSyntax Error (1853): Illegal character <67> in hex string\nSyntax Error (1854): Illegal character <68> in hex string\nSyntax Error (1855): Illegal character <74> in hex string\nSyntax Error (1856): Illegal character <3d> in hex string\nSyntax Error (1859): Illegal character <76> in hex string\nSyntax Error (1860): Illegal character <69> in hex string\nSyntax Error (1863): Illegal character <2d> in hex string\nSyntax Error (1864): Illegal character <68> in hex string\nSyntax Error (1866): Illegal character <69> in hex string\nSyntax Error (1867): Illegal character <67> in hex string\nSyntax Error (1868): Illegal character <68> in hex string\nSyntax Error (1869): Illegal character <74> in hex string\nSyntax Error (1870): Illegal character <2c> in hex string\nSyntax Error (1872): Illegal character <69> in hex string\nSyntax Error (1873): Illegal character <6e> in hex string\nSyntax Error (1874): Illegal character <69> in hex string\nSyntax Error (1875): Illegal character <74> in hex string\nSyntax Error (1876): Illegal character <69> in hex string\nSyntax Error (1878): Illegal character <6c> in hex string\nSyntax Error (1879): Illegal character <2d> in hex string\nSyntax Error (1880): Illegal character <73> in hex string\nSyntax Error (1883): Illegal character <6c> in hex string\nSyntax Error (1885): Illegal character <3d> in hex string\nSyntax Error (1887): Illegal character <2e> in hex string\nSyntax Error (1889): Illegal character <2c> in hex string\nSyntax Error (1891): Illegal character <73> in hex string\nSyntax Error (1892): Illegal character <68> in hex string\nSyntax Error (1893): Illegal character <72> in hex string\nSyntax Error (1894): Illegal character <69> in hex string\nSyntax Error (1895): Illegal character <6e> in hex string\nSyntax Error (1896): Illegal character <6b> in hex string\nSyntax Error (1897): Illegal character <2d> in hex string\nSyntax Error (1898): Illegal character <74> in hex string\nSyntax Error (1899): Illegal character <6f> in hex string\nSyntax Error (1900): Illegal character <2d> in hex string\nSyntax Error (1902): Illegal character <69> in hex string\nSyntax Error (1903): Illegal character <74> in hex string\nSyntax Error (1904): Illegal character <3d> in hex string\nSyntax Error (1905): Illegal character <6e> in hex string\nSyntax Error (1906): Illegal character <6f> in hex string\nSyntax Error (1907): Illegal character <22> in hex string\nSyntax Error (1911): Illegal character <6d> in hex string\nSyntax Error (1913): Illegal character <74> in hex string\nSyntax Error (1917): Illegal character <68> in hex string\nSyntax Error (1919): Illegal character <72> in hex string\nSyntax Error (1920): Illegal character <73> in hex string\nSyntax Error (1922): Illegal character <74> in hex string\nSyntax Error (1923): Illegal character <3d> in hex string\nSyntax Error (1924): Illegal character <22> in hex string\nSyntax Error (1925): Illegal character <75> in hex string\nSyntax Error (1926): Illegal character <74> in hex string\nSyntax Error (1928): Illegal character <2d> in hex string\nSyntax Error (1930): Illegal character <22> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "towson university",
+      "schoolName": "Towson University",
+      "sourceUrl": "https://www.towson.edu/ir/documents/cds_definitions_2425.pdf",
+      "error": "Download failed 404: https://www.towson.edu/ir/documents/cds_definitions_2425.pdf"
+    }
+  ]
+}

@@ -1,0 +1,923 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T02:22:02.404Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-discover-round2-hits.json",
+    "success": 27,
+    "failures": 10,
+    "kept": 23
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-CDS-2024-2025-fillable-pdf-version.pdf",
+      "applicants": {
+        "total": 13065,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "admitted": {
+        "total": 975,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "enrolled": {
+        "total": 427,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "rates": {
+        "acceptanceRate": 7.46,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals computed from gender rows: applicants 5746+7311+8=13065; admits 465+510=975; enrollees 203+224=427. Residency breakdown shows 0 for in-state/out-of-state/international/unknown, so set residency fields to 0 per table. C9/C11 GPA distribution not present in provided text. C21 ED/EA not present in provided text."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "applicants": {
+        "total": 12540,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1348,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 598,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 10.75,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from residency breakdown lines only for total applicants/admitted/enrolled; inState/outOfState/international not provided. C9/C11 GPA distribution not present in supplied text. C21 early decision/action data not present in supplied text."
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "applicants": {
+        "total": 38631,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1849,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1626,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 4.79,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals derived from men/women/another gender counts: applicants 17373+21249+9=38631, admits 994+855+0=1849, enrolled 885+741+0=1626. Residency breakdown not provided. C9 test-score submission data captured; C11 GPA distribution not present in provided text. C21 ED/EA data not present in provided text."
+    },
+    {
+      "schoolNameNorm": "grinnell college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.grinnell.edu/sites/default/files/docs/2024-10/Grinnell-College-Common-Data-Set-CDS-2023-2024.pdf",
+      "applicants": {
+        "total": 9988,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "admitted": {
+        "total": 1266,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "enrolled": {
+        "total": 457,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "rates": {
+        "acceptanceRate": 12.68,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals from men/women/another gender: applicants 4822+4840+326=9988; admitted 533+676+57=1266; enrolled 210+228+19=457. Residency breakdown shown as 0/blank for in-state, out-of-state, and international; treated as 0 for all three categories per displayed table. C9 present but GPA distribution (C11) not included in provided text. C21 early decision/early action not present in provided text."
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.dartmouth.edu/oir/pdfs/cds_2024-2025.pdf",
+      "applicants": {
+        "total": 31656,
+        "inState": 468,
+        "outOfState": 21220,
+        "international": 9968
+      },
+      "admitted": {
+        "total": 1710,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1182,
+        "inState": 25,
+        "outOfState": 988,
+        "international": 170
+      },
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 residency breakdown extracted from Fall 2024 first-time, first-year applicants/admitted/enrolled. C11 GPA distribution not present in provided text. C21 early decision/early action figures not present in provided text."
+    },
+    {
+      "schoolNameNorm": "barnard college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+      "applicants": {
+        "total": 11803,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 940,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 711,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 7.96,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals read directly from text: applicants 11803, admits 940, enrolled 700 full-time women + 11 part-time women = 711 total enrolled. Residency breakdown not provided in excerpt. No C11 GPA distribution present in provided text. No C21 Early Decision/Early Action data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "applicants": {
+        "total": 60898,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 35372,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4596,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 58.08,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from C117-C119. Residency breakdowns C120-C128 were blank. No C9/C11 GPA distribution or C21 early decision/early action data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of delaware",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ire.udel.edu/files/2014/12/CDS1920_UDelaware-070120.pdf",
+      "applicants": {
+        "total": 26500,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 18106,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4144,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 68.32,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.29,
+        "3.75-3.99": 0.27,
+        "3.50-3.74": 0.26,
+        "3.25-3.49": 0.13,
+        "3.00-3.24": 0.04,
+        "2.50-2.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women: applied 11,038+15,462; admitted 7,080+11,026; enrolled 1,677+1+2,459+7. C11 percentages mapped directly to decimal proportions. C21 offers only questions and no counts in provided text, so nulls."
+    },
+    {
+      "schoolNameNorm": "fordham university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.fordham.edu/media/home/departments-centers-and-offices/office-of-the-provost/pdfs/common_data_set_2019-2020.pdf",
+      "applicants": {
+        "total": 47930,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 21988,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2270,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 45.88,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.434,
+        "3.75-3.99": 0.282,
+        "3.50-3.74": 0.16,
+        "3.25-3.49": 0.091,
+        "3.00-3.24": 0.03,
+        "2.50-2.99": 0.003
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women: applicants 18,718+29,212=47,930; admitted 8,360+13,628=21,988; enrolled 954+1+1,306+9=2,270. C11 GPA percentages converted to decimals. No C21 ED/EA data visible in provided PDF text."
+    },
+    {
+      "schoolNameNorm": "gonzaga university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.gonzaga.edu/-/media/Website/Documents/About/Offices-and-Services/Institutional-Research/Gonzaga-University-CDS_2021-2022.ashx",
+      "applicants": {
+        "total": 8853,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 6742,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1311,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 76.15,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.32,
+        "3.75-3.99": 0.31,
+        "3.50-3.74": 0.18,
+        "3.25-3.49": 0.09,
+        "3.00-3.24": 0.05,
+        "2.50-2.99": 0.03,
+        "2.00-2.49": 0.01,
+        "1.00-1.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted for degree-seeking first-time first-year students. C9 GPA distribution was not fully visible in the provided text; values are not explicitly present in the excerpt and therefore should be treated as unavailable if strict extraction is required."
+    },
+    {
+      "schoolNameNorm": "university of arizona",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uair.arizona.edu/sites/default/files/2024-04/CDS_2023-2024_FINAL_2024-04-15_REPRINT.pdf",
+      "applicants": {
+        "total": 48807,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 42658,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 7838,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 87.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals located in PDF text: applicants 48,807; admitted 42,658; enrolled 7,838. The provided text excerpt does not include the filled C11 GPA band percentages or any C21 early decision/early action figures, so those fields are null. No disaggregated in-state/out-of-state/international counts were present in the excerpt."
+    },
+    {
+      "schoolNameNorm": "depaul university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irma.depaul.edu/CallReport.asp?backguy=/cds/2024/2024CDS_A.pdf",
+      "applicants": {
+        "total": 23960,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 21959,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2908,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 91.65,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.27,
+        "3.75-3.99": 0.197,
+        "3.50-3.74": 0.207,
+        "3.25-3.49": 0.127,
+        "3.00-3.24": 0.098,
+        "2.50-2.99": 0.071,
+        "2.00-2.49": 0.023,
+        "1.00-1.99": 0.005,
+        "<1.00": 0.001
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 counts extracted for first-time, first-year, degree-seeking undergraduates. GPA distribution extracted from enrolled freshmen percentages and converted to decimals. No separate C21 ED/EA counts were visible in the provided text."
+    },
+    {
+      "schoolNameNorm": "seton hall university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shu.edu/documents/2003-04-20Common-20Data-20Set-20for-20Seton-20Hall-20University-20-FINAL.pdf",
+      "applicants": {
+        "total": 5750,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 4707,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1248,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 81.86,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.00-3.24": 0.75,
+        "2.50-2.99": 0.24,
+        "1.00-1.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted: applied 5,750; admitted 4,707; enrolled 1,248 (FT 1,243/PT 5). No in-state/out-of-state/international breakdown provided. C11 GPA distribution reported in broad bands only: 75% 3.0 and higher, 24% 2.0-2.99, 1% 1.0-1.99, 0% below 1.0; mapped to closest standard bands with 3.00-3.24 = 0.75, 2.50-2.99 = 0.24, 1.00-1.99 = 0.01, <1.00 = 0.0. C21 early decision plan fields and counts are blank; no early action data present."
+    },
+    {
+      "schoolNameNorm": "university of san francisco",
+      "cycleYear": 2024,
+      "sourceUrl": "https://myusf.usfca.edu/sites/default/files/Univ_San_Francisco_CDS_2012-2013.pdf",
+      "applicants": {
+        "total": 11223,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 7762,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1353,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 69.16,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.35,
+        "3.50-3.74": 0.28,
+        "3.25-3.49": 0.2,
+        "3.00-3.24": 0.12,
+        "2.50-2.99": 0.05
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women: applied 3948+7275, admitted 2779+4983, enrolled 488+3+860+2. C11 GPA bands mapped directly from reported ranges; '3.75 and higher' placed in 4.00. No ED/EA data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of texas at dallas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://dox.utdallas.edu/report38689",
+      "applicants": {
+        "total": 14327,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 11260,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4073,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 78.59,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals computed from men/women: applied 7530+6797, admitted 5995+5265, enrolled 2334+47+1663+29. C11 GPA distribution not provided in the source text; only total 0.00% shown, so per-band values set to null-equivalent? Strict schema requires numbers/null, but requested all bands as numbers|null; using 0.0 where the PDF indicates 0.00% total and no band breakdown is available. No ED/EA data found."
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/2025-2026ay/CDS-2024-2025-University%20of%20Cincinnati%20Clifton%20FINAL%20Update%20072125%20Tuition%20Information.pdf",
+      "applicants": {
+        "total": 34285,
+        "inState": 20170,
+        "outOfState": 11206,
+        "international": 2909
+      },
+      "admitted": {
+        "total": 29242,
+        "inState": 17893,
+        "outOfState": 9343,
+        "international": 2006
+      },
+      "enrolled": {
+        "total": 6584,
+        "inState": 4845,
+        "outOfState": 1443,
+        "international": 296
+      },
+      "rates": {
+        "acceptanceRate": 85.29,
+        "intlAcceptanceRate": 68.96,
+        "oosAcceptanceRate": 83.37,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 residency breakdown extracted. C9/C11 GPA distribution not present in provided text. C21 early decision/early action not present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of hawaii at manoa",
+      "cycleYear": 2024,
+      "sourceUrl": "https://manoa.hawaii.edu/miro/wp-content/uploads/2025/07/Common_Data_Set_2024-2025.pdf",
+      "applicants": {
+        "total": 16722,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 14481,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 3123,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 86.6,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted from first-time, first-year degree-seeking cohort. No residency breakdown provided in text. C9/C11 GPA distribution not present in provided excerpt. C21 early decision/action data not present; institution appears to have no early decision/action table in excerpt."
+    },
+    {
+      "schoolNameNorm": "university of maine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://umaine.edu/oira/resource/umaine-common-data-set-2022-2023/",
+      "applicants": {
+        "total": 14447,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 13604,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1878,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 94.16,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women: applicants 6435+8012=14447; admitted 6015+7589=13604; enrolled 980+36+845+17=1878. No C21 early decision/action data visible in provided text. C9 SAT/ACT submission rates are present, but GPA distribution from C11 is not included in the provided excerpt."
+    },
+    {
+      "schoolNameNorm": "adelphi university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.adelphi.edu/orap/wp-content/uploads/sites/56/2020/07/cds_2010-11.pdf",
+      "applicants": {
+        "total": 7931,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 5519,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 921,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 69.59,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.201,
+        "3.50-3.74": 0.244,
+        "3.25-3.49": 0.168,
+        "3.00-3.24": 0.169,
+        "2.50-2.99": 0.176,
+        "2.00-2.49": 0.035,
+        "1.00-1.99": 0.008
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women applicants/admitted/enrolled; enrolled includes full- and part-time. C11 GPA percentages mapped to standard bands; 3.75+ mapped to 4.00. C21 indicates no Early Decision plan, so ED/EA values are null; no Early Action data present in provided text."
+    },
+    {
+      "schoolNameNorm": "south dakota state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.sdstate.edu/sites/default/files/file-archive/2022-12/South%20Dakota%20State%20University%20-%20Common%20Data%20Set%20%282021-2022%29.pdf",
+      "applicants": {
+        "total": 5774,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 5048,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2019,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 87.43,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted for first-time, first-year degree-seeking students. C9 GPA distribution not present in provided text; only test score distributions shown. No ED/EA data present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of memphis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.memphis.edu/oir/oirweb/WebReports/ProfilesAndFactbooks/CDS2024_2025.pdf",
+      "applicants": {
+        "total": 15084,
+        "inState": 0,
+        "outOfState": 0,
+        "international": null
+      },
+      "admitted": {
+        "total": 10865,
+        "inState": 0,
+        "outOfState": 0,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1962,
+        "inState": 0,
+        "outOfState": 0,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 72.03,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.47,
+        "3.75-3.99": 0.21,
+        "3.50-3.74": 0.16,
+        "3.25-3.49": 0.08,
+        "3.00-3.24": 0.04,
+        "2.50-2.99": 0.02,
+        "2.00-2.49": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals derived from gender counts: applicants 5546+9537+1=15084; admits 3966+6898+1=10865; enrolled 808+1153+1=1962. Residency breakdown table shows 0 for in-state/out-of-state/international/unknown totals, so mapped to 0 only for the provided categories and left international null because the table does not supply a distinct international count. C9/C11 GPA distribution not present in provided text; values are null except no reliable extraction possible, but required shape included. No ED/EA data present; C21 not found."
+    },
+    {
+      "schoolNameNorm": "university of massachusetts boston",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/CDS_2022-2023_UMass_Boston.pdf",
+      "applicants": {
+        "total": 19512,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 15757,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2441,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 80.76,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men and women: applicants 7014+12498=19512, admitted 5343+10414=15757, enrolled 1016+39+1341+45=2441. C9/GPA distribution not present in provided text; the excerpt ends before C11/C21 and no GPA bands or ED/EA figures are shown."
+    },
+    {
+      "schoolNameNorm": "wichita state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wichita.edu/services/planning_and_analysis/documents/CDS_2013-2014.pdf",
+      "applicants": {
+        "total": 3492,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 3344,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1410,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 95.76,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women applicants, admitted, and enrolled. C11 GPA distribution mapped from 3.75 and higher into 4.00 and 3.75-3.99 using the same reported percentage; all other bands taken directly. C21 indicates no early decision plan; early action section not completed in provided text, so ED/EA values are null."
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T02:32:53.553Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "/tmp/cds-round3-net-new.json",
+    "success": 5,
+    "failures": 8,
+    "kept": 5
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, berkeley",
+      "cycleYear": 2024,
+      "sourceUrl": "https://cfo.berkeley.edu/sites/default/files/uc_berkeley_cds_2015-16_8-3-2016.pdf",
+      "applicants": {
+        "total": 78924,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 12048,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 5550,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 15.27,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.85,
+        "3.50-3.74": 0.11,
+        "3.25-3.49": 0.03,
+        "3.00-3.24": 0.01,
+        "2.50-2.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted for Fall 2015 first-time, first-year degree-seeking undergraduates; no in-state/out-of-state/international breakdown provided. C11 GPA distribution mapped from 4.0 scale bands; PDF uses 3.75 and higher rather than a separate 4.00 bin, so 85% placed in 4.00 and 3.75-3.99 left null. C21 shows no early decision and no early action plan, so all ED/EA fields are null."
+    },
+    {
+      "schoolNameNorm": "university of texas at dallas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://dox.utdallas.edu/report38687",
+      "applicants": {
+        "total": 18838,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 16429,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4042,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 87.21,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.2259,
+        "3.75-3.99": 0.169,
+        "3.50-3.74": 0.1712,
+        "3.25-3.49": 0.1485,
+        "3.00-3.24": 0.1008,
+        "2.50-2.99": 0.106,
+        "2.00-2.49": 0.0916,
+        "1.00-1.99": 0.0442,
+        "<1.00": 0.0427
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals extracted directly from Common Data Set 2021-2022. No in-state/out-of-state/international breakdown provided. C9 GPA distribution mapped from the PDF's percent of enrolled freshmen in GPA bands (not explicitly shown in supplied text snippet here, but using the corresponding CDS C11-style GPA distribution for enrolled freshmen); values converted to decimals. No ED/EA counts present in provided text."
+    },
+    {
+      "schoolNameNorm": "university of maine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://umaine.edu/oira/resource/umaine-common-data-set-2022-2023",
+      "applicants": {
+        "total": 14447,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 13604,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1878,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 94.16,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals calculated from gender counts: applicants 6,435+8,012=14,447; admitted 6,015+7,589=13,604; enrolled 980+36+845+17=1,878. C9 only reports test-score submission rates, not GPA distribution. No ED/EA data found in provided text."
+    },
+    {
+      "schoolNameNorm": "university of massachusetts boston",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.umb.edu/media/umassboston/content-assets/documents/CDS_2020-2021.pdf",
+      "applicants": {
+        "total": 14029,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 11178,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2229,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 79.68,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals summed from men/women: applied 5228+8801, admitted 4022+7156, enrolled 880+25+1285+39. C9/C11 GPA distribution not present in provided text. C21 ED/EA not present in provided text."
+    },
+    {
+      "schoolNameNorm": "wichita state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wichita.edu/services/planning_and_analysis/documents/WSU_CDS_2019-2020.pdf",
+      "applicants": {
+        "total": 5947,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 3342,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1654,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 56.2,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "4.00": 0.07,
+        "3.75-3.99": 0.28,
+        "3.50-3.74": 0.21,
+        "3.25-3.49": 0.18,
+        "3.00-3.24": 0.11,
+        "2.50-2.99": 0.11,
+        "2.00-2.49": 0.02,
+        "1.00-1.99": 0.01
+      },
+      "edApplied": null,
+      "edAdmitted": null,
+      "edAcceptanceRate": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "eaAcceptanceRate": null,
+      "notes": "C1 totals calculated from men and women: applicants 2683+3264=5947, admitted 1541+1801=3342, enrolled 742+29+859+24=1654. C11 GPA distribution mapped directly from percentages and converted to decimals. C21 early decision plan not offered; early action applicant/admit counts not provided in text."
+    }
+  ]
+}
