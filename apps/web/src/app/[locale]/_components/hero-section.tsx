@@ -252,7 +252,22 @@ function LumniHeroScene({
             </div>
 
             <div className="relative mx-auto my-8 flex h-52 w-full max-w-[260px] items-center justify-center sm:h-60">
-              <div className="absolute h-36 w-36 rounded-full bg-[var(--lumni-moon)] shadow-[0_0_0_1px_rgba(255,255,255,0.18)] sm:h-40 sm:w-40" />
+              <motion.div
+                className="absolute h-36 w-36 rounded-full bg-[var(--lumni-moon)] shadow-[0_0_0_1px_rgba(255,255,255,0.18)] sm:h-40 sm:w-40"
+                animate={
+                  reduced
+                    ? undefined
+                    : {
+                        scale: [1, 1.035, 1],
+                        boxShadow: [
+                          '0 0 0 1px rgba(255,255,255,0.18), 0 0 0 rgba(221,184,90,0)',
+                          '0 0 0 1px rgba(255,255,255,0.22), 0 0 34px var(--lumni-moon-soft)',
+                          '0 0 0 1px rgba(255,255,255,0.18), 0 0 0 rgba(221,184,90,0)',
+                        ],
+                      }
+                }
+                transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
               <div className="absolute h-44 w-44 rounded-full border border-[color:var(--lumni-hero-line)] sm:h-52 sm:w-52" />
               <LumniMark
                 showDisc={false}
@@ -291,8 +306,18 @@ function LumniHeroScene({
 
               <div className="mt-4 space-y-2.5">
                 {copy.rows.slice(0, 4).map((row, index) => (
-                  <div
+                  <motion.div
                     key={row.name}
+                    initial={false}
+                    animate={
+                      reduced
+                        ? undefined
+                        : {
+                            y: activeRow === index ? -1 : 0,
+                            scale: activeRow === index ? 1.01 : 1,
+                          }
+                    }
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                     className={cn(
                       'grid gap-3 rounded-lg border px-3 py-3 transition duration-300 sm:grid-cols-[1fr_auto] sm:items-center',
                       activeRow === index
@@ -309,9 +334,20 @@ function LumniHeroScene({
                         <span className="h-1 w-1 rounded-full bg-[var(--lumni-hero-muted)]" />
                         <span className="font-mono">{row.probability}%</span>
                       </div>
+                      <div className="mt-2 h-1 overflow-hidden rounded-full bg-[color:var(--lumni-hero-inset)]">
+                        <motion.div
+                          className="h-full rounded-full bg-[var(--lumni-moon)]"
+                          initial={false}
+                          animate={{
+                            width: activeRow === index ? `${row.probability}%` : '18%',
+                            opacity: activeRow === index ? 1 : 0.42,
+                          }}
+                          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                        />
+                      </div>
                     </div>
                     <AdmissionTierBadge tier={row.tone} probability={row.probability} />
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -320,6 +356,14 @@ function LumniHeroScene({
               <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
                 <div className="text-2xs uppercase tracking-[0.18em] text-[var(--lumni-hero-muted)]">
                   {copy.tasksLabel}
+                </div>
+                <div className="mt-3 h-1 overflow-hidden rounded-full bg-[color:var(--lumni-hero-inset)]">
+                  <motion.div
+                    className="h-full rounded-full bg-[var(--lumni-moon)]"
+                    initial={false}
+                    animate={{ width: `${((activeTask + 1) / copy.tasks.length) * 100}%` }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  />
                 </div>
                 <div className="mt-3 space-y-2.5">
                   {copy.tasks.map((task, index) => (
@@ -352,9 +396,15 @@ function LumniHeroScene({
                   <StatusDot status="ai" />
                   {copy.assistantBadge}
                 </div>
-                <p className="mt-3 min-h-[72px] text-sm leading-7 text-[var(--lumni-hero-text)]">
+                <motion.p
+                  key={activeMessage}
+                  initial={reduced ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-3 min-h-[72px] text-sm leading-7 text-[var(--lumni-hero-text)]"
+                >
                   {activeMessage}
-                </p>
+                </motion.p>
                 <div className="lumni-disclosure-on-ink mt-3 border-t border-dashed border-[color:var(--lumni-hero-line)] pt-3">
                   <AIDisclosure
                     inputs={disclosure.inputs}
