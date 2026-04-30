@@ -42,7 +42,7 @@ export function CTAFooter() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="btn-elegant-glow h-12 rounded-full border border-primary/10 bg-[var(--landing-fg)] px-8 text-sm text-[var(--landing-bg)] shadow-[var(--landing-shadow-elevated)] hover:bg-[var(--landing-fg)]/92 sm:h-14 sm:text-base"
+                  className="btn-elegant-glow h-12 rounded-[var(--theme-radius-button)] border border-primary/10 bg-[var(--landing-fg)] px-8 text-sm text-[var(--landing-bg)] shadow-[var(--landing-shadow-elevated)] hover:bg-[var(--landing-fg)]/92 sm:h-14 sm:text-base"
                 >
                   {home.cta.primary}
                   <ArrowRight className="h-4 w-4" />
@@ -52,7 +52,7 @@ export function CTAFooter() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-12 rounded-full border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/72 px-8 text-sm text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:text-base"
+                  className="h-12 rounded-[var(--theme-radius-button)] border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/72 px-8 text-sm text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:text-base"
                 >
                   {home.cta.secondary}
                 </Button>

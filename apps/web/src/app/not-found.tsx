@@ -53,7 +53,8 @@ export default function NotFound() {
       <body
         style={{
           minHeight: '100vh',
-          background: 'linear-gradient(180deg, #f7f1e6 0%, #fff9ef 55%, #f3e7d6 100%)',
+          background:
+            'linear-gradient(180deg, var(--ds-background, #f7f1e6) 0%, var(--ds-card, #fff9ef) 55%, var(--ds-surface-subtle, #f3e7d6) 100%)',
           display: 'flex',
           flexDirection: 'column',
           fontFamily:
@@ -79,7 +80,8 @@ export default function NotFound() {
                 fontSize: 'clamp(8rem, 20vw, 12rem)',
                 fontWeight: 'bold',
                 lineHeight: 1,
-                background: 'linear-gradient(135deg, #1d1813, #ddb85a, #e76f8a)',
+                background:
+                  'linear-gradient(135deg, var(--ds-foreground, #1d1813), var(--ds-warning, #ddb85a), var(--ds-info, #6574ff))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -95,7 +97,7 @@ export default function NotFound() {
               style={{
                 fontSize: '1.875rem',
                 fontWeight: 'bold',
-                color: '#1d1813',
+                color: 'var(--ds-foreground, #1d1813)',
                 marginBottom: '1rem',
               }}
             >
@@ -103,7 +105,7 @@ export default function NotFound() {
             </h2>
             <p
               style={{
-                color: '#6f665b',
+                color: 'var(--ds-muted-foreground, #6f665b)',
                 marginBottom: '2rem',
                 fontSize: '1.125rem',
                 lineHeight: 1.6,
@@ -120,9 +122,9 @@ export default function NotFound() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '0.5rem',
-                background: '#1d1813',
+                background: 'var(--ds-primary, #1d1813)',
                 padding: '0.75rem 1.5rem',
-                color: '#fff7ea',
+                color: 'var(--ds-primary-foreground, #fff7ea)',
                 fontWeight: 500,
                 textDecoration: 'none',
                 transition: 'opacity 0.2s',
@@ -136,13 +138,13 @@ export default function NotFound() {
               style={{
                 marginTop: '3rem',
                 paddingTop: '2rem',
-                borderTop: '1px solid #d8c8b2',
+                borderTop: '1px solid var(--ds-border, #d8c8b2)',
               }}
             >
               <p
                 style={{
                   fontSize: '0.875rem',
-                  color: '#6f665b',
+                  color: 'var(--ds-muted-foreground, #6f665b)',
                   marginBottom: '1rem',
                 }}
               >
@@ -158,19 +160,31 @@ export default function NotFound() {
               >
                 <Link
                   href={`/${locale}/cases`}
-                  style={{ color: '#6f665b', textDecoration: 'none', fontSize: '0.875rem' }}
+                  style={{
+                    color: 'var(--ds-muted-foreground, #6f665b)',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                  }}
                 >
                   {t.casesLib}
                 </Link>
                 <Link
                   href={`/${locale}/ranking`}
-                  style={{ color: '#6f665b', textDecoration: 'none', fontSize: '0.875rem' }}
+                  style={{
+                    color: 'var(--ds-muted-foreground, #6f665b)',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                  }}
                 >
                   {t.ranking}
                 </Link>
                 <Link
                   href={`/${locale}/prediction`}
-                  style={{ color: '#6f665b', textDecoration: 'none', fontSize: '0.875rem' }}
+                  style={{
+                    color: 'var(--ds-muted-foreground, #6f665b)',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                  }}
                 >
                   {t.prediction}
                 </Link>
@@ -189,7 +203,7 @@ export default function NotFound() {
           <p
             style={{
               fontSize: '0.875rem',
-              color: '#6f665b',
+              color: 'var(--ds-muted-foreground, #6f665b)',
               margin: 0,
             }}
           >

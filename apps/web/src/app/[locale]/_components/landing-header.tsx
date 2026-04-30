@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import { useReducedMotion } from 'framer-motion';
-import { COLOR_PALETTES, getColorThemeLabel, type ColorPalette } from '@study-abroad/shared';
 import { ArrowUpRight, Globe, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +19,6 @@ import { type Locale } from '@/lib/i18n/config';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
-import { useColorPalette } from '@/hooks/use-color-palette';
 import { useHomeContent } from './home-content';
 
 const localeCodes: Record<Locale, string> = {
@@ -38,15 +35,12 @@ type NavItem = {
 export function LandingHeader() {
   const { user } = useAuthStore();
   const home = useHomeContent();
-  const tPalette = useTranslations('ui.colorPalette');
-  const { palette, setPalette } = useColorPalette();
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as Locale;
   const prefersReducedMotion = useReducedMotion();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
 
   const navItems: NavItem[] = [
     { label: home.nav.product, href: '#features', anchor: true },
@@ -84,7 +78,7 @@ export function LandingHeader() {
         className={cn(
           'fixed inset-x-0 top-0 z-50 transition-all duration-300',
           scrolled
-            ? 'border-b border-[color:var(--landing-border-strong)] bg-[color:var(--landing-glass)]/92 backdrop-blur-xl'
+            ? 'border-b border-[color:var(--landing-border-strong)] bg-[color:var(--landing-glass)] backdrop-blur-[var(--theme-backdrop-blur)]'
             : 'border-b border-transparent bg-transparent'
         )}
       >
@@ -128,7 +122,7 @@ export function LandingHeader() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full px-4 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
+                  className="rounded-[var(--theme-radius-button)] px-4 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
                 >
                   {home.nav.signIn}
                 </Button>
@@ -136,7 +130,7 @@ export function LandingHeader() {
               <Link href="/register">
                 <Button
                   size="sm"
-                  className="rounded-full border border-primary/10 bg-[var(--landing-fg)] px-4 text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)] hover:bg-[var(--landing-fg)]/92 hover:shadow-[var(--landing-shadow-elevated)]"
+                  className="rounded-[var(--theme-radius-button)] border border-primary/10 bg-[var(--landing-fg)] px-4 text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)] hover:bg-[var(--landing-fg)]/92 hover:shadow-[var(--landing-shadow-elevated)]"
                 >
                   {home.nav.getStarted}
                   <ArrowUpRight className="h-3.5 w-3.5" />
@@ -144,15 +138,15 @@ export function LandingHeader() {
               </Link>
             </div>
 
-            <ColorPaletteMenu className="shrink-0 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]" />
-            <ThemeToggle className="shrink-0 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
+            <ColorPaletteMenu className="shrink-0 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]" />
+            <ThemeToggle className="shrink-0 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
+                  className="rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
                   suppressHydrationWarning
                 >
                   <Globe className="h-3.5 w-3.5" />
@@ -195,7 +189,7 @@ export function LandingHeader() {
       <div
         className={cn(
           /* §7 Tooling 层:导航覆盖层降级圆角 rounded-xl → rounded-lg (marketing 层控制在 xl 以内) */
-          'fixed inset-x-4 top-[78px] z-40 origin-top rounded-lg border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/95 px-4 py-4 shadow-[var(--landing-shadow-elevated)] backdrop-blur-xl transition duration-300 lg:hidden',
+          'fixed inset-x-4 top-[78px] z-40 origin-top rounded-lg border border-[color:var(--landing-border-strong)] bg-[color:var(--theme-popover-bg)] px-4 py-4 shadow-[var(--landing-shadow-elevated)] backdrop-blur-[var(--theme-backdrop-blur)] transition duration-300 lg:hidden',
           mobileMenuOpen
             ? 'pointer-events-auto translate-y-0 opacity-100'
             : 'pointer-events-none -translate-y-2 opacity-0',
@@ -230,46 +224,24 @@ export function LandingHeader() {
           <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
             <Button
               variant="outline"
-              className="w-full rounded-full border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)]"
+              className="w-full rounded-[var(--theme-radius-button)] border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)]"
             >
               {home.nav.signIn}
             </Button>
           </Link>
           <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-            <Button className="w-full rounded-full bg-[var(--landing-fg)] text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)]">
+            <Button className="w-full rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] text-[var(--landing-bg)] shadow-[var(--landing-shadow-card)]">
               {home.nav.getStarted}
             </Button>
           </Link>
         </div>
 
-        <div className="mt-4 border-t border-[color:var(--landing-border)] pt-4">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--landing-subtle)]">
-            {tPalette('menuLabel')}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {COLOR_PALETTES.map((id: ColorPalette) => (
-              <Button
-                key={id}
-                type="button"
-                variant="outline"
-                size="sm"
-                className={cn(
-                  'rounded-full border-[color:var(--landing-border)] text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]',
-                  palette === id &&
-                    'border-transparent bg-[var(--landing-fg)] text-[var(--landing-bg)] hover:bg-[var(--landing-fg)]/90'
-                )}
-                onClick={() => {
-                  setPalette(id);
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {getColorThemeLabel(id, labelLocale)}
-              </Button>
-            ))}
-          </div>
-          <div className="mt-3 flex justify-end">
-            <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
-          </div>
+        <div className="mt-4 flex items-center justify-end gap-2 border-t border-[color:var(--landing-border)] pt-4">
+          <ColorPaletteMenu
+            align="end"
+            className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]"
+          />
+          <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
         </div>
       </div>
     </>

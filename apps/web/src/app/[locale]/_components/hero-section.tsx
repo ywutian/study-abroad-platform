@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useLocale, useTranslations } from 'next-intl';
-import { COLOR_PALETTES, getColorThemeLabel, type ColorPalette } from '@study-abroad/shared';
+import { useTranslations } from 'next-intl';
 import { ArrowRight, CheckCircle2, ChevronRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { AdmissionTierBadge, AIDisclosure, StatusDot } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { LumniMark } from '@/components/ui/lumni-mark';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { useColorPalette } from '@/hooks/use-color-palette';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useHomeContent } from './home-content';
@@ -44,16 +41,12 @@ type HeroConsoleCopy = {
 
 export function HeroSection() {
   const home = useHomeContent();
-  const tPalette = useTranslations('ui.colorPalette');
-  const locale = useLocale();
-  const { palette, setPalette } = useColorPalette();
   const prefersReducedMotion = useReducedMotion();
-  const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
 
   return (
     <section className="landing-hero-shell relative overflow-hidden pt-32 pb-20 sm:pt-36 lg:pt-44 lg:pb-28">
       <div className="landing-canvas-texture" />
-      <div className="landing-grid-mask absolute inset-0 opacity-35" />
+      <div className="landing-grid-mask absolute inset-0" />
 
       <PageContainer variant="marketing" className="relative">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
@@ -85,7 +78,7 @@ export function HeroSection() {
               <Link href="/register">
                 <Button
                   size="lg"
-                  className="h-12 min-w-[160px] rounded-full bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] transition-colors hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
+                  className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] transition-colors hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
                 >
                   {home.hero.primaryCta}
                   <ArrowRight className="h-4 w-4" />
@@ -95,40 +88,11 @@ export function HeroSection() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-12 min-w-[140px] rounded-full border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/52 px-7 text-sm text-[var(--landing-fg)] transition-colors hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[160px] sm:px-8 sm:text-base"
+                  className="h-12 min-w-[140px] rounded-[var(--theme-radius-button)] border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/52 px-7 text-sm text-[var(--landing-fg)] transition-colors hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[160px] sm:px-8 sm:text-base"
                 >
                   {home.hero.secondaryCta}
                 </Button>
               </Link>
-            </div>
-
-            <div className="mt-8 max-w-xl rounded-2xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/45 p-4 backdrop-blur-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--landing-subtle)]">
-                {tPalette('menuLabel')}
-              </p>
-              <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {COLOR_PALETTES.map((id: ColorPalette) => (
-                    <Button
-                      key={id}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        'rounded-full border-[color:var(--landing-border-strong)] bg-transparent text-sm text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]',
-                        palette === id &&
-                          'border-transparent bg-[var(--landing-fg)] text-[var(--landing-bg)] hover:bg-[var(--landing-fg)]/90'
-                      )}
-                      onClick={() => setPalette(id)}
-                    >
-                      {getColorThemeLabel(id, labelLocale)}
-                    </Button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 border-t border-[color:var(--landing-border)] pt-3 sm:border-t-0 sm:pt-0 sm:border-l sm:border-[color:var(--landing-border)] sm:pl-4">
-                  <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
-                </div>
-              </div>
             </div>
 
             <div className="mt-8 grid grid-cols-1 gap-y-3 gap-x-6 text-sm text-[var(--landing-muted)] sm:grid-cols-2 max-w-lg">
@@ -175,14 +139,16 @@ function MobileLumniCommandPreview() {
   const primaryRow = copy.rows[0];
 
   return (
-    <div className="relative mt-7 overflow-hidden rounded-lg border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-ink)] p-3 text-[#f6edde] shadow-[var(--landing-shadow-soft)] lg:hidden">
-      <div className="lumni-night-grid pointer-events-none absolute inset-0 opacity-60" />
+    <div className="relative mt-7 overflow-hidden rounded-lg border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-shell)] p-3 text-[var(--lumni-hero-text)] shadow-[var(--landing-shadow-soft)] lg:hidden">
+      <div className="lumni-night-grid pointer-events-none absolute inset-0" />
       <div className="relative flex items-center justify-between gap-3 rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] px-3 py-2.5">
         <div>
-          <div className="text-2xs uppercase tracking-[0.2em] text-[#a99b88]">{copy.workspace}</div>
-          <div className="mt-0.5 text-xs text-[#d8c8b2]">{copy.workflowLine}</div>
+          <div className="text-2xs uppercase tracking-[0.2em] text-[var(--lumni-hero-muted)]">
+            {copy.workspace}
+          </div>
+          <div className="mt-0.5 text-xs text-[var(--lumni-hero-soft)]">{copy.workflowLine}</div>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full border border-[color:var(--lumni-hero-line)] px-2 py-1 text-2xs uppercase tracking-[0.14em] text-[#d8c8b2]">
+        <div className="flex items-center gap-1.5 rounded-full border border-[color:var(--lumni-hero-line)] px-2 py-1 text-2xs uppercase tracking-[0.14em] text-[var(--lumni-hero-soft)]">
           <StatusDot status="success" pulse />
           {copy.statusReady}
         </div>
@@ -195,18 +161,20 @@ function MobileLumniCommandPreview() {
             <LumniMark
               showDisc={false}
               showMoon={false}
-              className="relative h-24 w-24 text-[var(--lumni-hero-ink)]"
+              className="relative h-24 w-24 text-[var(--lumni-hero-mark)]"
               iconClassName="h-full w-full"
             />
           </div>
         </div>
 
         <div className="min-w-0 rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-3">
-          <div className="text-2xs uppercase tracking-[0.2em] text-[#a99b88]">{copy.termLabel}</div>
-          <div className="mt-1 text-base font-semibold tracking-tight text-[#f6edde]">
+          <div className="text-2xs uppercase tracking-[0.2em] text-[var(--lumni-hero-muted)]">
+            {copy.termLabel}
+          </div>
+          <div className="mt-1 text-base font-semibold tracking-tight text-[var(--lumni-hero-text)]">
             {copy.title}
           </div>
-          <div className="mt-3 rounded-md border border-[color:var(--lumni-moon)] bg-white/10 px-2.5 py-2">
+          <div className="mt-3 rounded-md border border-[color:var(--lumni-moon)] bg-[color:var(--lumni-hero-active)] px-2.5 py-2">
             <div className="flex items-center justify-between gap-2">
               <span className="truncate text-sm font-medium">{primaryRow.name}</span>
               <span className="shrink-0 rounded-full bg-[#fff4e2] px-2 py-0.5 text-2xs font-medium text-[#8a5f12]">
@@ -214,7 +182,7 @@ function MobileLumniCommandPreview() {
               </span>
             </div>
           </div>
-          <div className="mt-3 flex items-start gap-2 text-xs leading-5 text-[#d8c8b2]">
+          <div className="mt-3 flex items-start gap-2 text-xs leading-5 text-[var(--lumni-hero-soft)]">
             <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--lumni-moon)]" />
             <span>{copy.tasks[0]}</span>
           </div>
@@ -256,17 +224,17 @@ function LumniHeroScene({
 
   return (
     <div className="relative mx-auto w-full max-w-[660px] lg:ml-4 xl:ml-10">
-      <div className="group relative overflow-hidden rounded-xl border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-ink)] p-3 text-[#f6edde] shadow-[var(--landing-shadow-elevated)] sm:p-4">
-        <div className="lumni-night-grid absolute inset-0 opacity-70" />
+      <div className="group relative overflow-hidden rounded-xl border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-shell)] p-3 text-[var(--lumni-hero-text)] shadow-[var(--landing-shadow-elevated)] sm:p-4">
+        <div className="lumni-night-grid absolute inset-0" />
 
         <div className="relative mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] px-4 py-3">
           <div>
-            <div className="text-2xs uppercase tracking-[0.22em] text-[#a99b88]">
+            <div className="text-2xs uppercase tracking-[0.22em] text-[var(--lumni-hero-muted)]">
               {copy.workspace}
             </div>
-            <div className="mt-1 text-sm text-[#d8c8b2]">{copy.workflowLine}</div>
+            <div className="mt-1 text-sm text-[var(--lumni-hero-soft)]">{copy.workflowLine}</div>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1.5 text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+          <div className="flex items-center gap-2 rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1.5 text-2xs uppercase tracking-[0.18em] text-[var(--lumni-hero-soft)]">
             <StatusDot status="success" pulse />
             {copy.statusReady}
           </div>
@@ -275,33 +243,33 @@ function LumniHeroScene({
         <div className="relative grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="flex min-h-[360px] flex-col justify-between rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-5">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-2xs uppercase tracking-[0.22em] text-[#d8c8b2]">
+              <div className="text-2xs uppercase tracking-[0.22em] text-[var(--lumni-hero-soft)]">
                 {copy.signalLabel}
               </div>
-              <div className="text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+              <div className="text-2xs uppercase tracking-[0.18em] text-[var(--lumni-hero-soft)]">
                 {copy.symbolLabel}
               </div>
             </div>
 
             <div className="relative mx-auto my-8 flex h-52 w-full max-w-[260px] items-center justify-center sm:h-60">
               <div className="absolute h-36 w-36 rounded-full bg-[var(--lumni-moon)] shadow-[0_0_0_1px_rgba(255,255,255,0.18)] sm:h-40 sm:w-40" />
-              <div className="absolute h-44 w-44 rounded-full border border-white/10 sm:h-52 sm:w-52" />
+              <div className="absolute h-44 w-44 rounded-full border border-[color:var(--lumni-hero-line)] sm:h-52 sm:w-52" />
               <LumniMark
                 showDisc={false}
                 showMoon={false}
-                className="relative h-48 w-48 text-[var(--lumni-hero-ink)] sm:h-56 sm:w-56"
+                className="relative h-48 w-48 text-[var(--lumni-hero-mark)] sm:h-56 sm:w-56"
                 iconClassName="h-full w-full"
               />
             </div>
 
-            <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-black/15 px-4 py-4">
-              <div className="text-2xs uppercase tracking-[0.22em] text-[#a99b88]">
+            <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-inset)] px-4 py-4">
+              <div className="text-2xs uppercase tracking-[0.22em] text-[var(--lumni-hero-muted)]">
                 {copy.workspace}
               </div>
-              <div className="mt-2 text-xl font-semibold tracking-tight text-[#f6edde]">
+              <div className="mt-2 text-xl font-semibold tracking-tight text-[var(--lumni-hero-text)]">
                 {copy.profileLabel}
               </div>
-              <div className="mt-1 text-sm text-[#d8c8b2]">{copy.profileMeta}</div>
+              <div className="mt-1 text-sm text-[var(--lumni-hero-soft)]">{copy.profileMeta}</div>
             </div>
           </div>
 
@@ -309,14 +277,14 @@ function LumniHeroScene({
             <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-2xs uppercase tracking-[0.22em] text-[#a99b88]">
+                  <div className="text-2xs uppercase tracking-[0.22em] text-[var(--lumni-hero-muted)]">
                     {copy.termLabel}
                   </div>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#f6edde]">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[var(--lumni-hero-text)]">
                     {copy.title}
                   </h2>
                 </div>
-                <div className="rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1 text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+                <div className="rounded-full border border-[color:var(--lumni-hero-line)] px-3 py-1 text-2xs uppercase tracking-[0.18em] text-[var(--lumni-hero-soft)]">
                   {copy.statusLive}
                 </div>
               </div>
@@ -328,15 +296,17 @@ function LumniHeroScene({
                     className={cn(
                       'grid gap-3 rounded-lg border px-3 py-3 transition duration-300 sm:grid-cols-[1fr_auto] sm:items-center',
                       activeRow === index
-                        ? 'border-[color:var(--lumni-moon)] bg-white/10'
-                        : 'border-[color:var(--lumni-hero-line)] bg-black/10'
+                        ? 'border-[color:var(--lumni-moon)] bg-[color:var(--lumni-hero-active)]'
+                        : 'border-[color:var(--lumni-hero-line)] bg-[color:var(--lumni-hero-inset)]'
                     )}
                   >
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-[#f6edde]">{row.name}</div>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-[#a99b88]">
+                      <div className="truncate text-sm font-medium text-[var(--lumni-hero-text)]">
+                        {row.name}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-[var(--lumni-hero-muted)]">
                         <span>{row.status}</span>
-                        <span className="h-1 w-1 rounded-full bg-[#a99b88]" />
+                        <span className="h-1 w-1 rounded-full bg-[var(--lumni-hero-muted)]" />
                         <span className="font-mono">{row.probability}%</span>
                       </div>
                     </div>
@@ -348,19 +318,28 @@ function LumniHeroScene({
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
-                <div className="text-2xs uppercase tracking-[0.18em] text-[#a99b88]">
+                <div className="text-2xs uppercase tracking-[0.18em] text-[var(--lumni-hero-muted)]">
                   {copy.tasksLabel}
                 </div>
                 <div className="mt-3 space-y-2.5">
                   {copy.tasks.map((task, index) => (
-                    <div key={task} className="flex items-start gap-2.5 text-sm text-[#d8c8b2]">
+                    <div
+                      key={task}
+                      className="flex items-start gap-2.5 text-sm text-[var(--lumni-hero-soft)]"
+                    >
                       <CheckCircle2
                         className={cn(
                           'mt-0.5 h-4 w-4 shrink-0',
-                          index <= activeTask ? 'text-[var(--lumni-moon)]' : 'text-[#9a8c79]'
+                          index <= activeTask
+                            ? 'text-[var(--lumni-moon)]'
+                            : 'text-[var(--lumni-hero-muted)]'
                         )}
                       />
-                      <span className={cn(index < activeTask && 'text-[#9a8c79] line-through')}>
+                      <span
+                        className={cn(
+                          index < activeTask && 'text-[var(--lumni-hero-muted)] line-through'
+                        )}
+                      >
                         {task}
                       </span>
                     </div>
@@ -369,11 +348,11 @@ function LumniHeroScene({
               </div>
 
               <div className="rounded-lg border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-4">
-                <div className="inline-flex items-center gap-2 rounded-md border border-[color:var(--lumni-hero-line)] px-2.5 py-1.5 text-2xs uppercase tracking-[0.18em] text-[#d8c8b2]">
+                <div className="inline-flex items-center gap-2 rounded-md border border-[color:var(--lumni-hero-line)] px-2.5 py-1.5 text-2xs uppercase tracking-[0.18em] text-[var(--lumni-hero-soft)]">
                   <StatusDot status="ai" />
                   {copy.assistantBadge}
                 </div>
-                <p className="mt-3 min-h-[72px] text-sm leading-7 text-[#f6edde]">
+                <p className="mt-3 min-h-[72px] text-sm leading-7 text-[var(--lumni-hero-text)]">
                   {activeMessage}
                 </p>
                 <div className="lumni-disclosure-on-ink mt-3 border-t border-dashed border-[color:var(--lumni-hero-line)] pt-3">

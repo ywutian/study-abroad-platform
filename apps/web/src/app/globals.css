@@ -10,13 +10,17 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* 企业级字体栈 — Geist (Vercel) + 系统中文字体 (Ant Design 方案) */
-  --font-sans:
+  --font-sans: var(
+    --theme-font-sans,
     var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC',
-    'WenQuanYi Micro Hei', sans-serif;
-  --font-mono:
+    'WenQuanYi Micro Hei', sans-serif
+  );
+  --font-mono: var(
+    --theme-font-mono,
     var(--font-geist-mono), 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation Mono',
-    monospace;
+    monospace
+  );
   /* 扩展字号阶梯：2xs — WCAG 最小可读 12px */
   --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
@@ -119,15 +123,15 @@
   --info-foreground: var(--ds-info-foreground);
 
   /* 📄 背景 */
-  --background: var(--ds-background);
+  --background: var(--theme-canvas);
   --foreground: var(--ds-foreground);
 
   /* 🎴 卡片 - 纯白带微光 */
-  --card: var(--ds-card);
+  --card: var(--theme-surface);
   --card-foreground: var(--ds-card-foreground);
 
   /* 💬 弹出层 */
-  --popover: var(--ds-popover);
+  --popover: var(--theme-surface-raised);
   --popover-foreground: var(--ds-popover-foreground);
 
   /* 🔇 静音色 */
@@ -139,7 +143,7 @@
   --accent-foreground: var(--ds-accent-foreground);
 
   /* 🔲 边框和输入 */
-  --border: var(--ds-border);
+  --border: var(--theme-border);
   --input: var(--ds-input);
   --ring: var(--ds-ring);
 
@@ -244,15 +248,15 @@
 
   /* ========== 语义别名层 (existing) ========== */
   /* 📄 背景 - 深邃夜空 */
-  --background: var(--ds-background);
+  --background: var(--theme-canvas);
   --foreground: var(--ds-foreground);
 
   /* 🎴 卡片 - 深色玻璃 */
-  --card: var(--ds-card);
+  --card: var(--theme-surface);
   --card-foreground: var(--ds-card-foreground);
 
   /* 💬 弹出层 */
-  --popover: var(--ds-popover);
+  --popover: var(--theme-surface-raised);
   --popover-foreground: var(--ds-popover-foreground);
 
   /* 🔵 品牌色 - 明亮蓝 */
@@ -288,7 +292,7 @@
   --info-foreground: var(--ds-info-foreground);
 
   /* 🔲 边框和输入 */
-  --border: var(--ds-border);
+  --border: var(--theme-border);
   --input: var(--ds-input);
   --ring: var(--ds-ring);
 
@@ -407,12 +411,16 @@
 
   body {
     @apply bg-background text-foreground;
+    background:
+      radial-gradient(circle at 8% 0%, var(--theme-glow-1), transparent 32rem),
+      radial-gradient(circle at 92% 8%, var(--theme-glow-2), transparent 34rem),
+      var(--theme-canvas);
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
     font-optical-sizing: auto;
     line-height: 1.625;
-    letter-spacing: -0.011em;
+    letter-spacing: var(--theme-body-tracking, 0);
     overflow-x: hidden; /* Layer 1 溢出防护 */
     overflow-wrap: break-word; /* 超长单词允许断行 */
     position: relative; /* 修复 framer-motion useScroll 警告 */
@@ -434,8 +442,9 @@
   h5,
   h6 {
     font-weight: 600;
+    font-family: var(--theme-font-display, var(--font-sans));
     line-height: 1.3;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--theme-heading-tracking, 0);
     text-wrap: balance;
     color: var(--foreground);
   }
@@ -443,8 +452,8 @@
   /* Display / Hero — 38~46px */
   h1 {
     font-size: clamp(1.875rem, 3.5vw + 0.5rem, 2.875rem);
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-weight: var(--theme-heading-weight, 700);
+    letter-spacing: var(--theme-heading-tracking, 0);
     line-height: 1.2;
   }
 
@@ -1016,6 +1025,7 @@
         oklch(0.92 0.045 200) 65%,
         oklch(0.96 0.03 280) 100%
       );
+    filter: saturate(calc(0.86 + var(--theme-saturation-strength) * 0.34));
   }
 
   .dark .bg-gradient-hero {
@@ -1225,40 +1235,40 @@
      🪟 玻璃效果
      ======================================== */
   .glass {
-    background: oklch(1 0 0 / 75%);
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid oklch(1 0 0 / 15%);
+    background: color-mix(in oklab, var(--theme-surface) var(--theme-surface-alpha-percent), transparent);
+    backdrop-filter: blur(var(--theme-backdrop-blur)) saturate(var(--theme-backdrop-saturate));
+    border: 1px solid color-mix(in oklab, var(--theme-border) 70%, transparent);
   }
 
   .dark .glass {
-    background: oklch(0.16 0.018 260 / 75%);
-    border: 1px solid oklch(1 0 0 / 8%);
+    background: color-mix(in oklab, var(--theme-surface) var(--theme-surface-alpha-percent), transparent);
+    border: 1px solid color-mix(in oklab, var(--theme-border) 70%, transparent);
   }
 
   .glass-heavy {
-    background: oklch(1 0 0 / 90%);
-    backdrop-filter: blur(24px) saturate(200%);
-    border: 1px solid oklch(1 0 0 / 20%);
+    background: color-mix(in oklab, var(--theme-surface-raised) var(--theme-popover-alpha-percent), transparent);
+    backdrop-filter: blur(var(--theme-backdrop-blur)) saturate(var(--theme-backdrop-saturate));
+    border: 1px solid color-mix(in oklab, var(--theme-border) 78%, transparent);
   }
 
   .dark .glass-heavy {
-    background: oklch(0.16 0.018 260 / 90%);
-    border: 1px solid oklch(1 0 0 / 10%);
+    background: color-mix(in oklab, var(--theme-surface-raised) var(--theme-popover-alpha-percent), transparent);
+    border: 1px solid color-mix(in oklab, var(--theme-border) 78%, transparent);
   }
 
   .glass-premium {
-    background: oklch(1 0 0 / 40%);
-    backdrop-filter: blur(12px) saturate(200%);
-    border-color: oklch(1 0 0 / 20%);
+    background: color-mix(in oklab, var(--theme-surface-raised) var(--theme-control-alpha-percent), transparent);
+    backdrop-filter: blur(var(--theme-backdrop-blur)) saturate(var(--theme-backdrop-saturate));
+    border-color: color-mix(in oklab, var(--theme-border) 72%, transparent);
     box-shadow:
-      inset 0 1px 0 oklch(1 0 0 / 30%),
+      inset 0 1px 0 color-mix(in oklab, var(--theme-surface-raised) 48%, transparent),
       0 8px 32px oklch(0 0 0 / 0.08);
   }
   .dark .glass-premium {
-    background: oklch(0.16 0.018 260 / 40%);
-    border-color: oklch(1 0 0 / 12%);
+    background: color-mix(in oklab, var(--theme-surface-raised) var(--theme-control-alpha-percent), transparent);
+    border-color: color-mix(in oklab, var(--theme-border) 72%, transparent);
     box-shadow:
-      inset 0 1px 0 oklch(1 0 0 / 15%),
+      inset 0 1px 0 color-mix(in oklab, var(--theme-surface-raised) 35%, transparent),
       0 8px 32px oklch(0 0 0 / 0.24);
   }
 
@@ -1954,25 +1964,31 @@
   }
 
   .landing-premium {
-    --landing-bg: var(--ds-background);
+    --landing-bg: var(--theme-canvas);
     --landing-fg: var(--ds-foreground);
-    --landing-surface: var(--ds-card);
+    --landing-surface: var(--theme-surface);
     --landing-surface-muted: var(--ds-surface-muted);
-    --landing-border: var(--ds-border);
+    --landing-border: var(--theme-border);
     --landing-border-strong: var(--ds-border-strong);
-    --landing-muted: var(--ds-muted-foreground);
-    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 84%, white 16%);
-    --landing-glass: color-mix(in oklab, var(--landing-surface) 88%, transparent);
+    --landing-muted: color-mix(in oklab, var(--ds-muted-foreground) 78%, var(--ds-foreground) 22%);
+    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 74%, var(--ds-foreground) 26%);
+    --landing-glass: color-mix(in oklab, var(--landing-surface) var(--theme-popover-alpha-percent), transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
-    --lumni-hero-ink: #0f0d0a;
-    --lumni-hero-panel: color-mix(in oklab, #f6edde 9%, transparent);
-    --lumni-hero-line: color-mix(in oklab, #f6edde 15%, transparent);
-    --lumni-moon: #ddb85a;
-    --lumni-moon-soft: color-mix(in oklab, #ddb85a 18%, transparent);
-    --lumni-gold-ink: #7a581a;
-    --lumni-rose: #e76f8a;
-    --lumni-violet: #6574ff;
+    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) var(--theme-popover-alpha-percent), var(--theme-canvas));
+    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) var(--theme-surface-alpha-percent), var(--theme-surface));
+    --lumni-hero-line: var(--theme-border-strong-dynamic);
+    --lumni-hero-text: var(--theme-hero-ink);
+    --lumni-hero-soft: var(--theme-hero-soft);
+    --lumni-hero-muted: var(--theme-hero-muted);
+    --lumni-hero-inset: var(--theme-hero-inset);
+    --lumni-hero-active: var(--theme-hero-active);
+    --lumni-hero-mark: var(--theme-brand-mark);
+    --lumni-moon: var(--ds-warning);
+    --lumni-moon-soft: color-mix(in oklab, var(--ds-warning) 18%, transparent);
+    --lumni-gold-ink: color-mix(in oklab, var(--ds-warning) 68%, var(--ds-foreground) 32%);
+    --lumni-rose: var(--ds-destructive);
+    --lumni-violet: var(--ds-info);
     --status-reach: var(--ds-status-reach);
     --status-reach-bg: var(--ds-status-reach-bg);
     --status-reach-fg: var(--ds-status-reach-fg);
@@ -1988,37 +2004,48 @@
     background:
       radial-gradient(
         circle at 78% 16%,
-        color-mix(in oklab, #ddb85a 12%, transparent),
+        var(--theme-glow-2),
         transparent 34rem
       ),
       radial-gradient(
         circle at 18% 12%,
-        color-mix(in oklab, #e76f8a 7%, transparent),
+        var(--theme-glow-1),
         transparent 30rem
       ),
-      linear-gradient(180deg, #f7f1e6 0%, #fff9ef 48%, #f3e7d6 100%);
+      linear-gradient(
+        180deg,
+        var(--theme-canvas) 0%,
+        var(--theme-canvas-soft) 48%,
+        var(--ds-surface-subtle) 100%
+      );
   }
 
   .dark .landing-premium {
-    --landing-bg: var(--ds-background);
+    --landing-bg: var(--theme-canvas);
     --landing-fg: var(--ds-foreground);
-    --landing-surface: var(--ds-card);
+    --landing-surface: var(--theme-surface);
     --landing-surface-muted: var(--ds-surface-muted);
-    --landing-border: var(--ds-border);
+    --landing-border: var(--theme-border);
     --landing-border-strong: var(--ds-border-strong);
-    --landing-muted: var(--ds-muted-foreground);
-    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 88%, white 12%);
-    --landing-glass: color-mix(in oklab, var(--landing-surface) 86%, transparent);
+    --landing-muted: color-mix(in oklab, var(--ds-muted-foreground) 82%, var(--ds-foreground) 18%);
+    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 78%, var(--ds-foreground) 22%);
+    --landing-glass: color-mix(in oklab, var(--landing-surface) var(--theme-popover-alpha-percent), transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
-    --lumni-hero-ink: #0f0d0a;
-    --lumni-hero-panel: color-mix(in oklab, #f6edde 7%, transparent);
-    --lumni-hero-line: color-mix(in oklab, #f6edde 13%, transparent);
-    --lumni-moon: #ddc170;
-    --lumni-moon-soft: color-mix(in oklab, #ddc170 16%, transparent);
-    --lumni-gold-ink: #ddc170;
-    --lumni-rose: #f09ab0;
-    --lumni-violet: #8d96ff;
+    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) var(--theme-popover-alpha-percent), var(--theme-canvas));
+    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) var(--theme-surface-alpha-percent), var(--theme-surface));
+    --lumni-hero-line: var(--theme-border-strong-dynamic);
+    --lumni-hero-text: var(--theme-hero-ink);
+    --lumni-hero-soft: var(--theme-hero-soft);
+    --lumni-hero-muted: var(--theme-hero-muted);
+    --lumni-hero-inset: var(--theme-hero-inset);
+    --lumni-hero-active: var(--theme-hero-active);
+    --lumni-hero-mark: var(--theme-brand-mark);
+    --lumni-moon: var(--ds-warning);
+    --lumni-moon-soft: color-mix(in oklab, var(--ds-warning) 16%, transparent);
+    --lumni-gold-ink: var(--ds-warning);
+    --lumni-rose: var(--ds-destructive);
+    --lumni-violet: var(--ds-info);
     --status-reach: var(--ds-status-reach);
     --status-reach-bg: var(--ds-status-reach-bg);
     --status-reach-fg: var(--ds-status-reach-fg);
@@ -2031,7 +2058,13 @@
     --status-likely: var(--ds-status-likely);
     --status-likely-bg: var(--ds-status-likely-bg);
     --status-likely-fg: var(--ds-status-likely-fg);
-    background: linear-gradient(180deg, #0f0d0a 0%, #15110d 54%, #191510 100%);
+    background: linear-gradient(
+      180deg,
+      var(--theme-canvas) 0%,
+      var(--theme-canvas-soft) 54%,
+      var(--theme-surface) 100%
+    );
+    filter: saturate(calc(0.86 + var(--theme-saturation-strength) * 0.34));
   }
 
   .landing-glass-edge {
@@ -2110,8 +2143,9 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
+    opacity: var(--theme-texture-strength);
     background-image: radial-gradient(
-      color-mix(in oklab, #1d1813 7%, transparent) 1px,
+      var(--theme-grid) 1px,
       transparent 1px
     );
     background-size: 32px 32px;
@@ -2121,15 +2155,16 @@
 
   .dark .landing-canvas-texture {
     background-image: radial-gradient(
-      color-mix(in oklab, #ddb85a 12%, transparent) 1px,
+      var(--theme-grid) 1px,
       transparent 1px
     );
   }
 
   .landing-grid-mask {
+    opacity: var(--theme-texture-strength);
     background-image:
-      linear-gradient(color-mix(in oklab, #1d1813 6%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in oklab, #1d1813 6%, transparent) 1px, transparent 1px);
+      linear-gradient(var(--theme-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--theme-grid) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
@@ -2137,27 +2172,28 @@
 
   .dark .landing-grid-mask {
     background-image:
-      linear-gradient(color-mix(in oklab, #ddb85a 8%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in oklab, #ddb85a 8%, transparent) 1px, transparent 1px);
+      linear-gradient(var(--theme-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--theme-grid) 1px, transparent 1px);
   }
 
   .lumni-night-grid {
+    opacity: var(--theme-texture-strength);
     background-image:
-      linear-gradient(color-mix(in oklab, #f6edde 7%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in oklab, #f6edde 7%, transparent) 1px, transparent 1px);
+      linear-gradient(color-mix(in oklab, var(--lumni-hero-text) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, var(--lumni-hero-text) 7%, transparent) 1px, transparent 1px);
     background-size: 28px 28px;
     mask-image: linear-gradient(135deg, black 0%, black 58%, transparent 100%);
     -webkit-mask-image: linear-gradient(135deg, black 0%, black 58%, transparent 100%);
   }
 
   .lumni-disclosure-on-ink {
-    --landing-fg: #f6edde;
-    --landing-muted: #d8c8b2;
-    --landing-subtle: #a99b88;
-    --landing-surface: color-mix(in oklab, #f6edde 8%, transparent);
-    --landing-surface-muted: color-mix(in oklab, #f6edde 10%, transparent);
-    --landing-border: color-mix(in oklab, #f6edde 14%, transparent);
-    --landing-border-strong: color-mix(in oklab, #f6edde 20%, transparent);
+    --landing-fg: var(--lumni-hero-text);
+    --landing-muted: var(--lumni-hero-soft);
+    --landing-subtle: var(--lumni-hero-muted);
+    --landing-surface: color-mix(in oklab, var(--lumni-hero-text) 8%, transparent);
+    --landing-surface-muted: color-mix(in oklab, var(--lumni-hero-text) 10%, transparent);
+    --landing-border: color-mix(in oklab, var(--lumni-hero-text) 14%, transparent);
+    --landing-border-strong: color-mix(in oklab, var(--lumni-hero-text) 20%, transparent);
   }
 
   /* DS v2.1 §装饰规则:移除 rotate(-2deg)(非必要装饰性旋转) */

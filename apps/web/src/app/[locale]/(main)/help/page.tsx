@@ -321,7 +321,7 @@ export default function HelpPage() {
                   {t('sendEmail')}
                 </a>
               </Button>
-              <Button className="gap-2 bg-success hover:opacity-90 text-white" asChild>
+              <Button className="gap-2" asChild>
                 <Link href="/chat">
                   <MessageCircle className="h-4 w-4" />
                   {t('onlineService')}

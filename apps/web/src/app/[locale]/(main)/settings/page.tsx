@@ -476,10 +476,10 @@ function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: bool
 
       {item.type === 'select' && (
         <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>
-          <SelectTrigger className="h-9 w-[9.5rem] min-w-[9rem] shrink-0">
+          <SelectTrigger className="h-9 w-[12rem] min-w-[10rem] shrink-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[420px]">
             {item.options?.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}

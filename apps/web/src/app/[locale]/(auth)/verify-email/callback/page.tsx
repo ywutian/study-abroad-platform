@@ -69,7 +69,7 @@ export default function VerifyEmailCallbackPage() {
           <p className="mt-2 text-sm text-auth-muted">{t('verifiedDesc')}</p>
         </div>
         <Link href="/login?verified=true" className="block">
-          <Button className="w-full h-12 bg-primary text-white font-medium rounded-xl">
+          <Button className="w-full h-12 bg-primary text-primary-foreground font-medium rounded-xl">
             {t('goToLogin')}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -90,7 +90,7 @@ export default function VerifyEmailCallbackPage() {
       </div>
       <div className="space-y-3">
         <Link href="/login" className="block">
-          <Button className="w-full h-11 bg-primary text-white font-medium rounded-xl">
+          <Button className="w-full h-11 bg-primary text-primary-foreground font-medium rounded-xl">
             {t('backToLogin')}
           </Button>
         </Link>

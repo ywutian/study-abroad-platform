@@ -12,6 +12,7 @@ import { OfflineIndicator } from '@/components/ui/offline-indicator';
 import { TourProvider } from '@/components/features/onboarding/tour-provider';
 import { FeedbackWidget } from '@/components/features/feedback/feedback-widget';
 import { useAuthStore, startTokenRefreshInterval, stopTokenRefreshInterval } from '@/stores/auth';
+import { ThemeAppearanceManager } from '@/hooks/use-theme-appearance-overrides';
 
 /**
  * 认证状态初始化器
@@ -55,6 +56,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <ProgressProvider>
               <TooltipProvider>
                 <TourProvider>
+                  <ThemeAppearanceManager />
                   <AuthInitializer>{children}</AuthInitializer>
                   <Toaster position="top-center" richColors />
                   <OfflineIndicator />

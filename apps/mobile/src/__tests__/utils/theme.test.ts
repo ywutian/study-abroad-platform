@@ -11,7 +11,7 @@ import { renderHook } from '@testing-library/react-native';
 // The global jest.setup.js has a default mock for @/stores/theme.
 // We override it here so we can control colorScheme per test.
 // Mock useThemeStore as a Zustand-style hook that accepts a selector
-const mockState = { colorScheme: 'light' as string | null };
+const mockState = { colorScheme: 'light' as string | null, colorPalette: 'lumni-warm' };
 jest.mock('@/stores/theme', () => ({
   useThemeStore: jest.fn((selector?: (s: typeof mockState) => unknown) =>
     selector ? selector(mockState) : mockState
@@ -31,6 +31,7 @@ import {
   shadows,
   useColors,
   getColors,
+  getPaletteColors,
   createStyles,
 } from '@/utils/theme';
 
@@ -135,11 +136,13 @@ describe('colors', () => {
 describe('useColors', () => {
   afterEach(() => {
     mockState.colorScheme = 'light';
+    mockState.colorPalette = 'lumni-warm';
     jest.restoreAllMocks();
   });
 
   it('returns light colors when colorScheme is light', () => {
     mockState.colorScheme = 'light';
+    mockState.colorPalette = 'lumni-warm';
 
     const { result } = renderHook(() => useColors());
 
@@ -165,6 +168,16 @@ describe('useColors', () => {
 
     // null is not 'dark', so the ternary yields colors.light
     expect(result.current.primary).toBe(colors.light.primary);
+  });
+
+  it('returns the selected color palette colors', () => {
+    mockState.colorScheme = 'light';
+    mockState.colorPalette = 'studio-black-blue';
+
+    const { result } = renderHook(() => useColors());
+
+    expect(result.current.primary).toBe(getPaletteColors('studio-black-blue', 'light').primary);
+    expect(result.current.primary).not.toBe(colors.light.primary);
   });
 
   it('falls back to light colors when useThemeStore throws', () => {
@@ -197,6 +210,12 @@ describe('getColors', () => {
   it('returns light colors when isDark is undefined', () => {
     const c = getColors();
     expect(c.primary).toBe(colors.light.primary);
+  });
+
+  it('returns alternate palette colors when a palette is provided', () => {
+    const c = getColors(false, 'framer-violet');
+    expect(c.primary).toBe(getPaletteColors('framer-violet', 'light').primary);
+    expect(c.primary).not.toBe(colors.light.primary);
   });
 });
 

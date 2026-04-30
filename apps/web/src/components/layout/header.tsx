@@ -45,6 +45,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Logo } from '@/components/ui/logo';
 import { CountBadge } from '@/components/ui/count-badge';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { ColorPaletteMenu } from '@/components/ui/color-palette-menu';
 import { ClientOnly } from '@/components/common/client-only';
 import { MobileNav } from './mobile-nav';
 import { NotificationCenter, HelpCenter } from '@/components/features';
@@ -323,6 +324,7 @@ function HeaderActions() {
       </DropdownMenu>
 
       {/* Theme Toggle */}
+      <ColorPaletteMenu className="text-muted-foreground hover:text-foreground hover:bg-muted" />
       <ThemeToggle className="text-muted-foreground hover:text-foreground hover:bg-muted" />
 
       {/* Notifications + Help (logged-in only for notifications, help always visible) */}
@@ -343,7 +345,7 @@ function HeaderActions() {
               aria-label={t('ui.a11y.userMenu')}
             >
               <Avatar className="h-7 w-7 ring-2 ring-muted transition-all hover:ring-primary/20">
-                <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-xs font-semibold text-white">
+                <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-xs font-semibold text-primary-foreground">
                   {user.email[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -577,7 +579,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-[color:var(--theme-popover-bg)] backdrop-blur-[var(--theme-backdrop-blur)]">
       <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-6">
         {/* Left: Hamburger (mobile) + Logo + Navigation */}
         <div className="flex items-center gap-1 lg:gap-2">

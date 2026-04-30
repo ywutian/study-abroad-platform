@@ -36,7 +36,7 @@ function subscribeDom(onChange: () => void) {
 }
 
 /**
- * Site-wide color family (warm vs slate), persisted in localStorage.
+ * Site-wide visual theme package, persisted in localStorage.
  * Orthogonal to next-themes light/dark (`.dark` on `html`).
  */
 export function useColorPalette() {

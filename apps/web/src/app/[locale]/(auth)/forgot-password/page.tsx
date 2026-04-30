@@ -116,7 +116,7 @@ export default function ForgotPasswordPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 bg-primary hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-xl   transition-all duration-300 disabled:opacity-50"
+          className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-xl transition-all duration-300 disabled:opacity-50"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (
