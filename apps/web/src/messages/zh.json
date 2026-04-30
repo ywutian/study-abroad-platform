@@ -2623,7 +2623,7 @@
     "colorPalette": {
       "menuLabel": "全站配色",
       "studioTitle": "Theme Studio",
-      "studioDesc": "选择一套完整视觉皮肤，包含背景、按钮、字体、圆角、卡片和动效。当前共有 {count} 个主题。",
+      "studioDesc": "选择一套企业级配色包，控制品牌、CTA、数据强调、字体、圆角、卡片和动效。当前共有 {count} 个主题。",
       "searchPlaceholder": "搜索 {count} 个主题...",
       "all": "全部",
       "recent": "最近",
@@ -2637,7 +2637,7 @@
       "customizeTab": "调节",
       "customizeTitle": "外观调节",
       "presetTitle": "快速预设",
-      "textureTitle": "视觉质感",
+      "textureTitle": "企业级外观",
       "resetTheme": "重置当前",
       "resetAll": "全部重置",
       "presets": {
@@ -2652,7 +2652,8 @@
         "glow": "发光",
         "texture": "纹理",
         "contrast": "对比度",
-        "saturation": "饱和度"
+        "saturation": "强调色饱和度",
+        "colorPresence": "色彩存在感"
       },
       "controlMin": {
         "clarity": "柔和",
@@ -2660,7 +2661,8 @@
         "glow": "克制",
         "texture": "纯净",
         "contrast": "平缓",
-        "saturation": "低饱和"
+        "saturation": "低饱和",
+        "colorPresence": "中性"
       },
       "controlMax": {
         "clarity": "锐利",
@@ -2668,7 +2670,8 @@
         "glow": "明亮",
         "texture": "丰富",
         "contrast": "强烈",
-        "saturation": "鲜明"
+        "saturation": "鲜明",
+        "colorPresence": "品牌感"
       },
       "styleLabels": {
         "radius": "圆角",

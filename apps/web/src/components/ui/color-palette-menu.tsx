@@ -69,6 +69,7 @@ const numericControls: ThemeAppearanceNumericKey[] = [
   'texture',
   'contrast',
   'saturation',
+  'colorPresence',
 ];
 
 function readPaletteList(key: string): ColorPalette[] {
