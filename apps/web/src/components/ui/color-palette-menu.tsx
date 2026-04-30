@@ -16,6 +16,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import {
   COLOR_THEME_CATEGORIES,
   COLOR_THEME_DEFINITIONS,
+  EXPERIMENTAL_COLOR_PALETTE_IDS,
+  FEATURED_COLOR_PALETTE_IDS,
   THEME_APPEARANCE_PRESETS,
   THEME_BUTTON_PRESETS,
   THEME_CARD_PRESETS,
@@ -56,7 +58,14 @@ type ColorPaletteMenuProps = {
   align?: 'start' | 'center' | 'end';
 };
 
-type ThemeGroupId = 'all' | 'recent' | 'favorites' | ColorThemeCategory;
+type ThemeGroupId =
+  | 'featured'
+  | 'recent'
+  | 'favorites'
+  | 'more'
+  | 'experimental'
+  | 'all'
+  | ColorThemeCategory;
 type StudioPanel = 'themes' | 'customize';
 
 const RECENT_THEMES_KEY = 'color-palette-recents';
@@ -187,7 +196,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   } = useThemeAppearanceOverrides(palette);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeGroup, setActiveGroup] = useState<ThemeGroupId>('all');
+  const [activeGroup, setActiveGroup] = useState<ThemeGroupId>('featured');
   const [activePanel, setActivePanel] = useState<StudioPanel>('themes');
   const [recentThemes, setRecentThemes] = useState<ColorPalette[]>([]);
   const [favoriteThemes, setFavoriteThemes] = useState<ColorPalette[]>([]);
@@ -206,9 +215,12 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
 
   const groups = useMemo(
     () => [
-      { id: 'all' as const, label: t('all'), icon: Palette },
+      { id: 'featured' as const, label: t('featured'), icon: Sparkles },
       { id: 'recent' as const, label: t('recent'), icon: Clock3 },
       { id: 'favorites' as const, label: t('favorites'), icon: Star },
+      { id: 'more' as const, label: t('more'), icon: Palette },
+      { id: 'experimental' as const, label: t('experimental'), icon: SlidersHorizontal },
+      { id: 'all' as const, label: t('all'), icon: null },
       ...COLOR_THEME_CATEGORIES.map((category) => ({
         id: category.id,
         label: getColorThemeCategoryLabel(category.id, labelLocale),
@@ -219,17 +231,26 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   );
 
   const activeThemeIds = useMemo(() => {
+    const allThemeIds = COLOR_THEME_DEFINITIONS.map((theme) => theme.id as ColorPalette);
     if (activeGroup === 'recent') return recentThemes;
     if (activeGroup === 'favorites') return favoriteThemes;
-    if (activeGroup === 'all')
-      return COLOR_THEME_DEFINITIONS.map((theme) => theme.id as ColorPalette);
+    if (activeGroup === 'featured') return FEATURED_COLOR_PALETTE_IDS;
+    if (activeGroup === 'experimental') return EXPERIMENTAL_COLOR_PALETTE_IDS;
+    if (activeGroup === 'more') {
+      const hiddenFromMore = new Set([...FEATURED_COLOR_PALETTE_IDS, ...EXPERIMENTAL_COLOR_PALETTE_IDS]);
+      return allThemeIds.filter((id) => !hiddenFromMore.has(id));
+    }
+    if (activeGroup === 'all') return allThemeIds;
     return COLOR_THEME_DEFINITIONS.filter((theme) => theme.category === activeGroup).map(
       (theme) => theme.id as ColorPalette
     );
   }, [activeGroup, favoriteThemes, recentThemes]);
 
   const filteredThemes = useMemo(() => {
-    const definitions = activeThemeIds
+    const sourceThemeIds = normalizedQuery
+      ? COLOR_THEME_DEFINITIONS.map((theme) => theme.id as ColorPalette)
+      : activeThemeIds;
+    const definitions = sourceThemeIds
       .map((id) => getColorThemeDefinition(id))
       .filter((theme, index, all) => all.findIndex((item) => item.id === theme.id) === index);
 
@@ -289,10 +310,10 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="top-2 bottom-2 h-[calc(100dvh-1rem)] max-h-none w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] min-w-0 translate-y-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] gap-0 overflow-hidden p-0 sm:top-4 sm:bottom-4 sm:h-[calc(100dvh-2rem)] sm:w-[min(1480px,calc(100vw-2rem))] sm:max-w-[min(1480px,calc(100vw-2rem))]"
+        className="top-2 bottom-2 h-[calc(100dvh-1rem)] max-h-none w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] min-w-0 translate-y-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] gap-0 overflow-hidden !bg-[#fbf8f2] p-0 text-[#211c17] !backdrop-blur-none dark:!bg-[#101010] dark:text-zinc-50 sm:top-4 sm:bottom-4 sm:h-[calc(100dvh-2rem)] sm:w-[min(1480px,calc(100vw-2rem))] sm:max-w-[min(1480px,calc(100vw-2rem))]"
         showCloseButton
       >
-        <DialogHeader className="min-w-0 overflow-hidden border-b border-border bg-[color:var(--theme-popover-bg)] px-4 py-4 sm:px-6">
+        <DialogHeader className="min-w-0 overflow-hidden border-b border-[#ded4c5] !bg-[#fbf8f2] px-4 py-4 dark:border-zinc-800 dark:!bg-[#101010] sm:px-6">
           <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
             <div className="min-w-0">
               <DialogTitle className="text-xl">{t('studioTitle')}</DialogTitle>
@@ -378,7 +399,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
           </div>
         </DialogHeader>
 
-        <div className="grid min-h-0 min-w-0 grid-cols-1 overflow-hidden bg-background lg:grid-cols-[minmax(0,1fr)_390px]">
+        <div className="grid min-h-0 min-w-0 grid-cols-1 overflow-hidden !bg-[#f7f1e8] dark:!bg-[#0c0c0c] lg:grid-cols-[minmax(0,1fr)_390px]">
           <div
             className={cn(
               'min-h-0 min-w-0 overflow-y-auto p-4 sm:p-5',
@@ -410,28 +431,50 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
                         handleSelect(id);
                       }}
                       className={cn(
-                        'group grid min-h-[158px] overflow-hidden rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-card-bg)] text-left shadow-[var(--theme-card-shadow)] transition hover:border-primary/50 hover:shadow-[var(--theme-card-hover-shadow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
+                        'group grid min-h-[176px] overflow-hidden rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-card-bg)] text-left shadow-[var(--theme-card-shadow)] transition hover:border-primary/50 hover:shadow-[var(--theme-card-hover-shadow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
                         active && 'border-primary ring-2 ring-primary/25'
                       )}
                     >
                       <div
-                        className="relative h-20 border-b"
+                        className="relative h-24 overflow-hidden border-b p-3"
                         style={{ background: preview.canvas, borderColor: preview.border }}
                       >
                         <div
-                          className="absolute left-3 top-3 h-11 w-20 rounded-[var(--theme-radius-card)] border"
+                          className="h-full rounded-[var(--theme-radius-card)] border p-2 shadow-sm"
                           style={{ background: preview.surface, borderColor: preview.border }}
-                        />
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex gap-1.5">
+                              <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
+                              <span className="h-2 w-2 rounded-full bg-[#f59e0b]" />
+                              <span className="h-2 w-2 rounded-full bg-[#10b981]" />
+                            </div>
+                            <div
+                              className="h-4 w-14 rounded-full"
+                              style={{ background: preview.primary }}
+                            />
+                          </div>
+                          <div className="mt-3 grid gap-1.5">
+                            {[0, 1, 2].map((rowIndex) => (
+                              <div key={rowIndex} className="flex items-center gap-2">
+                                <div
+                                  className="h-2 flex-1 rounded-full"
+                                  style={{ background: preview.heroPanel }}
+                                />
+                                <div
+                                  className="h-2 rounded-full"
+                                  style={{
+                                    width: `${28 + rowIndex * 12}%`,
+                                    background: rowIndex === 1 ? preview.accent : preview.primary,
+                                    opacity: rowIndex === 0 ? 0.42 : 1,
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                         <div
-                          className="absolute bottom-3 left-3 h-6 w-20 rounded-[var(--theme-radius-button)]"
-                          style={{ background: preview.primary }}
-                        />
-                        <div
-                          className="absolute bottom-3 left-28 h-6 w-12 rounded-[var(--theme-radius-button)] border"
-                          style={{ background: preview.heroPanel, borderColor: preview.border }}
-                        />
-                        <div
-                          className="absolute right-3 top-3 h-9 w-9 rounded-full"
+                          className="absolute right-5 top-5 h-3 w-3 rounded-full shadow-sm"
                           style={{ background: preview.accent }}
                         />
                       </div>
@@ -484,7 +527,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
 
           <aside
             className={cn(
-              'min-h-0 min-w-0 overflow-y-auto border-t bg-[color:var(--theme-popover-bg)] p-4 sm:p-5 lg:border-l lg:border-t-0',
+              'min-h-0 min-w-0 overflow-y-auto border-t !bg-[#fbf8f2] p-4 dark:!bg-[#101010] sm:p-5 lg:border-l lg:border-t-0',
               activePanel === 'themes' && 'hidden lg:block'
             )}
           >

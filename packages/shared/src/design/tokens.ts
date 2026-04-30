@@ -598,9 +598,24 @@ export type ThemeAppearanceOverrides = Partial<{
   motionPreset: ThemeMotionPreset;
 }>;
 
-export type ThemeAppearancePresetId = 'crisp' | 'glass' | 'editorial' | 'contrast';
+export type ThemeAppearancePresetId = 'premium' | 'crisp' | 'glass' | 'editorial' | 'contrast';
 
 export const THEME_APPEARANCE_PRESETS: Record<ThemeAppearancePresetId, ThemeAppearanceOverrides> = {
+  premium: {
+    clarity: 98,
+    frost: 2,
+    glow: 14,
+    texture: 16,
+    contrast: 84,
+    saturation: 56,
+    colorPresence: 22,
+    radiusPreset: 'standard',
+    densityPreset: 'standard',
+    cardPreset: 'bordered',
+    buttonPreset: 'solid',
+    shadowPreset: 'subtle',
+    motionPreset: 'standard',
+  },
   crisp: {
     clarity: 96,
     frost: 0,
@@ -680,6 +695,9 @@ export type ColorThemeDefinition = {
   shadowPreset?: ThemeShadowPreset;
   texturePreset?: ThemeTexturePreset;
   motionPreset?: ThemeMotionPreset;
+  featured?: boolean;
+  experimental?: boolean;
+  premiumRank?: number;
 };
 
 export type ThemePackageDefinition = ColorThemeDefinition;
@@ -707,6 +725,8 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#ddb85a',
     neutral: 'warm',
     darkPrimary: '#ddb85a',
+    featured: true,
+    premiumRank: 1,
   },
   {
     id: 'moon-gold',
@@ -719,6 +739,8 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#d8a72d',
     neutral: 'warm',
     darkPrimary: '#e6c766',
+    featured: true,
+    premiumRank: 4,
   },
   {
     id: 'claude-sand',
@@ -816,6 +838,8 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#4f7cff',
     neutral: 'charcoal',
     darkPrimary: '#ffffff',
+    featured: true,
+    premiumRank: 7,
   },
   {
     id: 'graphite-white',
@@ -901,6 +925,8 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#6366f1',
     neutral: 'slate',
     darkPrimary: '#a5b4fc',
+    featured: true,
+    premiumRank: 8,
   },
   {
     id: 'stripe-blue',
@@ -913,6 +939,8 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#7c3aed',
     neutral: 'slate',
     darkPrimary: '#93c5fd',
+    featured: true,
+    premiumRank: 9,
   },
   {
     id: 'cobalt-saas',
@@ -998,6 +1026,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#00a3ff',
     neutral: 'pearl',
     darkPrimary: '#75b7ff',
+    experimental: true,
   },
   {
     id: 'signal-cyan',
@@ -1010,6 +1039,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#22d3ee',
     neutral: 'slate',
     darkPrimary: '#67e8f9',
+    experimental: true,
   },
   {
     id: 'neural-azure',
@@ -1582,6 +1612,7 @@ const EXTRA_COLOR_THEME_DEFINITIONS = [
     accent: '#0099ff',
     neutral: 'charcoal',
     darkPrimary: '#ffffff',
+    experimental: true,
   },
   {
     id: 'chrome-glass',
@@ -2267,6 +2298,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     buttonPreset: 'solid',
     cardPreset: 'bordered',
     texturePreset: 'paper',
+    featured: true,
+    premiumRank: 2,
   },
   {
     id: 'lumni-pearl-gold',
@@ -2282,6 +2315,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     canvasStrength: 0.1,
     radiusPreset: 'standard',
     shadowPreset: 'subtle',
+    featured: true,
+    premiumRank: 3,
   },
   {
     id: 'notion-cream-ai',
@@ -2297,6 +2332,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     canvasStrength: 0.09,
     typographyPreset: 'humanist',
     texturePreset: 'paper',
+    featured: true,
+    premiumRank: 6,
   },
   {
     id: 'linen-coral',
@@ -2328,6 +2365,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     buttonPreset: 'outline',
     cardPreset: 'flat',
     shadowPreset: 'none',
+    featured: true,
+    premiumRank: 5,
   },
   {
     id: 'gallery-ink',
@@ -2342,6 +2381,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#e8e3da',
     typographyPreset: 'editorial',
     cardPreset: 'editorial',
+    featured: true,
+    premiumRank: 10,
   },
   {
     id: 'framer-plasma',
@@ -2358,6 +2399,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     buttonPreset: 'glass',
     cardPreset: 'glass',
     texturePreset: 'glow',
+    experimental: true,
   },
   {
     id: 'studio-cobalt-black',
@@ -2439,6 +2481,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#99f6e4',
     canvasStrength: 0.13,
     motionPreset: 'expressive',
+    experimental: true,
   },
   {
     id: 'cyber-lilac',
@@ -2453,6 +2496,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#ddd6fe',
     canvasStrength: 0.14,
     texturePreset: 'glow',
+    experimental: true,
   },
   {
     id: 'gradient-orchid',
@@ -2467,6 +2511,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#f0abfc',
     canvasStrength: 0.15,
     shadowPreset: 'medium',
+    experimental: true,
   },
   {
     id: 'aura-blue-pink',
@@ -2481,6 +2526,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#bfdbfe',
     canvasStrength: 0.14,
     cardPreset: 'glass',
+    experimental: true,
   },
   {
     id: 'developer-void',
@@ -2525,6 +2571,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#c7d7b0',
     canvasStrength: 0.08,
     typographyPreset: 'editorial',
+    featured: true,
+    premiumRank: 13,
   },
   {
     id: 'library-blue',
@@ -2538,6 +2586,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     neutral: 'pearl',
     darkPrimary: '#c7d2fe',
     canvasStrength: 0.07,
+    featured: true,
+    premiumRank: 12,
   },
   {
     id: 'editor-cream-red',
@@ -2582,6 +2632,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     canvasStrength: 0.07,
     radiusPreset: 'standard',
     cardPreset: 'bordered',
+    featured: true,
+    premiumRank: 11,
   },
   {
     id: 'finance-emerald',
@@ -2650,6 +2702,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     neutral: 'sage',
     darkPrimary: '#d4d0a8',
     canvasStrength: 0.08,
+    featured: true,
+    premiumRank: 14,
   },
   {
     id: 'contrast-lime',
@@ -2666,6 +2720,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     radiusPreset: 'sharp',
     buttonPreset: 'brutal',
     shadowPreset: 'none',
+    experimental: true,
   },
   {
     id: 'contrast-orange',
@@ -2681,6 +2736,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     canvasStrength: 0.05,
     radiusPreset: 'sharp',
     buttonPreset: 'brutal',
+    experimental: true,
   },
   {
     id: 'luxury-platinum',
@@ -2696,6 +2752,8 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     canvasStrength: 0.06,
     typographyPreset: 'editorial',
     cardPreset: 'elevated',
+    featured: true,
+    premiumRank: 15,
   },
   {
     id: 'neo-brutal-blue',
@@ -2713,6 +2771,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     buttonPreset: 'brutal',
     cardPreset: 'bordered',
     shadowPreset: 'none',
+    experimental: true,
   },
 ] as const satisfies readonly ColorThemeDefinition[];
 
@@ -2723,6 +2782,19 @@ export const COLOR_THEME_DEFINITIONS = [
 ] as const satisfies readonly ColorThemeDefinition[];
 
 export type ColorPalette = (typeof COLOR_THEME_DEFINITIONS)[number]['id'];
+
+const COLOR_THEME_DEFINITION_LIST = COLOR_THEME_DEFINITIONS as readonly ColorThemeDefinition[];
+
+export const FEATURED_COLOR_PALETTE_IDS = COLOR_THEME_DEFINITION_LIST.filter(
+  (theme) => theme.featured
+)
+  .slice()
+  .sort((a, b) => (a.premiumRank ?? 999) - (b.premiumRank ?? 999))
+  .map((theme) => theme.id) as ColorPalette[];
+
+export const EXPERIMENTAL_COLOR_PALETTE_IDS = COLOR_THEME_DEFINITION_LIST.filter(
+  (theme) => theme.experimental
+).map((theme) => theme.id) as ColorPalette[];
 
 export const COLOR_PALETTES = COLOR_THEME_DEFINITIONS.map((theme) => theme.id) as ColorPalette[];
 
@@ -3427,28 +3499,29 @@ export type ResolvedThemeAppearanceControls = {
 };
 
 function getDefaultThemeAppearanceControls(style: ThemeStyleMeta): ResolvedThemeAppearanceControls {
+  const isGlass = style.cardPreset === 'glass' || style.buttonPreset === 'glass';
   return {
-    clarity: style.cardPreset === 'glass' || style.buttonPreset === 'glass' ? 82 : 92,
-    frost: style.cardPreset === 'glass' || style.buttonPreset === 'glass' ? 18 : 4,
-    glow: style.texturePreset === 'glow' ? 32 : style.texturePreset === 'none' ? 6 : 14,
+    clarity: isGlass ? 88 : 96,
+    frost: isGlass ? 12 : 2,
+    glow: style.texturePreset === 'glow' ? 24 : style.texturePreset === 'none' ? 4 : 12,
     texture:
       style.texturePreset === 'none'
         ? 0
         : style.texturePreset === 'grid'
-          ? 18
+          ? 14
           : style.texturePreset === 'paper'
-            ? 20
+            ? 16
             : style.texturePreset === 'noise'
-              ? 14
-              : 22,
-    contrast: 76,
-    saturation: 66,
+              ? 10
+              : 18,
+    contrast: 82,
+    saturation: 58,
     colorPresence:
       style.texturePreset === 'glow' || style.motionPreset === 'expressive'
-        ? 42
+        ? 32
         : style.cardPreset === 'editorial'
-          ? 24
-          : 30,
+          ? 20
+          : 24,
   };
 }
 
@@ -3482,15 +3555,15 @@ const moodCanvasBase: Record<ThemeMood, { light: HexColor; dark: HexColor }> = {
 };
 
 const moodCanvasStrength: Record<ThemeMood, { light: number; dark: number }> = {
-  warm: { light: 0.032, dark: 0.09 },
-  cool: { light: 0.028, dark: 0.1 },
-  dark: { light: 0.024, dark: 0.13 },
-  paper: { light: 0.026, dark: 0.08 },
-  pastel: { light: 0.035, dark: 0.1 },
-  academic: { light: 0.024, dark: 0.09 },
-  natural: { light: 0.028, dark: 0.08 },
-  contrast: { light: 0.008, dark: 0.04 },
-  electric: { light: 0.038, dark: 0.14 },
+  warm: { light: 0.02, dark: 0.08 },
+  cool: { light: 0.018, dark: 0.09 },
+  dark: { light: 0.014, dark: 0.12 },
+  paper: { light: 0.018, dark: 0.07 },
+  pastel: { light: 0.022, dark: 0.09 },
+  academic: { light: 0.016, dark: 0.08 },
+  natural: { light: 0.018, dark: 0.07 },
+  contrast: { light: 0.006, dark: 0.04 },
+  electric: { light: 0.024, dark: 0.12 },
 };
 
 function themeHash(id: string): number {
@@ -3512,20 +3585,20 @@ function getThemeTint(definition: ColorThemeDefinition): HexColor {
 function getLayerTintPresence(definition: ColorThemeDefinition, mode: ThemeMode): number {
   const mood = getThemeMood(definition);
   const rawPresence = definition.canvasStrength ?? moodCanvasStrength[mood][mode];
-  const configured = rawPresence * (mode === 'light' ? 0.32 : 0.52);
+  const configured = rawPresence * (mode === 'light' ? 0.2 : 0.5);
   const limit =
     mode === 'light'
       ? mood === 'pastel' || mood === 'electric'
-        ? 0.018
+        ? 0.014
         : mood === 'contrast'
-          ? 0.008
-          : 0.015
+          ? 0.006
+          : 0.012
       : mood === 'electric' || mood === 'dark'
         ? 0.16
         : mood === 'contrast'
           ? 0.06
           : 0.12;
-  return Math.max(mode === 'light' ? 0.002 : 0.028, Math.min(limit, configured));
+  return Math.max(mode === 'light' ? 0.001 : 0.028, Math.min(limit, configured));
 }
 
 function tuneLightCanvas(definition: ColorThemeDefinition, neutralBackground: string): HexColor {

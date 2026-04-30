@@ -1964,19 +1964,19 @@
   }
 
   .landing-premium {
-    --landing-bg: var(--theme-canvas);
+    --landing-bg: #fbfcfd;
     --landing-fg: var(--ds-foreground);
-    --landing-surface: var(--theme-surface);
-    --landing-surface-muted: var(--ds-surface-muted);
-    --landing-border: var(--theme-border);
-    --landing-border-strong: var(--ds-border-strong);
+    --landing-surface: color-mix(in oklab, #ffffff 92%, var(--theme-surface) 8%);
+    --landing-surface-muted: color-mix(in oklab, #f3f6fa 88%, var(--theme-surface) 12%);
+    --landing-border: color-mix(in oklab, #d7dee8 82%, var(--ds-border) 18%);
+    --landing-border-strong: color-mix(in oklab, #c6ceda 78%, var(--ds-border-strong) 22%);
     --landing-muted: color-mix(in oklab, var(--ds-muted-foreground) 78%, var(--ds-foreground) 22%);
     --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 74%, var(--ds-foreground) 26%);
     --landing-glass: color-mix(in oklab, var(--landing-surface) var(--theme-popover-alpha-percent), transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
-    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) 92%, var(--theme-canvas));
-    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) 84%, var(--theme-surface));
+    --lumni-hero-shell: color-mix(in oklab, var(--landing-surface) 88%, var(--theme-canvas-soft));
+    --lumni-hero-panel: color-mix(in oklab, var(--landing-surface) 90%, var(--theme-hero-panel) 10%);
     --lumni-hero-line: var(--theme-border-strong-dynamic);
     --lumni-hero-text: var(--theme-hero-ink);
     --lumni-hero-soft: var(--theme-hero-soft);
@@ -2005,18 +2005,18 @@
       radial-gradient(
         circle at 78% 16%,
         var(--theme-glow-2),
-        transparent 34rem
+        transparent 32rem
       ),
       radial-gradient(
         circle at 18% 12%,
         var(--theme-glow-1),
-        transparent 30rem
+        transparent 28rem
       ),
       linear-gradient(
         180deg,
-        var(--theme-canvas) 0%,
-        var(--theme-canvas-soft) 48%,
-        var(--ds-surface-subtle) 100%
+        #ffffff 0%,
+        #fbfcfd 48%,
+        #f6f8fb 100%
       );
   }
 
@@ -2032,8 +2032,8 @@
     --landing-glass: color-mix(in oklab, var(--landing-surface) var(--theme-popover-alpha-percent), transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
-    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) 88%, var(--theme-canvas));
-    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) 82%, var(--theme-surface));
+    --lumni-hero-shell: color-mix(in oklab, var(--theme-surface) 82%, var(--theme-canvas) 18%);
+    --lumni-hero-panel: color-mix(in oklab, var(--theme-surface) 84%, var(--theme-hero-panel) 16%);
     --lumni-hero-line: var(--theme-border-strong-dynamic);
     --lumni-hero-text: var(--theme-hero-ink);
     --lumni-hero-soft: var(--theme-hero-soft);
@@ -2100,9 +2100,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.625rem;
-    border: 1px solid color-mix(in oklch, var(--lumni-moon) 24%, var(--landing-border));
+    border: 1px solid color-mix(in oklch, var(--ds-primary) 16%, var(--landing-border));
     border-radius: 999px;
-    background: color-mix(in oklab, var(--landing-surface) 84%, var(--lumni-moon) 16%);
+    background: color-mix(in oklab, var(--landing-surface) 94%, var(--ds-primary) 6%);
     padding: 0.5rem 1rem;
     color: var(--landing-fg);
     font-size: 0.75rem;
@@ -2111,13 +2111,13 @@
   }
 
   .landing-eyebrow-pill svg {
-    color: var(--lumni-gold-ink);
+    color: color-mix(in oklab, var(--ds-primary) 80%, var(--ds-info) 20%);
   }
 
   .landing-hero-accent {
-    font-style: normal;
-    font-weight: 650;
-    color: var(--lumni-gold-ink);
+    font-style: italic;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--ds-primary) 78%, var(--ds-accent) 22%);
   }
 
   .landing-nav-link {
@@ -2195,6 +2195,16 @@
     --landing-border-strong: color-mix(in oklab, var(--lumni-hero-text) 20%, transparent);
   }
 
+  .lumni-disclosure-on-light {
+    --landing-fg: var(--ds-foreground);
+    --landing-muted: var(--ds-muted-foreground);
+    --landing-subtle: color-mix(in oklab, var(--ds-muted-foreground) 78%, var(--ds-foreground) 22%);
+    --landing-surface: var(--theme-surface);
+    --landing-surface-muted: var(--ds-surface-muted);
+    --landing-border: var(--theme-border);
+    --landing-border-strong: var(--ds-border-strong);
+  }
+
   /* DS v2.1 §装饰规则:移除 rotate(-2deg)(非必要装饰性旋转) */
   .landing-console-backdrop {
     position: absolute;
@@ -2203,12 +2213,12 @@
     height: calc(100% - 4rem);
     border-radius: 2.25rem;
     border: 1px solid var(--landing-border);
-    background: color-mix(in oklch, var(--landing-surface) 94%, var(--primary) 6%);
+    background: color-mix(in oklch, var(--landing-surface) 97%, var(--primary) 3%);
     transform: translate3d(0.75rem, 1.25rem, 0);
   }
 
   .dark .landing-console-backdrop {
-    background: color-mix(in oklch, var(--landing-surface) 92%, var(--primary) 8%);
+    background: color-mix(in oklch, var(--landing-surface) 94%, var(--primary) 6%);
     border-color: oklch(1 0 0 / 0.15);
   }
 
