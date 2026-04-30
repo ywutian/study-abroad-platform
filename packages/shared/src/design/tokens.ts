@@ -579,7 +579,8 @@ export type ThemeAppearanceNumericKey =
   | 'glow'
   | 'texture'
   | 'contrast'
-  | 'saturation';
+  | 'saturation'
+  | 'colorPresence';
 
 export type ThemeAppearanceOverrides = Partial<{
   clarity: number;
@@ -588,6 +589,7 @@ export type ThemeAppearanceOverrides = Partial<{
   texture: number;
   contrast: number;
   saturation: number;
+  colorPresence: number;
   radiusPreset: ThemeRadiusPreset;
   densityPreset: ThemeDensityPreset;
   buttonPreset: ThemeButtonPreset;
@@ -606,6 +608,7 @@ export const THEME_APPEARANCE_PRESETS: Record<ThemeAppearancePresetId, ThemeAppe
     texture: 8,
     contrast: 82,
     saturation: 62,
+    colorPresence: 28,
     cardPreset: 'bordered',
     buttonPreset: 'solid',
     shadowPreset: 'subtle',
@@ -617,6 +620,7 @@ export const THEME_APPEARANCE_PRESETS: Record<ThemeAppearancePresetId, ThemeAppe
     texture: 24,
     contrast: 66,
     saturation: 78,
+    colorPresence: 58,
     cardPreset: 'glass',
     buttonPreset: 'glass',
     shadowPreset: 'medium',
@@ -628,6 +632,7 @@ export const THEME_APPEARANCE_PRESETS: Record<ThemeAppearancePresetId, ThemeAppe
     texture: 36,
     contrast: 78,
     saturation: 50,
+    colorPresence: 24,
     radiusPreset: 'sharp',
     cardPreset: 'editorial',
     buttonPreset: 'outline',
@@ -641,6 +646,7 @@ export const THEME_APPEARANCE_PRESETS: Record<ThemeAppearancePresetId, ThemeAppe
     texture: 0,
     contrast: 100,
     saturation: 58,
+    colorPresence: 16,
     radiusPreset: 'sharp',
     cardPreset: 'bordered',
     buttonPreset: 'brutal',
@@ -2583,7 +2589,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     labelZh: '金融祖母绿',
     labelEn: 'Finance Emerald',
     descriptionZh: '金融绿和象牙白，作为特殊专业主题保留。',
-    descriptionEn: 'Finance emerald and ivory for a specialized professional skin.',
+    descriptionEn: 'Finance emerald and ivory for a specialized professional palette.',
     primary: '#14532d',
     accent: '#d4af37',
     neutral: 'warm',
@@ -2625,7 +2631,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     labelZh: '海沫自然',
     labelEn: 'Natural Seafoam',
     descriptionZh: '海沫蓝绿与石灰白，清爽自然。',
-    descriptionEn: 'Seafoam and limestone white for a clean natural skin.',
+    descriptionEn: 'Seafoam and limestone white for a clean natural palette.',
     primary: '#2d5a57',
     accent: '#7db9a7',
     neutral: 'sage',
@@ -2697,7 +2703,7 @@ const ENTERPRISE_COLOR_THEME_DEFINITIONS = [
     labelZh: '新粗野蓝',
     labelEn: 'Neo Brutal Blue',
     descriptionZh: '高对比蓝白和硬朗边框，提供完全不同的视觉性格。',
-    descriptionEn: 'High-contrast blue-white with hard borders for a distinct skin.',
+    descriptionEn: 'High-contrast blue-white with hard borders for a distinct palette.',
     primary: '#001f54',
     accent: '#00a3ff',
     neutral: 'pearl',
@@ -3359,7 +3365,15 @@ export function normalizeThemeAppearanceOverrides(overrides: unknown): ThemeAppe
   const source = overrides as Record<string, unknown>;
   const normalized: ThemeAppearanceOverrides = {};
 
-  for (const key of ['clarity', 'frost', 'glow', 'texture', 'contrast', 'saturation'] as const) {
+  for (const key of [
+    'clarity',
+    'frost',
+    'glow',
+    'texture',
+    'contrast',
+    'saturation',
+    'colorPresence',
+  ] as const) {
     const value = clampAppearanceValue(source[key]);
     if (value !== undefined) normalized[key] = value;
   }
@@ -3409,6 +3423,7 @@ export type ResolvedThemeAppearanceControls = {
   texture: number;
   contrast: number;
   saturation: number;
+  colorPresence: number;
 };
 
 function getDefaultThemeAppearanceControls(style: ThemeStyleMeta): ResolvedThemeAppearanceControls {
@@ -3428,6 +3443,12 @@ function getDefaultThemeAppearanceControls(style: ThemeStyleMeta): ResolvedTheme
               : 22,
     contrast: 76,
     saturation: 66,
+    colorPresence:
+      style.texturePreset === 'glow' || style.motionPreset === 'expressive'
+        ? 42
+        : style.cardPreset === 'editorial'
+          ? 24
+          : 30,
   };
 }
 
@@ -3444,6 +3465,7 @@ export function resolveThemeAppearanceControls(
     texture: next.texture ?? base.texture,
     contrast: next.contrast ?? base.contrast,
     saturation: next.saturation ?? base.saturation,
+    colorPresence: next.colorPresence ?? base.colorPresence,
   };
 }
 
@@ -3460,15 +3482,15 @@ const moodCanvasBase: Record<ThemeMood, { light: HexColor; dark: HexColor }> = {
 };
 
 const moodCanvasStrength: Record<ThemeMood, { light: number; dark: number }> = {
-  warm: { light: 0.2, dark: 0.22 },
-  cool: { light: 0.18, dark: 0.24 },
-  dark: { light: 0.16, dark: 0.28 },
-  paper: { light: 0.18, dark: 0.2 },
-  pastel: { light: 0.23, dark: 0.22 },
-  academic: { light: 0.17, dark: 0.22 },
-  natural: { light: 0.2, dark: 0.2 },
-  contrast: { light: 0.14, dark: 0.16 },
-  electric: { light: 0.24, dark: 0.32 },
+  warm: { light: 0.032, dark: 0.09 },
+  cool: { light: 0.028, dark: 0.1 },
+  dark: { light: 0.024, dark: 0.13 },
+  paper: { light: 0.026, dark: 0.08 },
+  pastel: { light: 0.035, dark: 0.1 },
+  academic: { light: 0.024, dark: 0.09 },
+  natural: { light: 0.028, dark: 0.08 },
+  contrast: { light: 0.008, dark: 0.04 },
+  electric: { light: 0.038, dark: 0.14 },
 };
 
 function themeHash(id: string): number {
@@ -3487,30 +3509,41 @@ function getThemeTint(definition: ColorThemeDefinition): HexColor {
   return mixHex(definition.accent, definition.primary, 0.58);
 }
 
-function tuneLightCanvas(definition: ColorThemeDefinition, neutralBackground: string): HexColor {
-  if (definition.lightCanvas) return definition.lightCanvas;
-
+function getLayerTintPresence(definition: ColorThemeDefinition, mode: ThemeMode): number {
   const mood = getThemeMood(definition);
-  const jitter = themeHash(definition.id);
+  const rawPresence = definition.canvasStrength ?? moodCanvasStrength[mood][mode];
+  const configured = rawPresence * (mode === 'light' ? 0.32 : 0.52);
+  const limit =
+    mode === 'light'
+      ? mood === 'pastel' || mood === 'electric'
+        ? 0.018
+        : mood === 'contrast'
+          ? 0.008
+          : 0.015
+      : mood === 'electric' || mood === 'dark'
+        ? 0.16
+        : mood === 'contrast'
+          ? 0.06
+          : 0.12;
+  return Math.max(mode === 'light' ? 0.002 : 0.028, Math.min(limit, configured));
+}
+
+function tuneLightCanvas(definition: ColorThemeDefinition, neutralBackground: string): HexColor {
+  const mood = getThemeMood(definition);
   const tint = getThemeTint(definition);
-  const base = mixHex(moodCanvasBase[mood].light, neutralBackground, 0.68);
-  const strength =
-    (definition.canvasStrength ?? moodCanvasStrength[mood].light) + (jitter - 0.5) * 0.055;
-  const primaryWash = mixHex(definition.primary, base, Math.max(0.025, strength * 0.28));
-  return mixHex(tint, primaryWash, Math.max(0.06, Math.min(0.36, strength)));
+  const base = mixHex(moodCanvasBase[mood].light, neutralBackground, 0.06);
+  const jitter = (themeHash(definition.id) - 0.5) * 0.003;
+  const strength = Math.max(0.002, getLayerTintPresence(definition, 'light') + jitter);
+  return mixHex(tint, base, strength);
 }
 
 function tuneDarkCanvas(definition: ColorThemeDefinition, neutralBackground: string): HexColor {
-  if (definition.darkCanvas) return definition.darkCanvas;
-
   const mood = getThemeMood(definition);
-  const jitter = themeHash(`${definition.id}:dark`);
   const tint = getThemeTint(definition);
-  const base = mixHex(moodCanvasBase[mood].dark, neutralBackground, 0.72);
-  const strength =
-    (definition.canvasStrength ?? moodCanvasStrength[mood].dark) + (jitter - 0.5) * 0.075;
-  const primaryWash = mixHex(definition.primary, base, Math.max(0.04, strength * 0.34));
-  return mixHex(tint, primaryWash, Math.max(0.08, Math.min(0.42, strength)));
+  const base = mixHex(moodCanvasBase[mood].dark, neutralBackground, 0.18);
+  const jitter = (themeHash(`${definition.id}:dark`) - 0.5) * 0.012;
+  const strength = Math.max(0.024, getLayerTintPresence(definition, 'dark') + jitter);
+  return mixHex(tint, base, strength);
 }
 
 function buildThemeColorRows(definition: ColorThemeDefinition): {
@@ -3531,31 +3564,30 @@ function buildThemeColorRows(definition: ColorThemeDefinition): {
   const neutral = neutralFamilies[definition.neutral];
   const mood = getThemeMood(definition);
   const tint = getThemeTint(definition);
+  const lightPresence = getLayerTintPresence(definition, 'light');
+  const darkPresence = getLayerTintPresence(definition, 'dark');
   const lightCanvas = tuneLightCanvas(definition, neutral.light.background);
   const lightSurface =
     definition.lightSurface ??
-    mixHex(
-      mood === 'contrast' ? '#ffffff' : neutral.light.card,
-      lightCanvas,
-      mood === 'dark' ? 0.7 : 0.64
-    );
-  const lightMuted = mixHex(tint, lightCanvas, mood === 'pastel' ? 0.18 : 0.14);
+    mixHex(tint, mood === 'contrast' ? '#ffffff' : neutral.light.card, lightPresence * 0.16);
+  const lightMuted = mixHex(tint, neutral.light.muted, Math.min(0.04, lightPresence * 0.5));
   const lightPrimary = ensureContrast(definition.primary, lightCanvas, 4.5);
   const lightInfo = ensureContrast(definition.accent, lightCanvas, 3.2);
-  const lightAccent = mixHex(definition.accent, lightSurface, mood === 'electric' ? 0.2 : 0.16);
+  const lightAccent = mixHex(definition.accent, lightSurface, mood === 'electric' ? 0.14 : 0.1);
   const lightAccentForeground =
     getContrastRatio(lightPrimary, lightAccent) >= 4.5
       ? lightPrimary
       : ensureContrast(neutral.light.foreground as HexColor, lightAccent, 4.5);
-  const lightForeground = ensureContrast(
-    mixHex(lightPrimary, neutral.light.foreground, mood === 'contrast' ? 0.7 : 0.48),
-    lightCanvas,
-    7
-  );
+  const lightForeground = ensureContrast(neutral.light.foreground as HexColor, lightCanvas, 7);
 
   const darkCanvas = tuneDarkCanvas(definition, neutral.dark.background);
   const darkSurface =
-    definition.darkSurface ?? mixHex(tint, darkCanvas, mood === 'electric' ? 0.18 : 0.13);
+    definition.darkSurface ??
+    mixHex(
+      tint,
+      neutral.dark.card,
+      mood === 'electric' ? darkPresence * 0.72 : darkPresence * 0.56
+    );
   const darkPrimary = ensureContrast(
     definition.darkPrimary ?? mixHex(definition.primary, '#fff7ea', 0.48),
     darkCanvas,
@@ -3563,38 +3595,46 @@ function buildThemeColorRows(definition: ColorThemeDefinition): {
   );
   const darkAccent = mixHex(definition.accent, darkSurface, mood === 'electric' ? 0.28 : 0.22);
   const darkInfo = ensureContrast(mixHex(definition.accent, '#fff7ea', 0.5), darkSurface, 4.5);
-  const darkForeground = ensureContrast(
-    mixHex('#fff7ea', darkPrimary, mood === 'contrast' ? 0.9 : 0.82),
-    darkCanvas,
-    7
-  );
+  const darkForeground = ensureContrast(neutral.dark.foreground as HexColor, darkCanvas, 7);
 
   const light: WebThemeColorRow = {
     background: lightCanvas,
-    backgroundSecondary: mixHex(tint, lightCanvas, 0.12),
-    backgroundTertiary: mixHex(tint, lightCanvas, 0.22),
+    backgroundSecondary: mixHex(
+      tint,
+      neutral.light.backgroundSecondary,
+      Math.min(0.035, lightPresence * 0.45)
+    ),
+    backgroundTertiary: mixHex(
+      tint,
+      neutral.light.backgroundTertiary,
+      Math.min(0.045, lightPresence * 0.55)
+    ),
     foreground: lightForeground,
-    foregroundSecondary: mixHex(lightForeground, lightCanvas, 0.72),
-    foregroundMuted: mixHex(lightForeground, lightCanvas, 0.52),
+    foregroundSecondary: neutral.light.foregroundSecondary,
+    foregroundMuted: neutral.light.foregroundMuted,
     card: lightSurface,
     primary: lightPrimary,
     primaryForeground: readableOn(lightPrimary),
     cardForeground: lightForeground,
-    border: mixHex(tint, lightCanvas, mood === 'contrast' ? 0.26 : 0.2),
-    borderLight: mixHex(tint, lightCanvas, 0.12),
-    borderStrong: mixHex(lightPrimary, lightCanvas, 0.32),
+    border: mixHex(tint, neutral.light.border, Math.min(0.035, lightPresence * 0.45)),
+    borderLight: mixHex(tint, neutral.light.borderLight, Math.min(0.025, lightPresence * 0.35)),
+    borderStrong: mixHex(
+      lightPrimary,
+      neutral.light.borderStrong,
+      Math.min(0.09, lightPresence * 0.9)
+    ),
     muted: lightMuted,
-    mutedForeground: mixHex(lightForeground, lightCanvas, 0.56),
+    mutedForeground: neutral.light.mutedForeground,
     accent: lightAccent,
     accentForeground: lightAccentForeground,
     success: '#6f7b58',
-    warning: mixHex(definition.accent, '#b7832f', 0.28),
+    warning: '#b7832f',
     error: '#b85c58',
     info: lightInfo,
     violet: mixHex(definition.primary, '#6574ff', 0.55),
     pink: mixHex(definition.accent, '#e76f8a', 0.45),
-    input: mixHex(lightSurface, lightCanvas, 0.62),
-    inputBorder: mixHex(tint, lightCanvas, 0.22),
+    input: mixHex(tint, neutral.light.input, Math.min(0.025, lightPresence * 0.35)),
+    inputBorder: mixHex(tint, neutral.light.inputBorder, Math.min(0.03, lightPresence * 0.4)),
     inputFocus: lightPrimary,
     placeholder: mixHex(lightForeground, lightCanvas, 0.38),
     overlay: `rgba(${hexToRgb(lightForeground).r}, ${hexToRgb(lightForeground).g}, ${
@@ -3604,33 +3644,37 @@ function buildThemeColorRows(definition: ColorThemeDefinition): {
 
   const dark: WebThemeColorRow = {
     background: darkCanvas,
-    backgroundSecondary: mixHex(tint, darkCanvas, 0.1),
-    backgroundTertiary: mixHex(tint, darkCanvas, 0.18),
+    backgroundSecondary: mixHex(
+      tint,
+      neutral.dark.backgroundSecondary,
+      Math.min(0.12, darkPresence)
+    ),
+    backgroundTertiary: mixHex(tint, neutral.dark.backgroundTertiary, Math.min(0.16, darkPresence)),
     foreground: darkForeground,
-    foregroundSecondary: mixHex(darkForeground, darkCanvas, 0.74),
-    foregroundMuted: mixHex(darkForeground, darkCanvas, 0.54),
+    foregroundSecondary: neutral.dark.foregroundSecondary,
+    foregroundMuted: neutral.dark.foregroundMuted,
     card: darkSurface,
     primary: darkPrimary,
     primaryForeground: readableOn(darkPrimary),
     cardForeground: darkForeground,
-    border: mixHex(tint, darkCanvas, 0.28),
-    borderLight: mixHex(tint, darkCanvas, 0.17),
-    borderStrong: mixHex(darkPrimary, darkCanvas, 0.36),
-    muted: mixHex(tint, darkCanvas, 0.14),
-    mutedForeground: mixHex(darkForeground, darkCanvas, 0.58),
+    border: mixHex(tint, neutral.dark.border, Math.min(0.14, darkPresence)),
+    borderLight: mixHex(tint, neutral.dark.borderLight, Math.min(0.1, darkPresence)),
+    borderStrong: mixHex(darkPrimary, neutral.dark.borderStrong, Math.min(0.2, darkPresence * 1.3)),
+    muted: mixHex(tint, neutral.dark.muted, Math.min(0.14, darkPresence)),
+    mutedForeground: neutral.dark.mutedForeground,
     accent: darkAccent,
     accentForeground:
       getContrastRatio(darkPrimary, darkAccent) >= 4.5
         ? darkPrimary
         : ensureContrast(neutral.dark.foreground as HexColor, darkAccent, 4.5),
     success: '#a3a06f',
-    warning: ensureContrast(mixHex(definition.accent, '#fff7ea', 0.42), darkSurface, 4.5),
+    warning: ensureContrast('#ddb85a', darkSurface, 4.5),
     error: '#e98a7f',
     info: darkInfo,
     violet: mixHex(darkPrimary, '#a5b4fc', 0.55),
     pink: mixHex(definition.accent, '#f0abfc', 0.44),
-    input: mixHex(tint, darkCanvas, 0.16),
-    inputBorder: mixHex(tint, darkCanvas, 0.3),
+    input: mixHex(tint, neutral.dark.input, Math.min(0.12, darkPresence)),
+    inputBorder: mixHex(tint, neutral.dark.inputBorder, Math.min(0.14, darkPresence)),
     inputFocus: darkPrimary,
     placeholder: mixHex(darkForeground, darkCanvas, 0.36),
     overlay: 'rgba(0, 0, 0, 0.68)',
@@ -3751,8 +3795,8 @@ export function getThemePreview(
     foreground: colorsForPreview.foreground,
     heroPanel:
       style.cardPreset === 'glass'
-        ? mixHex(colorsForPreview.info, colorsForPreview.card, 0.18)
-        : mixHex(colorsForPreview.primary, colorsForPreview.card, 0.12),
+        ? mixHex(colorsForPreview.info, colorsForPreview.card, 0.08)
+        : mixHex(colorsForPreview.info, colorsForPreview.card, 0.04),
     style,
   };
 }
@@ -3944,6 +3988,7 @@ function createThemeAppearanceCssVars(
   const texture = controls.texture / 100;
   const contrast = controls.contrast / 100;
   const saturation = controls.saturation / 100;
+  const colorPresence = controls.colorPresence / 100;
   const radii = radiusVars[style.radiusPreset];
   const density = densityVars[style.densityPreset];
   const shadows = shadowVars[style.shadowPreset];
@@ -3953,12 +3998,13 @@ function createThemeAppearanceCssVars(
   const popoverAlpha = Math.max(0.78, Math.min(1, surfaceAlpha + 0.08));
   const controlAlpha = Math.max(0.74, Math.min(1, surfaceAlpha + 0.03));
   const borderBoost = percent(0.42 + contrast * 0.28);
-  const glowPct = percent(glow * 0.3);
-  const glowWarmPct = percent(glow * 0.24);
+  const brandPresencePct = percent(0.04 + colorPresence * 0.12);
+  const glowPct = percent(glow * (0.1 + colorPresence * 0.16));
+  const glowWarmPct = percent(glow * (0.08 + colorPresence * 0.12));
   const textureStrength =
     Number.parseFloat(textureOpacity[style.texturePreset]) * Math.max(0.08, texture);
   const blurPx = Math.round(frost * 24);
-  const saturate = 0.82 + saturation * 0.48;
+  const saturate = 0.94 + saturation * 0.22;
   const buttonSurface =
     style.buttonPreset === 'glass'
       ? `color-mix(in oklab, var(--ds-card) ${percent(controlAlpha - 0.08)}, transparent)`
@@ -3977,6 +4023,7 @@ function createThemeAppearanceCssVars(
     '--theme-texture-strength': decimal(textureStrength),
     '--theme-contrast-strength': decimal(contrast),
     '--theme-saturation-strength': decimal(saturation),
+    '--theme-brand-presence': decimal(colorPresence),
     '--theme-surface-alpha': decimal(surfaceAlpha),
     '--theme-surface-alpha-percent': percent(surfaceAlpha),
     '--theme-popover-alpha-percent': percent(popoverAlpha),
@@ -3987,6 +4034,7 @@ function createThemeAppearanceCssVars(
     '--theme-popover-bg': `color-mix(in oklab, var(--ds-popover) ${percent(popoverAlpha)}, transparent)`,
     '--theme-control-bg': `color-mix(in oklab, var(--ds-background) ${percent(controlAlpha)}, var(--ds-card))`,
     '--theme-border-strong-dynamic': `color-mix(in oklab, var(--ds-border-strong) ${borderBoost}, var(--ds-foreground))`,
+    '--theme-brand-tint': `color-mix(in oklab, var(--ds-info) ${brandPresencePct}, var(--ds-card))`,
     '--theme-glow-1': `color-mix(in oklab, var(--ds-info) ${glowPct}, transparent)`,
     '--theme-glow-2': `color-mix(in oklab, var(--ds-warning) ${glowWarmPct}, transparent)`,
     '--theme-grid': `color-mix(in oklab, var(--ds-foreground) ${percent(0.035 + texture * 0.07)}, transparent)`,
@@ -4027,6 +4075,7 @@ export const THEME_APPEARANCE_CSS_VAR_NAMES = [
   '--theme-texture-strength',
   '--theme-contrast-strength',
   '--theme-saturation-strength',
+  '--theme-brand-presence',
   '--theme-surface-alpha',
   '--theme-surface-alpha-percent',
   '--theme-popover-alpha-percent',
@@ -4036,6 +4085,7 @@ export const THEME_APPEARANCE_CSS_VAR_NAMES = [
   '--theme-card-bg',
   '--theme-popover-bg',
   '--theme-control-bg',
+  '--theme-brand-tint',
   '--theme-border-strong-dynamic',
   '--theme-glow-1',
   '--theme-glow-2',
@@ -4096,14 +4146,14 @@ function createWebThemeCssVars(
   const appearanceVars = createThemeAppearanceCssVars(palette, style);
   const lightHeroPanel =
     style.cardPreset === 'glass'
-      ? mixHex(light.info, light.card, 0.18)
+      ? mixHex(light.info, light.card, 0.08)
       : style.buttonPreset === 'brutal'
-        ? mixHex(light.primary, light.card, 0.22)
-        : mixHex(light.primary, light.card, 0.1);
+        ? mixHex(light.primary, light.card, 0.1)
+        : mixHex(light.info, light.card, 0.04);
   const darkHeroPanel =
     style.cardPreset === 'glass'
-      ? mixHex(dark.info, dark.card, 0.2)
-      : mixHex(dark.primary, dark.card, 0.1);
+      ? mixHex(dark.info, dark.card, 0.12)
+      : mixHex(dark.primary, dark.card, 0.06);
 
   return {
     light: {
@@ -4115,12 +4165,12 @@ function createWebThemeCssVars(
       '--theme-glow-1': `color-mix(in oklab, ${light.info} 18%, transparent)`,
       '--theme-glow-2': `color-mix(in oklab, ${light.warning} 16%, transparent)`,
       '--theme-hero-panel': lightHeroPanel,
-      '--theme-hero-panel-raised': mixHex(light.primary, lightHeroPanel, 0.08),
+      '--theme-hero-panel-raised': mixHex(light.info, lightHeroPanel, 0.04),
       '--theme-hero-ink': light.foreground,
       '--theme-hero-muted': light.mutedForeground,
       '--theme-hero-soft': light.foregroundSecondary,
-      '--theme-hero-inset': `color-mix(in oklab, ${light.primary} 7%, ${light.card})`,
-      '--theme-hero-active': `color-mix(in oklab, ${light.info} 12%, ${light.card})`,
+      '--theme-hero-inset': `color-mix(in oklab, ${light.primary} 3%, ${light.card})`,
+      '--theme-hero-active': `color-mix(in oklab, ${light.info} 10%, ${light.card})`,
       '--theme-brand-mark': light.primary,
       '--theme-grid': `color-mix(in oklab, ${light.foreground} 7%, transparent)`,
       '--theme-font-sans': fonts.sans,
@@ -4211,12 +4261,12 @@ function createWebThemeCssVars(
       '--theme-glow-1': `color-mix(in oklab, ${dark.info} 22%, transparent)`,
       '--theme-glow-2': `color-mix(in oklab, ${dark.warning} 16%, transparent)`,
       '--theme-hero-panel': darkHeroPanel,
-      '--theme-hero-panel-raised': mixHex(dark.primary, darkHeroPanel, 0.1),
+      '--theme-hero-panel-raised': mixHex(dark.info, darkHeroPanel, 0.06),
       '--theme-hero-ink': dark.foreground,
       '--theme-hero-muted': dark.mutedForeground,
       '--theme-hero-soft': dark.foregroundSecondary,
-      '--theme-hero-inset': `color-mix(in oklab, ${dark.primary} 9%, ${dark.card})`,
-      '--theme-hero-active': `color-mix(in oklab, ${dark.info} 14%, ${dark.card})`,
+      '--theme-hero-inset': `color-mix(in oklab, ${dark.primary} 5%, ${dark.card})`,
+      '--theme-hero-active': `color-mix(in oklab, ${dark.info} 12%, ${dark.card})`,
       '--theme-brand-mark': dark.primary,
       '--theme-grid': `color-mix(in oklab, ${dark.foreground} 8%, transparent)`,
       '--theme-font-sans': fonts.sans,

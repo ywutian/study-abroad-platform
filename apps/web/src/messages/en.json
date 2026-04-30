@@ -2639,7 +2639,7 @@
     "colorPalette": {
       "menuLabel": "Site color theme",
       "studioTitle": "Theme Studio",
-      "studioDesc": "Choose a complete visual skin for backgrounds, buttons, typography, radius, cards, and motion. {count} themes available.",
+      "studioDesc": "Choose an enterprise palette package for brand, CTA, data accents, typography, radius, cards, and motion. {count} themes available.",
       "searchPlaceholder": "Search {count} themes...",
       "all": "All",
       "recent": "Recent",
@@ -2653,7 +2653,7 @@
       "customizeTab": "Customize",
       "customizeTitle": "Customize",
       "presetTitle": "Presets",
-      "textureTitle": "Visual texture",
+      "textureTitle": "Enterprise appearance",
       "resetTheme": "Reset theme",
       "resetAll": "Reset all",
       "presets": {
@@ -2668,7 +2668,8 @@
         "glow": "Glow",
         "texture": "Texture",
         "contrast": "Contrast",
-        "saturation": "Saturation"
+        "saturation": "Accent saturation",
+        "colorPresence": "Color presence"
       },
       "controlMin": {
         "clarity": "Soft",
@@ -2676,7 +2677,8 @@
         "glow": "Quiet",
         "texture": "Plain",
         "contrast": "Calm",
-        "saturation": "Muted"
+        "saturation": "Muted",
+        "colorPresence": "Neutral"
       },
       "controlMax": {
         "clarity": "Sharp",
@@ -2684,7 +2686,8 @@
         "glow": "Bright",
         "texture": "Rich",
         "contrast": "Strong",
-        "saturation": "Vivid"
+        "saturation": "Vivid",
+        "colorPresence": "Branded"
       },
       "styleLabels": {
         "radius": "Radius",

@@ -1975,8 +1975,8 @@
     --landing-glass: color-mix(in oklab, var(--landing-surface) var(--theme-popover-alpha-percent), transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
-    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) var(--theme-popover-alpha-percent), var(--theme-canvas));
-    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) var(--theme-surface-alpha-percent), var(--theme-surface));
+    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) 92%, var(--theme-canvas));
+    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) 84%, var(--theme-surface));
     --lumni-hero-line: var(--theme-border-strong-dynamic);
     --lumni-hero-text: var(--theme-hero-ink);
     --lumni-hero-soft: var(--theme-hero-soft);
@@ -2032,8 +2032,8 @@
     --landing-glass: color-mix(in oklab, var(--landing-surface) var(--theme-popover-alpha-percent), transparent);
     --landing-shadow-card: var(--ds-shadow-card);
     --landing-shadow-elevated: var(--ds-shadow-elevated);
-    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) var(--theme-popover-alpha-percent), var(--theme-canvas));
-    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) var(--theme-surface-alpha-percent), var(--theme-surface));
+    --lumni-hero-shell: color-mix(in oklab, var(--theme-hero-panel) 88%, var(--theme-canvas));
+    --lumni-hero-panel: color-mix(in oklab, var(--theme-hero-panel-raised) 82%, var(--theme-surface));
     --lumni-hero-line: var(--theme-border-strong-dynamic);
     --lumni-hero-text: var(--theme-hero-ink);
     --lumni-hero-soft: var(--theme-hero-soft);
@@ -2064,7 +2064,6 @@
       var(--theme-canvas-soft) 54%,
       var(--theme-surface) 100%
     );
-    filter: saturate(calc(0.86 + var(--theme-saturation-strength) * 0.34));
   }
 
   .landing-glass-edge {
