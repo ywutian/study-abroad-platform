@@ -92,24 +92,16 @@ export function withOpacity(color: string, alpha: number): string {
 }
 
 export function useColors() {
-  try {
-    const colorScheme = useThemeStore((state) => state.colorScheme);
-    const colorPalette = useThemeStore((state) => state.colorPalette);
-    return getPaletteColors(colorPalette, colorScheme === 'dark' ? 'dark' : 'light');
-  } catch {
-    return colors.light;
-  }
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorPalette = useThemeStore((state) => state.colorPalette);
+  return getPaletteColors(colorPalette, colorScheme === 'dark' ? 'dark' : 'light');
 }
 
 export function useThemeAppearance() {
-  try {
-    const colorScheme = useThemeStore((state) => state.colorScheme);
-    const colorPalette = useThemeStore((state) => state.colorPalette);
-    const mode = colorScheme === 'dark' ? 'dark' : 'light';
-    return getThemeAppearance(colorPalette, mode);
-  } catch {
-    return getThemeAppearance(DEFAULT_COLOR_PALETTE, 'light');
-  }
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorPalette = useThemeStore((state) => state.colorPalette);
+  const mode = colorScheme === 'dark' ? 'dark' : 'light';
+  return getThemeAppearance(colorPalette, mode);
 }
 
 export function getColors(isDark?: boolean, palette: ColorPalette = DEFAULT_COLOR_PALETTE) {
