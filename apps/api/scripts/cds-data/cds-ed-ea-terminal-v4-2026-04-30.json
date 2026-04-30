@@ -1,0 +1,212 @@
+{
+  "meta": {
+    "createdAt": "2026-04-30T12:00:00.000Z",
+    "purpose": "Terminal ED/EA classification for remaining null School.edAcceptanceRate and School.eaAcceptanceRate fields after C9/C21 marathon.",
+    "note": "Only fields listed in missingFields should be updated. Existing real ED/EA rates are intentionally left untouched."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "missingFields": ["edAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://ir.mit.edu/projects/2024-25-common-data-set/",
+      "reason": "MIT does not offer Early Decision; official CDS/admissions materials use Early Action instead."
+    },
+    {
+      "schoolNameNorm": "stanford university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://irds.stanford.edu/data-findings/cds",
+      "reason": "Official Stanford CDS is published via IR&DS/Google Drive, but C21/C22 does not provide ED applicant/admit counts and REA counts are not reported as a usable CDS rate."
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf",
+      "reason": "Official Cal Poly CDS C21/C22 contains no ED/EA applicant/admit counts; Cal State campuses do not use ED and the section is blank/not offered."
+    },
+    {
+      "schoolNameNorm": "university of california, berkeley",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://opa.berkeley.edu/campus-data/common-data-set",
+      "reason": "UC Berkeley does not offer Early Decision or Early Action for first-year admission; official CDS/OPA source has no C21/C22 admit-rate counts."
+    },
+    {
+      "schoolNameNorm": "university of colorado boulder",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://data.colorado.edu/reports/common-data-set",
+      "reason": "Official CU Boulder CDS source confirms C22 early action exists but does not publish applicant/admit counts; ED counts are not published."
+    },
+    {
+      "schoolNameNorm": "gonzaga university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "NO_PUBLIC_REAL_DATA",
+      "selectedUrl": "https://www.gonzaga.edu/-/media/Website/Documents/About/Offices-and-Services/Institutional-Research/Gonzaga-University-CDS_2021-2022.ashx",
+      "reason": "Targeted searches found only older official Gonzaga CDS/public IR files; no current public C21/C22 applicant/admit counts were found."
+    },
+    {
+      "schoolNameNorm": "colorado school of mines",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "NO_PUBLIC_REAL_DATA",
+      "selectedUrl": "https://ir.mines.edu/common-data-set/",
+      "reason": "Colorado School of Mines official CDS page did not expose a verified current C21/C22 rate; prior extracted Colorado College-derived rates were rejected."
+    },
+    {
+      "schoolNameNorm": "seton hall university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "NO_PUBLIC_REAL_DATA",
+      "selectedUrl": "https://www.shu.edu/institutional-research/common-data-set.html",
+      "reason": "Targeted search found only early-2000s official Seton Hall CDS files and no current public C21/C22 applicant/admit counts."
+    },
+    {
+      "schoolNameNorm": "university of san francisco",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "NO_PUBLIC_REAL_DATA",
+      "selectedUrl": "https://myusf.usfca.edu/institutional-research/common-data-set",
+      "reason": "Targeted search found older USF CDS PDFs only; no current public ED/EA applicant/admit counts were found."
+    },
+    {
+      "schoolNameNorm": "san diego state university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://asir.sdsu.edu/Documents/CommonDataSets/CDS_2024-25.pdf",
+      "reason": "Official SDSU 2024-25 CDS C21/C22 indicates no Early Decision or Early Action counts are reported."
+    },
+    {
+      "schoolNameNorm": "university of oklahoma",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://www.ou.edu/content/dam/irr/docs/Common%20Data%20Sets/Norman%20Campus%20Only/2024-25-nc/CDS-2024-2025-Combined.pdf",
+      "reason": "Official OU 2024-25 CDS is available, but C21/C22 applicant/admit counts were not published as usable ED/EA rates."
+    },
+    {
+      "schoolNameNorm": "colorado state university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://www.ir.colostate.edu/wp-content/uploads/sites/21/2024/12/ColoState_CDS_2024-2025_for_web.pdf",
+      "reason": "Official Colorado State CDS C21/C22 does not publish applicant/admit counts for early plans; prior Colorado College-derived rates were rejected."
+    },
+    {
+      "schoolNameNorm": "university of new hampshire",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://www.unh.edu/institutional-research/sites/default/files/media/2025-02/cds-2024-2025-2.12.25_0.pdf",
+      "reason": "Official UNH 2024-25 CDS indicates ED/EA plans but does not publish applicant/admit counts in C21/C22."
+    },
+    {
+      "schoolNameNorm": "george mason university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://oiep.gmu.edu/wp-content/uploads/2025/02/2024-2025-CDS-Final.pdf",
+      "reason": "Official George Mason 2024-25 CDS C21/C22 shows no Early Decision or Early Action plan/counts."
+    },
+    {
+      "schoolNameNorm": "washington state university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://wpcdn.web.wsu.edu/wsuwp/uploads/sites/3447/2025/09/CDS-2024-2025-For-Website.pdf",
+      "reason": "Official Washington State 2024-25 CDS C21/C22 does not publish usable ED/EA applicant/admit counts."
+    },
+    {
+      "schoolNameNorm": "adelphi university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "NO_PUBLIC_REAL_DATA",
+      "selectedUrl": "https://www.adelphi.edu/orap/wp-content/uploads/sites/56/2020/07/cds_2010-11.pdf",
+      "reason": "Targeted search found only old Adelphi CDS/public files; no current public ED/EA applicant/admit counts were found."
+    },
+    {
+      "schoolNameNorm": "wichita state university",
+      "missingFields": ["edAcceptanceRate", "eaAcceptanceRate"],
+      "status": "NO_PUBLIC_REAL_DATA",
+      "selectedUrl": "https://www.wichita.edu/services/planning_and_analysis/documents/WSU_CDS_2019-2020.pdf",
+      "reason": "Targeted search found older Wichita State CDS files only; no current public ED/EA applicant/admit counts were found."
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://upenn.app.box.com/s/ckv4frz37rzxa4u6bdiv2h4yzykqm4ef",
+      "reason": "Official Penn 2024-25 CDS reports Early Decision but no Early Action plan/counts."
+    },
+    {
+      "schoolNameNorm": "duke university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://ir.provost.duke.edu/sites/default/files/CDS-2024-25-Final-2.pdf",
+      "reason": "Official Duke 2024-25 CDS reports Early Decision; Early Action is not offered/reported."
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://oir.brown.edu/sites/default/files/2020-04/CDS_2024_2025.pdf",
+      "reason": "Official Brown 2024-25 CDS reports Early Decision; C22 indicates no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf",
+      "reason": "Official Johns Hopkins 2024-25 CDS reports Early Decision; no Early Action applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "columbia university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_College_and_Columbia_Engineering_CDS.pdf",
+      "reason": "Official Columbia 2024-25 CDS reports Early Decision; no Early Action applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "colgate university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://www.colgate.edu/sites/default/files/2025-07/Colgate%202024-25%20CDS%20for%20Website_0.pdf",
+      "reason": "Official Colgate 2024-25 CDS reports Early Decision only; no Early Action plan/counts."
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://cdn.vanderbilt.edu/vu-wpfsx/wp-content/uploads/sites/70/2025/11/CDS_2024-2025.xlsx",
+      "reason": "Official Vanderbilt 2024-25 CDS reports Early Decision; no Early Action applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "washington university in st. louis",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://washu.edu/app/uploads/2025/06/2024-2025-WashU-CDS.pdf",
+      "reason": "Official WashU 2024-25 CDS reports Early Decision; no Early Action plan/counts."
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/10/CDS_2024-2025_FINAL-3.pdf",
+      "reason": "Official USC 2024-25 CDS does not publish Early Action applicant/admit counts as a usable rate."
+    },
+    {
+      "schoolNameNorm": "boston university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://www.bu.edu/asir/files/2026/04/CDS_2024_25-updated-sect-I.pdf",
+      "reason": "Official BU 2024-25 CDS reports Early Decision; C22 indicates no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "university of rochester",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf",
+      "reason": "Official Rochester 2024-25 CDS reports Early Decision; no Early Action plan/counts."
+    },
+    {
+      "schoolNameNorm": "northeastern university",
+      "missingFields": ["eaAcceptanceRate"],
+      "status": "OFFICIAL_BLANK_SECTION",
+      "selectedUrl": "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+      "reason": "Official Northeastern 2024-25 CDS reports ED counts; EA dates are present but applicant/admit counts are not published."
+    }
+  ]
+}
