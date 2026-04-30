@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch52-haverford-swarthmore-msu-harveymudd-carleton",
+    "note": "Batch 52: Haverford, Swarthmore, Michigan State (2023-24), Harvey Mudd (2023-24), Carleton"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "schoolName": "Swarthmore College",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "michigan state university",
+      "schoolName": "Michigan State University",
+      "selectedUrl": "https://ir.msu.edu/-/media/assets/ir/docs/cds/cds-2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/06/CDS_2023-2024_Complete_V2.pdf"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "schoolName": "Carleton College",
+      "selectedUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf"
+    }
+  ]
+}

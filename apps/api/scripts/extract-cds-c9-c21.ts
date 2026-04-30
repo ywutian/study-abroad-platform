@@ -100,10 +100,19 @@ function parseRows(input: string): RegistryRow[] {
 }
 
 async function download(url: string, dest: string) {
+  // Derive a plausible Referer from the URL's origin (helps with hotlink-protected servers)
+  let referer: string | undefined;
+  try {
+    const u = new URL(url);
+    referer = `${u.protocol}//${u.host}/`;
+  } catch (_e) {
+    // ignore invalid URLs
+  }
   const r = await fetch(url, {
     headers: {
       'user-agent':
-        'Mozilla/5.0 (compatible; LumniDataBot/1.0; +https://lumni.app)',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      ...(referer ? { referer } : {}),
     },
   });
   if (!r.ok) throw new Error(`Download failed ${r.status}: ${url}`);

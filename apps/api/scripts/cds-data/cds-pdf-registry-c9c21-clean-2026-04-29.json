@@ -1,0 +1,213 @@
+{
+  "_meta": {
+    "purpose": "C9/C11 extraction - valid URLs only",
+    "count": 29,
+    "removed_wrong_url": 15,
+    "generatedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "schoolNameNorm": "williams college",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "usNewsRank": 1
+    },
+    {
+      "schoolId": "cmnwr8iwl0052z0ti9adsxk6l",
+      "schoolName": "Olin College of Engineering",
+      "schoolNameNorm": "olin college of engineering",
+      "selectedUrl": "https://www.olin.edu/sites/default/files/2023-02/CDS_2022-2023.pdf",
+      "usNewsRank": 3
+    },
+    {
+      "schoolId": "cmnwr8iut0044z0tie7749l79",
+      "schoolName": "Swarthmore College",
+      "schoolNameNorm": "swarthmore college",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "usNewsRank": 3
+    },
+    {
+      "schoolId": "cmnwr8iwc004yz0tif1a6h2el",
+      "schoolName": "Manhattan School of Music",
+      "schoolNameNorm": "manhattan school of music",
+      "selectedUrl": "https://content.manhattan.edu/institutional-research/CDS_2024-2025.pdf",
+      "usNewsRank": 5
+    },
+    {
+      "schoolId": "cmnwr8iuy0047z0tijtdlowua",
+      "schoolName": "Bowdoin College",
+      "schoolNameNorm": "bowdoin college",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "usNewsRank": 6
+    },
+    {
+      "schoolId": "cmnwr8iv00048z0tityzi3zx8",
+      "schoolName": "Middlebury College",
+      "schoolNameNorm": "middlebury college",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "usNewsRank": 7
+    },
+    {
+      "schoolId": "cmnwr8iv5004bz0ti94b7ow5h",
+      "schoolName": "Hamilton College",
+      "schoolNameNorm": "hamilton college",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "usNewsRank": 10
+    },
+    {
+      "schoolId": "cmnwr8iv7004cz0tiy7lyda2g",
+      "schoolName": "Haverford College",
+      "schoolNameNorm": "haverford college",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+      "usNewsRank": 11
+    },
+    {
+      "schoolId": "cmnwr8ive004gz0tihs1kxbek",
+      "schoolName": "Davidson College",
+      "schoolNameNorm": "davidson college",
+      "selectedUrl": "https://www.davidson.edu/offices-and-services/institutional-effectiveness/common-data-set",
+      "usNewsRank": 15
+    },
+    {
+      "schoolId": "cmn1htkpr0014vqf2w1o1nsyd",
+      "schoolName": "Tufts University",
+      "schoolNameNorm": "tufts university",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "usNewsRank": 40
+    },
+    {
+      "schoolId": "cmn1htkpo0013vqf2byqbw5mb",
+      "schoolName": "Rutgers University-New Brunswick",
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "usNewsRank": 40
+    },
+    {
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "schoolNameNorm": "lehigh university",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "usNewsRank": 47
+    },
+    {
+      "schoolId": "cmn1htkqc001bvqf22zfkx827",
+      "schoolName": "Texas A&M University",
+      "schoolNameNorm": "texas a&m university",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "usNewsRank": 47
+    },
+    {
+      "schoolId": "cmnwr8ilz0002z0tiwrsmrdi7",
+      "schoolName": "Case Western Reserve University",
+      "schoolNameNorm": "case western reserve university",
+      "selectedUrl": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf",
+      "usNewsRank": 53
+    },
+    {
+      "schoolId": "cmnwr8im90007z0ti2n04hf3n",
+      "schoolName": "University of Pittsburgh",
+      "schoolNameNorm": "university of pittsburgh",
+      "selectedUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "usNewsRank": 60
+    },
+    {
+      "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+      "schoolName": "Pepperdine University",
+      "schoolNameNorm": "pepperdine university",
+      "selectedUrl": "https://www.pepperdine.edu/oie/institutional-research/common-data-set.htm",
+      "usNewsRank": 60
+    },
+    {
+      "schoolId": "cmnwr8ity003tz0tie2nazej1",
+      "schoolName": "American University",
+      "schoolNameNorm": "american university",
+      "selectedUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+      "usNewsRank": 79
+    },
+    {
+      "schoolId": "cmnwr8in3000oz0tih36u19xf",
+      "schoolName": "Clemson University",
+      "schoolNameNorm": "clemson university",
+      "selectedUrl": "https://www.clemson.edu/institutional-effectiveness/documents/2020/CDSClemsonUniversityallcompleted20200310.pdf",
+      "usNewsRank": 79
+    },
+    {
+      "schoolId": "cmnwr8inl000yz0ti6wsiqcrv",
+      "schoolName": "Marquette University",
+      "schoolNameNorm": "marquette university",
+      "selectedUrl": "https://www.marquette.edu/academic-effectiveness/institutional-research-analysis/documents/cds-2024-2025_final.pdf",
+      "usNewsRank": 79
+    },
+    {
+      "schoolId": "cmnwr8io00017z0ti5bju2vo7",
+      "schoolName": "University at Buffalo",
+      "schoolNameNorm": "university at buffalo",
+      "selectedUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+      "usNewsRank": 79
+    },
+    {
+      "schoolId": "cmnwr8iuf003zz0ti12pe3iq1",
+      "schoolName": "University of San Diego",
+      "schoolNameNorm": "university of san diego",
+      "selectedUrl": "https://www.sandiego.edu/facts/documents/cds/cds_2024-25.pdf",
+      "usNewsRank": 90
+    },
+    {
+      "schoolId": "cmnwr8io7001bz0tihu5wo9mh",
+      "schoolName": "Rutgers University-Newark",
+      "schoolNameNorm": "rutgers university-newark",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf",
+      "usNewsRank": 97
+    },
+    {
+      "schoolId": "cmnwr8iob001dz0ti3go71xpz",
+      "schoolName": "University of Utah",
+      "schoolNameNorm": "university of utah",
+      "selectedUrl": "https://data.utah.edu/wp-content/uploads/sites/61/2025/07/CDS-2024-2025-Template-for-Website.pdf",
+      "usNewsRank": 101
+    },
+    {
+      "schoolId": "cmnwr8ipa001oz0tionb7y3gm",
+      "schoolName": "Loyola University Chicago",
+      "schoolNameNorm": "loyola university chicago",
+      "selectedUrl": "https://www.luc.edu/media/lucedu/oie/CDS%202024-25%20Loyola%20University%20Chicago.pdf",
+      "usNewsRank": 115
+    },
+    {
+      "schoolId": "cmnwr8ipm001sz0tixvcr2p30",
+      "schoolName": "Oregon State University",
+      "schoolNameNorm": "oregon state university",
+      "selectedUrl": "https://institutionalresearch.oregonstate.edu/sites/institutionalresearch.oregonstate.edu/files/2025-07/cds_2024-25.pdf",
+      "usNewsRank": 125
+    },
+    {
+      "schoolId": "cmnwr8is4002zz0ti7l7rukwt",
+      "schoolName": "South Dakota State University",
+      "schoolNameNorm": "south dakota state university",
+      "selectedUrl": "https://www.sdstate.edu/sites/default/files/file-archive/2022-12/South%20Dakota%20State%20University%20-%20Common%20Data%20Set%20%282021-2022%29.pdf",
+      "usNewsRank": 168
+    },
+    {
+      "schoolId": "cmnwr8is80031z0tizosa0sa8",
+      "schoolName": "University of Toledo",
+      "schoolNameNorm": "university of toledo",
+      "selectedUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf",
+      "usNewsRank": 171
+    },
+    {
+      "schoolId": "cmnwr8is60030z0timvbtgjwa",
+      "schoolName": "University of Akron",
+      "schoolNameNorm": "university of akron",
+      "selectedUrl": "https://www.uakron.edu/ir/docs/CDS/CDS%202024-2025%20University%20of%20Akron%20Main%20Campus.pdf",
+      "usNewsRank": 171
+    },
+    {
+      "schoolId": "cmnwr8ite003jz0tijg7j0avf",
+      "schoolName": "University of Massachusetts Boston",
+      "schoolNameNorm": "university of massachusetts boston",
+      "selectedUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/CDS_2022-2023_UMass_Boston.pdf",
+      "usNewsRank": 189
+    }
+  ]
+}

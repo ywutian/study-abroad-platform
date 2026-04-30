@@ -1,0 +1,109 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:29:26.241Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch33-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "san jose state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www2.sjsu.edu/irsa/docs/cds/20250411_CDS_2024-2025%20FINAL.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.3829,
+        "3.50-3.74": 0.197,
+        "3.25-3.49": 0.16,
+        "3.00-3.24": 0.14,
+        "<3.00": 0.12
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "San Jose State University does not offer Early Decision or Early Action plans as indicated by 'No' to both questions in sections C21 and C22."
+    },
+    {
+      "schoolNameNorm": "university of kentucky",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irads.uky.edu/sites/default/files/2025-07/cds-2024-2025_0.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.446,
+        "3.50-3.74": 0.218,
+        "3.25-3.49": 0.133,
+        "3.00-3.24": 0.107,
+        "<3.00": 0.096
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9: Used percent enrolled with GPA of 4.0 plus 3.75-3.99 to map to 3.75-4.00 band. Sum fractions for <3.00 by adding ranges below 3.00 as reported. C21: Institution does not report Early Decision or Early Action application/admission counts; instead, reports yes/no for availability."
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/ir-web-24-25/2024%202025%20common%20data%20set%20clifton.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Cincinnati does not offer Early Decision or Early Action plans as per CDS sections C21-C22."
+    },
+    {
+      "schoolNameNorm": "university of alabama",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.ua.edu/d/sites/all/files/reports25/CDS%202024-25%20FINAL.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.61,
+        "3.50-3.74": 0.16,
+        "3.25-3.49": 0.12,
+        "3.00-3.24": 0.08,
+        "<3.00": 0.03
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Alabama reports GPA distribution in ranges similar to canonical, converted from combined data of students who submitted and not submitted scores. No detailed numeric data provided for Early Decision or Early Action applications or admissions."
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data is missing or zeroed out (all ranges 0.00) so gpaDistribution set to null. C21 Early Decision plan is offered with two rounds reported combined: 2217 applied, 996 admitted. No Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/d10-files/documents/2025-04/2024-2025-Common-Data-Set_0.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 93.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 479,
+      "edAdmitted": 449,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution not reported; Early Decision plan offered with 479 applications and 449 admits; no Early Action reported."
+    }
+  ],
+  "failures": []
+}

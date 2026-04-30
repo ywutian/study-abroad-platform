@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "html-direct-auburn",
+    "note": "Auburn University CDS 2024-25 extracted directly from HTML at auburn.edu/administration/ir/common-data-set/2024/section-c.html"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "auburn university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://auburn.edu/administration/ir/common-data-set/2024/section-c.html",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8386,
+        "3.50-3.74": 0.1052,
+        "3.25-3.49": 0.0383,
+        "3.00-3.24": 0.0141,
+        "<3.00": 0.0037
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution from C11 section. Auburn does not offer early decision. EA offered but no accept rate published."
+    }
+  ]
+}

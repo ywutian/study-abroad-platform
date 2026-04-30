@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch20-more-unis",
+    "note": "Batch 20: Vassar, Bates, Hamilton, Claremont McKenna, Carleton, Washington & Lee"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "vassar college",
+      "schoolName": "Vassar College",
+      "selectedUrl": "https://offices.vassar.edu/institutional-research/wp-content/uploads/sites/23/2025/03/Vassar-College-CDS-2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "schoolName": "Carleton College",
+      "selectedUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf"
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "schoolName": "Washington and Lee University",
+      "selectedUrl": "https://my.wlu.edu/document/2024-common-data-set"
+    }
+  ]
+}

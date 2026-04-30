@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch51-wyoming-wlu-bowdoin-middlebury-macalester",
+    "note": "Batch 51: Wyoming, Washington and Lee, Bowdoin, Middlebury, Macalester (2023-24)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of wyoming",
+      "schoolName": "University of Wyoming",
+      "selectedUrl": "https://www.uwyo.edu/oia/_files/cds/cds2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "schoolName": "Washington and Lee University",
+      "selectedUrl": "https://my.wlu.edu/document/2024-common-data-set"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "schoolName": "Middlebury College",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c"
+    },
+    {
+      "schoolNameNorm": "macalester college",
+      "schoolName": "Macalester College",
+      "selectedUrl": "https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2023_2024.pdf"
+    }
+  ]
+}

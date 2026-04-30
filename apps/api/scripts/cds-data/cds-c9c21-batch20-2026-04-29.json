@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:52:29.802Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch20-2026-04-29.json",
+    "success": 5,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "vassar college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://offices.vassar.edu/institutional-research/wp-content/uploads/sites/23/2025/03/Vassar-College-CDS-2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 31.23,
+      "eaAcceptanceRate": null,
+      "edApplied": 999,
+      "edAdmitted": 312,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported in the provided text. C21 early decision reported; C22 early action reported as no, so EA counts are null."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported; all GPA percentages are 0.00% in the PDF. C21 text provided only the early decision applications received (839); admits not visible in supplied text. No early action plan reported in supplied text."
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.37,
+      "eaAcceptanceRate": null,
+      "edApplied": 967,
+      "edAdmitted": 226,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 states high school GPA data is not reported and shows 0.00% across GPA rows. C21 reports Early Decision only; no Early Action plan is offered."
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 36.58,
+      "eaAcceptanceRate": null,
+      "edApplied": 667,
+      "edAdmitted": 244,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA section present but all GPA range values are blank; treated as unavailable. C21 Early Decision reported with one plan only; Early Action not offered (N), so EA counts null."
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://my.wlu.edu/document/2024-common-data-set",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.89,
+      "eaAcceptanceRate": null,
+      "edApplied": 844,
+      "edAdmitted": 286,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table appears present but all percentage cells are blank/0.00% in the provided text; mapped as zeros. C21 Early Decision values extracted. No Early Action plan reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "bates college",
+      "sourceUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    }
+  ]
+}

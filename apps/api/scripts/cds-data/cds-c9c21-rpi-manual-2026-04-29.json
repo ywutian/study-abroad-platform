@@ -1,0 +1,23 @@
+{
+  "schools": [
+    {
+      "schoolNameNorm": "rensselaer polytechnic institute",
+      "cycleYear": 2024,
+      "sourceUrl": "https://rpi.app.box.com/s/rwmonwp5196ei12vcp5rmp7fgu07ytma",
+      "gpaDistribution": {
+        "3.75-4.00": 0.68,
+        "3.50-3.74": 0.22,
+        "3.25-3.49": 0.06,
+        "3.00-3.24": 0.03,
+        "<3.00": 0.01
+      },
+      "edAcceptanceRate": 57.92,
+      "eaAcceptanceRate": null,
+      "edApplied": 240,
+      "edAdmitted": 139,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official RPI Box-hosted CDS PDF: C11 all enrolled students GPA distribution totals 100%; C21 early decision admits 139 of 240 applicants. C22 does not publish EA applicant/admit counts."
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:56:28.999Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch40b-2026-04-29.json",
+    "success": 8,
+    "failures": 2
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.37,
+      "eaAcceptanceRate": null,
+      "edApplied": 967,
+      "edAdmitted": 226,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "High school GPA data is not reported. GPAs come in a variety of scales and can be difficult to standardize, especially with international population whose transcripts don't include GPA on a 4-point scale. Early action plan is not offered."
+    },
+    {
+      "schoolNameNorm": "vassar college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://offices.vassar.edu/institutional-research/wp-content/uploads/sites/23/2025/03/Vassar-College-CDS-2024-2025-1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 1,
+        "3.50-3.74": 0,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 31.23,
+      "eaAcceptanceRate": null,
+      "edApplied": 999,
+      "edAdmitted": 312,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data shows 100% at 3.75-4.00 range and zero for all other ranges; school does not offer Early Action (EA) plans."
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2024-2025-FINAL-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.82,
+      "eaAcceptanceRate": null,
+      "edApplied": 1033,
+      "edAdmitted": 308,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution data not reported in CDS C9; Early Decision plans reported with ED I and ED II combined totals."
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 66.29,
+      "eaAcceptanceRate": null,
+      "edApplied": 1139,
+      "edAdmitted": 755,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No data on GPA distribution reported (all zeros). Early Decision plan is offered; no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "american university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 79.75,
+      "eaAcceptanceRate": null,
+      "edApplied": 726,
+      "edAdmitted": 579,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table shows all zeros, possibly no reported data. Early Decision plan offered with 726 applications and 579 admitted. Early Action is nonbinding with no application/admission counts reported."
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.16,
+      "eaAcceptanceRate": null,
+      "edApplied": 656,
+      "edAdmitted": 106,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution not reported in section C9. Early Decision and Early Action data are from section C21-C22."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 30.5,
+      "eaAcceptanceRate": null,
+      "edApplied": 1341,
+      "edAdmitted": 409,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 reports 0% for all GPA ranges, effectively no GPA distribution data provided. C21 reports Early Decision only; no Early Action plans offered."
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.4,
+      "eaAcceptanceRate": null,
+      "edApplied": 745,
+      "edAdmitted": 219,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data not reported (all entries N/A). Early Decision plan is offered with 745 applications and 219 admits. No Early Action plan offered."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "ball state university",
+      "sourceUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf",
+      "error": "Download failed 403: https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf"
+    },
+    {
+      "schoolNameNorm": "mississippi state university",
+      "sourceUrl": "https://ir.msstate.edu/CDS/cds2023_2024.pdf",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-c9c21-mississippi-state-university-1777517788393.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <68> in hex string\nSyntax Error (3): Illegal character <74> in hex string\nSyntax Error (4): Illegal character <6d> in hex string\nSyntax Error (5): Illegal character <6c> in hex string\nSyntax Error (7): Illegal character <6c> in hex string\nSyntax Error (9): Illegal character <6e> in hex string\nSyntax Error (10): Illegal character <67> in hex string\nSyntax Error (11): Illegal character <3d> in hex string\nSyntax Error (12): Illegal character <22> in hex string\nSyntax Error (14): Illegal character <6e> in hex string\nSyntax Error (15): Illegal character <22> in hex string\nSyntax Error (20): Illegal character <68> in hex string\nSyntax Error (35): Illegal character <6d> in hex string\nSyntax Error (37): Illegal character <74> in hex string\nSyntax Error (40): Illegal character <6e> in hex string\nSyntax Error (42): Illegal character <6d> in hex string\nSyntax Error (44): Illegal character <3d> in hex string\nSyntax Error (45): Illegal character <22> in hex string\nSyntax Error (47): Illegal character <6e> in hex string\nSyntax Error (49): Illegal character <6c> in hex string\nSyntax Error (50): Illegal character <79> in hex string\nSyntax Error (51): Illegal character <74> in hex string\nSyntax Error (52): Illegal character <69> in hex string\nSyntax Error (54): Illegal character <73> in hex string\nSyntax Error (55): Illegal character <5f> in hex string\nSyntax Error (56): Illegal character <73> in hex string\nSyntax Error (58): Illegal character <73> in hex string\nSyntax Error (59): Illegal character <73> in hex string\nSyntax Error (60): Illegal character <69> in hex string\nSyntax Error (61): Illegal character <6f> in hex string\nSyntax Error (62): Illegal character <6e> in hex string\nSyntax Error (63): Illegal character <22> in hex string\nSyntax Error (66): Illegal character <6f> in hex string\nSyntax Error (67): Illegal character <6e> in hex string\nSyntax Error (68): Illegal character <74> in hex string\nSyntax Error (70): Illegal character <6e> in hex string\nSyntax Error (71): Illegal character <74> in hex string\nSyntax Error (72): Illegal character <3d> in hex string\nSyntax Error (73): Illegal character <22> in hex string\nSyntax Error (74): Illegal character <6c> in hex string\nSyntax Error (79): Illegal character <70> in hex string\nSyntax Error (82): Illegal character <6a> in hex string\nSyntax Error (83): Illegal character <6b> in hex string\nSyntax Error (85): Illegal character <71> in hex string\nSyntax Error (94): Illegal character <6c> in hex string\nSyntax Error (95): Illegal character <67> in hex string\nSyntax Error (97): Illegal character <70> in hex string\nSyntax Error (98): Illegal character <6a> in hex string\nSyntax Error (99): Illegal character <6f> in hex string\nSyntax Error (100): Illegal character <22> in hex string\nSyntax Error (101): Illegal character <2f> in hex string\nSyntax Error (106): Illegal character <6d> in hex string\nSyntax Error (108): Illegal character <74> in hex string\nSyntax Error (112): Illegal character <68> in hex string\nSyntax Error (114): Illegal character <72> in hex string\nSyntax Error (115): Illegal character <73> in hex string\nSyntax Error (117): Illegal character <74> in hex string\nSyntax Error (118): Illegal character <3d> in hex string\nSyntax Error (119): Illegal character <22> in hex string\nSyntax Error (120): Illegal character <75> in hex string\nSyntax Error (121): Illegal character <74> in hex string\nSyntax Error (123): Illegal character <2d> in hex string\nSyntax Error (125): Illegal character <22> in hex string\nSyntax Error (132): Illegal character <74> in hex string\nSyntax Error (133): Illegal character <69> in hex string\nSyntax Error (134): Illegal character <74> in hex string\nSyntax Error (135): Illegal character <6c> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    }
+  ]
+}

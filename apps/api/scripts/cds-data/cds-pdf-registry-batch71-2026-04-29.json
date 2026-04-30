@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch71-ucla-uci-wfu-jmu-pitt",
+    "note": "Batch 71: UCLA, UC Irvine, Wake Forest, James Madison (section C), University of Pittsburgh"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "selectedUrl": "https://apb.ucla.edu/file/cedc749a-fd65-4935-b9ee-8a551f6de2fc"
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "schoolName": "University of California, Irvine",
+      "selectedUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "schoolName": "Wake Forest University",
+      "selectedUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "selectedUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "schoolName": "University of Pittsburgh",
+      "selectedUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf"
+    }
+  ]
+}

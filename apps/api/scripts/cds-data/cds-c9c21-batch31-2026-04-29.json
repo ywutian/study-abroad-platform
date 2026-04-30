@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:20:50.296Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch31-2026-04-29.json",
+    "success": 1,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of central florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://analytics.ucf.edu/wp-content/uploads/2025/08/Common-Data-Set-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.865,
+        "3.50-3.74": 0.12,
+        "3.25-3.49": 0.014,
+        "3.00-3.24": 0.001,
+        "<3.00": 0.001
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Central Florida does not offer Early Decision plans. It offers Early Action, but specific applicants and admitted numbers are not provided."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "sourceUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf",
+      "error": "fetch failed"
+    },
+    {
+      "schoolNameNorm": "santa clara university",
+      "sourceUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf",
+      "error": "Download failed 404: https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nebraska-lincoln",
+      "sourceUrl": "https://iea.unl.edu/executive-vice-chancellor/institutional-research-and-planning/sites/unl.edu.executive-vice-chancellor.institutional-research-and-planning/files/media/file/Common-Data-Set-2023-2024.pdf",
+      "error": "Download failed 404: https://iea.unl.edu/executive-vice-chancellor/institutional-research-and-planning/sites/unl.edu.executive-vice-chancellor.institutional-research-and-planning/files/media/file/Common-Data-Set-2023-2024.pdf"
+    }
+  ]
+}

@@ -55,6 +55,7 @@ function fieldBucket(provenance: Record<string, unknown> | null) {
   }
   if (
     realDataStatus === 'OFFICIAL_BLANK' ||
+    realDataStatus === 'OFFICIAL_BLANK_SECTION' ||
     realDataStatus === 'NO_PUBLIC_REAL_DATA' ||
     source === 'PERMANENT_HEURISTIC' ||
     Boolean(provenance?.permanent)

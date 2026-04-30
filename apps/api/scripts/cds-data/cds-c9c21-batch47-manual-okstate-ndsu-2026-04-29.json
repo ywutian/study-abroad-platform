@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-official-cds-okstate-ndsu",
+    "note": "Oklahoma State official PDF was readable via official page/PDF text but direct curl was 403. NDSU publishes 2024-25 CDS as official Excel."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "oklahoma state university",
+      "schoolName": "Oklahoma State University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.441551,
+        "3.50-3.74": 0.218688,
+        "3.25-3.49": 0.150099,
+        "3.00-3.24": 0.100596,
+        "<3.00": 0.089066
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 all-enrolled GPA column: 4.0=12.4851%, 3.75-3.99=31.6700%, 3.50-3.74=21.8688%, 3.25-3.49=15.0099%, 3.00-3.24=10.0596%, 2.50-2.99=7.9324%, 2.0-2.49=0.5567%, 1.0-1.99=0.0596%, below 1.0=0.3579%. C21/C22 do not report ED/EA applicant/admit counts."
+    },
+    {
+      "schoolNameNorm": "north dakota state university",
+      "schoolName": "North Dakota State University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ndsu.edu/sites/default/files/fileadmin/oira/Common_Data_Set/NDSU_CDS_2024-2025.xlsx",
+      "gpaDistribution": {
+        "3.75-4.00": 0.393885,
+        "3.50-3.74": 0.199552,
+        "3.25-3.49": 0.139638,
+        "3.00-3.24": 0.121963,
+        "<3.00": 0.144962
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 all-enrolled GPA column: 4.0=9.4432%, 3.75-3.99=29.9453%, 3.50-3.74=19.9552%, 3.25-3.49=13.9638%, 3.00-3.24=12.1963%, 2.50-2.99=13.2884%, 2.0-2.49=1.0652%, 1.0-1.99=0.1426%, below 1.0=0%. C21/C22 do not report ED/EA applicant/admit counts."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch61-williams-stonybrook-bowdoin-hmc23-haverford-lehigh-cmc-denver-amherst",
+    "note": "Batch 61: Williams (retry), Stony Brook (retry), Bowdoin, Harvey Mudd 23-24 fallback, Haverford, Lehigh, CMC, Denver, Amherst section-C"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "schoolName": "Stony Brook University",
+      "selectedUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/06/CDS_2023-2024_Complete_V2.pdf"
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "schoolName": "University of Denver",
+      "selectedUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf"
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "schoolName": "Amherst College",
+      "selectedUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf"
+    }
+  ]
+}

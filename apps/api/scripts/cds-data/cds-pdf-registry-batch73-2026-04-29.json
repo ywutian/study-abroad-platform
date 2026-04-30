@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch73-tamu-tufts-williams-calpoly-utaustin-georgetown-tulane",
+    "note": "Batch 73: Texas A&M, Tufts, Williams, Cal Poly SLO, UT Austin, Georgetown, Tulane"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "texas a&m university",
+      "schoolName": "Texas A&M University",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf"
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "schoolName": "University of Texas at Austin",
+      "selectedUrl": "https://utexas.app.box.com/s/d9izqb6s8dw2xxg5h5sunxyhrnef2ay6"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://georgetown.box.com/s/rp4p2ly4ej2tsikv827pl48psmb68quv"
+    },
+    {
+      "schoolNameNorm": "tulane university",
+      "schoolName": "Tulane University",
+      "selectedUrl": "https://tulane.box.com/s/uzo690yk2rzs7v2tqws50i3cesgz194w"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch34",
+    "note": "Batch 34: Pitt, GWU, American, UConn, Rutgers 2023-24 fallback"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "schoolName": "University of Pittsburgh",
+      "selectedUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf"
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "schoolName": "George Washington University",
+      "selectedUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "american university",
+      "schoolName": "American University",
+      "selectedUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "schoolName": "University of Connecticut",
+      "selectedUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "schoolName": "Rutgers University-New Brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "mississippi state university",
+      "schoolName": "Mississippi State University",
+      "selectedUrl": "https://ir.msstate.edu/CDS/cds2023_2024.pdf"
+    }
+  ]
+}

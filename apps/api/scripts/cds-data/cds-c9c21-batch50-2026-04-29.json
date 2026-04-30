@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:30:55.892Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch50-2026-04-29.json",
+    "success": 4,
+    "failures": 4
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "binghamton university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.binghamton.edu/offices/oir/upload_data/cds20242025p.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8139,
+        "3.50-3.74": 0.1127,
+        "3.25-3.49": 0.047,
+        "3.00-3.24": 0.0218,
+        "<3.00": 0.0046
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": 49.97,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": 28444,
+      "eaAdmitted": 14214,
+      "notes": "GPA distribution derived from percent of all enrolled students with GPA ranges; Early Decision not offered; Early Action figures are for Early Action plans only."
+    },
+    {
+      "schoolNameNorm": "western michigan university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://files.wmich.edu/s3fs-public/2025-02/wmu_cds_2024-25_0.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.391,
+        "3.50-3.74": 0.169,
+        "3.25-3.49": 0.139,
+        "3.00-3.24": 0.133,
+        "<3.00": 0.168
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": 88.48,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": 18502,
+      "eaAdmitted": 16370,
+      "notes": "C9 GPA distribution calculated from sum of GPA 3.75-3.99 and GPA 4.0 (or higher) for 3.75-4.00 band, other bands matched approximately. C21 Early Decision not offered, Early Action numbers given."
+    },
+    {
+      "schoolNameNorm": "university at buffalo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.496,
+        "3.50-3.74": 0.208,
+        "3.25-3.49": 0.112,
+        "3.00-3.24": 0.116,
+        "<3.00": 0.068
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No Early Decision plan offered; Early Action plan offered but no counts reported. GPA bands aggregated from reported detailed breakdown."
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The C9 section states: totals should be 0.00 for GPA ranges but no data is provided. The C21 section states the institution offers Early Decision plan but does not provide numbers for early decision applications or admissions. Early Action plan is offered but no application or admission numbers are reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "mississippi state university",
+      "sourceUrl": "https://ir.msstate.edu/CDS/cds2023_2024.pdf",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-c9c21-mississippi-state-university-1777519850128.pdf -\nSyntax Warning: May not be a PDF file (continuing anyway)\nSyntax Error (2): Illegal character <68> in hex string\nSyntax Error (3): Illegal character <74> in hex string\nSyntax Error (4): Illegal character <6d> in hex string\nSyntax Error (5): Illegal character <6c> in hex string\nSyntax Error (7): Illegal character <6c> in hex string\nSyntax Error (9): Illegal character <6e> in hex string\nSyntax Error (10): Illegal character <67> in hex string\nSyntax Error (11): Illegal character <3d> in hex string\nSyntax Error (12): Illegal character <22> in hex string\nSyntax Error (14): Illegal character <6e> in hex string\nSyntax Error (15): Illegal character <22> in hex string\nSyntax Error (20): Illegal character <68> in hex string\nSyntax Error (35): Illegal character <6d> in hex string\nSyntax Error (37): Illegal character <74> in hex string\nSyntax Error (40): Illegal character <6e> in hex string\nSyntax Error (42): Illegal character <6d> in hex string\nSyntax Error (44): Illegal character <3d> in hex string\nSyntax Error (45): Illegal character <22> in hex string\nSyntax Error (47): Illegal character <6e> in hex string\nSyntax Error (49): Illegal character <6c> in hex string\nSyntax Error (50): Illegal character <79> in hex string\nSyntax Error (51): Illegal character <74> in hex string\nSyntax Error (52): Illegal character <69> in hex string\nSyntax Error (54): Illegal character <73> in hex string\nSyntax Error (55): Illegal character <5f> in hex string\nSyntax Error (56): Illegal character <73> in hex string\nSyntax Error (58): Illegal character <73> in hex string\nSyntax Error (59): Illegal character <73> in hex string\nSyntax Error (60): Illegal character <69> in hex string\nSyntax Error (61): Illegal character <6f> in hex string\nSyntax Error (62): Illegal character <6e> in hex string\nSyntax Error (63): Illegal character <22> in hex string\nSyntax Error (66): Illegal character <6f> in hex string\nSyntax Error (67): Illegal character <6e> in hex string\nSyntax Error (68): Illegal character <74> in hex string\nSyntax Error (70): Illegal character <6e> in hex string\nSyntax Error (71): Illegal character <74> in hex string\nSyntax Error (72): Illegal character <3d> in hex string\nSyntax Error (73): Illegal character <22> in hex string\nSyntax Error (76): Illegal character <76> in hex string\nSyntax Error (77): Illegal character <69> in hex string\nSyntax Error (80): Illegal character <73> in hex string\nSyntax Error (81): Illegal character <6b> in hex string\nSyntax Error (83): Illegal character <6f> in hex string\nSyntax Error (85): Illegal character <69> in hex string\nSyntax Error (94): Illegal character <6a> in hex string\nSyntax Error (95): Illegal character <72> in hex string\nSyntax Error (96): Illegal character <68> in hex string\nSyntax Error (97): Illegal character <76> in hex string\nSyntax Error (98): Illegal character <6f> in hex string\nSyntax Error (100): Illegal character <22> in hex string\nSyntax Error (101): Illegal character <2f> in hex string\nSyntax Error (106): Illegal character <6d> in hex string\nSyntax Error (108): Illegal character <74> in hex string\nSyntax Error (112): Illegal character <68> in hex string\nSyntax Error (114): Illegal character <72> in hex string\nSyntax Error (115): Illegal character <73> in hex string\nSyntax Error (117): Illegal character <74> in hex string\nSyntax Error (118): Illegal character <3d> in hex string\nSyntax Error (119): Illegal character <22> in hex string\nSyntax Error (120): Illegal character <75> in hex string\nSyntax Error (121): Illegal character <74> in hex string\nSyntax Error (123): Illegal character <2d> in hex string\nSyntax Error (125): Illegal character <22> in hex string\nSyntax Error (132): Illegal character <74> in hex string\nSyntax Error (133): Illegal character <69> in hex string\nSyntax Error (134): Illegal character <74> in hex string\nSyntax Error (135): Illegal character <6c> in hex string\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't find trailer dictionary\nSyntax Error: Couldn't read xref table\n"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

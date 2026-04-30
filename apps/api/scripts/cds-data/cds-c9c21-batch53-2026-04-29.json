@@ -1,0 +1,103 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:40:20.235Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch53-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "cycleYear": 2024,
+      "sourceUrl": "https://apb.ucla.edu/file/cedc749a-fd65-4935-b9ee-8a551f6de2fc",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of California, Los Angeles does not report GPA distribution in section C9. For section C21, Early Decision plans are not offered (No); Early Action plan is offered (Yes) but no detailed applicant/admit numbers provided."
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of California, Irvine does not report high school GPA distribution for the freshman class profile (section C9), as the table is present but all GPA percentage fields are zero. For early decision and early action plans (section C21 and C22), UC Irvine reported 'No' for offering Early Decision or Early Action plans, so no applicant or admit numbers are provided."
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.608,
+        "3.50-3.74": 0.238,
+        "3.25-3.49": 0.119,
+        "3.00-3.24": 0.031,
+        "<3.00": 0.004
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of California, Riverside does not offer Early Decision or Early Action plans as indicated in C21 with 'No' responses."
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2023-24.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.719,
+        "3.50-3.74": 0.191,
+        "3.25-3.49": 0.071,
+        "3.00-3.24": 0.019,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of California, Santa Cruz does not offer Early Decision or Early Action plans as indicated in C21 and C22."
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The PDF text does not contain the specified GPA distribution table for C9 nor the Early Decision/Early Action breakdown for C21. These sections are either omitted or not reported."
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.37,
+      "eaAcceptanceRate": null,
+      "edApplied": 967,
+      "edAdmitted": 226,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA data not reported; school states GPA data is difficult to standardize due to international transcripts. Early Decision plan data reported, no Early Action plan offered."
+    }
+  ],
+  "failures": []
+}

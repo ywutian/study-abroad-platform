@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:20:01.188Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch62-2026-04-29.json",
+    "success": 2,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5132,
+        "3.50-3.74": 0.434,
+        "3.25-3.49": 0.0512,
+        "3.00-3.24": 0.0017,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set for University of Minnesota Twin Cities reports detailed GPA distribution in ranges that map closely to the canonical bands. Early Decision plan is offered but application and admit counts are not provided. Early Action plan is offered with closing date and notification date, but no applicant/admitted numbers reported."
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set for Texas A&M University for 2023-2024 does not report the freshman class profile high school GPA distribution in section C9; the GPA distribution is missing (all zeros). The Early Decision section C21 indicates Texas A&M offers an Early Decision plan, but no numeric values for applications or admits under ED are provided. The Early Action plan is indicated as not offered (no)."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "bates college",
+      "sourceUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of idaho",
+      "sourceUrl": "https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf",
+      "error": "Download failed 403: https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2024/04/CDS_2023_2024_Williams_April2024.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2024/04/CDS_2023_2024_Williams_April2024.pdf"
+    }
+  ]
+}

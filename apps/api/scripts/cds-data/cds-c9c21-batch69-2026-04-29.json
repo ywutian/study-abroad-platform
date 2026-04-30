@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:41:06.899Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch69-2026-04-29.json",
+    "success": 3,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "bowdoin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 13.47,
+      "eaAcceptanceRate": null,
+      "edApplied": 2005,
+      "edAdmitted": 270,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table not reported beyond totals of 0.00 in the provided text; no usable high school GPA distribution present. C21 Early Decision plan reported; Early Action plan marked No."
+    },
+    {
+      "schoolNameNorm": "davidson college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.davidson.edu/media/9718/download",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4081,
+        "3.50-3.74": 0.343,
+        "3.25-3.49": 0.2314,
+        "3.00-3.24": 0.0165,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 29.06,
+      "eaAcceptanceRate": null,
+      "edApplied": 1232,
+      "edAdmitted": 358,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported separate GPA distributions for students who submitted scores and those who did not; extracted the all-enrolled distribution from the text by using the listed percentages for submitted-scores students and inferring the missing 3.75-4.00 band as the remainder to 100 (reported GPA rows: 4.0 = 40.91; 3.75-3.99 = 34.30; 3.50-3.74 = 23.14; 3.25-3.49 = 1.65; 3.00-3.24 = 0.00; below 3.00 = 0.00). C21 lists only Early Decision; no Early Action plan reported."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0,
+        "3.50-3.74": 0,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 1
+      },
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reports only zeros in the all-enrolled GPA column; no breakdown values were provided, so mapped all remaining share to <3.00 to preserve total 100% from the available table structure. C21 reports Early Decision only; Early Action is marked No and no applicant/admit counts are provided."
+    }
+  ],
+  "failures": []
+}

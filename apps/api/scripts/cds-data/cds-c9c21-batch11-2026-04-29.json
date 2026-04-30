@@ -1,0 +1,115 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:34:50.130Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch11-2026-04-29.json",
+    "success": 6,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "worcester polytechnic institute",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wpi.edu/sites/default/files/2025-02/WPI_CDS_2024-2025_2-27-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 75.63,
+      "eaAcceptanceRate": 68.89,
+      "edApplied": 279,
+      "edAdmitted": 211,
+      "eaApplied": 9020,
+      "eaAdmitted": 6214,
+      "notes": "C9 mapped from WPI Common Data Set 2024-25 GPA ranges. C21 early decision includes two ED rounds listed in the PDF: first/only ED plan (279 applied, 211 admitted) and other ED plan (1/5 close) with no applicant/admit counts reported; therefore only the reported ED counts were used. C22 early action counts reported as 9,020 applied and 6,214 admitted."
+    },
+    {
+      "schoolNameNorm": "american university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 79.75,
+      "eaAcceptanceRate": null,
+      "edApplied": 726,
+      "edAdmitted": 579,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table present but all reported percentages are blank/0.00, so canonical GPA distribution cannot be derived and is represented as zeros from the source text. C21 early decision values reported; C22 early action plan exists but no applicant/admit counts are provided."
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4553,
+        "3.50-3.74": 0.3331,
+        "3.25-3.49": 0.1631,
+        "3.00-3.24": 0.0393,
+        "<3.00": 0.0086
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 high school GPA distribution reported as all enrolled degree-seeking first-time first-year students on a 4.0 scale; percentages mapped to canonical bands. C21 shows the institution offers Early Decision and Early Action, but the Fall 2024 counts for applications/admissions are blank in the provided text."
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.339,
+        "3.50-3.74": 0.269,
+        "3.25-3.49": 0.238,
+        "3.00-3.24": 0.119,
+        "<3.00": 0.035
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 used as the GPA distribution table; mapped 4.0 GPA to 3.75-4.00 and combined 2.50-2.99, 2.0-2.49, 1.0-1.99, and below 1.0 into <3.00. C21 reports no Early Decision and no Early Action breakdown values in the provided text."
+    },
+    {
+      "schoolNameNorm": "arizona state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uoia.asu.edu/sites/g/files/litvpz1436/files/2025-04/ASU%20Campus%20Immersion%20-%20Common%20Data%20Set%202024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.278,
+        "3.50-3.74": 0.227,
+        "3.25-3.49": 0.165,
+        "3.00-3.24": 0.134,
+        "<3.00": 0.19600000000000004
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported GPA distribution for all enrolled students only; mapped 4.0 GPA into 3.75-4.00 and combined all GPA below 3.00 into <3.00. C21 indicates no Early Decision and no Early Action plan, so counts are null."
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table not present in provided PDF text; C21 early decision and early action numeric fields not present in provided PDF text."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "santa clara university",
+      "sourceUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf",
+      "error": "Download failed 404: https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf"
+    }
+  ]
+}

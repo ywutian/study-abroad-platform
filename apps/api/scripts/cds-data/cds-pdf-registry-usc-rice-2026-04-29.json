@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "purpose": "USC + Rice C9/C11 extraction",
+    "count": 2
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of southern california",
+      "schoolName": "University of Southern California",
+      "selectedUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/10/CDS_2024-2025_FINAL-3.pdf"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "schoolName": "Rice University",
+      "selectedUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf"
+    }
+  ]
+}

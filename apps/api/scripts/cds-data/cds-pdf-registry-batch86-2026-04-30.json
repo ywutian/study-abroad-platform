@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30",
+    "source": "manual-batch86",
+    "note": "Batch 86: Tufts, Rutgers NB 2023-24, Texas A&M, UConn, Wake Forest, Pitt, UC Merced 2022-23"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "schoolName": "Rutgers University-New Brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "schoolName": "Texas A&M University",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf"
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "schoolName": "University of Connecticut",
+      "selectedUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "schoolName": "Wake Forest University",
+      "selectedUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf"
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "schoolName": "University of Pittsburgh",
+      "selectedUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "schoolName": "University of California, Merced",
+      "selectedUrl": "https://cie.ucmerced.edu/sites/g/files/ufvvjh616/f/page/documents/2023_cds_uc_merced_b.pdf"
+    }
+  ]
+}

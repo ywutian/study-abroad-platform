@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T05:30:00.000Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via manual extraction",
+    "model": "manual",
+    "input": "manual-batch78-williams-berklee",
+    "success": 2,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "williams college",
+      "cycleYear": 2023,
+      "sourceUrl": "https://web.archive.org/web/20250121201855/https://www.williams.edu/institutional-research/files/2024/04/CDS_2023_2024_Williams_April2024.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 27.04,
+      "eaAcceptanceRate": null,
+      "edApplied": 943,
+      "edAdmitted": 255,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported (all 0.0%). C21 ED: 943 applied, 255 admitted = 27.04%. C22: no EA plan. Data from 2023-24 CDS (Fall 2023 class). Primary URL blocked by Cloudflare WAF; data extracted from Wayback Machine archive."
+    },
+    {
+      "schoolNameNorm": "berklee college of music",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.berklee.edu/sites/default/files/2025-02/CDS_2024-2025%20for%20print.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported (all 0.0%). C21: no ED plan. C22: has EA plan (closing 11/1) but no applicant/admit counts published in CDS."
+    }
+  ],
+  "failures": []
+}

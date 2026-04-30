@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:22:10.938Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch47-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.01,
+      "eaAcceptanceRate": null,
+      "edApplied": 5154,
+      "edAdmitted": 1186,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set for University of Denver (2024-25) does not report GPA distribution data (section C9) or Early Decision/Early Action application and admission numbers (section C21). GPA distribution and Early Decision/Early Action application/admission details are not provided in the text."
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Toledo does not report detailed high school GPA distribution (section C11 reports no data). Early Decision and Early Action plans are not offered (sections C21 and C22 both marked No)."
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution data is not reported in the CDS section C9; the school shows zeros for all GPA range percentages. Early Decision plan is offered; no Early Action plan is offered."
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/ir-web-24-25/2024%202025%20common%20data%20set%20clifton.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4764,
+        "3.50-3.74": 0.1779,
+        "3.25-3.49": 0.1485,
+        "3.00-3.24": 0.1045,
+        "<3.00": 0.0927
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Cincinnati does not offer Early Decision or Early Action plans for the Fall 2024 entering class."
+    }
+  ],
+  "failures": []
+}

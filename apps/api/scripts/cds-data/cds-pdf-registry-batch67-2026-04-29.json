@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch67-villanova-lehigh-cmc-bucknell-cc-middlebury-hamilton-swarthmore",
+    "note": "Batch 67: Villanova, Lehigh, Claremont McKenna, Bucknell, Colorado College, Middlebury, Hamilton, Swarthmore"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "villanova university",
+      "schoolName": "Villanova University",
+      "selectedUrl": "https://www1.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bucknell university",
+      "schoolName": "Bucknell University",
+      "selectedUrl": "https://www.bucknell.edu/sites/default/files/institutional-research/common_data_set_2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "colorado college",
+      "schoolName": "Colorado College",
+      "selectedUrl": "https://www.coloradocollege.edu/offices/ipe/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "schoolName": "Middlebury College",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "schoolName": "Swarthmore College",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf"
+    }
+  ]
+}

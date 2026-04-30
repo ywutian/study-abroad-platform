@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch49-uncw-csus-wellesley-hamilton",
+    "note": "Batch 49: UNCW, Cal State Sacramento, Wellesley 2023-24, Hamilton"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north carolina wilmington",
+      "schoolName": "University of North Carolina Wilmington",
+      "selectedUrl": "https://uncw.edu/media/pdf/irp/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, sacramento",
+      "schoolName": "California State University, Sacramento",
+      "selectedUrl": "https://www.csus.edu/information-resources-technology/institutional-research/common-data-set/cds_2024-2025-final.pdf"
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "schoolName": "Wellesley College",
+      "selectedUrl": "https://www1.wellesley.edu/sites/default/files/assets/departments/instresearch/files/cds_2023-2024_-_final.pdf"
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    }
+  ]
+}

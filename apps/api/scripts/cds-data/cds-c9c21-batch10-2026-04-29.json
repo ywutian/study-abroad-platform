@@ -1,0 +1,121 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:33:01.206Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch10-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.01,
+      "eaAcceptanceRate": null,
+      "edApplied": 5154,
+      "edAdmitted": 1186,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA breakdown not reported in the provided text; all GPA cells are C or t. C21 reports Early Decision only. C22 indicates no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.53,
+        "3.50-3.74": 0.41,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 reported as C11 in the provided PDF text. Early decision plan is marked No, and early action is offered but no applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "university of washington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uw-s3-cdn.s3.us-west-2.amazonaws.com/wp-content/uploads/sites/162/2025/04/01121035/CDS_2024-2025_Seattle.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.1836,
+        "3.50-3.74": 0.566,
+        "3.25-3.49": 0.1761,
+        "3.00-3.24": 0.0565,
+        "<3.00": 0.0178
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported GPA distribution for all enrolled students only; canonical bands mapped from 4.0, 3.75-3.99, 3.50-3.74, 3.25-3.49, 3.00-3.24, and all lower bands combined (<3.00 = 0.31+0.01+0+0 = 0.32%, rounded to 0.0032? Wait source percentages sum to 100 and lower-than-3.00 bands total 0.32%; represented here as fraction 0.0032. C21 states no early decision and no early action."
+    },
+    {
+      "schoolNameNorm": "william & mary",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wm.edu/offices/ir/university_data/cds/cds-2024-2025_a.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.6817,
+        "3.50-3.74": 0.2162,
+        "3.25-3.49": 0.0699,
+        "3.00-3.24": 0.0216,
+        "<3.00": 0.0106
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 found in freshman profile GPA distribution table. C21 not present in provided PDF text."
+    },
+    {
+      "schoolNameNorm": "southern methodist university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.smu.edu/-/media/site/ir/commondatasets/2024/cds-2024-25-part-c-first-time-freshman.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.598,
+        "3.50-3.74": 0.236,
+        "3.25-3.49": 0.138,
+        "3.00-3.24": 0.072,
+        "<3.00": 0.056
+      },
+      "edAcceptanceRate": 87.38,
+      "eaAcceptanceRate": null,
+      "edApplied": 404,
+      "edAdmitted": 353,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 reported GPA distribution in all enrolled students column; mapped 3.75-3.99 to 3.75-4.00 and combined all GPA bands below 3.00 into <3.00. C21 reports Early Decision only; no Early Action counts provided because institution marked No for early action plan."
+    },
+    {
+      "schoolNameNorm": "george mason university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oiep.gmu.edu/wp-content/uploads/2025/02/2024-2025-CDS-Final.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.51,
+        "3.50-3.74": 0.22,
+        "3.25-3.49": 0.19,
+        "3.00-3.24": 0.08,
+        "<3.00": 0.01
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution used for C9 because C9 GPA distribution was not separately reported. C21 shows no early decision plan and no early action plan."
+    }
+  ],
+  "failures": []
+}

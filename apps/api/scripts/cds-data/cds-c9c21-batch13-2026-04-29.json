@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:37:30.204Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch13-2026-04-29.json",
+    "success": 3,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of south carolina",
+      "cycleYear": 2024,
+      "sourceUrl": "http://oiraa.dw.sc.edu/cds/cds2024/cds_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.34,
+        "3.50-3.74": 0.28,
+        "3.25-3.49": 0.15,
+        "3.00-3.24": 0.06,
+        "<3.00": 0.02
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution mapped from the 'all enrolled students' column in C11; combined 4.0 and 3.75-3.99 into 3.75-4.00. C21 shows Early Decision and Early Action questions, but no application/admit counts are provided in the PDF text."
+    },
+    {
+      "schoolNameNorm": "university at buffalo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 extracted from CDS-C11 GPA distribution. C21 reports no Early Decision plan and only Early Action plan metadata; no applicant/admit counts provided."
+    },
+    {
+      "schoolNameNorm": "university of central florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://analytics.ucf.edu/wp-content/uploads/2025/08/Common-Data-Set-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution used for all enrolled students column; mapped 4.0 and 3.75-3.99 into 3.75-4.00. C21 indicates no Early Decision and no Early Action plan; no counts reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

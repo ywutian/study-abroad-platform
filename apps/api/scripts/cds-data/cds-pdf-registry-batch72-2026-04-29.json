@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch72-uvm-uconn-wlu",
+    "note": "Batch 72: University of Vermont, University of Connecticut, Washington and Lee University"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of vermont",
+      "schoolName": "University of Vermont",
+      "selectedUrl": "https://www.uvm.edu/d10-files/documents/2025-04/2024-2025-Common-Data-Set_0.pdf"
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "schoolName": "University of Connecticut",
+      "selectedUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "schoolName": "Washington and Lee University",
+      "selectedUrl": "https://my.wlu.edu/document/2024-common-data-set"
+    }
+  ]
+}

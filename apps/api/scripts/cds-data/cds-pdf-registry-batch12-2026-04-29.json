@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch12-state-unis",
+    "note": "Batch 12: LSU, Kansas, Vermont, Tennessee, Alabama"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "louisiana state university",
+      "schoolName": "Louisiana State University",
+      "selectedUrl": "https://www.lsu.edu/data/common-data-set/2024/3_2425_admissions.pdf"
+    },
+    {
+      "schoolNameNorm": "university of kansas",
+      "schoolName": "University of Kansas",
+      "selectedUrl": "https://aire.ku.edu/sites/air/files/files/CDS/KUCDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "schoolName": "University of Vermont",
+      "selectedUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "university of tennessee",
+      "schoolName": "University of Tennessee",
+      "selectedUrl": "https://irsa.utk.edu/wp-content/uploads/sites/107/2025/02/CDS_2024-2025_C-.pdf"
+    },
+    {
+      "schoolNameNorm": "university of alabama",
+      "schoolName": "University of Alabama",
+      "selectedUrl": "https://oira.ua.edu/d/sites/all/files/reports25/CDS%202024-25%20FINAL.pdf"
+    }
+  ]
+}

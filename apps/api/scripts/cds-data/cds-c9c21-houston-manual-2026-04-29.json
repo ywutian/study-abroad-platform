@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-official-university-of-houston-cds-excel-2024-25",
+    "note": "Official UH CDS page publishes 2024-25 as Excel. Parsed Admission sheet C11/C21 with openpyxl."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of houston",
+      "schoolName": "University of Houston",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uh.edu/ir/reports/common-data-sets/cds-data/common-data-set_2024-2025_final.xlsx",
+      "gpaDistribution": {
+        "3.75-4.00": 0.282,
+        "3.50-3.74": 0.265,
+        "3.25-3.49": 0.222,
+        "3.00-3.24": 0.146,
+        "<3.00": 0.086
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 all-enrolled GPA column: 4.0=2.8%, 3.75-3.99=25.4%, 3.50-3.74=26.5%, 3.25-3.49=22.2%, 3.00-3.24=14.6%, 2.50-2.99=7.5%, 2.0-2.49=1.0%, 1.0-1.99=0.1%. C21/C22 do not report ED/EA applicant/admit counts."
+    }
+  ]
+}

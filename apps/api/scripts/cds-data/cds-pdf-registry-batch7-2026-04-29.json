@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch7-new-schools",
+    "note": "Batch 7: UCSD, UCD, UCI, UCLA, Swarthmore, Bowdoin, Middlebury, Haverford, Harvey Mudd"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "schoolName": "University of California, San Diego",
+      "selectedUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20252.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, davis",
+      "schoolName": "University of California, Davis",
+      "selectedUrl": "https://aggiedata.ucdavis.edu/sites/g/files/dgvnsk1841/files/media/documents/CDS_UCD.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "schoolName": "University of California, Irvine",
+      "selectedUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "selectedUrl": "https://apb.ucla.edu/file/22f7b216-5bcd-4401-bf95-6b9fc3652a67"
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "schoolName": "Swarthmore College",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "schoolName": "Middlebury College",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c"
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf"
+    }
+  ]
+}

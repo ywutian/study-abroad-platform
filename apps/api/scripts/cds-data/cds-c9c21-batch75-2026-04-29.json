@@ -1,0 +1,64 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T05:00:00.176Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch75-2026-04-29.json",
+    "success": 3,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "tulane university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://tulane.app.box.com/index.php?rm=box_download_shared_file&shared_name=uzo690yk2rzs7v2tqws50i3cesgz194w&file_id=f_1778192317454",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5228,
+        "3.50-3.74": 0.2899,
+        "3.25-3.49": 0.1128,
+        "3.00-3.24": 0.0441,
+        "<3.00": 0.0304
+      },
+      "edAcceptanceRate": 59.4,
+      "eaAcceptanceRate": null,
+      "edApplied": 1946,
+      "edAdmitted": 1156,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 reported GPA distribution as all enrolled students (using 4.0 scale): 4.0=12.81%, 3.75-3.99=40.27%, 3.50-3.74=28.99%, 3.25-3.49=11.28%, 3.00-3.24=4.41%, below 3.00 totals 3.04%. C21 reports Early Decision only; no Early Action applicant/admit counts provided."
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://georgetown.app.box.com/index.php?rm=box_download_shared_file&shared_name=rp4p2ly4ej2tsikv827pl48psmb68quv&file_id=f_1843229373215",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution is not reported; the table shows 0.00% in the reported columns and no usable breakdown. C21 early decision counts are not provided in the supplied text. C22 indicates early action exists, but no applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "cycleYear": 2024,
+      "sourceUrl": "https://utexas.app.box.com/index.php?rm=box_download_shared_file&shared_name=d9izqb6s8dw2xxg5h5sunxyhrnef2ay6&file_id=f_1812286540077",
+      "gpaDistribution": {
+        "3.75-4.00": 0.04,
+        "3.50-3.74": 0.11,
+        "3.25-3.49": 0.12,
+        "3.00-3.24": 0.11,
+        "<3.00": 0.62
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution used as proxy for C9 because the PDF text does not include a separate C9 high-school GPA table. C21 reports no Early Decision/Early Action counts; only plan availability is marked yes/no, with the application/admit fields blank."
+    }
+  ],
+  "failures": []
+}

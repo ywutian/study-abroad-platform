@@ -1,271 +1,29 @@
 {
   "_meta": {
-    "generatedAt": "2026-04-29T12:34:19.037Z",
-    "source": "tavily",
-    "missingField": "intlAcceptanceRate",
-    "cycleLabel": "2024-25",
-    "scannedSchools": 18,
-    "selectedUrls": 2
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch31-more-unis",
+    "note": "Batch 31: Texas Tech, Santa Clara, UCF (corrected URL), UNL (2023-24)"
   },
   "schools": [
     {
-      "schoolId": "cmnwr8iqf0024z0tiy29w0e1z",
-      "schoolName": "Missouri University of Science and Technology",
-      "schoolNameNorm": "missouri university of science and technology",
-      "usNewsRank": 140,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:mst.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf"
     },
     {
-      "schoolId": "cmnwr8ird002kz0tifunyipf1",
-      "schoolName": "University of North Dakota",
-      "schoolNameNorm": "university of north dakota",
-      "usNewsRank": 156,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:und.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
+      "schoolNameNorm": "santa clara university",
+      "schoolName": "Santa Clara University",
+      "selectedUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf"
     },
     {
-      "schoolId": "cmnwr8irv002uz0tic1bpn6g4",
-      "schoolName": "Bowling Green State University",
-      "schoolNameNorm": "bowling green state university",
-      "usNewsRank": 165,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:bgsu.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
+      "schoolNameNorm": "university of central florida",
+      "schoolName": "University of Central Florida",
+      "selectedUrl": "https://analytics.ucf.edu/wp-content/uploads/2025/08/Common-Data-Set-2024-2025.pdf"
     },
     {
-      "schoolId": "cmnwr8isf0035z0tixudqprxr",
-      "schoolName": "New Mexico State University",
-      "schoolNameNorm": "new mexico state university",
-      "usNewsRank": 175,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:nmsu.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8isn0039z0tik49prelk",
-      "schoolName": "Eastern Michigan University",
-      "schoolNameNorm": "eastern michigan university",
-      "usNewsRank": 178,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:emich.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8isj0037z0tihc4cw8ue",
-      "schoolName": "University of Southern Mississippi",
-      "schoolNameNorm": "university of southern mississippi",
-      "usNewsRank": 178,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:usm.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8iss003cz0tia71q9qy1",
-      "schoolName": "Idaho State University",
-      "schoolNameNorm": "idaho state university",
-      "usNewsRank": 185,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:isu.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8isu003dz0tijwn1m0s0",
-      "schoolName": "University of Texas at Arlington",
-      "schoolNameNorm": "university of texas at arlington",
-      "usNewsRank": 185,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:uta.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8it2003gz0tixy0e9ok2",
-      "schoolName": "Cleveland State University",
-      "schoolNameNorm": "cleveland state university",
-      "usNewsRank": 189,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:csuohio.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8ite003jz0tijg7j0avf",
-      "schoolName": "University of Massachusetts Boston",
-      "schoolNameNorm": "university of massachusetts boston",
-      "usNewsRank": 189,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:umb.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": 1,
-      "selectedUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/CDS_2022-2023_UMass_Boston.pdf",
-      "candidates": [
-        {
-          "title": "[PDF] Common Data Set 2022-2023 - UMass Boston",
-          "url": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/CDS_2022-2023_UMass_Boston.pdf",
-          "snippet": "programs 17 51 Business/marketing 16 52 History 1 54 Other TOTAL (should = 100%) 100.00% 0.00% 100.00% J. Disciplinary areas of DEGREES CONFERRED For each of the following discipline areas, provide the percentage of diplomas/certificates, a",
-          "score": 143
-        },
-        {
-          "title": "Common Data Set 2021-2022",
-          "url": "https://www.umb.edu/media/umassboston/content-assets/documents/CDS_2021-2022.pdf",
-          "snippet": "CDS-E Page 16 Common Data Set 2021-2022 F1 First-time, first-year (freshman) students Undergraduates 12% 7% 40% 9% 0% 19% 18 21 18 22 F2 X Campus Ministries X Choral groups X Concert band X Dance X Drama/theater X X Jazz band X Literary mag",
-          "score": 135
-        }
-      ],
-      "rejectedCandidates": [
-        {
-          "url": "https://www.umb.edu/oirap/facts/common-data-set/",
-          "title": "Common Data Set - UMass Boston",
-          "score": 70
-        },
-        {
-          "url": "https://www.umb.edu/oirap/about/data-request-form",
-          "title": "Data Request Form - UMass Boston",
-          "score": 43
-        },
-        {
-          "url": "https://collaborate.umb.edu/en/publications/overview-of-acm-sigkdd-2024-ai4science4ai-special-day",
-          "title": "Overview of ACM SIGKDD 2024 AI4Science4AI Special Day - University of Massachusetts Boston",
-          "score": 2
-        }
-      ]
-    },
-    {
-      "schoolId": "cmnwr8itk003mz0tirfyu068c",
-      "schoolName": "Central Michigan University",
-      "schoolNameNorm": "central michigan university",
-      "usNewsRank": 194,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:cmich.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8itm003nz0tiqazikwxi",
-      "schoolName": "Indiana University-Purdue University Indianapolis",
-      "schoolNameNorm": "indiana university-purdue university indianapolis",
-      "usNewsRank": 194,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:iupui.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8ito003oz0tiyojti719",
-      "schoolName": "Wichita State University",
-      "schoolNameNorm": "wichita state university",
-      "usNewsRank": 199,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:wichita.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": 1,
-      "selectedUrl": "https://www.wichita.edu/services/planning_and_analysis/documents/CDS_2013-2014.pdf",
-      "candidates": [
-        {
-          "title": "[PDF] Common Data Set 2013-2014 - Wichita State University",
-          "url": "https://www.wichita.edu/services/planning_and_analysis/documents/CDS_2013-2014.pdf",
-          "snippet": "general. Wait list: List of students who meet the admission requirements but will only be offered a place in the class if space becomes available. Weekend college: A program that allows students to take a complete course of study and attend",
-          "score": 98
-        },
-        {
-          "title": "[PDF] Common Data Set 2015-2016 - Wichita State University",
-          "url": "https://www.wichita.edu/services/planning_and_analysis/documents/CDS_2015-2016.pdf",
-          "snippet": "as the student’s high school transcript, class rank, GPA, and teacher and counselor recommendations. Semester calendar system: A calendar system that consists of two semesters during the academic year with about 16 weeks for each semester o",
-          "score": 98
-        }
-      ],
-      "rejectedCandidates": [
-        {
-          "url": "https://wichita.edu/services/planning_and_analysis/ERD_Explanation.php",
-          "title": "External Reporting & Assessment Data",
-          "score": 92
-        },
-        {
-          "url": "https://news.wichita.edu/wsu-newsletter/wsu-today-monday-march-25-2024",
-          "title": "WSU Today: Monday, March 25, 2024 – WSU Newsletters",
-          "score": 29
-        },
-        {
-          "url": "https://news.wichita.edu/2025/02/03/manager-review-for-2024-25-myperformance-evaluations-is-due-feb-28/",
-          "title": "Manager review for 2024-25 myPerformance evaluations is due Feb. 28 – WSU Newsletters",
-          "score": 29
-        }
-      ]
-    },
-    {
-      "schoolId": "cmnwr8iwn0053z0tiokrlwt8f",
-      "schoolName": "Appalachian State University",
-      "schoolNameNorm": "appalachian state university",
-      "usNewsRank": 201,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:appstate.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8inf000uz0tic8a7s8is",
-      "schoolName": "Rensselaer Polytechnic Institute",
-      "schoolNameNorm": "rensselaer polytechnic institute",
-      "usNewsRank": 67,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:rpi.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8iqp0029z0ti2wbplonv",
-      "schoolName": "Hofstra University",
-      "schoolNameNorm": "hofstra university",
-      "usNewsRank": 143,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:hofstra.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8iqx002dz0tigsxpge66",
-      "schoolName": "Mississippi State University",
-      "schoolNameNorm": "mississippi state university",
-      "usNewsRank": 146,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:msstate.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
-    },
-    {
-      "schoolId": "cmnwr8ioo001hz0tim3isqwz9",
-      "schoolName": "Clarkson University",
-      "schoolNameNorm": "clarkson university",
-      "usNewsRank": 110,
-      "missingField": "intlAcceptanceRate",
-      "query": "site:clarkson.edu \"common data set\" \"2024-25\" filetype:pdf",
-      "stageHit": -1,
-      "selectedUrl": null,
-      "candidates": []
+      "schoolNameNorm": "university of nebraska-lincoln",
+      "schoolName": "University of Nebraska-Lincoln",
+      "selectedUrl": "https://iea.unl.edu/executive-vice-chancellor/institutional-research-and-planning/sites/unl.edu.executive-vice-chancellor.institutional-research-and-planning/files/media/file/Common-Data-Set-2023-2024.pdf"
     }
-  ],
-  "failures": []
+  ]
 }

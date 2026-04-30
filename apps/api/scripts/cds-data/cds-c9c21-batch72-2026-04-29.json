@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:47:53.393Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch72-2026-04-29.json",
+    "success": 3,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/d10-files/documents/2025-04/2024-2025-Common-Data-Set_0.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 93.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 479,
+      "edAdmitted": 449,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table reported 0.00% in all listed GPA ranges for both score subgroups and all enrolled students; mapped to canonical bands as 0.00 each. C21 reports only a single Early Decision plan; no Early Action applicant/admit counts are provided."
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table is present but all GPA-range cells are blank/0.00 totals only; C21 indicates Early Decision offered, but the Fall 2024 application/admit counts are not reported. C22 Early Action is marked No."
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://my.wlu.edu/document/2024-common-data-set",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.89,
+      "eaAcceptanceRate": null,
+      "edApplied": 844,
+      "edAdmitted": 286,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 table reports 0.00% in all GPA bands and 0.00% totals, so GPA distribution mapped as all zeroes. C21 reports one Early Decision plan only; no Early Action plan."
+    }
+  ],
+  "failures": []
+}

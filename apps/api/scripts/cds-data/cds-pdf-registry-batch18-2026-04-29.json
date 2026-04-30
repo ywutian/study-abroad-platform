@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch18-more-unis",
+    "note": "Batch 18: Notre Dame retry, Boston College, Rice, Northwestern, Williams, Bowdoin, Swarthmore"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "schoolName": "Boston College",
+      "selectedUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "schoolName": "Rice University",
+      "selectedUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf"
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "schoolName": "Northwestern University",
+      "selectedUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "schoolName": "Swarthmore College",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf"
+    }
+  ]
+}

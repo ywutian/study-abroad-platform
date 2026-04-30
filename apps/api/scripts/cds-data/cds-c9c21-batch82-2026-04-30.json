@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T06:00:40.897Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4o-mini",
+    "input": "apps/api/scripts/cds-data/cds-pdf-registry-batch82-2026-04-30.json",
+    "success": 1,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.25,
+        "3.50-3.74": 0.3,
+        "3.25-3.49": 0.2,
+        "3.00-3.24": 0.15,
+        "<3.00": 0.1
+      },
+      "edAcceptanceRate": 60,
+      "eaAcceptanceRate": 62.5,
+      "edApplied": 500,
+      "edAdmitted": 300,
+      "eaApplied": 400,
+      "eaAdmitted": 250,
+      "notes": "Early Decision and Early Action data for Fall 2024."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

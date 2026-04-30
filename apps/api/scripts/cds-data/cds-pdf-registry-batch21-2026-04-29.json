@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch21-more-unis",
+    "note": "Batch 21: Emory, Colby, Villanova, Rensselaer Polytechnic, Case Western, University of Rochester"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "emory university",
+      "schoolName": "Emory University",
+      "selectedUrl": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf"
+    }
+  ]
+}

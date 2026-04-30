@@ -1,0 +1,109 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:28:12.510Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch9-2026-04-29.json",
+    "success": 6,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "george washington university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 66.29,
+      "eaAcceptanceRate": null,
+      "edApplied": 1139,
+      "edAdmitted": 755,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA table present but all GPA distribution values shown as 0.00% in the PDF text. C21 Early Decision reported only one ED plan with 1139 applications and 755 admits; no Early Action plan is reported."
+    },
+    {
+      "schoolNameNorm": "michigan state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.msu.edu/-/media/assets/ir/docs/cds/cds-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.2947,
+        "3.50-3.74": 0.2417,
+        "3.25-3.49": 0.1335,
+        "3.00-3.24": 0.0703,
+        "<3.00": 0.2598
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 extracted from C11 'All enrolled students' GPA distribution; mapped 4.0 GPA to 3.75-4.00. C21 reports no Early Decision plan and provides no Early Decision applicant/admit counts. Early Action is offered, but no application/admit counts are shown in the provided text."
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/C9 GPA table reported all zeros in the provided PDF text (all enrolled students total = 0.00%). C21: institution does not offer Early Decision (N) and Early Action (N), so counts are not provided."
+    },
+    {
+      "schoolNameNorm": "university of minnesota",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported; all GPA range entries shown as 0.00 and totals 0.00 in the provided text. C21 Early Decision and Early Action counts are blank/not reported."
+    },
+    {
+      "schoolNameNorm": "north carolina state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://report.isa.ncsu.edu/ir/cds/pdfs/CDS_2024-25.v3.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.567,
+        "3.50-3.74": 0.1943,
+        "3.25-3.49": 0.0278,
+        "3.00-3.24": 0.0068,
+        "<3.00": 0.2041
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported GPA distribution for all enrolled students only; mapped 4.0 to 3.75-4.00. C21 indicates no Early Decision plan and no Early Action plan, so counts are not provided."
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution table is present but all GPA range percentages are blank/omitted in the provided text; C21 indicates the institution offers Early Decision, but the Fall 2024 early decision application/admit counts are blank, and C22 Early Action is marked No."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

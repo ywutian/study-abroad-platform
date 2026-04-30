@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch40a",
+    "note": "Batch 40a: Northwestern, BC, Rutgers-NB, Rutgers-Newark, Swarthmore, OSU, Lehigh, WPI, Bowdoin, Bates"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "schoolName": "Northwestern University",
+      "selectedUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "schoolName": "Boston College",
+      "selectedUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "schoolName": "Rutgers University-New Brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-newark",
+      "schoolName": "Rutgers University-Newark",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "schoolName": "Swarthmore College",
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "oklahoma state university",
+      "schoolName": "Oklahoma State University",
+      "selectedUrl": "https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "worcester polytechnic institute",
+      "schoolName": "Worcester Polytechnic Institute",
+      "selectedUrl": "https://www.wpi.edu/sites/default/files/2025-02/WPI_CDS_2024-2025_2-27-25.pdf"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    }
+  ]
+}

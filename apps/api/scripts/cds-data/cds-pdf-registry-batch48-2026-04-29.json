@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch48-tufts-unt-unlv-csulb-bc-unr",
+    "note": "Batch 48: Tufts, UNT, UNLV, CSULB, Boston College, UNR (2023-24)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "schoolName": "University of North Texas",
+      "selectedUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nevada, las vegas",
+      "schoolName": "University of Nevada, Las Vegas",
+      "selectedUrl": "https://www.it.unlv.edu/sites/default/files/assets/ir/UNLV_common_dataset_2024-2025_2.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "schoolName": "California State University, Long Beach",
+      "selectedUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf"
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "schoolName": "Boston College",
+      "selectedUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nevada, reno",
+      "schoolName": "University of Nevada, Reno",
+      "selectedUrl": "https://dataden.unr.edu/Resources/CDS/CDS_2023-2024.pdf"
+    }
+  ]
+}

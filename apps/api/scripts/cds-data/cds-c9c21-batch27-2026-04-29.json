@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:11:17.439Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch27-2026-04-29.json",
+    "success": 3,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "ohio state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.06,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Florida does not report specific numbers of early decision or early action applicants or admits, only that they offer early decision and early action. GPA distribution reported for enrolled first-time, first-year students."
+    },
+    {
+      "schoolNameNorm": "university of south carolina",
+      "cycleYear": 2024,
+      "sourceUrl": "http://oiraa.dw.sc.edu/cds/cds2024/cds_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5,
+        "3.50-3.74": 0.28,
+        "3.25-3.49": 0.15,
+        "3.00-3.24": 0.06,
+        "<3.00": 0.01
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No Early Decision applications or admits reported. Early Action is offered with closing date 15-Oct; other data not reported. GPA distribution mapped from combined GPA percent who had GPA of 4.0 (16%), 3.75-3.99 (34%), 3.50-3.74 (28%), 3.25-3.49 (15%), 3.00-3.24 (6%), below 3.00 (1%) from all enrolled students."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "clemson university",
+      "sourceUrl": "https://open.clemson.edu/cgi/viewcontent.cgi?article=1016&context=cds",
+      "error": "Command failed: pdftotext -layout /var/folders/j6/24jqjdsn6_lbgks5lq452l0r0000gn/T/cds-c9c21-clemson-university-1777515059522.pdf -\nSyntax Error: Document stream is empty\n"
+    }
+  ]
+}

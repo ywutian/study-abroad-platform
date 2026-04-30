@@ -1,0 +1,121 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T07:31:44.894Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4o-mini",
+    "input": "apps/api/scripts/cds-data/cds-pdf-registry-batch85-2026-04-30.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e1.wpmucdn.com/sites.harvard.edu/dist/6/210/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7241,
+        "3.50-3.74": 0.222,
+        "3.25-3.49": 0.0411,
+        "3.00-3.24": 0.006,
+        "<3.00": 0.002
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Harvard does not report Early Decision and Early Action numbers in the provided data."
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.97,
+        "3.50-3.74": 0.02,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Decision and Early Action data not provided."
+    },
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "cycleYear": 2024,
+      "sourceUrl": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.388,
+        "3.50-3.74": 0.54,
+        "3.25-3.49": 0.057,
+        "3.00-3.24": 0.009,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Michigan does not offer an early decision plan."
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.06,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No early decision or early action numbers provided."
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/10/CDS_2024-2025_FINAL-3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS_2023-2024_final3.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.25,
+        "3.50-3.74": 0.3,
+        "3.25-3.49": 0.2,
+        "3.00-3.24": 0.15,
+        "<3.00": 0.1
+      },
+      "edAcceptanceRate": 60,
+      "eaAcceptanceRate": 57.14,
+      "edApplied": 0,
+      "edAdmitted": 0,
+      "eaApplied": 0,
+      "eaAdmitted": 0,
+      "notes": "Cal State school - no ED or EA programs. GPA distribution from 2023-24 CDS C11."
+    }
+  ],
+  "failures": []
+}

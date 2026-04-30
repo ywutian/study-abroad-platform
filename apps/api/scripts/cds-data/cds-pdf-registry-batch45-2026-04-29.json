@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch45-texastech-boxcom-schools",
+    "note": "Batch 45: Texas Tech (direct PDF), Box.com links for Georgetown/Tulane/UW-Madison/UT Austin"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://georgetown.box.com/s/rp4p2ly4ej2tsikv827pl48psmb68quv"
+    },
+    {
+      "schoolNameNorm": "tulane university",
+      "schoolName": "Tulane University",
+      "selectedUrl": "https://tulane.box.com/s/uzo690yk2rzs7v2tqws50i3cesgz194w"
+    },
+    {
+      "schoolNameNorm": "university of wisconsin-madison",
+      "schoolName": "University of Wisconsin-Madison",
+      "selectedUrl": "https://uwmadison.box.com/s/cm3r7gc83w3eqjotfbva111dnin6toer"
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "schoolName": "University of Texas at Austin",
+      "selectedUrl": "https://utexas.app.box.com/s/d9izqb6s8dw2xxg5h5sunxyhrnef2ay6"
+    }
+  ]
+}

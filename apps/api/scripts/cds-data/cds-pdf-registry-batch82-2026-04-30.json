@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30",
+    "source": "manual-batch82-wrong-url-corrections-round2",
+    "note": "Batch 82: Stony Brook (correct URL), University of Denver (correct URL)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "schoolName": "Stony Brook University",
+      "selectedUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "schoolName": "University of Denver",
+      "selectedUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-retry-batch6b",
+    "note": "Retry of 4 failed schools from batch6 with corrected URLs"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/06/CDS_2024_2025_Williams_V5.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "schoolName": "University of North Carolina at Chapel Hill",
+      "selectedUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf"
+    }
+  ]
+}

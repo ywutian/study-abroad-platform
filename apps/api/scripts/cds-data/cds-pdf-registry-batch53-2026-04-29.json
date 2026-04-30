@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch53-ucla-uci-ucr-ucsc-calpolyslo-claremontmckenna",
+    "note": "Batch 53: UCLA, UC Irvine, UC Riverside, UC Santa Cruz (2023-24), Cal Poly SLO, Claremont McKenna"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "selectedUrl": "https://apb.ucla.edu/file/cedc749a-fd65-4935-b9ee-8a551f6de2fc"
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "schoolName": "University of California, Irvine",
+      "selectedUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "schoolName": "University of California, Riverside",
+      "selectedUrl": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "schoolName": "University of California, Santa Cruz",
+      "selectedUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2023-24.pdf"
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf"
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    }
+  ]
+}

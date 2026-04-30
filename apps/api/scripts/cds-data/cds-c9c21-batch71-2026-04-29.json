@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:44:28.632Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch71-2026-04-29.json",
+    "success": 4,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "cycleYear": 2024,
+      "sourceUrl": "https://apb.ucla.edu/file/cedc749a-fd65-4935-b9ee-8a551f6de2fc",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table not present in provided text; C21 indicates no early decision and no early action plan, so no counts reported."
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution table shows 0.00% in the totals row, with no nonzero GPA band values provided. C21 indicates Early Decision = No and Early Action = No; no application/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table present but no percentages reported (all listed as 0.00 totals in source, with no distribution values). C21 states Wake Forest does not offer an early decision plan and has an early action plan, but the PDF text provided does not include applicant/admit counts for either round."
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/C9 GPA distribution table present but all reported values are 0.00% for the all-enrolled-students column; C21 indicates no Early Decision and no Early Action plan (both N), so no applicant/admit counts provided."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "james madison university",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf",
+      "error": "Download failed 404: https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

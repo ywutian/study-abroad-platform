@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch41",
+    "note": "Batch 41: Eastern Michigan, Idaho State, Illinois State, Central Michigan, James Madison, Vermont, Carleton, Cincinnati, Towson, LMU"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "schoolName": "Eastern Michigan University",
+      "selectedUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "idaho state university",
+      "schoolName": "Idaho State University",
+      "selectedUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf"
+    },
+    {
+      "schoolNameNorm": "illinois state university",
+      "schoolName": "Illinois State University",
+      "selectedUrl": "https://prpa.illinoisstate.edu/downloads/CDS-2024-2025_ISU_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "central michigan university",
+      "schoolName": "Central Michigan University",
+      "selectedUrl": "https://www.cmich.edu/docs/default-source/academic-affairs-division/academic-administration/academic-planning-analysis/reports-(public)/common-data-sets/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "selectedUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "schoolName": "University of Vermont",
+      "selectedUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "schoolName": "Carleton College",
+      "selectedUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "schoolName": "University of Cincinnati",
+      "selectedUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/ir-web-24-25/2024%202025%20common%20data%20set%20clifton.pdf"
+    },
+    {
+      "schoolNameNorm": "towson university",
+      "schoolName": "Towson University",
+      "selectedUrl": "https://www.towson.edu/ir/documents/cds_all_2425.pdf"
+    },
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "schoolName": "Loyola Marymount University",
+      "selectedUrl": "https://academics.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/CDS_UNL2_2023_2024_05212024.pdf"
+    }
+  ]
+}

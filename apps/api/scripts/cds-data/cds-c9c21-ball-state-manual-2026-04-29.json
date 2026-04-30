@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-official-ball-state-cds-pdf-2024-25",
+    "note": "Official Ball State 2024-25 CDS PDF. Parsed Section C11 and C21/C22 from PDF text."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "ball state university",
+      "schoolName": "Ball State University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf?hash=091C733F7675B0EF78AE749E7CCB99F2A44785FC&sc_lang=en",
+      "gpaDistribution": {
+        "3.75-4.00": 0.3883,
+        "3.50-3.74": 0.1501,
+        "3.25-3.49": 0.1511,
+        "3.00-3.24": 0.1596,
+        "<3.00": 0.1509
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 all-enrolled GPA column: 4.0=22.44%, 3.75-3.99=16.39%, 3.50-3.74=15.01%, 3.25-3.49=15.11%, 3.00-3.24=15.96%, 2.50-2.99=15.01%, 2.0-2.49=0.08%, 1.0-1.99=0%, below 1.0=0%. C21 Early Decision and C22 Early Action are both marked No, so applicant/admit counts are not published."
+    }
+  ]
+}

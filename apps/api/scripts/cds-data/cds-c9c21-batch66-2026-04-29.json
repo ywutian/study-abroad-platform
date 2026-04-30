@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:36:33.587Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch66-2026-04-29.json",
+    "success": 2,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of georgia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.uga.edu/wp-content/uploads/UGA_CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 mapped from C11 GPA table. Reported all enrolled students only; ranges were 4.0=85.48%, 3.75-3.99=12.50%, 3.50-3.74=1.25%, 3.25-3.49=0.31%, 3.00-3.24=0.16%, 2.50-2.99=0.21%, 2.0-2.49=0.08%. Canonical bins were approximated by combining 4.0 with 3.75-3.99 into 3.75-4.00 and all sub-3.00 ranges into <3.00. C21: the CDS shows no early decision plan and early action is marked no, so ED/EA counts are not reported."
+    },
+    {
+      "schoolNameNorm": "university of tennessee",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irsa.utk.edu/wp-content/uploads/sites/107/2025/02/CDS_2024-2025_C-.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.1289,
+        "3.50-3.74": 0.0813,
+        "3.25-3.49": 0.0448,
+        "3.00-3.24": 0.0163,
+        "<3.00": 0.7287
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported all students only. Mapped 4.0 GPA (72.10%) into 3.75-4.00 canonical band, and combined 2.50-2.99 (0.67%), 2.0-2.49 (0.04%), 1.0-1.99 (0.01%), and below 1.0 (0.00%) into <3.00. C21 contains no Fall 2024 ED counts; C22 indicates Early Action exists but the text provides no applicant/admit counts."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

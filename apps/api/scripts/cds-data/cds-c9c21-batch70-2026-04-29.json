@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:42:05.117Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch70-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "amherst college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.39,
+      "eaAcceptanceRate": null,
+      "edApplied": 735,
+      "edAdmitted": 216,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table in provided text shows only blank rows and totals at 0.00%, with no usable GPA distribution reported. C21 Early Decision reported; no Early Action plan (C22 marked No), so EA values are null."
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.16,
+      "eaAcceptanceRate": null,
+      "edApplied": 656,
+      "edAdmitted": 106,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported; table shows 0.00 placeholders only. C21 reports Early Decision only; Early Action is marked No."
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.4,
+      "eaAcceptanceRate": null,
+      "edApplied": 745,
+      "edAdmitted": 219,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution is reported as N/A for all enrolled students, so canonical GPA bands are set to 0.0 based on absent report. C21 reports Early Decision only; no Early Action plan or counts are provided."
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.01,
+      "eaAcceptanceRate": null,
+      "edApplied": 5154,
+      "edAdmitted": 1186,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/GPA distribution not reported in provided PDF text; set to null-like absence not available, but schema requested object so values set to 0.00 not based on source. C21 reports Early Decision only; no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.81,
+      "eaAcceptanceRate": null,
+      "edApplied": 3087,
+      "edAdmitted": 519,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA breakdown not reported (NA). C21 Early Decision reported; no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 66.29,
+      "eaAcceptanceRate": null,
+      "edApplied": 1139,
+      "edAdmitted": 755,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported in the provided PDF text; all GPA row percentages shown as 0.00% and C12 average GPA is 0.00, indicating no usable GPA breakdown available. C21 Early Decision reported; C22 Early Action not offered."
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:23:48.518Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch32-2026-04-29.json",
+    "success": 2,
+    "failures": 2
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA distribution or Early Decision/Early Action tables or data were found in the provided document text for California Polytechnic State University, San Luis Obispo."
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No data for sections C9 (high school GPA distribution) or C21 (Early Decision/Early Action) found in the provided text."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "sourceUrl": "https://www.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/Legacy-CDS_2024-2025_06112025.pdf",
+      "error": "Download failed 404: https://www.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/Legacy-CDS_2024-2025_06112025.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf",
+      "error": "Download failed 404: https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schools": [
+    {
+      "schoolNameNorm": "cleveland state university",
+      "cycleYear": 2021,
+      "sourceUrl": "https://www.csuohio.edu/sites/default/files/CDS_2021-2022_022822_Final.xlsx",
+      "gpaDistribution": {
+        "3.75-4.00": 0.287,
+        "3.50-3.74": 0.1555,
+        "3.25-3.49": 0.1433,
+        "3.00-3.24": 0.1204,
+        "<3.00": 0.2938
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "2024-25 and 2023-24 official CDS links are SharePoint-hosted and not publicly downloadable in this environment; 2021-22 official CSU XLSX remains publicly downloadable. C11 all-enrolled GPA distribution totals 100%; C21/C22 do not publish ED/EA applicant/admit counts."
+    }
+  ]
+}

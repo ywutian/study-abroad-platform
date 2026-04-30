@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:39:03.325Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch15-2026-04-29.json",
+    "success": 1,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "washington state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://wpcdn.web.wsu.edu/wsuwp/uploads/sites/3447/2025/09/CDS-2024-2025-For-Website.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.242,
+        "3.50-3.74": 0.211,
+        "3.25-3.49": 0.184,
+        "3.00-3.24": 0.17,
+        "<3.00": 0.163
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 mapped from all-enrolled GPA distribution: 4.0=3.7% included in 3.75-4.00, 3.75-3.99=24.2%, 3.50-3.74=21.1%, 3.25-3.49=18.4%, 3.00-3.24=17.0%, 2.50-2.99=14.7%, 2.0-2.49=0.9%, 1.0-1.99=0.0%, below 1.0=0.0%; combined to canonical <3.00. C21 shows early decision and early action plans are not offered (ED/EA marked No), so applicant/admit counts are null."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "sourceUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf",
+      "error": "fetch failed"
+    }
+  ]
+}

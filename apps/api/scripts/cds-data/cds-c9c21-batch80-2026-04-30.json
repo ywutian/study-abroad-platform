@@ -1,0 +1,117 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T05:38:00.000Z",
+    "source": "manual-batch80-inaccessible-schools",
+    "model": "manual",
+    "input": "manual-batch80",
+    "success": 8,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "bowling green state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bgsu.edu/institutional-research/CDS.html",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "BGSU CDS is embedded as a Tableau dashboard (not a PDF). Cannot extract C11 or C21 data programmatically. Page exists but no PDF is published."
+    },
+    {
+      "schoolNameNorm": "university of north dakota",
+      "cycleYear": 2024,
+      "sourceUrl": "https://und.edu/analytics-and-planning/data-and-reports/common-data-set.html",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "UND CDS 2024-25 not yet published as of 2026-04-30. Page states 'Updated reports will be available soon.'"
+    },
+    {
+      "schoolNameNorm": "curtis institute of music",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.curtis.edu/admissions/",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Curtis Institute is a specialized music conservatory with audition-based admissions. No standard CDS PDF found publicly. GPA distribution and ED/EA data not applicable to their admissions process."
+    },
+    {
+      "schoolNameNorm": "new england conservatory",
+      "cycleYear": 2024,
+      "sourceUrl": "https://necmusic.edu/admissions/",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "NEC is a specialized music conservatory with audition-based admissions. No publicly accessible CDS PDF found. C11 GPA distribution and C21 ED/EA data not typically published for music schools."
+    },
+    {
+      "schoolNameNorm": "the juilliard school",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.juilliard.edu/admissions/numbers",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Juilliard is a specialized performing arts school with audition-based admissions. Admissions data page returns 403. No standard CDS PDF found. GPA distribution and ED/EA not applicable."
+    },
+    {
+      "schoolNameNorm": "new mexico state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oia.nmsu.edu/",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "NMSU does not publish CDS PDF publicly. OIA website provides only factbooks, census reports, and dashboards. Last known CDS PDF (2018-19) is now returning 404. No 2023-24 or 2024-25 CDS found."
+    },
+    {
+      "schoolNameNorm": "the new school",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.newschool.edu/provost/institutional-research/",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The New School does not appear to publish its CDS as a publicly accessible PDF. Institutional Research page links to IPEDS, MSCHE, and survey data but not CDS. Archives only contain 2008-09 CDS."
+    },
+    {
+      "schoolNameNorm": "university of texas at arlington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uta.edu/administration/analytics/reports",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "UT Arlington provides admissions data through SAS-based interactive dashboards (not PDFs). No CDS PDF found on uta.edu. Their analytics portal has pipeline and funnel data but not in CDS format."
+    }
+  ],
+  "failures": []
+}

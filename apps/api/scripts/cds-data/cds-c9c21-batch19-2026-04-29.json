@@ -1,0 +1,117 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:50:47.250Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch19-2026-04-29.json",
+    "success": 8,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution is omitted in the provided PDF text. C21 reports two early decision rounds: first/only ED applications 2217 and admits 996; other ED round dates are listed but no separate counts are provided, so totals are not combined beyond reported figures."
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.39,
+      "eaAcceptanceRate": null,
+      "edApplied": 735,
+      "edAdmitted": 216,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported ('Do not track'). C21 Early Decision reported; no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 30.5,
+      "eaAcceptanceRate": null,
+      "edApplied": 1341,
+      "edAdmitted": 409,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/C9 GPA table in PDF shows 0.00% for all GPA rows and totals should = 100%, indicating no reportable GPA distribution; mapped as all zeros per provided text. C21 reports Early Decision only; no Early Action plan or counts provided."
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2024-2025-FINAL-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.82,
+      "eaAcceptanceRate": null,
+      "edApplied": 1033,
+      "edAdmitted": 308,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 lists GPA ranges but all percentages are 0.00% / no data reported; C21 reports Early Decision only. No Early Action plan or counts reported."
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.4,
+      "eaAcceptanceRate": null,
+      "edApplied": 745,
+      "edAdmitted": 219,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution is N/A for all ranges, so gpaDistribution is null. C21 reports Early Decision only; Early Action is not offered/reported."
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.16,
+      "eaAcceptanceRate": null,
+      "edApplied": 656,
+      "edAdmitted": 106,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table is present but all visible entries are blank/0.00 and no valid distribution values are provided; mapped to zeros from the source's displayed totals. C21 reports Early Decision only; no Early Action plan is offered/reported."
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 high school GPA distribution not reported in the provided text. C21 early decision/early action counts not reported in the provided text; C21 and C22 prompt text is present but no numeric breakdown is included."
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table reports 0.00% for all enrolled students in the provided text; no separate test-score/no-test-score breakdown values are shown. C21 indicates UCI does not offer Early Decision or Early Action, so application/admit counts are not provided."
+    }
+  ],
+  "failures": []
+}

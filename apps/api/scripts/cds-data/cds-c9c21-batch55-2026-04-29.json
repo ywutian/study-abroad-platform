@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:47:39.526Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch55-2026-04-29.json",
+    "success": 6,
+    "failures": 2
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution does not provide actual data; table shows all zeroes for GPA ranges. C21 Early Decision plan offered, but no numbers for applications or admits provided. Early Action plan offered with closing date Nov 1 and notification date Jan 31, but no application or admission counts provided."
+    },
+    {
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5132,
+        "3.50-3.74": 0.434,
+        "3.25-3.49": 0.0512,
+        "3.00-3.24": 0.0017,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution mapped from reported score ranges: 3.75-4.00 as 1400-1600 SAT Composite (51.32%), 3.50-3.74 as 1200-1399 (43.40%), 3.25-3.49 as 1000-1199 (5.12%), 3.00-3.24 as 800-999 (0.17%), <3.00 as below 800 (0.00%). C21 Early Decision and Early Action counts not reported in available text, only plan existence and dates provided."
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Sections C9 and C21 GPA distribution and Early Decision/Early Action data not reported in this Common Data Set."
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The provided PDF text does not contain specific data tables or percentages for high school GPA distribution (Section C9) or early decision/early action applicants and admits (Section C21) for University of Denver. The relevant sections and headings are present but the detailed data is missing or not reported."
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Rutgers University-New Brunswick does not report high school GPA distribution (C9). The institution does not offer an Early Decision plan but does offer an Early Action plan with a closing date 11/1 and notification date 1/31. No applicant/admit counts for Early Decision or Early Action are provided (C21)."
+    },
+    {
+      "schoolNameNorm": "rutgers university-newark",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Rutgers University-Newark does not report their high school GPA distribution (C9) and does not offer early decision plans. The Early Action plan is offered with a closing date of 11/1 and notification date 1/31, but no applicant or admit numbers are reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "sourceUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf",
+      "error": "fetch failed"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf",
+      "error": "Download failed 404: https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

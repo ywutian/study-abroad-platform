@@ -1,0 +1,102 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:01:21.363Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch24-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "colorado college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.coloradocollege.edu/offices/ipe/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.72,
+        "3.50-3.74": 0.156,
+        "3.25-3.49": 0.091,
+        "3.00-3.24": 0.024,
+        "<3.00": 0.009
+      },
+      "edAcceptanceRate": 31.81,
+      "eaAcceptanceRate": 20.57,
+      "edApplied": 918,
+      "edAdmitted": 292,
+      "eaApplied": 3840,
+      "eaAdmitted": 790,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "skidmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.skidmore.edu/ir/facts/common/CDS_2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 41.39,
+      "eaAcceptanceRate": null,
+      "edApplied": 848,
+      "edAdmitted": 351,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution not reported (N/A). Early Decision I applications = 469, admits = 264. Early Decision II applications = 379, admits = 87. Deferred ED applicants excluded from admits/enrolls counts."
+    },
+    {
+      "schoolNameNorm": "kenyon college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.kenyon.edu/files/resources/kenyon-cds-202425-march-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.64,
+        "3.50-3.74": 0.18,
+        "3.25-3.49": 0.08,
+        "3.00-3.24": 0.05,
+        "<3.00": 0.04
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution derived from percent who had GPA 4.0 (41%) plus 3.75-3.99 (23%) combined as 3.75-4.00 band. Early Decision and Early Action plan reporting present but no application/admit numbers provided."
+    },
+    {
+      "schoolNameNorm": "oberlin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.oberlin.edu/media/34940/download?inline=",
+      "gpaDistribution": {
+        "3.75-4.00": 0.53,
+        "3.50-3.74": 0.25,
+        "3.25-3.49": 0.14,
+        "3.00-3.24": 0.06,
+        "<3.00": 0.02
+      },
+      "edAcceptanceRate": 38.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 635,
+      "edAdmitted": 246,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution percentages approximated by aggregating reported bands: 4.0 (11%) + 3.75-3.99 (42%) = 53%; 3.50-3.74 = 25%; 3.25-3.49 = 14%; 3.00-3.24 = 6%; and 2.50-2.99 (2%) counted as <3.00. Early Action plan not offered."
+    },
+    {
+      "schoolNameNorm": "st. olaf college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://wp.stolaf.edu/iea/files/2025/12/CDS-2025-26.xlsx-CDS-C.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.48,
+        "3.50-3.74": 0.2,
+        "3.25-3.49": 0.11,
+        "3.00-3.24": 0.05,
+        "<3.00": 0.16
+      },
+      "edAcceptanceRate": 54.96,
+      "eaAcceptanceRate": null,
+      "edApplied": 504,
+      "edAdmitted": 277,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Decision plan: yes. Early Action plan: yes, non-restrictive. EA applicant and admit counts not reported."
+    }
+  ],
+  "failures": []
+}

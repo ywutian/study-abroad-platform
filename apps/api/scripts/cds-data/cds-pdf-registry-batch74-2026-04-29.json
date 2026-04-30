@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch74-notredame2023-rutgersnb2023-fsu-hofstra",
+    "note": "Batch 74: Notre Dame (2023-24 most recent), Rutgers NB (2023-24 most recent), FSU, Hofstra search"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2023-2024/CDS_2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "schoolName": "Rutgers University-New Brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    }
+  ]
+}

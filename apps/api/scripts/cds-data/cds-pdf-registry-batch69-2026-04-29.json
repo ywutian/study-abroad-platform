@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch69-bowdoin-davidson-bc",
+    "note": "Batch 69: Bowdoin College, Davidson College, Boston College"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "davidson college",
+      "schoolName": "Davidson College",
+      "selectedUrl": "https://www.davidson.edu/media/9718/download"
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "schoolName": "Boston College",
+      "selectedUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf"
+    }
+  ]
+}

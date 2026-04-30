@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:00:03.885Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch23-2026-04-29.json",
+    "success": 4,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "grinnell college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.grinnell.edu/sites/default/files/docs/2025-03/Grinnell-2024-2025-Common-Data-Set.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 34.18,
+      "eaAcceptanceRate": null,
+      "edApplied": 828,
+      "edAdmitted": 283,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No high school GPA distribution data reported. Early Decision data for Fall 2024 entering class provided; no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "smith college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.97,
+        "3.50-3.74": 0.03,
+        "3.25-3.49": 0.01,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 38.2,
+      "eaAcceptanceRate": null,
+      "edApplied": 924,
+      "edAdmitted": 353,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Smith College offers an Early Decision plan with two rounds: first or only early decision plan closing date November 15 with notification mid-December, and another early decision plan closing date January 1 with notification late January. No Early Action plan is offered."
+    },
+    {
+      "schoolNameNorm": "lafayette college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.lafayette.edu/wp-content/uploads/sites/196/2025/10/CDS2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.3248,
+        "3.50-3.74": 0.288,
+        "3.25-3.49": 0.202,
+        "3.00-3.24": 0.1246,
+        "<3.00": 0.0606
+      },
+      "edAcceptanceRate": 42.41,
+      "eaAcceptanceRate": null,
+      "edApplied": 870,
+      "edAdmitted": 369,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution percentages are from C11 for all enrolled students. Early Decision data is reported for Fall 2024; no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "trinity college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.trincoll.edu/asic/wp-content/uploads/sites/125/2025/12/CDS-2024-2025-Trinity-College.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The document includes the heading for C9 High School GPA distribution but does not provide numerical data; for C21 Early Decision and Early Action plans, existence and dates are given but no applicant or admit counts are reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "dickinson college",
+      "sourceUrl": "https://www.dickinson.edu/download/downloads/id/16348/cds_2024-2025.pdf",
+      "error": "Download failed 404: https://www.dickinson.edu/download/downloads/id/16348/cds_2024-2025.pdf"
+    }
+  ]
+}

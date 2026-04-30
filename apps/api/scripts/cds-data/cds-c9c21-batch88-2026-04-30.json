@@ -1,0 +1,87 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T08:06:51.356Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4o-mini",
+    "input": "apps/api/scripts/cds-data/cds-pdf-registry-batch88-2026-04-30.json",
+    "success": 4,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north texas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No early decision or early action data provided."
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Toledo only collects weighted GPA for high school students."
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.25,
+        "3.50-3.74": 0.3,
+        "3.25-3.49": 0.2,
+        "3.00-3.24": 0.15,
+        "<3.00": 0.1
+      },
+      "edAcceptanceRate": 80,
+      "eaAcceptanceRate": 90,
+      "edApplied": 1500,
+      "edAdmitted": 1200,
+      "eaApplied": 2000,
+      "eaAdmitted": 1800,
+      "notes": "Data reflects the most recent admissions cycle."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of north dakota",
+      "sourceUrl": "https://und.edu/analytics-and-planning/_files/docs/common-data-set/cds-2024-2025.pdf",
+      "error": "Download failed 404: https://und.edu/analytics-and-planning/_files/docs/common-data-set/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "sourceUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf",
+      "error": "Download failed 403: https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf",
+      "error": "Download failed 404: https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

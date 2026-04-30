@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch33",
+    "note": "Batch 33: San Jose State, U Kentucky, U Cincinnati, U Alabama, Lehigh, U Vermont"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "san jose state university",
+      "schoolName": "San Jose State University",
+      "selectedUrl": "https://www2.sjsu.edu/irsa/docs/cds/20250411_CDS_2024-2025%20FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "university of kentucky",
+      "schoolName": "University of Kentucky",
+      "selectedUrl": "https://irads.uky.edu/sites/default/files/2025-07/cds-2024-2025_0.pdf"
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "schoolName": "University of Cincinnati",
+      "selectedUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/ir-web-24-25/2024%202025%20common%20data%20set%20clifton.pdf"
+    },
+    {
+      "schoolNameNorm": "university of alabama",
+      "schoolName": "University of Alabama",
+      "selectedUrl": "https://oira.ua.edu/d/sites/all/files/reports25/CDS%202024-25%20FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "schoolName": "University of Vermont",
+      "selectedUrl": "https://www.uvm.edu/d10-files/documents/2025-04/2024-2025-Common-Data-Set_0.pdf"
+    }
+  ]
+}

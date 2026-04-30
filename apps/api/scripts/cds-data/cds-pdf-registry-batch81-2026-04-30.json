@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30",
+    "source": "manual-batch81-wrong-url-corrections",
+    "note": "Batch 81: Re-processing schools that had wrong URLs in recovered registry. UCLA (2024-25 correct URL), Wake Forest (2023-24 filled CDS)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "UCLA",
+      "selectedUrl": "https://apb.ucla.edu/file/22f7b216-5bcd-4401-bf95-6b9fc3652a67"
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "schoolName": "Wake Forest University",
+      "selectedUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/02/CDS_2023-2024_2025-02-07.pdf"
+    }
+  ]
+}

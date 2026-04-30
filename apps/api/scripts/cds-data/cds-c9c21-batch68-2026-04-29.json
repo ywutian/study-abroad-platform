@@ -1,0 +1,116 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:39:58.624Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch68-2026-04-29.json",
+    "success": 7,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "binghamton university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.binghamton.edu/offices/oir/institutional-data/cds2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.86,
+        "3.50-3.74": 0.1,
+        "3.25-3.49": 0.03,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": 41.76,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": 34283,
+      "eaAdmitted": 14315,
+      "notes": "C11 reported GPA ranges by submitted-scores / non-submitted-scores / all enrolled students; used the all enrolled students column and mapped 4.0 to 3.75-4.00. C21 shows no Early Decision plan (NO); Early Action is reported with 34,283 applications and 14,315 admits."
+    },
+    {
+      "schoolNameNorm": "connecticut college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.conncoll.edu/media/Common-Data-Set-2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0,
+        "3.50-3.74": 0,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 1
+      },
+      "edAcceptanceRate": 41.06,
+      "eaAcceptanceRate": null,
+      "edApplied": 526,
+      "edAdmitted": 216,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table reported all zeros across the displayed rows and totals should = 100%, but the PDF text extraction shows no values except 0.00% and an average GPA of 0.00; mapped as <3.00 = 1.00 to preserve the reported total while noting the extraction issue. C21 reports two early decision rounds: first/or only early decision applications 526 and admits 216; no early action plan reported."
+    },
+    {
+      "schoolNameNorm": "brandeis university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.brandeis.edu/institutional-research/docs/cds-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 42.22,
+      "eaAcceptanceRate": null,
+      "edApplied": 765,
+      "edAdmitted": 323,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 used as proxy for C9 high school GPA distribution; mapping based on all enrolled students column. C21 reports Early Decision only; institution states no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "american university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 79.75,
+      "eaAcceptanceRate": null,
+      "edApplied": 726,
+      "edAdmitted": 579,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution not reported; the CDS page shows 0.00 entries for the GPA bands and totals, indicating no usable breakdown was provided. C21 early decision data reported; early action plan exists but no EA applicant/admit counts were provided."
+    },
+    {
+      "schoolNameNorm": "case western reserve university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 804,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported all enrolled students GPA distribution by all enrolled students. Mapped 4.0 and 3.75-3.99 into 3.75-4.00, and 2.50-2.99 plus 2.0-2.49 into <3.00. C21 text shows 804 early decision applications and the admits cell is OCR-corrupted as '8/14'; unable to verify a numeric admit count from the provided text. No early action applicant/admit counts reported."
+    },
+    {
+      "schoolNameNorm": "university of massachusetts amherst",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.umass.edu/uair/media/1059/download",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 extracted from 'All enrolled students' GPA range table. The PDF text provided does not include a C21 Early Decision/Early Action table, so ED/EA fields are null."
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 high school GPA distribution not reported in provided text. C21 early decision/early action counts not present in provided text; only plan questions are shown."
+    }
+  ],
+  "failures": []
+}

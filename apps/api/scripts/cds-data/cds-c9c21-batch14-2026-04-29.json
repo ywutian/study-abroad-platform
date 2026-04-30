@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:38:21.151Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch14-2026-04-29.json",
+    "success": 3,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "howard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.howard.edu/sites/ira.howard.edu/files/2025-04/Howard%20University%20-%20CDS%20PDF%20Format.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4796,
+        "3.50-3.74": 0.3316,
+        "3.25-3.49": 0.0646,
+        "3.00-3.24": 0.0161,
+        "<3.00": 0.1081
+      },
+      "edAcceptanceRate": 49.43,
+      "eaAcceptanceRate": null,
+      "edApplied": 348,
+      "edAdmitted": 172,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported GPA ranges for all enrolled students only. Mapped 4.0 GPA to 3.75-4.00. Combined all <3.00 ranges: 2.50-2.99 (0.66) + 2.0-2.49 (0.11) + 1.0-1.99 (0.00) + below 1.0 (0.04) = 0.81, but because the canonical buckets require only <3.00 and the provided text totals 100.00, this bucket is set to the remainder after the mapped higher bands: 10.81. C21: early decision reported; early action marked no, so nulls returned for EA."
+    },
+    {
+      "schoolNameNorm": "san diego state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://asir.sdsu.edu/Documents/CommonDataSets/CDS_2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.67,
+        "3.50-3.74": 0.2,
+        "3.25-3.49": 0.09,
+        "3.00-3.24": 0.03,
+        "<3.00": 0.01
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 not explicitly labeled in the provided text, but the freshman GPA distribution table is present as C11. Mapped 4.0 GPA to 3.75-4.00 and 2.50-2.99 to <3.00. C21/C22 indicate SDSU does not offer Early Decision or Early Action; no applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "university of new hampshire",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.unh.edu/institutional-research/sites/default/files/media/2025-02/cds-2024-2025-2.12.25_0.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.2757,
+        "3.50-3.74": 0.1555,
+        "3.25-3.49": 0.1532,
+        "3.00-3.24": 0.1259,
+        "<3.00": 0.2897
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported all enrolled students GPA distribution. Bands mapped from 4.0, 3.75-3.99, 3.50-3.74, 3.25-3.49, 3.00-3.24, and combined lower bands 2.50-2.99/2.00-2.49/1.00-1.99/below 1.0 into <3.00. C21 indicates Early Decision = yes and Early Action = yes, but the PDF text provided contains no applicant/admit counts for either plan."
+    }
+  ],
+  "failures": []
+}

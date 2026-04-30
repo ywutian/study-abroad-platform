@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:56:52.819Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch21-2026-04-29.json",
+    "success": 1,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "emory university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.emory.edu/planning-administration/_includes/documents/sections/institutional-data/emory-common-data-set-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7549,
+        "3.50-3.74": 0.2124,
+        "3.25-3.49": 0.0253,
+        "3.00-3.24": 0.0044,
+        "<3.00": 0.003
+      },
+      "edAcceptanceRate": 23.23,
+      "eaAcceptanceRate": null,
+      "edApplied": 4193,
+      "edAdmitted": 974,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution derived from Section C11; Early Decision data from Section C21; No Early Action plan reported."
+    }
+  ],
+  "failures": []
+}

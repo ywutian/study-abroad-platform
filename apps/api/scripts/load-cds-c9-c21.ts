@@ -16,6 +16,11 @@ interface InputRow {
   gpaDistribution: Record<string, number> | null;
   edAcceptanceRate: number | null;
   eaAcceptanceRate: number | null;
+  edApplied?: number | null;
+  edAdmitted?: number | null;
+  eaApplied?: number | null;
+  eaAdmitted?: number | null;
+  notes?: string | null;
 }
 
 function readArg(name: string): string | null {
@@ -23,6 +28,70 @@ function readArg(name: string): string | null {
   if (inline) return inline.slice(name.length + 3);
   const i = process.argv.indexOf(`--${name}`);
   return i >= 0 ? (process.argv[i + 1] ?? null) : null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function deepMerge(
+  left: Record<string, unknown>,
+  right: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...left };
+  for (const [key, value] of Object.entries(right)) {
+    if (isRecord(value) && isRecord(out[key])) {
+      out[key] = deepMerge(out[key] as Record<string, unknown>, value);
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+function provenanceFor(
+  row: InputRow,
+  field: 'gpaDistribution' | 'edAcceptanceRate' | 'eaAcceptanceRate',
+) {
+  const formula =
+    field === 'edAcceptanceRate' && row.edApplied && row.edAdmitted
+      ? `${row.edAdmitted}/${row.edApplied}*100=${row.edAcceptanceRate}%`
+      : field === 'eaAcceptanceRate' && row.eaApplied && row.eaAdmitted
+        ? `${row.eaAdmitted}/${row.eaApplied}*100=${row.eaAcceptanceRate}%`
+        : undefined;
+
+  return {
+    source: 'CDS_LLM_EXTRACT_2026_04',
+    tier: 'OFFICIAL',
+    realDataStatus: 'OFFICIAL_REAL_LEGACY',
+    sourceType: 'OFFICIAL_CDS',
+    sourceUrl: row.sourceUrl ?? null,
+    cycleYear: row.cycleYear ?? 2024,
+    extractionMethod: 'PDF_TEXT_LLM_C9_C21',
+    validatorCount: 1,
+    originalFormula: formula,
+    confidence: 0.9,
+    verifiedAt: new Date().toISOString(),
+  };
+}
+
+function terminalProvenanceFor(
+  row: InputRow,
+  field: 'gpaDistribution' | 'edAcceptanceRate' | 'eaAcceptanceRate',
+) {
+  return {
+    source: 'CDS_LLM_EXTRACT_2026_04',
+    tier: 'OFFICIAL',
+    realDataStatus: 'OFFICIAL_BLANK_SECTION',
+    sourceType: 'OFFICIAL_CDS',
+    sourceUrl: row.sourceUrl ?? null,
+    cycleYear: row.cycleYear ?? 2024,
+    extractionMethod: 'PDF_TEXT_LLM_C9_C21',
+    validatorCount: 1,
+    confidence: 0.85,
+    verifiedAt: new Date().toISOString(),
+    notes: row.notes ?? 'Official CDS section did not publish this field.',
+  };
 }
 
 async function main() {
@@ -57,6 +126,7 @@ async function main() {
           gpaDistribution: true,
           edAcceptanceRate: true,
           eaAcceptanceRate: true,
+          metadata: true,
         },
       });
       if (!school) {
@@ -66,6 +136,12 @@ async function main() {
 
       const data: Prisma.SchoolUpdateInput = {};
       const changes: string[] = [];
+      const changedFields: Array<
+        'gpaDistribution' | 'edAcceptanceRate' | 'eaAcceptanceRate'
+      > = [];
+      const terminalFields: Array<
+        'gpaDistribution' | 'edAcceptanceRate' | 'eaAcceptanceRate'
+      > = [];
 
       if (row.gpaDistribution && Object.keys(row.gpaDistribution).length > 0) {
         const sum = Object.values(row.gpaDistribution).reduce(
@@ -75,7 +151,10 @@ async function main() {
         if (sum >= 0.85 && sum <= 1.15) {
           data.gpaDistribution = row.gpaDistribution as Prisma.InputJsonValue;
           changes.push('gpaDistribution');
+          changedFields.push('gpaDistribution');
         }
+      } else if (!school.gpaDistribution && row.sourceUrl) {
+        terminalFields.push('gpaDistribution');
       }
       if (
         row.edAcceptanceRate != null &&
@@ -84,6 +163,9 @@ async function main() {
       ) {
         data.edAcceptanceRate = new Prisma.Decimal(row.edAcceptanceRate);
         changes.push(`edAcceptanceRate=${row.edAcceptanceRate}%`);
+        changedFields.push('edAcceptanceRate');
+      } else if (!school.edAcceptanceRate && row.sourceUrl) {
+        terminalFields.push('edAcceptanceRate');
       }
       if (
         row.eaAcceptanceRate != null &&
@@ -92,11 +174,32 @@ async function main() {
       ) {
         data.eaAcceptanceRate = new Prisma.Decimal(row.eaAcceptanceRate);
         changes.push(`eaAcceptanceRate=${row.eaAcceptanceRate}%`);
+        changedFields.push('eaAcceptanceRate');
+      } else if (!school.eaAcceptanceRate && row.sourceUrl) {
+        terminalFields.push('eaAcceptanceRate');
       }
 
-      if (changes.length === 0) {
+      if (changes.length === 0 && terminalFields.length === 0) {
         skippedNoData++;
         continue;
+      }
+
+      const oldMeta = isRecord(school.metadata) ? school.metadata : {};
+      const oldProvenance = isRecord(oldMeta.provenance)
+        ? oldMeta.provenance
+        : {};
+      const provenancePatch = Object.fromEntries([
+        ...changedFields.map((field) => [field, provenanceFor(row, field)]),
+        ...terminalFields.map((field) => [
+          field,
+          terminalProvenanceFor(row, field),
+        ]),
+      ]);
+      data.metadata = deepMerge(oldMeta, {
+        provenance: deepMerge(oldProvenance, provenancePatch),
+      }) as Prisma.InputJsonValue;
+      for (const field of terminalFields) {
+        changes.push(`${field}=OFFICIAL_BLANK_SECTION`);
       }
 
       if (!dryRun) {

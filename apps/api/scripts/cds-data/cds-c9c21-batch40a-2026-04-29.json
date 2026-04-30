@@ -1,0 +1,134 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:54:39.566Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch40a-2026-04-29.json",
+    "success": 8,
+    "failures": 2
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.01,
+      "eaAcceptanceRate": null,
+      "edApplied": 5154,
+      "edAdmitted": 1186,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 section does not include GPA distribution data, only states 'C or t' placeholders for each GPA range indicating data not reported. Early Decision plan provided with one closing date and one notification date; no Early Action plan reported."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution missing actual data values in report, only header present with zero percentages."
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Rutgers University-New Brunswick does not offer Early Decision plans, and the Early Decision data is not provided. They do have a nonbinding Early Action plan with an 11/1 closing date and 1/31 notification date, but no numerical data on applicants or admits under Early Action is reported. High school GPA distribution details are omitted from the report."
+    },
+    {
+      "schoolNameNorm": "rutgers university-newark",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Rutgers University-Newark does not offer Early Decision plans and therefore no data on Early Decision applications or admissions is reported. A nonbinding Early Action plan exists with closing date 11/1 and notification date 1/31. GPA distribution data is not reported separately in the CDS; GPA related items (C11) are present but no percentages reported, indicating GPA breakdown is not available."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 18.02,
+      "eaAcceptanceRate": null,
+      "edApplied": 1221,
+      "edAdmitted": 220,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Swarthmore College does not report GPA distribution for the freshman class profile."
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution information (C9) was requested but the table shows all zeros, indicating data not reported. Early Decision is offered with application and notification dates; Early Action is not offered."
+    },
+    {
+      "schoolNameNorm": "worcester polytechnic institute",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wpi.edu/sites/default/files/2025-02/WPI_CDS_2024-2025_2-27-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8,
+        "3.50-3.74": 0.14,
+        "3.25-3.49": 0.04,
+        "3.00-3.24": 0.02,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 75.63,
+      "eaAcceptanceRate": 68.89,
+      "edApplied": 279,
+      "edAdmitted": 211,
+      "eaApplied": 9020,
+      "eaAdmitted": 6214,
+      "notes": "GPA bands adjusted from reported ranges: 63% with 4.0 plus 17% with 3.75-3.99 for 3.75-4.00 band."
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 13.47,
+      "eaAcceptanceRate": null,
+      "edApplied": 2005,
+      "edAdmitted": 270,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table shows 0% for all GPA ranges implying data not reported or zero. Early Decision is offered with data for applications and admits. No Early Action plan reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "oklahoma state university",
+      "sourceUrl": "https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf",
+      "error": "Download failed 403: https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "sourceUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    }
+  ]
+}

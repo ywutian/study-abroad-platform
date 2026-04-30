@@ -1,0 +1,77 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:28:35.952Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch49-2026-04-29.json",
+    "success": 4,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north carolina wilmington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uncw.edu/media/pdf/irp/cds-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.838,
+        "3.50-3.74": 0.136,
+        "3.25-3.49": 0.022,
+        "3.00-3.24": 0.006,
+        "<3.00": 0.0007
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of North Carolina Wilmington offers Early Decision (yes) and Early Action (non-restrictive) plans but the CDS does not provide number of Early Decision or Early Action applicants or admits for Fall 2024."
+    },
+    {
+      "schoolNameNorm": "california state university, sacramento",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csus.edu/information-resources-technology/institutional-research/common-data-set/cds_2024-2025-final.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.139,
+        "3.50-3.74": 0.1507,
+        "3.25-3.49": 0.1819,
+        "3.00-3.24": 0.1591,
+        "<3.00": 0.3753
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 provided GPA percentage ranges converted to the canonical bands. C21 Early Decision and Early Action plans reported no numbers - ED offered (checkbox no), EA plan checkbox yes but no application/admit/enroll counts were given."
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www1.wellesley.edu/sites/default/files/assets/departments/instresearch/files/cds_2023-2024_-_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 30.23,
+      "eaAcceptanceRate": null,
+      "edApplied": 976,
+      "edAdmitted": 295,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set does not report a breakdown of high school GPA distribution for first-time, first-year students (C9) for Wellesley College. Early Decision (ED) data is reported with 976 ED applications and 295 admits. The institution does not offer Early Action (EA) plans."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution data not reported; Early Decision offered with only one reported application count."
+    }
+  ],
+  "failures": []
+}
