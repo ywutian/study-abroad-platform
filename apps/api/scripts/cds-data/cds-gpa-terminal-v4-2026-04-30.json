@@ -1,0 +1,67 @@
+{
+  "schools": [
+    {
+      "schoolNameNorm": "boston college",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "reason": "Official 2024-25 CDS C11 lists GPA ranges but reports no GPA distribution values; totals row is 0.0%."
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf",
+      "reason": "Official 2024-25 CDS C11 section is present but does not publish GPA range values."
+    },
+    {
+      "schoolNameNorm": "grinnell college",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://www.grinnell.edu/sites/default/files/docs/2025-03/Grinnell-2024-2025-Common-Data-Set.pdf",
+      "reason": "Official 2024-25 CDS C11 publishes all GPA range totals as 0.00%, indicating GPA distribution is not reported."
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "reason": "Official 2024-25 CDS C11 cells contain placeholders / not reported, not numeric GPA distribution values."
+    },
+    {
+      "schoolNameNorm": "seton hall university",
+      "status": "NO_PUBLIC_REAL_DATA",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://www.shu.edu/institutional-research/reports.html",
+      "reason": "Official Seton Hall reports page only exposes early-2000s CDS files; no current public official CDS/C11 data found after targeted search."
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://cie.ucmerced.edu/sites/g/files/ufvvjh616/f/page/documents/2023_cds_uc_merced_b.pdf",
+      "reason": "UC Merced CDS/UC public data is usable for UCOP GPA-only admit-band cells, but no CDS C11 GPA distribution values are publicly reported for this field."
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "reason": "Official 2024-25 CDS C11 section is present but does not publish GPA range values."
+    },
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "reason": "Official 2024-25 CDS C11 all-enrolled GPA values are 0.00 / blank, so no usable GPA distribution is published."
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "status": "OFFICIAL_BLANK_SECTION",
+      "missingFields": ["gpaDistribution"],
+      "selectedUrl": "https://utexas.app.box.com/index.php?rm=box_download_shared_file&shared_name=d9izqb6s8dw2xxg5h5sunxyhrnef2ay6&file_id=f_1812286540077",
+      "reason": "Official UT Austin Box-hosted CDS/source does not expose usable CDS C11 GPA distribution values in the extracted text."
+    }
+  ]
+}
