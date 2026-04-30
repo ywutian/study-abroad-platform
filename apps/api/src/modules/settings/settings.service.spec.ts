@@ -90,10 +90,10 @@ describe('SettingsService', () => {
         null,
       );
 
-      // site_name has a default of 'Study Abroad Platform'
+      // site_name has a default of 'Lumni'
       const result = await service.get('site_name');
 
-      expect(result).toBe('Study Abroad Platform');
+      expect(result).toBe('Lumni');
     });
 
     it('should return null for unknown key with no default', async () => {
@@ -370,7 +370,7 @@ describe('SettingsService', () => {
       const siteNameEntry = result.find((s) => s.key === 'site_name');
       expect(siteNameEntry).toEqual({
         key: 'site_name',
-        value: 'Study Abroad Platform',
+        value: 'Lumni',
         description: 'Site name',
         category: 'general',
       });
@@ -532,7 +532,7 @@ describe('SettingsService', () => {
       expect(prismaService.systemSetting.create).toHaveBeenCalledWith({
         data: {
           key: 'site_name',
-          value: 'Study Abroad Platform',
+          value: 'Lumni',
           description: 'Site name',
           category: 'general',
         },

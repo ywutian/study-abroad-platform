@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:16:06.527Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch6b-2026-04-29.json",
+    "success": 1,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 from Section C11 high school GPA distribution. C21 offers no Early Decision; Early Action is offered but the provided PDF text does not include applicant/admit counts for either plan."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "sourceUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/06/CDS_2024_2025_Williams_V5.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/06/CDS_2024_2025_Williams_V5.pdf"
+    }
+  ]
+}

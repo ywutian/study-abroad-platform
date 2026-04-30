@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch62-bates-uminn-tamu-uidaho-williams23",
+    "note": "Batch 62: Bates (correct URL), UMinn TC, Texas A&M, U Idaho 2023-24 fallback, Williams 2023-24 fallback"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "schoolName": "University of Minnesota Twin Cities",
+      "selectedUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf"
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "schoolName": "Texas A&M University",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf"
+    },
+    {
+      "schoolNameNorm": "university of idaho",
+      "schoolName": "University of Idaho",
+      "selectedUrl": "https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2024/04/CDS_2023_2024_Williams_April2024.pdf"
+    }
+  ]
+}

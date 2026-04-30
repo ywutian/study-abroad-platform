@@ -23,17 +23,17 @@ interface AnalysisReportPDFProps {
 }
 
 const colors = {
-  primary: '#6366f1',
-  secondary: '#8b5cf6',
-  text: '#1f2937',
-  textMuted: '#6b7280',
-  border: '#e5e7eb',
-  background: '#f9fafb',
-  success: '#10b981',
+  primary: '#1d1813',
+  secondary: '#6574ff',
+  text: '#1d1813',
+  textMuted: '#6f665b',
+  border: '#d8c8b2',
+  background: '#fff4e2',
+  success: '#6f7b58',
   successBg: '#ecfdf5',
   warning: '#f59e0b',
   warningBg: '#fffbeb',
-  white: '#ffffff',
+  white: '#fff9ef',
 };
 
 const translations = {

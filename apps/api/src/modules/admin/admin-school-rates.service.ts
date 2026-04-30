@@ -82,8 +82,24 @@ const RATE_FIELDS = [
   'transferAcceptanceRate',
 ] as const;
 const PERCENT_POINT_FIELDS = ['intlStudentPct'] as const;
+const DECIMAL_PERCENT_FIELDS = [
+  'graduationRate',
+  'retentionRate',
+  'percentNeedMet',
+  'loanDefaultRate',
+] as const;
 const INTEGER_FIELDS = [
   'totalEnrollment',
+  'studentCount',
+  'tuition',
+  'avgSalary',
+  'studentFacultyRatio',
+  'averageAidPackage',
+  'averageNetPrice',
+  'roomAndBoard',
+  'applicationFee',
+  'salary6YrPostGrad',
+  'monthlyLoanPayment',
   'sat25',
   'satAvg',
   'sat75',
@@ -91,10 +107,18 @@ const INTEGER_FIELDS = [
   'actAvg',
   'act75',
 ] as const;
-const BOOLEAN_FIELDS = ['needBlindInternational', 'testOptional'] as const;
+const BOOLEAN_FIELDS = [
+  'needBlindInternational',
+  'testOptional',
+  'feeWaiverAvailable',
+  'acceptsCommonApp',
+  'acceptsCoalition',
+  'hasEarlyDecision',
+] as const;
 
 type RateField = (typeof RATE_FIELDS)[number];
 type PercentPointField = (typeof PERCENT_POINT_FIELDS)[number];
+type DecimalPercentField = (typeof DECIMAL_PERCENT_FIELDS)[number];
 type IntegerField = (typeof INTEGER_FIELDS)[number];
 type BooleanField = (typeof BOOLEAN_FIELDS)[number];
 
@@ -148,6 +172,7 @@ export class AdminSchoolRatesService {
       const hasAnyField =
         RATE_FIELDS.some((field) => row[field] != null) ||
         PERCENT_POINT_FIELDS.some((field) => row[field] != null) ||
+        DECIMAL_PERCENT_FIELDS.some((field) => row[field] != null) ||
         INTEGER_FIELDS.some((field) => row[field] != null) ||
         BOOLEAN_FIELDS.some((field) => row[field] != null);
       if (!hasAnyField) {
@@ -290,6 +315,30 @@ export class AdminSchoolRatesService {
         changedFields.push(key);
       };
 
+      const tryDecimalPercentField = (
+        key: DecimalPercentField,
+        rawInput: number | undefined,
+      ) => {
+        if (rawInput == null) return;
+        const normalized = this.normalizePercent(rawInput);
+        if (normalized == null) return;
+        const currentDecimal = (school as any)[key] as Prisma.Decimal | null;
+        const currentNum = currentDecimal ? currentDecimal.toNumber() : null;
+        const roundedNew = Math.round(normalized * 100) / 100;
+        if (currentNum != null && Math.abs(currentNum - roundedNew) < 0.005) {
+          before[key] = currentNum;
+          if (shouldRefreshHeuristicProvenance(key)) {
+            after[key] = roundedNew;
+            changedFields.push(key);
+          }
+          return;
+        }
+        updates[key] = new Prisma.Decimal(roundedNew);
+        before[key] = currentNum;
+        after[key] = roundedNew;
+        changedFields.push(key);
+      };
+
       const tryBooleanField = (
         key: BooleanField,
         rawInput: boolean | undefined,
@@ -313,6 +362,8 @@ export class AdminSchoolRatesService {
       for (const field of RATE_FIELDS) tryRateField(field, row[field]);
       for (const field of PERCENT_POINT_FIELDS)
         tryPercentPointField(field, row[field]);
+      for (const field of DECIMAL_PERCENT_FIELDS)
+        tryDecimalPercentField(field, row[field]);
       for (const field of INTEGER_FIELDS) tryIntegerField(field, row[field]);
       for (const field of BOOLEAN_FIELDS) tryBooleanField(field, row[field]);
 
@@ -408,6 +459,24 @@ export class AdminSchoolRatesService {
       transferAcceptanceRate: true,
       intlStudentPct: true,
       totalEnrollment: true,
+      studentCount: true,
+      tuition: true,
+      avgSalary: true,
+      graduationRate: true,
+      retentionRate: true,
+      studentFacultyRatio: true,
+      percentNeedMet: true,
+      averageAidPackage: true,
+      averageNetPrice: true,
+      roomAndBoard: true,
+      applicationFee: true,
+      feeWaiverAvailable: true,
+      acceptsCommonApp: true,
+      acceptsCoalition: true,
+      hasEarlyDecision: true,
+      salary6YrPostGrad: true,
+      loanDefaultRate: true,
+      monthlyLoanPayment: true,
       needBlindInternational: true,
       oosAcceptanceRate: true,
       sat25: true,

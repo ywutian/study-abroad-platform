@@ -39,8 +39,12 @@ import {
 } from './dto/recruitment.dto';
 import { TEAM_USER_SELECT } from './team.constants';
 import { SCHOOL_NAME_SELECT } from '../../common/constants/prisma-selects';
+import {
+  buildMemberHighlights,
+  getVisibleDisplaySettings,
+} from './team-recruitment-highlights';
 
-const RECRUITMENT_USER_SELECT = {
+const RECRUITMENT_USER_SELECT = Prisma.validator<Prisma.UserSelect>()({
   id: true,
   email: true,
   role: true,
@@ -53,9 +57,25 @@ const RECRUITMENT_USER_SELECT = {
       currentSchool: true,
       grade: true,
       targetMajor: true,
+      testScores: {
+        orderBy: [{ createdAt: 'desc' }],
+      },
+      awards: {
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+        include: { competition: true },
+      },
+      activities: {
+        orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+        include: { activityTemplate: true },
+      },
     },
   },
-} as const;
+  assessmentResults: {
+    orderBy: [{ completedAt: 'desc' }],
+    take: 4,
+    include: { assessment: { select: { type: true } } },
+  },
+});
 
 const RECRUITMENT_CONTEXT_INCLUDE =
   Prisma.validator<Prisma.RecruitmentContextInclude>()({
@@ -679,6 +699,35 @@ export class TeamRecruitmentService {
           },
         },
       });
+      const trimmedIntroLine = dto.introLine?.trim();
+      const selectedResumeChanged =
+        dto.selectedResumeId !== undefined &&
+        (existing?.selectedResumeId ?? null) !== (selectedResumeId ?? null);
+      const displaySettingsChanged =
+        selectedResumeChanged ||
+        (dto.introLine !== undefined &&
+          (existing?.introLine ?? '') !== (trimmedIntroLine ?? '')) ||
+        (dto.showSchool !== undefined &&
+          existing?.showSchool !== dto.showSchool) ||
+        (dto.showGrade !== undefined &&
+          existing?.showGrade !== dto.showGrade) ||
+        (dto.showAwards !== undefined &&
+          existing?.showAwards !== dto.showAwards) ||
+        (dto.showAcademics !== undefined &&
+          (existing as { showAcademics?: boolean } | null)?.showAcademics !==
+            dto.showAcademics) ||
+        (dto.showExperiences !== undefined &&
+          (existing as { showExperiences?: boolean } | null)
+            ?.showExperiences !== dto.showExperiences) ||
+        (dto.showPersonality !== undefined &&
+          (existing as { showPersonality?: boolean } | null)
+            ?.showPersonality !== dto.showPersonality);
+      const consentConfirmedAt =
+        dto.consentConfirmed === true
+          ? new Date()
+          : dto.consentConfirmed === false || displaySettingsChanged
+            ? null
+            : undefined;
 
       await tx.teamRecruitmentMemberProfile.upsert({
         where: {
@@ -689,33 +738,31 @@ export class TeamRecruitmentService {
         },
         update: {
           selectedResumeId,
-          introLine: dto.introLine?.trim(),
+          introLine: trimmedIntroLine,
           showSchool: dto.showSchool,
           showGrade: dto.showGrade,
           showAwards: dto.showAwards,
-          consentConfirmedAt:
-            dto.consentConfirmed === true
-              ? new Date()
-              : dto.consentConfirmed === false
-                ? null
-                : undefined,
-        },
+          showAcademics: dto.showAcademics,
+          showExperiences: dto.showExperiences,
+          showPersonality: dto.showPersonality,
+          consentConfirmedAt,
+        } as any,
         create: {
           teamRecruitmentCardId: cardId,
           userId,
           selectedResumeId,
-          introLine: dto.introLine?.trim(),
+          introLine: trimmedIntroLine,
           showSchool: dto.showSchool ?? false,
           showGrade: dto.showGrade ?? false,
           showAwards: dto.showAwards ?? false,
+          showAcademics: dto.showAcademics ?? false,
+          showExperiences: dto.showExperiences ?? false,
+          showPersonality: dto.showPersonality ?? false,
           consentConfirmedAt: dto.consentConfirmed ? new Date() : null,
-        },
+        } as any,
       });
 
-      if (
-        card.phase === 'PUBLISHED' &&
-        existing?.selectedResumeId !== selectedResumeId
-      ) {
+      if (card.phase === 'PUBLISHED' && selectedResumeChanged) {
         await tx.teamRecruitmentCard.update({
           where: { id: cardId },
           data: { phase: TeamRecruitmentPhase.DRAFT },
@@ -1753,6 +1800,27 @@ export class TeamRecruitmentService {
             ? member.user.profile?.grade
             : undefined;
         const resume = memberProfile?.selectedResume;
+        const displayProfile = memberProfile as
+          | (typeof memberProfile & {
+              showAcademics?: boolean;
+              showExperiences?: boolean;
+              showPersonality?: boolean;
+              consentConfirmedAt?: Date | string | null;
+            })
+          | undefined;
+        const highlightOptions = { requireConsent: !fullAccess };
+        const highlights = buildMemberHighlights(
+          member.user,
+          displayProfile,
+          highlightOptions,
+        );
+        const visibleDisplaySettings = fullAccess
+          ? {
+              showAcademics: displayProfile?.showAcademics ?? false,
+              showExperiences: displayProfile?.showExperiences ?? false,
+              showPersonality: displayProfile?.showPersonality ?? false,
+            }
+          : getVisibleDisplaySettings(displayProfile, highlightOptions);
 
         return {
           userId: member.userId,
@@ -1768,9 +1836,13 @@ export class TeamRecruitmentService {
           showSchool: memberProfile?.showSchool ?? false,
           showGrade: memberProfile?.showGrade ?? false,
           showAwards: memberProfile?.showAwards ?? false,
+          showAcademics: visibleDisplaySettings.showAcademics,
+          showExperiences: visibleDisplaySettings.showExperiences,
+          showPersonality: visibleDisplaySettings.showPersonality,
           school,
           grade,
           targetMajor: member.user.profile?.targetMajor,
+          highlights,
           consentConfirmedAt: memberProfile?.consentConfirmedAt ?? null,
           resume: resume
             ? {

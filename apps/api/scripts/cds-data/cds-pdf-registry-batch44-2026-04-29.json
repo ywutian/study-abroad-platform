@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch44-amherst-uml-psu-ballstate-bgsu-texastech",
+    "note": "Batch 44: Amherst section C, UMass Lowell 2023-24, Portland State 2023-24, Ball State retry, BGSU, Texas Tech"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "amherst college",
+      "schoolName": "Amherst College",
+      "selectedUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf"
+    },
+    {
+      "schoolNameNorm": "university of massachusetts lowell",
+      "schoolName": "University of Massachusetts Lowell",
+      "selectedUrl": "https://www.uml.edu/docs/CDS_2023-2024_UMass_Lowell_(4-12-24)_tcm18-383430.pdf"
+    },
+    {
+      "schoolNameNorm": "portland state university",
+      "schoolName": "Portland State University",
+      "selectedUrl": "https://www.pdx.edu/research-planning/sites/researchplanning.web.wdt.pdx.edu/files/2024-05/CDS_2023-2024%20(Updated%205-8-24%20AM).pdf"
+    },
+    {
+      "schoolNameNorm": "ball state university",
+      "schoolName": "Ball State University",
+      "selectedUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf?sc_lang=en&hash=091C733F7675B0EF78AE749E7CCB99F2A44785FC"
+    }
+  ]
+}

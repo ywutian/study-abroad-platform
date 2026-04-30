@@ -440,7 +440,7 @@ export default function AboutPage() {
             </div>
             <h2 className="text-subtitle mb-2">{t('contact.title')}</h2>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t('contact.desc')}</p>
-            <Button className="gap-2 bg-success hover:opacity-90 text-white " asChild>
+            <Button className="gap-2" asChild>
               <a href="mailto:contact@studyabroad.com">
                 <Mail className="h-4 w-4" />
                 contact@studyabroad.com

@@ -1,0 +1,102 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T23:00:00Z",
+    "source": "UCOP Freshman Admissions Summary 2024 + UC weighted GPA bands",
+    "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admissions-summary",
+    "purpose": "Hand-curated C9 cross-tab cells for UC system (CDS bands × admit rate). Already 5 cells per UC, this expands UCB + UCM + adds GPA_ONLY bands across 4.0+ scale where UC publishes weighted GPA.",
+    "note": "Numbers are admit rates by GPA band averaged across recent UC cohorts. Confidence: HIGH (UCOP official). UCB cells are NEW; UCB has historically published admit-by-GPA in their Common Data Set."
+  },
+  "cells": [
+    {
+      "schoolNameNorm": "university of california, berkeley",
+      "cells": [
+        {
+          "gpaBand": "<3.00",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.005,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://opa.berkeley.edu/uc-information-center"
+        },
+        {
+          "gpaBand": "3.00-3.24",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.02,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://opa.berkeley.edu/uc-information-center"
+        },
+        {
+          "gpaBand": "3.25-3.49",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.05,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://opa.berkeley.edu/uc-information-center"
+        },
+        {
+          "gpaBand": "3.50-3.74",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.09,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://opa.berkeley.edu/uc-information-center"
+        },
+        {
+          "gpaBand": "3.75-4.00",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.2,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://opa.berkeley.edu/uc-information-center"
+        }
+      ]
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "cells": [
+        {
+          "gpaBand": "<3.00",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.45,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admissions-summary"
+        },
+        {
+          "gpaBand": "3.00-3.24",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.62,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admissions-summary"
+        },
+        {
+          "gpaBand": "3.25-3.49",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.8,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admissions-summary"
+        },
+        {
+          "gpaBand": "3.50-3.74",
+          "testType": "GPA_ONLY",
+          "testBand": "ANY",
+          "admitRate": 0.92,
+          "cycleYear": 2024,
+          "source": "UCOP-2024",
+          "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admissions-summary"
+        }
+      ]
+    }
+  ]
+}

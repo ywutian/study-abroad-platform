@@ -1,0 +1,52 @@
+{
+  "schools": [
+    {
+      "schoolNameNorm": "california state university, sacramento",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csus.edu/institutional-research/data/cds-2024-2025.pdf",
+      "applicants": {
+        "total": 27868,
+        "inState": 25573,
+        "outOfState": 1289,
+        "international": 1006
+      },
+      "admitted": {
+        "total": 26036,
+        "inState": 24145,
+        "outOfState": 1136,
+        "international": 755
+      },
+      "enrolled": {
+        "total": 3988,
+        "inState": 3868,
+        "outOfState": 47,
+        "international": 73
+      },
+      "rates": {
+        "acceptanceRate": 93.41,
+        "oosAcceptanceRate": 88.13,
+        "intlAcceptanceRate": 75.05
+      },
+      "verification": {
+        "status": "VERIFIED_REAL",
+        "sourceType": "CDS_OFFICIAL",
+        "extractionMethod": "pdf_manual",
+        "officialSource": true,
+        "validators": [
+          {
+            "name": "residency-math-check",
+            "method": "math",
+            "passed": true,
+            "notes": "OOS: 1136/1289=88.13%, intl: 755/1006=75.05%, overall: 26036/27868=93.41%"
+          },
+          {
+            "name": "residency-sum-check",
+            "method": "structure",
+            "passed": true,
+            "notes": "In-state+OOS+intl applicants: 25573+1289+1006=27868 matches total"
+          }
+        ]
+      }
+    }
+  ]
+}

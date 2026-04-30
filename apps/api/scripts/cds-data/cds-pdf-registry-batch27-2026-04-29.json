@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch27-more-unis",
+    "note": "Batch 27: Ohio State, Clemson, University of Florida, University of South Carolina, Texas A&M"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "ohio state university",
+      "schoolName": "Ohio State University",
+      "selectedUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf"
+    },
+    {
+      "schoolNameNorm": "clemson university",
+      "schoolName": "Clemson University",
+      "selectedUrl": "https://open.clemson.edu/cgi/viewcontent.cgi?article=1016&context=cds"
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "selectedUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of south carolina",
+      "schoolName": "University of South Carolina",
+      "selectedUrl": "http://oiraa.dw.sc.edu/cds/cds2024/cds_2024-2025.pdf"
+    }
+  ]
+}

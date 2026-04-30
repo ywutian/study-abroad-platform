@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T03:17:56.990Z",
+    "source": "extract-cds-residency-only.ts: focused LLM prompt on C1 residency only",
+    "success": 70,
+    "intlYielded": 2,
+    "attempted": 78
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "ohio state university",
+      "schoolName": "Ohio State University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+      "rates": {
+        "acceptanceRate": 56.55,
+        "intlAcceptanceRate": 6.94,
+        "oosAcceptanceRate": 49.93
+      },
+      "notes": "C1 residency breakdown for first-time, first-year degree-seeking applicants/admitted at Ohio State University; international corresponds to 'foreign'/'nonresident' count in the PDF."
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v4_ADA5.pdf",
+      "rates": {
+        "acceptanceRate": 24.2,
+        "intlAcceptanceRate": 32.5,
+        "oosAcceptanceRate": 23.26
+      },
+      "notes": "C1 residency breakdown found in the Fall 2024 first-time, first-year admissions table. Rates computed as admitted/applicants × 100."
+    }
+  ]
+}

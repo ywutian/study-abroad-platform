@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:08:16.557Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch26-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.99,
+        "3.50-3.74": 0.01,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University does not offer Early Decision plans (C21 ED: No). Early Action is offered but no data on applications or admits provided."
+    },
+    {
+      "schoolNameNorm": "university of georgia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.uga.edu/wp-content/uploads/UGA_CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.975,
+        "3.50-3.74": 0.0125,
+        "3.25-3.49": 0.0031,
+        "3.00-3.24": 0.0016,
+        "<3.00": 0.0108
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Georgia reports 85.48% have GPA of 4.0, 12.5% between 3.75-3.99, and smaller fractions below. Early Decision plan is offered but no numbers of applications or admits provided; Early Action plan is offered with dates but no applicant or admit numbers."
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Rutgers University-New Brunswick does not report the high school GPA distribution in CDS C9 section. The institution does not offer an Early Decision plan but offers a nonbinding Early Action plan with a closing date of 11/1 and notification date of 1/31. Exact Early Action applicant and admitted numbers are not reported."
+    },
+    {
+      "schoolNameNorm": "university of massachusetts amherst",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.umass.edu/uair/media/1059/download",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8,
+        "3.50-3.74": 0.12,
+        "3.25-3.49": 0.06,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA bands combined from detailed ranges reported; no Early Decision/Early Action data provided in the extracted document."
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No explicit GPA distribution table (C9) or Early Decision/Early Action plans data (C21) found in provided text. C9 states only that data is reported for students who submitted GPA but no percentages given. C21 states Early Decision offered = Yes, Early Action = Yes, but no applicant/admit numbers provided."
+    }
+  ],
+  "failures": []
+}

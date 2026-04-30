@@ -1,0 +1,178 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T08:30:15.210Z",
+    "tavilyKeyBudget": 15,
+    "primaryField": "intlAcceptanceRate",
+    "assumptions": "Prioritize probe_ir + direct URLs before Tavily; chunk discover (~30) then replan from registry metrics.",
+    "auditInput": "scripts/coverage-reports/coverage-2026-04-29-plan.json",
+    "heuristicIntlAuditCount": 85,
+    "heuristicIntlAfterKnownNoCds": 64
+  },
+  "planVersion": 5,
+  "supersedes": null,
+  "replanHistory": [
+    {
+      "at": "2026-04-29T08:36:00.000Z",
+      "trigger": "post_zero_quota",
+      "metricsSummary": "probe: 8 schools, 0 PDF hits (ir-domain-probe); max-candidates capped to 60 per school.",
+      "changes": "Confirmed zero-cost miss on LAC-heavy head; proceed to Tavily chunk of 5 IDs."
+    },
+    {
+      "at": "2026-04-29T08:54:00.000Z",
+      "trigger": "post_discover_chunk",
+      "metricsSummary": "discover chunk1: 5 scanned, 4 selectedUrl; tavily key 1 hit quota early, keys 2-9 used.",
+      "changes": "Fixed discover --missing-only to include heuristic rows; extract 3/4 rows (Swarthmore suspect 100% — do not live import)."
+    },
+    {
+      "at": "2026-04-29T08:55:00.000Z",
+      "trigger": "post_import",
+      "metricsSummary": "import-cds-bundle dry-run: 3 matched, would change Swarthmore+acceptance; skipped --live.",
+      "changes": "Next chunk: skip Swarthmore until manual PDF C1 verify; lower extract limit or tighten LLM window."
+    },
+    {
+      "at": "2026-04-29T08:56:30.000Z",
+      "trigger": "post_audit_delta",
+      "metricsSummary": "audit: heuristic intl 85, oos 92 unchanged vs baseline; gold:counselor 27/31 pass (4 UC-range failures pre-existing).",
+      "changes": "No DB import this session; continue chunk2+ with non-LAC IDs or manual C1 for Swarthmore."
+    }
+  ],
+  "status": "active",
+  "zeroQuotaFirst": true,
+  "orderedSteps": [
+    "merge_known_no_cds_json_into_probe_and_discover",
+    "probe_ir_cds_urls",
+    "direct_pdf_xlsx_where_plan_notes",
+    "tavily_multistage_chunks",
+    "extract_import_audit"
+  ],
+  "buckets": [
+    {
+      "name": "heuristic_intl_not_in_known_no_cds",
+      "rationale": "US schools with intlAcceptanceRate still heuristic; excludes known-no-cds list.",
+      "schoolIds": [
+        "cmnwr8iup0042z0tieqofvyfn",
+        "cmnwr8iut0044z0tie7749l79",
+        "cmnwr8is1002xz0ti23uxhu2j",
+        "cmnwr8iv00048z0tityzi3zx8",
+        "cmn1htkns000dvqf2a150rn2s",
+        "cmnwr8ivb004ez0tiduer8l0n",
+        "cmnwr8ivj004jz0tij2m7ox54",
+        "cmn1htko2000hvqf2r5gxwf84",
+        "cmnwr8ivm004lz0tio6m2uic4",
+        "cmn1htkoa000kvqf2oqm36hw5",
+        "cmn1htkoh000nvqf2uj3pjgxw",
+        "cmn1htkoz000uvqf2rnozc3fe",
+        "cmn1htkp9000yvqf29pcl812t",
+        "cmn1htkpw0016vqf20t0lflxm",
+        "cmn1htkq60019vqf2lmijsj2s",
+        "cmn1htkqj001dvqf2n8mczcpn",
+        "cmnwr8ilx0001z0tilru6b1th",
+        "cmnwr8im90007z0ti2n04hf3n",
+        "cmnwr8inf000uz0tic8a7s8is",
+        "cmnwr8itt003rz0tizqmu1u5h",
+        "cmnwr8iuk0040z0ti7p8v604n",
+        "cmnwr8iua003xz0tio2zj4a4z",
+        "cmnwr8ini000wz0ti57rv9m9o",
+        "cmnwr8ioe001ez0tii04p5pvd",
+        "cmnwr8ioi001fz0tivlt104p7",
+        "cmnwr8iol001gz0ticdgvwjkf",
+        "cmnwr8ioo001hz0tim3isqwz9",
+        "cmnwr8ip1001lz0ti51lr5gad",
+        "cmnwr8ip7001nz0ti6qy76djw",
+        "cmnwr8ipz001xz0ti9f4tlagk",
+        "cmnwr8iq40020z0tif8l8dxxu",
+        "cmnwr8iq2001zz0tiix4lbz86",
+        "cmnwr8iny0016z0tiikip2622",
+        "cmnwr8iq70021z0titshta238",
+        "cmnwr8iqf0024z0tiy29w0e1z",
+        "cmnwr8iqi0026z0tin3vtpw1p",
+        "cmnwr8iqp0029z0ti2wbplonv",
+        "cmnwr8iqt002bz0ti5efot7m8",
+        "cmnwr8iqx002dz0tigsxpge66",
+        "cmnwr8iqy002ez0tizit8vwvw",
+        "cmnwr8irj002nz0tief4railh",
+        "cmnwr8ird002kz0tifunyipf1",
+        "cmnwr8irv002uz0tic1bpn6g4",
+        "cmnwr8irx002vz0ti8qpx4iws",
+        "cmnwr8is4002zz0ti7l7rukwt",
+        "cmnwr8is60030z0timvbtgjwa",
+        "cmnwr8ish0036z0tiy3l6tt76",
+        "cmnwr8isf0035z0tixudqprxr",
+        "cmnwr8ise0034z0tiwz772kaw",
+        "cmnwr8isn0039z0tik49prelk",
+        "cmnwr8isj0037z0tihc4cw8ue",
+        "cmnwr8iss003cz0tia71q9qy1",
+        "cmnwr8isv003ez0timrhbjznd",
+        "cmnwr8isu003dz0tijwn1m0s0",
+        "cmnwr8it2003gz0tixy0e9ok2",
+        "cmnwr8ita003iz0ti7ezibmu3",
+        "cmnwr8ite003jz0tijg7j0avf",
+        "cmnwr8itk003mz0tirfyu068c",
+        "cmnwr8itm003nz0tiqazikwxi",
+        "cmnwr8ito003oz0tiyojti719",
+        "cmnwr8iwn0053z0tiokrlwt8f",
+        "cmnwr8iwp0054z0tic1mh49ba",
+        "cmnwr8iwq0055z0tivbkk0qbk",
+        "cmnwr8iwv0058z0tivh6huv4n"
+      ],
+      "tactics": ["probe_ir", "direct_ir_url", "tavily_multistage"],
+      "notes": "Ordered by usNewsRank asc; 64 schools after skip list."
+    }
+  ],
+  "discover": {
+    "missingField": "intlAcceptanceRate",
+    "missingOnly": true,
+    "maxStages": 4,
+    "maxResults": 8,
+    "limit": 30,
+    "delayMs": 250,
+    "engine": "tavily",
+    "tavilyKeyLimit": 15
+  },
+  "abortRules": {
+    "consecutiveNoSelectedUrl": 8,
+    "consecutiveC1BlankAfterDownload": 5,
+    "stopWhenAllTavilyKeysExhausted": true
+  },
+  "postZeroQuota": {
+    "replanRequired": true,
+    "promptForAi": "After probe: paste registry _meta (selectedUrls count) + failures sample; revise discover.limit / maxStages / nextChunk.schoolIds."
+  },
+  "nextChunk": {
+    "schoolIds": [
+      "cmnwr8iup0042z0tieqofvyfn",
+      "cmnwr8iut0044z0tie7749l79",
+      "cmnwr8is1002xz0ti23uxhu2j",
+      "cmnwr8iv00048z0tityzi3zx8",
+      "cmn1htkns000dvqf2a150rn2s",
+      "cmnwr8ivb004ez0tiduer8l0n",
+      "cmnwr8ivj004jz0tij2m7ox54",
+      "cmn1htko2000hvqf2r5gxwf84",
+      "cmnwr8ivm004lz0tio6m2uic4",
+      "cmn1htkoa000kvqf2oqm36hw5",
+      "cmn1htkoh000nvqf2uj3pjgxw",
+      "cmn1htkoz000uvqf2rnozc3fe",
+      "cmn1htkp9000yvqf29pcl812t",
+      "cmn1htkpw0016vqf20t0lflxm",
+      "cmn1htkq60019vqf2lmijsj2s",
+      "cmn1htkqj001dvqf2n8mczcpn",
+      "cmnwr8ilx0001z0tilru6b1th",
+      "cmnwr8im90007z0ti2n04hf3n",
+      "cmnwr8inf000uz0tic8a7s8is",
+      "cmnwr8itt003rz0tizqmu1u5h",
+      "cmnwr8iuk0040z0ti7p8v604n",
+      "cmnwr8iua003xz0tio2zj4a4z",
+      "cmnwr8ini000wz0ti57rv9m9o",
+      "cmnwr8ioe001ez0tii04p5pvd",
+      "cmnwr8ioi001fz0tivlt104p7",
+      "cmnwr8iol001gz0ticdgvwjkf",
+      "cmnwr8ioo001hz0tim3isqwz9",
+      "cmnwr8ip1001lz0ti51lr5gad",
+      "cmnwr8ip7001nz0ti6qy76djw",
+      "cmnwr8ipz001xz0ti9f4tlagk"
+    ],
+    "discoverOverrides": {
+      "limit": 30
+    }
+  }
+}

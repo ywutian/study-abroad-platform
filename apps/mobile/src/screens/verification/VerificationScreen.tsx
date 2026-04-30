@@ -24,7 +24,7 @@ export default function VerificationScreen() {
         title={t('verification.title')}
         description={t('verification.description')}
         icon="shield-checkmark-outline"
-        color="#10b981"
+        color="#6f7b58"
       />
       {isLoading ? (
         <Loading />

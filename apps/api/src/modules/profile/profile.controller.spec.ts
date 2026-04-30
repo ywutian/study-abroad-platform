@@ -59,6 +59,10 @@ describe('ProfileController', () => {
             calculateProfileGrade: jest
               .fn()
               .mockResolvedValue({ overall: 'B+', score: 85 }),
+            calculateCompleteness: jest.fn().mockResolvedValue({
+              score: 72,
+              sections: {},
+            }),
             getTestScores: jest.fn().mockResolvedValue([mockTestScore]),
             createTestScore: jest.fn().mockResolvedValue(mockTestScore),
             updateTestScore: jest.fn().mockResolvedValue(mockTestScore),
@@ -240,6 +244,9 @@ describe('ProfileController', () => {
       expect(result).toEqual({
         success: true,
         message: 'Onboarding completed',
+        completeness: 72,
+        targetSchoolCount: 0,
+        nextRoute: '/prediction?autorun=1',
       });
     });
 
@@ -269,6 +276,86 @@ describe('ProfileController', () => {
           type: 'SAT',
           score: 1520,
         },
+      );
+    });
+
+    it('should save quick onboarding nested resources and target schools', async () => {
+      const dto = {
+        profile: {
+          grade: 'JUNIOR',
+          educationSystem: 'AP',
+          currentSchool: 'Test High',
+          targetMajor: 'Computer Science',
+          gpa: 3.9,
+          gpaScale: 4,
+          needsFinancialAid: true,
+          applyingTestOptional: false,
+        },
+        activities: [
+          {
+            name: 'Debate',
+            category: 'LEADERSHIP',
+            role: 'Captain',
+            description: 'Led weekly practice',
+          },
+        ],
+        awards: [
+          {
+            name: 'AMC',
+            level: 'NATIONAL',
+            category: 'MATH',
+            year: 2025,
+          },
+        ],
+        targetSchools: [{ schoolId: 'school-1', round: 'RD' }],
+      };
+
+      await controller.completeOnboarding(mockUser as any, dto as any);
+
+      expect(profileService.upsert).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({
+          grade: 'JUNIOR',
+          educationSystem: 'AP',
+          currentSchool: 'Test High',
+          targetMajor: 'Computer Science',
+          gpa: 3.9,
+          gpaScale: 4,
+          needsFinancialAid: true,
+          applyingTestOptional: false,
+          onboardingCompleted: true,
+        }),
+      );
+      expect(profileService.createActivity).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({ name: 'Debate', order: 0 }),
+      );
+      expect(profileService.createAward).toHaveBeenCalledWith(
+        'user-1',
+        expect.objectContaining({ name: 'AMC', order: 0 }),
+      );
+      expect(schoolListService.addSchool).toHaveBeenCalledWith('user-1', {
+        schoolId: 'school-1',
+        round: 'RD',
+        tier: undefined,
+      });
+    });
+
+    it('should ignore duplicate target-school failures during onboarding', async () => {
+      jest
+        .spyOn(schoolListService, 'addSchool')
+        .mockRejectedValueOnce(new Error('School already exists in your list'));
+
+      const result = await controller.completeOnboarding(
+        mockUser as any,
+        {
+          targetSchools: [{ schoolId: 'school-1' }],
+        } as any,
+      );
+
+      expect(result.success).toBe(true);
+      expect(profileService.calculateCompleteness).toHaveBeenCalledWith(
+        'user-1',
       );
     });
   });

@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T11:52:17.226Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "claude-haiku-4-5-20251001",
+    "input": "apps/api/scripts/cds-data/cds-c9c21-batch4-target-2026-04-28.json",
+    "success": 4,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "boston university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bu.edu/asir/files/2026/04/CDS_2024_25-updated-sect-I.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.78,
+        "3.50-3.74": 0.22,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 28.25,
+      "eaAcceptanceRate": null,
+      "edApplied": 6854,
+      "edAdmitted": 1936,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 provides GPA distribution: 4.00 (41%), 3.75-3.99 (37%), 3.50-3.74 (22%). Mapped to canonical bands: 3.75-4.00 = 0.78 (41% + 37%), 3.50-3.74 = 0.22. C21 shows Early Decision with two rounds (ED1 and ED2 combined): 6854 applications, 1936 admitted. C22 indicates no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-CDS-2024-2025-fillable-pdf-version.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 18.02,
+      "eaAcceptanceRate": null,
+      "edApplied": 1221,
+      "edAdmitted": 220,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table (Section C11) shows all percentages as 0.00 with note 'High School GPA data is not available'. C21 Early Decision data found: 1221 applications, 220 admitted. Early Action section (C22) indicates 'No' - institution does not offer Early Action plan."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table (C11) shows all zeros and incomplete data - institution reports 0.00% for all GPA ranges and 0.00% of students submitted GPA. ED applicant count found (839) but ED admitted count not provided in excerpt. EA section incomplete in provided text. C21 section cuts off mid-sentence."
+    },
+    {
+      "schoolNameNorm": "grinnell college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.grinnell.edu/sites/default/files/docs/2024-10/Grinnell-College-Common-Data-Set-CDS-2023-2024.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 40.8,
+      "eaAcceptanceRate": null,
+      "edApplied": 728,
+      "edAdmitted": 297,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C21 Early Decision data found (728 applied, 297 admitted). C22 indicates Early Action plan exists but no applicant/admitted numbers provided in document. C9 GPA distribution table (C11) is present but all cells show 0.00% with note 'Totals should = 100%' showing 0.00, indicating data was not reported/completed by institution."
+    }
+  ],
+  "failures": []
+}

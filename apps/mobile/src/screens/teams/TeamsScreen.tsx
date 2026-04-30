@@ -68,6 +68,9 @@ export default function TeamsScreen() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [introLine, setIntroLine] = useState('');
   const [selectedResumeId, setSelectedResumeId] = useState('none');
+  const [showAcademics, setShowAcademics] = useState(false);
+  const [showExperiences, setShowExperiences] = useState(false);
+  const [showPersonality, setShowPersonality] = useState(false);
 
   const { data: contextsData, isLoading: contextsLoading } = useQuery({
     queryKey: ['mobile-teams', 'contexts'],
@@ -108,6 +111,7 @@ export default function TeamsScreen() {
   useEffect(() => {
     if (!currentCard) return;
     const currentContext = getRecruitmentContext(currentCard);
+    const currentMember = currentCard.members[0];
     setForm({
       teamName: currentEntry?.team.name ?? '',
       recruitmentContextId: getRecruitmentContextId(currentCard) ?? '',
@@ -118,6 +122,11 @@ export default function TeamsScreen() {
       skillTags: currentCard.skillTags.join(', '),
       targetTeamSize: String(currentCard.team.targetSize || currentContext?.maxTeamSize || ''),
     });
+    setIntroLine(currentMember?.introLine ?? '');
+    setSelectedResumeId(currentMember?.resume?.id ?? 'none');
+    setShowAcademics(currentMember?.showAcademics ?? false);
+    setShowExperiences(currentMember?.showExperiences ?? false);
+    setShowPersonality(currentMember?.showPersonality ?? false);
   }, [currentCard, currentEntry?.team.name]);
 
   const { data: deckData, isLoading: deckLoading } = useQuery({
@@ -155,7 +164,7 @@ export default function TeamsScreen() {
     onSuccess: () => {
       toast.show({
         type: 'success',
-        message: i18n.language.startsWith('zh') ? '组队卡已创建' : 'Recruitment card created',
+        message: t('teams.recruitment.toast.cardCreated'),
       });
       invalidate();
       setTab('my-team');
@@ -177,7 +186,7 @@ export default function TeamsScreen() {
     onSuccess: () => {
       toast.show({
         type: 'success',
-        message: i18n.language.startsWith('zh') ? '组队卡已更新' : 'Recruitment card updated',
+        message: t('teams.recruitment.toast.cardUpdated'),
       });
       invalidate();
     },
@@ -188,7 +197,7 @@ export default function TeamsScreen() {
     onSuccess: () => {
       toast.show({
         type: 'success',
-        message: i18n.language.startsWith('zh') ? '组队卡已发布' : 'Recruitment card published',
+        message: t('teams.recruitment.toast.cardPublished'),
       });
       invalidate();
     },
@@ -199,12 +208,15 @@ export default function TeamsScreen() {
       teamService.updateRecruitmentMemberProfile(currentCard!.id, {
         introLine,
         selectedResumeId: selectedResumeId === 'none' ? null : selectedResumeId,
+        showAcademics,
+        showExperiences,
+        showPersonality,
         consentConfirmed,
       }),
     onSuccess: () => {
       toast.show({
         type: 'success',
-        message: i18n.language.startsWith('zh') ? '展示配置已更新' : 'Display settings updated',
+        message: t('teams.recruitment.toast.displayUpdated'),
       });
       invalidate();
     },
@@ -224,12 +236,8 @@ export default function TeamsScreen() {
       toast.show({
         type: 'success',
         message: result?.matched
-          ? i18n.language.startsWith('zh')
-            ? '匹配成功，已创建群聊'
-            : 'Matched and created a group chat'
-          : i18n.language.startsWith('zh')
-            ? '已记录划卡'
-            : 'Swipe recorded',
+          ? t('teams.recruitment.toast.matched')
+          : t('teams.recruitment.toast.swipeRecorded'),
       });
       invalidate();
     },
@@ -238,13 +246,13 @@ export default function TeamsScreen() {
   const contextOptions =
     contextsData?.items.map((track) => ({
       value: getRecruitmentContextId(track) ?? track.id,
-      label: `${getCompetitionTrackLabel(track.competition, i18n.language) || 'TEAM'} / ${getRecruitmentContextName(track, i18n.language)}`,
+      label: `${getCompetitionTrackLabel(track.competition, i18n.language) || t('teams.recruitment.card.teamFallback')} / ${getRecruitmentContextName(track, i18n.language)}`,
     })) ?? [];
 
   const teamOptions = [
     {
       value: 'new-solo',
-      label: i18n.language.startsWith('zh') ? '新建 Solo Team' : 'Create Solo Team',
+      label: t('teams.recruitment.field.createSoloTeam'),
     },
     ...((myRecruitments?.items ?? []).map((item) => ({
       value: item.team.id,
@@ -253,7 +261,7 @@ export default function TeamsScreen() {
   ];
 
   const resumeOptions = [
-    { value: 'none', label: i18n.language.startsWith('zh') ? '不展示简历' : 'No resume' },
+    { value: 'none', label: t('teams.recruitment.display.noResume') },
     ...(resumes ?? []).map((resume) => ({ value: resume.id, label: resume.title })),
   ];
 
@@ -264,18 +272,16 @@ export default function TeamsScreen() {
     <PageContainer variant="community">
       <PageHeader
         title={t('teams.title')}
-        description={
-          i18n.language.startsWith('zh') ? '比赛组队匹配工作台' : 'Competition matching workspace'
-        }
+        description={t('teams.recruitment.description')}
         icon="people-outline"
         variant="community"
       />
 
       <Segment
         segments={[
-          { key: 'match', label: 'Match' },
-          { key: 'matches', label: 'Matches' },
-          { key: 'my-team', label: 'My Team' },
+          { key: 'match', label: t('teams.recruitment.tab.match') },
+          { key: 'matches', label: t('teams.recruitment.tab.matches') },
+          { key: 'my-team', label: t('teams.recruitment.tab.myTeam') },
         ]}
         value={tab}
         onChange={(value) => setTab(value as typeof tab)}
@@ -287,19 +293,9 @@ export default function TeamsScreen() {
           (deckLoading ? (
             <Loading />
           ) : !currentCard ? (
-            <EmptyState
-              icon="people-outline"
-              title={
-                i18n.language.startsWith('zh')
-                  ? '先在 My Team 创建组队卡'
-                  : 'Create your card in My Team first'
-              }
-            />
+            <EmptyState icon="people-outline" title={t('teams.recruitment.empty.noCard')} />
           ) : !deckCard ? (
-            <EmptyState
-              icon="heart-outline"
-              title={i18n.language.startsWith('zh') ? '当前没有可划的卡' : 'No cards in the deck'}
-            />
+            <EmptyState icon="heart-outline" title={t('teams.recruitment.empty.deckEmpty')} />
           ) : (
             <View style={styles.section}>
               <RecruitmentCard card={deckCard} locale={i18n.language} />
@@ -315,7 +311,9 @@ export default function TeamsScreen() {
                   }
                 >
                   <Ionicons name="close" size={18} color={colors.foreground} />
-                  <Text style={[styles.actionLabel, { color: colors.foreground }]}>Pass</Text>
+                  <Text style={[styles.actionLabel, { color: colors.foreground }]}>
+                    {t('teams.recruitment.swipeDeck.pass')}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.primaryButton, { backgroundColor: colors.primary }]}
@@ -329,7 +327,7 @@ export default function TeamsScreen() {
                 >
                   <Ionicons name="heart" size={18} color={colors.primaryForeground} />
                   <Text style={[styles.primaryLabel, { color: colors.primaryForeground }]}>
-                    Like
+                    {t('teams.recruitment.swipeDeck.like')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -342,7 +340,7 @@ export default function TeamsScreen() {
           ) : matches.length === 0 ? (
             <EmptyState
               icon="chatbubble-ellipses-outline"
-              title={i18n.language.startsWith('zh') ? '还没有匹配' : 'No matches yet'}
+              title={t('teams.recruitment.empty.noMatches')}
             />
           ) : (
             <View style={styles.section}>
@@ -361,7 +359,7 @@ export default function TeamsScreen() {
                     {getCompetitionTrackLabel(
                       getRecruitmentContext(match.otherCard)?.competition,
                       i18n.language
-                    ) || 'TEAM'}{' '}
+                    ) || t('teams.recruitment.card.teamFallback')}{' '}
                     /{' '}
                     {getRecruitmentContextName(
                       getRecruitmentContext(match.otherCard),
@@ -369,8 +367,8 @@ export default function TeamsScreen() {
                     )}
                   </Text>
                   <View style={styles.badges}>
-                    <BadgeLike label={match.matchKind} colors={colors} />
-                    <BadgeLike label={match.otherCard.status} colors={colors} />
+                    <BadgeLike label={getMatchKindLabel(t, match.matchKind)} colors={colors} />
+                    <BadgeLike label={getStatusLabel(t, match.otherCard.status)} colors={colors} />
                   </View>
                 </View>
               ))}
@@ -389,16 +387,16 @@ export default function TeamsScreen() {
                   ]}
                 >
                   <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                    {i18n.language.startsWith('zh') ? '组队卡编辑器' : 'Recruitment Editor'}
+                    {t('teams.recruitment.editor.title')}
                   </Text>
                   <Select
-                    label={i18n.language.startsWith('zh') ? '绑定队伍' : 'Backing team'}
+                    label={t('teams.recruitment.field.backingTeam')}
                     options={teamOptions}
                     value={selectedTeamId}
                     onChange={setSelectedTeamId}
                   />
                   <Select
-                    label={i18n.language.startsWith('zh') ? '比赛赛道' : 'Competition track'}
+                    label={t('teams.recruitment.field.competitionTrack')}
                     options={contextOptions}
                     value={form.recruitmentContextId}
                     onChange={(value) =>
@@ -406,38 +404,38 @@ export default function TeamsScreen() {
                     }
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '队伍名（仅 Solo）' : 'Solo team name'}
+                    label={t('teams.recruitment.field.soloTeamName')}
                     value={form.teamName}
                     onChangeText={(value) => setForm((prev) => ({ ...prev, teamName: value }))}
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '摘要' : 'Headline'}
+                    label={t('teams.recruitment.field.headline')}
                     value={form.headline}
                     onChangeText={(value) => setForm((prev) => ({ ...prev, headline: value }))}
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '详细说明' : 'Detail note'}
+                    label={t('teams.recruitment.field.detailNote')}
                     value={form.detailNote}
                     onChangeText={(value) => setForm((prev) => ({ ...prev, detailNote: value }))}
                     multiline
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '我能提供' : 'Offer roles'}
+                    label={t('teams.recruitment.field.offerRoles')}
                     value={form.offerRoles}
                     onChangeText={(value) => setForm((prev) => ({ ...prev, offerRoles: value }))}
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '我需要' : 'Need roles'}
+                    label={t('teams.recruitment.field.needRoles')}
                     value={form.needRoles}
                     onChangeText={(value) => setForm((prev) => ({ ...prev, needRoles: value }))}
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '技能标签' : 'Skill tags'}
+                    label={t('teams.recruitment.field.skillTags')}
                     value={form.skillTags}
                     onChangeText={(value) => setForm((prev) => ({ ...prev, skillTags: value }))}
                   />
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '目标人数' : 'Target size'}
+                    label={t('teams.recruitment.field.targetSize')}
                     value={form.targetTeamSize}
                     onChangeText={(value) =>
                       setForm((prev) => ({ ...prev, targetTeamSize: value }))
@@ -453,12 +451,8 @@ export default function TeamsScreen() {
                     >
                       <Text style={[styles.primaryLabel, { color: colors.primaryForeground }]}>
                         {currentCard
-                          ? i18n.language.startsWith('zh')
-                            ? '保存'
-                            : 'Save'
-                          : i18n.language.startsWith('zh')
-                            ? '创建'
-                            : 'Create'}
+                          ? t('teams.recruitment.action.saveCard')
+                          : t('teams.recruitment.action.createCard')}
                       </Text>
                     </TouchableOpacity>
                     {currentCard && (
@@ -467,7 +461,7 @@ export default function TeamsScreen() {
                         onPress={() => publishMutation.mutate(currentCard.id)}
                       >
                         <Text style={[styles.actionLabel, { color: colors.foreground }]}>
-                          {i18n.language.startsWith('zh') ? '发布' : 'Publish'}
+                          {t('teams.recruitment.action.publish')}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -481,19 +475,39 @@ export default function TeamsScreen() {
                   ]}
                 >
                   <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-                    {i18n.language.startsWith('zh') ? '我的展示配置' : 'My display settings'}
+                    {t('teams.recruitment.display.title')}
                   </Text>
                   <FieldInput
-                    label={i18n.language.startsWith('zh') ? '一句话介绍' : 'Intro line'}
+                    label={t('teams.recruitment.display.introLine')}
                     value={introLine}
                     onChangeText={setIntroLine}
                   />
                   <Select
-                    label={i18n.language.startsWith('zh') ? '展示简历' : 'Selected resume'}
+                    label={t('teams.recruitment.display.selectedResume')}
                     options={resumeOptions}
                     value={selectedResumeId}
                     onChange={setSelectedResumeId}
                   />
+                  <View style={styles.toggleRow}>
+                    <ToggleChip
+                      label={t('teams.recruitment.display.showAcademics')}
+                      active={showAcademics}
+                      onPress={() => setShowAcademics((value) => !value)}
+                    />
+                    <ToggleChip
+                      label={t('teams.recruitment.display.showExperiences')}
+                      active={showExperiences}
+                      onPress={() => setShowExperiences((value) => !value)}
+                    />
+                    <ToggleChip
+                      label={t('teams.recruitment.display.showPersonality')}
+                      active={showPersonality}
+                      onPress={() => setShowPersonality((value) => !value)}
+                    />
+                  </View>
+                  <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
+                    {t('teams.recruitment.display.completeProfileHint')}
+                  </Text>
                   <View style={styles.row}>
                     <TouchableOpacity
                       style={[styles.actionButton, { borderColor: colors.border }]}
@@ -501,7 +515,7 @@ export default function TeamsScreen() {
                       onPress={() => profileMutation.mutate(false)}
                     >
                       <Text style={[styles.actionLabel, { color: colors.foreground }]}>
-                        {i18n.language.startsWith('zh') ? '仅保存' : 'Save'}
+                        {t('teams.recruitment.display.save')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -510,7 +524,7 @@ export default function TeamsScreen() {
                       onPress={() => profileMutation.mutate(true)}
                     >
                       <Text style={[styles.primaryLabel, { color: colors.primaryForeground }]}>
-                        {i18n.language.startsWith('zh') ? '确认同意展示' : 'Confirm consent'}
+                        {t('teams.recruitment.display.confirmConsent')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -526,31 +540,234 @@ export default function TeamsScreen() {
   );
 }
 
+type TranslationFn = (key: string, options?: Record<string, unknown>) => string;
+type RecruitmentMember = TeamRecruitmentCardFrontDto['members'][number];
+type RecruitmentHighlight = NonNullable<RecruitmentMember['highlights']>['academics'][number];
+
 function RecruitmentCard({ card, locale }: { card: TeamRecruitmentCardFrontDto; locale: string }) {
+  const { t } = useTranslation();
   const colors = useColors();
   const context = getRecruitmentContext(card);
+  const primaryMember = card.members[0];
+  const isSingleMember = card.members.length <= 1;
+  const visibleMembers = card.members.slice(0, isSingleMember ? 1 : 2);
+  const title = isSingleMember ? primaryMember?.displayName || card.team.name : card.team.name;
+  const meta = [primaryMember?.grade, primaryMember?.school, card.city].filter(Boolean);
+  const highlights = mergeMemberHighlights(visibleMembers);
+  const hasHighlights =
+    highlights.academics.length > 0 ||
+    highlights.experiences.length > 0 ||
+    highlights.personality.length > 0;
 
   return (
     <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <Text style={[styles.cardKicker, { color: colors.foregroundMuted }]}>
-        {getCompetitionTrackLabel(context?.competition, locale) || 'TEAM'} /{' '}
-        {getRecruitmentContextName(context, locale)}
+        {getCompetitionTrackLabel(context?.competition, locale) ||
+          t('teams.recruitment.card.teamFallback')}{' '}
+        / {getRecruitmentContextName(context, locale)}
       </Text>
-      <Text style={[styles.cardTitle, { color: colors.foreground }]}>{card.team.name}</Text>
+      <Text style={[styles.cardTitle, { color: colors.foreground }]}>{title}</Text>
+      {meta.length > 0 && (
+        <Text style={[styles.cardMeta, { color: colors.foregroundMuted }]}>{meta.join(' · ')}</Text>
+      )}
       <Text style={[styles.cardMeta, { color: colors.foregroundMuted }]}>{card.headline}</Text>
       <View style={styles.badges}>
-        <BadgeLike label={`${card.team.currentSize}/${card.team.targetSize}`} colors={colors} />
-        <BadgeLike label={card.status} colors={colors} />
+        <BadgeLike
+          label={t('teams.recruitment.card.memberCount', {
+            current: card.team.currentSize,
+            max: card.team.targetSize,
+          })}
+          colors={colors}
+        />
+        <BadgeLike label={getStatusLabel(t, card.status)} colors={colors} />
       </View>
-      {!!card.offerRoles.length && (
-        <Text style={[styles.listText, { color: colors.foreground }]}>
-          Offer: {card.offerRoles.join(', ')}
-        </Text>
+
+      {hasHighlights ? (
+        <View style={styles.highlights}>
+          <HighlightChipGroup
+            title={t('teams.recruitment.card.academics')}
+            chips={highlights.academics}
+          />
+          <ExperienceList
+            title={t('teams.recruitment.card.experience')}
+            items={highlights.experiences}
+          />
+          <HighlightChipGroup
+            title={t('teams.recruitment.card.personality')}
+            chips={highlights.personality}
+          />
+        </View>
+      ) : (
+        <View style={[styles.emptyHighlights, { borderColor: colors.border }]}>
+          <Text style={[styles.helperText, { color: colors.foregroundMuted }]}>
+            {t('teams.recruitment.card.noHighlights')}
+          </Text>
+        </View>
       )}
-      {!!card.needRoles.length && (
-        <Text style={[styles.listText, { color: colors.foreground }]}>
-          Need: {card.needRoles.join(', ')}
+
+      <RoleChipGroup label={t('teams.recruitment.card.offer')} items={card.offerRoles} />
+      <RoleChipGroup label={t('teams.recruitment.card.need')} items={card.needRoles} />
+      <RoleChipGroup label={t('teams.recruitment.card.skills')} items={card.skillTags} />
+
+      {!isSingleMember && visibleMembers.length > 0 && (
+        <View style={styles.memberRow}>
+          {visibleMembers.map((member) => (
+            <BadgeLike
+              key={member.userId}
+              label={member.displayName || member.role}
+              colors={colors}
+            />
+          ))}
+        </View>
+      )}
+
+      <CoordinationDetails card={card} />
+    </View>
+  );
+}
+
+function mergeMemberHighlights(members: RecruitmentMember[]) {
+  return {
+    academics: members.flatMap((member) => member.highlights?.academics ?? []).slice(0, 8),
+    experiences: members.flatMap((member) => member.highlights?.experiences ?? []).slice(0, 3),
+    personality: members.flatMap((member) => member.highlights?.personality ?? []).slice(0, 6),
+  };
+}
+
+function getStatusLabel(t: TranslationFn, status: string) {
+  return t(`teams.recruitment.status.${status}`);
+}
+
+function getMatchKindLabel(t: TranslationFn, kind: string) {
+  return kind === 'NETWORKING'
+    ? t('teams.recruitment.matchKind.networking')
+    : t('teams.recruitment.matchKind.teamUp');
+}
+
+function getToneStyle(tone: RecruitmentHighlight['tone']) {
+  switch (tone) {
+    case 'success':
+      return { backgroundColor: '#ece8d2', color: '#555d3c' };
+    case 'warning':
+      return { backgroundColor: '#fef3c7', color: '#92400e' };
+    case 'danger':
+      return { backgroundColor: '#fee2e2', color: '#991b1b' };
+    default:
+      return { backgroundColor: '#e0f2fe', color: '#075985' };
+  }
+}
+
+function HighlightChipGroup({ title, chips }: { title: string; chips: RecruitmentHighlight[] }) {
+  if (chips.length === 0) return null;
+
+  return (
+    <View style={styles.highlightBlock}>
+      <Text style={styles.highlightTitle}>{title}</Text>
+      <View style={styles.chipRow}>
+        {chips.map((chip, index) => {
+          const toneStyle = getToneStyle(chip.tone);
+          return (
+            <View
+              key={`${chip.source}-${chip.sourceId ?? chip.label}-${index}`}
+              style={[styles.highlightChip, { backgroundColor: toneStyle.backgroundColor }]}
+            >
+              <Text style={[styles.highlightChipText, { color: toneStyle.color }]}>
+                {chip.label}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function ExperienceList({ title, items }: { title: string; items: RecruitmentHighlight[] }) {
+  const colors = useColors();
+  if (items.length === 0) return null;
+
+  return (
+    <View style={styles.highlightBlock}>
+      <Text style={styles.highlightTitle}>{title}</Text>
+      {items.map((item, index) => (
+        <Text
+          key={`${item.source}-${item.sourceId ?? item.label}-${index}`}
+          style={[styles.experienceText, { color: colors.foreground }]}
+        >
+          {item.label}
         </Text>
+      ))}
+    </View>
+  );
+}
+
+function RoleChipGroup({ label, items }: { label: string; items: string[] }) {
+  const colors = useColors();
+  if (items.length === 0) return null;
+
+  return (
+    <View style={styles.roleGroup}>
+      <Text style={[styles.roleLabel, { color: colors.foregroundMuted }]}>{label}</Text>
+      <View style={styles.chipRow}>
+        {items.map((item) => (
+          <BadgeLike key={item} label={item} colors={colors} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function CoordinationDetails({ card }: { card: TeamRecruitmentCardFrontDto }) {
+  const { t } = useTranslation();
+  const colors = useColors();
+  const [expanded, setExpanded] = useState(false);
+  const hasDetails =
+    Boolean(card.availabilityBand || card.collaborationMode || card.timezone || card.detailNote) ||
+    card.languages.length > 0;
+
+  if (!hasDetails) return null;
+
+  return (
+    <View style={[styles.coordination, { borderColor: colors.border }]}>
+      <TouchableOpacity
+        style={styles.coordinationHeader}
+        onPress={() => setExpanded((value) => !value)}
+      >
+        <Text style={[styles.coordinationTitle, { color: colors.foregroundMuted }]}>
+          {t('teams.recruitment.card.coordination')}
+        </Text>
+        <Ionicons
+          name={expanded ? 'chevron-up' : 'chevron-down'}
+          size={16}
+          color={colors.foregroundMuted}
+        />
+      </TouchableOpacity>
+      {expanded && (
+        <View style={styles.coordinationBody}>
+          <View style={styles.chipRow}>
+            {card.availabilityBand && (
+              <BadgeLike
+                label={t(`teams.recruitment.availability.${card.availabilityBand}`)}
+                colors={colors}
+              />
+            )}
+            {card.collaborationMode && (
+              <BadgeLike
+                label={t(`teams.recruitment.option.${card.collaborationMode.toLowerCase()}`)}
+                colors={colors}
+              />
+            )}
+            {card.timezone && <BadgeLike label={card.timezone} colors={colors} />}
+            {card.languages.map((language) => (
+              <BadgeLike key={language} label={language} colors={colors} />
+            ))}
+          </View>
+          {card.detailNote ? (
+            <Text style={[styles.listText, { color: colors.foregroundMuted }]}>
+              {card.detailNote}
+            </Text>
+          ) : null}
+        </View>
       )}
     </View>
   );
@@ -602,6 +819,45 @@ function BadgeLike({ label, colors }: { label: string; colors: ReturnType<typeof
   );
 }
 
+function ToggleChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  const colors = useColors();
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.toggleChip,
+        {
+          borderColor: active ? colors.primary : colors.border,
+          backgroundColor: active ? colors.primary : colors.muted,
+        },
+      ]}
+    >
+      <Ionicons
+        name={active ? 'checkmark-circle' : 'ellipse-outline'}
+        size={14}
+        color={active ? colors.primaryForeground : colors.foregroundMuted}
+      />
+      <Text
+        style={[
+          styles.toggleChipText,
+          { color: active ? colors.primaryForeground : colors.foreground },
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 function splitList(value: string) {
   return value
     .split(',')
@@ -640,6 +896,75 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     marginBottom: spacing.sm,
   },
+  highlights: {
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  highlightBlock: {
+    gap: spacing.xs,
+  },
+  highlightTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+    color: '#6f665b',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  highlightChip: {
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  highlightChipText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+  },
+  experienceText: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
+  },
+  emptyHighlights: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  roleGroup: {
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  roleLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+  },
+  memberRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  coordination: {
+    borderTopWidth: 1,
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  coordinationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  coordinationTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+  },
+  coordinationBody: {
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
   badges: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -665,6 +990,11 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
     marginBottom: spacing.xs,
   },
+  helperText: {
+    fontSize: fontSize.xs,
+    lineHeight: 18,
+    marginBottom: spacing.md,
+  },
   input: {
     borderWidth: 1,
     borderRadius: borderRadius.md,
@@ -675,6 +1005,25 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: spacing.md,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  toggleChip: {
+    borderWidth: 1,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  toggleChipText: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
   },
   actionButton: {
     flex: 1,

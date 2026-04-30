@@ -108,20 +108,20 @@ export class IpedsMonitorService {
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #3b82f6; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #1d1813; }
             .content { padding: 30px 0; }
-            .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
-            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px; }
-            .data-list { background: #f8fafc; padding: 15px 20px; border-radius: 8px; margin: 20px 0; }
+            .button { display: inline-block; padding: 12px 24px; background: #1d1813; color: #fff7ea; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #d8c8b2; color: #6f665b; font-size: 12px; }
+            .data-list { background: #fff4e2; padding: 15px 20px; border-radius: 8px; margin: 20px 0; }
             .data-item { margin: 8px 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="color: #3b82f6; margin: 0;">📊 IPEDS 数据更新</h1>
+              <h1 style="color: #1d1813; margin: 0;">📊 IPEDS 数据更新</h1>
             </div>
             <div class="content">
               <p>检测到 IPEDS (Integrated Postsecondary Education Data System) 可能有新数据发布。</p>
@@ -145,7 +145,7 @@ export class IpedsMonitorService {
               </p>
             </div>
             <div class="footer">
-              <p>此邮件由系统自动发送 - 留学申请平台</p>
+              <p>此邮件由系统自动发送 - Lumni</p>
               <p>检测时间：${new Date().toLocaleString('zh-CN')}</p>
             </div>
           </div>

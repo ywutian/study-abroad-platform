@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch31-more-unis",
+    "note": "Batch 31: Texas Tech, Santa Clara, UCF (corrected URL), UNL (2023-24)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf"
+    },
+    {
+      "schoolNameNorm": "santa clara university",
+      "schoolName": "Santa Clara University",
+      "selectedUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-08082025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of central florida",
+      "schoolName": "University of Central Florida",
+      "selectedUrl": "https://analytics.ucf.edu/wp-content/uploads/2025/08/Common-Data-Set-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nebraska-lincoln",
+      "schoolName": "University of Nebraska-Lincoln",
+      "selectedUrl": "https://iea.unl.edu/executive-vice-chancellor/institutional-research-and-planning/sites/unl.edu.executive-vice-chancellor.institutional-research-and-planning/files/media/file/Common-Data-Set-2023-2024.pdf"
+    }
+  ]
+}

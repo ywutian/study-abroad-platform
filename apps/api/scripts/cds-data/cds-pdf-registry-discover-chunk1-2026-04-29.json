@@ -1,0 +1,186 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T08:52:23.968Z",
+    "source": "tavily",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 5,
+    "selectedUrls": 4
+  },
+  "schools": [
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "schoolNameNorm": "williams college",
+      "usNewsRank": 1,
+      "missingField": "intlAcceptanceRate",
+      "query": "\"Williams College\" \"common data set\" \"2024-25\" inurl:cds OR inurl:institutional-research filetype:pdf",
+      "stageHit": 2,
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Williams College Common Data Set 2024-2025",
+          "url": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+          "snippet": "$76,282,660 H109 Scholarships/grants from external sources (e.g. Kiwanis, National Merit) not awarded by the college $1,459,446 H110 Total Scholarships/Grants $80,546,441 Self-Help H111 Student loans from all sources (excluding parent loans",
+          "score": 151
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "Common Data Set 2024-2025 Welcome to the 2024-2025 Common Data Set collection!",
+          "score": 153
+        },
+        {
+          "url": "https://www.washcoll.edu/people_departments/offices/institutional-research/fact_books/fact-book-24-2025_use.pdf",
+          "title": "[PDF] FACT BOOK - 2 0 2 4 - Washington College",
+          "score": 117
+        },
+        {
+          "url": "https://www.cves.org/wp-content/uploads/2025/09/CVES-SPED-Guide-for-CDs-2025-26.pdf",
+          "title": "[PDF] A Guide for Our Component Districts",
+          "score": 88
+        },
+        {
+          "url": "https://www.ucop.edu/institutional-research-academic-planning/content-analysis/employees/2024/annual-report-on-executive-compensation-2024.pdf",
+          "title": "[PDF] Annual Report on Executive Compensation for Calendar Year 2024",
+          "score": 81
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iut0044z0tie7749l79",
+      "schoolName": "Swarthmore College",
+      "schoolNameNorm": "swarthmore college",
+      "usNewsRank": 3,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:swarthmore.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "candidates": [
+        {
+          "title": "Swarthmore College Common Data Set 2024-2025",
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+          "snippet": "Stafford Loan 305 B412 Total 414 Per CDS instructions, Fall 2018 cohort information is available and provided below; Fall 2017 cohort information can be found in the 2023-24 CDS. [...] 'x' Distribution of high school units required and/or r",
+          "score": 163
+        },
+        {
+          "title": "[PDF] Swarthmore College Common Data Set 2023 - 2024",
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore%20CDS%202023-2024.pdf",
+          "snippet": "409 Post-bachelor’s certificates: C or t Master’s degrees: C or t Post-master’s certificates: C or t Doctoral degrees – research/scholarship: C or t Doctoral degrees – professional practice: C or t Doctoral degrees – other: C or t Swarthmor",
+          "score": 143
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/honors-program/HONORS%20HANDBOOK%202024-2025.pdf",
+          "title": "[PDF] Swarthmore College Honors Handbook 2024-2025",
+          "score": 109
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/sustainability/7.2025_PSRF-Annual-Report_v5.pdf",
+          "title": "[PDF] PSRF Annual Report (July 2025) - Swarthmore College",
+          "score": 108
+        },
+        {
+          "url": "https://www.swarthmore.edu/sites/default/files/assets/documents/provosts-office/Handbook-for-Instructional-Staff-2024.pdf",
+          "title": "[PDF] Handbook-for-Instructional-Staff-2024.pdf - Swarthmore College",
+          "score": 88
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8is1002xz0ti23uxhu2j",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "usNewsRank": 5,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:calpoly.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iv00048z0tityzi3zx8",
+      "schoolName": "Middlebury College",
+      "schoolNameNorm": "middlebury college",
+      "usNewsRank": 7,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:middlebury.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Middlebury College",
+          "url": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+          "snippet": "24 Library science 25 Biological/life sciences 126 13.9% 26 Mathematics and statistics 29 3.2% 27 Military science and military technologies 28 & 29 Interdisciplinary studies 13 1.4% 30 Parks and recreation 31 Philosophy and religious studi",
+          "score": 152
+        },
+        {
+          "title": "[PDF] Common Data Set 2024-2025 - Middlebury College",
+          "url": "https://www.middlebury.edu/sites/default/files/2024-10/CDS%20Form%20B%20Prelim%202024-2025.pdf?fv=9gpdMXig",
+          "snippet": "Common Data Set 2024-2025 B1 Undergraduate Students: Full-Time Men Women Another Gender Unknown Degree-seeking, first-time first-year students 272 326 0 0 Other first-year, degree-seeking All other degree-seeking 990 1,129 2 0 Fall Transfer",
+          "score": 148
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.middlebury.edu/sites/default/files/2021-05/EC%20and%20SC%20Report%20to%20LP0519.pdf",
+          "title": "[PDF] Environmental Council 2018-19 Report to President Laurie Patton ...",
+          "score": 89
+        },
+        {
+          "url": "http://go.middlebury.edu/anthronewsletter25",
+          "title": "[PDF] Field Notes 2025 draft - Middlebury College",
+          "score": 53
+        },
+        {
+          "url": "https://www.middlebury.edu/media/37876",
+          "title": "[PDF] Kathryn Wasserman Davis Collaborative in Conflict Transformation ...",
+          "score": 46
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkns000dvqf2a150rn2s",
+      "schoolName": "University of Chicago",
+      "schoolNameNorm": "university of chicago",
+      "usNewsRank": 12,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:uchicago.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "candidates": [
+        {
+          "title": "Common Data Set 2023-2024 - CDN",
+          "url": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf",
+          "snippet": "Percent of first-time, first-year students with scores in each range: CDS-C Page 10 Common Data Set 2023-2024 62.65% 26.95% 6.62% 3.41% 0.29% 0.10% 0 0 0 100.00% 0.00% 0.00% C12 4.32 63.22% C13-C20: Admission Policies C13 Application Fee Ye",
+          "score": 148
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commons.cri.uchicago.edu/wp-content/uploads/2025/12/D4CG-Annual-Report-2024-25.pdf",
+          "title": "[PDF] Discovery - Data for the Common Good",
+          "score": 110
+        },
+        {
+          "url": "https://humanities.uchicago.edu/sites/default/files/CMS%20Handbook%202024-25.pdf",
+          "title": "[PDF] Graduate Student Handbook Academic Year 2024-2025",
+          "score": 110
+        },
+        {
+          "url": "https://crownschool.uchicago.edu/sites/default/files/2024-09/Doctoral%20CV%202024-25%20Final.pdf",
+          "title": "[PDF] 2O24–2O25 - Crown Family School - The University of Chicago",
+          "score": 110
+        },
+        {
+          "url": "https://commons.cri.uchicago.edu/wp-content/uploads/2024/12/Annual-Report-2023-24.pdf",
+          "title": "[PDF] Collective Impact - Data for the Common Good",
+          "score": 98
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

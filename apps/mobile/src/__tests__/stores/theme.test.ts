@@ -60,6 +60,7 @@ jest.unmock('@/stores/theme');
 // ---------------------------------------------------------------------------
 
 import { Appearance } from 'react-native';
+import { DEFAULT_COLOR_PALETTE } from '@study-abroad/shared';
 import { useThemeStore } from '@/stores/theme';
 import { storage } from '@/lib/storage/secure-store';
 
@@ -68,6 +69,7 @@ import { storage } from '@/lib/storage/secure-store';
 // ---------------------------------------------------------------------------
 
 const THEME_KEY = 'app_theme';
+const COLOR_PALETTE_KEY = 'app_color_palette';
 
 /**
  * Grab the Appearance.addChangeListener callback that the theme store
@@ -80,6 +82,7 @@ function resetStore() {
   useThemeStore.setState({
     mode: 'system',
     colorScheme: 'light',
+    colorPalette: DEFAULT_COLOR_PALETTE,
   });
 }
 
@@ -115,6 +118,7 @@ describe('Theme Store', () => {
 
     expect(state.mode).toBe('system');
     expect(state.colorScheme).toBe('light');
+    expect(state.colorPalette).toBe(DEFAULT_COLOR_PALETTE);
   });
 
   // -----------------------------------------------------------------------
@@ -163,12 +167,24 @@ describe('Theme Store', () => {
     expect(storage.set).toHaveBeenCalledWith(THEME_KEY, 'light');
   });
 
+  it('setColorPalette persists to storage and updates state', async () => {
+    await act(async () => {
+      await useThemeStore.getState().setColorPalette('studio-black-blue');
+    });
+
+    const state = useThemeStore.getState();
+    expect(state.colorPalette).toBe('studio-black-blue');
+    expect(storage.set).toHaveBeenCalledWith(COLOR_PALETTE_KEY, 'studio-black-blue');
+  });
+
   // -----------------------------------------------------------------------
   // loadTheme
   // -----------------------------------------------------------------------
 
   it('loadTheme restores saved mode from storage', async () => {
-    (storage.get as jest.Mock).mockResolvedValue('dark');
+    (storage.get as jest.Mock).mockImplementation((key: string) =>
+      Promise.resolve(key === THEME_KEY ? 'dark' : null)
+    );
 
     await act(async () => {
       await useThemeStore.getState().loadTheme();
@@ -177,6 +193,18 @@ describe('Theme Store', () => {
     const state = useThemeStore.getState();
     expect(state.mode).toBe('dark');
     expect(state.colorScheme).toBe('dark');
+  });
+
+  it('loadTheme restores saved color palette from storage', async () => {
+    (storage.get as jest.Mock).mockImplementation((key: string) =>
+      Promise.resolve(key === COLOR_PALETTE_KEY ? 'framer-violet' : null)
+    );
+
+    await act(async () => {
+      await useThemeStore.getState().loadTheme();
+    });
+
+    expect(useThemeStore.getState().colorPalette).toBe('framer-violet');
   });
 
   it('loadTheme falls back to "system" when storage is empty', async () => {

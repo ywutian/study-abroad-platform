@@ -1,0 +1,35 @@
+# Intermediate / scratch CDS extraction files — keep canonical bundles only.
+# Pattern: target lists, retry attempts, claude-direct iterations
+*-target-*.json
+*-retry-*.json
+*-from-ai-*.json
+*-claude-direct-*.json
+*-claude-test-*.json
+*-recovered-*.json
+*-refresh-*.json
+*-refresh-clean-*.json
+*-multi-cycle-*.json
+*-hypsm-*.json
+*-phase5-*.json
+*-corrections-*.json
+*-extracted-2026-04-*-llm-extracted.json
+hardcoded-html-cds-urls.json
+top100-missing-all-*.json
+cds-pdf-registry-v*.json
+cds-pdf-registry-recovered-*.json
+cds-pdf-registry-merged-*.json
+cds-pdf-registry-2023-24-*.json
+cds-pdf-registry-2025-26-*.json
+cds-discovered-by-ai-*.json
+cds-pdf-from-*.json
+cds-html-*.json
+cds-pdf-ai-retry-*.json
+cds-pdf-multi-cycle-*.json
+cds-pdf-refresh-*.json
+cds-pdf-retry-*.json
+cds-pdf-hypsm-manual-*.json
+cds-c1-claude-test-*.json
+cds-pdf-registry-handcurated-valid.json
+cds-merged-bundle-*.json
+cds-discover-fullsweep-*.json
+cds-fullsweep-clean-*.json

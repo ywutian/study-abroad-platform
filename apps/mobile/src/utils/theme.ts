@@ -2,6 +2,7 @@
  * Mobile theme adapter backed by the shared design token source.
  */
 import {
+  DEFAULT_COLOR_PALETTE,
   admissionStatus,
   animation as sharedAnimation,
   borderRadius as sharedBorderRadius,
@@ -11,45 +12,61 @@ import {
   elevation as sharedElevation,
   fontSize as sharedFontSize,
   fontWeight as sharedFontWeight,
+  getThemeColors,
+  getThemeAppearance,
+  getThemeSemanticSurfaces,
   lineHeight as sharedLineHeight,
   opacity as sharedOpacity,
+  parseColorPalette,
   semanticSurfaces,
   shadows as sharedShadows,
   spacing as sharedSpacing,
+  type ColorPalette,
 } from '@study-abroad/shared';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useThemeStore } from '@/stores/theme';
 
+type SharedColorRow = { [K in keyof typeof sharedColors.light]: string };
+type SharedSurfaceRow = { [K in keyof typeof semanticSurfaces.light]: string };
+
+function withMobileExtras(base: SharedColorRow, surfaces: SharedSurfaceRow, mode: ColorScheme) {
+  const dark = mode === 'dark';
+  return {
+    ...base,
+    successForeground: dark ? '#191510' : '#fff7ea',
+    warningForeground: dark ? '#191510' : '#1d1813',
+    errorForeground: dark ? '#191510' : '#fff7ea',
+    infoForeground: dark ? '#191510' : '#fff7ea',
+    shadow: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.08)',
+    onGradient: '#fff7ea',
+    onGradientMuted: 'rgba(255, 255, 255, 0.8)',
+    onGradientOverlay: 'rgba(255, 255, 255, 0.2)',
+    surfaceMuted: surfaces.surfaceMuted,
+    surfaceSubtle: surfaces.surfaceSubtle,
+    infoSurface: surfaces.infoSurface,
+  };
+}
+
 export const colors = {
-  light: {
-    ...sharedColors.light,
-    successForeground: '#ffffff',
-    warningForeground: '#111827',
-    errorForeground: '#ffffff',
-    infoForeground: '#ffffff',
-    shadow: 'rgba(0, 0, 0, 0.08)',
-    onGradient: '#ffffff',
-    onGradientMuted: 'rgba(255, 255, 255, 0.8)',
-    onGradientOverlay: 'rgba(255, 255, 255, 0.2)',
-    surfaceMuted: semanticSurfaces.light.surfaceMuted,
-    surfaceSubtle: semanticSurfaces.light.surfaceSubtle,
-    infoSurface: semanticSurfaces.light.infoSurface,
-  },
-  dark: {
-    ...sharedColors.dark,
-    successForeground: '#101726',
-    warningForeground: '#101726',
-    errorForeground: '#101726',
-    infoForeground: '#101726',
-    shadow: 'rgba(0, 0, 0, 0.35)',
-    onGradient: '#ffffff',
-    onGradientMuted: 'rgba(255, 255, 255, 0.8)',
-    onGradientOverlay: 'rgba(255, 255, 255, 0.2)',
-    surfaceMuted: semanticSurfaces.dark.surfaceMuted,
-    surfaceSubtle: semanticSurfaces.dark.surfaceSubtle,
-    infoSurface: semanticSurfaces.dark.infoSurface,
-  },
+  light: withMobileExtras(sharedColors.light, semanticSurfaces.light, 'light'),
+  dark: withMobileExtras(sharedColors.dark, semanticSurfaces.dark, 'dark'),
 } as const;
+
+export function getPaletteColors(
+  palette: ColorPalette = DEFAULT_COLOR_PALETTE,
+  mode: ColorScheme = 'light'
+) {
+  const nextPalette = parseColorPalette(palette);
+  if (nextPalette === DEFAULT_COLOR_PALETTE) {
+    return mode === 'dark' ? colors.dark : colors.light;
+  }
+
+  return withMobileExtras(
+    getThemeColors(nextPalette, mode),
+    getThemeSemanticSurfaces(nextPalette, mode),
+    mode
+  );
+}
 
 export const statusColors = admissionStatus;
 export const spacing = sharedSpacing;
@@ -75,21 +92,25 @@ export function withOpacity(color: string, alpha: number): string {
 }
 
 export function useColors() {
-  try {
-    const colorScheme = useThemeStore((state) => state.colorScheme);
-    return colorScheme === 'dark' ? colors.dark : colors.light;
-  } catch {
-    return colors.light;
-  }
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorPalette = useThemeStore((state) => state.colorPalette);
+  return getPaletteColors(colorPalette, colorScheme === 'dark' ? 'dark' : 'light');
 }
 
-export function getColors(isDark?: boolean) {
-  return isDark ? colors.dark : colors.light;
+export function useThemeAppearance() {
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorPalette = useThemeStore((state) => state.colorPalette);
+  const mode = colorScheme === 'dark' ? 'dark' : 'light';
+  return getThemeAppearance(colorPalette, mode);
+}
+
+export function getColors(isDark?: boolean, palette: ColorPalette = DEFAULT_COLOR_PALETTE) {
+  return getPaletteColors(palette, isDark ? 'dark' : 'light');
 }
 
 export function createStyles<T extends Record<string, any>>(stylesCreator: (theme: Colors) => T) {
   return (isDark: boolean): T => {
-    const theme: Colors = isDark ? colors.dark : colors.light;
+    const theme: Colors = getColors(isDark);
     return stylesCreator(theme);
   };
 }

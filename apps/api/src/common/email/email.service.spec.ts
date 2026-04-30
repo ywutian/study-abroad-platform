@@ -130,7 +130,7 @@ describe('EmailService', () => {
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: ['user@example.com'],
-          subject: '验证您的邮箱 - 留学申请平台',
+          subject: '验证您的邮箱 - Lumni',
         }),
       );
 
@@ -152,7 +152,7 @@ describe('EmailService', () => {
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: ['user@example.com'],
-          subject: '欢迎加入留学申请平台！',
+          subject: '欢迎加入 Lumni！',
         }),
       );
     });
@@ -176,7 +176,7 @@ describe('EmailService', () => {
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: ['user@example.com'],
-          subject: '重置密码 - 留学申请平台',
+          subject: '重置密码 - Lumni',
         }),
       );
 

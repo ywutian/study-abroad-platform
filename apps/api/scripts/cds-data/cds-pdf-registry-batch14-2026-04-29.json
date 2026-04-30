@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch14-more-unis",
+    "note": "Batch 14: Howard, SDSU, UNH"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "howard university",
+      "schoolName": "Howard University",
+      "selectedUrl": "https://ira.howard.edu/sites/ira.howard.edu/files/2025-04/Howard%20University%20-%20CDS%20PDF%20Format.pdf"
+    },
+    {
+      "schoolNameNorm": "san diego state university",
+      "schoolName": "San Diego State University",
+      "selectedUrl": "https://asir.sdsu.edu/Documents/CommonDataSets/CDS_2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "university of new hampshire",
+      "schoolName": "University of New Hampshire",
+      "selectedUrl": "https://www.unh.edu/institutional-research/sites/default/files/media/2025-02/cds-2024-2025-2.12.25_0.pdf"
+    }
+  ]
+}

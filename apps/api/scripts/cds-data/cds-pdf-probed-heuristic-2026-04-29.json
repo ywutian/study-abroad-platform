@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30T00:38:48.308Z",
+    "source": "ir-domain-probe",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 11,
+    "selectedUrls": 0
+  },
+  "schools": [],
+  "failures": [
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "rootDomain": "williams.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmnwr8iv00048z0tityzi3zx8",
+      "schoolName": "Middlebury College",
+      "rootDomain": "middlebury.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htkns000dvqf2a150rn2s",
+      "schoolName": "University of Chicago",
+      "rootDomain": "uchicago.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmnwr8ivb004ez0tiduer8l0n",
+      "schoolName": "Grinnell College",
+      "rootDomain": "grinnell.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htko2000hvqf2r5gxwf84",
+      "schoolName": "Dartmouth College",
+      "rootDomain": "dartmouth.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmnwr8ivm004lz0tio6m2uic4",
+      "schoolName": "Barnard College",
+      "rootDomain": "barnard.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htkoa000kvqf2oqm36hw5",
+      "schoolName": "University of Michigan, Ann Arbor",
+      "rootDomain": "umich.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htkoh000nvqf2uj3pjgxw",
+      "schoolName": "Carnegie Mellon University",
+      "rootDomain": "cmu.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htkoz000uvqf2rnozc3fe",
+      "schoolName": "University of Southern California",
+      "rootDomain": "usc.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htkp9000yvqf29pcl812t",
+      "schoolName": "New York University",
+      "rootDomain": "nyu.edu",
+      "probedCount": 80
+    },
+    {
+      "schoolId": "cmn1htkpw0016vqf20t0lflxm",
+      "schoolName": "Boston University",
+      "rootDomain": "bu.edu",
+      "probedCount": 80
+    }
+  ]
+}

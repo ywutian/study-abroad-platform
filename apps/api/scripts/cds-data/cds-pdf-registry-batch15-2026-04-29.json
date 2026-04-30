@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch15-more-unis",
+    "note": "Batch 15: Washington State, Texas Tech"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "washington state university",
+      "schoolName": "Washington State University",
+      "selectedUrl": "https://wpcdn.web.wsu.edu/wsuwp/uploads/sites/3447/2025/09/CDS-2024-2025-For-Website.pdf"
+    },
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf"
+    }
+  ]
+}

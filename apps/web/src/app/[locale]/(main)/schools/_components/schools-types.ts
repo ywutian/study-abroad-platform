@@ -16,7 +16,11 @@ export interface School {
   website?: string;
   logoUrl?: string;
   avgSalary?: number;
+  salary6YrPostGrad?: number;
   totalEnrollment?: number;
+  percentNeedMet?: number;
+  averageNetPrice?: number;
+  averageAidPackage?: number;
   isPrivate?: boolean;
   nicheSafetyGrade?: string;
   nicheLifeGrade?: string;
@@ -29,4 +33,5 @@ export interface School {
   rankings?: SchoolRanking[];
   fieldSources?: SchoolFieldSources;
   communityRatingSummary?: SchoolCommunityRatingSummary;
+  fitScore?: number;
 }

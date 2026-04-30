@@ -1,0 +1,670 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T01:00:00Z",
+    "source": "College Kickstart Class of 2028 admission results aggregator",
+    "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+    "purpose": "Fall 2024 overall admit rates for ~60 schools (refreshes prior cycle data)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "american university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 55.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 18624 apps / 10243 admit"
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 9.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 13700 apps / 1233 admit"
+    },
+    {
+      "schoolNameNorm": "auburn university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 46.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 55111 apps / 25219 admit"
+    },
+    {
+      "schoolNameNorm": "barnard college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 7.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 11832 apps / 828 admit"
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 14.7,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 35475 apps / 5215 admit"
+    },
+    {
+      "schoolNameNorm": "boston university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 10.7,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 78634 apps / 8414 admit"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 6.97,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 13265 apps / 924 admit"
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 5.16,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 48881 apps / 2521 admit"
+    },
+    {
+      "schoolNameNorm": "bucknell university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 28.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 11338 apps / 3175 admit"
+    },
+    {
+      "schoolNameNorm": "brigham young university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 68.7,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 12976 apps / 8915 admit"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 17.85,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 7869 apps / 1405 admit"
+    },
+    {
+      "schoolNameNorm": "colby college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 6.64,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 19188 apps / 1275 admit"
+    },
+    {
+      "schoolNameNorm": "colgate university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 13.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 20914 apps / 2818 admit"
+    },
+    {
+      "schoolNameNorm": "colorado college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 17.98,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 8506 apps / 1529 admit"
+    },
+    {
+      "schoolNameNorm": "columbia university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 3.85,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 60248 apps / 2319 admit"
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 5.32,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 31657 apps / 1685 admit"
+    },
+    {
+      "schoolNameNorm": "duke university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 5.15,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 54191 apps / 2790 admit"
+    },
+    {
+      "schoolNameNorm": "emory university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 14.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 34914 apps / 5058 admit"
+    },
+    {
+      "schoolNameNorm": "fairfield university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 33.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 18502 apps / 6106 admit"
+    },
+    {
+      "schoolNameNorm": "florida state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 21.8,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 76748 apps / 16748 admit"
+    },
+    {
+      "schoolNameNorm": "fordham university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 57.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 43885 apps / 25014 admit"
+    },
+    {
+      "schoolNameNorm": "franklin and marshall college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 26.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 10257 apps / 2667 admit"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 12.3,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 26170 apps / 3226 admit"
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 14.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 59760 apps / 8366 admit"
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 3.59,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 54008 apps / 1937 admit"
+    },
+    {
+      "schoolNameNorm": "college of the holy cross",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 16.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 9563 apps / 1530 admit"
+    },
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 4.59,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 38100 apps / 1749 admit"
+    },
+    {
+      "schoolNameNorm": "lafayette college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 30.6,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 10191 apps / 3118 admit"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 25.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 20395 apps / 5170 admit"
+    },
+    {
+      "schoolNameNorm": "macalester college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 27.85,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 8964 apps / 2496 admit"
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 4.55,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 28232 apps / 1275 admit"
+    },
+    {
+      "schoolNameNorm": "new york university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 8.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 118000 apps / 9440 admit"
+    },
+    {
+      "schoolNameNorm": "northeastern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 5.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): ? apps / ? admit"
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 7.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 50000 apps / 3750 admit"
+    },
+    {
+      "schoolNameNorm": "oberlin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 34.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 9699 apps / 3298 admit"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 7.51,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 32459 apps / 2439 admit"
+    },
+    {
+      "schoolNameNorm": "santa clara university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 47.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 18964 apps / 8913 admit"
+    },
+    {
+      "schoolNameNorm": "smith college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 20.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 8666 apps / 1776 admit"
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 7.46,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 13065 apps / 975 admit"
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 10.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 34000 apps / 3400 admit"
+    },
+    {
+      "schoolNameNorm": "tulane university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 13.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 30000 apps / 3900 admit"
+    },
+    {
+      "schoolNameNorm": "university of georgia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 36.9,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 43090 apps / 15900 admit"
+    },
+    {
+      "schoolNameNorm": "university of miami",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 19.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 48141 apps / 9147 admit"
+    },
+    {
+      "schoolNameNorm": "university of tennessee, knoxville",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 34.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 57270 apps / 19471 admit"
+    },
+    {
+      "schoolNameNorm": "university of richmond",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 22.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 16000 apps / 3520 admit"
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 9.27,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 82000 apps / 7600 admit"
+    },
+    {
+      "schoolNameNorm": "university of virginia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 16.49,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 58995 apps / 9726 admit"
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 5.09,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 47171 apps / 2401 admit"
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 13.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 8900 apps / 1157 admit"
+    },
+    {
+      "schoolNameNorm": "wesleyan university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 16.05,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 14826 apps / 2380 admit"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 7.52,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 15411 apps / 1159 admit"
+    },
+    {
+      "schoolNameNorm": "college of william and mary",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 32.6,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 17787 apps / 5800 admit"
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 3.73,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 57465 apps / 2146 admit"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 11.1,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 29943 apps / 3324 admit"
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegekickstart.com/blog/item/class-of-2028-admission-results",
+      "rates": {
+        "acceptanceRate": 5.38,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Class 2028 (Fall 2024): 65235 apps / 3508 admit"
+    }
+  ]
+}

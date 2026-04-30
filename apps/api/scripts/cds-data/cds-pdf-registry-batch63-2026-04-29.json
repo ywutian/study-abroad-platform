@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch63-yale-uchicago-harvard-caltech-gatech-notredame-wm-uf",
+    "note": "Batch 63: Yale, UChicago, Harvard, Caltech, Georgia Tech, Notre Dame (retry), William & Mary, University of Florida"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "yale university",
+      "schoolName": "Yale University",
+      "selectedUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf"
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "schoolName": "University of Chicago",
+      "selectedUrl": "https://data.uchicago.edu/files/2025/08/CDS_2024-2025_to_publish.pdf"
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "schoolName": "Harvard University",
+      "selectedUrl": "https://bpb-us-e1.wpmucdn.com/sites.harvard.edu/dist/6/210/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "schoolName": "California Institute of Technology",
+      "selectedUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "schoolName": "Georgia Institute of Technology",
+      "selectedUrl": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "william & mary",
+      "schoolName": "William & Mary",
+      "selectedUrl": "https://www.wm.edu/offices/ir/university_data/cds/cds-2024-2025_a.pdf"
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "selectedUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf"
+    }
+  ]
+}

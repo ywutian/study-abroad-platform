@@ -4,12 +4,13 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import { Search, ChevronRight, SlidersHorizontal, Filter, Globe, X } from 'lucide-react';
+import { Globe, Search, SlidersHorizontal, X } from 'lucide-react';
 import { schoolRoutes } from '@study-abroad/shared';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { AdvancedSchoolFilter } from '@/components/features';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -18,19 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { AdvancedSchoolFilter } from '@/components/features';
-import {
-  applyTuitionPreset,
-  getTuitionPresetValue,
-  type TuitionPresetValue,
-  type SchoolFilters,
-} from '@/components/features/schools/school-filters';
+import { Slider } from '@/components/ui/slider';
 import { apiClient } from '@/lib/api';
-import { Link } from '@/lib/i18n/navigation';
+import {
+  type SchoolFilters,
+  type SchoolWeightParams,
+} from '@/components/features/schools/school-filters';
 
-// Country code → i18n label key (matches messages/{en,zh}.json `schools.countries.*`)
 const COUNTRY_LABEL_KEYS: Record<string, string> = {
   US: 'us',
   USA: 'us',
@@ -47,15 +42,6 @@ interface AvailableCountry {
   count: number;
 }
 
-const tuitionRanges = [
-  { value: 'ALL', labelKey: 'all' },
-  { value: 'CUSTOM', labelKey: 'custom' },
-  { value: '20-30', labelKey: '20k-30k' },
-  { value: '30-40', labelKey: '30k-40k' },
-  { value: '40-50', labelKey: '40k-50k' },
-  { value: '50+', labelKey: '50k+' },
-];
-
 interface SchoolFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
@@ -71,6 +57,8 @@ interface SchoolFilterBarProps {
   activePreset: string;
   onActivePresetChange: (preset: string) => void;
   weightPresetKeys: string[];
+  fitWeights: SchoolWeightParams;
+  onFitWeightsChange: (weights: SchoolWeightParams) => void;
 }
 
 export function SchoolFilterBar({
@@ -88,25 +76,21 @@ export function SchoolFilterBar({
   activePreset,
   onActivePresetChange,
   weightPresetKeys,
+  fitWeights,
+  onFitWeightsChange,
 }: SchoolFilterBarProps) {
   const t = useTranslations('schools');
-  const tc = useTranslations('common');
-  const quickTuitionRange = getTuitionPresetValue(advancedFilters);
 
-  // Fetch countries that actually have schools — avoids the UX bug where
-  // users select "UK" from a hardcoded list only to get zero results.
   const { data: availableCountries } = useQuery<AvailableCountry[]>({
     queryKey: ['schools', 'countries'],
     queryFn: () => apiClient.get(schoolRoutes.countries()),
-    staleTime: 5 * 60 * 1000, // 5 min — matches backend cache
+    staleTime: 5 * 60 * 1000,
   });
 
   const countries = useMemo(() => {
     const items = availableCountries ?? [];
-    // Fallback while loading: show nothing. Component hides filter when empty.
     if (items.length === 0) return [];
 
-    // Build [ALL, ...actual countries] — sorted by count desc (backend already sorts)
     return [
       { value: 'ALL', labelKey: 'all', count: null as number | null },
       ...items.map((c) => ({
@@ -117,15 +101,15 @@ export function SchoolFilterBar({
     ];
   }, [availableCountries]);
 
-  // Hide country filter entirely when only 1 country has data (no meaningful choice)
-  const showCountryFilter = countries.length > 2; // ALL + 1 country = hidden
+  const showCountryFilter = countries.length > 2;
+  const filterCountry = country === 'ALL' && !showCountryFilter ? 'US' : country;
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-          {/* Search */}
-          <div className="relative flex-1">
+    <Card className="overflow-hidden">
+      <div className="h-1 bg-primary" />
+      <CardContent className="space-y-6 pt-5">
+        <div className="space-y-3">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t('searchPlaceholder')}
@@ -135,11 +119,10 @@ export function SchoolFilterBar({
             />
           </div>
 
-          {/* Country Filter — only shown when 2+ countries have schools */}
           {showCountryFilter && (
             <Select value={country} onValueChange={onCountryChange}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectTrigger>
+                <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
                 <SelectValue placeholder={t('country')} />
               </SelectTrigger>
               <SelectContent>
@@ -155,183 +138,133 @@ export function SchoolFilterBar({
             </Select>
           )}
 
-          {/* Sort */}
           <Select value={sortBy} onValueChange={onSortByChange}>
-            <SelectTrigger className="w-full md:w-[150px]">
-              <SlidersHorizontal className="h-4 w-4 mr-2 text-muted-foreground" />
+            <SelectTrigger>
+              <SlidersHorizontal className="mr-2 h-4 w-4 text-muted-foreground" />
               <SelectValue placeholder={t('sortBy')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="rank">{t('sort.rank')}</SelectItem>
               <SelectItem value="name">{t('sort.name')}</SelectItem>
               <SelectItem value="acceptance">{t('sort.acceptance')}</SelectItem>
+              <SelectItem value="salary">{t('sort.salary')}</SelectItem>
               <SelectItem value="weighted">{t('weightSort')}</SelectItem>
             </SelectContent>
           </Select>
 
-          {/* Quick Filters Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Filter className="h-4 w-4" />
-                {t('allFilters')}
-                {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <h4 className="font-medium">{t('filterOptions')}</h4>
-                <div className="space-y-2">
-                  <Label>{t('schoolType')}</Label>
-                  <Select
-                    value={advancedFilters.schoolType || 'all'}
-                    onValueChange={(value) =>
-                      onAdvancedFiltersChange({
-                        ...advancedFilters,
-                        schoolType: value === 'all' ? undefined : (value as 'public' | 'private'),
-                      })
-                    }
+          {(search || (showCountryFilter && country !== 'ALL')) && (
+            <div className="flex flex-wrap gap-2">
+              {search && (
+                <Badge variant="secondary" className="gap-1 pr-1">
+                  <Search className="h-3 w-3" />
+                  {search}
+                  <button
+                    onClick={() => onSearchChange('')}
+                    className="ml-1 rounded-full p-0.5 hover:bg-muted"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{tc('all')}</SelectItem>
-                      <SelectItem value="public">{t('public')}</SelectItem>
-                      <SelectItem value="private">{t('private')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('tuitionRange')}</Label>
-                  <Select
-                    value={quickTuitionRange}
-                    onValueChange={(value) => {
-                      if (value === 'CUSTOM') return;
-                      onAdvancedFiltersChange(
-                        applyTuitionPreset(
-                          advancedFilters,
-                          value as Exclude<TuitionPresetValue, 'CUSTOM'>
-                        )
-                      );
-                    }}
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {showCountryFilter && country !== 'ALL' && (
+                <Badge variant="secondary" className="gap-1 pr-1">
+                  <Globe className="h-3 w-3" />
+                  {(() => {
+                    const match = countries.find((c) => c.value === country);
+                    return match ? t(`countries.${match.labelKey}`) : country;
+                  })()}
+                  <button
+                    onClick={() => onCountryChange('ALL')}
+                    className="ml-1 rounded-full p-0.5 hover:bg-muted"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tuitionRanges.map((range) => (
-                        <SelectItem
-                          key={range.value}
-                          value={range.value}
-                          disabled={range.value === 'CUSTOM'}
-                        >
-                          {t(`tuition.${range.labelKey}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() =>
-                    onAdvancedFiltersChange({
-                      ...advancedFilters,
-                      schoolType: undefined,
-                      tuitionMin: undefined,
-                      tuitionMax: undefined,
-                    })
-                  }
-                >
-                  {t('resetFilters')}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
 
-          {/* Advanced Filter */}
+        <div className="space-y-4 border-t pt-5">
+          <div>
+            <h3 className="text-sm font-semibold">{t('weightControls.title')}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">{t('weightControls.description')}</p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {weightPresetKeys.map((key) => (
+              <Button
+                key={key}
+                variant={activePreset === key ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onActivePresetChange(key)}
+              >
+                {t(`weightControls.presets.${key}`)}
+              </Button>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            {(
+              [
+                ['ranking', 'ranking'],
+                ['acceptanceRate', 'acceptanceRate'],
+                ['tuition', 'tuition'],
+                ['salary', 'salary'],
+              ] as const
+            ).map(([key, labelKey]) => (
+              <div key={key} className="space-y-2 rounded-lg border p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <Label className="text-sm">{t(`weightControls.weights.${labelKey}`)}</Label>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {fitWeights[key]}%
+                  </span>
+                </div>
+                <Slider
+                  value={[fitWeights[key]]}
+                  min={0}
+                  max={80}
+                  step={5}
+                  onValueChange={([value]) => onFitWeightsChange({ ...fitWeights, [key]: value })}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4 border-t pt-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold">{t('filterOptions')}</h3>
+              <p className="mt-1 text-xs text-muted-foreground">{t('filterOptionsDesc')}</p>
+            </div>
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="shrink-0">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </div>
+
+          <div className="lg:hidden">
+            <AdvancedSchoolFilter
+              country={filterCountry}
+              filters={advancedFilters}
+              onChange={onAdvancedFiltersChange}
+              onReset={onResetAdvancedFilters}
+              activeCount={activeAdvancedFilterCount}
+            />
+          </div>
+
           <AdvancedSchoolFilter
-            country={country}
+            country={filterCountry}
             filters={advancedFilters}
             onChange={onAdvancedFiltersChange}
             onReset={onResetAdvancedFilters}
             activeCount={activeAdvancedFilterCount}
+            variant="inline"
+            className="hidden lg:block"
           />
         </div>
-
-        {/* Active Filters */}
-        {(search || (showCountryFilter && country !== 'ALL')) && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {search && (
-              <Badge variant="secondary" className="gap-1 pr-1">
-                <Search className="h-3 w-3" />
-                {search}
-                <button
-                  onClick={() => onSearchChange('')}
-                  className="ml-1 rounded-full hover:bg-muted p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-            {showCountryFilter && country !== 'ALL' && (
-              <Badge variant="secondary" className="gap-1 pr-1">
-                <Globe className="h-3 w-3" />
-                {(() => {
-                  const match = countries.find((c) => c.value === country);
-                  return match ? t(`countries.${match.labelKey}`) : country;
-                })()}
-                <button
-                  onClick={() => onCountryChange('ALL')}
-                  className="ml-1 rounded-full hover:bg-muted p-0.5"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {/* Weight Presets (shown when weighted sort is selected) */}
-        <Collapsible open={sortBy === 'weighted'}>
-          <CollapsibleContent>
-            <div className="mt-6 pt-6 border-t">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <SlidersHorizontal className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm">{t('presets.title')}</h4>
-                  <p className="text-xs text-muted-foreground">{t('presets.description')}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {weightPresetKeys.map((key) => (
-                  <Button
-                    key={key}
-                    variant={activePreset === key ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => onActivePresetChange(key)}
-                  >
-                    {t(`presets.${key}`)}
-                  </Button>
-                ))}
-                <Button variant="ghost" size="sm" className="gap-1" asChild>
-                  <Link href="/ranking">
-                    {t('presets.customRanking')}
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
       </CardContent>
     </Card>
   );

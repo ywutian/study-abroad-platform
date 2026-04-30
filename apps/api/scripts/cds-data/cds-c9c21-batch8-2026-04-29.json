@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:24:17.755Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch8-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "pennsylvania state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://opair.psu.edu/files/2025/04/CDS_2024_2025_University_Park1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution taken from C11 'Percent (All enrolled students)' column; mapped 4.0 + 3.75-3.99 into 3.75-4.00. C21 Early Decision is 'No' and no ED counts are provided. Early Action is offered, but no applicant/admit counts are reported."
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 is present but the PDF text shows 0.00 in the totals area and does not provide usable GPA-range percentages; C21 indicates both Early Decision and Early Action are not offered, so no application/admit counts are provided."
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/6.20.2025_CDS-2024-2025_FINAL_REVISED.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 45.32,
+      "eaAcceptanceRate": null,
+      "edApplied": 2171,
+      "edAdmitted": 984,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9/GPA table (C11) present but all GPA range values shown as 0.00 in the provided text; mapped to canonical bands with 0.0 fractions. C21 early decision present with 2171 applications and 984 admits. C22 early action is marked No, so EA counts are null."
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table present but all percentages reported as 0.00% across categories; mapped 4.0 to 3.75-4.00. C21 indicates Early Decision is offered, but the PDF text does not include the numbers of applications received or admitted. No Early Action plan reported (marked No)."
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0,
+        "3.50-3.74": 0,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 1
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table reports all zeros with the <3.00 row implied by totals to be 100.00% because only 0.00 values are visible in the PDF text. C21 shows Texas A&M offers early decision and early action, but the application/admit counts are blank in the provided text."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported (all GPA percent fields are blank/0.0%); C21 reports Early Decision only, with one ED plan for Fall 2024 and no Early Action plan."
+    }
+  ],
+  "failures": []
+}

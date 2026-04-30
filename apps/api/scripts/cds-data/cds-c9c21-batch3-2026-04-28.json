@@ -1,0 +1,211 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T11:39:32.332Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "claude-haiku-4-5-20251001",
+    "input": "apps/api/scripts/cds-data/cds-c9c21-batch3-target-2026-04-28.json",
+    "success": 12,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northeastern university",
+      "cycleYear": 2024,
+      "sourceUrl": "http://uds.northeastern.edu/wp-content/uploads/2026/03/CDS-2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.945,
+        "3.50-3.74": 0.04,
+        "3.25-3.49": 0.008,
+        "3.00-3.24": 0.007,
+        "<3.00": 0.002
+      },
+      "edAcceptanceRate": 43.05,
+      "eaAcceptanceRate": null,
+      "edApplied": 3466,
+      "edAdmitted": 1492,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9: GPA distribution extracted from C11 table showing percentages for enrolled students who submitted GPA. C21: ED data found (3,466 applications, 1,492 admitted). EA section present but no applicant/admitted numbers provided in the document - only closing date (1-Nov) and notification date (15-Feb) listed."
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table not found in provided text. C11 contains GPA data but uses different bands (4.0, 3.75-3.99, 3.50-3.74, 3.25-3.49, 3.00-3.24, etc.) and reports 97% at 4.0 GPA which does not map to standard C9 canonical bands. C21 Early Decision section (page 14-15) indicates 'No' for ED plan offering and provides no ED applicant/admitted numbers. C22 Early Action section indicates 'Yes' with closing date Oct. 15 and notification date Jan. 31, but specific EA applicant and admitted counts are not provided in the text."
+    },
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "cycleYear": 2024,
+      "sourceUrl": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data found in section C11 (High School Grade Point Ranges): 4.0=38.8%, 3.75-3.99=54.0%, 3.50-3.74=5.7%, 3.25-3.49=0.9%, 3.00-3.24=0.4%, below 3.00=0.2%. However, this uses non-standard bands (3.75-3.99 instead of 3.75-4.00). C21 shows Early Decision: No plan offered. Early Action: 11/1 closing, 1/31 notification, but specific applicant and admitted numbers are blank/not provided in document."
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table (C11) shows all zeros with 0.00% across all ranges and 0% submitting GPA - data not reported. C21 Early Decision section present but numerical data for applications and admits not provided in extracted text. Early Action plan confirmed to exist but applicant/admit counts not included in provided PDF excerpt."
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution table (C11) shows all percentages as 0.00 with 0.00% of students submitting GPA data - institution does not report GPA distribution. C21 Early Decision data found: 2217 applications, 996 admitted. C22 confirms no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "villanova university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.82,
+        "3.50-3.74": 0.15,
+        "3.25-3.49": 0.03,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 54.25,
+      "eaAcceptanceRate": null,
+      "edApplied": 1696,
+      "edAdmitted": 920,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data extracted from C11 'All enrolled students' row (C1121-C1129). C21 shows Early Decision plan with two rounds: ED I (closing 1-Nov, notifying 15-Dec) and ED II (closing 15-Jan, notifying 1-Mar). Total ED applicants and admits combined. Early Action plan exists (C2201=Y, closing 1-Nov, notifying 20-Jan) but specific applicant/admit numbers not provided in document."
+    },
+    {
+      "schoolNameNorm": "case western reserve university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.6471,
+        "3.50-3.74": 0.2432,
+        "3.25-3.49": 0.0928,
+        "3.00-3.24": 0.0136,
+        "<3.00": 0.0033
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 804,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9: GPA distribution extracted from C11 'Percent (All enrolled students)' column. C21: ED applications received = 804. ED admits listed as '8/14' which appears to be a formatting error in source document (possibly date notation); unable to extract reliable admit count. EA section present but no applicant/admit numbers provided in the PDF text."
+    },
+    {
+      "schoolNameNorm": "university of rochester",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5506,
+        "3.50-3.74": 0.2438,
+        "3.25-3.49": 0.1427,
+        "3.00-3.24": 0.0535,
+        "<3.00": 0.0093
+      },
+      "edAcceptanceRate": 38.05,
+      "eaAcceptanceRate": null,
+      "edApplied": 1385,
+      "edAdmitted": 527,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data from section C11 (percent who had GPA ranges): 4.0=21.75%, 3.75-3.99=33.31%, 3.50-3.74=24.38%, 3.25-3.49=14.27%, 3.00-3.24=5.35%, 2.50-2.99=0.85%, 2.0-2.49=0.08%. Combined 4.0 and 3.75-3.99 into 3.75-4.00 band (55.06%). Combined 2.50-2.99 and 2.0-2.49 into <3.00 band (0.93%). C21 shows ED only; no Early Action plan offered (C22 marked 'No')."
+    },
+    {
+      "schoolNameNorm": "brandeis university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.brandeis.edu/institutional-research/docs/cds-2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.65,
+        "3.50-3.74": 0.23,
+        "3.25-3.49": 0.07,
+        "3.00-3.24": 0.02,
+        "<3.00": 0.02
+      },
+      "edAcceptanceRate": 42.22,
+      "eaAcceptanceRate": null,
+      "edApplied": 765,
+      "edAdmitted": 323,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA data extracted from C11 'all enrolled students' column. C21 shows Early Decision only; Early Action plan marked as 'No' in C22."
+    },
+    {
+      "schoolNameNorm": "new york university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/2024-2025%20(pdf,%20file%20size%20907KB).pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.72,
+        "3.50-3.74": 0.22,
+        "3.25-3.49": 0.05,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution found in section C11 (Percent who had high school GPA within ranges, all enrolled students column). C21 Early Decision section present but applicant and admitted numbers are blank/not provided in the PDF text."
+    },
+    {
+      "schoolNameNorm": "university of virginia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.virginia.edu/sites/ira/files/2025-03/CDS_2024-2025_508.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.973,
+        "3.50-3.74": 0.021,
+        "3.25-3.49": 0.003,
+        "3.00-3.24": 0.001,
+        "<3.00": 0.002
+      },
+      "edAcceptanceRate": 27.91,
+      "eaAcceptanceRate": null,
+      "edApplied": 4461,
+      "edAdmitted": 1245,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9: GPA distribution extracted from C11 table showing enrolled students. GPA of 4.0 (90.5%) mapped to 3.75-4.00 range along with 3.75-3.99 (6.8%). C21: Early Decision data found with 4,461 applications and 1,245 admits. Early Action plan exists (nonbinding, restrictive) with closing date 11/1 and notification 2/15, but applicant and admit numbers not provided in the document."
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data found in section C11 (not C9 as labeled in instructions). C9 in this CDS covers standardized test scores. C11 shows: 4.0 GPA: 92.54%, 3.75-3.99: 5.26%, 3.50-3.74: 1.13%, 3.25-3.49: 0.33%, 3.00-3.24: 0.25%, below 3.00: 0.74%. C21 Early Decision section shows 'No' - institution does not offer ED plan. C22 Early Action shows 'Yes' with closing date 11/1 and notification date 1/31, but specific applicant and admit numbers are not provided in the PDF text."
+    }
+  ],
+  "failures": []
+}

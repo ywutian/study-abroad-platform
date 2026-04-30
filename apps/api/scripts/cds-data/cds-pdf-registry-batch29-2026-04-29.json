@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch29-more-unis",
+    "note": "Batch 29: UCLA, Virginia Tech (2023-24), Indiana University Bloomington"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "selectedUrl": "https://apb.ucla.edu/file/cedc749a-fd65-4935-b9ee-8a551f6de2fc"
+    },
+    {
+      "schoolNameNorm": "virginia tech",
+      "schoolName": "Virginia Tech",
+      "selectedUrl": "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "indiana university bloomington",
+      "schoolName": "Indiana University Bloomington",
+      "selectedUrl": "https://iuia.iu.edu/apps/cds/pdf/CDS_2024.pdf"
+    }
+  ]
+}

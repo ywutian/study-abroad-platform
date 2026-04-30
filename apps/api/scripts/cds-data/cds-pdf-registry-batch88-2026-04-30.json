@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30",
+    "source": "manual-batch88",
+    "note": "Batch 88: North Dakota, North Texas, Toledo, Eastern Michigan, Cal State LB, Arkansas, James Madison (Sec C)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north dakota",
+      "schoolName": "University of North Dakota",
+      "selectedUrl": "https://und.edu/analytics-and-planning/_files/docs/common-data-set/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "schoolName": "University of North Texas",
+      "selectedUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "schoolName": "University of Toledo",
+      "selectedUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "schoolName": "Eastern Michigan University",
+      "selectedUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "schoolName": "California State University, Long Beach",
+      "selectedUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf"
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "schoolName": "University of Arkansas",
+      "selectedUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "selectedUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

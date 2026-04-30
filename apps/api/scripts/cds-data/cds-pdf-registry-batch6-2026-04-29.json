@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "purpose": "Batch 6 C9/C11 extraction - newly found URLs",
+    "count": 15
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "schoolName": "Northwestern University",
+      "selectedUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "schoolName": "Wellesley College",
+      "selectedUrl": "https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2024-2025-FINAL-1.pdf"
+    },
+    {
+      "schoolNameNorm": "davidson college",
+      "schoolName": "Davidson College",
+      "selectedUrl": "https://www.davidson.edu/media/9718/download"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "vassar college",
+      "schoolName": "Vassar College",
+      "selectedUrl": "https://offices.vassar.edu/institutional-research/wp-content/uploads/sites/23/2025/03/Vassar-College-CDS-2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "selectedUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf"
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "schoolName": "Washington and Lee University",
+      "selectedUrl": "https://my.wlu.edu/document/2024-common-data-set"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2026/02/Williams-CDS-2025-2026-V1.1.pdf"
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "schoolName": "Amherst College",
+      "selectedUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "schoolName": "Carleton College",
+      "selectedUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2024/05/CDS_UNL2_2023_2024_Carleton-FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://georgetown.box.com/s/rp4p2ly4ej2tsikv827pl48psmb68quv"
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "schoolName": "University of North Carolina at Chapel Hill",
+      "selectedUrl": "https://ir.unc.edu/data-publications/common-data-set/"
+    }
+  ]
+}

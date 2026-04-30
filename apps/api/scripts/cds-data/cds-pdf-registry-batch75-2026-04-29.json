@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch75-tulane-georgetown-utaustin-boxdirect",
+    "note": "Batch 75: Tulane, Georgetown, UT Austin via Box.com direct download URLs"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "tulane university",
+      "schoolName": "Tulane University",
+      "selectedUrl": "https://tulane.app.box.com/index.php?rm=box_download_shared_file&shared_name=uzo690yk2rzs7v2tqws50i3cesgz194w&file_id=f_1778192317454"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://georgetown.app.box.com/index.php?rm=box_download_shared_file&shared_name=rp4p2ly4ej2tsikv827pl48psmb68quv&file_id=f_1843229373215"
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "schoolName": "University of Texas at Austin",
+      "selectedUrl": "https://utexas.app.box.com/index.php?rm=box_download_shared_file&shared_name=d9izqb6s8dw2xxg5h5sunxyhrnef2ay6&file_id=f_1812286540077"
+    }
+  ]
+}

@@ -393,6 +393,18 @@ describe('ForumTeamService', () => {
           post: {
             id: 'post-1',
             categoryId: 'cat-1',
+            communityId: null,
+            category: {
+              id: 'cat-1',
+              name: 'General',
+              nameZh: '综合',
+              description: null,
+              descriptionZh: null,
+              icon: null,
+              color: null,
+            },
+            community: null,
+            images: [],
             author: mockAuthor,
             title: 'Team Post',
             content: 'Content',

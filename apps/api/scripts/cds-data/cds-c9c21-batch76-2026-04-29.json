@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T05:07:48.895Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch76-2026-04-29.json",
+    "success": 2,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/C9 GPA table shows Total = 0.00% for all rows; interpreted as unavailable/zero-filled in source text. C21: institution reports no Early Decision (N) and no Early Action (N), so counts are null."
+    },
+    {
+      "schoolNameNorm": "pratt institute",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.pratt.edu/wp-content/uploads/2024/04/Pratt-Institute-Commom-Data-Set-2023-2024.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.273,
+        "3.50-3.74": 0.2,
+        "3.25-3.49": 0.1,
+        "3.00-3.24": 0.027,
+        "<3.00": 0.4
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 used as GPA distribution source because C9 in provided text is SAT/ACT, not high school GPA. C21 indicates Pratt Institute does not offer Early Decision; Early Action is offered but applicant/admit counts are blank, so counts are null."
+    }
+  ],
+  "failures": []
+}

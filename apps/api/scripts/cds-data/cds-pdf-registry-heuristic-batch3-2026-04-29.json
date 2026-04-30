@@ -1,0 +1,461 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T22:43:30.742Z",
+    "source": "tavily",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 22,
+    "selectedUrls": 6
+  },
+  "schools": [
+    {
+      "schoolId": "cmnwr8inf000uz0tic8a7s8is",
+      "schoolName": "Rensselaer Polytechnic Institute",
+      "schoolNameNorm": "rensselaer polytechnic institute",
+      "usNewsRank": 67,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:rpi.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "schoolNameNorm": "yeshiva university",
+      "usNewsRank": 74,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:yu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iua003xz0tio2zj4a4z",
+      "schoolName": "Saint Louis University",
+      "schoolNameNorm": "saint louis university",
+      "usNewsRank": 95,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:slu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ini000wz0ti57rv9m9o",
+      "schoolName": "Auburn University",
+      "schoolNameNorm": "auburn university",
+      "usNewsRank": 101,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:auburn.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://ir.auburn.edu/common-data-set/index.html",
+      "candidates": [
+        {
+          "title": "IR | Common Data Set",
+          "url": "https://ir.auburn.edu/common-data-set/index.html",
+          "snippet": "The Common Data Set (CDS) is a collaborative effort between publishers and the educational community to improve the quality and accuracy of information provided to all involved in a student's transition into higher education, as well as to ",
+          "score": 100
+        },
+        {
+          "title": "IR | Common Data Set",
+          "url": "https://auburn.edu/administration/ir/common-data-set/index.html",
+          "snippet": "The Common Data Set (CDS) is a collaborative effort between publishers and the educational community to improve the quality and accuracy of information provided to all involved in a student's transition into higher education, as well as to ",
+          "score": 100
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://outreach.auburn.edu/facultyengagement/documents/august_28_w_abstract_4.pdf",
+          "title": "[PDF] Thursday, August 28, 2025 - Auburn University Outreach",
+          "score": 117
+        },
+        {
+          "url": "https://www.auburn.edu/cosam/outreach/stem_outreach/programs/scienc-olympiad/elementary-science-olympiad/al_eso_rules_manual_2025.pdf",
+          "title": "[PDF] 2024-25 Event Rules Manual AA Division - Auburn University",
+          "score": 110
+        },
+        {
+          "url": "https://auburn.edu/administration/trustees/materials/materials-20241115.pdf",
+          "title": "[PDF] November 15, 2024 Board of Trustees Meeting - Auburn University",
+          "score": 108
+        },
+        {
+          "url": "https://outreach.auburn.edu/facultyengagement/documents/full_5.pdf",
+          "title": "[PDF] Full Agenda for 2025 Outreach and Engaged Scholarship Symposium",
+          "score": 99
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iol001gz0ticdgvwjkf",
+      "schoolName": "University of San Francisco",
+      "schoolNameNorm": "university of san francisco",
+      "usNewsRank": 105,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:usfca.edu \"common data set\" filetype:pdf",
+      "stageHit": 3,
+      "selectedUrl": "https://myusf.usfca.edu/sites/default/files/Univ_San_Francisco_CDS_2012-2013.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2012-2013 - myUSF - University of San Francisco",
+          "url": "https://myusf.usfca.edu/sites/default/files/Univ_San_Francisco_CDS_2012-2013.pdf",
+          "snippet": "CDS-C Page 4 Common Data Set 2012-2013 Visual/Performing Arts Other (specify) 1 chemistry and 1 biology or physics required of nursing or science applicants Basis for Selection C6 C7 Very Important Important Considered Not Considered Academ",
+          "score": 118
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://myusf.usfca.edu/sites/default/files/users/ncain/CDS%202022-2023.pdf",
+          "title": "[PDF] Copy of CDS 2022-23 - August 2, 12:13 PM",
+          "score": 120
+        },
+        {
+          "url": "https://myusf.usfca.edu/sites/default/files/CDS_2017-2018_072018.pdf",
+          "title": "[PDF] University of San Francisco Common Data Set 2017-2018",
+          "score": 116
+        },
+        {
+          "url": "https://myusf.usfca.edu/sites/default/files/documents/OIRA/CDS%202019-2020.pdf",
+          "title": "[PDF] A. General Information - myUSF - University of San Francisco",
+          "score": 116
+        },
+        {
+          "url": "https://myusf.usfca.edu/sites/default/files/documents/OIRA/CDS%202013-2014.pdf",
+          "title": "[PDF] A. General Information - myUSF - University of San Francisco",
+          "score": 115
+        },
+        {
+          "url": "https://myusf.usfca.edu/sites/default/files/users/wongl/CDS_2018-2019.pdf",
+          "title": "[PDF] A. General Information - myUSF",
+          "score": 113
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8ioo001hz0tim3isqwz9",
+      "schoolName": "Clarkson University",
+      "schoolNameNorm": "clarkson university",
+      "usNewsRank": 110,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:clarkson.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ip7001nz0ti6qy76djw",
+      "schoolName": "University of Missouri",
+      "schoolNameNorm": "university of missouri",
+      "usNewsRank": 115,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:missouri.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://udair.missouri.edu/mu-data/common-data-set/",
+      "candidates": [
+        {
+          "title": "Common Data Set - University Data, Analytics, and Institutional Research // University Data, Analytics, and Institutional Research",
+          "url": "https://udair.missouri.edu/mu-data/common-data-set/",
+          "snippet": "Skip to navigation Skip to content\n\nMU Logo\n\nUniversity of Missouri\n\n Contact\n\nUniversity Data, Analytics, and Institutional Research\n\n## Common Data Set - University Data, Analytics, and Institutional Research\n\nThe Common Data Set is a col",
+          "score": 109
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://extension.missouri.edu/media/wysiwyg/Extensiondata/CountyPages/Gentry/Docs/2025-gentry-county-annual-report.pdf",
+          "title": "[PDF] 2025 Gentry County Annual Report - MU Extension",
+          "score": 100
+        },
+        {
+          "url": "https://extension.missouri.edu/media/wysiwyg/Extensiondata/CountyPages/Johnson/Docs/2025-johnson-annual-report.pdf",
+          "title": "[PDF] 2025 Johnson County Annual Report - MU Extension - Missouri",
+          "score": 99
+        },
+        {
+          "url": "https://raff.missouri.edu/wp-content/uploads/2024/11/Missouri-Agriculture-Outlook-Report-2024.pdf",
+          "title": "[PDF] Show-Me 2024 - Missouri Agriculture Outlook",
+          "score": 94
+        },
+        {
+          "url": "https://economics.missouri.edu/sites/default/files/grad-files/2024-06/mu-econ-phd-handbook-ay24-25_0.pdf",
+          "title": "[PDF] PhD Student Handbook - Academic Year 2024–25 - Economics",
+          "score": 69
+        },
+        {
+          "url": "https://cra.missouri.edu/variety_testing_report_24_25",
+          "title": "National Cover Crop Variety Testing Program: 2024-25 Report | Center for Regenerative Agriculture",
+          "score": 47
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iq2001zz0tiix4lbz86",
+      "schoolName": "University of Houston",
+      "schoolNameNorm": "university of houston",
+      "usNewsRank": 130,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:uh.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iqf0024z0tiy29w0e1z",
+      "schoolName": "Missouri University of Science and Technology",
+      "schoolNameNorm": "missouri university of science and technology",
+      "usNewsRank": 140,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:mst.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iqp0029z0ti2wbplonv",
+      "schoolName": "Hofstra University",
+      "schoolNameNorm": "hofstra university",
+      "usNewsRank": 143,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:hofstra.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iqt002bz0ti5efot7m8",
+      "schoolName": "Adelphi University",
+      "schoolNameNorm": "adelphi university",
+      "usNewsRank": 146,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:adelphi.edu \"common data set\" filetype:pdf",
+      "stageHit": 3,
+      "selectedUrl": "https://www.adelphi.edu/orap/wp-content/uploads/sites/56/2020/07/cds_2010-11.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Common Data Set 2010-11 - Adelphi University",
+          "url": "https://www.adelphi.edu/orap/wp-content/uploads/sites/56/2020/07/cds_2010-11.pdf",
+          "snippet": "Federal methodology (FM) Institutional methodology (IM) State (i.e., all states, not only the state in which your institution is located) Institutional: Endowed scholarships, annual gifts and tuition funded grants, awarded by the college, e",
+          "score": 135
+        },
+        {
+          "title": "Common Data Set 2018-2019",
+          "url": "https://www.adelphi.edu/orap/wp-content/uploads/sites/56/2020/07/2018-2019-Common-Data-Set-for-Web.pdf",
+          "snippet": "For Bachelor's or Equivalent Institutions Students who did not receive either a Pell Grant or a subsidized Stafford Loan Total (sum of 3 columes to the left) Fall 2012 Cohort Recipients of a Federal Pell Grant Recipients of a Subsidized Sta",
+          "score": 129
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.adelphi.edu/provost/wp-content/uploads/sites/34/2020/06/Adelphi-University-Self-Study-2019.pdf",
+          "title": "[PDF] 2018–2019 SELF-STUDY - Adelphi University",
+          "score": 56
+        },
+        {
+          "url": "https://www.adelphi.edu/business/wp-content/uploads/sites/18/2022/02/Graduate-Student-Handbook.pdf",
+          "title": "[PDF] Adelphi University Garden City, NY 11530 Graduate Student ...",
+          "score": 51
+        },
+        {
+          "url": "https://www.adelphi.edu/education/wp-content/uploads/sites/5/2022/06/2022-Report.pdf",
+          "title": "[PDF] 2022-Report.pdf - Adelphi University",
+          "score": 51
+        },
+        {
+          "url": "https://home.adelphi.edu/~mathcs/MCS_student_handbook_current.pdf",
+          "title": "[PDF] Department of Mathematics and Computer Science Student Handbook",
+          "score": 49
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8iqx002dz0tigsxpge66",
+      "schoolName": "Mississippi State University",
+      "schoolNameNorm": "mississippi state university",
+      "usNewsRank": 146,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:msstate.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ird002kz0tifunyipf1",
+      "schoolName": "University of North Dakota",
+      "schoolNameNorm": "university of north dakota",
+      "usNewsRank": 156,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:und.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8irv002uz0tic1bpn6g4",
+      "schoolName": "Bowling Green State University",
+      "schoolNameNorm": "bowling green state university",
+      "usNewsRank": 165,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:bgsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8is4002zz0ti7l7rukwt",
+      "schoolName": "South Dakota State University",
+      "schoolNameNorm": "south dakota state university",
+      "usNewsRank": 168,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:sdstate.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://www.sdstate.edu/sites/default/files/file-archive/2022-12/South%20Dakota%20State%20University%20-%20Common%20Data%20Set%20%282021-2022%29.pdf",
+      "candidates": [
+        {
+          "title": "Common Data Set 2021-2022",
+          "url": "https://www.sdstate.edu/sites/default/files/file-archive/2022-12/South%20Dakota%20State%20University%20-%20Common%20Data%20Set%20%282021-2022%29.pdf",
+          "snippet": "38 Theology and religious vocations 39 Physical sciences 1% 40 Science technologies 41 Psychology 4% 42 Homeland Security, law enforcement, firefighting, and protective services 43 Public administration and social services 44 Social science",
+          "score": 135
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.sdstate.edu/office-institutional-research-assessment/institutional-data",
+          "title": "Institutional Data | South Dakota State University",
+          "score": 89
+        },
+        {
+          "url": "https://www.sdstate.edu/sites/default/files/file-archive/2024-10/EH116_2024_College_of_Education_and_Human_Sciences_Magazine_Fall.pdf",
+          "title": "[PDF] Level Up - Fall 2024 - South Dakota State University",
+          "score": 89
+        },
+        {
+          "url": "https://extension.sdstate.edu/sites/default/files/2025-05/P-00117-2025.pdf",
+          "title": "[PDF] South Dakota Agricultural Land Market Trends, 1991-2025",
+          "score": 88
+        },
+        {
+          "url": "https://www.sdstate.edu/sites/default/files/file-archive/2025-07/EHS%20Level%20Up%20Magazine_Summer%202025.pdf",
+          "title": "[PDF] Level Up - Summer 2025 - South Dakota State University",
+          "score": 81
+        },
+        {
+          "url": "https://openprairie.sdstate.edu/cgi/viewcontent.cgi?article=1957&context=etd2",
+          "title": "[PDF] Utilizing Soil Sensors to Assess Soil Health and Investigating Cover ...",
+          "score": 22
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8is60030z0timvbtgjwa",
+      "schoolName": "University of Akron",
+      "schoolNameNorm": "university of akron",
+      "usNewsRank": 171,
+      "missingField": "intlAcceptanceRate",
+      "query": "\"University of Akron\" \"common data set\" \"2024-25\" inurl:cds OR inurl:institutional-research filetype:pdf",
+      "stageHit": 2,
+      "selectedUrl": "https://www.uakron.edu/ir/common-data-set.dot",
+      "candidates": [
+        {
+          "title": "Common Data Set | Institutional Research - The University Of Akron",
+          "url": "https://www.uakron.edu/ir/common-data-set.dot",
+          "snippet": "| Academic Year |\n\n| 2024-2025 | Akron Campus |\n| 2023-2024 | Akron Campus |\n| 2022-2023 | Akron Campus |\n| 2021-2022 | Akron Campus |\n| 2020-2021 | Akron Campus |\n| 2019-2020 | Akron Campus |\n| 2018-2019 | Akron Campus |\n| 2017-2018 | Akro",
+          "score": 116
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://ir.uoregon.edu/uo-overview/common-data-set",
+          "title": "Common Data Set | Office of Institutional Research",
+          "score": 113
+        },
+        {
+          "url": "https://academics.umw.edu/iae/looking-for-data/common-data-sets-ms-excel-files/2024-2025-common-data-set/",
+          "title": "2024-2025 Common Data Set - Institutional Analysis and Effectiveness",
+          "score": 106
+        },
+        {
+          "url": "https://oira.harvard.edu/2025/06/13/2024-25-common-data-set-cds-published",
+          "title": "2024-25 Common Data Set (CDS) Published",
+          "score": 103
+        },
+        {
+          "url": "https://irda.wayne.edu/institutional-research/cds",
+          "title": "Common Data Set - Institutional Research and Data Analytics - Wayne State University",
+          "score": 99
+        },
+        {
+          "url": "https://irsa.utk.edu/reporting/common-data-set",
+          "title": "Common Data Set | Institutional Research and Strategic Analysis",
+          "score": 71
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8isf0035z0tixudqprxr",
+      "schoolName": "New Mexico State University",
+      "schoolNameNorm": "new mexico state university",
+      "usNewsRank": 175,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:nmsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ise0034z0tiwz772kaw",
+      "schoolName": "Oklahoma State University",
+      "schoolNameNorm": "oklahoma state university",
+      "usNewsRank": 175,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:okstate.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8isn0039z0tik49prelk",
+      "schoolName": "Eastern Michigan University",
+      "schoolNameNorm": "eastern michigan university",
+      "usNewsRank": 178,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:emich.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8isu003dz0tijwn1m0s0",
+      "schoolName": "University of Texas at Arlington",
+      "schoolNameNorm": "university of texas at arlington",
+      "usNewsRank": 185,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:uta.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+      "schoolName": "Georgia State University",
+      "schoolNameNorm": "georgia state university",
+      "usNewsRank": 189,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:gsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8itm003nz0tiqazikwxi",
+      "schoolName": "Indiana University-Purdue University Indianapolis",
+      "schoolNameNorm": "indiana university-purdue university indianapolis",
+      "usNewsRank": 194,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:iupui.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    }
+  ],
+  "failures": []
+}

@@ -155,10 +155,10 @@ export function FeedbackWidget() {
         <Button
           variant="outline"
           size="sm"
-          className="fixed bottom-6 left-6 z-50 h-12 px-4 shadow-lg border-2 hover:scale-105 transition-transform"
+          className="fixed right-4 bottom-4 z-50 h-10 w-10 rounded-full border-2 px-0 shadow-lg transition-transform hover:scale-105 sm:right-auto sm:bottom-6 sm:left-6 sm:h-12 sm:w-auto sm:rounded-md sm:px-4"
         >
-          <MessageSquarePlus className="w-5 h-5 mr-2" />
-          {t('button')}
+          <MessageSquarePlus className="h-5 w-5 sm:mr-2" />
+          <span className="hidden sm:inline">{t('button')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[360px] p-0" align="start" side="top" sideOffset={16}>

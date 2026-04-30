@@ -5,6 +5,8 @@ import { ForumPostService } from './forum-post.service';
 import { ForumCommentService } from './forum-comment.service';
 import { ForumTeamService } from './forum-team.service';
 import { ForumReportService } from './forum-report.service';
+import { ForumCommunityService } from './forum-community.service';
+import { ForumUploadService } from './forum-upload.service';
 import { ForumMemoryService } from './forum-memory.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthorizationService } from '../../common/services/authorization.service';
@@ -62,6 +64,7 @@ describe('ForumService', () => {
   const mockPost = {
     id: mockPostId,
     categoryId: mockCategory.id,
+    communityId: 'community-1',
     authorId: mockUserId,
     title: 'Test Post',
     content: 'Test content',
@@ -80,7 +83,20 @@ describe('ForumService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     category: mockCategory,
+    community: {
+      id: 'community-1',
+      slug: 'general',
+      name: 'General',
+      description: null,
+      postCount: 1,
+      followerCount: 0,
+      isOfficial: true,
+      isActive: true,
+      createdAt: new Date(),
+      followers: [],
+    },
     author: mockAuthor,
+    images: [],
   };
 
   const mockComment = {
@@ -104,6 +120,24 @@ describe('ForumService', () => {
       findUnique: jest.fn(),
       findFirst: jest.fn().mockResolvedValue(null),
       create: jest.fn(),
+    },
+    forumCommunity: {
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'community-1',
+        slug: 'general',
+        name: 'General',
+        description: null,
+        postCount: 1,
+        followerCount: 0,
+        isOfficial: true,
+        isActive: true,
+        createdAt: new Date(),
+        followers: [],
+      }),
+      update: jest.fn(),
+    },
+    forumCommunityFollow: {
+      findMany: jest.fn().mockResolvedValue([]),
     },
     forumPost: {
       findMany: jest.fn(),
@@ -185,6 +219,21 @@ describe('ForumService', () => {
         ForumCommentService,
         ForumTeamService,
         ForumReportService,
+        {
+          provide: ForumCommunityService,
+          useValue: {
+            getCommunities: jest.fn(),
+            createCommunity: jest.fn(),
+            followCommunity: jest.fn(),
+            unfollowCommunity: jest.fn(),
+          },
+        },
+        {
+          provide: ForumUploadService,
+          useValue: {
+            uploadImages: jest.fn(),
+          },
+        },
         ForumMemoryService,
         {
           provide: PrismaService,
@@ -348,10 +397,13 @@ describe('ForumService', () => {
         ...mockPost,
         author: mockAuthor,
         category: mockCategory,
+        community: mockPost.community,
+        images: [],
       });
 
       const result = await service.createPost(mockUserId, {
         categoryId: mockCategory.id,
+        communityId: 'community-1',
         title: 'Test Post',
         content: 'Test content',
       });
@@ -374,11 +426,14 @@ describe('ForumService', () => {
         teamSize: 4,
         author: mockAuthor,
         category: mockCategory,
+        community: mockPost.community,
+        images: [],
       });
       (prismaService.teamMember.create as jest.Mock).mockResolvedValue({});
 
       const result = await service.createPost(mockUserId, {
         categoryId: mockCategory.id,
+        communityId: 'community-1',
         title: 'Team Post',
         content: 'Looking for teammates',
         isTeamPost: true,
@@ -403,6 +458,7 @@ describe('ForumService', () => {
       await expect(
         service.createPost(mockUserId, {
           categoryId: 'invalid',
+          communityId: 'community-1',
           title: 'Test',
           content: 'Test',
         }),

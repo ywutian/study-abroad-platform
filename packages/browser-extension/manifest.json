@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "StudyAbroad - CommonApp Auto-Fill",
+  "name": "Lumni - CommonApp Auto-Fill",
   "name_locales": {
-    "zh_CN": "留学助手 - CommonApp 自动填充"
+    "zh_CN": "Lumni - CommonApp 自动填充"
   },
   "version": "1.0.0",
-  "description": "Automatically fill CommonApp forms with your profile data from StudyAbroad platform",
+  "description": "Automatically fill CommonApp forms with your profile data from Lumni",
   "description_locales": {
-    "zh_CN": "从留学助手平台自动填充 CommonApp 表单"
+    "zh_CN": "从 Lumni 自动填充 CommonApp 表单"
   },
   "permissions": ["storage", "activeTab", "tabs"],
   "host_permissions": ["https://apply.commonapp.org/*", "https://www.commonapp.org/*"],
@@ -31,7 +31,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "StudyAbroad Auto-Fill"
+    "default_title": "Lumni Auto-Fill"
   },
   "icons": {
     "16": "icons/icon16.png",

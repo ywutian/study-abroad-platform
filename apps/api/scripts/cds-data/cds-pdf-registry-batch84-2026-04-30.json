@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30",
+    "source": "manual-batch84",
+    "note": "Batch 84: UCI, GWU, American Univ, UVM, Lehigh, WLU, Carleton, UChicago 2023-24, Bates 2023-24"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "schoolName": "University of California, Irvine",
+      "selectedUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "schoolName": "George Washington University",
+      "selectedUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "american university",
+      "schoolName": "American University",
+      "selectedUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "schoolName": "University of Vermont",
+      "selectedUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "schoolName": "Washington and Lee University",
+      "selectedUrl": "https://my.wlu.edu/document/2024-common-data-set"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "schoolName": "Carleton College",
+      "selectedUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "schoolName": "University of Chicago",
+      "selectedUrl": "https://bpb-us-w2.wpmucdn.com/voices.uchicago.edu/dist/8/2077/files/2024/06/UChicago_CDS_2023-24.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2024/08/CDS_2023-2024.pdf"
+    }
+  ]
+}

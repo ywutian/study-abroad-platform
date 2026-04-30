@@ -1,0 +1,44 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch39-usm-odu-uwyo-uri-unt-unm-utoledo",
+    "note": "Batch 39: USM, Old Dominion, Wyoming, Rhode Island, North Texas, New Mexico, Toledo"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of southern mississippi",
+      "schoolName": "University of Southern Mississippi",
+      "selectedUrl": "https://www.usm.edu/institutional-research/cds_2024_2025_final.pdf"
+    },
+    {
+      "schoolNameNorm": "old dominion university",
+      "schoolName": "Old Dominion University",
+      "selectedUrl": "https://www.odu.edu/sites/default/files/2025/documents/common-data-set-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of wyoming",
+      "schoolName": "University of Wyoming",
+      "selectedUrl": "https://www.uwyo.edu/oia/_files/cds/cds2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of rhode island",
+      "schoolName": "University of Rhode Island",
+      "selectedUrl": "https://web.uri.edu/ir/wp-content/uploads/sites/276/CDS-2024-2025-fillable.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "schoolName": "University of North Texas",
+      "selectedUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of new mexico",
+      "schoolName": "University of New Mexico",
+      "selectedUrl": "https://oia.unm.edu/resources/cds_24-25_pdf.pdf"
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "schoolName": "University of Toledo",
+      "selectedUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:11:31.736Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch44-2026-04-29.json",
+    "success": 3,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "amherst college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.39,
+      "eaAcceptanceRate": null,
+      "edApplied": 735,
+      "edAdmitted": 216,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution not reported; C21 Early Decision offered with data, no Early Action offered."
+    },
+    {
+      "schoolNameNorm": "university of massachusetts lowell",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uml.edu/docs/CDS_2023-2024_UMass_Lowell_(4-12-24)_tcm18-383430.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4673,
+        "3.50-3.74": 0.1876,
+        "3.25-3.49": 0.1614,
+        "3.00-3.24": 0.1292,
+        "<3.00": 0.0545
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Massachusetts Lowell does not offer Early Decision for Fall 2023; Early Action is offered but no data on applications or admits are provided in CDS."
+    },
+    {
+      "schoolNameNorm": "portland state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.pdx.edu/research-planning/sites/researchplanning.web.wdt.pdx.edu/files/2024-05/CDS_2023-2024%20(Updated%205-8-24%20AM).pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.216,
+        "3.50-3.74": 0.197,
+        "3.25-3.49": 0.169,
+        "3.00-3.24": 0.162,
+        "<3.00": 0.196
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Portland State University does not have Early Decision or Early Action plans as indicated by 'No' for both in section C21-C22."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "ball state university",
+      "sourceUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf?sc_lang=en&hash=091C733F7675B0EF78AE749E7CCB99F2A44785FC",
+      "error": "Download failed 403: https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf?sc_lang=en&hash=091C733F7675B0EF78AE749E7CCB99F2A44785FC"
+    }
+  ]
+}

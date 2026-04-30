@@ -1,0 +1,103 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:46:50.625Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch38-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No specific GPA distribution data reported in section C9 for Fall 2024 enrolled students; no Early Decision or Early Action application/admission data reported in section C21."
+    },
+    {
+      "schoolNameNorm": "kansas state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.k-state.edu/data/institutional-research/resources/common-data-set/CDS_2024_2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4972,
+        "3.50-3.74": 0.2311,
+        "3.25-3.49": 0.1192,
+        "3.00-3.24": 0.0824,
+        "<3.00": 0.0699
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Kansas State University does not report Early Decision or Early Action application or admission numbers. The GPA distribution is aggregated from reported percentages for ranges 3.75-4.0, 3.50-3.74, 3.25-3.49, 3.00-3.24, and combined below 3.00 from 2.50-2.99, 2.0-2.49, 1.0-1.99, and below 1.0 bands."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data not reported (all zeros). C21 ED plan offered with 839 ED applications; admits count missing."
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The University of Denver's CDS document does not include the GPA distribution table (Section C9) nor specific counts for Early Decision or Early Action applicants and admits (Section C21)."
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA distribution table reported in the source. No Early Decision or Early Action applicant/admitted counts reported in the source."
+    },
+    {
+      "schoolNameNorm": "western michigan university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://files.wmich.edu/s3fs-public/2025-02/wmu_cds_2024-25_0.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.391,
+        "3.50-3.74": 0.169,
+        "3.25-3.49": 0.139,
+        "3.00-3.24": 0.133,
+        "<3.00": 0.168
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": 88.48,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": 18502,
+      "eaAdmitted": 16370,
+      "notes": "Western Michigan University does not offer Early Decision plans for Fall 2024. Early Action plan is nonbinding and not restrictive."
+    }
+  ],
+  "failures": []
+}

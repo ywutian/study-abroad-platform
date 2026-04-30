@@ -18,6 +18,14 @@ export enum SchoolType {
   PRIVATE = 'private',
 }
 
+export enum SchoolSortBy {
+  RANK = 'rank',
+  NAME = 'name',
+  ACCEPTANCE = 'acceptance',
+  SALARY = 'salary',
+  WEIGHTED = 'weighted',
+}
+
 export class SchoolQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: 'Country code' })
   @IsOptional()
@@ -96,6 +104,59 @@ export class SchoolQueryDto extends PaginationDto {
   @Type(() => Number)
   @IsNumber()
   sizeMax?: number;
+
+  @ApiPropertyOptional({ description: 'Minimum post-graduation salary (USD)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  salaryMin?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum post-graduation salary (USD)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  salaryMax?: number;
+
+  @ApiPropertyOptional({
+    description: 'School list sort',
+    enum: SchoolSortBy,
+  })
+  @IsOptional()
+  @IsEnum(SchoolSortBy)
+  sortBy?: SchoolSortBy;
+
+  @ApiPropertyOptional({ description: 'Weighted sort rank weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightRank?: number;
+
+  @ApiPropertyOptional({ description: 'Weighted sort acceptance rate weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightAcceptance?: number;
+
+  @ApiPropertyOptional({ description: 'Weighted sort tuition weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightTuition?: number;
+
+  @ApiPropertyOptional({ description: 'Weighted sort salary weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightSalary?: number;
 
   @ApiPropertyOptional({
     description: 'School type (public/private)',

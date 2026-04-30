@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch58-idahostate-notredame23-ucsc24-ucmerced",
+    "note": "Batch 58: Idaho State (new URL), Notre Dame 2023-24 fallback, UCSC 2024-25 upgrade"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "idaho state university",
+      "schoolName": "Idaho State University",
+      "selectedUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/Academic-Year-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2023-2024/CDS_2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "schoolName": "University of California, Santa Cruz",
+      "selectedUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch24-more-unis",
+    "note": "Batch 24: Colorado College, Skidmore, Kenyon, Oberlin, St. Olaf"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "colorado college",
+      "schoolName": "Colorado College",
+      "selectedUrl": "https://www.coloradocollege.edu/offices/ipe/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "skidmore college",
+      "schoolName": "Skidmore College",
+      "selectedUrl": "https://www.skidmore.edu/ir/facts/common/CDS_2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "kenyon college",
+      "schoolName": "Kenyon College",
+      "selectedUrl": "https://www.kenyon.edu/files/resources/kenyon-cds-202425-march-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "oberlin college",
+      "schoolName": "Oberlin College",
+      "selectedUrl": "https://www.oberlin.edu/media/34940/download?inline="
+    },
+    {
+      "schoolNameNorm": "st. olaf college",
+      "schoolName": "St. Olaf College",
+      "selectedUrl": "https://wp.stolaf.edu/iea/files/2025/12/CDS-2025-26.xlsx-CDS-C.pdf"
+    }
+  ]
+}

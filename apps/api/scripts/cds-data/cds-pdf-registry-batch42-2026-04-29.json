@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch42-arkansas-southdakota-idaho-uwm-florida-bgsu-kent-portland",
+    "note": "Batch 42: confirmed URLs from prior search"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of arkansas",
+      "schoolName": "University of Arkansas",
+      "selectedUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf"
+    },
+    {
+      "schoolNameNorm": "university of south dakota",
+      "schoolName": "University of South Dakota",
+      "selectedUrl": "https://www.usd.edu/-/media/Project/USD/DotEdu/About/Departments-Offices-and-Resources/Institutional-Research-Planning-and-Assessment/USD-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "university of idaho",
+      "schoolName": "University of Idaho",
+      "selectedUrl": "https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "university of wisconsin-milwaukee",
+      "schoolName": "University of Wisconsin-Milwaukee",
+      "selectedUrl": "https://uwm.edu/institutional-research/wp-content/uploads/sites/268/2024/03/CDS23_24_public.pdf"
+    }
+  ]
+}

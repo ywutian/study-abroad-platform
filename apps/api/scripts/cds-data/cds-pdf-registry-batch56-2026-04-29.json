@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch56-ttu-csulb-tamu",
+    "note": "Batch 56: Texas Tech (final), CSULB, Texas A&M (new URL to fix bad data)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-06-03-25.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "schoolName": "California State University, Long Beach",
+      "selectedUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf"
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "schoolName": "Texas A&M University",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf"
+    }
+  ]
+}

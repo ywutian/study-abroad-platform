@@ -113,7 +113,7 @@ export const BUDGET_OPTIONS = [
 export const TIER_CONFIG = {
   reach: { color: '#ef4444', icon: 'rocket-outline' as const, labelKey: 'tierReach' },
   match: { color: '#f59e0b', icon: 'checkmark-circle-outline' as const, labelKey: 'tierMatch' },
-  safety: { color: '#10b981', icon: 'shield-checkmark-outline' as const, labelKey: 'tierSafety' },
+  safety: { color: '#6f7b58', icon: 'shield-checkmark-outline' as const, labelKey: 'tierSafety' },
 } as const;
 
 // ============================================================

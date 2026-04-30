@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T22:03:53.288Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-handcurated-valid.json",
+    "success": 2,
+    "failures": 4,
+    "kept": 2,
+    "phase": "A"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of virginia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.virginia.edu/sites/g/files/jsddwu1106/files/2025-03/CDS_2024-2025_508.pdf",
+      "applicants": {
+        "total": 58951,
+        "inState": 16464,
+        "outOfState": 35526,
+        "international": 6961
+      },
+      "admitted": {
+        "total": 9909,
+        "inState": 4269,
+        "outOfState": 4912,
+        "international": 728
+      },
+      "enrolled": {
+        "total": 3961,
+        "inState": 206,
+        "outOfState": 1132,
+        "international": 206
+      },
+      "rates": {
+        "acceptanceRate": 16.81,
+        "intlAcceptanceRate": 10.46,
+        "oosAcceptanceRate": 13.83,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "applicants": {
+        "total": 32473,
+        "inState": 9164,
+        "outOfState": 15314,
+        "international": 7995
+      },
+      "admitted": {
+        "total": 2597,
+        "inState": 762,
+        "outOfState": 1519,
+        "international": 316
+      },
+      "enrolled": {
+        "total": 1148,
+        "inState": 433,
+        "outOfState": 559,
+        "international": 156
+      },
+      "rates": {
+        "acceptanceRate": 8,
+        "intlAcceptanceRate": 3.95,
+        "oosAcceptanceRate": 9.92,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    }
+  ]
+}

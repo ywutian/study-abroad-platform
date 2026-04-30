@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch35",
+    "note": "Batch 35: SCU (new URL), FIU, IIT 2023-24, Arkansas, LMU retry"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "santa clara university",
+      "schoolName": "Santa Clara University",
+      "selectedUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-01152026.pdf"
+    },
+    {
+      "schoolNameNorm": "florida international university",
+      "schoolName": "Florida International University",
+      "selectedUrl": "https://aim.fiu.edu/cds/CDS2024.pdf"
+    },
+    {
+      "schoolNameNorm": "illinois institute of technology",
+      "schoolName": "Illinois Institute of Technology",
+      "selectedUrl": "https://www.iit.edu/sites/default/files/2024-07/Full-2023-2024-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "schoolName": "University of Arkansas",
+      "selectedUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf"
+    },
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "schoolName": "Loyola Marymount University",
+      "selectedUrl": "https://academics.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/Legacy-CDS_2024-2025_06112025.pdf"
+    }
+  ]
+}

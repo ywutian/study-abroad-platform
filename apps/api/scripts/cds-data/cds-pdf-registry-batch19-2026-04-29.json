@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch19-more-unis",
+    "note": "Batch 19: Lehigh, Amherst, Middlebury, Wellesley, Haverford, Harvey Mudd, Cal Poly SLO, UCI"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "schoolName": "Amherst College",
+      "selectedUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf"
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "schoolName": "Middlebury College",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "schoolName": "Wellesley College",
+      "selectedUrl": "https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2024-2025-FINAL-1.pdf"
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf"
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "schoolName": "University of California, Irvine",
+      "selectedUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    }
+  ]
+}

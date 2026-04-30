@@ -58,7 +58,7 @@ export function AssessmentIntro({ onStartTest }: AssessmentIntroProps) {
                   <Badge variant="secondary">+12</Badge>
                 </div>
               </div>
-              <Button className="w-full mt-4 group-hover:bg-violet-500 dark:group-hover:bg-violet-600 group-hover:text-white transition-colors">
+              <Button className="w-full mt-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 {t('mbti.start')}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -104,7 +104,7 @@ export function AssessmentIntro({ onStartTest }: AssessmentIntroProps) {
                   ))}
                 </div>
               </div>
-              <Button className="w-full mt-4 group-hover:bg-emerald-500 dark:group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+              <Button className="w-full mt-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 {t('holland.start')}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>

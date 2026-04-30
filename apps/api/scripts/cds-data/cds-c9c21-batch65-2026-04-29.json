@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:31:00.469Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch65-2026-04-29.json",
+    "success": 4,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "ohio state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The provided PDF text does not include specific data for Section C9 (GPA distribution) or Section C21 (Early Decision/Early Action breakdown). The sections are listed but do not contain the data tables or numbers required for extraction."
+    },
+    {
+      "schoolNameNorm": "north carolina state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://report.isa.ncsu.edu/ir/cds/pdfs/CDS_2024-25.v3.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7602,
+        "3.50-3.74": 0.1943,
+        "3.25-3.49": 0.0278,
+        "3.00-3.24": 0.0068,
+        "<3.00": 0.0039
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 data reported in C11 section; High school GPA distribution for all enrolled students. Early decision plan not offered. Early action plan offered but no applicant/admit numbers reported."
+    },
+    {
+      "schoolNameNorm": "university of washington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uw-s3-cdn.s3.us-west-2.amazonaws.com/wp-content/uploads/sites/162/2025/04/01121035/CDS_2024-2025_Seattle.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7846,
+        "3.50-3.74": 0.1761,
+        "3.25-3.49": 0.0565,
+        "3.00-3.24": 0.0156,
+        "<3.00": 0.0032
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Washington reported percent of first-time, first-year students with high school GPA ranges but did not provide Early Decision or Early Action application/admission numbers. It states no Early Decision plan and no Early Action plan for Fall 2024."
+    },
+    {
+      "schoolNameNorm": "university of delaware",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ire.udel.edu/files/2025/07/CDS2425_UDelaware.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.51,
+        "3.50-3.74": 0.22,
+        "3.25-3.49": 0.2,
+        "3.00-3.24": 0.08,
+        "<3.00": 0.02
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Delaware indicates it offers Early Decision and Early Action; however, no numeric data is provided for applications or admits for either ED or EA in CDS sections C21 or C22."
+    }
+  ],
+  "failures": []
+}

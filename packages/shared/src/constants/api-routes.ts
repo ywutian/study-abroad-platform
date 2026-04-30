@@ -80,6 +80,11 @@ export const profileRoutes = {
 };
 
 export const forumRoutes = {
+  communities: () => `${API_ROUTES.FORUMS}/communities`,
+  communityFollow: (id: string) => `${API_ROUTES.FORUMS}/communities/${id}/follow`,
+  imageUpload: () => `${API_ROUTES.FORUMS}/uploads/images`,
+  categories: () => `${API_ROUTES.FORUMS}/categories`,
+  stats: () => `${API_ROUTES.FORUMS}/stats`,
   posts: () => `${API_ROUTES.FORUMS}/posts`,
   post: (id: string) => `${API_ROUTES.FORUMS}/posts/${id}`,
   postLike: (id: string) => `${API_ROUTES.FORUMS}/posts/${id}/like`,

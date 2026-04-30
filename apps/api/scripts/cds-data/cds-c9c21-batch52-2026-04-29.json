@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:35:31.263Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch52-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "haverford college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 29.4,
+      "eaAcceptanceRate": null,
+      "edApplied": 745,
+      "edAdmitted": 219,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution not reported (marked as N/A). Early Decision offered with ED I and other ED round data. No Early Action plan."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 18.02,
+      "eaAcceptanceRate": null,
+      "edApplied": 1221,
+      "edAdmitted": 220,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Swarthmore College does not report high school GPA distribution data in the CDS. It offers an Early Decision plan with reported applicant and admit numbers. Early Action is not offered."
+    },
+    {
+      "schoolNameNorm": "michigan state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.msu.edu/-/media/assets/ir/docs/cds/cds-2023-2024.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5529999999999999,
+        "3.50-3.74": 0.23,
+        "3.25-3.49": 0.129,
+        "3.00-3.24": 0.069,
+        "<3.00": 0.021
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No Early Decision plans offered; Early Action plan is nonbinding with closing date 11/1 and notification date 1/15; not restrictive."
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/06/CDS_2023-2024_Complete_V2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 17.83,
+      "eaAcceptanceRate": null,
+      "edApplied": 572,
+      "edAdmitted": 102,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Harvey Mudd College offers Early Decision plans but does not have an Early Action plan."
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 36.58,
+      "eaAcceptanceRate": null,
+      "edApplied": 667,
+      "edAdmitted": 244,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA breakdown reported for C9; Early Decision plan offered with 667 applications and 244 admitted; no Early Action plan."
+    }
+  ],
+  "failures": []
+}

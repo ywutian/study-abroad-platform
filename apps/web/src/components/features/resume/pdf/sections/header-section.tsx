@@ -117,7 +117,7 @@ export function HeaderSectionBanner({ section, theme }: SectionRendererProps) {
 
   // Banner uses headerBg + headerText colors — with fallbacks
   const headerBg = theme.headerBg || theme.primary || '#1e3a5f';
-  const headerText = theme.headerText || '#ffffff';
+  const headerText = theme.headerText || '#fff9ef';
 
   const bannerTheme = {
     ...theme,

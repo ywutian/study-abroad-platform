@@ -1,0 +1,71 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:46:16.813Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch17-2026-04-29.json",
+    "success": 4,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20253.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reported GPA ranges for all enrolled students only; mapped 4.0 and 3.75-3.99 into 3.75-4.00. C21 indicates no Early Decision and no Early Action plan, so applicant/admit counts are null."
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table present but all reported values are 0.00 in the provided text, so GPA distribution not extractable from this source text. C21 shows both Early Decision and Early Action sections present, but the application/admit counts are blank/not reported."
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 reports 0.00% across all GPA bands and 0.00% total for enrolled students; C21 lists Early Decision plan but provides no counts; C22 indicates no Early Action plan."
+    },
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "cycleYear": 2024,
+      "sourceUrl": "https://apb.ucla.edu/file/22f7b216-5bcd-4401-bf95-6b9fc3652a67",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution not present in provided PDF text; C21 early decision/early action counts not provided in the excerpt."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    }
+  ]
+}

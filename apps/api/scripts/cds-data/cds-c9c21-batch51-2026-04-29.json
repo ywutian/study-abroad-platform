@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:33:13.159Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch51-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of wyoming",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uwyo.edu/oia/_files/cds/cds2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.443,
+        "3.50-3.74": 0.204,
+        "3.25-3.49": 0.123,
+        "3.00-3.24": 0.114,
+        "<3.00": 0.116
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Wyoming does not offer Early Decision or Early Action plans for first-time, first-year applicants as of 2024-2025."
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://my.wlu.edu/document/2024-common-data-set",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.89,
+      "eaAcceptanceRate": null,
+      "edApplied": 844,
+      "edAdmitted": 286,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution not reported (0.00% for all ranges indicating none reported). Early Decision plan offered, Early Action not offered."
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 13.47,
+      "eaAcceptanceRate": null,
+      "edApplied": 2005,
+      "edAdmitted": 270,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution data in section C11 reports all zeros and no meaningful distribution; thus set to null. Early Decision plan offered with specific application and notification dates. No Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 30.5,
+      "eaAcceptanceRate": null,
+      "edApplied": 1341,
+      "edAdmitted": 409,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution is not reported (all values 0.00%). Early Decision data for Fall 2024 entering class: 1341 applied, 409 admitted. No Early Action reported."
+    },
+    {
+      "schoolNameNorm": "macalester college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2023_2024.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 46.32,
+      "eaAcceptanceRate": null,
+      "edApplied": 380,
+      "edAdmitted": 176,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution not reported in the specified C9 table; Early Decision data found; Early Action data plan exists but no applicants or admits reported."
+    }
+  ],
+  "failures": []
+}

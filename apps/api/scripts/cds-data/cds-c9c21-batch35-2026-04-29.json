@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:35:25.792Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch35-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "santa clara university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.scu.edu/media/offices/institutional-research/fampf/common-data-set/CDS-2024-2025---Final---Revised-01152026.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4447,
+        "3.50-3.74": 0.2762,
+        "3.25-3.49": 0.1304,
+        "3.00-3.24": 0.0416,
+        "<3.00": 0.1069
+      },
+      "edAcceptanceRate": 80.13,
+      "eaAcceptanceRate": null,
+      "edApplied": 609,
+      "edAdmitted": 488,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution reported for all enrolled students; early decision data combined for ED1 and ED2; no Early Action applicants reported."
+    },
+    {
+      "schoolNameNorm": "florida international university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://aim.fiu.edu/cds/CDS2024.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.84,
+        "3.50-3.74": 0.13,
+        "3.25-3.49": 0.03,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Florida International University does not report numbers for Early Decision or Early Action applicants/admitted; the institution has an early decision plan but no data provided. There is no early action plan."
+    },
+    {
+      "schoolNameNorm": "illinois institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.iit.edu/sites/default/files/2024-07/Full-2023-2024-Common-Data-Set.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.838,
+        "3.50-3.74": 0.113,
+        "3.25-3.49": 0.026,
+        "3.00-3.24": 0.015,
+        "<3.00": 0.008
+      },
+      "edAcceptanceRate": 68.12,
+      "eaAcceptanceRate": null,
+      "edApplied": 69,
+      "edAdmitted": 47,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution mapped from reported percentages: 4.0 (64.0%) + 3.75-3.99 (19.8%) = 83.8% for 3.75-4.00 band; other bands combined accordingly. Early Decision data are reported, no Early Action applicant or admit numbers provided."
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The University of Arkansas Common Data Set does not report the high school GPA distribution or Early Decision/Early Action application and admission numbers."
+    },
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://academics.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/Legacy-CDS_2024-2025_06112025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.11,
+      "eaAcceptanceRate": null,
+      "edApplied": 807,
+      "edAdmitted": 356,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution based on percent of all enrolled, degree-seeking, first-time, first-year students reported in CDS-C11. Early Decision plan data from CDS-C21; no EA applicant/admit numbers reported."
+    }
+  ],
+  "failures": []
+}

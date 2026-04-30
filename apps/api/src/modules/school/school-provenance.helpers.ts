@@ -368,7 +368,7 @@ export function createFieldProvenance(params: {
       ? { cycleYear: params.cycleYear }
       : {}),
     ...(params.notes ? { notes: params.notes } : {}),
-    ...(tier === 'INFERRED' && typeof params.confidence === 'number'
+    ...(typeof params.confidence === 'number'
       ? { confidence: params.confidence }
       : {}),
   };

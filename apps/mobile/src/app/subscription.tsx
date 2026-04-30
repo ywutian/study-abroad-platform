@@ -106,7 +106,7 @@ const PLAN_ICONS: Record<PlanKey, keyof typeof Ionicons.glyphMap> = {
 
 const PLAN_ACCENT_COLORS: Record<PlanKey, string> = {
   free: '#64748b',
-  pro: '#6366f1',
+  pro: '#1d1813',
   premium: '#f59e0b',
 };
 
@@ -502,7 +502,7 @@ export default function SubscriptionPage() {
                   onPress={() => handleSubscribe(planKey)}
                   loading={isSubscribing}
                   style={[styles.planButton, { backgroundColor: accentColor }]}
-                  leftIcon={<Ionicons name="arrow-up-circle-outline" size={20} color="#ffffff" />}
+                  leftIcon={<Ionicons name="arrow-up-circle-outline" size={20} color="#fff9ef" />}
                 >
                   {t('subscription.upgrade', 'Upgrade')}
                 </AnimatedButton>
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: '#ffffff',
+    color: '#fff9ef',
     marginBottom: spacing.xs,
   },
   heroSubtitle: {

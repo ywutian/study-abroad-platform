@@ -32,7 +32,7 @@ export class EmailService {
     this.fromEmail =
       this.configService.get<string>('EMAIL_FROM') || 'onboarding@resend.dev';
     this.fromName =
-      this.configService.get<string>('EMAIL_FROM_NAME') || '留学申请平台';
+      this.configService.get<string>('EMAIL_FROM_NAME') || 'Lumni';
 
     const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
     if (resendApiKey) {
@@ -92,38 +92,38 @@ export class EmailService {
 
     return this.sendEmail({
       to,
-      subject: '验证您的邮箱 - 留学申请平台',
+      subject: '验证您的邮箱 - Lumni',
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #3b82f6; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #1d1813; }
             .content { padding: 30px 0; }
-            .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
-            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px; }
+            .button { display: inline-block; padding: 12px 24px; background: #1d1813; color: #fff7ea; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #d8c8b2; color: #6f665b; font-size: 12px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="color: #3b82f6; margin: 0;">留学申请平台</h1>
+              <h1 style="color: #1d1813; margin: 0;">Lumni</h1>
             </div>
             <div class="content">
               <h2>验证您的邮箱</h2>
-              <p>感谢您注册留学申请平台！请点击下方按钮验证您的邮箱地址：</p>
+              <p>感谢您注册 Lumni！请点击下方按钮验证您的邮箱地址：</p>
               <p style="text-align: center; margin: 30px 0;">
                 <a href="${verifyUrl}" class="button">验证邮箱</a>
               </p>
               <p>如果按钮无法点击，请复制以下链接到浏览器：</p>
-              <p style="word-break: break-all; color: #666;">${verifyUrl}</p>
+              <p style="word-break: break-all; color: #6f665b;">${verifyUrl}</p>
               <p>此链接24小时内有效。</p>
             </div>
             <div class="footer">
-              <p>© 2026 留学申请平台</p>
+              <p>© 2026 Lumni</p>
               <p>如果您没有注册账号，请忽略此邮件。</p>
             </div>
           </div>
@@ -138,26 +138,26 @@ export class EmailService {
 
     return this.sendEmail({
       to,
-      subject: '重置密码 - 留学申请平台',
+      subject: '重置密码 - Lumni',
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #3b82f6; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #1d1813; }
             .content { padding: 30px 0; }
-            .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
-            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px; }
-            .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 12px; border-radius: 6px; margin: 20px 0; }
+            .button { display: inline-block; padding: 12px 24px; background: #1d1813; color: #fff7ea; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #d8c8b2; color: #6f665b; font-size: 12px; }
+            .warning { background: #f7e8c4; border: 1px solid #ddb85a; padding: 12px; border-radius: 6px; margin: 20px 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="color: #3b82f6; margin: 0;">留学申请平台</h1>
+              <h1 style="color: #1d1813; margin: 0;">Lumni</h1>
             </div>
             <div class="content">
               <h2>重置您的密码</h2>
@@ -166,14 +166,14 @@ export class EmailService {
                 <a href="${resetUrl}" class="button">重置密码</a>
               </p>
               <p>如果按钮无法点击，请复制以下链接到浏览器：</p>
-              <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+              <p style="word-break: break-all; color: #6f665b;">${resetUrl}</p>
               <div class="warning">
                 <strong>⚠️ 安全提示</strong>
                 <p style="margin: 5px 0 0;">此链接1小时内有效。如果您没有请求重置密码，请忽略此邮件，您的账号是安全的。</p>
               </div>
             </div>
             <div class="footer">
-              <p>© 2026 留学申请平台</p>
+              <p>© 2026 Lumni</p>
             </div>
           </div>
         </body>
@@ -187,32 +187,32 @@ export class EmailService {
 
     return this.sendEmail({
       to,
-      subject: '欢迎加入留学申请平台！',
+      subject: '欢迎加入 Lumni！',
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #3b82f6; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #1d1813; }
             .content { padding: 30px 0; }
-            .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
-            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px; }
-            .features { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .button { display: inline-block; padding: 12px 24px; background: #1d1813; color: #fff7ea; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #d8c8b2; color: #6f665b; font-size: 12px; }
+            .features { background: #fff4e2; padding: 20px; border-radius: 8px; margin: 20px 0; }
             .feature { display: flex; align-items: center; margin: 10px 0; }
-            .feature-icon { width: 24px; height: 24px; margin-right: 10px; color: #3b82f6; }
+            .feature-icon { width: 24px; height: 24px; margin-right: 10px; color: #1d1813; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="color: #3b82f6; margin: 0;">🎓 留学申请平台</h1>
+              <h1 style="color: #1d1813; margin: 0;">Lumni</h1>
             </div>
             <div class="content">
               <h2>欢迎${userName ? `, ${escapeHtml(userName)}` : ''}！</h2>
-              <p>感谢您加入留学申请平台，您的留学之旅从这里开始！</p>
+              <p>感谢您加入 Lumni，你的留学申请流程从这里开始！</p>
               
               <div class="features">
                 <h3 style="margin-top: 0;">平台功能</h3>
@@ -227,7 +227,7 @@ export class EmailService {
               </p>
             </div>
             <div class="footer">
-              <p>© 2026 留学申请平台</p>
+              <p>© 2026 Lumni</p>
               <p>有任何问题？随时联系我们的支持团队</p>
             </div>
           </div>
@@ -241,18 +241,18 @@ export class EmailService {
   async sendAccountDeletionEmail(to: string): Promise<boolean> {
     return this.sendEmail({
       to,
-      subject: '账号删除确认 - 留学申请平台',
+      subject: '账号删除确认 - Lumni',
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #ef4444; }
             .content { padding: 30px 0; }
-            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px; }
+            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #d8c8b2; color: #6f665b; font-size: 12px; }
             .warning { background: #fef2f2; border: 1px solid #ef4444; padding: 15px; border-radius: 6px; margin: 20px 0; }
           </style>
         </head>
@@ -276,7 +276,7 @@ export class EmailService {
               <p>如果这不是您本人操作，请立即联系我们的支持团队。</p>
             </div>
             <div class="footer">
-              <p>© 2026 留学申请平台</p>
+              <p>© 2026 Lumni</p>
               <p>客服邮箱：support@studyabroad.com</p>
             </div>
           </div>
@@ -295,27 +295,27 @@ export class EmailService {
   ): Promise<boolean> {
     return this.sendEmail({
       to,
-      subject: `订阅成功 - ${escapeHtml(planName)} - 留学申请平台`,
+      subject: `订阅成功 - ${escapeHtml(planName)} - Lumni`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #22c55e; }
+            .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #1d1813; }
             .content { padding: 30px 0; }
-            .button { display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
-            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px; }
-            .receipt { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .button { display: inline-block; padding: 12px 24px; background: #1d1813; color: #fff7ea; text-decoration: none; border-radius: 6px; font-weight: 600; }
+            .footer { text-align: center; padding-top: 20px; border-top: 1px solid #d8c8b2; color: #6f665b; font-size: 12px; }
+            .receipt { background: #fff4e2; padding: 20px; border-radius: 8px; margin: 20px 0; }
             .receipt-row { display: flex; justify-content: space-between; margin: 10px 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="color: #22c55e; margin: 0;">✅ 订阅成功</h1>
+              <h1 style="color: #1d1813; margin: 0;">✅ 订阅成功</h1>
             </div>
             <div class="content">
               <p>感谢您订阅 <strong>${escapeHtml(planName)}</strong>！您现在可以享受所有高级功能。</p>
@@ -341,7 +341,7 @@ export class EmailService {
               </p>
             </div>
             <div class="footer">
-              <p>© 2026 留学申请平台</p>
+              <p>© 2026 Lumni</p>
               <p>如有问题，请联系 billing@studyabroad.com</p>
             </div>
           </div>
@@ -370,9 +370,9 @@ export class EmailService {
         <head>
           <meta charset="utf-8">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1d1813; background: #f7f1e6; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .info { background: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0; }
+            .info { background: #fff4e2; padding: 15px; border-radius: 6px; margin: 15px 0; }
             .message { background: white; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin: 15px 0; }
           </style>
         </head>

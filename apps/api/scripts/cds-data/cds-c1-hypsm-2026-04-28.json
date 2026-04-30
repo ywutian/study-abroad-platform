@@ -1,0 +1,212 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T10:24:14.837Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-hypsm-manual-2026-04-28.json",
+    "success": 6,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "california institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+      "applicants": {
+        "total": 13856,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 356,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 218,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 2.57,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 first-time, first-year degree-seeking totals extracted from Fall 2024: applicants 9401+4446+9+0=13856, admitted 166+190+0+0=356, enrolled 107+111+0+0=218. Residency breakdown table shows all residency categories as 0, so inState/outOfState/international preserved as null per instruction."
+    },
+    {
+      "schoolNameNorm": "duke university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.provost.duke.edu/sites/default/files/CDS-2024-25-Final-2.pdf",
+      "applicants": {
+        "total": 51795,
+        "inState": 4748,
+        "outOfState": 31906,
+        "international": 15141
+      },
+      "admitted": {
+        "total": 2957,
+        "inState": 377,
+        "outOfState": 1995,
+        "international": 585
+      },
+      "enrolled": {
+        "total": 1740,
+        "inState": 267,
+        "outOfState": 1178,
+        "international": 295
+      },
+      "rates": {
+        "acceptanceRate": 5.71,
+        "intlAcceptanceRate": 3.86,
+        "oosAcceptanceRate": 6.25,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "washington university in st. louis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://washu.edu/app/uploads/2025/06/2024-2025-WashU-CDS.pdf",
+      "applicants": {
+        "total": 32754,
+        "inState": 2051,
+        "outOfState": 23334,
+        "international": 7369
+      },
+      "admitted": {
+        "total": 3951,
+        "inState": 386,
+        "outOfState": 3064,
+        "international": 501
+      },
+      "enrolled": {
+        "total": 1847,
+        "inState": 266,
+        "outOfState": 1353,
+        "international": 228
+      },
+      "rates": {
+        "acceptanceRate": 12.06,
+        "intlAcceptanceRate": 6.8,
+        "oosAcceptanceRate": 13.13,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "applicants": {
+        "total": 32473,
+        "inState": 9164,
+        "outOfState": 15314,
+        "international": 7995
+      },
+      "admitted": {
+        "total": 2597,
+        "inState": 762,
+        "outOfState": 1519,
+        "international": 316
+      },
+      "enrolled": {
+        "total": 1148,
+        "inState": 433,
+        "outOfState": 559,
+        "international": 156
+      },
+      "rates": {
+        "acceptanceRate": 8,
+        "intlAcceptanceRate": 3.95,
+        "oosAcceptanceRate": 9.92,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.amherst.edu/system/files/C%20First-Time%2C%20First-Year%20Admission_3.pdf",
+      "applicants": {
+        "total": 13743,
+        "inState": 1028,
+        "outOfState": 6927,
+        "international": 5664
+      },
+      "admitted": {
+        "total": 1238,
+        "inState": 123,
+        "outOfState": 957,
+        "international": 150
+      },
+      "enrolled": {
+        "total": 480,
+        "inState": 57,
+        "outOfState": 332,
+        "international": 89
+      },
+      "rates": {
+        "acceptanceRate": 9.01,
+        "intlAcceptanceRate": 2.65,
+        "oosAcceptanceRate": 13.82,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-w2.wpmucdn.com/voices.uchicago.edu/dist/8/2077/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "applicants": {
+        "total": 38631,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1849,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1626,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 4.79,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 totals computed from gender rows only: applicants 17373+21249+9=38631; admits 994+855+0=1849; enrolled 885+741+0+0+0+0=1626. Residency breakdown table present but blank, so residency counts remain null."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "johns hopkins university",
+      "schoolName": "Johns Hopkins University",
+      "sourceUrl": "https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf",
+      "error": "Download failed 403: https://oira.jhu.edu/wp-content/uploads/CDS_2024-2025_JHU.pdf"
+    },
+    {
+      "schoolNameNorm": "princeton university",
+      "schoolName": "Princeton University",
+      "sourceUrl": "https://ir.princeton.edu/document/546",
+      "error": "Download failed 403: https://ir.princeton.edu/document/546"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "schoolName": "Williams College",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/06/CDS_2024_2025_Williams_V5.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/06/CDS_2024_2025_Williams_V5.pdf"
+    }
+  ]
+}

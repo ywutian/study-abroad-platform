@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch76-pitt-pratt",
+    "note": "Batch 76: University of Pittsburgh (2024-25), Pratt Institute (2023-24)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "schoolName": "University of Pittsburgh",
+      "selectedUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf"
+    },
+    {
+      "schoolNameNorm": "pratt institute",
+      "schoolName": "Pratt Institute",
+      "selectedUrl": "https://www.pratt.edu/wp-content/uploads/2024/04/Pratt-Institute-Commom-Data-Set-2023-2024.pdf"
+    }
+  ]
+}

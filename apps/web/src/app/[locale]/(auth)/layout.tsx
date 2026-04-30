@@ -4,9 +4,10 @@ import { useEffect, Suspense } from 'react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { GraduationCap, Sparkles, TrendingUp, Users, Globe, Star } from 'lucide-react';
+import { Sparkles, TrendingUp, Users, Globe, Star } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { FadeInView } from '@/components/ui/motion';
+import { LumniMark } from '@/components/ui/lumni-mark';
 
 /**
  * Redirect authenticated users — isolated in its own component
@@ -73,10 +74,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           href={user ? '/dashboard' : '/'}
           className="group flex items-center gap-2.5 text-xl font-bold text-foreground hover:opacity-80 transition-all"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-md border-2 border-primary/20 bg-primary">
-            <GraduationCap className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-bold">StudyAbroad</span>
+          <LumniMark className="h-10 w-10 border-2" iconClassName="h-5 w-5" />
+          <span className="font-bold">Lumni</span>
         </Link>
       </div>
 

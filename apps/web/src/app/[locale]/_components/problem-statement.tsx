@@ -62,7 +62,7 @@ export function ProblemStatement() {
                 delay: index * 0.08,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-7 shadow-[var(--landing-shadow-card)]"
+              className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-7 shadow-[var(--landing-shadow-card)]"
             >
               <div className="flex items-end gap-4">
                 <span className="text-4xl font-semibold leading-none tracking-[-0.04em] text-[var(--landing-subtle)]">
@@ -94,7 +94,7 @@ function SignalNoiseVisual({ reduced }: { reduced: boolean }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="overflow-hidden rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-card)]"
+      className="overflow-hidden rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-card)]"
     >
       <div className="flex items-center justify-between border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)] px-5 py-4">
         <div className="text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
@@ -161,7 +161,7 @@ function DecisionQuestionsVisual({ reduced }: { reduced: boolean }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.6, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex min-h-[320px] flex-col justify-between overflow-hidden rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-6 shadow-[var(--landing-shadow-card)]"
+      className="relative flex min-h-[320px] flex-col justify-between overflow-hidden rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-6 shadow-[var(--landing-shadow-card)]"
     >
       <div className="absolute right-5 top-5 rounded-full border border-[color:var(--ds-status-reach)]/25 bg-[color:var(--ds-status-reach-bg)] px-3 py-1 text-2xs uppercase tracking-[0.22em] text-[color:var(--ds-status-reach-fg)]">
         {copy.stamp}

@@ -15,6 +15,7 @@ const TIER_STYLES: Record<SchoolFieldSource['tier'], string> = {
   SEED: 'border-dashed border-muted-foreground/40 bg-muted/60 text-muted-foreground',
   COMMUNITY: 'border-pink-500/30 bg-pink-500/10 text-pink-700 dark:text-pink-300',
   INFERRED: 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300',
+  UNAVAILABLE: 'border-dashed border-muted-foreground/40 bg-muted/60 text-muted-foreground',
 };
 
 interface TrustBadgeProps {
@@ -48,7 +49,7 @@ export function TrustBadge({ source, sourceUrl, className }: TrustBadgeProps) {
         <TooltipTrigger asChild>
           <Badge
             variant="outline"
-            className={cn('gap-1 text-[10px] font-medium', TIER_STYLES[source.tier], className)}
+            className={cn('gap-1 text-2xs font-medium', TIER_STYLES[source.tier], className)}
           >
             {tierLabel}
           </Badge>

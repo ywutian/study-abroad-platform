@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T08:00:47.767Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4o-mini",
+    "input": "apps/api/scripts/cds-data/cds-pdf-registry-batch87-2026-04-30.json",
+    "success": 2,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 0,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": 0,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.16,
+      "eaAcceptanceRate": null,
+      "edApplied": 656,
+      "edAdmitted": 106,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "sourceUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    }
+  ]
+}

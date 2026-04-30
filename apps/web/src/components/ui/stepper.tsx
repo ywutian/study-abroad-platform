@@ -448,7 +448,7 @@ export function SuccessAnimation({ show, title, description, onComplete }: Succe
                       key={i}
                       className="absolute w-2 h-2 rounded-full"
                       style={{
-                        background: ['#10b981', '#6366f1', '#f59e0b', '#ef4444'][i % 4],
+                        background: ['#6f7b58', '#1d1813', '#f59e0b', '#ef4444'][i % 4],
                         left: '50%',
                         top: '50%',
                       }}

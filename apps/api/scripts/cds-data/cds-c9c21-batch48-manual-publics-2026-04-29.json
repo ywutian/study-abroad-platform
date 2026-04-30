@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-official-cds-publics-batch48",
+    "note": "Official 2024-25 CDS PDF/XLSX/DOCX sources parsed directly for C11/C21/C22."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-06-03-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.377,
+        "3.50-3.74": 0.356,
+        "3.25-3.49": 0.171,
+        "3.00-3.24": 0.062,
+        "<3.00": 0.034
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 all-enrolled GPA column: 4.0=4.10%, 3.75-3.99=33.60%, 3.50-3.74=35.60%, 3.25-3.49=17.10%, 3.00-3.24=6.20%, 2.50-2.99=2.90%, 2.0-2.49=0.50%. C21 is marked Yes but does not publish early-decision applicant/admit counts; C22 early action is marked No."
+    },
+    {
+      "schoolNameNorm": "mississippi state university",
+      "schoolName": "Mississippi State University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.msstate.edu/cdsets.php#cds2024",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5122,
+        "3.50-3.74": 0.1779,
+        "3.25-3.49": 0.1107,
+        "3.00-3.24": 0.0814,
+        "<3.00": 0.1173
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official MSU 2024-25 CDS XLSX served from the Common Data Sets page. C11: 4.0=26.99%, 3.75-3.99=24.23%, 3.50-3.74=17.79%, 3.25-3.49=11.07%, 3.00-3.24=8.14%, 2.50-2.99=8.87%, 2.0-2.49=2.86%, 1.0-1.99=0%, below 1.0=0%. C21/C22 mark ED and EA as No."
+    },
+    {
+      "schoolNameNorm": "grand valley state university",
+      "schoolName": "Grand Valley State University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.gvsu.edu/cms4/asset/EFAB4AD2-A926-8D16-A5685AB71E0C7DC3/cds_2024-2025_new.xlsx",
+      "gpaDistribution": {
+        "3.75-4.00": 0.3559,
+        "3.50-3.74": 0.1733,
+        "3.25-3.49": 0.1388,
+        "3.00-3.24": 0.1172,
+        "<3.00": 0.2148
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 all-enrolled GPA column: 4.0=15.56%, 3.75-3.99=20.03%, 3.50-3.74=17.33%, 3.25-3.49=13.88%, 3.00-3.24=11.72%, 2.50-2.99=17.28%, 2.0-2.49=4.08%, 1.0-1.99=0.12%. C21/C22 mark ED and EA as No."
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds-2024-2025.docx",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official JMU 2024-25 CDS DOCX publishes C11 rows but leaves all GPA percentage cells blank and totals at 0.00%. C21 early decision is marked No; C22 early action has no applicant/admit counts."
+    }
+  ]
+}

@@ -7,7 +7,7 @@ import type { Message, MessageResponse } from '../utils/types';
 
 // 监听扩展安装/更新
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('[StudyAbroad Extension] Installed:', details.reason);
+  console.log('[Lumni Extension] Installed:', details.reason);
 
   if (details.reason === 'install') {
     // 首次安装，显示欢迎页面
@@ -82,7 +82,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (isCommonApp) {
     // 设置徽章显示
     await chrome.action.setBadgeText({ tabId, text: 'CA' });
-    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#4F46E5' });
+    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#1D1813' });
   } else {
     await chrome.action.setBadgeText({ tabId, text: '' });
   }
@@ -92,7 +92,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'fill-field',
-    title: 'Fill with StudyAbroad data',
+    title: 'Fill with Lumni data',
     contexts: ['editable'],
     documentUrlPatterns: ['https://apply.commonapp.org/*', 'https://www.commonapp.org/*'],
   });
@@ -111,4 +111,4 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-console.log('[StudyAbroad Extension] Background service worker initialized');
+console.log('[Lumni Extension] Background service worker initialized');

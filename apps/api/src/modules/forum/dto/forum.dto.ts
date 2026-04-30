@@ -8,6 +8,8 @@ import {
   IsArray,
   IsEnum,
   IsDateString,
+  ValidateNested,
+  ArrayMaxSize,
   Min,
   Max,
   MaxLength,
@@ -21,6 +23,18 @@ export enum PostSortBy {
   POPULAR = 'popular',
   COMMENTS = 'comments',
   RECOMMENDED = 'recommended',
+}
+
+export enum PostFeed {
+  POPULAR = 'popular',
+  LATEST = 'latest',
+  HOME = 'home',
+}
+
+export enum CommunityScope {
+  MINE = 'mine',
+  POPULAR = 'popular',
+  ALL = 'all',
 }
 
 // 举报Reason
@@ -77,6 +91,70 @@ export class CreateCategoryDto {
   sortOrder?: number;
 }
 
+export class CreateCommunityDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(80)
+  name: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  description?: string;
+}
+
+export class CommunityQueryDto {
+  @ApiPropertyOptional({ enum: CommunityScope })
+  @IsOptional()
+  @IsEnum(CommunityScope)
+  scope?: CommunityScope = CommunityScope.POPULAR;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
+}
+
+export class ForumImageInputDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  key: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(2000)
+  url: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  mimeType: string;
+
+  @ApiProperty()
+  @IsInt()
+  @Min(1)
+  size: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  width?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  height?: number;
+}
+
 export class CreatePostDto {
   @ApiProperty()
   @IsString()
@@ -88,13 +166,19 @@ export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
-  title: string;
+  communityId: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
+  title: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   @MaxLength(50000)
-  content: string;
+  content?: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
@@ -102,6 +186,14 @@ export class CreatePostDto {
   @IsString({ each: true })
   @MaxLength(500, { each: true })
   tags?: string[];
+
+  @ApiPropertyOptional({ type: [ForumImageInputDto] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(6)
+  @ValidateNested({ each: true })
+  @Type(() => ForumImageInputDto)
+  images?: ForumImageInputDto[];
 
   // 组队帖子字段
   @ApiPropertyOptional()
@@ -180,6 +272,17 @@ export class PostQueryDto {
   @IsString()
   @MaxLength(200)
   categoryId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  communityId?: string;
+
+  @ApiPropertyOptional({ enum: PostFeed })
+  @IsOptional()
+  @IsEnum(PostFeed)
+  feed?: PostFeed;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -286,6 +389,35 @@ export class CategoryDto {
   postCount: number;
 }
 
+export class CommunityDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  slug: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  description?: string;
+
+  @ApiProperty()
+  postCount: number;
+
+  @ApiProperty()
+  followerCount: number;
+
+  @ApiProperty()
+  isOfficial: boolean;
+
+  @ApiProperty()
+  isFollowing: boolean;
+
+  @ApiProperty()
+  createdAt: Date;
+}
+
 export class AuthorDto {
   @ApiProperty()
   id: string;
@@ -300,6 +432,32 @@ export class AuthorDto {
   isVerified: boolean;
 }
 
+export class ForumImageDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  key: string;
+
+  @ApiProperty()
+  url: string;
+
+  @ApiProperty()
+  mimeType: string;
+
+  @ApiProperty()
+  size: number;
+
+  @ApiPropertyOptional()
+  width?: number;
+
+  @ApiPropertyOptional()
+  height?: number;
+
+  @ApiProperty()
+  sortOrder: number;
+}
+
 export class PostDto {
   @ApiProperty()
   id: string;
@@ -309,6 +467,12 @@ export class PostDto {
 
   @ApiProperty({ type: CategoryDto })
   category?: CategoryDto;
+
+  @ApiPropertyOptional({ type: CommunityDto })
+  community?: CommunityDto;
+
+  @ApiPropertyOptional()
+  communityId?: string;
 
   @ApiProperty({ type: AuthorDto })
   author: AuthorDto;
@@ -321,6 +485,9 @@ export class PostDto {
 
   @ApiProperty({ type: [String] })
   tags: string[];
+
+  @ApiProperty({ type: [ForumImageDto] })
+  images: ForumImageDto[];
 
   @ApiProperty()
   isTeamPost: boolean;

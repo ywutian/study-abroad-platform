@@ -1,6 +1,6 @@
 #!/bin/bash
 # ╔══════════════════════════════════════════════════════════════╗
-# ║  Study Abroad Platform — Docker API + 本地 Web 热更新          ║
+# ║  Lumni — Docker API + 本地 Web 热更新                         ║
 # ║                                                              ║
 # ║  用法:                                                       ║
 # ║    ./dev-docker.sh          启动 db/redis/api 容器 + Next dev  ║

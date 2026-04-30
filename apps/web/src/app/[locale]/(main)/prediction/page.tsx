@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { AlertTriangle, History, Info, Target } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, History, Info, Target } from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
@@ -45,6 +46,8 @@ interface SchoolListItemApi {
 
 export default function PredictionPage() {
   const t = useTranslations();
+  const searchParams = useSearchParams();
+  const hasAutoRun = useRef(false);
 
   // School selection (pre-filled from user school list)
   const [activeTab, setActiveTab] = useState<'predict' | 'history'>('predict');
@@ -86,7 +89,7 @@ export default function PredictionPage() {
   // Data fetching
   const { data: dashboardData } = usePredictionDashboard();
   const predictMutation = useRunPrediction();
-  const { data: ucIdsData } = useQuery({
+  const { data: ucIdsData, isLoading: ucIdsLoading } = useQuery({
     queryKey: ['schools', 'uc-ids'],
     queryFn: () => apiClient.get<{ schoolIds: string[] }>(schoolRoutes.ucIds()),
   });
@@ -106,6 +109,22 @@ export default function PredictionPage() {
       currentSchoolType: profileData.currentSchoolType,
     }).isInternational;
   }, [profileData]);
+
+  const profileChecklist = useMemo(() => {
+    if (!profileData) return [];
+    return [
+      { key: 'gpa', complete: Boolean(profileData.gpa) },
+      {
+        key: 'testScores',
+        complete:
+          Boolean(profileData.testScores?.length) || Boolean(profileData.applyingTestOptional),
+      },
+      { key: 'activities', complete: Boolean(profileData.activities?.length) },
+      { key: 'awards', complete: Boolean(profileData.awards?.length) },
+      { key: 'major', complete: Boolean(profileData.targetMajor || profileData.intendedMajor) },
+    ];
+  }, [profileData]);
+  const hasProfileGaps = profileChecklist.some((item) => !item.complete);
 
   // Handlers
   const handleAddSchool = useCallback((school: SchoolSearchItem) => {
@@ -252,6 +271,22 @@ export default function PredictionPage() {
     setUcExpandedFrom(null);
   }, [ucExpandedFrom]);
 
+  useEffect(() => {
+    if (hasAutoRun.current) return;
+    if (searchParams.get('autorun') !== '1') return;
+    if (!hasPreFilled || selectedSchools.length === 0 || predictMutation.isPending || ucIdsLoading)
+      return;
+    hasAutoRun.current = true;
+    handlePredict();
+  }, [
+    handlePredict,
+    hasPreFilled,
+    predictMutation.isPending,
+    searchParams,
+    selectedSchools.length,
+    ucIdsLoading,
+  ]);
+
   return (
     <AIErrorBoundary feature="prediction">
       <PageContainer maxWidth="default">
@@ -278,21 +313,45 @@ export default function PredictionPage() {
           <PredictionHistoryTab />
         ) : (
           <>
-            {/* Data completeness warning for sparse profiles */}
-            {profileData && !profileData.gpa && !profileData.testScores?.length && (
-              <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
-                <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <div className="flex-1 text-sm text-amber-900 dark:text-amber-100">
-                  {t('prediction.lowDataWarning')}
+            {/* Data completeness checklist for sparse profiles */}
+            {profileData && hasProfileGaps && (
+              <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      {t('prediction.dataChecklistTitle')}
+                    </p>
+                    <p className="mt-1 text-sm text-amber-900/80 dark:text-amber-100/80">
+                      {t('prediction.dataChecklistDesc')}
+                    </p>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                      {profileChecklist.map((item) => (
+                        <div
+                          key={item.key}
+                          className="flex items-center gap-2 rounded-md bg-background/60 px-2.5 py-1.5 text-xs"
+                        >
+                          <CheckCircle2
+                            className={
+                              item.complete
+                                ? 'h-3.5 w-3.5 text-emerald-600'
+                                : 'h-3.5 w-3.5 text-muted-foreground'
+                            }
+                          />
+                          <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="shrink-0 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                  >
+                    <Link href="/profile">{t('prediction.completeProfile')}</Link>
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="shrink-0 text-amber-600 dark:text-amber-400 border-amber-500/30"
-                >
-                  <Link href="/profile">{t('prediction.completeProfile')}</Link>
-                </Button>
               </div>
             )}
 

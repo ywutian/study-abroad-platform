@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:02:02.800Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch57-2026-04-29.json",
+    "success": 2,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of north texas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data is not reported ('0.00' in all GPA bands), C21 Early Decision and Early Action counts are not provided in the text."
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Toledo CDS 2024-2025 does not report GPA distribution for first-time, first-year students (C11 omitted). Institution does not offer Early Decision or Early Action plans (C21 and C22 show NO for both)."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "sourceUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf",
+      "error": "Download failed 403: https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "idaho state university",
+      "sourceUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf",
+      "error": "Download failed 404: https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf"
+    }
+  ]
+}

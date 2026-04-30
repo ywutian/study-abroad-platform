@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T09:00:00Z",
+    "source": "Round 11 - WPI direct CDS PDF + Penn State duplicate fix",
+    "purpose": "WPI intl/oos rates from official CDS PDF; Penn State nameNorm duplicate fix",
+    "verifiedBy": "Direct PDF download + pdftotext extraction",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "worcester polytechnic institute",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wpi.edu/sites/default/files/2025-02/WPI_CDS_2024-2025_2-27-25.pdf",
+      "rates": {
+        "acceptanceRate": 60.2,
+        "intlAcceptanceRate": 41.3,
+        "oosAcceptanceRate": 64.6,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 60.2,
+      "notes": "WPI CDS 2024-25 C1: applied 12559 (in-state 4171 / oos 6790 / intl 1598), admitted 7555 (in-state 2511 / oos 4384 / intl 660). Intl 41.3%, OOS 64.6%, in-state 60.2%."
+    },
+    {
+      "schoolNameNorm": "penn state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/pennsylvania-state-university-university-park/acceptance-rate",
+      "rates": {
+        "acceptanceRate": 60.0,
+        "intlAcceptanceRate": 64.3,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Penn State (nameNorm duplicate fix): same as pennsylvania state university. Overall 60%, intl 64.3% (6639/10314 intl apps). Synced from round8 pennsylvania state university entry."
+    }
+  ]
+}

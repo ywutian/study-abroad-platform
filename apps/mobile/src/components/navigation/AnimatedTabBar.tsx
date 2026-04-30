@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: '#ffffff',
+    color: '#fff9ef',
     fontSize: 10,
     fontWeight: '700',
     textAlign: 'center',

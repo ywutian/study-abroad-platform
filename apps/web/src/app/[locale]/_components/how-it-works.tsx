@@ -53,7 +53,7 @@ export function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.55, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-6 shadow-[var(--landing-shadow-card)]"
+              className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-6 py-6 shadow-[var(--landing-shadow-card)]"
             >
               <div className="flex items-center gap-4 lg:flex-col lg:items-start">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--landing-border-strong)] bg-gradient-to-br from-[color:var(--landing-surface-muted)] to-[color:var(--landing-surface)] text-2xl font-bold tracking-tight text-[var(--landing-fg)] shadow-sm">
@@ -96,7 +96,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.22 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="mt-10 overflow-hidden rounded-3xl border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-elevated)]"
+      className="mt-10 overflow-hidden rounded-xl border border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)] shadow-[var(--landing-shadow-elevated)]"
     >
       <div className="flex items-center justify-between border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/75 px-5 py-4">
         <div>
@@ -120,7 +120,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
               return (
                 <div
                   key={card}
-                  className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-4 py-4"
+                  className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-4 py-4"
                 >
                   <Icon className="h-4 w-4 text-primary" />
                   <div className="mt-4 text-sm font-medium text-[var(--landing-fg)]">{card}</div>
@@ -129,7 +129,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
             })}
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-[color:var(--landing-border)]">
+          <div className="overflow-hidden rounded-xl border border-[color:var(--landing-border)]">
             <div className="grid grid-cols-[1.3fr_0.8fr_1fr] gap-3 border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/72 px-4 py-3 text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
               {copy.columns.map((column) => (
                 <span key={column}>{column}</span>
@@ -166,7 +166,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-5 py-5">
+          <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-5 py-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3 py-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-muted)]">
               <StatusDot status="ai" />
               <Bot className="h-3.5 w-3.5 text-primary" />
@@ -175,7 +175,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
             <div className="mt-4 text-sm leading-7 text-[var(--landing-fg)]">{copy.tip}</div>
           </div>
 
-          <div className="rounded-3xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-5 py-5">
+          <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-5 py-5">
             <div className="text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
               {copy.tasksLabel}
             </div>

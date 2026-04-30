@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-official-cds-umn-slu",
+    "note": "UMN Twin Cities official 2024-25 CDS has blank C11/C21 counts. SLU has no current public CDS found; loaded its official 2021-22 CDS GPA distribution as legacy official fallback."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official UMN Twin Cities 2024-25 CDS leaves C11 GPA rows blank with 0.00 totals and no GPA-submitted percentage. C21/C22 indicate early plans but do not publish applicant/admit counts, so no ED/EA rate can be calculated."
+    },
+    {
+      "schoolNameNorm": "saint louis university",
+      "schoolName": "Saint Louis University",
+      "cycleYear": 2021,
+      "sourceUrl": "https://www.slu.edu/provost/office-of-institutional-research/institutional-data/2122cds.php",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7035,
+        "3.50-3.74": 0.121,
+        "3.25-3.49": 0.0764,
+        "3.00-3.24": 0.0474,
+        "<3.00": 0.0518
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Official SLU 2021-22 CDS C11: 4.0=50.56%, 3.75-3.99=19.79%, 3.50-3.74=12.10%, 3.25-3.49=7.64%, 3.00-3.24=4.74%, 2.50-2.99=4.57%, 2.0-2.49=0.61%. C21/C22 list early plans but no applicant/admit counts for a calculable rate. This is a legacy official fallback because no public current CDS was found."
+    }
+  ]
+}

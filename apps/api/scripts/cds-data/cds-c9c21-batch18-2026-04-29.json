@@ -1,0 +1,89 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:48:48.334Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch18-2026-04-29.json",
+    "success": 5,
+    "failures": 2
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution table contains only 0.0% values and appears unreported; C21 reports Early Decision only, with two ED rounds listed but only one combined applicant/admit total provided."
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.81,
+      "eaAcceptanceRate": null,
+      "edApplied": 3087,
+      "edAdmitted": 519,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported (NA for all ranges). C21 reports Early Decision only; Early Action is marked No."
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.01,
+      "eaAcceptanceRate": null,
+      "edApplied": 5154,
+      "edAdmitted": 1186,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/GPA distribution not reported in provided text (table shows C or t for all GPA ranges). C21 reports Early Decision only; no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 13.47,
+      "eaAcceptanceRate": null,
+      "edApplied": 2005,
+      "edAdmitted": 270,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported in provided text; table shows all zeros and no GPA breakdown. C21 early decision reported; Bowdoin does not offer early action."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 18.02,
+      "eaAcceptanceRate": null,
+      "edApplied": 1221,
+      "edAdmitted": 220,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/C9 high school GPA data is not available; the CDS shows all GPA range fields at 0.00% and explicitly notes 'High school GPA data is not available.' C21 Early Decision is reported for Fall 2024 with 1221 applications and 220 admits. C22 Early Action is marked 'N' (not offered)."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    }
+  ]
+}

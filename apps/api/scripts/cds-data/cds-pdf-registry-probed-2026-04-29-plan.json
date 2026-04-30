@@ -1,0 +1,133 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T09:17:25.275Z",
+    "source": "ir-domain-probe",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 20,
+    "selectedUrls": 0
+  },
+  "schools": [],
+  "failures": [
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "rootDomain": "williams.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8is1002xz0ti23uxhu2j",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "rootDomain": "calpoly.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8iv00048z0tityzi3zx8",
+      "schoolName": "Middlebury College",
+      "rootDomain": "middlebury.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkns000dvqf2a150rn2s",
+      "schoolName": "University of Chicago",
+      "rootDomain": "uchicago.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8ivb004ez0tiduer8l0n",
+      "schoolName": "Grinnell College",
+      "rootDomain": "grinnell.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htko2000hvqf2r5gxwf84",
+      "schoolName": "Dartmouth College",
+      "rootDomain": "dartmouth.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8ivm004lz0tio6m2uic4",
+      "schoolName": "Barnard College",
+      "rootDomain": "barnard.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkoa000kvqf2oqm36hw5",
+      "schoolName": "University of Michigan, Ann Arbor",
+      "rootDomain": "umich.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkoh000nvqf2uj3pjgxw",
+      "schoolName": "Carnegie Mellon University",
+      "rootDomain": "cmu.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkoz000uvqf2rnozc3fe",
+      "schoolName": "University of Southern California",
+      "rootDomain": "usc.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkp9000yvqf29pcl812t",
+      "schoolName": "New York University",
+      "rootDomain": "nyu.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkpw0016vqf20t0lflxm",
+      "schoolName": "Boston University",
+      "rootDomain": "bu.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "rootDomain": "umd.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+      "schoolName": "Wake Forest University",
+      "rootDomain": "wfu.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "rootDomain": "wm.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8im90007z0ti2n04hf3n",
+      "schoolName": "University of Pittsburgh",
+      "rootDomain": "pitt.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8inf000uz0tic8a7s8is",
+      "schoolName": "Rensselaer Polytechnic Institute",
+      "rootDomain": "rpi.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "rootDomain": "yu.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8iuk0040z0ti7p8v604n",
+      "schoolName": "Gonzaga University",
+      "rootDomain": "gonzaga.edu",
+      "probedCount": 408
+    },
+    {
+      "schoolId": "cmnwr8iua003xz0tio2zj4a4z",
+      "schoolName": "Saint Louis University",
+      "rootDomain": "slu.edu",
+      "probedCount": 408
+    }
+  ]
+}

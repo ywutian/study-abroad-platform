@@ -136,6 +136,47 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
+   * Upload a forum image attachment.
+   */
+  async uploadForumImage(
+    userId: string,
+    file: StorageFile,
+  ): Promise<UploadResult> {
+    const fileExt =
+      path.extname(file.originalname) || this.extFromMime(file.mimetype);
+    const fileHash = crypto.randomBytes(16).toString('hex');
+    const key = `forum/${userId}/${fileHash}${fileExt}`;
+
+    switch (this.storageType) {
+      case 'local':
+        return this.uploadLocal(key, file.buffer);
+      case 's3':
+        return this.uploadS3(key, file.buffer, file.mimetype);
+      case 'oss':
+        return this.uploadOSS(key, file.buffer);
+      case 'cos':
+        return this.uploadCOS(key, file.buffer);
+      default:
+        return this.uploadLocal(key, file.buffer);
+    }
+  }
+
+  private extFromMime(mimetype: string): string {
+    switch (mimetype) {
+      case 'image/jpeg':
+        return '.jpg';
+      case 'image/png':
+        return '.png';
+      case 'image/webp':
+        return '.webp';
+      case 'image/gif':
+        return '.gif';
+      default:
+        return '';
+    }
+  }
+
+  /**
    * 本地存储上传
    */
   private async uploadLocal(key: string, data: Buffer): Promise<UploadResult> {

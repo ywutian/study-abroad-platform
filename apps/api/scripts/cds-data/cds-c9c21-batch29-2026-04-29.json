@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:17:18.928Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch29-2026-04-29.json",
+    "success": 2,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "cycleYear": 2024,
+      "sourceUrl": "https://apb.ucla.edu/file/cedc749a-fd65-4935-b9ee-8a551f6de2fc",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of California, Los Angeles does not report GPA distribution and does not offer an early decision plan. They do offer early action but no numbers reported for applied or admitted."
+    },
+    {
+      "schoolNameNorm": "virginia tech",
+      "cycleYear": 2024,
+      "sourceUrl": "https://aie.vt.edu/content/dam/aie_vt_edu/common-data-set/23-24/CDS_2023-2024.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.82,
+        "3.50-3.74": 0.11,
+        "3.25-3.49": 0.0451,
+        "3.00-3.24": 0.02,
+        "<3.00": 0.0058
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Virginia Tech does not offer an early decision plan; has a nonbinding early action plan with closing date 12/1 and notification date 2/22; no data on Early Action applicants or admitted provided."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "indiana university bloomington",
+      "sourceUrl": "https://iuia.iu.edu/apps/cds/pdf/CDS_2024.pdf",
+      "error": "Download failed 404: https://iuia.iu.edu/apps/cds/pdf/CDS_2024.pdf"
+    }
+  ]
+}

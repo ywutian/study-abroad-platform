@@ -1,6 +1,22 @@
-export type TrustTier = 'OFFICIAL' | 'PARTNER' | 'SCRAPED' | 'SEED' | 'COMMUNITY' | 'INFERRED';
+export type TrustTier =
+  | 'OFFICIAL'
+  | 'PARTNER'
+  | 'SCRAPED'
+  | 'SEED'
+  | 'COMMUNITY'
+  | 'INFERRED'
+  | 'UNAVAILABLE';
 
 export type ProvenanceStaleness = 'FRESH' | 'AGING' | 'STALE';
+
+export type RealDataStatus =
+  | 'VERIFIED_REAL'
+  | 'PARTIAL_REAL'
+  | 'OFFICIAL_BLANK'
+  | 'OFFICIAL_BLOCKED'
+  | 'NO_PUBLIC_REAL_DATA'
+  | 'MANUAL_REVIEW'
+  | 'PERMANENT_HEURISTIC';
 
 export interface FieldProvenance {
   tier: TrustTier;
@@ -13,6 +29,12 @@ export interface FieldProvenance {
   notes?: string;
   confidence?: number;
   staleness?: ProvenanceStaleness;
+  realDataStatus?: RealDataStatus;
+  validatorCount?: number;
+  originalFormula?: string;
+  extractionMethod?: string;
+  reason?: string;
+  permanent?: boolean;
 }
 
 export type SchoolProvenance = Partial<Record<string, FieldProvenance>>;
@@ -28,6 +50,12 @@ export interface SchoolFieldSource {
   notes?: string;
   confidence?: number;
   staleness: ProvenanceStaleness;
+  realDataStatus?: RealDataStatus;
+  validatorCount?: number;
+  originalFormula?: string;
+  extractionMethod?: string;
+  reason?: string;
+  permanent?: boolean;
   isVerified: boolean;
   predictionEligible: boolean;
 }

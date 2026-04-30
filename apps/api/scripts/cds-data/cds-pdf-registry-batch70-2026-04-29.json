@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch70-amherst-hmc-haverford-northwestern-rice-gwu",
+    "note": "Batch 70: Amherst (section C only), Harvey Mudd, Haverford, Northwestern, Rice, GWU"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "amherst college",
+      "schoolName": "Amherst College",
+      "selectedUrl": "https://www.amherst.edu/system/files/C%20First-Time,%20First-Year%20Admission_3.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf"
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "schoolName": "Northwestern University",
+      "selectedUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "schoolName": "Rice University",
+      "selectedUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf"
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "schoolName": "George Washington University",
+      "selectedUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf"
+    }
+  ]
+}

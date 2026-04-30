@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T05:18:43.034Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch77-2026-04-29.json",
+    "success": 2,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported; all GPA percentages are 0.00% and the PDF shows no filled distribution. C21 early decision applications received = 839; early decision admits not visible in provided text. No early action plan reported in provided text."
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "cycleYear": 2024,
+      "sourceUrl": "https://drive.google.com/uc?export=download&id=1L1IOSn19CxOwqRaDK8F_cZVzbsFD1EPg&confirm=t",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution reported as 0.00% in all rows. C21 does not provide counts for early decision applications/admits; C22 early action is marked nonbinding yes, restrictive no, but no applicant/admit counts are reported."
+    }
+  ],
+  "failures": []
+}

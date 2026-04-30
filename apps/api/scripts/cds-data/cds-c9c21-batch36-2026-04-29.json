@@ -1,0 +1,57 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:36:45.733Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch36-2026-04-29.json",
+    "success": 2,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "west virginia university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://dataoffice.wvu.edu/files/d/d0809710-b583-4b08-8214-e297d97326d5/cds-2024-2025-wvu-final.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4915,
+        "3.50-3.74": 0.1703,
+        "3.25-3.49": 0.0886,
+        "3.00-3.24": 0.1204,
+        "<3.00": 0.1292
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "West Virginia University does not offer Early Decision or Early Action plans for Fall 2024 first-time, first-year applicants."
+    },
+    {
+      "schoolNameNorm": "university at buffalo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.496,
+        "3.50-3.74": 0.208,
+        "3.25-3.49": 0.112,
+        "3.00-3.24": 0.116,
+        "<3.00": 0.068
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University at Buffalo does not offer an Early Decision plan (ED) but does have a nonbinding Early Action plan (EA). No specific applicant or admit counts for ED or EA were reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "oklahoma state university",
+      "sourceUrl": "https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf",
+      "error": "Download failed 403: https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf"
+    }
+  ]
+}

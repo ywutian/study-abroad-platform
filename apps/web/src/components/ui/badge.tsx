@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
   // 学术严肃风：使用 rounded-md 替代 rounded-full，添加边框
-  'inline-flex items-center justify-center rounded-md border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-colors duration-150 overflow-hidden',
+  'inline-flex items-center justify-center rounded-[var(--theme-radius-badge)] border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-colors duration-150 overflow-hidden',
   {
     variants: {
       variant: {
@@ -21,8 +21,7 @@ const badgeVariants = cva(
         success: 'border-success/30 bg-success/10 text-success [a&]:hover:bg-success/15',
         warning: 'border-warning/30 bg-warning/10 text-warning [a&]:hover:bg-warning/15',
         info: 'border-primary/30 bg-primary/10 text-primary [a&]:hover:bg-primary/15',
-        purple:
-          'border-violet-700/30 bg-primary/10 text-violet-700 dark:text-violet-400 [a&]:hover:bg-primary/15',
+        purple: 'border-info/30 bg-info/10 text-info [a&]:hover:bg-info/15',
         // 强调变体（实色，用于重要状态）
         'solid-primary':
           'border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
@@ -31,7 +30,7 @@ const badgeVariants = cva(
         'solid-warning':
           'border-transparent bg-warning text-warning-foreground [a&]:hover:bg-warning/90',
         'solid-destructive':
-          'border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90',
+          'border-transparent bg-destructive text-destructive-foreground [a&]:hover:bg-destructive/90',
       },
     },
     defaultVariants: {

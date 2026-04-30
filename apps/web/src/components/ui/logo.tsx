@@ -1,7 +1,7 @@
 'use client';
 
-import { GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LumniMark } from './lumni-mark';
 
 interface LogoProps {
   className?: string;
@@ -18,18 +18,13 @@ export function Logo({ className, showText = true, size = 'md' }: LogoProps) {
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      {/* 学术风 Logo：实体背景 + 边框，无发光效果 */}
-      <div
-        className={cn(
-          'flex items-center justify-center rounded-md border-2 border-primary/20 bg-primary',
-          sizes[size].container
-        )}
-      >
-        <GraduationCap className={cn('text-primary-foreground', sizes[size].icon)} />
-      </div>
+      <LumniMark
+        className={cn('border-2', sizes[size].container)}
+        iconClassName={sizes[size].icon}
+      />
       {showText && (
         <span className={cn('font-bold text-foreground hidden sm:inline', sizes[size].text)}>
-          StudyAbroad
+          Lumni
         </span>
       )}
     </div>

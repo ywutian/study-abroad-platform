@@ -1,0 +1,141 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T21:44:17.589Z",
+    "source": "tavily",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 9,
+    "selectedUrls": 1
+  },
+  "schools": [
+    {
+      "schoolId": "cmnwr8ini000wz0ti57rv9m9o",
+      "schoolName": "Auburn University",
+      "schoolNameNorm": "auburn university",
+      "usNewsRank": 101,
+      "missingField": "intlAcceptanceRate",
+      "query": "\"Auburn University\" \"common data set\" \"2024-25\" inurl:cds OR inurl:institutional-research filetype:pdf",
+      "stageHit": 2,
+      "selectedUrl": "https://auburn.edu/administration/ir/common-data-set/index.html",
+      "candidates": [
+        {
+          "title": "IR | Common Data Set",
+          "url": "https://auburn.edu/administration/ir/common-data-set/index.html",
+          "snippet": "The Common Data Set (CDS) is a collaborative effort between publishers and the educational community to improve the quality and accuracy of information provided to all involved in a student's transition into higher education, as well as to ",
+          "score": 83
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://www.minotstateu.edu/instplan/_documents/common_data_set/Common-Data-Set-24-25.pdf",
+          "title": "[PDF] Common Data Set 2024-2025 - Minot State University",
+          "score": 131
+        },
+        {
+          "url": "https://ir.uoregon.edu/uo-overview/common-data-set",
+          "title": "Common Data Set | Office of Institutional Research",
+          "score": 115
+        },
+        {
+          "url": "https://oira.harvard.edu/2025/06/13/2024-25-common-data-set-cds-published",
+          "title": "2024-25 Common Data Set (CDS) Published – Office of Institutional Research & Analytics",
+          "score": 103
+        },
+        {
+          "url": "https://irsa.utk.edu/reporting/common-data-set",
+          "title": "Common Data Set | Institutional Research and Strategic Analysis",
+          "score": 76
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "schoolNameNorm": "university of maryland, college park",
+      "usNewsRank": 46,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:umd.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmn1htkp9000yvqf29pcl812t",
+      "schoolName": "New York University",
+      "schoolNameNorm": "new york university",
+      "usNewsRank": 35,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:nyu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmn1htkoz000uvqf2rnozc3fe",
+      "schoolName": "University of Southern California",
+      "schoolNameNorm": "university of southern california",
+      "usNewsRank": 28,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:usc.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iny0016z0tiikip2622",
+      "schoolName": "Florida State University",
+      "schoolNameNorm": "florida state university",
+      "usNewsRank": 135,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:fsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+      "schoolName": "Wake Forest University",
+      "schoolNameNorm": "wake forest university",
+      "usNewsRank": 47,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:wfu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "schoolNameNorm": "william & mary",
+      "usNewsRank": 58,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:wm.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmn1htkpw0016vqf20t0lflxm",
+      "schoolName": "Boston University",
+      "schoolNameNorm": "boston university",
+      "usNewsRank": 43,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:bu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8is1002xz0ti23uxhu2j",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "usNewsRank": 5,
+      "missingField": "intlAcceptanceRate",
+      "query": "site:calpoly.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    }
+  ],
+  "failures": []
+}

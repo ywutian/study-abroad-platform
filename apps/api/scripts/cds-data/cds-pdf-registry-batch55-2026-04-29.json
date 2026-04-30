@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch55-umn-ttu-uark-du-jmu-rutgers",
+    "note": "Batch 55: UMN Twin Cities, Texas Tech, U Arkansas, U Denver, James Madison, Rutgers NB (2023-24)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "schoolName": "University of Minnesota Twin Cities",
+      "selectedUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "selectedUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf"
+    },
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf"
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "schoolName": "University of Arkansas",
+      "selectedUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf"
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "schoolName": "University of Denver",
+      "selectedUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "selectedUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "schoolName": "Rutgers University-New Brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-newark",
+      "schoolName": "Rutgers University-Newark",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf"
+    }
+  ]
+}

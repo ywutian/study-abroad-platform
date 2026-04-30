@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:27:59.555Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch46-gpa-missing-2026-04-29.json",
+    "success": 0,
+    "failures": 2
+  },
+  "schools": [],
+  "failures": [
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "pepperdine university",
+      "sourceUrl": "https://www.pepperdine.edu/oie/content/pdf/cds_2024-25.pdf",
+      "error": "Download failed 404: https://www.pepperdine.edu/oie/content/pdf/cds_2024-25.pdf"
+    }
+  ]
+}

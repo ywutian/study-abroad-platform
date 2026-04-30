@@ -1,0 +1,136 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:12:31.725Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch60-2026-04-29.json",
+    "success": 9,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "carleton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 36.58,
+      "eaAcceptanceRate": null,
+      "edApplied": 667,
+      "edAdmitted": 244,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA values reported in Section C9. Early Decision offered, Early Action not offered."
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 0,
+      "edAdmitted": 0,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Connecticut reports no GPA distribution data (C9) and provides no numbers for early decision applications or admits in C21. Early Decision is offered but no application or admit counts are provided. No Early Action plans reported."
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 93.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 479,
+      "edAdmitted": 449,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The CDS does not provide a GPA distribution breakdown for fall 2024 first-time, first-year students (C9). Early Decision plan reported: 479 applications, 449 admits. Early Action plan is not offered."
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA distribution data reported; Early Decision and Early Action plans are not offered (answers 'N' for both)."
+    },
+    {
+      "schoolNameNorm": "university of arkansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No data found for sections C9 (high school GPA distribution) and C21 (Early Decision/Early Action breakdown) in the PDF text for University of Arkansas."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution data (C9) not reported; Early Decision applicants data found, admits not completed in provided text."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 30.5,
+      "eaAcceptanceRate": null,
+      "edApplied": 1341,
+      "edAdmitted": 409,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 section reports no high school GPA distribution data; all GPA percentage fields are 0. Early Decision data given for Fall 2024 entering class. No Early Action plans offered."
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Wake Forest University does not report a high school GPA distribution for first-time, first-year students in Fall 2024. The institution reports it offers Early Decision and Early Action plans but no data on number applied or admitted for these plans is provided in the CDS."
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://my.wlu.edu/document/2024-common-data-set",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.89,
+      "eaAcceptanceRate": null,
+      "edApplied": 844,
+      "edAdmitted": 286,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution (Section C9) data not reported for Washington and Lee University. Early Decision plan reported with application and admit numbers. No Early Action plan offered."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

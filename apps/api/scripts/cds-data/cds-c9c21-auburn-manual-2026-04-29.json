@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T19:55:00.000Z",
+    "source": "Manual extraction from Auburn University HTML CDS at auburn.edu/administration/ir/common-data-set/2024/section-c.html",
+    "model": "manual",
+    "input": "https://auburn.edu/administration/ir/common-data-set/2024/section-c.html",
+    "success": 1,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "auburn university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://auburn.edu/administration/ir/common-data-set/2024/section-c.html",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8386,
+        "3.50-3.74": 0.1052,
+        "3.25-3.49": 0.0383,
+        "3.00-3.24": 0.0141,
+        "<3.00": 0.0037
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Auburn does not offer ED. Offers nonbinding EA (deadline Nov 1, notification Dec 1) but no ED/EA admit counts published. GPA bands: 4.0=63.98%, 3.75-3.99=19.88%, 3.50-3.74=10.52%, 3.25-3.49=3.83%, 3.00-3.24=1.41%, 2.50-2.99=0.29%, 2.0-2.49=0.08%, Below 2.0=0.00%. Combined: 3.75-4.00=83.86% (4.0+3.75-3.99), <3.00=0.37%."
+    }
+  ],
+  "failures": []
+}

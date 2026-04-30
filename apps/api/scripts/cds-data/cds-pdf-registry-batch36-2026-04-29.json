@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch36",
+    "note": "Batch 36: Oklahoma State, WVU, U at Buffalo"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "oklahoma state university",
+      "schoolName": "Oklahoma State University",
+      "selectedUrl": "https://ira.okstate.edu/site-files/documents/cds/cds2425.pdf"
+    },
+    {
+      "schoolNameNorm": "west virginia university",
+      "schoolName": "West Virginia University",
+      "selectedUrl": "https://dataoffice.wvu.edu/files/d/d0809710-b583-4b08-8214-e297d97326d5/cds-2024-2025-wvu-final.pdf"
+    },
+    {
+      "schoolNameNorm": "university at buffalo",
+      "schoolName": "University at Buffalo",
+      "selectedUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf"
+    }
+  ]
+}

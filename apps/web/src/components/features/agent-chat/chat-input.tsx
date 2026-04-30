@@ -106,7 +106,7 @@ export function ChatInput({
       )}
       initial={false}
       animate={{
-        boxShadow: isFocused ? '0 -4px 20px rgba(99, 102, 241, 0.08)' : '0 0 0 transparent',
+        boxShadow: isFocused ? '0 -4px 20px rgba(221, 184, 90, 0.14)' : '0 0 0 transparent',
       }}
     >
       {/* Loading indicator bar */}

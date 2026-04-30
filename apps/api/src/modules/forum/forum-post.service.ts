@@ -20,10 +20,13 @@ import {
   UpdatePostDto,
   PostQueryDto,
   PostSortBy,
+  PostFeed,
   PostDto,
   PostDetailResponseDto,
   PostListResponseDto,
   CommentDto,
+  CommunityDto,
+  ForumImageDto,
 } from './dto';
 import { FORUM_AUTHOR_SELECT, mapForumAuthor } from './forum.constants';
 
@@ -52,6 +55,8 @@ export class ForumPostService {
   ): Promise<PostListResponseDto> {
     const {
       categoryId,
+      communityId,
+      feed,
       isTeamPost,
       postTag,
       search,
@@ -64,6 +69,21 @@ export class ForumPostService {
 
     if (categoryId) {
       where.categoryId = categoryId;
+    }
+
+    if (communityId) {
+      where.communityId = communityId;
+    } else if (feed === PostFeed.HOME && userId) {
+      const followedCommunities =
+        await this.prisma.forumCommunityFollow.findMany({
+          where: { userId },
+          select: { communityId: true },
+        });
+      if (followedCommunities.length > 0) {
+        where.communityId = {
+          in: followedCommunities.map((follow) => follow.communityId),
+        };
+      }
     }
 
     if (isTeamPost !== undefined) {
@@ -87,7 +107,10 @@ export class ForumPostService {
     let orderBy:
       | Prisma.ForumPostOrderByWithRelationInput
       | Prisma.ForumPostOrderByWithRelationInput[] = {};
-    switch (sortBy) {
+    const effectiveSortBy =
+      sortBy ||
+      (feed === PostFeed.POPULAR ? PostSortBy.POPULAR : PostSortBy.LATEST);
+    switch (effectiveSortBy) {
       case PostSortBy.POPULAR:
         orderBy = { likeCount: 'desc' };
         break;
@@ -120,9 +143,17 @@ export class ForumPostService {
         take: limit,
         include: {
           category: true,
+          community: userId
+            ? {
+                include: {
+                  followers: { where: { userId }, select: { id: true } },
+                },
+              }
+            : true,
           author: {
             select: FORUM_AUTHOR_SELECT,
           },
+          images: { orderBy: { sortOrder: 'asc' } },
           likes: userId ? { where: { userId }, select: { id: true } } : false,
           _count: { select: { comments: true } },
         },
@@ -130,23 +161,17 @@ export class ForumPostService {
       this.prisma.forumPost.count({ where }),
     ]);
 
-    const formattedPosts: PostDto[] = posts.map((post) => ({
+    const formattedPosts: PostDto[] = posts.map((post: any) => ({
       id: post.id,
       categoryId: post.categoryId,
-      category: {
-        id: post.category.id,
-        name: post.category.name,
-        nameZh: post.category.nameZh,
-        description: post.category.description || undefined,
-        descriptionZh: post.category.descriptionZh || undefined,
-        icon: post.category.icon || undefined,
-        color: post.category.color || undefined,
-        postCount: 0,
-      },
+      category: this.mapCategory(post.category),
+      communityId: post.communityId || undefined,
+      community: this.mapCommunity(post.community, userId),
       author: mapForumAuthor(post.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
+      images: (post.images || []).map((image: any) => this.mapImage(image)),
       isTeamPost: post.isTeamPost,
       teamSize: post.teamSize || undefined,
       currentSize: post.currentSize || undefined,
@@ -186,9 +211,17 @@ export class ForumPostService {
       where: { id: postId },
       include: {
         category: true,
+        community: userId
+          ? {
+              include: {
+                followers: { where: { userId }, select: { id: true } },
+              },
+            }
+          : true,
         author: {
           select: FORUM_AUTHOR_SELECT,
         },
+        images: { orderBy: { sortOrder: 'asc' } },
         likes: userId ? { where: { userId }, select: { id: true } } : false,
         comments: {
           where: { parentId: null },
@@ -265,20 +298,14 @@ export class ForumPostService {
     return {
       id: post.id,
       categoryId: post.categoryId,
-      category: {
-        id: postData.category.id,
-        name: postData.category.name,
-        nameZh: postData.category.nameZh,
-        description: postData.category.description || undefined,
-        descriptionZh: postData.category.descriptionZh || undefined,
-        icon: postData.category.icon || undefined,
-        color: postData.category.color || undefined,
-        postCount: 0,
-      },
+      category: this.mapCategory(postData.category),
+      communityId: postData.communityId || undefined,
+      community: this.mapCommunity(postData.community, userId),
       author: mapForumAuthor(postData.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
+      images: (postData.images || []).map((image: any) => this.mapImage(image)),
       isTeamPost: post.isTeamPost,
       teamSize: post.teamSize || undefined,
       currentSize: post.currentSize || undefined,
@@ -338,10 +365,27 @@ export class ForumPostService {
       );
     }
 
+    const content = data.content?.trim() || '';
+    const images = data.images || [];
+    if (!data.communityId) {
+      throw new BadRequestException('Community is required');
+    }
+    if (!content && images.length === 0) {
+      throw new BadRequestException('Post content or images are required');
+    }
+    if (images.length > 6) {
+      throw new BadRequestException('A post can include up to 6 images');
+    }
+    for (const image of images) {
+      if (!image.key.startsWith(`forum/${userId}/`)) {
+        throw new BadRequestException('Invalid forum image key');
+      }
+    }
+
     // 内容审核
     await this.moderation.validateMultiple([
       { content: data.title, context: '标题' },
-      { content: data.content, context: '内容' },
+      ...(content ? [{ content, context: '内容' }] : []),
       ...(data.requirements
         ? [{ content: data.requirements, context: '队友要求' }]
         : []),
@@ -356,26 +400,53 @@ export class ForumPostService {
       throw new BadRequestException('Invalid category');
     }
 
+    const community = await this.prisma.forumCommunity.findUnique({
+      where: { id: data.communityId },
+    });
+
+    if (!community || !community.isActive) {
+      throw new BadRequestException('Invalid community');
+    }
+
     const post = await this.prisma.forumPost.create({
       data: {
         categoryId: data.categoryId,
+        communityId: data.communityId,
         authorId: userId,
         title: data.title,
-        content: data.content,
-        tags: data.tags || [],
+        content,
+        tags: data.tags?.length ? data.tags : [community.name],
         isTeamPost: data.isTeamPost || false,
         teamSize: data.teamSize,
         requirements: data.requirements,
         teamDeadline: data.teamDeadline
           ? new Date(data.teamDeadline)
           : undefined,
+        images: {
+          create: images.map((image, index) => ({
+            key: image.key,
+            url: image.url,
+            mimeType: image.mimeType,
+            size: image.size,
+            width: image.width,
+            height: image.height,
+            sortOrder: index,
+          })),
+        },
       },
       include: {
         category: true,
+        community: true,
+        images: { orderBy: { sortOrder: 'asc' } },
         author: {
           select: FORUM_AUTHOR_SELECT,
         },
       },
+    });
+
+    await this.prisma.forumCommunity.update({
+      where: { id: data.communityId },
+      data: { postCount: { increment: 1 } },
     });
 
     // 如果是组队帖子，自动将发帖人添加为团队 owner
@@ -392,16 +463,14 @@ export class ForumPostService {
     const result: PostDto = {
       id: post.id,
       categoryId: post.categoryId,
-      category: {
-        id: post.category.id,
-        name: post.category.name,
-        nameZh: post.category.nameZh,
-        postCount: 0,
-      },
+      category: this.mapCategory(post.category),
+      communityId: post.communityId || undefined,
+      community: this.mapCommunity(post.community, userId),
       author: mapForumAuthor(post.author),
       title: post.title,
       content: post.content,
       tags: post.tags,
+      images: post.images.map((image) => this.mapImage(image)),
       isTeamPost: post.isTeamPost,
       teamSize: post.teamSize || undefined,
       currentSize: 1,
@@ -424,7 +493,7 @@ export class ForumPostService {
       locale === 'zh'
         ? post.category.nameZh || post.category.name
         : post.category.name || post.category.nameZh,
-      data,
+      { ...data, content },
     );
 
     return result;
@@ -468,6 +537,8 @@ export class ForumPostService {
       },
       include: {
         category: true,
+        community: true,
+        images: { orderBy: { sortOrder: 'asc' } },
         author: {
           select: FORUM_AUTHOR_SELECT,
         },
@@ -478,10 +549,14 @@ export class ForumPostService {
     return {
       id: updated.id,
       categoryId: updated.categoryId,
+      category: this.mapCategory(updated.category),
+      communityId: updated.communityId || undefined,
+      community: this.mapCommunity(updated.community, userId),
       author: mapForumAuthor(updated.author),
       title: updated.title,
       content: updated.content,
       tags: updated.tags,
+      images: updated.images.map((image) => this.mapImage(image)),
       isTeamPost: updated.isTeamPost,
       teamSize: updated.teamSize || undefined,
       currentSize: updated.currentSize || undefined,
@@ -505,13 +580,19 @@ export class ForumPostService {
    * @throws {ForbiddenException} When the user is not the author
    */
   async deletePost(postId: string, userId: string): Promise<void> {
-    this.auth.verifyOwnership(
+    const post = this.auth.verifyOwnership(
       await this.prisma.forumPost.findUnique({ where: { id: postId } }),
       userId,
       { entityName: 'Post', ownerField: 'authorId' },
     );
 
     await this.prisma.forumPost.delete({ where: { id: postId } });
+    if (post.communityId) {
+      await this.prisma.forumCommunity.update({
+        where: { id: post.communityId },
+        data: { postCount: { decrement: 1 } },
+      });
+    }
   }
 
   /**
@@ -576,5 +657,50 @@ export class ForumPostService {
 
       return { liked: true };
     }
+  }
+
+  private mapCategory(category: any) {
+    if (!category) return undefined;
+    return {
+      id: category.id,
+      name: category.name,
+      nameZh: category.nameZh,
+      description: category.description || undefined,
+      descriptionZh: category.descriptionZh || undefined,
+      icon: category.icon || undefined,
+      color: category.color || undefined,
+      postCount: 0,
+    };
+  }
+
+  private mapCommunity(
+    community: any,
+    userId: string | null,
+  ): CommunityDto | undefined {
+    if (!community) return undefined;
+    return {
+      id: community.id,
+      slug: community.slug,
+      name: community.name,
+      description: community.description || undefined,
+      postCount: community.postCount,
+      followerCount: community.followerCount,
+      isOfficial: community.isOfficial,
+      isFollowing: userId ? (community.followers || []).length > 0 : false,
+      createdAt: community.createdAt,
+    };
+  }
+
+  private mapImage(image: any): ForumImageDto {
+    return {
+      id: image.id,
+      key: image.key,
+      url: image.url,
+      mimeType: image.mimeType,
+      size: image.size,
+      width: image.width || undefined,
+      height: image.height || undefined,
+      sortOrder: image.sortOrder,
+    };
   }
 }

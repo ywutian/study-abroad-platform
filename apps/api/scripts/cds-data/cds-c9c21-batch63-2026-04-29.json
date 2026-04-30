@@ -1,0 +1,134 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:24:11.275Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch63-2026-04-29.json",
+    "success": 7,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 section on high school GPA distribution reports no data (all zeros or no percentages). C21 Early Decision is 'No' with no data. C22 Early Action is offered as a restrictive plan, but no numbers for applicants/admitted provided."
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.uchicago.edu/files/2025/08/CDS_2024-2025_to_publish.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8847,
+        "3.50-3.74": 0.0685,
+        "3.25-3.49": 0.0176,
+        "3.00-3.24": 0.0278,
+        "<3.00": 0.0009
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The document does not provide numeric data on Early Decision or Early Action applicants or admits; only presence of ED and EA plans is confirmed."
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e1.wpmucdn.com/sites.harvard.edu/dist/6/210/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.9459,
+        "3.50-3.74": 0.0411,
+        "3.25-3.49": 0.006,
+        "3.00-3.24": 0.0017,
+        "<3.00": 0.0034
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Harvard University does not offer Early Decision plans but does have a nonbinding Early Action plan."
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 0,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Section C9 GPA distribution table is absent or reports no data; early decision is offered with zero applications received. Early Action is offered but no applicant/admit counts reported."
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.9779,
+        "3.50-3.74": 0.0113,
+        "3.25-3.49": 0.0033,
+        "3.00-3.24": 0.0025,
+        "<3.00": 0.0054
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Section C9 GPA distribution was reported with precise percentages by GPA ranges; mapped to requested bands. No Early Decision application or admission numbers were reported under Section C21. Early Action plan is offered but no application/admit counts provided."
+    },
+    {
+      "schoolNameNorm": "william & mary",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wm.edu/offices/ir/university_data/cds/cds-2024-2025_a.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA distribution table or Early Decision/Early Action breakdown was present in the provided text."
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.06,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 and C21 tables present: GPA bands show 53% with 4.0 GPA and 41% with 3.75-3.99 (total 94%), 6% with 3.50-3.74, no lower bands reported. C21 confirms that early decision is offered (YES) but no application or admit counts given. Early action is offered but counts not reported."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    }
+  ]
+}

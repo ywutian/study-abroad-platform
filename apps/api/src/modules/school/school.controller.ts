@@ -141,11 +141,18 @@ export class SchoolController {
       tuitionMax,
       sizeMin,
       sizeMax,
+      salaryMin,
+      salaryMax,
       schoolType,
       testOptional,
       testingPolicy,
       needBlind,
       hasEarlyDecision,
+      sortBy,
+      weightRank,
+      weightAcceptance,
+      weightTuition,
+      weightSalary,
     } = query;
 
     return this.schoolService.findAll(
@@ -163,11 +170,18 @@ export class SchoolController {
         tuitionMax,
         sizeMin,
         sizeMax,
+        salaryMin,
+        salaryMax,
         schoolType,
         testOptional,
         testingPolicy,
         needBlind,
         hasEarlyDecision,
+        sortBy,
+        weightRank,
+        weightAcceptance,
+        weightTuition,
+        weightSalary,
       },
     );
   }

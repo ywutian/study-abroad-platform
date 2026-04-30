@@ -10,7 +10,6 @@ export type SwipeBadge = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 interface BadgeConfig {
   color: string;
   bgColor: string;
-  glowColor: string;
   icon: React.ComponentType<{ className?: string }>;
   /** Translation key under hall.badges namespace */
   key: SwipeBadge;
@@ -19,36 +18,31 @@ interface BadgeConfig {
 const BADGE_CONFIG: Record<SwipeBadge, BadgeConfig> = {
   bronze: {
     color: 'text-amber-700',
-    bgColor: 'from-amber-600 to-amber-800',
-    glowColor: 'shadow-amber-500/30',
+    bgColor: 'bg-amber-700',
     icon: Shield,
     key: 'bronze',
   },
   silver: {
     color: 'text-gray-500 dark:text-gray-400',
-    bgColor: 'from-gray-300 to-gray-500',
-    glowColor: 'shadow-gray-400/30',
+    bgColor: 'bg-gray-500',
     icon: Shield,
     key: 'silver',
   },
   gold: {
     color: 'text-yellow-500',
-    bgColor: 'from-yellow-400 to-amber-500',
-    glowColor: 'shadow-yellow-400/40',
+    bgColor: 'bg-yellow-500',
     icon: Crown,
     key: 'gold',
   },
   platinum: {
     color: 'text-cyan-500',
-    bgColor: 'from-cyan-300 to-blue-500',
-    glowColor: 'shadow-cyan-400/40',
+    bgColor: 'bg-cyan-500',
     icon: Award,
     key: 'platinum',
   },
   diamond: {
     color: 'text-violet-500',
-    bgColor: 'from-violet-400 to-purple-600',
-    glowColor: 'shadow-violet-400/50',
+    bgColor: 'bg-violet-500',
     icon: Gem,
     key: 'diamond',
   },
@@ -91,10 +85,9 @@ export function BadgeDisplay({
       className={cn(
         'relative inline-flex items-center justify-center',
         'rounded-full',
-        'bg-gradient-to-br shadow-lg',
+        'shadow-md',
         sizeClasses[size],
         config.bgColor,
-        config.glowColor,
         className
       )}
     >
@@ -102,11 +95,7 @@ export function BadgeDisplay({
       {/* Glow effect */}
       {animated && (
         <div
-          className={cn(
-            'absolute inset-0 rounded-full',
-            'animate-pulse opacity-50',
-            config.glowColor
-          )}
+          className={cn('absolute inset-0 rounded-full', 'animate-pulse opacity-50 shadow-md')}
         />
       )}
     </div>

@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch77-hamilton-notredame",
+    "note": "Batch 77: Hamilton College (2024-25), Notre Dame (2024-25 via Google Drive)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://drive.google.com/uc?export=download&id=1L1IOSn19CxOwqRaDK8F_cZVzbsFD1EPg&confirm=t"
+    }
+  ]
+}

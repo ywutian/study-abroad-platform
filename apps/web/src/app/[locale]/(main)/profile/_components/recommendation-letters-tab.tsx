@@ -190,7 +190,7 @@ export function RecommendationLettersTab() {
             </CardTitle>
             <CardDescription>{t('recLetter.desc')}</CardDescription>
           </div>
-          <Button onClick={openCreate} className="gap-2 bg-violet-500 hover:opacity-90 text-white">
+          <Button onClick={openCreate} className="gap-2">
             <Plus className="h-4 w-4" />
             {t('recLetter.add')}
           </Button>

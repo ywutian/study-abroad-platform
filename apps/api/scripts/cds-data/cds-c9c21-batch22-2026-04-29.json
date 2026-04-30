@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:58:47.649Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch22-2026-04-29.json",
+    "success": 4,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "villanova university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www1.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.82,
+        "3.50-3.74": 0.15,
+        "3.25-3.49": 0.03,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 54.25,
+      "eaAcceptanceRate": null,
+      "edApplied": 1696,
+      "edAdmitted": 920,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Action plan exists with closing date Nov 1 and notification date Jan 20 but no application or admit counts reported."
+    },
+    {
+      "schoolNameNorm": "case western reserve university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.6781,
+        "3.50-3.74": 0.2432,
+        "3.25-3.49": 0.0928,
+        "3.00-3.24": 0.0136,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 804,
+      "edAdmitted": 814,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "For GPA distribution, combined 3.75-4.00 from 17.89% (4.0) plus 46.82% (3.75-3.99). Early Decision admits reported as 8/14 which seems like a typo; interpreted as admitted 814 (likely a typo). Early Action reported as offered but no applicants/admissions data."
+    },
+    {
+      "schoolNameNorm": "university of rochester",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5526,
+        "3.50-3.74": 0.2438,
+        "3.25-3.49": 0.1427,
+        "3.00-3.24": 0.0535,
+        "<3.00": 0.0093
+      },
+      "edAcceptanceRate": 38.05,
+      "eaAcceptanceRate": null,
+      "edApplied": 1385,
+      "edAdmitted": 527,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution from section C11 Percent of all enrolled first-time, first-year students who had high school GPA in ranges. ED data from section C21 Early Decision applications and admitted. No Early Action plans reported."
+    },
+    {
+      "schoolNameNorm": "colgate university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.colgate.edu/sites/default/files/2025-07/Colgate%202024-25%20CDS%20for%20Website_0.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.685,
+        "3.50-3.74": 0.2327,
+        "3.25-3.49": 0.0667,
+        "3.00-3.24": 0.0145,
+        "<3.00": 0.0001
+      },
+      "edAcceptanceRate": 19.49,
+      "eaAcceptanceRate": null,
+      "edApplied": 2447,
+      "edAdmitted": 477,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution mapped from detailed ranges in CDS-C section C11; Early Decision data present, Early Action not offered."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "macalester college",
+      "sourceUrl": "https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2025-2026_Macalester-College_completed.pdf",
+      "error": "Download failed 404: https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2025-2026_Macalester-College_completed.pdf"
+    }
+  ]
+}

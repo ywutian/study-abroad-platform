@@ -1,0 +1,123 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:38:19.672Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch67-2026-04-29.json",
+    "success": 8,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "villanova university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www1.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 54.25,
+      "eaAcceptanceRate": null,
+      "edApplied": 1696,
+      "edAdmitted": 920,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 used 'All enrolled students' GPA distribution. C21 reported Early Decision only; Early Action had dates and restrictive status but no applicant/admit counts."
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution not reported in the provided text; only a 0.00 total line appears without category percentages. C21 reports Early Decision only; Early Action is marked No."
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.37,
+      "eaAcceptanceRate": null,
+      "edApplied": 967,
+      "edAdmitted": 226,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 states high school GPA data is not reported. C21 reports Early Decision only; no Early Action plan reported."
+    },
+    {
+      "schoolNameNorm": "bucknell university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bucknell.edu/sites/default/files/institutional-research/common_data_set_2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.3037,
+        "3.50-3.74": 0.3068,
+        "3.25-3.49": 0.2038,
+        "3.00-3.24": 0.0908,
+        "<3.00": 0.0202
+      },
+      "edAcceptanceRate": 55.45,
+      "eaAcceptanceRate": null,
+      "edApplied": 1201,
+      "edAdmitted": 666,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 extracted from C11 GPA distribution; range 3.75-3.99 mapped to 3.75-4.00. No Early Action counts reported; C22 indicates no nonbinding early action plan."
+    },
+    {
+      "schoolNameNorm": "colorado college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.coloradocollege.edu/offices/ipe/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 31.81,
+      "eaAcceptanceRate": 20.57,
+      "edApplied": 918,
+      "edAdmitted": 292,
+      "eaApplied": 3840,
+      "eaAdmitted": 790,
+      "notes": "C11 all enrolled students GPA distribution used. Mapped 4.0 within 3.75-4.00 band. Remaining sub-3.00 bands aggregated to <3.00 (0.5% + 0.2% + 0.0% + 0.0% = 0.7% in students who submitted scores; 0.3% + 0.0% + 0.0% + 0.0% = 0.3% in students who did not submit scores; all-enrolled column shows 0.5% + 0.2% + 0.0% + 0.0% = 0.7%, but canonical <3.00 derived from all-enrolled remaining below 3.00 categories: 0.5%+0.2%+0.0%+0.0%=0.7%; normalized from percentage values shown yields 0.012 after rounding from table totals?"
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 30.5,
+      "eaAcceptanceRate": null,
+      "edApplied": 1341,
+      "edAdmitted": 409,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 table for GPA distribution contains only 0.00% entries across the reported GPA ranges; mapped to canonical bands as all zero. C21 reports Early Decision only; no Early Action counts provided."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/GPA table in provided text reports all GPA percentages as 0.00% and appears not populated; treated as omitted/invalid for distribution. C21 shows early decision applications received = 839, but the provided text is truncated before admit/enroll counts and contains no early action plan data."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 18.02,
+      "eaAcceptanceRate": null,
+      "edApplied": 1221,
+      "edAdmitted": 220,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11/C9 GPA data not available; PDF shows all GPA range percentages as 0.00% and indicates high school GPA data is not available. C21 reports Early Decision only; no Early Action plan."
+    }
+  ],
+  "failures": []
+}

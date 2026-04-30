@@ -54,8 +54,8 @@ function Sparkline({ data, ariaLabel }: { data: number[]; ariaLabel: string }) {
       {/* Gradient fill */}
       <defs>
         <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={isUp ? '#10b981' : '#f43f5e'} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={isUp ? '#10b981' : '#f43f5e'} stopOpacity="0" />
+          <stop offset="0%" stopColor={isUp ? '#6f7b58' : '#f43f5e'} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={isUp ? '#6f7b58' : '#f43f5e'} stopOpacity="0" />
         </linearGradient>
       </defs>
       {/* Area */}
@@ -67,7 +67,7 @@ function Sparkline({ data, ariaLabel }: { data: number[]; ariaLabel: string }) {
       <polyline
         points={points.join(' ')}
         fill="none"
-        stroke={isUp ? '#10b981' : '#f43f5e'}
+        stroke={isUp ? '#6f7b58' : '#f43f5e'}
         strokeWidth="2"
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -76,7 +76,7 @@ function Sparkline({ data, ariaLabel }: { data: number[]; ariaLabel: string }) {
       {(() => {
         const lastX = padding + ((data.length - 1) / (data.length - 1)) * (width - padding * 2);
         const lastY = height - padding - ((lastPoint - min) / range) * (height - padding * 2);
-        return <circle cx={lastX} cy={lastY} r="3" fill={isUp ? '#10b981' : '#f43f5e'} />;
+        return <circle cx={lastX} cy={lastY} r="3" fill={isUp ? '#6f7b58' : '#f43f5e'} />;
       })()}
     </svg>
   );

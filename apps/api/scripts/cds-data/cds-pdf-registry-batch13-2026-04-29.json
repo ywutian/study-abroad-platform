@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch13-state-unis-b",
+    "note": "Batch 13: USC, UB, UCF, Stony Brook (retry)"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of south carolina",
+      "schoolName": "University of South Carolina",
+      "selectedUrl": "http://oiraa.dw.sc.edu/cds/cds2024/cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university at buffalo",
+      "schoolName": "University at Buffalo",
+      "selectedUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of central florida",
+      "schoolName": "University of Central Florida",
+      "selectedUrl": "https://analytics.ucf.edu/wp-content/uploads/2025/08/Common-Data-Set-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "schoolName": "Stony Brook University",
+      "selectedUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch57-notredame-unt-utoledo-emich-idahostate",
+    "note": "Batch 57: Notre Dame, U North Texas, U Toledo, Eastern Michigan, Idaho State"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "schoolName": "University of North Texas",
+      "selectedUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "schoolName": "University of Toledo",
+      "selectedUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "schoolName": "Eastern Michigan University",
+      "selectedUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "idaho state university",
+      "schoolName": "Idaho State University",
+      "selectedUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf"
+    }
+  ]
+}

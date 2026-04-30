@@ -207,7 +207,7 @@ export class SchoolScraperService {
     const response = await fetch(url, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; StudyAbroadBot/1.0; +https://example.com/bot)',
+          'Mozilla/5.0 (compatible; LumniBot/1.0; +https://example.com/bot)',
         Accept: 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9',
       },

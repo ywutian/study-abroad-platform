@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch22-more-unis",
+    "note": "Batch 22: Villanova, Case Western, University of Rochester, Colgate, Macalester"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "villanova university",
+      "schoolName": "Villanova University",
+      "selectedUrl": "https://www1.villanova.edu/content/dam/villanova/provost/decision_support/2024-2025-CDS_v2.pdf"
+    },
+    {
+      "schoolNameNorm": "case western reserve university",
+      "schoolName": "Case Western Reserve University",
+      "selectedUrl": "https://case.edu/ir/sites/default/files/2025-01/CWRU%202024%20-%2025%20CDS.pdf"
+    },
+    {
+      "schoolNameNorm": "university of rochester",
+      "schoolName": "University of Rochester",
+      "selectedUrl": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf"
+    },
+    {
+      "schoolNameNorm": "colgate university",
+      "schoolName": "Colgate University",
+      "selectedUrl": "https://www.colgate.edu/sites/default/files/2025-07/Colgate%202024-25%20CDS%20for%20Website_0.pdf"
+    },
+    {
+      "schoolNameNorm": "macalester college",
+      "schoolName": "Macalester College",
+      "selectedUrl": "https://www.macalester.edu/institutional-research/wp-content/uploads/sites/515/CDS_2025-2026_Macalester-College_completed.pdf"
+    }
+  ]
+}

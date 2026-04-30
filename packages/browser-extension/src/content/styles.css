@@ -16,20 +16,20 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
+  background: linear-gradient(135deg, #1d1813 0%, #3a2a18 100%);
+  color: #fff7ea;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 20px rgba(29, 24, 19, 0.24);
   transition: all 0.3s ease;
 }
 
 .studyabroad-fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 6px 24px rgba(29, 24, 19, 0.3);
 }
 
 .studyabroad-fab svg {
@@ -43,7 +43,8 @@
   bottom: 70px;
   right: 0;
   width: 280px;
-  background: white;
+  background: #fff9ef;
+  border: 1px solid #d8c8b2;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
@@ -71,8 +72,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
+  background: linear-gradient(135deg, #1d1813 0%, #3a2a18 100%);
+  color: #fff7ea;
 }
 
 .studyabroad-logo {
@@ -83,7 +84,7 @@
 .studyabroad-close {
   background: none;
   border: none;
-  color: white;
+  color: #fff7ea;
   font-size: 24px;
   cursor: pointer;
   padding: 0;
@@ -116,12 +117,12 @@
   gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  background: #f3f4f6;
+  background: #efe4d2;
   border: none;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: #4e4034;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 8px;
@@ -132,7 +133,7 @@
 }
 
 .studyabroad-btn:hover {
-  background: #e5e7eb;
+  background: #e3d1b8;
 }
 
 .studyabroad-btn svg {
@@ -140,13 +141,13 @@
 }
 
 .studyabroad-btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: white;
+  background: linear-gradient(135deg, #1d1813 0%, #3a2a18 100%);
+  color: #fff7ea;
 }
 
 .studyabroad-btn-primary:hover {
-  opacity: 0.9;
-  background: linear-gradient(135deg, #5855e8 0%, #7c4dff 100%);
+  opacity: 0.92;
+  background: linear-gradient(135deg, #2a2117 0%, #7a581a 100%);
 }
 
 /* 状态显示 */
@@ -156,13 +157,13 @@
   border-radius: 8px;
   font-size: 13px;
   text-align: center;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #efe4d2;
+  color: #6f665b;
 }
 
 .studyabroad-status-success {
-  background: #dcfce7;
-  color: #166534;
+  background: #ece8d2;
+  color: #555d3c;
 }
 
 .studyabroad-status-error {
@@ -176,8 +177,8 @@
 }
 
 .studyabroad-status-info {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #ececff;
+  color: #3f4bcc;
 }
 
 /* 字段选择器 */
@@ -195,13 +196,13 @@
   align-items: center;
   margin-bottom: 12px;
   font-weight: 500;
-  color: #374151;
+  color: #4e4034;
 }
 
 .studyabroad-back {
   background: none;
   border: none;
-  color: #6366f1;
+  color: #1d1813;
   cursor: pointer;
   font-size: 13px;
   padding: 4px 8px;
@@ -210,14 +211,14 @@
 }
 
 .studyabroad-back:hover {
-  background: #f3f4f6;
+  background: #efe4d2;
 }
 
 .studyabroad-fields-list {
   max-height: 240px;
   overflow-y: auto;
   margin-bottom: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d8c8b2;
   border-radius: 10px;
 }
 
@@ -226,7 +227,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #efe4d2;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -236,7 +237,7 @@
 }
 
 .studyabroad-field-item:hover {
-  background: #f9fafb;
+  background: #fff4e2;
 }
 
 .studyabroad-field-item.disabled {
@@ -244,21 +245,21 @@
   cursor: not-allowed;
 }
 
-.studyabroad-field-item input[type="checkbox"] {
+.studyabroad-field-item input[type='checkbox'] {
   width: 16px;
   height: 16px;
-  accent-color: #6366f1;
+  accent-color: #1d1813;
 }
 
 .studyabroad-field-name {
   flex: 1;
   font-size: 13px;
-  color: #374151;
+  color: #4e4034;
 }
 
 .studyabroad-field-value {
   font-size: 12px;
-  color: #9ca3af;
+  color: #9a8c79;
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -268,7 +269,7 @@
 .studyabroad-no-fields {
   padding: 20px;
   text-align: center;
-  color: #9ca3af;
+  color: #9a8c79;
   font-size: 13px;
 }
 
@@ -278,7 +279,7 @@
 }
 
 .studyabroad-fields-list::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #efe4d2;
   border-radius: 3px;
 }
 
@@ -288,19 +289,19 @@
 }
 
 .studyabroad-fields-list::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #9a8c79;
 }
 
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .studyabroad-menu {
-    background: #1f2937;
+    background: #1d1813;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
   }
 
   .studyabroad-btn {
-    background: #374151;
-    color: #f3f4f6;
+    background: #4e4034;
+    color: #efe4d2;
   }
 
   .studyabroad-btn:hover {
@@ -308,34 +309,27 @@
   }
 
   .studyabroad-status {
-    background: #374151;
-    color: #9ca3af;
+    background: #4e4034;
+    color: #9a8c79;
   }
 
   .studyabroad-fields-list {
-    border-color: #374151;
+    border-color: #4e4034;
   }
 
   .studyabroad-field-item {
-    border-color: #374151;
+    border-color: #4e4034;
   }
 
   .studyabroad-field-item:hover {
-    background: #374151;
+    background: #4e4034;
   }
 
   .studyabroad-field-name {
-    color: #f3f4f6;
+    color: #efe4d2;
   }
 
   .studyabroad-fields-header {
-    color: #f3f4f6;
+    color: #efe4d2;
   }
 }
-
-
-
-
-
-
-

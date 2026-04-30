@@ -1,0 +1,144 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:59:39.802Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch41-2026-04-29.json",
+    "success": 7,
+    "failures": 3
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "illinois state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prpa.illinoisstate.edu/downloads/CDS-2024-2025_ISU_FINAL.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4165,
+        "3.50-3.74": 0.1731,
+        "3.25-3.49": 0.1567,
+        "3.00-3.24": 0.145,
+        "<3.00": 0.1087
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Illinois State University does not offer Early Decision or Early Action plans for Fall 2024."
+    },
+    {
+      "schoolNameNorm": "central michigan university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.cmich.edu/docs/default-source/academic-affairs-division/academic-administration/academic-planning-analysis/reports-(public)/common-data-sets/cds-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.40499999999999997,
+        "3.50-3.74": 0.161,
+        "3.25-3.49": 0.15,
+        "3.00-3.24": 0.142,
+        "<3.00": 0.142
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Central Michigan University does not offer Early Decision or Early Action plans as indicated by 'No' responses for both ED and EA in Sections C21 and C22. GPA distribution is derived from percent of all enrolled first-time, first-year students with specific GPA ranges including conversion of partial ranges (e.g., 2.50-2.99 and below 3.00 combined as <3.00)."
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 93.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 479,
+      "edAdmitted": 449,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data is not reported (all values zero). ED reported; EA reported as No."
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 36.58,
+      "eaAcceptanceRate": null,
+      "edApplied": 667,
+      "edAdmitted": 244,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Carleton College offers an Early Decision plan with two rounds. For Fall 2024, they received 667 ED applications and admitted 244 students. They do not offer an Early Action plan."
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/ir-web-24-25/2024%202025%20common%20data%20set%20clifton.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Cincinnati does not offer Early Decision or Early Action plans for Fall 2024."
+    },
+    {
+      "schoolNameNorm": "towson university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.towson.edu/ir/documents/cds_all_2425.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5024,
+        "3.50-3.74": 0.1908,
+        "3.25-3.49": 0.1558,
+        "3.00-3.24": 0.1113,
+        "<3.00": 0.0397
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Decision plan not offered. Early Action plan offered with closing date Nov 15 and notification date Jan 15. Early Action is not restrictive."
+    },
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://academics.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/CDS_UNL2_2023_2024_05212024.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.8199999999999998,
+        "3.50-3.74": 0.119,
+        "3.25-3.49": 0.049,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 62.01,
+      "eaAcceptanceRate": 52.38,
+      "edApplied": 587,
+      "edAdmitted": 364,
+      "eaApplied": 10753,
+      "eaAdmitted": 5632,
+      "notes": "GPA distribution is based on percent of all enrolled, degree-seeking, first-time, first-year students who had high school GPAs within specified ranges on a 4.0 scale. ED numbers combine First or Only ED plan and Other ED plan. EA refers to Early Action applications and admits."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "sourceUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf",
+      "error": "Download failed 403: https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "idaho state university",
+      "sourceUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf",
+      "error": "Download failed 404: https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "sourceUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf",
+      "error": "Download failed 404: https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

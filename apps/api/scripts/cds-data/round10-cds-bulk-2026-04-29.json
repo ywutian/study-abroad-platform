@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T08:00:00Z",
+    "source": "Round 10 - Direct CDS PDF extraction (SDSU, SJSU, KSU, OSU, UGA)",
+    "purpose": "State school residency admit rates from official CDS PDFs",
+    "verifiedBy": "Direct PDF download + pdftotext extraction",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of georgia",
+      "cycleYear": 2024,
+      "sourceUrl": "http://oir.uga.edu/wp-content/uploads/UGA_CDS_2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 37.9,
+        "intlAcceptanceRate": 20.9,
+        "oosAcceptanceRate": 31.1,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 47.0,
+      "notes": "UGA CDS 2024-25 C1: applied 42436 (in-state 19041 / oos 22113 / intl 1282), admitted 16092 (in-state 8946 / oos 6878 / intl 268). Intl 268/1282=20.9%, oos 31.1%, in-state 47.0%."
+    },
+    {
+      "schoolNameNorm": "san diego state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://asir.sdsu.edu/Documents/CommonDataSets/CDS_2024-25.pdf",
+      "rates": {
+        "acceptanceRate": 36.0,
+        "intlAcceptanceRate": 56.9,
+        "oosAcceptanceRate": 87.1,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 30.8,
+      "notes": "SDSU CDS 2024-25 C1: applied 90504 (in-state 81487 / oos 7741 / intl 1276), admitted 32556 (in-state 25091 / oos 6739 / intl 726). CSU pattern: in-state most competitive, OOS/intl easier. Intl 56.9%, oos 87.1%, in-state 30.8%."
+    },
+    {
+      "schoolNameNorm": "kansas state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.k-state.edu/data/institutional-research/resources/common-data-set/CDS_2024_2025.pdf",
+      "rates": {
+        "acceptanceRate": 82.0,
+        "intlAcceptanceRate": 30.2,
+        "oosAcceptanceRate": 84.3,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 91.6,
+      "notes": "KSU CDS 2024-25 C1: applied 15432 (in-state 6381 / oos 7553 / intl 1498), admitted 12653 (in-state 5844 / oos 6365 / intl 453). Intl notably selective (30.2%) vs domestic (84-92%). In-state 91.6%, OOS 84.3%."
+    },
+    {
+      "schoolNameNorm": "san jose state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www2.sjsu.edu/irsa/docs/cds/20250411_CDS_2024-2025%20FINAL.pdf",
+      "rates": {
+        "acceptanceRate": 84.6,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 77.6,
+        "transferAcceptanceRate": null
+      },
+      "inStateAcceptanceRate": 85.1,
+      "notes": "SJSU CDS 2024-25 C1: total applied 37132 / admitted 31419 = 84.6%. In-state 35162/29918=85.1%, OOS 1197/929=77.6%. International column uncertain (4th column may be 'Unknown' not intl). CSU system school."
+    }
+  ]
+}

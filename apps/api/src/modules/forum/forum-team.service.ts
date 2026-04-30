@@ -330,6 +330,8 @@ export class ForumTeamService {
         post: {
           include: {
             category: true,
+            community: true,
+            images: { orderBy: { sortOrder: 'asc' } },
             author: {
               select: FORUM_AUTHOR_SELECT,
             },
@@ -343,10 +345,44 @@ export class ForumTeamService {
     return memberships.map((m) => ({
       id: m.post.id,
       categoryId: m.post.categoryId,
+      category: {
+        id: m.post.category.id,
+        name: m.post.category.name,
+        nameZh: m.post.category.nameZh,
+        description: m.post.category.description || undefined,
+        descriptionZh: m.post.category.descriptionZh || undefined,
+        icon: m.post.category.icon || undefined,
+        color: m.post.category.color || undefined,
+        postCount: 0,
+      },
+      communityId: m.post.communityId || undefined,
+      community: m.post.community
+        ? {
+            id: m.post.community.id,
+            slug: m.post.community.slug,
+            name: m.post.community.name,
+            description: m.post.community.description || undefined,
+            postCount: m.post.community.postCount,
+            followerCount: m.post.community.followerCount,
+            isOfficial: m.post.community.isOfficial,
+            isFollowing: false,
+            createdAt: m.post.community.createdAt,
+          }
+        : undefined,
       author: mapForumAuthor(m.post.author),
       title: m.post.title,
       content: m.post.content,
       tags: m.post.tags,
+      images: m.post.images.map((image) => ({
+        id: image.id,
+        key: image.key,
+        url: image.url,
+        mimeType: image.mimeType,
+        size: image.size,
+        width: image.width || undefined,
+        height: image.height || undefined,
+        sortOrder: image.sortOrder,
+      })),
       isTeamPost: true,
       teamSize: m.post.teamSize || undefined,
       currentSize: m.post._count.teamMembers,

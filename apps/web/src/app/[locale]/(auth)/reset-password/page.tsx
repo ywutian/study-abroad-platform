@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
           <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.linkExpiredDesc')}</p>
         </div>
         <Link href="/forgot-password" className="block">
-          <Button className="w-full h-12 bg-primary text-white font-medium rounded-xl">
+          <Button className="w-full h-12 bg-primary text-primary-foreground font-medium rounded-xl">
             {t('auth.resetPassword.getNewLink')}
           </Button>
         </Link>
@@ -97,7 +97,7 @@ export default function ResetPasswordPage() {
           <p className="mt-2 text-sm text-auth-muted">{t('auth.resetPassword.successDesc')}</p>
         </div>
         <Link href="/login" className="block">
-          <Button className="w-full h-12 bg-primary text-white font-medium rounded-xl">
+          <Button className="w-full h-12 bg-primary text-primary-foreground font-medium rounded-xl">
             {t('auth.resetPassword.goToLogin')}
           </Button>
         </Link>
@@ -179,7 +179,7 @@ export default function ResetPasswordPage() {
 
         <Button
           type="submit"
-          className="w-full h-12 bg-primary text-white font-medium rounded-xl  transition-all duration-300 disabled:opacity-50"
+          className="w-full h-12 bg-primary text-primary-foreground font-medium rounded-xl transition-all duration-300 disabled:opacity-50"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (

@@ -24,7 +24,7 @@ const motionButtonVariants = cva(
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
         gradient: 'bg-primary text-primary-foreground shadow-lg shadow-primary/25',
-        glow: 'bg-primary text-primary-foreground shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]',
+        glow: 'bg-primary text-primary-foreground shadow-[var(--ds-shadow-elevated)] hover:shadow-[var(--ds-shadow-elevated)]',
       },
       size: {
         default: 'h-10 px-5 py-2',

@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-28T06:38:31.019Z",
+    "source": "tavily",
+    "missingField": "intlAcceptanceRate",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 0,
+    "selectedUrls": 0
+  },
+  "schools": [],
+  "failures": []
+}

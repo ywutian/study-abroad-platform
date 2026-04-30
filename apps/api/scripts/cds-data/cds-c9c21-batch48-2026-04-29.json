@@ -1,0 +1,103 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:24:50.790Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch48-2026-04-29.json",
+    "success": 6,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data not reported (all 0.00% indicated). C21 Early Decision plan is offered but no counts of applications or admits provided. No Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set text for University of North Texas does not report the high school GPA distribution in section C9 (only zeros and no distribution percentages are shown). Section C21 confirms the institution implements an Early Decision plan but does not provide numbers for applications or admits, similarly no Early Action plan is reported (marked No)."
+    },
+    {
+      "schoolNameNorm": "university of nevada, las vegas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.it.unlv.edu/sites/default/files/assets/ir/UNLV_common_dataset_2024-2025_2.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.236,
+        "3.50-3.74": 0.2045,
+        "3.25-3.49": 0.1898,
+        "3.00-3.24": 0.1623,
+        "<3.00": 0.2074
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Nevada, Las Vegas does not report numbers for Early Decision or Early Action applicants or admits. The GPA distribution is reported as percentages in approximate 4.0 scale bands and mapped to the canonical bands; the below 3.00 band sums the reported GPA bands below 3.00."
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No data found in provided PDF text for sections C9 or C21."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data is reported as all zeros, indicating no data reported for GPA bands."
+    },
+    {
+      "schoolNameNorm": "university of nevada, reno",
+      "cycleYear": 2024,
+      "sourceUrl": "https://dataden.unr.edu/Resources/CDS/CDS_2023-2024.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.28,
+        "3.50-3.74": 0.21,
+        "3.25-3.49": 0.21,
+        "3.00-3.24": 0.15,
+        "<3.00": 0.16
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Nevada, Reno does not offer Early Decision plans. Early Action plan exists but no applicant or admit counts for Early Action are reported. GPA distribution is reported under C11 as percent of all enrolled, degree-seeking first-year students using 4.0 scale."
+    }
+  ],
+  "failures": []
+}

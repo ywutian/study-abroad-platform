@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch65-osu-ncstate-uw-udel",
+    "note": "Batch 65: Ohio State, NC State, University of Washington Seattle, University of Delaware"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "ohio state university",
+      "schoolName": "Ohio State University",
+      "selectedUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf"
+    },
+    {
+      "schoolNameNorm": "north carolina state university",
+      "schoolName": "North Carolina State University",
+      "selectedUrl": "https://report.isa.ncsu.edu/ir/cds/pdfs/CDS_2024-25.v3.pdf"
+    },
+    {
+      "schoolNameNorm": "university of washington",
+      "schoolName": "University of Washington",
+      "selectedUrl": "https://uw-s3-cdn.s3.us-west-2.amazonaws.com/wp-content/uploads/sites/162/2025/04/01121035/CDS_2024-2025_Seattle.pdf"
+    },
+    {
+      "schoolNameNorm": "university of delaware",
+      "schoolName": "University of Delaware",
+      "selectedUrl": "https://ire.udel.edu/files/2025/07/CDS2425_UDelaware.pdf"
+    }
+  ]
+}

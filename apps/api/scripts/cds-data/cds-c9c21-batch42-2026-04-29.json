@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:03:46.880Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch42-2026-04-29.json",
+    "success": 3,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of arkansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://osai.uark.edu/datasets/cds/cds24-25v3.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Sections C9 and C21 tables not found or no data reported in the provided PDF text for University of Arkansas."
+    },
+    {
+      "schoolNameNorm": "university of south dakota",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.usd.edu/-/media/Project/USD/DotEdu/About/Departments-Offices-and-Resources/Institutional-Research-Planning-and-Assessment/USD-Common-Data-Set.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.305,
+        "3.50-3.74": 0.179,
+        "3.25-3.49": 0.157,
+        "3.00-3.24": 0.117,
+        "<3.00": 0.242
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No Early Decision plans offered. Early Action plan offered but no applicant/admit counts reported."
+    },
+    {
+      "schoolNameNorm": "university of wisconsin-milwaukee",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uwm.edu/institutional-research/wp-content/uploads/sites/268/2024/03/CDS23_24_public.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.158,
+        "3.50-3.74": 0.147,
+        "3.25-3.49": 0.166,
+        "3.00-3.24": 0.154,
+        "<3.00": 0.376
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "UWM does not offer Early Decision or Early Action plans as of Fall 2023."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of idaho",
+      "sourceUrl": "https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf",
+      "error": "Download failed 403: https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf"
+    }
+  ]
+}

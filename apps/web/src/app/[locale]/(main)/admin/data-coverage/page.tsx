@@ -19,9 +19,19 @@ interface CoverageField {
   source: string | null;
   tier: string | null;
   confidence: number | null;
+  sourceUrl?: string | null;
+  cycleYear?: number | null;
+  validatorCount?: number | null;
+  originalFormula?: string | null;
+  realDataStatus?: string | null;
+  terminalStatus?: string | null;
+  reason?: string | null;
   staleness: string | null;
   predictionEligible: boolean;
+  isOfficial: boolean;
   isHeuristic: boolean;
+  isTerminal: boolean;
+  bucket: 'official' | 'heuristic' | 'terminal' | 'stale' | 'other' | 'missing';
 }
 
 interface CoverageItem {
@@ -32,6 +42,8 @@ interface CoverageItem {
   criticalComplete: boolean;
   missingCritical: string[];
   heuristicCritical: string[];
+  terminalCritical: string[];
+  staleCritical: string[];
   fields: CoverageField[];
 }
 
@@ -44,6 +56,12 @@ interface CoverageResponse {
     criticalComplete: number;
     missingAnyCritical: number;
     heuristicOnlySchools: number;
+    terminalStatusSchools: number;
+    staleCriticalSchools: number;
+    officialFields: number;
+    heuristicFields: number;
+    terminalFields: number;
+    staleFields: number;
   };
   fieldTotals: Record<
     string,
@@ -53,10 +71,13 @@ interface CoverageResponse {
       percent: number;
       predictionEligible: number;
       predictionEligiblePercent: number;
+      official: number;
       heuristic: number;
+      terminal: number;
       stale: number;
     }
   >;
+  bucketCounts: Record<string, number>;
   items: CoverageItem[];
 }
 
@@ -83,7 +104,15 @@ export default function AdminDataCoveragePage() {
   const rows = coverage.data?.items ?? [];
   const problemRows = useMemo(
     () =>
-      rows.filter((row) => !row.criticalComplete || row.heuristicCritical.length > 0).slice(0, 80),
+      rows
+        .filter(
+          (row) =>
+            !row.criticalComplete ||
+            row.heuristicCritical.length > 0 ||
+            row.terminalCritical.length > 0 ||
+            row.staleCritical.length > 0
+        )
+        .slice(0, 80),
     [rows]
   );
 
@@ -96,14 +125,13 @@ export default function AdminDataCoveragePage() {
         color="emerald"
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
         <MetricCard label={t('metrics.schools')} value={coverage.data?.totals.schools} />
         <MetricCard label={t('metrics.complete')} value={coverage.data?.totals.criticalComplete} />
         <MetricCard label={t('metrics.missing')} value={coverage.data?.totals.missingAnyCritical} />
-        <MetricCard
-          label={t('metrics.heuristic')}
-          value={coverage.data?.totals.heuristicOnlySchools}
-        />
+        <MetricCard label={t('metrics.heuristic')} value={coverage.data?.totals.heuristicFields} />
+        <MetricCard label={t('metrics.official')} value={coverage.data?.totals.officialFields} />
+        <MetricCard label={t('metrics.terminal')} value={coverage.data?.totals.terminalFields} />
       </div>
 
       <Card>
@@ -136,13 +164,15 @@ export default function AdminDataCoveragePage() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto rounded-md border">
-            <table className="w-full min-w-[860px] text-sm">
+            <table className="w-full min-w-[980px] text-sm">
               <thead className="bg-muted/60">
                 <tr>
                   <th className="px-3 py-2 text-left">{t('table.field')}</th>
                   <th className="px-3 py-2 text-right">{t('table.filled')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.official')}</th>
                   <th className="px-3 py-2 text-right">{t('table.eligible')}</th>
                   <th className="px-3 py-2 text-right">{t('table.heuristic')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.terminal')}</th>
                   <th className="px-3 py-2 text-right">{t('table.stale')}</th>
                 </tr>
               </thead>
@@ -153,8 +183,10 @@ export default function AdminDataCoveragePage() {
                     <td className="px-3 py-2 text-right">
                       {total.filled}/{total.total} ({total.percent}%)
                     </td>
+                    <td className="px-3 py-2 text-right">{total.official}</td>
                     <td className="px-3 py-2 text-right">{total.predictionEligiblePercent}%</td>
                     <td className="px-3 py-2 text-right">{total.heuristic}</td>
+                    <td className="px-3 py-2 text-right">{total.terminal}</td>
                     <td className="px-3 py-2 text-right">{total.stale}</td>
                   </tr>
                 ))}
@@ -180,7 +212,7 @@ export default function AdminDataCoveragePage() {
                 <tr>
                   <th className="px-3 py-2 text-left">{t('table.school')}</th>
                   <th className="px-3 py-2 text-left">{t('table.missing')}</th>
-                  <th className="px-3 py-2 text-left">{t('table.heuristicFields')}</th>
+                  <th className="px-3 py-2 text-left">{t('table.qualityFields')}</th>
                   <th className="px-3 py-2 text-left">{t('table.sources')}</th>
                 </tr>
               </thead>
@@ -199,20 +231,50 @@ export default function AdminDataCoveragePage() {
                       </Badge>
                     </td>
                     <td className="px-3 py-2">
-                      {row.heuristicCritical.length ? row.heuristicCritical.join(', ') : t('none')}
+                      <div className="space-y-1 text-xs">
+                        <FieldList label={t('table.heuristic')} fields={row.heuristicCritical} />
+                        <FieldList label={t('table.terminal')} fields={row.terminalCritical} />
+                        <FieldList label={t('table.stale')} fields={row.staleCritical} />
+                      </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-1">
+                      <div className="space-y-2">
                         {row.fields
-                          .filter((field) => field.filled)
-                          .slice(0, 8)
+                          .filter((field) => field.filled || field.isTerminal)
+                          .slice(0, 10)
                           .map((field) => (
-                            <Badge
-                              key={field.field}
-                              variant={field.isHeuristic ? 'outline' : 'secondary'}
-                            >
-                              {field.field}: {field.tier ?? t('unknown')}
-                            </Badge>
+                            <div key={field.field} className="rounded-md border bg-background p-2">
+                              <div className="flex flex-wrap items-center gap-1">
+                                <Badge variant={field.isOfficial ? 'secondary' : 'outline'}>
+                                  {field.field}: {field.bucket}
+                                </Badge>
+                                {field.cycleYear ? (
+                                  <Badge variant="outline">{field.cycleYear}</Badge>
+                                ) : null}
+                                {field.validatorCount ? (
+                                  <Badge variant="outline">
+                                    {t('table.validators', {
+                                      count: field.validatorCount,
+                                    })}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                              <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                                <div>{field.source ?? field.realDataStatus ?? t('unknown')}</div>
+                                {field.sourceUrl ? (
+                                  <a
+                                    href={field.sourceUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-primary hover:underline"
+                                  >
+                                    {field.sourceUrl}
+                                  </a>
+                                ) : null}
+                                {field.originalFormula ? <div>{field.originalFormula}</div> : null}
+                                {field.reason ? <div>{field.reason}</div> : null}
+                              </div>
+                            </div>
                           ))}
                       </div>
                     </td>
@@ -235,5 +297,15 @@ function MetricCard({ label, value }: { label: string; value?: number | string }
         <div className="mt-1 text-2xl font-semibold">{value ?? '-'}</div>
       </CardContent>
     </Card>
+  );
+}
+
+function FieldList({ label, fields }: { label: string; fields: string[] }) {
+  if (fields.length === 0) return null;
+  return (
+    <div>
+      <span className="font-medium">{label}: </span>
+      <span>{fields.join(', ')}</span>
+    </div>
   );
 }

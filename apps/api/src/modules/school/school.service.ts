@@ -31,6 +31,7 @@ import {
   toRecord,
 } from './school-provenance.helpers';
 import { SchoolWriteService } from './school-write.service';
+import { scoreAndRankSchools } from '../ranking/ranking-score.util';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -77,11 +78,18 @@ interface SchoolFilters {
   tuitionMax?: number;
   sizeMin?: number;
   sizeMax?: number;
+  salaryMin?: number;
+  salaryMax?: number;
   schoolType?: 'public' | 'private';
   testOptional?: boolean;
   testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   needBlind?: boolean;
   hasEarlyDecision?: boolean;
+  sortBy?: 'rank' | 'name' | 'acceptance' | 'salary' | 'weighted';
+  weightRank?: number;
+  weightAcceptance?: number;
+  weightTuition?: number;
+  weightSalary?: number;
 }
 
 // 地区到州的映射
@@ -267,6 +275,17 @@ export class SchoolService {
       }
     }
 
+    // ROI / post-graduation salary range
+    if (filters?.salaryMin !== undefined || filters?.salaryMax !== undefined) {
+      where.avgSalary = {};
+      if (filters.salaryMin !== undefined) {
+        where.avgSalary.gte = filters.salaryMin;
+      }
+      if (filters.salaryMax !== undefined) {
+        where.avgSalary.lte = filters.salaryMax;
+      }
+    }
+
     // 学校类型 (使用 isPrivate 字段)
     if (filters?.schoolType) {
       where.isPrivate = filters.schoolType === 'private';
@@ -289,20 +308,26 @@ export class SchoolService {
       where.hasEarlyDecision = true;
     }
 
-    const [schools, total] = await Promise.all([
-      this.prisma.school.findMany({
-        where,
-        skip,
-        take: pageSize,
-        orderBy: { usNewsRank: 'asc' },
-        include: {
-          rankings: {
-            select: { source: true, list: true, rank: true, year: true },
-          },
-        },
-      }),
-      this.prisma.school.count({ where }),
-    ]);
+    const sortBy = filters?.sortBy ?? 'rank';
+    const includeRankings = {
+      rankings: {
+        select: { source: true, list: true, rank: true, year: true },
+      },
+    } satisfies Prisma.SchoolInclude;
+
+    const [schools, total] =
+      sortBy === 'weighted'
+        ? await this.findWeightedSortedSchools(where, skip, pageSize, filters)
+        : await Promise.all([
+            this.prisma.school.findMany({
+              where,
+              skip,
+              take: pageSize,
+              orderBy: this.getListOrderBy(sortBy),
+              include: includeRankings,
+            }),
+            this.prisma.school.count({ where }),
+          ]);
 
     const communitySummaries =
       await this.schoolCommunityRatingService.getSummariesForSchools(
@@ -316,7 +341,7 @@ export class SchoolService {
       ),
     );
 
-    if (isSearch) {
+    if (isSearch && sortBy === 'rank') {
       const searchTerm = filters.search!.trim();
       const sorted = this.sortByRelevance(enrichedSchools, searchTerm);
       return createPaginatedResponse(sorted, total, page, pageSize);
@@ -330,10 +355,65 @@ export class SchoolService {
     );
 
     // Cache non-search results
-    const cacheKey = this.buildListCacheKey(pagination, filters);
-    await this.redis.setJSON(cacheKey, result, CACHE_TTL.SCHOOL_LIST);
+    if (!isSearch) {
+      const cacheKey = this.buildListCacheKey(pagination, filters);
+      await this.redis.setJSON(cacheKey, result, CACHE_TTL.SCHOOL_LIST);
+    }
 
     return result;
+  }
+
+  private getListOrderBy(
+    sortBy: SchoolFilters['sortBy'],
+  ): Prisma.SchoolOrderByWithRelationInput[] {
+    switch (sortBy) {
+      case 'name':
+        return [{ name: 'asc' }];
+      case 'acceptance':
+        return [{ acceptanceRate: 'asc' }, { usNewsRank: 'asc' }];
+      case 'salary':
+        return [{ avgSalary: 'desc' }, { usNewsRank: 'asc' }];
+      case 'rank':
+      default:
+        return [{ usNewsRank: 'asc' }, { name: 'asc' }];
+    }
+  }
+
+  private async findWeightedSortedSchools(
+    where: Prisma.SchoolWhereInput,
+    skip: number,
+    pageSize: number,
+    filters?: SchoolFilters,
+  ) {
+    const includeRankings = {
+      rankings: {
+        select: { source: true, list: true, rank: true, year: true },
+      },
+    } satisfies Prisma.SchoolInclude;
+
+    const [allSchools, total] = await Promise.all([
+      this.prisma.school.findMany({
+        where,
+        orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
+        include: includeRankings,
+      }),
+      this.prisma.school.count({ where }),
+    ]);
+
+    const rankedSchools = scoreAndRankSchools(allSchools, {
+      usNewsRank: filters?.weightRank ?? 30,
+      acceptanceRate: filters?.weightAcceptance ?? 20,
+      tuition: filters?.weightTuition ?? 25,
+      avgSalary: filters?.weightSalary ?? 25,
+    }).map((school) => {
+      const { score, rank: _rank, ...rest } = school;
+      return {
+        ...rest,
+        fitScore: score,
+      };
+    });
+
+    return [rankedSchools.slice(skip, skip + pageSize), total] as const;
   }
 
   async findById(id: string) {
@@ -700,6 +780,7 @@ export class SchoolService {
       SEED: 0,
       COMMUNITY: 0,
       INFERRED: 0,
+      UNAVAILABLE: 0,
     };
     const predictionEligibleCoverage: Record<
       string,

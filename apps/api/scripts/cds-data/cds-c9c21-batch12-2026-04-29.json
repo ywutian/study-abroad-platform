@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:36:41.766Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch12-2026-04-29.json",
+    "success": 5,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "louisiana state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.lsu.edu/data/common-data-set/2024/3_2425_admissions.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.3586,
+        "3.50-3.74": 0.1779,
+        "3.25-3.49": 0.139,
+        "3.00-3.24": 0.0907,
+        "<3.00": 0.2338
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 sourced from C11 'All enrolled students' GPA distribution. Mapped 4.0 to 3.75-4.00. Lower-than-3.00 categories combined: 0.81% + 0.05% + 0.00% + 0.01% = 0.87%? Wait, C11 all-enrolled lower bands sum to 0.81 + 0.05 + 0.00 + 0.01 = 0.87; however the extracted table shows 0.81, 0.05, 0.00, 0.01; combined under 3.00 = 0.0087. ED/EA counts not provided in the PDF text."
+    },
+    {
+      "schoolNameNorm": "university of kansas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://aire.ku.edu/sites/air/files/files/CDS/KUCDS_2024_2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.59,
+        "3.50-3.74": 0.16,
+        "3.25-3.49": 0.11,
+        "3.00-3.24": 0.07,
+        "<3.00": 0.07
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 corresponds to CDS C11 in the provided text. Percentages were mapped as: 4.00=0.36 and 3.75-3.99=0.23 combined into 3.75-4.00=0.59; 3.50-3.74=0.16; 3.25-3.49=0.11; 3.00-3.24=0.07; below 3.00=0.07 from 2.50-2.99=0.06, 2.00-2.49=0.01, 1.00-1.99=0, below 1.00=0. C21 states no early decision and no early action plans, so counts are null."
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 93.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 479,
+      "edAdmitted": 449,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table present but all GPA percentage cells are blank/0.00% and no usable distribution is reported. C21 Early Decision is reported; no Early Action applicant/admit counts are provided in C22."
+    },
+    {
+      "schoolNameNorm": "university of tennessee",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irsa.utk.edu/wp-content/uploads/sites/107/2025/02/CDS_2024-2025_C-.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7289,
+        "3.50-3.74": 0.0813,
+        "3.25-3.49": 0.0448,
+        "3.00-3.24": 0.0163,
+        "<3.00": 0.1287
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA table used for C9 because the provided text does not include a separate C9 high-school GPA distribution table; mapped 4.0 GPA to 3.75-4.00 and combined all sub-3.00 bands into <3.00. C21 indicates no early decision plan and an early action plan, but the PDF text provides no counts for EA applicants/admits or ED counts."
+    },
+    {
+      "schoolNameNorm": "university of alabama",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.ua.edu/d/sites/all/files/reports25/CDS%202024-25%20FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 extracted from C11 GPA table for all enrolled students; mapped 3.75-3.99 to 3.75-4.00 and combined all below 3.00 (2.50-2.99, 2.0-2.49, 1.0-1.99, below 1.0) into <3.00. C21 shows Early Decision and Early Action sections with no affirmative offerings and no counts reported."
+    }
+  ],
+  "failures": []
+}

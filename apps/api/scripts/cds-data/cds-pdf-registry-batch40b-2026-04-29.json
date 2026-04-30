@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch40b",
+    "note": "Batch 40b: CMC, Vassar, Wellesley, GWU, American, Harvey Mudd, Middlebury, Haverford, Ball State, Mississippi State"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "vassar college",
+      "schoolName": "Vassar College",
+      "selectedUrl": "https://offices.vassar.edu/institutional-research/wp-content/uploads/sites/23/2025/03/Vassar-College-CDS-2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "schoolName": "Wellesley College",
+      "selectedUrl": "https://wellesley-college.files.svdcdn.com/production/administrative-departments/OIR/CDS_2024-2025-FINAL-1.pdf"
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "schoolName": "George Washington University",
+      "selectedUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "american university",
+      "schoolName": "American University",
+      "selectedUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf"
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "schoolName": "Middlebury College",
+      "selectedUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "ball state university",
+      "schoolName": "Ball State University",
+      "selectedUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf"
+    },
+    {
+      "schoolNameNorm": "mississippi state university",
+      "schoolName": "Mississippi State University",
+      "selectedUrl": "https://ir.msstate.edu/CDS/cds2023_2024.pdf"
+    }
+  ]
+}

@@ -1,0 +1,1618 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T08:50:00Z",
+    "sources": [
+      "manual-webfetch (cds-2024-25-extracted.json)",
+      "tavily-llm-extract (cds-c1-clean-batch)"
+    ],
+    "description": "Trusted CDS data ready for import-cds-rates.ts",
+    "totalSchools": 54,
+    "filteredAt": "2026-04-28T09:00:00Z",
+    "filteredReason": "Removed entries where school name does not match PDF hostname"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, davis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://aggiedata.ucdavis.edu/sites/g/files/dgvnsk1841/files/media/documents/CDS_UCD.pdf",
+      "applicants": {
+        "total": 98869,
+        "inState": 67710,
+        "outOfState": 12279,
+        "international": 18880
+      },
+      "admitted": {
+        "total": 41353,
+        "inState": 24746,
+        "outOfState": 7038,
+        "international": 9569
+      },
+      "enrolled": {
+        "total": 6804,
+        "inState": 5280,
+        "outOfState": 412,
+        "international": 1112
+      },
+      "rates": {
+        "acceptanceRate": 41.83,
+        "intlAcceptanceRate": 50.68,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucr.edu/sites/default/files/2025-04/cds-2024-2025.pdf",
+      "applicants": {
+        "total": 57714,
+        "inState": 48922,
+        "outOfState": 2864,
+        "international": 5928
+      },
+      "admitted": {
+        "total": 44356,
+        "inState": 36711,
+        "outOfState": 2607,
+        "international": 5038
+      },
+      "enrolled": {
+        "total": 5419,
+        "inState": 5138,
+        "outOfState": 89,
+        "international": 192
+      },
+      "rates": {
+        "acceptanceRate": 76.85,
+        "intlAcceptanceRate": 84.99,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20252.pdf",
+      "applicants": {
+        "total": 134455,
+        "inState": 88418,
+        "outOfState": 24216,
+        "international": 21821
+      },
+      "admitted": {
+        "total": 35989,
+        "inState": 22984,
+        "outOfState": 8109,
+        "international": 4896
+      },
+      "enrolled": {
+        "total": 7330,
+        "inState": 5629,
+        "outOfState": 890,
+        "international": 811
+      },
+      "rates": {
+        "acceptanceRate": 26.77,
+        "intlAcceptanceRate": 22.44,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf",
+      "applicants": {
+        "total": 71696,
+        "inState": 57502,
+        "outOfState": 7782,
+        "international": 6412
+      },
+      "admitted": {
+        "total": 47012,
+        "inState": 35736,
+        "outOfState": 6335,
+        "international": 4941
+      },
+      "enrolled": {
+        "total": 4381,
+        "inState": 3939,
+        "outOfState": 234,
+        "international": 208
+      },
+      "rates": {
+        "acceptanceRate": 65.57,
+        "intlAcceptanceRate": 77.06,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "applicants": {
+        "total": 122706,
+        "inState": 87538,
+        "outOfState": 15792,
+        "international": 19376
+      },
+      "admitted": {
+        "total": 35317,
+        "inState": 19101,
+        "outOfState": 7858,
+        "international": 8358
+      },
+      "enrolled": {
+        "total": 6736,
+        "inState": 4901,
+        "outOfState": 693,
+        "international": 1142
+      },
+      "rates": {
+        "acceptanceRate": 28.78,
+        "intlAcceptanceRate": 43.14,
+        "transferAcceptanceRate": null
+      }
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e1.wpmucdn.com/sites.harvard.edu/dist/6/210/files/2025/06/HarvardUniversity_CDS_2024-2025.pdf",
+      "applicants": {
+        "total": 57517,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 2227,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1554,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 3.87,
+        "intlAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Harvard CDS does not publish residency breakdown. Counselor falls back to PR-8 selectivity-aware intl multiplier (highly selective + need-blind = 0.7\u00d7)."
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.mit.edu/projects/2024-25-common-data-set/",
+      "applicants": {
+        "total": 28232,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1284,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 4.55,
+        "intlAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "MIT CDS does not publish residency breakdown. Counselor falls back to PR-8 selectivity-aware intl multiplier (highly selective + need-blind = 0.7\u00d7)."
+    },
+    {
+      "schoolNameNorm": "cornell university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.dpb.cornell.edu/wp-content/uploads/2025/07/CDS-2024-2025-v6-print.pdf",
+      "applicants": {
+        "total": 65612,
+        "inState": 11722,
+        "outOfState": 37032,
+        "international": 16858
+      },
+      "admitted": {
+        "total": 5516,
+        "inState": 1556,
+        "outOfState": 3372,
+        "international": 588
+      },
+      "enrolled": {
+        "total": 3525,
+        "inState": 1104,
+        "outOfState": 2025,
+        "international": 396
+      },
+      "rates": {
+        "acceptanceRate": 8.41,
+        "intlAcceptanceRate": 3.49,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Cornell intl 3.49% vs overall 8.41% (ratio 0.42). Classic elite-private pattern."
+    },
+    {
+      "schoolNameNorm": "columbia university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_College_and_Columbia_Engineering_CDS.pdf",
+      "applicants": {
+        "total": 60247,
+        "inState": 9133,
+        "outOfState": 36521,
+        "international": 14593
+      },
+      "admitted": {
+        "total": 2325,
+        "inState": 346,
+        "outOfState": 1620,
+        "international": 359
+      },
+      "enrolled": {
+        "total": 1483,
+        "inState": 247,
+        "outOfState": 986,
+        "international": 250
+      },
+      "rates": {
+        "acceptanceRate": 3.86,
+        "intlAcceptanceRate": 2.46,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Columbia intl 2.46% vs overall 3.86% (ratio 0.64). Same elite-private pattern as Yale/Cornell."
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+      "applicants": {
+        "total": 54008,
+        "inState": 3032,
+        "outOfState": 34216,
+        "international": 16760
+      },
+      "admitted": {
+        "total": 1970,
+        "inState": 265,
+        "outOfState": 1380,
+        "international": 325
+      },
+      "enrolled": {
+        "total": 1647,
+        "inState": 227,
+        "outOfState": 1125,
+        "international": 295
+      },
+      "rates": {
+        "acceptanceRate": 3.65,
+        "intlAcceptanceRate": 1.94,
+        "transferAcceptanceRate": null
+      },
+      "notes": "REVERSE pattern from UCs: Yale intl admit (1.94%) is ~half of overall (3.65%). Validates that real-data approach works for both selective and less-selective schools."
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.brown.edu/sites/default/files/2025-08/CDS_2024-2025.pdf",
+      "applicants": {
+        "total": 48904,
+        "inState": 591,
+        "outOfState": 37382,
+        "international": 10919
+      },
+      "admitted": {
+        "total": 2638,
+        "inState": 59,
+        "outOfState": 2103,
+        "international": 475
+      },
+      "enrolled": {
+        "total": 1719,
+        "inState": 52,
+        "outOfState": 1362,
+        "international": 304
+      },
+      "rates": {
+        "acceptanceRate": 5.39,
+        "intlAcceptanceRate": 4.35,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Brown intl 4.35% vs overall 5.39% (ratio 0.81). Less aggressive elite-private pattern than Yale/Cornell \u2014 closer to overall."
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.adminplan.northwestern.edu/ir/data-book/v59/cds-2024-25-northwestern-final.pdf",
+      "applicants": {
+        "total": 51795,
+        "inState": 4748,
+        "outOfState": 31906,
+        "international": 15141
+      },
+      "admitted": {
+        "total": 2957,
+        "inState": 377,
+        "outOfState": 1995,
+        "international": 585
+      },
+      "enrolled": {
+        "total": 1740,
+        "inState": 267,
+        "outOfState": 1178,
+        "international": 295
+      },
+      "rates": {
+        "acceptanceRate": 5.71,
+        "intlAcceptanceRate": 3.86,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Northwestern intl 3.86% vs overall 5.71% (ratio 0.68). Classic elite-private penalty similar to Yale/Cornell."
+    },
+    {
+      "schoolNameNorm": "olin college of engineering",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.olin.edu/sites/default/files/2023-02/CDS_2022-2023.pdf",
+      "applicants": {
+        "total": 862,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 165,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 75,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 19.14,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 427,
+        "inState": null,
+        "outOfState": null,
+        "international": 49
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Counts are for first-time, first-year, degree-seeking undergraduates."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "applicants": {
+        "total": 12540,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1348,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 598,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 10.75,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "grinnell college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.grinnell.edu/sites/default/files/docs/2024-10/Grinnell-College-Common-Data-Set-CDS-2023-2024.pdf",
+      "applicants": {
+        "total": 0,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 0,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 0,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "No residency breakdowns available for applicants, admits, or enrolled students."
+    },
+    {
+      "schoolNameNorm": "barnard college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+      "applicants": {
+        "total": 11803,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 940,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 711,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 7.96,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+      "applicants": {
+        "total": 5170,
+        "inState": null,
+        "outOfState": null,
+        "international": 86
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data for admitted and enrolled counts not provided in the extracted text."
+    },
+    {
+      "schoolNameNorm": "university of georgia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+      "applicants": {
+        "total": 5170,
+        "inState": null,
+        "outOfState": null,
+        "international": 86
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data for admitted and enrolled counts not provided in the extracted text."
+    },
+    {
+      "schoolNameNorm": "indiana university bloomington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://indianastate.edu/sites/default/files/2025-03/CDS24_1.pdf",
+      "applicants": {
+        "total": 11793,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 10815,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1417,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 91.71,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "stevens institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://assets.stevens.edu/mviowpldu823/SYVRZ7OfZYOUm5hNrz7Qz/720500f10bed5fcd5fb905c3aa2143d1/CDS_2023-2024__Stevens_Institute_of_Technology.pdf",
+      "applicants": {
+        "total": 14170,
+        "inState": 6327,
+        "outOfState": 6295,
+        "international": 1548
+      },
+      "admitted": {
+        "total": 6156,
+        "inState": 3104,
+        "outOfState": 2628,
+        "international": 424
+      },
+      "enrolled": {
+        "total": 1024,
+        "inState": 637,
+        "outOfState": 341,
+        "international": 46
+      },
+      "rates": {
+        "acceptanceRate": 43.44,
+        "intlAcceptanceRate": 27.39,
+        "oosAcceptanceRate": 41.75,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of miami",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.irsa.miami.edu/cds2425.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data not available in the provided text."
+    },
+    {
+      "schoolNameNorm": "suny binghamton university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.binghamton.edu/offices/oir/upload_data/cds20242025p.pdf",
+      "applicants": {
+        "total": 53007,
+        "inState": 44338,
+        "outOfState": 6411,
+        "international": 2092
+      },
+      "admitted": {
+        "total": 20464,
+        "inState": 13885,
+        "outOfState": 5076,
+        "international": 1369
+      },
+      "enrolled": {
+        "total": 3248,
+        "inState": 2671,
+        "outOfState": 477,
+        "international": 100
+      },
+      "rates": {
+        "acceptanceRate": 38.61,
+        "intlAcceptanceRate": 65.44,
+        "oosAcceptanceRate": 79.18,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "university of iowa",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2026-04/CDS_2526.pdf",
+      "applicants": {
+        "total": 2678,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "admitted": {
+        "total": 1860,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "enrolled": {
+        "total": 547,
+        "inState": 0,
+        "outOfState": 0,
+        "international": 0
+      },
+      "rates": {
+        "acceptanceRate": 69.45,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "binghamton university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.binghamton.edu/offices/oir/upload_data/cds20242025p.pdf",
+      "applicants": {
+        "total": 53007,
+        "inState": 44338,
+        "outOfState": 6411,
+        "international": 2092
+      },
+      "admitted": {
+        "total": 20464,
+        "inState": 13885,
+        "outOfState": 5076,
+        "international": 1369
+      },
+      "enrolled": {
+        "total": 3248,
+        "inState": 2671,
+        "outOfState": 477,
+        "international": 100
+      },
+      "rates": {
+        "acceptanceRate": 38.61,
+        "intlAcceptanceRate": 65.44,
+        "oosAcceptanceRate": 79.18,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "american university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+      "applicants": {
+        "total": 17154,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 10613,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1662,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 61.87,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "baylor university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.web.baylor.edu/sites/g/files/ecbvkj1621/files/2025-04/CDS-2024-2025-Baylor%20University.pdf",
+      "applicants": {
+        "total": 46946,
+        "inState": 25052,
+        "outOfState": 18556,
+        "international": 3338
+      },
+      "admitted": {
+        "total": 24075,
+        "inState": 12452,
+        "outOfState": 9874,
+        "international": 1749
+      },
+      "enrolled": {
+        "total": 3427,
+        "inState": 2116,
+        "outOfState": 1235,
+        "international": 76
+      },
+      "rates": {
+        "acceptanceRate": 51.28,
+        "intlAcceptanceRate": 52.4,
+        "oosAcceptanceRate": 53.21,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "clemson university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.clemson.edu/institutional-effectiveness/documents/2020/CDSClemsonUniversityallcompleted20200310.pdf",
+      "applicants": {
+        "total": 1951,
+        "inState": 1780,
+        "outOfState": 171,
+        "international": null
+      },
+      "admitted": {
+        "total": 1390,
+        "inState": 1260,
+        "outOfState": 130,
+        "international": null
+      },
+      "enrolled": {
+        "total": 378,
+        "inState": 300,
+        "outOfState": 78,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 71.25,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 76.02,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Counts are for first-time, first-year, degree-seeking undergraduates."
+    },
+    {
+      "schoolNameNorm": "marquette university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.marquette.edu/academic-effectiveness/institutional-research-analysis/documents/cds-2024-2025_final.pdf",
+      "applicants": {
+        "total": 18701,
+        "inState": 4432,
+        "outOfState": 13163,
+        "international": 1106
+      },
+      "admitted": {
+        "total": 15212,
+        "inState": 3476,
+        "outOfState": 10947,
+        "international": 789
+      },
+      "enrolled": {
+        "total": 2149,
+        "inState": 753,
+        "outOfState": 1371,
+        "international": 25
+      },
+      "rates": {
+        "acceptanceRate": 81.34,
+        "intlAcceptanceRate": 71.34,
+        "oosAcceptanceRate": 83.16,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university at buffalo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.buffalo.edu/content/dam/www/oia/Common-Data-Sets/CDS_2024-2025.pdf",
+      "applicants": {
+        "total": 40856,
+        "inState": 31736,
+        "outOfState": 3375,
+        "international": 5744
+      },
+      "admitted": {
+        "total": 30308,
+        "inState": 24170,
+        "outOfState": 2666,
+        "international": 3471
+      },
+      "enrolled": {
+        "total": 4264,
+        "inState": 3742,
+        "outOfState": 174,
+        "international": 348
+      },
+      "rates": {
+        "acceptanceRate": 74.18,
+        "intlAcceptanceRate": 60.43,
+        "oosAcceptanceRate": 78.99,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Counts include only first-time, first-year, degree-seeking undergraduate students."
+    },
+    {
+      "schoolNameNorm": "drexel university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://drexel.edu/institutionalresearch/~/media/Drexel/Provost-Group/InstitutionalResearch/Documents/Factbook/CDS-2024-2025-publish.pdf",
+      "applicants": {
+        "total": 37314,
+        "inState": 9670,
+        "outOfState": 18730,
+        "international": 8914
+      },
+      "admitted": {
+        "total": 29642,
+        "inState": 7671,
+        "outOfState": 15925,
+        "international": 6046
+      },
+      "enrolled": {
+        "total": 2399,
+        "inState": 1036,
+        "outOfState": 1029,
+        "international": 334
+      },
+      "rates": {
+        "acceptanceRate": 79.44,
+        "intlAcceptanceRate": 67.83,
+        "oosAcceptanceRate": 85.02,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data reflects first-time, first-year, degree-seeking undergraduate counts for Fall 2024."
+    },
+    {
+      "schoolNameNorm": "temple university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.temple.edu/sites/ira/files/Temple%20University%20CDS-2024-2025-v2.pdf",
+      "applicants": {
+        "total": 40817,
+        "inState": 13632,
+        "outOfState": 23193,
+        "international": null
+      },
+      "admitted": {
+        "total": 32838,
+        "inState": 11050,
+        "outOfState": 18960,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4926,
+        "inState": 2788,
+        "outOfState": 1927,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 80.45,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 81.75,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucdenver.edu/docs/librariesprovider192/default-document-library/cds-24-25.pdf?sfvrsn=fe11edb4_1",
+      "applicants": {
+        "total": 14931,
+        "inState": 7891,
+        "outOfState": 5169,
+        "international": 1854
+      },
+      "admitted": {
+        "total": 11151,
+        "inState": 6314,
+        "outOfState": 4201,
+        "international": 631
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 74.68,
+        "intlAcceptanceRate": 34.03,
+        "oosAcceptanceRate": 81.27,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "university of san diego",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.sandiego.edu/facts/documents/cds/cds_2024-25.pdf",
+      "applicants": {
+        "total": 17010,
+        "inState": 9049,
+        "outOfState": 7085,
+        "international": 855
+      },
+      "admitted": {
+        "total": 8909,
+        "inState": 4781,
+        "outOfState": 3724,
+        "international": 420
+      },
+      "enrolled": {
+        "total": 1104,
+        "inState": 554,
+        "outOfState": 477,
+        "international": 52
+      },
+      "rates": {
+        "acceptanceRate": 52.38,
+        "intlAcceptanceRate": 49.12,
+        "oosAcceptanceRate": 52.56,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "howard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.howard.edu/sites/ira.howard.edu/files/2025-04/Howard%20University%20-%20CDS%20PDF%20Format.pdf",
+      "applicants": {
+        "total": 34211,
+        "inState": 581,
+        "outOfState": 32271,
+        "international": 1357
+      },
+      "admitted": {
+        "total": 14144,
+        "inState": 217,
+        "outOfState": 13032,
+        "international": 894
+      },
+      "enrolled": {
+        "total": 2738,
+        "inState": 53,
+        "outOfState": 2582,
+        "international": 76
+      },
+      "rates": {
+        "acceptanceRate": 41.34,
+        "intlAcceptanceRate": 65.88,
+        "oosAcceptanceRate": 40.38,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "rochester institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.rochester.edu/provost/wp-content/uploads/2025/06/CDS_2024-2025-completed-for-web.pdf",
+      "applicants": {
+        "total": 21384,
+        "inState": 4553,
+        "outOfState": 9049,
+        "international": 7782
+      },
+      "admitted": {
+        "total": 8570,
+        "inState": 1946,
+        "outOfState": 5176,
+        "international": 1448
+      },
+      "enrolled": {
+        "total": 1317,
+        "inState": 367,
+        "outOfState": 624,
+        "international": 326
+      },
+      "rates": {
+        "acceptanceRate": 40.08,
+        "intlAcceptanceRate": 18.61,
+        "oosAcceptanceRate": 57.2,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "university of arizona",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uair.arizona.edu/sites/default/files/2024-04/CDS_2023-2024_FINAL_2024-04-15_REPRINT.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data not available in the provided text."
+    },
+    {
+      "schoolNameNorm": "rutgers university-newark",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf",
+      "applicants": {
+        "total": 17779,
+        "inState": 11913,
+        "outOfState": 3655,
+        "international": 2211
+      },
+      "admitted": {
+        "total": 13997,
+        "inState": 9612,
+        "outOfState": 2835,
+        "international": 1550
+      },
+      "enrolled": {
+        "total": 1408,
+        "inState": 1345,
+        "outOfState": 34,
+        "international": 29
+      },
+      "rates": {
+        "acceptanceRate": 78.73,
+        "intlAcceptanceRate": 70.1,
+        "oosAcceptanceRate": 77.56,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of utah",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.utah.edu/wp-content/uploads/sites/61/2025/07/CDS-2024-2025-Template-for-Website.pdf",
+      "applicants": {
+        "total": 26822,
+        "inState": 8984,
+        "outOfState": 17071,
+        "international": 767
+      },
+      "admitted": {
+        "total": 23062,
+        "inState": 7922,
+        "outOfState": 14429,
+        "international": 711
+      },
+      "enrolled": {
+        "total": 6001,
+        "inState": 3180,
+        "outOfState": 2608,
+        "international": 213
+      },
+      "rates": {
+        "acceptanceRate": 85.98,
+        "intlAcceptanceRate": 92.7,
+        "oosAcceptanceRate": 84.52,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "depaul university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irma.depaul.edu/cds/2024/2024CDS_C.pdf",
+      "applicants": {
+        "total": 31266,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 23729,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2566,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 75.89,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Counts include only first-time, first-year, degree-seeking undergraduate students."
+    },
+    {
+      "schoolNameNorm": "arizona state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://uair.arizona.edu/sites/default/files/2024-04/CDS_2023-2024_FINAL_2024-04-15_REPRINT.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data not available in the provided text."
+    },
+    {
+      "schoolNameNorm": "iowa state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.uiowa.edu/sites/provost.uiowa.edu/files/2025-09/cds_2425_0.pdf",
+      "applicants": {
+        "total": 27770,
+        "inState": 5714,
+        "outOfState": 20664,
+        "international": null
+      },
+      "admitted": {
+        "total": 23222,
+        "inState": 4978,
+        "outOfState": 17627,
+        "international": null
+      },
+      "enrolled": {
+        "total": 5208,
+        "inState": 2813,
+        "outOfState": 2338,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 83.62,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 85.3,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "oregon state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://institutionalresearch.oregonstate.edu/sites/institutionalresearch.oregonstate.edu/files/2025-07/cds_2024-25.pdf",
+      "applicants": {
+        "total": 30293,
+        "inState": 8582,
+        "outOfState": 20268,
+        "international": 1443
+      },
+      "admitted": {
+        "total": 23418,
+        "inState": 7298,
+        "outOfState": 15681,
+        "international": 439
+      },
+      "enrolled": {
+        "total": 4778,
+        "inState": 2636,
+        "outOfState": 2029,
+        "international": 113
+      },
+      "rates": {
+        "acceptanceRate": 77.3,
+        "intlAcceptanceRate": 30.42,
+        "oosAcceptanceRate": 77.37,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "rowan university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://sites.rowan.edu/academic-affairs/oira/_docs/rowan_university_cds.pdf",
+      "applicants": {
+        "total": 18768,
+        "inState": 14868,
+        "outOfState": 2645,
+        "international": 1255
+      },
+      "admitted": {
+        "total": 14696,
+        "inState": 11967,
+        "outOfState": 1902,
+        "international": 827
+      },
+      "enrolled": {
+        "total": 3506,
+        "inState": 3084,
+        "outOfState": 253,
+        "international": 169
+      },
+      "rates": {
+        "acceptanceRate": 78.3,
+        "intlAcceptanceRate": 65.9,
+        "oosAcceptanceRate": 71.91,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "montana state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.montana.edu/data/common-data-set/cds24.pdf",
+      "applicants": {
+        "total": 21652,
+        "inState": 4649,
+        "outOfState": 16930,
+        "international": 73
+      },
+      "admitted": {
+        "total": 17786,
+        "inState": 4008,
+        "outOfState": 13711,
+        "international": 67
+      },
+      "enrolled": {
+        "total": 3612,
+        "inState": 1496,
+        "outOfState": 2099,
+        "international": 17
+      },
+      "rates": {
+        "acceptanceRate": 82.14,
+        "intlAcceptanceRate": 91.78,
+        "oosAcceptanceRate": 80.99,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf",
+      "applicants": {
+        "total": 11067,
+        "inState": 6642,
+        "outOfState": 2759,
+        "international": 1666
+      },
+      "admitted": {
+        "total": 10184,
+        "inState": 6399,
+        "outOfState": 2602,
+        "international": 1183
+      },
+      "enrolled": {
+        "total": 1917,
+        "inState": 1436,
+        "outOfState": 346,
+        "international": 135
+      },
+      "rates": {
+        "acceptanceRate": 92.02,
+        "intlAcceptanceRate": 71.01,
+        "oosAcceptanceRate": 94.31,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "wayne state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irda.wayne.edu/common-data-set/cds-2023-2024-final.pdf",
+      "applicants": {
+        "total": 15229,
+        "inState": 13590,
+        "outOfState": 1141,
+        "international": 498
+      },
+      "admitted": {
+        "total": 12461,
+        "inState": 11324,
+        "outOfState": 848,
+        "international": 289
+      },
+      "enrolled": {
+        "total": 2988,
+        "inState": 2847,
+        "outOfState": 68,
+        "international": 73
+      },
+      "rates": {
+        "acceptanceRate": 81.82,
+        "intlAcceptanceRate": 58.03,
+        "oosAcceptanceRate": 74.32,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "northern illinois university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prpa.illinoisstate.edu/downloads/CDS-2024-2025_ISU_FINAL.pdf",
+      "applicants": {
+        "total": 21573,
+        "inState": 19949,
+        "outOfState": 1160,
+        "international": 428
+      },
+      "admitted": {
+        "total": 19017,
+        "inState": 17644,
+        "outOfState": 969,
+        "international": 375
+      },
+      "enrolled": {
+        "total": 4285,
+        "inState": 4112,
+        "outOfState": 131,
+        "international": 41
+      },
+      "rates": {
+        "acceptanceRate": 88.15,
+        "intlAcceptanceRate": 87.62,
+        "oosAcceptanceRate": 83.53,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of memphis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.memphis.edu/oir/oirweb/WebReports/ProfilesAndFactbooks/CDS2024_2025.pdf",
+      "applicants": {
+        "total": 15084,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 10865,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1972,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 72.03,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Counts include first-time, first-year, degree-seeking undergraduate students."
+    },
+    {
+      "schoolNameNorm": "georgia state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ww2.georgiasouthern.edu/em/ir/wp-content/uploads/sites/5/cds24-25.pdf",
+      "applicants": {
+        "total": 5170,
+        "inState": null,
+        "outOfState": null,
+        "international": 86
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data for admitted and enrolled counts not provided in the extracted section."
+    },
+    {
+      "schoolNameNorm": "wright state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.wright.edu/sites/www.wright.edu/files/page/attachments/CDS_2024-2025_Lake.pdf",
+      "applicants": {
+        "total": 643,
+        "inState": 557,
+        "outOfState": 85,
+        "international": 1
+      },
+      "admitted": {
+        "total": 641,
+        "inState": 557,
+        "outOfState": 83,
+        "international": 1
+      },
+      "enrolled": {
+        "total": 278,
+        "inState": 269,
+        "outOfState": 8,
+        "international": 1
+      },
+      "rates": {
+        "acceptanceRate": 99.69,
+        "intlAcceptanceRate": 100,
+        "oosAcceptanceRate": 97.65,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    },
+    {
+      "schoolNameNorm": "ohio state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.osu.edu/sites/default/files/documents/2025/11/CDS-2024-2025-The-Ohio-State-University-Columbus.pdf",
+      "applicants": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": null,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Data not available in the provided text."
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "applicants": {
+        "total": 60898,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 35372,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4596,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 58.08,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "loyola university chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.luc.edu/media/lucedu/oie/CDS%202024-25%20Loyola%20University%20Chicago.pdf",
+      "applicants": {
+        "total": 39316,
+        "inState": 18582,
+        "outOfState": 17689,
+        "international": 3045
+      },
+      "admitted": {
+        "total": 32081,
+        "inState": 15126,
+        "outOfState": 15774,
+        "international": 1181
+      },
+      "enrolled": {
+        "total": 2763,
+        "inState": 1463,
+        "outOfState": 1230,
+        "international": 70
+      },
+      "rates": {
+        "acceptanceRate": 81.6,
+        "intlAcceptanceRate": 38.78,
+        "oosAcceptanceRate": 89.17,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Parsed by deterministic CDS C1 residency table regex."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch23-more-unis",
+    "note": "Batch 23: Grinnell, Smith, Lafayette, Trinity Hartford, Dickinson"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "grinnell college",
+      "schoolName": "Grinnell College",
+      "selectedUrl": "https://www.grinnell.edu/sites/default/files/docs/2025-03/Grinnell-2024-2025-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "smith college",
+      "schoolName": "Smith College",
+      "selectedUrl": "https://www1.smith.edu/sites/default/files/2025-02/2024-2025-CDS-Smith-PUB19Dec24%20v2.pdf"
+    },
+    {
+      "schoolNameNorm": "lafayette college",
+      "schoolName": "Lafayette College",
+      "selectedUrl": "https://oir.lafayette.edu/wp-content/uploads/sites/196/2025/10/CDS2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "trinity college",
+      "schoolName": "Trinity College",
+      "selectedUrl": "https://www.trincoll.edu/asic/wp-content/uploads/sites/125/2025/12/CDS-2024-2025-Trinity-College.pdf"
+    },
+    {
+      "schoolNameNorm": "dickinson college",
+      "schoolName": "Dickinson College",
+      "selectedUrl": "https://www.dickinson.edu/download/downloads/id/16348/cds_2024-2025.pdf"
+    }
+  ]
+}

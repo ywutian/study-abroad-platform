@@ -1,0 +1,57 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:05:30.245Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch58-2026-04-29.json",
+    "success": 2,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "idaho state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/Academic-Year-2024-2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.278,
+        "3.50-3.74": 0.195,
+        "3.25-3.49": 0.144,
+        "3.00-3.24": 0.098,
+        "<3.00": 0.285
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Idaho State University does not offer Early Decision or Early Action plans (Early Decision: No, Early Action: No). GPA distribution is derived from percent enrolled with high school GPA ranges provided."
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mediafiles.ucsc.edu/iraps/common-data-set/common-data-set-2024-25.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.4553,
+        "3.50-3.74": 0.3331,
+        "3.25-3.49": 0.1631,
+        "3.00-3.24": 0.0393,
+        "<3.00": 0.0085
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No specific numeric data for Early Decision or Early Action applications or admits provided. The institution confirms offering both ED and EA plans but does not report counts."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2023-2024/CDS_2023-2024.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2023-2024/CDS_2023-2024.pdf"
+    }
+  ]
+}

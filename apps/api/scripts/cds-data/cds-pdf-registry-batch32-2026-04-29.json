@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch32-more-unis",
+    "note": "Batch 32: Cal Poly SLO, LMU, CSULB, James Madison"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf"
+    },
+    {
+      "schoolNameNorm": "loyola marymount university",
+      "schoolName": "Loyola Marymount University",
+      "selectedUrl": "https://www.lmu.edu/media/lmuacademics/strategicplanningacademiceffectiveness/officeofinstitutionalresearch/documents/Legacy-CDS_2024-2025_06112025.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "schoolName": "California State University, Long Beach",
+      "selectedUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "selectedUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    }
+  ]
+}

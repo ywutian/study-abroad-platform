@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T02:15:23.288Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch28-2026-04-29.json",
+    "success": 4,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20253.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.798,
+        "3.50-3.74": 0.172,
+        "3.25-3.49": 0.03,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of California, San Diego does not offer Early Decision or Early Action plans as indicated in C21 and C22 sections."
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The document does not report the high school GPA distribution for first-time, first-year students in section C9. It also does not provide any data about Early Decision or Early Action plans in section C21. Both C9 and C21 sections indicate absence of data for these items."
+    },
+    {
+      "schoolNameNorm": "pennsylvania state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://opair.psu.edu/files/2025/04/CDS_2024_2025_University_Park1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.7499,
+        "3.50-3.74": 0.1458,
+        "3.25-3.49": 0.0735,
+        "3.00-3.24": 0.0197,
+        "<3.00": 0.0111
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Pennsylvania State University does not offer an early decision plan but does offer a nonbinding early action plan."
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": 839,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "GPA distribution (C9) not reported in the document. Early Decision plan offered. Early Decision application count reported; admitted applicants count not fully available. No Early Action data present."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    }
+  ]
+}

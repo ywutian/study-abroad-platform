@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:09:30.833Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch59-2026-04-29.json",
+    "success": 5,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 23.01,
+      "eaAcceptanceRate": null,
+      "edApplied": 5154,
+      "edAdmitted": 1186,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA distribution data reported; Early Decision offered but application and admission numbers not provided; No Early Action plan."
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 16.81,
+      "eaAcceptanceRate": null,
+      "edApplied": 3087,
+      "edAdmitted": 519,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "High school GPA distribution (Section C9) data not reported (marked as NA), only early decision plan data (Section C21) reported."
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.44,
+      "eaAcceptanceRate": null,
+      "edApplied": 4288,
+      "edAdmitted": 1434,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Section C9 states the percent who had GPA within ranges but all values are 0.0% or not reported, indicating no GPA distribution data available. Early Decision numbers are reported; no Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 18.02,
+      "eaAcceptanceRate": null,
+      "edApplied": 1221,
+      "edAdmitted": 220,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Swarthmore College does not report high school GPA distribution data in the Common Data Set. Early Decision plan is offered with 1221 applications and 220 admits for Fall 2024. No Early Action plan is offered."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    }
+  ]
+}

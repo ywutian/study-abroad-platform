@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T05:35:00.000Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via manual extraction",
+    "model": "manual",
+    "input": "manual-batch79-appstate",
+    "success": 1,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "appalachian state university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://drive.usercontent.google.com/download?id=1PUkZvkKHC3TpwIknzecYO6HGAm6kQFCO&export=download",
+      "gpaDistribution": {
+        "3.75-4.00": 0.5806,
+        "3.50-3.74": 0.1809,
+        "3.25-3.49": 0.1365,
+        "3.00-3.24": 0.073,
+        "<3.00": 0.029
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11: GPA 4.0=39.64%, 3.75-3.99=18.42%, 3.50-3.74=18.09%, 3.25-3.49=13.65%, 3.00-3.24=7.30%, <3.00=2.90% (all enrolled students column). C21: No ED plan. C22: Has REA (Restrictive Early Action, closing 11/1) but no applicant/admit counts published in CDS. Source: 2024-25 CDS PDF from Google Drive."
+    }
+  ],
+  "failures": []
+}

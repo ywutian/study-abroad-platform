@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch10-large-research-unis",
+    "note": "Batch 10: Northwestern, UF, UW-Seattle, William&Mary, SMU, George Mason"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "northwestern university",
+      "schoolName": "Northwestern University",
+      "selectedUrl": "https://www.enrollment.northwestern.edu/data/2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "selectedUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of washington",
+      "schoolName": "University of Washington",
+      "selectedUrl": "https://uw-s3-cdn.s3.us-west-2.amazonaws.com/wp-content/uploads/sites/162/2025/04/01121035/CDS_2024-2025_Seattle.pdf"
+    },
+    {
+      "schoolNameNorm": "william & mary",
+      "schoolName": "William & Mary",
+      "selectedUrl": "https://www.wm.edu/offices/ir/university_data/cds/cds-2024-2025_a.pdf"
+    },
+    {
+      "schoolNameNorm": "southern methodist university",
+      "schoolName": "Southern Methodist University",
+      "selectedUrl": "https://www.smu.edu/-/media/site/ir/commondatasets/2024/cds-2024-25-part-c-first-time-freshman.pdf"
+    },
+    {
+      "schoolNameNorm": "george mason university",
+      "schoolName": "George Mason University",
+      "selectedUrl": "https://oiep.gmu.edu/wp-content/uploads/2025/02/2024-2025-CDS-Final.pdf"
+    }
+  ]
+}

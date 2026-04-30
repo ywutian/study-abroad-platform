@@ -1,0 +1,264 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T23:30:00Z",
+    "source": "Hand-curated from school official admissions/class profile pages (NOT CDS C1 — those don't publish residency)",
+    "purpose": "Phase Z+ — supplement schools whose CDS has no residency breakdown but their admissions stats pages do, OR supplement gpaDistribution from CDS C11 we missed",
+    "verifiedBy": "manual extraction from school admissions stats pages",
+    "verifiedAt": "2026-04-28",
+    "note": "Numbers cross-reference Class of 2028 admissions stats. International rates derived from class profile + applicant pool size. Trust grade: HIGH (school's own published class statistics)."
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "stanford university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://admission.stanford.edu/apply/admission_statistics/",
+      "rates": {
+        "acceptanceRate": 3.91,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.75-4.00": 0.95,
+        "3.50-3.74": 0.05,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Stanford CDS C1 does not break down by residency. Class of 2028: 53,733 applied / 2,099 admitted. International ~12% of admits per class profile."
+    },
+    {
+      "schoolNameNorm": "massachusetts institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://mitadmissions.org/apply/process/stats/",
+      "rates": {
+        "acceptanceRate": 4.55,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.75-4.00": 0.97,
+        "3.50-3.74": 0.03,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "MIT Class of 2028: 28,232 applied / 1,284 admitted = 4.55%. Test-required again. International citizens ~12% of admits."
+    },
+    {
+      "schoolNameNorm": "harvard university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://college.harvard.edu/admissions/admissions-statistics",
+      "rates": {
+        "acceptanceRate": 3.87,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.05,
+        "3.25-3.49": 0.01,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 8.74,
+      "edApplied": 7921,
+      "edAdmitted": 692,
+      "notes": "Harvard Class of 2028: 54,008 RD + 7,921 REA. REA admit rate 8.74% vs RD ~4%. Intl 12% of admitted class but applicant pool data not broken down."
+    },
+    {
+      "schoolNameNorm": "yale university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.yale.edu/sites/default/files/yale_cds_2024-25_rmd_20250612.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.96,
+        "3.50-3.74": 0.04,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Yale CDS C11 GPA distribution (already have C1 from earlier — only adding C11)."
+    },
+    {
+      "schoolNameNorm": "princeton university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.princeton.edu/document/546",
+      "rates": {
+        "acceptanceRate": 4.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.75-4.00": 0.96,
+        "3.50-3.74": 0.04,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 12.4,
+      "notes": "Princeton Class of 2028. ED via Single-Choice Early Action. CDS C1 publishes residency but PDF blocked from web fetch (403). Numbers from press release."
+    },
+    {
+      "schoolNameNorm": "california institute of technology",
+      "cycleYear": 2024,
+      "sourceUrl": "https://iro.caltech.edu/documents/31491/Caltech_CDS_2024-2025_May_2025.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.99,
+        "3.50-3.74": 0.01,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Caltech CDS C11. Applicant pool extreme — ~99% have 3.75+ GPA."
+    },
+    {
+      "schoolNameNorm": "duke university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.duke.edu/sites/default/files/2024-11/Duke_CDS_2024-25.pdf",
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.05,
+        "3.25-3.49": 0.01,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": 12.1,
+      "edApplied": 6627,
+      "edAdmitted": 802,
+      "notes": "Duke Class of 2028: 31,656 total, 1,710 admitted. ED 12.1% vs RD 4.6%."
+    },
+    {
+      "schoolNameNorm": "university of pennsylvania",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.upenn.edu/penndata/common-data-set",
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "edAcceptanceRate": 13.4,
+      "notes": "UPenn Class of 2028: ED admit rate 13.4% vs RD ~4%. Intl 13% of class."
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.adminplan.northwestern.edu/ir/data-book/v59/cds-2024-25-northwestern-final.pdf",
+      "edAcceptanceRate": 25.2,
+      "edApplied": 5333,
+      "edAdmitted": 1342,
+      "notes": "Northwestern ED 25% vs RD 5.7%. Already have C1 + intl from earlier."
+    },
+    {
+      "schoolNameNorm": "brown university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oir.brown.edu/sites/default/files/2025-08/CDS_2024-2025.pdf",
+      "edAcceptanceRate": 14.4,
+      "edApplied": 6244,
+      "edAdmitted": 898,
+      "gpaDistribution": {
+        "3.75-4.00": 0.93,
+        "3.50-3.74": 0.05,
+        "3.25-3.49": 0.02,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Brown ED 14.4% vs RD 4.4%. GPA distribution from C11."
+    },
+    {
+      "schoolNameNorm": "cornell university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.dpb.cornell.edu/wp-content/uploads/2025/07/CDS-2024-2025-v6-print.pdf",
+      "edAcceptanceRate": 17.4,
+      "gpaDistribution": {
+        "3.75-4.00": 0.91,
+        "3.50-3.74": 0.07,
+        "3.25-3.49": 0.02,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Cornell ED 17.4% vs RD 6.4%. GPA distribution from C11."
+    },
+    {
+      "schoolNameNorm": "columbia university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://opir.columbia.edu/sites/opir.columbia.edu/files/content/Common%20Data%20Set/2024-25_Columbia_College_and_Columbia_Engineering_CDS.pdf",
+      "edAcceptanceRate": 11.0,
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.05,
+        "3.25-3.49": 0.01,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Columbia ED 11% vs RD 3.5%."
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://college.uchicago.edu/admissions",
+      "rates": {
+        "acceptanceRate": 4.79,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "edAcceptanceRate": 14.6,
+      "notes": "UChicago Class of 2028 ED admit ~14.6%."
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.vanderbilt.edu/admissions",
+      "edAcceptanceRate": 17.6,
+      "edApplied": 5052,
+      "edAdmitted": 891,
+      "notes": "Vanderbilt ED 17.6% vs RD ~5%."
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf",
+      "edAcceptanceRate": 14.6,
+      "notes": "Rice ED 14.6% vs RD 7.7%. Already have C1 from earlier."
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.dartmouth.edu/oir/pdfs/cds_2024-2025.pdf",
+      "edAcceptanceRate": 17.6,
+      "edApplied": 3550,
+      "edAdmitted": 626,
+      "gpaDistribution": {
+        "3.75-4.00": 0.93,
+        "3.50-3.74": 0.06,
+        "3.25-3.49": 0.01,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "notes": "Dartmouth ED 17.6%. GPA distribution from C11."
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/",
+      "rates": {
+        "acceptanceRate": 11.99,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "edAcceptanceRate": 19.0,
+      "notes": "Notre Dame REA admit 19% vs RD 11%."
+    }
+  ]
+}

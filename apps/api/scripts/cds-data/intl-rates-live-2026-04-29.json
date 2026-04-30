@@ -1,0 +1,353 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29T21:53:14.706Z",
+    "dryRun": false,
+    "updated": 14,
+    "noData": 35,
+    "permanent": 3,
+    "errors": 0,
+    "activeKeys": 19
+  },
+  "results": [
+    {
+      "schoolId": "cmnwr8is1002xz0ti23uxhu2j",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates and mention that rates can vary by residency, but no actual international or out-of-state admission numbers/rates are provided."
+    },
+    {
+      "schoolId": "cmn1htkoz000uvqf2rnozc3fe",
+      "schoolName": "University of Southern California",
+      "status": "no_data",
+      "notes": "Search results show USC overall admission rate only; no international (nonresident alien) or out-of-state breakdown was provided."
+    },
+    {
+      "schoolId": "cmn1htkp9000yvqf29pcl812t",
+      "schoolName": "New York University",
+      "status": "no_data",
+      "notes": "Search results only provide NYU overall acceptance rate; no international or out-of-state admission breakdown was found."
+    },
+    {
+      "schoolId": "cmn1htkpw0016vqf20t0lflxm",
+      "schoolName": "Boston University",
+      "status": "updated",
+      "intlRate": 7.5,
+      "oosRate": null,
+      "sourceUrl": "https://admitstudio.com/undergraduate-articles/acceptance-rate-analysis-boston-university-2025/"
+    },
+    {
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "status": "permanent_heuristic",
+      "notes": "Search results show overall acceptance rate and nonresident alien enrollment, but no published admission breakdown by international or out-of-state applicants/admits."
+    },
+    {
+      "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+      "schoolName": "Wake Forest University",
+      "status": "no_data",
+      "notes": "Search results do not provide actual international or out-of-state admission numbers/rates for Wake Forest University. One source explicitly says international acceptance rates cannot be reported due to lack of data; another only shows student body percentages, not admission rates."
+    },
+    {
+      "schoolId": "cmnwr8ilx0001z0tilru6b1th",
+      "schoolName": "William & Mary",
+      "status": "no_data",
+      "notes": "Search results only provide overall acceptance rate and international enrollment, not admission rates broken out by international or out-of-state status."
+    },
+    {
+      "schoolId": "cmnwr8im90007z0ti2n04hf3n",
+      "schoolName": "University of Pittsburgh",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates; no separate international or out-of-state admission numbers/rates for University of Pittsburgh were provided."
+    },
+    {
+      "schoolId": "cmnwr8inf000uz0tic8a7s8is",
+      "schoolName": "Rensselaer Polytechnic Institute",
+      "status": "no_data",
+      "notes": "Search results include overall acceptance rates and international student enrollment data, but no published admission breakdown for international (nonresident alien) or out-of-state applicants/admits."
+    },
+    {
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "status": "no_data",
+      "notes": "Search results mention Yeshiva University international applicants, but no actual international or out-of-state admission numbers or rates are provided."
+    },
+    {
+      "schoolId": "cmnwr8iuk0040z0ti7p8v604n",
+      "schoolName": "Gonzaga University",
+      "status": "no_data",
+      "notes": "Search results mention overall acceptance rate and percentages of international/out-of-state students, but do not provide admission rates or applicant/admit counts by residency."
+    },
+    {
+      "schoolId": "cmnwr8iua003xz0tio2zj4a4z",
+      "schoolName": "Saint Louis University",
+      "status": "updated",
+      "intlRate": 4.5,
+      "oosRate": null,
+      "sourceUrl": "https://www.shiksha.com/studyabroad/usa/universities/saint-louis-university/acceptance-rate"
+    },
+    {
+      "schoolId": "cmnwr8ini000wz0ti57rv9m9o",
+      "schoolName": "Auburn University",
+      "status": "no_data",
+      "notes": "Search results mention an international student acceptance rate range (40%-55%) and an overall admit rate, but do not provide actual Auburn University international or out-of-state applicant/admit numbers or a residency breakdown."
+    },
+    {
+      "schoolId": "cmnwr8iol001gz0ticdgvwjkf",
+      "schoolName": "University of San Francisco",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates for University of San Francisco; no international or out-of-state admission breakdown was provided."
+    },
+    {
+      "schoolId": "cmnwr8ioi001fz0tivlt104p7",
+      "schoolName": "Seton Hall University",
+      "status": "permanent_heuristic",
+      "notes": "Search results only show overall admissions data for Seton Hall University; no international (nonresident alien) or out-of-state domestic admission breakdown was published."
+    },
+    {
+      "schoolId": "cmnwr8ioe001ez0tii04p5pvd",
+      "schoolName": "DePaul University",
+      "status": "permanent_heuristic",
+      "notes": "Search results show the residency breakdown section but no actual international or out-of-state applicant/admit numbers or rates for DePaul University."
+    },
+    {
+      "schoolId": "cmnwr8ioo001hz0tim3isqwz9",
+      "schoolName": "Clarkson University",
+      "status": "no_data",
+      "notes": "Search results only provide overall acceptance rates and an international admissions page, but no actual international or out-of-state admission breakdown for Clarkson University."
+    },
+    {
+      "schoolId": "cmnwr8ip7001nz0ti6qy76djw",
+      "schoolName": "University of Missouri",
+      "status": "no_data",
+      "notes": "Search results only provide overall acceptance rate; no international or out-of-state admission breakdown for University of Missouri was published in the provided text."
+    },
+    {
+      "schoolId": "cmnwr8ip1001lz0ti51lr5gad",
+      "schoolName": "University of Alabama",
+      "status": "updated",
+      "intlRate": 94,
+      "oosRate": 60,
+      "sourceUrl": "https://www.usnews.com/education/best-colleges/applying/slideshows/colleges-that-accept-the-most-international-students"
+    },
+    {
+      "schoolId": "cmnwr8ipz001xz0ti9f4tlagk",
+      "schoolName": "George Mason University",
+      "status": "updated",
+      "intlRate": 91,
+      "oosRate": null,
+      "sourceUrl": "https://unischolars.com/blog/george-mason-university-acceptance-rate/"
+    },
+    {
+      "schoolId": "cmnwr8iq2001zz0tiix4lbz86",
+      "schoolName": "University of Houston",
+      "status": "no_data",
+      "notes": "Search results show University of Houston residency enrollment counts (Out-of-State 1,405; International 5,089) but do not provide admission/applicant numbers or residency-specific admission rates."
+    },
+    {
+      "schoolId": "cmnwr8iq40020z0tif8l8dxxu",
+      "schoolName": "University of Arkansas",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates; no actual international (nonresident alien) or out-of-state admission numbers/rates for University of Arkansas were provided. One result mentions international students but gives an implausible 0% without supporting data."
+    },
+    {
+      "schoolId": "cmnwr8iq70021z0titshta238",
+      "schoolName": "University of Hawaii at Manoa",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate for University of Hawaii at Manoa; no international or out-of-state admission breakdown was provided."
+    },
+    {
+      "schoolId": "cmnwr8iny0016z0tiikip2622",
+      "schoolName": "Florida State University",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates for Florida State University; no international or out-of-state residency breakdown was provided."
+    },
+    {
+      "schoolId": "cmnwr8iqf0024z0tiy29w0e1z",
+      "schoolName": "Missouri University of Science and Technology",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate; no published international or out-of-state admission breakdown found."
+    },
+    {
+      "schoolId": "cmnwr8iqi0026z0tin3vtpw1p",
+      "schoolName": "University of Maine",
+      "status": "updated",
+      "intlRate": 77.3,
+      "oosRate": null,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/university-of-maine-orono/international"
+    },
+    {
+      "schoolId": "cmnwr8iqp0029z0ti2wbplonv",
+      "schoolName": "Hofstra University",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate and international student totals, not a residency breakdown or separate international/out-of-state admission rates."
+    },
+    {
+      "schoolId": "cmnwr8iqt002bz0ti5efot7m8",
+      "schoolName": "Adelphi University",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate and counts of international/out-of-state students, not admission rates broken out by residency."
+    },
+    {
+      "schoolId": "cmnwr8iqx002dz0tigsxpge66",
+      "schoolName": "Mississippi State University",
+      "status": "no_data",
+      "notes": "Search results mention overall acceptance rate and student body composition, but do not provide actual international or out-of-state admission rates for Mississippi State University."
+    },
+    {
+      "schoolId": "cmnwr8iqy002ez0tizit8vwvw",
+      "schoolName": "Ohio University",
+      "status": "updated",
+      "intlRate": 55.6,
+      "oosRate": null,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/ohio-university/international"
+    },
+    {
+      "schoolId": "cmnwr8irj002nz0tief4railh",
+      "schoolName": "University of Nevada, Reno",
+      "status": "updated",
+      "intlRate": 86,
+      "oosRate": null,
+      "sourceUrl": "https://yocket.com/universities/university-of-nevada-reno-2630"
+    },
+    {
+      "schoolId": "cmnwr8ird002kz0tifunyipf1",
+      "schoolName": "University of North Dakota",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate for University of North Dakota; no actual international or out-of-state admission breakdown was provided. One result about international students appears to be for North Dakota State University, not UND."
+    },
+    {
+      "schoolId": "cmnwr8irv002uz0tic1bpn6g4",
+      "schoolName": "Bowling Green State University",
+      "status": "no_data",
+      "notes": "Search results mention international applicant/acceptance figures are unavailable for 2020-2024; no actual international or out-of-state admission numbers/rates were provided."
+    },
+    {
+      "schoolId": "cmnwr8is4002zz0ti7l7rukwt",
+      "schoolName": "South Dakota State University",
+      "status": "no_data",
+      "notes": "Search results mention overall acceptance rate and student composition, but do not provide separate international (nonresident alien) or out-of-state admission rates for South Dakota State University."
+    },
+    {
+      "schoolId": "cmnwr8is60030z0timvbtgjwa",
+      "schoolName": "University of Akron",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate and student body profile (including non-resident alien share), but no international or out-of-state admission breakdown."
+    },
+    {
+      "schoolId": "cmnwr8ish0036z0tiy3l6tt76",
+      "schoolName": "California State University, Northridge",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate; no international nonresident alien or out-of-state admission breakdown was provided."
+    },
+    {
+      "schoolId": "cmnwr8ise0034z0tiwz772kaw",
+      "schoolName": "Oklahoma State University",
+      "status": "no_data",
+      "notes": "Search results include overall acceptance rate and international student counts, but no international nonresident alien or out-of-state admission numbers/rates for Oklahoma State University."
+    },
+    {
+      "schoolId": "cmnwr8isf0035z0tixudqprxr",
+      "schoolName": "New Mexico State University",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates and general enrollment; no international (nonresident alien) or out-of-state admission breakdown for New Mexico State University was provided."
+    },
+    {
+      "schoolId": "cmnwr8isj0037z0tihc4cw8ue",
+      "schoolName": "University of Southern Mississippi",
+      "status": "no_data",
+      "notes": "Search results mention the Common Data Set and international admissions pages, but no actual international or out-of-state admission numbers/rates are shown."
+    },
+    {
+      "schoolId": "cmnwr8isn0039z0tik49prelk",
+      "schoolName": "Eastern Michigan University",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate and international student statistics unrelated to admission breakdown; no international or out-of-state admission numbers/rates for Eastern Michigan University were found."
+    },
+    {
+      "schoolId": "cmnwr8isu003dz0tijwn1m0s0",
+      "schoolName": "University of Texas at Arlington",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rates for University of Texas at Arlington; no international or out-of-state admission breakdown was provided."
+    },
+    {
+      "schoolId": "cmnwr8iss003cz0tia71q9qy1",
+      "schoolName": "Idaho State University",
+      "status": "updated",
+      "intlRate": 97,
+      "oosRate": null,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/idaho-state-university/international"
+    },
+    {
+      "schoolId": "cmnwr8isv003ez0timrhbjznd",
+      "schoolName": "University of Memphis",
+      "status": "no_data",
+      "notes": "Search results only show overall acceptance rate; no actual international or out-of-state admission numbers/rates for University of Memphis were provided."
+    },
+    {
+      "schoolId": "cmnwr8it2003gz0tixy0e9ok2",
+      "schoolName": "Cleveland State University",
+      "status": "updated",
+      "intlRate": 85,
+      "oosRate": null,
+      "sourceUrl": "https://unischolars.com/blog/cleveland-state-university-acceptance-rate/"
+    },
+    {
+      "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+      "schoolName": "Georgia State University",
+      "status": "no_data",
+      "notes": "Search results mention an international student acceptance rate around 50.4%, but no actual applicant/admitted numbers or separate out-of-state admission rate for Georgia State University were provided."
+    },
+    {
+      "schoolId": "cmnwr8ite003jz0tijg7j0avf",
+      "schoolName": "University of Massachusetts Boston",
+      "status": "updated",
+      "intlRate": 79,
+      "oosRate": null,
+      "sourceUrl": "https://unischolars.com/blog/university-of-massachusetts-acceptance-rate/"
+    },
+    {
+      "schoolId": "cmnwr8itm003nz0tiqazikwxi",
+      "schoolName": "Indiana University-Purdue University Indianapolis",
+      "status": "no_data",
+      "notes": "Search results mention overall acceptance rate and international student population, but do not provide international or out-of-state admission applicant/admit numbers or rates for IUPUI."
+    },
+    {
+      "schoolId": "cmnwr8itk003mz0tirfyu068c",
+      "schoolName": "Central Michigan University",
+      "status": "updated",
+      "intlRate": 70,
+      "oosRate": null,
+      "sourceUrl": "https://yocket.com/universities/central-michigan-university-2687"
+    },
+    {
+      "schoolId": "cmnwr8ito003oz0tiyojti719",
+      "schoolName": "Wichita State University",
+      "status": "updated",
+      "intlRate": 82.6,
+      "oosRate": null,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/wichita-state-university/international"
+    },
+    {
+      "schoolId": "cmnwr8iwp0054z0tic1mh49ba",
+      "schoolName": "James Madison University",
+      "status": "updated",
+      "intlRate": 86.3,
+      "oosRate": null,
+      "sourceUrl": "https://unischolars.com/blog/james-madison-university-acceptance-rate/"
+    },
+    {
+      "schoolId": "cmnwr8iwn0053z0tiokrlwt8f",
+      "schoolName": "Appalachian State University",
+      "status": "updated",
+      "intlRate": 85.8,
+      "oosRate": null,
+      "sourceUrl": "https://www.clastify.com/blog/acceptance-rates/appalachian-state-university/international"
+    },
+    {
+      "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+      "schoolName": "University of North Carolina Wilmington",
+      "status": "no_data",
+      "notes": "The search results only provide overall acceptance rates for UNCW and do not include separate international (nonresident alien) or out-of-state admission numbers or rates."
+    }
+  ]
+}

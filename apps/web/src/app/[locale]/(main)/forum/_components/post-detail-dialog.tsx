@@ -22,15 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { apiClient as api } from '@/lib/api';
-import type { Post, PostDetailResponse, Comment, TeamApplication } from './forum-types';
+import type { Post, PostDetailResponse, Comment, TeamApplication, ForumImage } from './forum-types';
 import { getCategoryColorStyle, renderMarkdown } from './forum-types';
 
 interface PostDetailDialogProps {
@@ -57,9 +50,6 @@ export function PostDetailDialog({
   const [commentContent, setCommentContent] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [applications, setApplications] = useState<TeamApplication[]>([]);
-  const [applicationMessage, setApplicationMessage] = useState('');
-  const [selectedResumeId, setSelectedResumeId] = useState<string>('');
-  const [userResumes, setUserResumes] = useState<Array<{ id: string; title: string }>>([]);
 
   // Load post detail when post changes
   useEffect(() => {
@@ -88,13 +78,6 @@ export function PostDetailDialog({
       .finally(() => {
         setLoadingComments(false);
       });
-
-    if (post.isTeamPost && user) {
-      api
-        .get<Array<{ id: string; title: string }>>('/resumes')
-        .then((res) => setUserResumes(Array.isArray(res) ? res : []))
-        .catch(() => setUserResumes([]));
-    }
   }, [post?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatDate = (dateStr: string) => {
@@ -140,20 +123,6 @@ export function PostDetailDialog({
     }
   };
 
-  const handleApply = async (postId: string) => {
-    if (!applicationMessage.trim()) return;
-    try {
-      await api.post(`/forums/posts/${postId}/apply`, {
-        message: applicationMessage,
-        ...(selectedResumeId && { resumeId: selectedResumeId }),
-      });
-      setApplicationMessage('');
-      setSelectedResumeId('');
-    } catch {
-      // Error handled by global MutationCache toast
-    }
-  };
-
   const handleApplication = async (appId: string, action: 'accept' | 'reject') => {
     try {
       await api.post(`/forums/applications/${appId}/review`, {
@@ -181,6 +150,11 @@ export function PostDetailDialog({
               {/* Header */}
               <div className="p-6 pb-4 border-b shrink-0">
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  {showPostDetail.community && (
+                    <Badge variant="secondary" className="text-xs">
+                      r/{showPostDetail.community.name}
+                    </Badge>
+                  )}
                   {showPostDetail.isPinned && (
                     <Badge
                       variant="outline"
@@ -233,8 +207,14 @@ export function PostDetailDialog({
               {/* Content */}
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="prose prose-sm max-w-none text-muted-foreground mb-6">
-                  {renderMarkdown(showPostDetail.content)}
+                  {showPostDetail.content ? renderMarkdown(showPostDetail.content) : null}
                 </div>
+
+                {showPostDetail.images.length > 0 && (
+                  <div className="mb-6">
+                    <DetailImageGrid images={showPostDetail.images} />
+                  </div>
+                )}
 
                 {/* Team Info */}
                 {showPostDetail.isTeamPost && (
@@ -518,5 +498,25 @@ export function PostDetailDialog({
         </Dialog>
       )}
     </>
+  );
+}
+
+function DetailImageGrid({ images }: { images: ForumImage[] }) {
+  if (images.length === 1) {
+    return (
+      <div className="overflow-hidden rounded-md border bg-muted">
+        <img src={images[0].url} alt="" className="max-h-[560px] w-full object-contain" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {images.map((image) => (
+        <div key={image.id} className="overflow-hidden rounded-md border bg-muted">
+          <img src={image.url} alt="" className="aspect-square h-full w-full object-cover" />
+        </div>
+      ))}
+    </div>
   );
 }

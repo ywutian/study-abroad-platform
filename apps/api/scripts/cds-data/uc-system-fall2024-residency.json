@@ -1,0 +1,119 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T00:00:00Z",
+    "source": "UC Office of the President + College Kickstart aggregation Fall 2024",
+    "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+    "sourceUrl2": "https://www.collegekickstart.com/blog/item/university-of-california-fall-2024-admission-trends",
+    "purpose": "Authoritative Fall 2024 admit-rate-by-residency for ALL 9 UCs in one place"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, berkeley",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 11.0,
+        "intlAcceptanceRate": 3.4,
+        "oosAcceptanceRate": 7.3,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA resident 14.9%, OOS 7.3%, intl 3.4%. UCB elite-pattern: intl admits much harder than CA residents."
+    },
+    {
+      "schoolNameNorm": "university of california, davis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 42.1,
+        "intlAcceptanceRate": 51.5,
+        "oosAcceptanceRate": 57.7,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 36.7%, OOS 57.7%, intl 51.5%. UCD positive intl pattern."
+    },
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 28.8,
+        "intlAcceptanceRate": 43.1,
+        "oosAcceptanceRate": 49.9,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 21.8%, OOS 49.9%, intl 43.1%. UCI strong positive intl pattern."
+    },
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 9.0,
+        "intlAcceptanceRate": 6.3,
+        "oosAcceptanceRate": 9.3,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 9.5%, OOS 9.3%, intl 6.3%. UCLA elite-pattern: intl harder than residents."
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 96.0,
+        "intlAcceptanceRate": 81.0,
+        "oosAcceptanceRate": 85.3,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: capped at 96% (raw shows 99.6% for overall and 103.8% for CA due to UC referral / coordinated admit). intl 81%, OOS 85.3%."
+    },
+    {
+      "schoolNameNorm": "university of california, riverside",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 77.2,
+        "intlAcceptanceRate": 84.9,
+        "oosAcceptanceRate": 95.3,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 75.2%, OOS 95.3%, intl 84.9%."
+    },
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 26.8,
+        "intlAcceptanceRate": 22.4,
+        "oosAcceptanceRate": 33.6,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 26%, OOS 33.6%, intl 22.4%. UCSD slight intl penalty."
+    },
+    {
+      "schoolNameNorm": "university of california, santa barbara",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 32.9,
+        "intlAcceptanceRate": 30.4,
+        "oosAcceptanceRate": 38.5,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 32.3%, OOS 38.5%, intl 30.4%."
+    },
+    {
+      "schoolNameNorm": "university of california, santa cruz",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.ucop.edu/operating-budget/_files/legreports/2024-25/data_on_nonresident_student_admission_legrpt.pdf",
+      "rates": {
+        "acceptanceRate": 65.0,
+        "intlAcceptanceRate": 81.3,
+        "oosAcceptanceRate": 81.8,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Fall 2024: CA 60.9%, OOS 81.8%, intl 81.3%."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch16-more-unis",
+    "note": "Batch 16: Drexel, Temple"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "drexel university",
+      "schoolName": "Drexel University",
+      "selectedUrl": "https://drexel.edu/institutionalresearch/~/media/Drexel/Provost-Group/InstitutionalResearch/Documents/Factbook/CDS-2024-2025-publish.pdf"
+    },
+    {
+      "schoolNameNorm": "temple university",
+      "schoolName": "Temple University",
+      "selectedUrl": "https://ira.temple.edu/sites/ira/files/Temple%20University%20CDS-2024-2025-v2.pdf"
+    }
+  ]
+}

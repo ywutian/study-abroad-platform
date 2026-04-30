@@ -8,11 +8,22 @@ export interface SchoolFilters {
   tuitionMax?: number;
   sizeMin?: number;
   sizeMax?: number;
+  salaryMin?: number;
+  salaryMax?: number;
   testOptional?: boolean;
   needBlind?: boolean;
   hasEarlyDecision?: boolean;
   schoolType?: 'public' | 'private';
   region?: string;
+}
+
+export type SchoolSortBy = 'rank' | 'name' | 'acceptance' | 'salary' | 'weighted';
+
+export interface SchoolWeightParams {
+  ranking: number;
+  acceptanceRate: number;
+  tuition: number;
+  salary: number;
 }
 
 export type TuitionPresetValue = 'ALL' | '20-30' | '30-40' | '40-50' | '50+' | 'CUSTOM';
@@ -28,6 +39,8 @@ export const SCHOOL_FILTER_DEFAULTS = {
   tuitionMax: 8,
   sizeMin: 0,
   sizeMax: 50000,
+  salaryMin: 0,
+  salaryMax: 20,
 } as const;
 
 function normalizeBound(value: number | undefined, defaultValue: number): number | undefined {
@@ -63,8 +76,10 @@ export function sanitizeSchoolFilters(
   sanitized.tuitionMax = normalizeBound(filters.tuitionMax, SCHOOL_FILTER_DEFAULTS.tuitionMax);
   sanitized.sizeMin = normalizeBound(filters.sizeMin, SCHOOL_FILTER_DEFAULTS.sizeMin);
   sanitized.sizeMax = normalizeBound(filters.sizeMax, SCHOOL_FILTER_DEFAULTS.sizeMax);
+  sanitized.salaryMin = normalizeBound(filters.salaryMin, SCHOOL_FILTER_DEFAULTS.salaryMin);
+  sanitized.salaryMax = normalizeBound(filters.salaryMax, SCHOOL_FILTER_DEFAULTS.salaryMax);
 
-  if (country !== 'US') {
+  if (country && country !== 'US') {
     sanitized.state = undefined;
     sanitized.region = undefined;
   } else if (sanitized.state) {
@@ -83,6 +98,7 @@ export function countActiveSchoolFilters(filters: SchoolFilters, country?: strin
   if (sanitized.acceptanceMin != null || sanitized.acceptanceMax != null) count++;
   if (sanitized.tuitionMin != null || sanitized.tuitionMax != null) count++;
   if (sanitized.sizeMin != null || sanitized.sizeMax != null) count++;
+  if (sanitized.salaryMin != null || sanitized.salaryMax != null) count++;
   if (sanitized.schoolType) count++;
   if (sanitized.testOptional) count++;
   if (sanitized.needBlind) count++;
@@ -96,6 +112,8 @@ export function buildSchoolQueryParams(input: {
   country?: string;
   filters?: SchoolFilters;
   pageSize?: number;
+  sortBy?: SchoolSortBy;
+  weights?: SchoolWeightParams;
 }): Record<string, string> {
   const params: Record<string, string> = {
     pageSize: String(input.pageSize ?? SCHOOL_BROWSE_PAGE_SIZE),
@@ -140,6 +158,12 @@ export function buildSchoolQueryParams(input: {
   if (filters.sizeMax != null) {
     params.sizeMax = String(filters.sizeMax);
   }
+  if (filters.salaryMin != null) {
+    params.salaryMin = String(filters.salaryMin * 10000);
+  }
+  if (filters.salaryMax != null) {
+    params.salaryMax = String(filters.salaryMax * 10000);
+  }
   if (filters.schoolType) {
     params.schoolType = filters.schoolType;
   }
@@ -151,6 +175,15 @@ export function buildSchoolQueryParams(input: {
   }
   if (filters.hasEarlyDecision) {
     params.hasEarlyDecision = 'true';
+  }
+  if (input.sortBy) {
+    params.sortBy = input.sortBy;
+  }
+  if (input.weights) {
+    params.weightRank = String(input.weights.ranking);
+    params.weightAcceptance = String(input.weights.acceptanceRate);
+    params.weightTuition = String(input.weights.tuition);
+    params.weightSalary = String(input.weights.salary);
   }
 
   return params;

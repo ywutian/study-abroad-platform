@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch54-tufts-wfu-pitt-uconn-hamilton",
+    "note": "Batch 54: Tufts, Wake Forest, Pittsburgh, UConn, Hamilton"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "schoolName": "Wake Forest University",
+      "selectedUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf"
+    },
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "schoolName": "University of Pittsburgh",
+      "selectedUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf"
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "schoolName": "University of Connecticut",
+      "selectedUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    }
+  ]
+}

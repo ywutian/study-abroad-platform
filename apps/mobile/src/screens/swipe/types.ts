@@ -126,19 +126,19 @@ export const BADGE_THRESHOLDS: Record<string, number> = {
 // ---------------------------------------------------------------------------
 
 export function getTierColor(rank?: number): string {
-  if (!rank) return '#6366f1';
-  if (rank <= 10) return '#8b5cf6';
+  if (!rank) return '#1d1813';
+  if (rank <= 10) return '#6574ff';
   if (rank <= 25) return '#3b82f6';
-  if (rank <= 50) return '#10b981';
+  if (rank <= 50) return '#6f7b58';
   if (rank <= 100) return '#f59e0b';
   return '#64748b';
 }
 
 export function getTierBgColor(rank?: number): string {
-  if (!rank) return '#6366f1' + '12';
-  if (rank <= 10) return '#8b5cf6' + '15';
+  if (!rank) return '#1d1813' + '12';
+  if (rank <= 10) return '#6574ff' + '15';
   if (rank <= 25) return '#3b82f6' + '12';
-  if (rank <= 50) return '#10b981' + '10';
+  if (rank <= 50) return '#6f7b58' + '10';
   if (rank <= 100) return '#f59e0b' + '10';
   return '#64748b' + '10';
 }

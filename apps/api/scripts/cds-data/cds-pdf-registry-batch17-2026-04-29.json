@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-29",
+    "source": "manual-batch17-more-unis",
+    "note": "Batch 17: UCSD, Notre Dame, Wake Forest, Tufts, UCLA"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, san diego",
+      "schoolName": "University of California, San Diego",
+      "selectedUrl": "https://ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20253.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "schoolName": "Wake Forest University",
+      "selectedUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf"
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "selectedUrl": "https://apb.ucla.edu/file/22f7b216-5bcd-4401-bf95-6b9fc3652a67"
+    }
+  ]
+}

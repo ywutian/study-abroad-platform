@@ -1,0 +1,314 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30T03:27:41.683Z",
+    "source": "tavily",
+    "missingField": "gpaDistribution",
+    "cycleLabel": "2024-25",
+    "scannedSchools": 22,
+    "selectedUrls": 2
+  },
+  "schools": [
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "schoolNameNorm": "williams college",
+      "usNewsRank": 1,
+      "missingField": "gpaDistribution",
+      "query": "\"Williams College\" \"common data set\" \"2024-25\" inurl:cds OR inurl:institutional-research filetype:pdf",
+      "stageHit": 2,
+      "selectedUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "candidates": [
+        {
+          "title": "[PDF] Williams College Common Data Set 2024-2025",
+          "url": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+          "snippet": "students who applied, were admitted, and enrolled (full-or part-time) in Fall 2024. • Include early decision, early action, and students who began studies during summer in this cohort. [...] first-time, first-year students enrolled in Fall ",
+          "score": 155
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://commondataset.org/wp-content/uploads/2024/11/CDS-2024-2025-TEMPLATE.pdf",
+          "title": "[PDF] CDS-2024-2025-TEMPLATE.pdf - Common Data Set",
+          "score": 160
+        },
+        {
+          "url": "https://www.washcoll.edu/people_departments/offices/institutional-research/fact_books/fact-book-25-2026_v2.pdf",
+          "title": "[PDF] Fact Book 2025-2026 - Washington College",
+          "score": 126
+        },
+        {
+          "url": "https://www.lycoming.edu/institutional-research/pdfs/eada.pdf",
+          "title": "[PDF] EADA Report 2024-25.xlsx - Lycoming College",
+          "score": 106
+        },
+        {
+          "url": "https://www.uab.edu/shp/cds/images/handbooks/2024-25/MSPAS-Student-Handbook-2024-2025.pdf",
+          "title": "[PDF] 2024-2025 STUDENT HANDBOOK - UAB",
+          "score": 99
+        }
+      ]
+    },
+    {
+      "schoolId": "cmn1htko7000jvqf22r0n55p2",
+      "schoolName": "University of Notre Dame",
+      "schoolNameNorm": "university of notre dame",
+      "usNewsRank": 20,
+      "missingField": "gpaDistribution",
+      "query": "site:nd.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8itq003pz0tirhvysbdj",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "usNewsRank": 53,
+      "missingField": "gpaDistribution",
+      "query": "site:umn.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+      "schoolName": "Pepperdine University",
+      "schoolNameNorm": "pepperdine university",
+      "usNewsRank": 60,
+      "missingField": "gpaDistribution",
+      "query": "site:pepperdine.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": 1,
+      "selectedUrl": "https://www.pepperdine.edu/oie/content/pdf/cds_2024-25.pdf",
+      "candidates": [
+        {
+          "title": "CDS 2024-25.xlsx",
+          "url": "https://www.pepperdine.edu/oie/content/pdf/cds_2024-25.pdf",
+          "snippet": "E3 Areas in which all or most students are required to complete some course work prior to graduation: X Arts/fine arts Computer literacy X English (including composition) X Foreign languages X History Physical Education X Humanities Intensi",
+          "score": 140
+        },
+        {
+          "title": "Common Data Set | Institutional Research | Pepperdine University",
+          "url": "https://www.pepperdine.edu/oie/institutional-research/common-data-set.htm",
+          "snippet": "+ Common Data Set for 2024-2025\n+ Common Data Set for 2023-2024\n+ Common Data Set for 2022-2023\n+ Common Data Set for 2021-2022\n+ Common Data Set for 2020-2021\n\n## Most Common Questions\n\nWhat is your student-to-faculty ratio?\n\n12 to 1\n\nCDS ",
+          "score": 110
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "url": "https://gsep.pepperdine.edu/content/2024-2025-academic-catalog.pdf",
+          "title": "[PDF] 2024–2025 Academic Catalog | Pepperdine",
+          "score": 84
+        },
+        {
+          "url": "https://seaver.pepperdine.edu/academics/content/2024-seaver-catalog.pdf",
+          "title": "[PDF] 2024–2025 Academic Catalog - Seaver College",
+          "score": 69
+        },
+        {
+          "url": "https://www.pepperdine.edu/center-for-faith-common-good/research",
+          "title": "Latest and Upcoming Research | Center for Faith and the Common Good | Pepperdine University",
+          "score": 23
+        }
+      ]
+    },
+    {
+      "schoolId": "cmnwr8inf000uz0tic8a7s8is",
+      "schoolName": "Rensselaer Polytechnic Institute",
+      "schoolNameNorm": "rensselaer polytechnic institute",
+      "usNewsRank": 67,
+      "missingField": "gpaDistribution",
+      "query": "site:rpi.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iua003xz0tio2zj4a4z",
+      "schoolName": "Saint Louis University",
+      "schoolNameNorm": "saint louis university",
+      "usNewsRank": 95,
+      "missingField": "gpaDistribution",
+      "query": "site:slu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iq2001zz0tiix4lbz86",
+      "schoolName": "University of Houston",
+      "schoolNameNorm": "university of houston",
+      "usNewsRank": 130,
+      "missingField": "gpaDistribution",
+      "query": "site:uh.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iqx002dz0tigsxpge66",
+      "schoolName": "Mississippi State University",
+      "schoolNameNorm": "mississippi state university",
+      "usNewsRank": 146,
+      "missingField": "gpaDistribution",
+      "query": "site:msstate.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ir4002hz0tibdz0myoo",
+      "schoolName": "Ball State University",
+      "schoolNameNorm": "ball state university",
+      "usNewsRank": 151,
+      "missingField": "gpaDistribution",
+      "query": "site:bsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ird002kz0tifunyipf1",
+      "schoolName": "University of North Dakota",
+      "schoolNameNorm": "university of north dakota",
+      "usNewsRank": 156,
+      "missingField": "gpaDistribution",
+      "query": "site:und.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8irn002pz0tihyw561a7",
+      "schoolName": "Texas Tech University",
+      "schoolNameNorm": "texas tech university",
+      "usNewsRank": 160,
+      "missingField": "gpaDistribution",
+      "query": "site:ttu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8irv002uz0tic1bpn6g4",
+      "schoolName": "Bowling Green State University",
+      "schoolNameNorm": "bowling green state university",
+      "usNewsRank": 165,
+      "missingField": "gpaDistribution",
+      "query": "site:bgsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8is3002yz0ti9qk8f21x",
+      "schoolName": "North Dakota State University",
+      "schoolNameNorm": "north dakota state university",
+      "usNewsRank": 168,
+      "missingField": "gpaDistribution",
+      "query": "site:ndsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8isf0035z0tixudqprxr",
+      "schoolName": "New Mexico State University",
+      "schoolNameNorm": "new mexico state university",
+      "usNewsRank": 175,
+      "missingField": "gpaDistribution",
+      "query": "site:nmsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8ise0034z0tiwz772kaw",
+      "schoolName": "Oklahoma State University",
+      "schoolNameNorm": "oklahoma state university",
+      "usNewsRank": 175,
+      "missingField": "gpaDistribution",
+      "query": "site:okstate.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8isu003dz0tijwn1m0s0",
+      "schoolName": "University of Texas at Arlington",
+      "schoolNameNorm": "university of texas at arlington",
+      "usNewsRank": 185,
+      "missingField": "gpaDistribution",
+      "query": "site:uta.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8it2003gz0tixy0e9ok2",
+      "schoolName": "Cleveland State University",
+      "schoolNameNorm": "cleveland state university",
+      "usNewsRank": 189,
+      "missingField": "gpaDistribution",
+      "query": "site:csuohio.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iwn0053z0tiokrlwt8f",
+      "schoolName": "Appalachian State University",
+      "schoolNameNorm": "appalachian state university",
+      "usNewsRank": 201,
+      "missingField": "gpaDistribution",
+      "query": "site:appstate.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iwp0054z0tic1mh49ba",
+      "schoolName": "James Madison University",
+      "schoolNameNorm": "james madison university",
+      "usNewsRank": 201,
+      "missingField": "gpaDistribution",
+      "query": "site:jmu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+      "schoolName": "University of North Carolina Wilmington",
+      "schoolNameNorm": "university of north carolina wilmington",
+      "usNewsRank": 205,
+      "missingField": "gpaDistribution",
+      "query": "site:uncw.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iws0056z0tial92bfrt",
+      "schoolName": "Grand Valley State University",
+      "schoolNameNorm": "grand valley state university",
+      "usNewsRank": 205,
+      "missingField": "gpaDistribution",
+      "query": "site:gvsu.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    },
+    {
+      "schoolId": "cmnwr8iwv0058z0tivh6huv4n",
+      "schoolName": "California State University, Sacramento",
+      "schoolNameNorm": "california state university, sacramento",
+      "usNewsRank": 210,
+      "missingField": "gpaDistribution",
+      "query": "site:csus.edu \"common data set\" \"2024-25\" filetype:pdf",
+      "stageHit": -1,
+      "selectedUrl": null,
+      "candidates": []
+    }
+  ],
+  "failures": []
+}

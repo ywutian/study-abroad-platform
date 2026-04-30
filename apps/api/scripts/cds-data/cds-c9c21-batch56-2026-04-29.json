@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:50:55.918Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch56-2026-04-29.json",
+    "success": 2,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "CDS does not report high school GPA distribution or Early Decision/Early Action breakdown for California State University, Long Beach."
+    },
+    {
+      "schoolNameNorm": "texas a&m university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set for Texas A&M University does not report GPA distribution for first-time, first-year students in section C9; the table is present but contains zeros, indicating no data reported. Early Decision and Early Action application and admission numbers for Fall 2023 are not provided in the document, only that Early Decision is offered but no numeric breakdown is given; Early Action is not offered (marked No)."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "texas tech university",
+      "sourceUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-06-03-25.pdf",
+      "error": "fetch failed"
+    }
+  ]
+}

@@ -51,9 +51,9 @@ interface SwipeReviewModeProps {
 const STEP_GRADIENT: Record<string, string> = {
   intro: 'bg-primary',
   academic: 'bg-primary',
-  scores: 'bg-gradient-to-r from-indigo-500 to-violet-500',
+  scores: 'bg-violet-500',
   activities: 'bg-warning',
-  awards: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+  awards: 'bg-amber-500',
   verdict: 'bg-destructive',
 };
 

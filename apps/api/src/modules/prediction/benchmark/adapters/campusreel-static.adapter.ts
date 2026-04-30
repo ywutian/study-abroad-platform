@@ -252,7 +252,7 @@ export class CampusReelStaticAdapter implements StaticTeacher {
     const response = await fetch(sourceUrl, {
       headers: {
         'user-agent':
-          'Mozilla/5.0 (compatible; StudyAbroadPlatformDistillation/1.0; +https://example.com)',
+          'Mozilla/5.0 (compatible; LumniDistillation/1.0; +https://example.com)',
       },
       signal: AbortSignal.timeout(30_000),
     });

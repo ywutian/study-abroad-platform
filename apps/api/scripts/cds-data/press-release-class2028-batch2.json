@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-29T00:45:00Z",
+    "source": "Class of 2028 press releases / aggregated admissions data (Round 2)",
+    "purpose": "Big publics + Southern Ivies whose press releases give residency",
+    "verifiedBy": "WebSearch on official admissions data sources",
+    "verifiedAt": "2026-04-29"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of virginia",
+      "cycleYear": 2024,
+      "sourceUrl": "https://collegetransitions.com/blog/how-to-get-into-uva",
+      "rates": {
+        "acceptanceRate": null,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": 13.0,
+        "transferAcceptanceRate": null
+      },
+      "notes": "UVA Class 2028: 64,463 apps (record). In-state 25.5%, OOS 13%. Already have intl/overall from CDS C1."
+    },
+    {
+      "schoolNameNorm": "university of maryland, college park",
+      "cycleYear": 2024,
+      "sourceUrl": "https://toptieradmissions.com/new-ivies-class-of-2028-acceptance-rates/",
+      "rates": {
+        "acceptanceRate": 45.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "UMD Class 2028: 59,499 apps / 26,750 admit = 45%."
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "cycleYear": 2024,
+      "sourceUrl": "https://reports.utexas.edu/sites/default/files/2025-04/CDS_2024-2025.pdf",
+      "rates": {
+        "acceptanceRate": 30.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "UT Austin Class 2028: ~73,000 apps (record). Admit rate ~30% per public reports."
+    },
+    {
+      "schoolNameNorm": "indiana university bloomington",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.collegetransitions.com/blog/how-to-get-into-indiana-university-bloomington/",
+      "rates": {
+        "acceptanceRate": 80.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "IU Bloomington Class 2028: 67,000+ apps. 9,600 enrolled. 54% in-state, 46% OOS+intl. Admit rate ~80%."
+    },
+    {
+      "schoolNameNorm": "vanderbilt university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://admissions.vanderbilt.edu/vandybloggers/2024/02/class-of-2028-early-decision-by-the-numbers/",
+      "rates": {
+        "acceptanceRate": 5.1,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "edAcceptanceRate": 15.2,
+      "notes": "Vanderbilt Class 2028: 5.1% overall, RD only 3.7%, ED 15.2%."
+    },
+    {
+      "schoolNameNorm": "emory university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://toptieradmissions.com/southern-ivies-class-of-2028-acceptance-rate/",
+      "rates": {
+        "acceptanceRate": 14.5,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Emory Class 2028: 5,058 admit / 34,914 apps = 14.5% (Emory College + Oxford)."
+    },
+    {
+      "schoolNameNorm": "tulane university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://toptieradmissions.com/southern-ivies-class-of-2028-acceptance-rate/",
+      "rates": {
+        "acceptanceRate": 13.0,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "Tulane Class 2028: ~30,000 apps, ~13% admit."
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://appybara.org/blog/university-of-florida-admissions-statistics-and-acceptance-rate",
+      "rates": {
+        "acceptanceRate": 24.03,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "UF Class 2028: 24.03% admit rate (we already have intl 32.5%, oos 23.26% from earlier)."
+    }
+  ]
+}

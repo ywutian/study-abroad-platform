@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T01:42:16.626Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch16-2026-04-29.json",
+    "success": 2,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "drexel university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://drexel.edu/institutionalresearch/~/media/Drexel/Provost-Group/InstitutionalResearch/Documents/Factbook/CDS-2024-2025-publish.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.22,
+        "3.50-3.74": 0.2,
+        "3.25-3.49": 0.13,
+        "3.00-3.24": 0.1,
+        "<3.00": 0.35
+      },
+      "edAcceptanceRate": 91.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 327,
+      "edAdmitted": 300,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 taken from C11 'All enrolled students' GPA range; mapped 4.0 and 3.75-3.99 into 3.75-4.00. C21 reports Early Decision only; Early Action applicant/admit counts are not provided."
+    },
+    {
+      "schoolNameNorm": "temple university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ira.temple.edu/sites/ira/files/Temple%20University%20CDS-2024-2025-v2.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.152,
+        "3.50-3.74": 0.159,
+        "3.25-3.49": 0.155,
+        "3.00-3.24": 0.144,
+        "<3.00": 0.39
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 reported only the 'All enrolled students' GPA column; mapped 4.0 to 3.75-4.00 and combined 2.50-2.99, 2.00-2.49, 1.00-1.99, and below 1.0 into <3.00. C21 shows Temple offers Early Decision and Early Action, but the PDF text provided does not include any counts for applications or admits in either plan."
+    }
+  ],
+  "failures": []
+}

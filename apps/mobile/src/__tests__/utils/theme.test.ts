@@ -11,7 +11,7 @@ import { renderHook } from '@testing-library/react-native';
 // The global jest.setup.js has a default mock for @/stores/theme.
 // We override it here so we can control colorScheme per test.
 // Mock useThemeStore as a Zustand-style hook that accepts a selector
-const mockState = { colorScheme: 'light' as string | null };
+const mockState = { colorScheme: 'light' as string | null, colorPalette: 'lumni-warm' };
 jest.mock('@/stores/theme', () => ({
   useThemeStore: jest.fn((selector?: (s: typeof mockState) => unknown) =>
     selector ? selector(mockState) : mockState
@@ -31,6 +31,7 @@ import {
   shadows,
   useColors,
   getColors,
+  getPaletteColors,
   createStyles,
 } from '@/utils/theme';
 
@@ -40,81 +41,81 @@ import {
 describe('colors', () => {
   describe('light theme', () => {
     it('has the correct primary color', () => {
-      expect(colors.light.primary).toBe('#5b66f6');
+      expect(colors.light.primary).toBe('#1d1813');
     });
 
     it('has the correct background color', () => {
-      expect(colors.light.background).toBe('#fafbfd');
+      expect(colors.light.background).toBe('#f7f1e6');
     });
 
     it('has the correct foreground color', () => {
-      expect(colors.light.foreground).toBe('#111827');
+      expect(colors.light.foreground).toBe('#1d1813');
     });
 
     it('has the correct card color', () => {
-      expect(colors.light.card).toBe('#ffffff');
+      expect(colors.light.card).toBe('#fff9ef');
     });
 
     it('has the correct border color', () => {
-      expect(colors.light.border).toBe('#d9e2ec');
+      expect(colors.light.border).toBe('#d8c8b2');
     });
 
     it('has the correct success color', () => {
-      expect(colors.light.success).toBe('#3a9564');
+      expect(colors.light.success).toBe('#6f7b58');
     });
 
     it('has the correct error color', () => {
-      expect(colors.light.error).toBe('#bc4b45');
+      expect(colors.light.error).toBe('#b85c58');
     });
 
     it('has the correct warning color', () => {
-      expect(colors.light.warning).toBe('#b9852f');
+      expect(colors.light.warning).toBe('#b7832f');
     });
 
     it('has the correct info color', () => {
-      expect(colors.light.info).toBe('#4a81ae');
+      expect(colors.light.info).toBe('#6574ff');
     });
 
     it('has the correct overlay value', () => {
-      expect(colors.light.overlay).toBe('rgba(15, 23, 42, 0.5)');
+      expect(colors.light.overlay).toBe('rgba(29, 24, 19, 0.52)');
     });
   });
 
   describe('dark theme', () => {
     it('has the correct primary color', () => {
-      expect(colors.dark.primary).toBe('#8590ff');
+      expect(colors.dark.primary).toBe('#ddb85a');
     });
 
     it('has the correct background color', () => {
-      expect(colors.dark.background).toBe('#101726');
+      expect(colors.dark.background).toBe('#0f0d0a');
     });
 
     it('has the correct foreground color', () => {
-      expect(colors.dark.foreground).toBe('#f5f7fb');
+      expect(colors.dark.foreground).toBe('#f6edde');
     });
 
     it('has the correct card color', () => {
-      expect(colors.dark.card).toBe('#161f2f');
+      expect(colors.dark.card).toBe('#191510');
     });
 
     it('has the correct border color', () => {
-      expect(colors.dark.border).toBe('#283142');
+      expect(colors.dark.border).toBe('#3b3026');
     });
 
     it('has the correct success color', () => {
-      expect(colors.dark.success).toBe('#64bb84');
+      expect(colors.dark.success).toBe('#a3a06f');
     });
 
     it('has the correct error color', () => {
-      expect(colors.dark.error).toBe('#d96a63');
+      expect(colors.dark.error).toBe('#e98a7f');
     });
 
     it('has the correct warning color', () => {
-      expect(colors.dark.warning).toBe('#d4aa59');
+      expect(colors.dark.warning).toBe('#ddb85a');
     });
 
     it('has the correct info color', () => {
-      expect(colors.dark.info).toBe('#75abd2');
+      expect(colors.dark.info).toBe('#8d96ff');
     });
 
     it('has the correct overlay value', () => {
@@ -135,11 +136,13 @@ describe('colors', () => {
 describe('useColors', () => {
   afterEach(() => {
     mockState.colorScheme = 'light';
+    mockState.colorPalette = 'lumni-warm';
     jest.restoreAllMocks();
   });
 
   it('returns light colors when colorScheme is light', () => {
     mockState.colorScheme = 'light';
+    mockState.colorPalette = 'lumni-warm';
 
     const { result } = renderHook(() => useColors());
 
@@ -167,10 +170,20 @@ describe('useColors', () => {
     expect(result.current.primary).toBe(colors.light.primary);
   });
 
-  it('falls back to light colors when useThemeStore throws', () => {
-    (useThemeStore as unknown as jest.Mock).mockImplementation(() => {
-      throw new Error('store not ready');
-    });
+  it('returns the selected color palette colors', () => {
+    mockState.colorScheme = 'light';
+    mockState.colorPalette = 'studio-black-blue';
+
+    const { result } = renderHook(() => useColors());
+
+    expect(result.current.primary).toBe(getPaletteColors('studio-black-blue', 'light').primary);
+    expect(result.current.primary).not.toBe(colors.light.primary);
+  });
+
+  it('returns default palette colors when colorPalette is default', () => {
+    (useThemeStore as unknown as jest.Mock).mockImplementation((selector: any) =>
+      selector({ colorScheme: 'light', colorPalette: 'default' })
+    );
 
     const { result } = renderHook(() => useColors());
 
@@ -197,6 +210,12 @@ describe('getColors', () => {
   it('returns light colors when isDark is undefined', () => {
     const c = getColors();
     expect(c.primary).toBe(colors.light.primary);
+  });
+
+  it('returns alternate palette colors when a palette is provided', () => {
+    const c = getColors(false, 'framer-violet');
+    expect(c.primary).toBe(getPaletteColors('framer-violet', 'light').primary);
+    expect(c.primary).not.toBe(colors.light.primary);
   });
 });
 

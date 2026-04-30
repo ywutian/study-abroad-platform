@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T04:55:49.219Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-5.4-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch74-2026-04-29.json",
+    "success": 1,
+    "failures": 1
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C11 GPA distribution is blank/omitted in the provided PDF text. C21 indicates no Early Decision plan and provides no Early Decision or Early Action applicant/admit counts."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2023-2024/CDS_2023-2024.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2023-2024/CDS_2023-2024.pdf"
+    }
+  ]
+}

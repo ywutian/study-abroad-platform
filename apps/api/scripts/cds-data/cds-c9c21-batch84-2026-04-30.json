@@ -1,0 +1,136 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T07:25:15.459Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4o-mini",
+    "input": "apps/api/scripts/cds-data/cds-pdf-registry-batch84-2026-04-30.json",
+    "success": 9,
+    "failures": 0
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 66.29,
+      "eaAcceptanceRate": null,
+      "edApplied": 1139,
+      "edAdmitted": 755,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "american university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 79.75,
+      "eaAcceptanceRate": null,
+      "edApplied": 726,
+      "edAdmitted": 579,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 93.74,
+      "eaAcceptanceRate": null,
+      "edApplied": 479,
+      "edAdmitted": 449,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 44.93,
+      "eaAcceptanceRate": null,
+      "edApplied": 2217,
+      "edAdmitted": 996,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://my.wlu.edu/document/2024-common-data-set",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 33.89,
+      "eaAcceptanceRate": null,
+      "edApplied": 844,
+      "edAdmitted": 286,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Decision is an application program designed for students who believe Washington and Lee is their top choice."
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 36.58,
+      "eaAcceptanceRate": null,
+      "edApplied": 667,
+      "edAdmitted": 244,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    },
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://bpb-us-w2.wpmucdn.com/voices.uchicago.edu/dist/8/2077/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.6265,
+        "3.50-3.74": 0.2695,
+        "3.25-3.49": 0.0662,
+        "3.00-3.24": 0.0029,
+        "<3.00": 0.001
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No specific numbers for Early Decision or Early Action were provided."
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.bates.edu/research/files/2024/08/CDS_2023-2024.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": 41.73,
+      "eaAcceptanceRate": null,
+      "edApplied": 810,
+      "edAdmitted": 338,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": ""
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,275 @@
+{
+  "_meta": {
+    "generatedAt": "2026-04-30T03:12:39.656Z",
+    "source": "collect-all-known-urls.ts: dedup of all registry/extracted files",
+    "totalSchools": 236,
+    "qualifyingTargets": 53
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of california, irvine",
+      "schoolName": "University of California, Irvine",
+      "selectedUrl": "https://bpb-us-e2.wpmucdn.com/sites.uci.edu/dist/2/5478/files/2025/09/CDS-2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "northwestern university",
+      "schoolName": "Northwestern University",
+      "selectedUrl": "https://www.adminplan.northwestern.edu/ir/data-book/v59/cds-2024-25-northwestern-final.pdf"
+    },
+    {
+      "schoolNameNorm": "rice university",
+      "schoolName": "Rice University",
+      "selectedUrl": "https://ideas.rice.edu/wp-content/uploads/2025/10/CDS_2024-25_WEBSITE.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "schoolName": "University of North Texas",
+      "selectedUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "bowdoin college",
+      "schoolName": "Bowdoin College",
+      "selectedUrl": "https://www.bowdoin.edu/ir/pdf/bowdoin-cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "hamilton college",
+      "schoolName": "Hamilton College",
+      "selectedUrl": "https://www.hamilton.edu/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "haverford college",
+      "schoolName": "Haverford College",
+      "selectedUrl": "https://www.haverford.edu/sites/default/files/Office/President/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-new brunswick",
+      "schoolName": "Rutgers University-New Brunswick",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/New%20Brunswick%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "lehigh university",
+      "schoolName": "Lehigh University",
+      "selectedUrl": "https://data.lehigh.edu/sites/data.lehigh.edu/files/4.18.2025_CDS-2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, sacramento",
+      "schoolName": "California State University, Sacramento",
+      "selectedUrl": "https://www.csus.edu/institutional-research/data/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of texas at austin",
+      "schoolName": "University of Texas at Austin",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf"
+    },
+    {
+      "schoolNameNorm": "american university",
+      "schoolName": "American University",
+      "selectedUrl": "https://www.american.edu/provost/oira/upload/cds_2024-2025_american-university_final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of denver",
+      "schoolName": "University of Denver",
+      "selectedUrl": "https://www.du.edu/sites/default/files/2025-01/CDS_2024_2025_1.pdf"
+    },
+    {
+      "schoolNameNorm": "colorado school of mines",
+      "schoolName": "Colorado School of Mines",
+      "selectedUrl": "https://www.coloradocollege.edu/offices/ipe/documents/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "rutgers university-newark",
+      "schoolName": "Rutgers University-Newark",
+      "selectedUrl": "https://oirap.rutgers.edu/CDS/2023/Newark%20CDS_2023-2024_final_V1.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nebraska-lincoln",
+      "schoolName": "University of Nebraska-Lincoln",
+      "selectedUrl": "https://www.unk.edu/factbook/_files/cds/cds_2024_2025_universitynebraskakearney_nosectiong_041625.pdf"
+    },
+    {
+      "schoolNameNorm": "university of toledo",
+      "schoolName": "University of Toledo",
+      "selectedUrl": "https://www.utoledo.edu/offices/institutional-research/report-library/common-data-set/docs/cds-2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of texas at san antonio",
+      "schoolName": "University of Texas at San Antonio",
+      "selectedUrl": "https://abpa.tamu.edu/getattachment/439f54fe-1105-48af-955a-405775f80872/CDS-2024-2025_TexasA-M.pdf"
+    },
+    {
+      "schoolNameNorm": "harvey mudd college",
+      "schoolName": "Harvey Mudd College",
+      "selectedUrl": "https://www.hmc.edu/institutional-research/wp-content/uploads/sites/42/2024/12/CDS-2024-2025-SharedtoWeb.pdf"
+    },
+    {
+      "schoolNameNorm": "wellesley college",
+      "schoolName": "Wellesley College",
+      "selectedUrl": "https://www1.wellesley.edu/sites/default/files/assets/departments/provost/files/department_chairs_manual_2024-25_10-10-24.pdf"
+    },
+    {
+      "schoolNameNorm": "claremont mckenna college",
+      "schoolName": "Claremont McKenna College",
+      "selectedUrl": "https://www.cmc.edu/sites/default/files/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "washington and lee university",
+      "schoolName": "Washington and Lee University",
+      "selectedUrl": "https://my.wlu.edu/document/2024-common-data-set"
+    },
+    {
+      "schoolNameNorm": "amherst college",
+      "schoolName": "Amherst College",
+      "selectedUrl": "https://www.amherst.edu/system/files/C%20First-Time%2C%20First-Year%20Admission_3.pdf"
+    },
+    {
+      "schoolNameNorm": "boston college",
+      "schoolName": "Boston College",
+      "selectedUrl": "https://www.bc.edu/content/dam/bc1/offices/irp/ir/cds/Boston_College_CDS_2024-2025_Final.pdf"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://oire.georgetown.edu/wp-content/uploads/2025/10/CDS_2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "carleton college",
+      "schoolName": "Carleton College",
+      "selectedUrl": "https://carleton-wp-production.s3.amazonaws.com/uploads/sites/292/2025/07/2024-2025-CDS_06032025.pdf"
+    },
+    {
+      "schoolNameNorm": "bates college",
+      "schoolName": "Bates College",
+      "selectedUrl": "https://www.bates.edu/research/files/2025/09/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, santa barbara",
+      "schoolName": "University of California, Santa Barbara",
+      "selectedUrl": "https://bap.ucsb.edu/institutional-research/common-data-set/cds_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of illinois urbana-champaign",
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "selectedUrl": "https://www.studentcode.illinois.edu/sites/default/files/2024-09/2024-Student-Code.pdf"
+    },
+    {
+      "schoolNameNorm": "university of wisconsin-madison",
+      "schoolName": "University of Wisconsin-Madison",
+      "selectedUrl": "https://apir.wisc.edu/wp-content/uploads/sites/55/2025/05/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "tulane university",
+      "schoolName": "Tulane University",
+      "selectedUrl": "https://small.tulane.edu/wp-content/uploads/2025/10/Annual-Report_2024-2025_sm-1.pdf"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "schoolName": "Stony Brook University",
+      "selectedUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, merced",
+      "schoolName": "University of California, Merced",
+      "selectedUrl": "https://cie.ucmerced.edu/sites/g/files/ufvvjh616/f/documents/cds_2019-2020_ucm_definitions.pdf"
+    },
+    {
+      "schoolNameNorm": "university of cincinnati",
+      "schoolName": "University of Cincinnati",
+      "selectedUrl": "https://www.uc.edu/content/dam/refresh/provost-62/offices/ir/2025-2026ay/CDS-2024-2025-University%20of%20Cincinnati%20Clifton%20FINAL%20Update%20072125%20Tuition%20Information.pdf"
+    },
+    {
+      "schoolNameNorm": "missouri university of science and technology",
+      "schoolName": "Missouri University of Science and Technology",
+      "selectedUrl": "https://www.missouristate.edu/Registrar/_Files/_CatalogArchives/zz-24-25-EntireUGCatalogNew.pdf"
+    },
+    {
+      "schoolNameNorm": "kent state university",
+      "schoolName": "Kent State University",
+      "selectedUrl": "https://www-s3-live.kent.edu/s3fs-root/s3fs-public/file/Information%20Packet%202024-25%20FINAL.pdf?VersionId=MlbRck4bkDp.LiUVdFTaXSppfH6XC4n7"
+    },
+    {
+      "schoolNameNorm": "university of idaho",
+      "schoolName": "University of Idaho",
+      "selectedUrl": "https://www.uidaho.edu/-/media/uidaho-responsive/files/provost/ir/common-data-set/cds-2023-2024.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nevada, las vegas",
+      "schoolName": "University of Nevada, Las Vegas",
+      "selectedUrl": "https://nshe.nevada.edu/html/wp-content/uploads/file/BoardOfRegents/Agendas/2025/12-dec-mtgs/refs/arsa/ARSA-7a.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, fullerton",
+      "schoolName": "California State University, Fullerton",
+      "selectedUrl": "https://www.fullerton.edu/data/_resources/pdfs/presentations/CAIR2017_CDS_Furuichi.pdf"
+    },
+    {
+      "schoolNameNorm": "eastern michigan university",
+      "schoolName": "Eastern Michigan University",
+      "selectedUrl": "https://www.emich.edu/irim/documents/common-data-sets/cds2024v3.pdf"
+    },
+    {
+      "schoolNameNorm": "idaho state university",
+      "schoolName": "Idaho State University",
+      "selectedUrl": "https://www.isu.edu/media/libraries/finance-and-business-affairs/ISU-2024-2025-CDS.pdf"
+    },
+    {
+      "schoolNameNorm": "university of vermont",
+      "schoolName": "University of Vermont",
+      "selectedUrl": "https://www.uvm.edu/d10-files/documents/2025-02/2024-2025-Common-Data-Set.pdf"
+    },
+    {
+      "schoolNameNorm": "university of california, los angeles",
+      "schoolName": "University of California, Los Angeles",
+      "selectedUrl": "https://apb.ucla.edu/file/22f7b216-5bcd-4401-bf95-6b9fc3652a67"
+    },
+    {
+      "schoolNameNorm": "california polytechnic state university, san luis obispo",
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "selectedUrl": "https://content-calpoly-edu.s3.amazonaws.com/ir/1/images/CDS-2024-2025_final.pdf"
+    },
+    {
+      "schoolNameNorm": "university of connecticut",
+      "schoolName": "University of Connecticut",
+      "selectedUrl": "https://bpir.media.uconn.edu/wp-content/uploads/sites/3452/2025/07/UConn_CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "schoolName": "University of Minnesota Twin Cities",
+      "selectedUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf"
+    },
+    {
+      "schoolNameNorm": "california state university, long beach",
+      "schoolName": "California State University, Long Beach",
+      "selectedUrl": "https://www.csulb.edu/sites/default/files/2025/documents/CDS%202024%20-%202025%20(PDF)_2.pdf"
+    },
+    {
+      "schoolNameNorm": "george washington university",
+      "schoolName": "George Washington University",
+      "selectedUrl": "https://irp.gwu.edu/sites/g/files/zaxdzs6056/files/2025-05/CDS_2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "schoolName": "University of Minnesota, Twin Cities",
+      "selectedUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf"
+    },
+    {
+      "schoolNameNorm": "texas tech university",
+      "schoolName": "Texas Tech University",
+      "selectedUrl": "https://www.depts.ttu.edu/irim/CommonDataSets/TTU_CDS_2024-2025-03-14-25.pdf"
+    },
+    {
+      "schoolNameNorm": "james madison university",
+      "schoolName": "James Madison University",
+      "selectedUrl": "https://www.jmu.edu/pair/ir/common-data-set/cds2024/cds-2024c.pdf"
+    },
+    {
+      "schoolNameNorm": "ball state university",
+      "schoolName": "Ball State University",
+      "selectedUrl": "https://www.bsu.edu/-/media/www/departmentalcontent/oirds/files/common-data-set/2024-2025-cds.pdf"
+    }
+  ]
+}

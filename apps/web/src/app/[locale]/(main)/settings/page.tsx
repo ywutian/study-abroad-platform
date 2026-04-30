@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -46,7 +46,14 @@ import { useRouter, usePathname } from '@/lib/i18n/navigation';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api';
-import { userRoutes } from '@study-abroad/shared';
+import {
+  COLOR_PALETTES,
+  DEFAULT_COLOR_PALETTE,
+  getColorThemeLabel,
+  userRoutes,
+  type ColorPalette,
+} from '@study-abroad/shared';
+import { useColorPalette } from '@/hooks/use-color-palette';
 
 interface SettingSection {
   id: string;
@@ -75,7 +82,9 @@ interface SettingItem {
 
 export default function SettingsPage() {
   const t = useTranslations();
+  const locale = useLocale();
   const { theme, setTheme } = useTheme();
+  const { palette, setPalette } = useColorPalette();
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
@@ -83,6 +92,7 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
 
   useEffect(() => {
     setMounted(true);
@@ -152,6 +162,19 @@ export default function SettingsPage() {
           type: 'toggle',
           value: mounted ? theme === 'dark' : false,
           onToggle: (value) => setTheme(value ? 'dark' : 'light'),
+        },
+        {
+          id: 'colorPalette',
+          icon: Palette,
+          label: t('settings.items.colorTheme'),
+          description: t('settings.items.colorThemeDesc'),
+          type: 'select',
+          value: mounted ? palette : DEFAULT_COLOR_PALETTE,
+          options: COLOR_PALETTES.map((p) => ({
+            value: p,
+            label: getColorThemeLabel(p, labelLocale),
+          })),
+          onSelect: (value) => setPalette(value as ColorPalette),
         },
         {
           id: 'language',
@@ -453,10 +476,10 @@ function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: bool
 
       {item.type === 'select' && (
         <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>
-          <SelectTrigger className="w-28 h-9">
+          <SelectTrigger className="h-9 w-[12rem] min-w-[10rem] shrink-0">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[420px]">
             {item.options?.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}

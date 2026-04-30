@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
-import { useRouter } from '@/lib/i18n/navigation';
+import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useAuthStore } from '@/stores/auth';
 import {
   getCurrentMemberDisplaySettings,
@@ -231,6 +231,9 @@ export function TeamsPageClient() {
   const [showSchool, setShowSchool] = useState(false);
   const [showGrade, setShowGrade] = useState(false);
   const [showAwards, setShowAwards] = useState(false);
+  const [showAcademics, setShowAcademics] = useState(false);
+  const [showExperiences, setShowExperiences] = useState(false);
+  const [showPersonality, setShowPersonality] = useState(false);
   const [inviteResultsByMatchId, setInviteResultsByMatchId] = useState<
     Record<string, TeamMatchInviteResultDto[]>
   >({});
@@ -551,6 +554,9 @@ export function TeamsPageClient() {
     setShowSchool(displaySettings.showSchool);
     setShowGrade(displaySettings.showGrade);
     setShowAwards(displaySettings.showAwards);
+    setShowAcademics(displaySettings.showAcademics);
+    setShowExperiences(displaySettings.showExperiences);
+    setShowPersonality(displaySettings.showPersonality);
   }, [authUserId, currentCard]);
 
   const invalidateRecruitmentQueries = () => {
@@ -718,6 +724,9 @@ export function TeamsPageClient() {
         showSchool,
         showGrade,
         showAwards,
+        showAcademics,
+        showExperiences,
+        showPersonality,
         consentConfirmed,
       }),
     onSuccess: () => {
@@ -994,6 +1003,12 @@ export function TeamsPageClient() {
                     setShowGrade={setShowGrade}
                     showAwards={showAwards}
                     setShowAwards={setShowAwards}
+                    showAcademics={showAcademics}
+                    setShowAcademics={setShowAcademics}
+                    showExperiences={showExperiences}
+                    setShowExperiences={setShowExperiences}
+                    showPersonality={showPersonality}
+                    setShowPersonality={setShowPersonality}
                     onSave={() => memberProfileMutation.mutate(false)}
                     onConfirm={() => memberProfileMutation.mutate(true)}
                     pending={memberProfileMutation.isPending}
@@ -1330,6 +1345,12 @@ export function TeamsPageClient() {
                 setShowGrade={setShowGrade}
                 showAwards={showAwards}
                 setShowAwards={setShowAwards}
+                showAcademics={showAcademics}
+                setShowAcademics={setShowAcademics}
+                showExperiences={showExperiences}
+                setShowExperiences={setShowExperiences}
+                showPersonality={showPersonality}
+                setShowPersonality={setShowPersonality}
                 onSave={() => memberProfileMutation.mutate(false)}
                 onConfirm={() => memberProfileMutation.mutate(true)}
                 pending={memberProfileMutation.isPending}
@@ -1511,6 +1532,12 @@ export function TeamsPageClient() {
                 setShowGrade={setShowGrade}
                 showAwards={showAwards}
                 setShowAwards={setShowAwards}
+                showAcademics={showAcademics}
+                setShowAcademics={setShowAcademics}
+                showExperiences={showExperiences}
+                setShowExperiences={setShowExperiences}
+                showPersonality={showPersonality}
+                setShowPersonality={setShowPersonality}
                 onSave={() => memberProfileMutation.mutate(false)}
                 onConfirm={() => memberProfileMutation.mutate(true)}
                 pending={memberProfileMutation.isPending}
@@ -1924,6 +1951,12 @@ function DisplaySettingsCard({
   setShowGrade,
   showAwards,
   setShowAwards,
+  showAcademics,
+  setShowAcademics,
+  showExperiences,
+  setShowExperiences,
+  showPersonality,
+  setShowPersonality,
   onSave,
   onConfirm,
   pending,
@@ -1941,6 +1974,12 @@ function DisplaySettingsCard({
   setShowGrade: (value: boolean) => void;
   showAwards: boolean;
   setShowAwards: (value: boolean) => void;
+  showAcademics: boolean;
+  setShowAcademics: (value: boolean) => void;
+  showExperiences: boolean;
+  setShowExperiences: (value: boolean) => void;
+  showPersonality: boolean;
+  setShowPersonality: (value: boolean) => void;
   onSave: () => void;
   onConfirm: () => void;
   pending: boolean;
@@ -1989,6 +2028,35 @@ function DisplaySettingsCard({
             icon={Sparkles}
             label={t('recruitment.display.showAwards')}
           />
+          <ToggleBadge
+            active={showAcademics}
+            onClick={() => setShowAcademics(!showAcademics)}
+            icon={ShieldCheck}
+            label={t('recruitment.display.showAcademics')}
+          />
+          <ToggleBadge
+            active={showExperiences}
+            onClick={() => setShowExperiences(!showExperiences)}
+            icon={Sparkles}
+            label={t('recruitment.display.showExperiences')}
+          />
+          <ToggleBadge
+            active={showPersonality}
+            onClick={() => setShowPersonality(!showPersonality)}
+            icon={Users}
+            label={t('recruitment.display.showPersonality')}
+          />
+        </div>
+        <div className="rounded-lg border border-dashed bg-muted/30 p-3 text-sm text-muted-foreground">
+          <p>{t('recruitment.display.completeProfileHint')}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/profile">{t('recruitment.display.completeProfile')}</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/assessment">{t('recruitment.display.completeAssessment')}</Link>
+            </Button>
+          </div>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" disabled={!currentCard || pending} onClick={onSave}>
@@ -2095,6 +2163,10 @@ function RecruitmentCardPreview({
   const locale = useLocale();
   const contextLabel = getRecruitmentContextLabel(card, locale);
   const contextMeta = getRecruitmentContextMeta(card, locale);
+  const statusLabel =
+    card.intentMode === 'NETWORKING_ONLY'
+      ? t('recruitment.intentMode.networkingOnly')
+      : t(`recruitment.status.${card.status}`);
 
   return (
     <div
@@ -2109,7 +2181,7 @@ function RecruitmentCardPreview({
           <h3 className="text-lg font-semibold">{card.team.name}</h3>
           <p className="text-sm text-muted-foreground">{card.headline}</p>
         </div>
-        <Badge variant={card.status === 'CLOSED' ? 'secondary' : 'default'}>{card.status}</Badge>
+        <Badge variant={card.status === 'CLOSED' ? 'secondary' : 'default'}>{statusLabel}</Badge>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -2117,8 +2189,14 @@ function RecruitmentCardPreview({
           <Target className="mr-1 h-3 w-3" />
           {card.team.currentSize}/{card.team.targetSize}
         </Badge>
-        {card.availabilityBand ? <Badge variant="outline">{card.availabilityBand}</Badge> : null}
-        {card.collaborationMode ? <Badge variant="outline">{card.collaborationMode}</Badge> : null}
+        {card.availabilityBand ? (
+          <Badge variant="outline">{t(`recruitment.availability.${card.availabilityBand}`)}</Badge>
+        ) : null}
+        {card.collaborationMode ? (
+          <Badge variant="outline">
+            {t(`recruitment.option.${card.collaborationMode.toLowerCase()}`)}
+          </Badge>
+        ) : null}
         {card.timezone ? <Badge variant="outline">{card.timezone}</Badge> : null}
       </div>
 

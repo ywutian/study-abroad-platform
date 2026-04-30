@@ -300,6 +300,72 @@ describe('SchoolService', () => {
       expect(findManyArgs.where).toMatchObject({ country: 'UK' });
       expect(findManyArgs.where.state).toBeUndefined();
     });
+
+    it('should filter and sort by post-graduation salary', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        { ...mockSchool, avgSalary: 95000 },
+      ]);
+      (prismaService.school.count as jest.Mock).mockResolvedValue(1);
+
+      await service.findAll(
+        { page: 1, pageSize: 20 },
+        { salaryMin: 80000, salaryMax: 120000, sortBy: 'salary' },
+      );
+
+      expect(prismaService.school.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            avgSalary: { gte: 80000, lte: 120000 },
+          }),
+          orderBy: [{ avgSalary: 'desc' }, { usNewsRank: 'asc' }],
+        }),
+      );
+    });
+
+    it('should apply weighted sorting before pagination', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'lower-salary',
+          name: 'Lower Salary University',
+          usNewsRank: 1,
+          acceptanceRate: 5,
+          tuition: 50000,
+          avgSalary: 70000,
+        },
+        {
+          ...mockSchool,
+          id: 'higher-salary',
+          name: 'Higher Salary Institute',
+          usNewsRank: 50,
+          acceptanceRate: 30,
+          tuition: 60000,
+          avgSalary: 140000,
+        },
+      ]);
+      (prismaService.school.count as jest.Mock).mockResolvedValue(2);
+
+      const result = await service.findAll(
+        { page: 1, pageSize: 1 },
+        {
+          sortBy: 'weighted',
+          weightRank: 0,
+          weightAcceptance: 0,
+          weightTuition: 0,
+          weightSalary: 100,
+        },
+      );
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].id).toBe('higher-salary');
+      expect((result.items[0] as any).fitScore).toBe(100);
+      expect(prismaService.school.findMany).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          skip: expect.any(Number),
+          take: expect.any(Number),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

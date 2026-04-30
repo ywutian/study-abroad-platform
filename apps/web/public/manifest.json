@@ -1,11 +1,11 @@
 {
-  "name": "留学助手 - Study Abroad Platform",
-  "short_name": "留学助手",
-  "description": "AI 驱动的留学申请智能平台",
+  "name": "Lumni",
+  "short_name": "Lumni",
+  "description": "AI 驱动的留学申请工作台",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#6366f1",
+  "background_color": "#f7f1e6",
+  "theme_color": "#1d1813",
   "orientation": "portrait-primary",
   "icons": [
     {

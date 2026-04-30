@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Study Abroad Platform",
+    "appName": "Lumni",
     "save": "Save",
     "cancel": "Cancel",
     "submit": "Submit",
@@ -81,14 +81,14 @@
     "more": "More"
   },
   "home": {
-    "title": "Study Abroad Platform",
+    "title": "Lumni",
     "subtitle": "Smart School Selection, Admission Prediction, Case Sharing",
     "quickActions": "Quick Actions",
     "recentCases": "Recent Cases",
     "topSchools": "Top Schools",
     "viewAll": "View All",
     "welcomeBack": "Welcome back",
-    "guestWelcome": "Welcome to Study Abroad Platform",
+    "guestWelcome": "Welcome to Lumni",
     "loginPrompt": "Login to enjoy more features",
     "stats": {
       "cases": "Admission Cases",
@@ -1192,6 +1192,12 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "systemMode": "System Default",
+    "colorTheme": "Theme Style",
+    "colorThemeDesc": "Choose a complete global visual style shared by Web and mobile across 160 themes.",
+    "themeSearchPlaceholder": "Search themes",
+    "themeAll": "All",
+    "themeRecent": "Recent",
+    "themeNoResults": "No matching themes",
     "changePassword": "Change Password",
     "deleteAccount": "Delete Account",
     "exportAllData": "Export All Data",
@@ -1777,6 +1783,99 @@
     "empty": {
       "title": "No Teams Found",
       "description": "Browse or create a team to collaborate with others"
+    },
+    "recruitment": {
+      "description": "Competition recruitment matching workspace",
+      "tab": {
+        "match": "Match",
+        "matches": "Matches",
+        "myTeam": "My Team"
+      },
+      "swipeDeck": {
+        "pass": "Pass",
+        "like": "Like"
+      },
+      "empty": {
+        "noCard": "Create your card in My Team first",
+        "deckEmpty": "No cards in the deck",
+        "noMatches": "No matches yet"
+      },
+      "editor": {
+        "title": "Recruitment Editor"
+      },
+      "field": {
+        "backingTeam": "Backing team",
+        "createSoloTeam": "Create Solo Team",
+        "competitionTrack": "Competition track",
+        "soloTeamName": "Solo team name",
+        "headline": "Headline",
+        "detailNote": "Detail note",
+        "offerRoles": "Offer roles",
+        "needRoles": "Need roles",
+        "skillTags": "Skill tags",
+        "targetSize": "Target size"
+      },
+      "display": {
+        "title": "My display settings",
+        "introLine": "Intro line",
+        "selectedResume": "Selected resume",
+        "noResume": "No resume",
+        "showAcademics": "Show academics",
+        "showExperiences": "Show experience",
+        "showPersonality": "Show personality",
+        "completeProfileHint": "Highlights are generated from Profile scores, awards, activities, resumes, and assessments.",
+        "save": "Save",
+        "confirmConsent": "Confirm consent"
+      },
+      "card": {
+        "teamFallback": "TEAM",
+        "offer": "Offer",
+        "need": "Need",
+        "skills": "Skills",
+        "academics": "Academics",
+        "experience": "Experience",
+        "personality": "Personality",
+        "noHighlights": "No confirmed profile highlights yet",
+        "memberCount": "{{current}}/{{max}} members",
+        "coordination": "Coordination details"
+      },
+      "status": {
+        "LOOKING": "Looking",
+        "ALMOST_FULL": "Almost full",
+        "NETWORKING_ONLY": "Networking",
+        "CLOSED": "Closed"
+      },
+      "matchKind": {
+        "teamUp": "Team up",
+        "networking": "Networking"
+      },
+      "intentMode": {
+        "networkingOnly": "Networking only"
+      },
+      "availability": {
+        "LESS_THAN_5_HOURS": "<5h/wk",
+        "FIVE_TO_TEN_HOURS": "5-10h/wk",
+        "TEN_PLUS_HOURS": "10h+/wk",
+        "WEEKENDS_ONLY": "Weekends"
+      },
+      "option": {
+        "online": "Online",
+        "offline": "Offline",
+        "hybrid": "Hybrid"
+      },
+      "action": {
+        "saveCard": "Save",
+        "createCard": "Create",
+        "publish": "Publish"
+      },
+      "toast": {
+        "cardCreated": "Recruitment card created",
+        "cardUpdated": "Recruitment card updated",
+        "cardPublished": "Recruitment card published",
+        "displayUpdated": "Display settings updated",
+        "matched": "Matched and created a group chat",
+        "swipeRecorded": "Swipe recorded"
+      }
     }
   },
   "points": {

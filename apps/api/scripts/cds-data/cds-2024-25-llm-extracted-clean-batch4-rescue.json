@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T22:57:24.985Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "/tmp/cds-registry-smart-200-new.json",
+    "success": 12,
+    "failures": 0,
+    "kept": 2,
+    "note": "rescued from over-strict host filter"
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of pittsburgh",
+      "cycleYear": 2024,
+      "sourceUrl": "https://ir.pitt.edu/sites/default/files/assets/2024-2025%20CDS%20Pittsburgh_2.pdf",
+      "applicants": {
+        "total": 60898,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 35372,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 4596,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 58.08,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 totals extracted from Common Data Set C117-C119 for first-time, first-year degree-seeking students. Residency breakdown rows C120-C128 were blank, so preserved as null."
+    },
+    {
+      "schoolNameNorm": "university of north texas",
+      "cycleYear": 2024,
+      "sourceUrl": "https://institutionalresearch.unt.edu/cds_univnorthtx_final2024-2025.pdf",
+      "applicants": {
+        "total": 38477,
+        "inState": 34181,
+        "outOfState": 2089,
+        "international": 2207
+      },
+      "admitted": {
+        "total": 27793,
+        "inState": 24992,
+        "outOfState": 1526,
+        "international": 1275
+      },
+      "enrolled": {
+        "total": 6730,
+        "inState": 6080,
+        "outOfState": 211,
+        "international": 439
+      },
+      "rates": {
+        "acceptanceRate": 72.23,
+        "intlAcceptanceRate": 57.77,
+        "oosAcceptanceRate": 73.05,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 first-time, first-year degree-seeking Fall 2024 counts used. Residency breakdown present for applicants, admits, and enrolled. Enrolled totals reflect full- or part-time initial enrollment, consistent with CDS C1."
+    }
+  ]
+}

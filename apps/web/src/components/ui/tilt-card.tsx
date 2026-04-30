@@ -130,7 +130,7 @@ const TiltCard = forwardRef<HTMLDivElement, TiltCardProps>(
             <motion.div
               className="absolute inset-0 rounded-xl pointer-events-none z-0"
               style={{
-                background: `linear-gradient(135deg, rgba(99,102,241,0.2) 0%, transparent 50%, rgba(99,102,241,0.1) 100%)`,
+                background: `linear-gradient(135deg, rgba(221,184,90,0.18) 0%, transparent 50%, rgba(29,24,19,0.08) 100%)`,
                 opacity: isHovered ? 1 : 0,
               }}
               transition={{ duration: 0.3 }}
@@ -145,7 +145,7 @@ const TiltCard = forwardRef<HTMLDivElement, TiltCardProps>(
             style={{
               background: 'transparent',
               boxShadow: isHovered
-                ? '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 12px 24px -8px rgba(99, 102, 241, 0.1)'
+                ? '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 12px 24px -8px rgba(29, 24, 19, 0.1)'
                 : '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
               transform: `translateY(${isHovered ? 8 : 4}px)`,
               transition: 'all 0.3s ease',

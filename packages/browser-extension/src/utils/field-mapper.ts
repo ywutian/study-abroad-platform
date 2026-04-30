@@ -300,7 +300,7 @@ function highlightField(element: HTMLElement): void {
   const originalTransition = element.style.transition;
 
   element.style.transition = 'background-color 0.3s ease';
-  element.style.backgroundColor = '#d4edda'; // 浅绿色高亮
+  element.style.backgroundColor = '#f7e8c4';
 
   setTimeout(() => {
     element.style.backgroundColor = originalBackground;

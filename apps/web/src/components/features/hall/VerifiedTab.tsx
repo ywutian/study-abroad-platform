@@ -135,14 +135,14 @@ export function VerifiedTab() {
     }
     if (rank === 2) {
       return (
-        <div className="w-10 h-10 rounded-full bg-slate-400 dark:bg-slate-500 flex items-center justify-center shadow-lg shadow-gray-400/30 dark:shadow-gray-600/30">
+        <div className="w-10 h-10 rounded-full bg-slate-400 dark:bg-slate-500 flex items-center justify-center shadow-md">
           <Medal className="h-5 w-5 text-white" />
         </div>
       );
     }
     if (rank === 3) {
       return (
-        <div className="w-10 h-10 rounded-full bg-warning flex items-center justify-center shadow-lg shadow-amber-600/30">
+        <div className="w-10 h-10 rounded-full bg-warning flex items-center justify-center shadow-md">
           <Award className="h-5 w-5 text-white" />
         </div>
       );

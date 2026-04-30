@@ -1,0 +1,73 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-30T03:07:16.361Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-batch43-2026-04-29.json",
+    "success": 3,
+    "failures": 4
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The Common Data Set for Wake Forest University does not report the high school GPA distribution (Section C9). The early decision plan is offered (Section C21) but no numeric data for applications or admits under Early Decision or Early Action is reported. Early Decision plan closing dates and notification dates are given, but no counts are provided. Early Action plan dates are also provided with no counts. Therefore, all counts are set to null."
+    },
+    {
+      "schoolNameNorm": "university of minnesota twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "No GPA distribution data reported in the CDS for this institution (C9). Early Decision plan offered (C21) but no application or admit counts provided."
+    },
+    {
+      "schoolNameNorm": "university of minnesota, twin cities",
+      "cycleYear": 2024,
+      "sourceUrl": "https://idr.umn.edu/sites/idr.umn.edu/files/cds_2024_2025_tc_1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The report does not provide the high school GPA distribution in the expected ranges (C9). The C21 section confirms an early decision plan but provides no application or admission numbers; early action plan is present, but no numbers given for applications or admits."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "williams college",
+      "sourceUrl": "https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf",
+      "error": "Download failed 403: https://www.williams.edu/institutional-research/files/2025/05/CDS_2024_2025_Williams_V4.pdf"
+    },
+    {
+      "schoolNameNorm": "stony brook university",
+      "sourceUrl": "https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf",
+      "error": "Download failed 404: https://www.stonybrook.edu/commcms/irpe/fact_book/common_data_set/_files/CDS_2024_2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of nebraska-lincoln",
+      "sourceUrl": "https://iea.unl.edu/executive-vice-chancellor/institutional-research-and-planning/sites/unl.edu.executive-vice-chancellor.institutional-research-and-planning/files/media/file/Common-Data-Set-2023-2024.pdf",
+      "error": "Download failed 404: https://iea.unl.edu/executive-vice-chancellor/institutional-research-and-planning/sites/unl.edu.executive-vice-chancellor.institutional-research-and-planning/files/media/file/Common-Data-Set-2023-2024.pdf"
+    }
+  ]
+}

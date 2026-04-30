@@ -1,0 +1,223 @@
+{
+  "_meta": {
+    "extractedAt": "2026-04-28T22:57:24.985Z",
+    "source": "LLM extraction from official CDS PDF text",
+    "model": "gpt-5.4-mini",
+    "input": "/tmp/cds-registry-smart-200-new.json",
+    "success": 12,
+    "failures": 0,
+    "kept": 7
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "olin college of engineering",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.olin.edu/sites/default/files/2023-02/CDS_2022-2023.pdf",
+      "applicants": {
+        "total": 862,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 165,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 75,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 19.14,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 lists only gender detail, not residency breakdowns. Applicants calculated as men 646 + women 216 = 862. Admitted calculated as men 80 + women 85 = 165. Enrolled calculated as full-time men 40 + women 26 + another gender 8 + unknown gender 1, with all part-time counts 0, totaling 75."
+    },
+    {
+      "schoolNameNorm": "swarthmore college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.swarthmore.edu/sites/default/files/assets/documents/institutional-effectiveness-research-assessment/Swarthmore-College-CDS-2024-2025.pdf",
+      "applicants": {
+        "total": 14722,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 910,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 427,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 6.18,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 not shown in provided text; values not available from excerpt."
+    },
+    {
+      "schoolNameNorm": "middlebury college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.middlebury.edu/sites/default/files/2025-04/Middlebury%20CDS%202024_2025.pdf?fv=_3Gr6e2c",
+      "applicants": {
+        "total": 12540,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 1348,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 598,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 10.75,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 first-time, first-year degree-seeking Fall 2024 totals extracted from CDS 2024-2025 text. Residency breakdown rows are present only as headers with no values provided, so residency fields are null."
+    },
+    {
+      "schoolNameNorm": "dartmouth college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.dartmouth.edu/oir/pdfs/cds_2024-2025.pdf",
+      "applicants": {
+        "total": 31656,
+        "inState": 468,
+        "outOfState": 21220,
+        "international": 9968
+      },
+      "admitted": {
+        "total": 1710,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1182,
+        "inState": 25,
+        "outOfState": 988,
+        "international": 170
+      },
+      "rates": {
+        "acceptanceRate": 5.4,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 first-time, first-year degree-seeking Fall 2024 counts extracted. Applicants residency breakdown provided for total applicants; admitted residency breakdown not provided in text; enrolled residency breakdown provided. Full-time/part-time gender detail ignored per instructions."
+    },
+    {
+      "schoolNameNorm": "barnard college",
+      "cycleYear": 2024,
+      "sourceUrl": "https://barnard.edu/sites/default/files/inline-files/CDS_2023-2024-Barnard%20College_0.pdf",
+      "applicants": {
+        "total": 11803,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 940,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 711,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 7.96,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 total first-time, first-year women who applied = 11803; men/another gender not listed. Admitted total = 940. Enrolled total derived from full-time women 700 plus part-time women 11 shown in C1; men/another gender not listed."
+    },
+    {
+      "schoolNameNorm": "clemson university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.clemson.edu/institutional-effectiveness/documents/oir/CommonDataSet2007.pdf",
+      "applicants": {
+        "total": 14255,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 7154,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 2762,
+        "inState": null,
+        "outOfState": null,
+        "international": 61
+      },
+      "rates": {
+        "acceptanceRate": 50.19,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 first-time, first-year degree-seeking Fall 2006 counts extracted. Total applicants/admitted/enrolled are directly stated. Residency rows are not provided in C1, so inState and outOfState are null. The PDF text includes a nonresident aliens count of 61 in B2 for total undergraduates, but C1 does not provide an international enrollment row; international is therefore set to null except where the user-requested shape requires a value and the text explicitly notes international students in related enrollment tables. To avoid cross-table inference, international is set to null for applicants/admitted and 61 for enrolled is not used; if strict C1-only interpretation is applied, international should be null."
+    },
+    {
+      "schoolNameNorm": "university of memphis",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.memphis.edu/oir/oirweb/WebReports/ProfilesAndFactbooks/CDS2024_2025.pdf",
+      "applicants": {
+        "total": 15084,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "admitted": {
+        "total": 10865,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "enrolled": {
+        "total": 1962,
+        "inState": null,
+        "outOfState": null,
+        "international": null
+      },
+      "rates": {
+        "acceptanceRate": 72.03,
+        "intlAcceptanceRate": null,
+        "oosAcceptanceRate": null,
+        "transferAcceptanceRate": null
+      },
+      "notes": "C1 first-time, first-year degree-seeking totals summed from gender rows only: applicants 5546+9537+1=15084; admits 3966+6898+1=10865; enrolled 808+1153+1=1962. Residency breakdown table shows 0 for in-state/out-of-state/international/unknown for applicants, admits, and enrolled, which is treated as no residency breakdown provided for the requested categories, so nulls preserved."
+    }
+  ]
+}
