@@ -180,10 +180,10 @@ describe('useColors', () => {
     expect(result.current.primary).not.toBe(colors.light.primary);
   });
 
-  it('falls back to light colors when useThemeStore throws', () => {
-    (useThemeStore as unknown as jest.Mock).mockImplementation(() => {
-      throw new Error('store not ready');
-    });
+  it('returns default palette colors when colorPalette is default', () => {
+    (useThemeStore as unknown as jest.Mock).mockImplementation((selector: any) =>
+      selector({ colorScheme: 'light', colorPalette: 'default' })
+    );
 
     const { result } = renderHook(() => useColors());
 
