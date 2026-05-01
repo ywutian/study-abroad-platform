@@ -13,6 +13,7 @@ import { TourProvider } from '@/components/features/onboarding/tour-provider';
 import { FeedbackWidget } from '@/components/features/feedback/feedback-widget';
 import { useAuthStore, startTokenRefreshInterval, stopTokenRefreshInterval } from '@/stores/auth';
 import { ThemeAppearanceManager } from '@/hooks/use-theme-appearance-overrides';
+import { HeroVisualManager } from '@/hooks/use-hero-visual';
 
 /**
  * 认证状态初始化器
@@ -57,6 +58,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <TooltipProvider>
                 <TourProvider>
                   <ThemeAppearanceManager />
+                  <HeroVisualManager />
                   <AuthInitializer>{children}</AuthInitializer>
                   <Toaster position="top-center" richColors />
                   <OfflineIndicator />

@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { ArrowRight, CheckCircle2, ChevronRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { type HeroVisualId } from '@study-abroad/shared';
 import { AdmissionTierBadge, AIDisclosure, StatusDot } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { LumniMark } from '@/components/ui/lumni-mark';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { useHeroVisual } from '@/hooks/use-hero-visual';
 import { useHomeContent } from './home-content';
 
 type ConsoleRow = {
@@ -42,9 +44,18 @@ type HeroConsoleCopy = {
 export function HeroSection() {
   const home = useHomeContent();
   const prefersReducedMotion = useReducedMotion();
+  const { heroVisual } = useHeroVisual();
+  const t = useTranslations('home');
+  const consoleCopy = t.raw('hero.console') as HeroConsoleCopy;
 
   return (
-    <section className="landing-hero-shell relative overflow-hidden pt-32 pb-20 sm:pt-36 lg:pt-44 lg:pb-28">
+    <section
+      data-hero-visual={heroVisual}
+      className={cn(
+        'landing-hero-shell relative overflow-hidden pt-32 pb-20 sm:pt-36 lg:pt-44 lg:pb-28',
+        heroVisual !== 'matrix-premium' && 'landing-hero-alt'
+      )}
+    >
       <div className="landing-canvas-texture" />
       <div className="landing-grid-mask absolute inset-0" />
 
@@ -72,7 +83,7 @@ export function HeroSection() {
               {home.hero.subtitle}
             </p>
 
-            <MobileLumniCommandPreview />
+            <MobileLumniCommandPreview visual={heroVisual} />
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/register">
@@ -136,7 +147,12 @@ export function HeroSection() {
               />
             </div>
             <div className="landing-console-backdrop" />
-            <PremiumHeroConsole reduced={!!prefersReducedMotion} disclosure={home.hero.aiDisclosure} />
+            <HeroVisualScene
+              visual={heroVisual}
+              copy={consoleCopy}
+              reduced={!!prefersReducedMotion}
+              disclosure={home.hero.aiDisclosure}
+            />
           </motion.div>
         </div>
       </PageContainer>
@@ -144,45 +160,80 @@ export function HeroSection() {
   );
 }
 
-function MobileLumniCommandPreview() {
+function MobileLumniCommandPreview({ visual }: { visual: HeroVisualId }) {
   const t = useTranslations('home');
   const copy = t.raw('hero.console') as HeroConsoleCopy;
   const primaryRow = copy.rows[0];
 
   return (
-    <div className="relative mt-7 overflow-hidden rounded-lg border border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-shell)] p-3 text-[var(--lumni-hero-text)] shadow-[var(--landing-shadow-soft)] lg:hidden">
+    <div
+      className={cn(
+        'relative mt-7 overflow-hidden rounded-lg border p-3 shadow-[var(--landing-shadow-soft)] lg:hidden',
+        visual === 'deer-moon-monolith'
+          ? 'border-[#1f1a15] bg-[#11100f] text-[#fff8ee]'
+          : 'border-[color:var(--landing-border-strong)] bg-[var(--lumni-hero-shell)] text-[var(--lumni-hero-text)]'
+      )}
+    >
       <div className="lumni-night-grid pointer-events-none absolute inset-0" />
-      <div className="relative flex items-center justify-between gap-3 rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] px-3 py-2.5">
+      <div
+        className={cn(
+          'relative flex items-center justify-between gap-3 rounded-md border px-3 py-2.5',
+          visual === 'deer-moon-monolith'
+            ? 'border-white/12 bg-white/6'
+            : 'border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]'
+        )}
+      >
         <div>
-          <div className="text-2xs uppercase tracking-[0.2em] text-[var(--lumni-hero-muted)]">
+          <div className={cn('text-2xs uppercase tracking-[0.2em]', visual === 'deer-moon-monolith' ? 'text-white/48' : 'text-[var(--lumni-hero-muted)]')}>
             {copy.workspace}
           </div>
-          <div className="mt-0.5 text-xs text-[var(--lumni-hero-soft)]">{copy.workflowLine}</div>
+          <div className={cn('mt-0.5 text-xs', visual === 'deer-moon-monolith' ? 'text-white/64' : 'text-[var(--lumni-hero-soft)]')}>{copy.workflowLine}</div>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full border border-[color:var(--lumni-hero-line)] px-2 py-1 text-2xs uppercase tracking-[0.14em] text-[var(--lumni-hero-soft)]">
+        <div
+          className={cn(
+            'flex items-center gap-1.5 rounded-full border px-2 py-1 text-2xs uppercase tracking-[0.14em]',
+            visual === 'deer-moon-monolith'
+              ? 'border-white/14 text-white/70'
+              : 'border-[color:var(--lumni-hero-line)] text-[var(--lumni-hero-soft)]'
+          )}
+        >
           <StatusDot status="success" pulse />
           {copy.statusReady}
         </div>
       </div>
 
       <div className="relative mt-3 grid grid-cols-[104px_1fr] gap-3">
-        <div className="flex min-h-[150px] items-center justify-center rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]">
+        <div
+          className={cn(
+            'flex min-h-[150px] items-center justify-center rounded-md border',
+            visual === 'deer-moon-monolith'
+              ? 'border-white/12 bg-black'
+              : 'border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]'
+          )}
+        >
           <div className="relative flex h-24 w-24 items-center justify-center">
-            <div className="absolute h-20 w-20 rounded-full bg-[var(--lumni-moon)]" />
+            <div className={cn('absolute h-20 w-20 rounded-full', visual === 'framer-orbit' ? 'bg-[#7aa8ff]' : visual === 'lovable-aura' ? 'bg-[#ff5aa5]' : 'bg-[var(--lumni-moon)]')} />
             <LumniMark
               showDisc={false}
               showMoon={false}
-              className="relative h-24 w-24 text-[var(--lumni-hero-mark)]"
+              className={cn('relative h-24 w-24', visual === 'deer-moon-monolith' ? 'text-[#fff7e5]' : 'text-[var(--lumni-hero-mark)]')}
               iconClassName="h-full w-full"
             />
           </div>
         </div>
 
-        <div className="min-w-0 rounded-md border border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)] p-3">
-          <div className="text-2xs uppercase tracking-[0.2em] text-[var(--lumni-hero-muted)]">
+        <div
+          className={cn(
+            'min-w-0 rounded-md border p-3',
+            visual === 'deer-moon-monolith'
+              ? 'border-white/12 bg-white/6'
+              : 'border-[color:var(--lumni-hero-line)] bg-[var(--lumni-hero-panel)]'
+          )}
+        >
+          <div className={cn('text-2xs uppercase tracking-[0.2em]', visual === 'deer-moon-monolith' ? 'text-white/46' : 'text-[var(--lumni-hero-muted)]')}>
             {copy.termLabel}
           </div>
-          <div className="mt-1 text-base font-semibold tracking-tight text-[var(--lumni-hero-text)]">
+          <div className={cn('mt-1 text-base font-semibold tracking-tight', visual === 'deer-moon-monolith' ? 'text-white' : 'text-[var(--lumni-hero-text)]')}>
             {copy.title}
           </div>
           <div className="mt-3 rounded-md border border-[color:var(--lumni-moon)] bg-[color:var(--lumni-hero-active)] px-2.5 py-2">
@@ -203,10 +254,44 @@ function MobileLumniCommandPreview() {
   );
 }
 
+type HeroVisualSceneProps = {
+  visual: HeroVisualId;
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: {
+    trigger: string;
+    inputs: string[];
+    confidence: 'high' | 'medium' | 'low';
+    limitations: string[];
+  };
+};
+
+function HeroVisualScene({ visual, copy, reduced, disclosure }: HeroVisualSceneProps) {
+  if (visual === 'deer-moon-monolith') {
+    return <DeerMoonMonolith copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
+  if (visual === 'framer-orbit') {
+    return <FramerOrbitHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
+  if (visual === 'lovable-aura') {
+    return <LovableAuraHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
+  if (visual === 'beige-editorial') {
+    return <BeigeEditorialHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
+  if (visual === 'command-minimal') {
+    return <CommandMinimalHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
+
+  return <PremiumHeroConsole copy={copy} reduced={reduced} disclosure={disclosure} />;
+}
+
 function PremiumHeroConsole({
+  copy,
   reduced,
   disclosure,
 }: {
+  copy: HeroConsoleCopy;
   reduced: boolean;
   disclosure: {
     trigger: string;
@@ -215,8 +300,6 @@ function PremiumHeroConsole({
     limitations: string[];
   };
 }) {
-  const t = useTranslations('home');
-  const copy = t.raw('hero.console') as HeroConsoleCopy;
   const [typedMessage, setTypedMessage] = useState('');
   const [messageIndex, setMessageIndex] = useState(0);
   const [activeRow, setActiveRow] = useState(0);
@@ -469,6 +552,299 @@ function PremiumHeroConsole({
           {copy.askAnything}
         </Button>
       </motion.div>
+    </div>
+  );
+}
+
+function BrandSeal({ className, markClassName }: { className?: string; markClassName?: string }) {
+  return (
+    <div className={cn('relative flex items-center justify-center', className)}>
+      <div className="absolute h-[68%] w-[68%] rounded-full bg-[var(--lumni-moon)] shadow-[0_0_44px_var(--lumni-moon-soft)]" />
+      <LumniMark
+        showDisc={false}
+        showMoon={false}
+        className={cn('relative h-full w-full text-[var(--landing-fg)]', markClassName)}
+        iconClassName="h-full w-full"
+      />
+    </div>
+  );
+}
+
+function CompactRows({ copy, dark = false }: { copy: HeroConsoleCopy; dark?: boolean }) {
+  return (
+    <div className="space-y-2.5">
+      {copy.rows.slice(0, 4).map((row, index) => (
+        <div
+          key={row.name}
+          className={cn(
+            'grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3',
+            dark
+              ? 'border-white/10 bg-white/[0.06] text-white'
+              : 'border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)]'
+          )}
+        >
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold">{row.name}</div>
+            <div className={cn('mt-1 text-xs', dark ? 'text-white/52' : 'text-[var(--landing-muted)]')}>
+              {row.status}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'h-1.5 rounded-full',
+                row.tone === 'safety' ? 'bg-emerald-400' : row.tone === 'target' ? 'bg-amber-400' : 'bg-rose-400'
+              )}
+              style={{ width: `${22 + index * 10}px` }}
+            />
+            <span className={cn('font-mono text-xs', dark ? 'text-white/58' : 'text-[var(--landing-muted)]')}>
+              {row.probability}%
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function InsightCard({
+  copy,
+  disclosure,
+  dark = false,
+}: {
+  copy: HeroConsoleCopy;
+  disclosure: HeroVisualSceneProps['disclosure'];
+  dark?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        'rounded-[1.5rem] border p-5 shadow-[var(--landing-shadow-card)]',
+        dark
+          ? 'border-white/12 bg-white/[0.07] text-white'
+          : 'border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/90 text-[var(--landing-fg)]'
+      )}
+    >
+      <div className={cn('inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-2xs uppercase tracking-[0.2em]', dark ? 'border-white/12 text-white/60' : 'border-[color:var(--landing-border)] text-[var(--landing-muted)]')}>
+        <StatusDot status="ai" />
+        {copy.assistantBadge}
+      </div>
+      <p className={cn('mt-4 text-sm leading-7', dark ? 'text-white/80' : 'text-[var(--landing-fg)]')}>
+        {copy.assistantMessages[2]}
+      </p>
+      <div className={cn('mt-4 border-t border-dashed pt-3', dark ? 'border-white/14 lumni-disclosure-on-ink' : 'border-[color:var(--landing-border)] lumni-disclosure-on-light')}>
+        <AIDisclosure
+          inputs={disclosure.inputs}
+          confidence={disclosure.confidence}
+          limitations={disclosure.limitations}
+        >
+          {disclosure.trigger}
+        </AIDisclosure>
+      </div>
+    </div>
+  );
+}
+
+function DeerMoonMonolith({
+  copy,
+  reduced,
+  disclosure,
+}: {
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  return (
+    <div className="group relative mx-auto w-full max-w-[640px]" tabIndex={0}>
+      <motion.div
+        className="relative overflow-hidden rounded-[2.4rem] border border-[#1f1b16] bg-[#0d0c0b] p-8 text-[#fff8ec] shadow-[0_34px_90px_rgba(12,10,8,0.28)]"
+        animate={reduced ? undefined : { y: [0, -5, 0] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(221,184,90,0.24),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_42%)]" />
+        <div className="absolute inset-x-8 top-8 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="relative grid min-h-[520px] place-items-center">
+          <BrandSeal className="h-80 w-80" markClassName="text-[#fff8ec]" />
+          <div className="absolute left-0 top-0 max-w-[210px]">
+            <div className="text-2xs uppercase tracking-[0.28em] text-white/42">{copy.symbolLabel}</div>
+            <div className="mt-3 text-2xl font-semibold tracking-tight">{copy.workspace}</div>
+          </div>
+          <div className="absolute bottom-0 right-0 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3 text-right">
+            <div className="text-2xs uppercase tracking-[0.22em] text-white/42">{copy.statusReady}</div>
+            <div className="mt-1 text-sm text-white/72">{copy.workflowLine}</div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="absolute -right-8 top-10 w-[310px] translate-x-3 opacity-0 transition duration-500 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100">
+        <InsightCard copy={copy} disclosure={disclosure} dark />
+      </div>
+      <div className="absolute -left-8 bottom-8 w-[330px] rounded-[1.6rem] border border-white/10 bg-[#151311]/86 p-4 text-white shadow-2xl backdrop-blur-xl">
+        <CompactRows copy={copy} dark />
+      </div>
+    </div>
+  );
+}
+
+function FramerOrbitHero({
+  copy,
+  reduced,
+  disclosure,
+}: {
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  return (
+    <div className="relative mx-auto w-full max-w-[650px]">
+      <div className="relative overflow-hidden rounded-[2.25rem] border border-[#171717] bg-[#030303] p-6 text-white shadow-[0_32px_90px_rgba(0,0,0,0.28)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_24%,rgba(101,116,255,0.42),transparent_26%),radial-gradient(circle_at_88%_70%,rgba(231,111,138,0.28),transparent_30%)]" />
+        <div className="relative grid min-h-[520px] grid-cols-[0.9fr_1.1fr] gap-5">
+          <div className="flex flex-col justify-between rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
+            <div>
+              <div className="text-2xs uppercase tracking-[0.26em] text-white/44">{copy.workspace}</div>
+              <h2 className="mt-4 text-4xl font-semibold tracking-tight">{copy.title}</h2>
+            </div>
+            <InsightCard copy={copy} disclosure={disclosure} dark />
+          </div>
+          <div className="relative rounded-[1.5rem] border border-white/10 bg-black/35 p-5">
+            <div className="absolute inset-8 rounded-full border border-[#6574ff]/40" />
+            <div className="absolute inset-16 rounded-full border border-[#e76f8a]/30" />
+            <motion.div
+              className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5"
+              animate={reduced ? undefined : { rotate: 360 }}
+              transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+            >
+              <BrandSeal className="h-full w-full" markClassName="text-white" />
+            </motion.div>
+            <div className="absolute bottom-5 left-5 right-5">
+              <CompactRows copy={copy} dark />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LovableAuraHero({
+  copy,
+  reduced,
+  disclosure,
+}: {
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  return (
+    <div className="relative mx-auto w-full max-w-[650px]">
+      <div className="relative overflow-hidden rounded-[2.25rem] border border-[color:var(--landing-border)] bg-white p-6 shadow-[var(--landing-shadow-elevated)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_25%,rgba(88,134,255,0.34),transparent_28%),radial-gradient(circle_at_70%_42%,rgba(255,80,166,0.26),transparent_30%),radial-gradient(circle_at_60%_92%,rgba(255,144,64,0.30),transparent_34%)]" />
+        <div className="relative min-h-[520px] rounded-[1.6rem] border border-white/60 bg-white/70 p-6 backdrop-blur-2xl">
+          <div className="mx-auto flex max-w-[430px] items-center gap-3 rounded-[1.25rem] border border-black/10 bg-white px-4 py-3 shadow-lg">
+            <Sparkles className="h-4 w-4 text-[#6574ff]" />
+            <span className="text-sm text-[var(--landing-muted)]">{copy.workflowLine}</span>
+          </div>
+          <div className="mt-8 grid grid-cols-[0.92fr_1.08fr] gap-5">
+            <div className="rounded-[1.75rem] border border-black/10 bg-white/86 p-5 shadow-xl">
+              <BrandSeal className="mx-auto h-44 w-44" markClassName="text-[#201915]" />
+              <div className="mt-5 text-center">
+                <div className="text-2xs uppercase tracking-[0.22em] text-[var(--landing-subtle)]">
+                  {copy.statusReady}
+                </div>
+                <div className="mt-2 text-2xl font-semibold">{copy.workspace}</div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <CompactRows copy={copy} />
+              <InsightCard copy={copy} disclosure={disclosure} />
+            </div>
+          </div>
+        </div>
+        {!reduced ? <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-[#5886ff] via-[#ff50a6] to-[#ff9040]" /> : null}
+      </div>
+    </div>
+  );
+}
+
+function BeigeEditorialHero({
+  copy,
+  disclosure,
+}: {
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  return (
+    <div className="relative mx-auto w-full max-w-[630px]">
+      <div className="relative overflow-hidden rounded-[2rem] border border-[#d8c8b2] bg-[#f7f1e6] p-7 text-[#1d1813] shadow-[0_24px_70px_rgba(70,52,30,0.16)]">
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(29,24,19,0.045)_1px,transparent_1px),linear-gradient(rgba(29,24,19,0.035)_1px,transparent_1px)] bg-[size:44px_44px]" />
+        <div className="relative grid min-h-[520px] grid-cols-[0.82fr_1.18fr] gap-5">
+          <div className="flex flex-col justify-between border-r border-[#d8c8b2] pr-5">
+            <div>
+              <div className="text-2xs uppercase tracking-[0.28em] text-[#7a6a58]">
+                {copy.termLabel}
+              </div>
+              <h2 className="mt-5 text-5xl font-semibold leading-[0.95] tracking-tight">
+                {copy.title}
+              </h2>
+            </div>
+            <BrandSeal className="h-48 w-48" markClassName="text-[#1d1813]" />
+          </div>
+          <div className="space-y-5">
+            <div className="rounded-[1.5rem] border border-[#d8c8b2] bg-[#fff9ef]/76 p-5">
+              <div className="text-2xs uppercase tracking-[0.24em] text-[#7a6a58]">
+                {copy.profileLabel}
+              </div>
+              <div className="mt-2 text-lg font-semibold">{copy.profileMeta}</div>
+            </div>
+            <CompactRows copy={copy} />
+            <InsightCard copy={copy} disclosure={disclosure} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CommandMinimalHero({
+  copy,
+  disclosure,
+}: {
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  return (
+    <div className="relative mx-auto w-full max-w-[640px]">
+      <div className="relative rounded-[1.4rem] border border-[color:var(--landing-border)] bg-white p-4 shadow-[var(--landing-shadow-elevated)]">
+        <div className="grid min-h-[520px] grid-cols-[84px_1fr] gap-4">
+          <div className="flex flex-col items-center justify-between rounded-[1rem] border border-[color:var(--landing-border)] bg-[#fbfcfd] py-4">
+            <BrandSeal className="h-14 w-14" />
+            <div className="flex flex-col gap-2">
+              {copy.sections.slice(0, 4).map((section) => (
+                <span key={section} className="h-2 w-8 rounded-full bg-[color:var(--landing-border-strong)]" />
+              ))}
+            </div>
+            <StatusDot status="success" pulse />
+          </div>
+          <div className="grid grid-rows-[auto_1fr_auto] gap-4">
+            <div className="flex items-center justify-between rounded-[1rem] border border-[color:var(--landing-border)] px-5 py-4">
+              <div>
+                <div className="text-2xs uppercase tracking-[0.24em] text-[var(--landing-subtle)]">
+                  {copy.workspace}
+                </div>
+                <div className="mt-1 text-2xl font-semibold">{copy.title}</div>
+              </div>
+              <div className="rounded-full border border-[color:var(--landing-border)] px-3 py-1.5 text-2xs uppercase tracking-[0.18em] text-[var(--landing-muted)]">
+                {copy.statusReady}
+              </div>
+            </div>
+            <CompactRows copy={copy} />
+            <InsightCard copy={copy} disclosure={disclosure} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
