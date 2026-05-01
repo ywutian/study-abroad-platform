@@ -1,0 +1,2953 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-01T01:06:28.950160+00:00",
+    "source": "UCOP Freshman admission by discipline",
+    "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+    "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+    "records": 101,
+    "campuses": [
+      "UCB",
+      "UCD",
+      "UCI",
+      "UCLA",
+      "UCM",
+      "UCR",
+      "UCSB",
+      "UCSC",
+      "UCSD"
+    ],
+    "cycleYear": 2025,
+    "notes": "Rates are broad discipline applicant/admit rates from official UC Information Center. UC warns major choice is generally not a factor for freshman admission and disciplines group multiple majors/CIP codes."
+  },
+  "programRates": [
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Architecture",
+      "programName": "Architecture",
+      "cipCode": "04.0901",
+      "applicants": 2865,
+      "admits": 222,
+      "acceptanceRateEstimate": 7.75,
+      "formula": "222/2865",
+      "admitGpaRange25To75": "4.14 - 4.30",
+      "enrolleeGpaRange25To75": "4.12 - 4.29",
+      "yieldRate": 55.41,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.129824+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 8925,
+      "admits": 2256,
+      "acceptanceRateEstimate": 25.28,
+      "formula": "2256/8925",
+      "admitGpaRange25To75": "4.06 - 4.27",
+      "enrolleeGpaRange25To75": "4.00 - 4.25",
+      "yieldRate": 43.97,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.129912+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 7102,
+      "admits": 323,
+      "acceptanceRateEstimate": 4.55,
+      "formula": "323/7102",
+      "admitGpaRange25To75": "4.20 - 4.30",
+      "enrolleeGpaRange25To75": "4.19 - 4.30",
+      "yieldRate": 56.04,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.129983+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 9750,
+      "admits": 629,
+      "acceptanceRateEstimate": 6.45,
+      "formula": "629/9750",
+      "admitGpaRange25To75": "4.20 - 4.29",
+      "enrolleeGpaRange25To75": "4.18 - 4.29",
+      "yieldRate": 62.96,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130046+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 25025,
+      "admits": 1788,
+      "acceptanceRateEstimate": 7.14,
+      "formula": "1788/25025",
+      "admitGpaRange25To75": "4.20 - 4.30",
+      "enrolleeGpaRange25To75": "4.18 - 4.29",
+      "yieldRate": 56.04,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130080+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 19316,
+      "admits": 3114,
+      "acceptanceRateEstimate": 16.12,
+      "formula": "3114/19316",
+      "admitGpaRange25To75": "4.16 - 4.29",
+      "enrolleeGpaRange25To75": "4.11 - 4.28",
+      "yieldRate": 37.28,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130104+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 6498,
+      "admits": 835,
+      "acceptanceRateEstimate": 12.85,
+      "formula": "835/6498",
+      "admitGpaRange25To75": "4.16 - 4.29",
+      "enrolleeGpaRange25To75": "4.09 - 4.28",
+      "yieldRate": 38.44,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130126+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 12109,
+      "admits": 1993,
+      "acceptanceRateEstimate": 16.46,
+      "formula": "1993/12109",
+      "admitGpaRange25To75": "4.18 - 4.29",
+      "enrolleeGpaRange25To75": "4.14 - 4.28",
+      "yieldRate": 47.42,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130147+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Admin",
+      "programName": "Public Administration",
+      "cipCode": "44.0401",
+      "applicants": 278,
+      "admits": 39,
+      "acceptanceRateEstimate": 14.03,
+      "formula": "39/278",
+      "admitGpaRange25To75": "4.08 - 4.26",
+      "enrolleeGpaRange25To75": "4.07 - 4.25",
+      "yieldRate": 41.03,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130168+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Health",
+      "programName": "Public Health",
+      "cipCode": "51.2201",
+      "applicants": 3415,
+      "admits": 74,
+      "acceptanceRateEstimate": 2.17,
+      "formula": "74/3415",
+      "admitGpaRange25To75": "4.16 - 4.29",
+      "enrolleeGpaRange25To75": "4.04 - 4.25",
+      "yieldRate": 40.54,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130188+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 20627,
+      "admits": 1758,
+      "acceptanceRateEstimate": 8.52,
+      "formula": "1758/20627",
+      "admitGpaRange25To75": "4.15 - 4.29",
+      "enrolleeGpaRange25To75": "4.09 - 4.27",
+      "yieldRate": 44.82,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130208+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Berkeley",
+      "campusCode": "UCB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 10920,
+      "admits": 1329,
+      "acceptanceRateEstimate": 12.17,
+      "formula": "1329/10920",
+      "admitGpaRange25To75": "4.11 - 4.28",
+      "enrolleeGpaRange25To75": "4.06 - 4.25",
+      "yieldRate": 55.15,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:20.130228+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Architecture",
+      "programName": "Architecture",
+      "cipCode": "04.0901",
+      "applicants": 526,
+      "admits": 130,
+      "acceptanceRateEstimate": 24.71,
+      "formula": "130/526",
+      "admitGpaRange25To75": "4.03 - 4.25",
+      "enrolleeGpaRange25To75": "3.85 - 4.21",
+      "yieldRate": 9.23,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179676+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 6530,
+      "admits": 3437,
+      "acceptanceRateEstimate": 52.63,
+      "formula": "3437/6530",
+      "admitGpaRange25To75": "3.94 - 4.24",
+      "enrolleeGpaRange25To75": "3.78 - 4.12",
+      "yieldRate": 11.38,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179711+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 9308,
+      "admits": 2426,
+      "acceptanceRateEstimate": 26.06,
+      "formula": "2426/9308",
+      "admitGpaRange25To75": "4.00 - 4.25",
+      "enrolleeGpaRange25To75": "3.90 - 4.20",
+      "yieldRate": 13.4,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179734+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 4893,
+      "admits": 946,
+      "acceptanceRateEstimate": 19.33,
+      "formula": "946/4893",
+      "admitGpaRange25To75": "4.20 - 4.30",
+      "enrolleeGpaRange25To75": "4.20 - 4.28",
+      "yieldRate": 7.82,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179755+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Education",
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "applicants": 354,
+      "admits": 185,
+      "acceptanceRateEstimate": 52.26,
+      "formula": "185/354",
+      "admitGpaRange25To75": "3.79 - 4.21",
+      "enrolleeGpaRange25To75": "3.74 - 4.04",
+      "yieldRate": 20.0,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179776+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 17866,
+      "admits": 6935,
+      "acceptanceRateEstimate": 38.82,
+      "formula": "6935/17866",
+      "admitGpaRange25To75": "4.08 - 4.28",
+      "enrolleeGpaRange25To75": "4.00 - 4.27",
+      "yieldRate": 11.72,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179796+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 25418,
+      "admits": 12732,
+      "acceptanceRateEstimate": 50.09,
+      "formula": "12732/25418",
+      "admitGpaRange25To75": "4.03 - 4.27",
+      "enrolleeGpaRange25To75": "3.96 - 4.22",
+      "yieldRate": 19.85,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179815+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other Health Science",
+      "programName": "Nursing / Health Science",
+      "cipCode": "51.0000",
+      "applicants": 533,
+      "admits": 309,
+      "acceptanceRateEstimate": 57.97,
+      "formula": "309/533",
+      "admitGpaRange25To75": "4.05 - 4.25",
+      "enrolleeGpaRange25To75": "4.04 - 4.25",
+      "yieldRate": 18.45,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179834+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 5808,
+      "admits": 2871,
+      "acceptanceRateEstimate": 49.43,
+      "formula": "2871/5808",
+      "admitGpaRange25To75": "4.00 - 4.25",
+      "enrolleeGpaRange25To75": "3.81 - 4.13",
+      "yieldRate": 13.86,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179853+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 6245,
+      "admits": 3758,
+      "acceptanceRateEstimate": 60.18,
+      "formula": "3758/6245",
+      "admitGpaRange25To75": "4.00 - 4.26",
+      "enrolleeGpaRange25To75": "3.87 - 4.19",
+      "yieldRate": 11.55,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179872+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Admin",
+      "programName": "Public Administration",
+      "cipCode": "44.0401",
+      "applicants": 118,
+      "admits": 90,
+      "acceptanceRateEstimate": 76.27,
+      "formula": "90/118",
+      "admitGpaRange25To75": "3.83 - 4.21",
+      "enrolleeGpaRange25To75": "3.63 - 3.95",
+      "yieldRate": 16.67,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179891+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 18584,
+      "admits": 8775,
+      "acceptanceRateEstimate": 47.22,
+      "formula": "8775/18584",
+      "admitGpaRange25To75": "4.00 - 4.24",
+      "enrolleeGpaRange25To75": "3.85 - 4.14",
+      "yieldRate": 13.89,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179910+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Davis",
+      "campusCode": "UCD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 6805,
+      "admits": 3079,
+      "acceptanceRateEstimate": 45.25,
+      "formula": "3079/6805",
+      "admitGpaRange25To75": "3.96 - 4.21",
+      "enrolleeGpaRange25To75": "3.82 - 4.13",
+      "yieldRate": 16.34,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:21.179928+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 7179,
+      "admits": 2454,
+      "acceptanceRateEstimate": 34.18,
+      "formula": "2454/7179",
+      "admitGpaRange25To75": "3.93 - 4.23",
+      "enrolleeGpaRange25To75": "3.80 - 4.11",
+      "yieldRate": 16.22,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224331+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 17907,
+      "admits": 2893,
+      "acceptanceRateEstimate": 16.16,
+      "formula": "2893/17907",
+      "admitGpaRange25To75": "4.08 - 4.28",
+      "enrolleeGpaRange25To75": "4.05 - 4.27",
+      "yieldRate": 12.17,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224369+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 6794,
+      "admits": 1874,
+      "acceptanceRateEstimate": 27.58,
+      "formula": "1874/6794",
+      "admitGpaRange25To75": "4.17 - 4.29",
+      "enrolleeGpaRange25To75": "4.14 - 4.28",
+      "yieldRate": 16.6,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224394+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Education",
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "applicants": 2018,
+      "admits": 721,
+      "acceptanceRateEstimate": 35.73,
+      "formula": "721/2018",
+      "admitGpaRange25To75": "4.00 - 4.25",
+      "enrolleeGpaRange25To75": "4.00 - 4.20",
+      "yieldRate": 19.14,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224416+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 20276,
+      "admits": 5387,
+      "acceptanceRateEstimate": 26.57,
+      "formula": "5387/20276",
+      "admitGpaRange25To75": "4.15 - 4.29",
+      "enrolleeGpaRange25To75": "4.12 - 4.29",
+      "yieldRate": 19.03,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224437+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 18556,
+      "admits": 5620,
+      "acceptanceRateEstimate": 30.29,
+      "formula": "5620/18556",
+      "admitGpaRange25To75": "4.12 - 4.29",
+      "enrolleeGpaRange25To75": "4.07 - 4.27",
+      "yieldRate": 15.8,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224458+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 4376,
+      "admits": 1424,
+      "acceptanceRateEstimate": 32.54,
+      "formula": "1424/4376",
+      "admitGpaRange25To75": "4.07 - 4.27",
+      "enrolleeGpaRange25To75": "4.00 - 4.22",
+      "yieldRate": 11.87,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224489+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 6811,
+      "admits": 3739,
+      "acceptanceRateEstimate": 54.9,
+      "formula": "3739/6811",
+      "admitGpaRange25To75": "4.02 - 4.26",
+      "enrolleeGpaRange25To75": "3.93 - 4.20",
+      "yieldRate": 15.41,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224519+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Health",
+      "programName": "Public Health",
+      "cipCode": "51.2201",
+      "applicants": 3164,
+      "admits": 1159,
+      "acceptanceRateEstimate": 36.63,
+      "formula": "1159/3164",
+      "admitGpaRange25To75": "4.08 - 4.25",
+      "enrolleeGpaRange25To75": "4.00 - 4.21",
+      "yieldRate": 23.55,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224539+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 20261,
+      "admits": 6409,
+      "acceptanceRateEstimate": 31.63,
+      "formula": "6409/20261",
+      "admitGpaRange25To75": "4.00 - 4.25",
+      "enrolleeGpaRange25To75": "3.93 - 4.20",
+      "yieldRate": 16.45,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224557+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Irvine",
+      "campusCode": "UCI",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 8383,
+      "admits": 3221,
+      "acceptanceRateEstimate": 38.42,
+      "formula": "3221/8383",
+      "admitGpaRange25To75": "3.93 - 4.20",
+      "enrolleeGpaRange25To75": "3.87 - 4.14",
+      "yieldRate": 30.7,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:22.224577+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 14569,
+      "admits": 1295,
+      "acceptanceRateEstimate": 8.89,
+      "formula": "1295/14569",
+      "admitGpaRange25To75": "4.04 - 4.28",
+      "enrolleeGpaRange25To75": "4.00 - 4.27",
+      "yieldRate": 51.35,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.239867+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 13196,
+      "admits": 1146,
+      "acceptanceRateEstimate": 8.68,
+      "formula": "1146/13196",
+      "admitGpaRange25To75": "4.19 - 4.30",
+      "enrolleeGpaRange25To75": "4.16 - 4.30",
+      "yieldRate": 49.74,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.239900+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 6803,
+      "admits": 498,
+      "acceptanceRateEstimate": 7.32,
+      "formula": "498/6803",
+      "admitGpaRange25To75": "4.25 - 4.30",
+      "enrolleeGpaRange25To75": "4.23 - 4.32",
+      "yieldRate": 27.71,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.239925+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Education",
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "applicants": 1244,
+      "admits": 98,
+      "acceptanceRateEstimate": 7.88,
+      "formula": "98/1244",
+      "admitGpaRange25To75": "4.13 - 4.28",
+      "enrolleeGpaRange25To75": "4.12 - 4.28",
+      "yieldRate": 58.16,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.239946+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 23911,
+      "admits": 1591,
+      "acceptanceRateEstimate": 6.65,
+      "formula": "1591/23911",
+      "admitGpaRange25To75": "4.25 - 4.32",
+      "enrolleeGpaRange25To75": "4.25 - 4.32",
+      "yieldRate": 40.67,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.239966+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 23700,
+      "admits": 3121,
+      "acceptanceRateEstimate": 13.17,
+      "formula": "3121/23700",
+      "admitGpaRange25To75": "4.21 - 4.30",
+      "enrolleeGpaRange25To75": "4.21 - 4.30",
+      "yieldRate": 53.09,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.239986+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other Health Science",
+      "programName": "Nursing / Health Science",
+      "cipCode": "51.0000",
+      "applicants": 2886,
+      "admits": 303,
+      "acceptanceRateEstimate": 10.5,
+      "formula": "303/2886",
+      "admitGpaRange25To75": "4.20 - 4.30",
+      "enrolleeGpaRange25To75": "4.17 - 4.30",
+      "yieldRate": 55.78,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.240016+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 4579,
+      "admits": 613,
+      "acceptanceRateEstimate": 13.39,
+      "formula": "613/4579",
+      "admitGpaRange25To75": "4.21 - 4.30",
+      "enrolleeGpaRange25To75": "4.20 - 4.30",
+      "yieldRate": 49.43,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.240034+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 12894,
+      "admits": 1895,
+      "acceptanceRateEstimate": 14.7,
+      "formula": "1895/12894",
+      "admitGpaRange25To75": "4.22 - 4.30",
+      "enrolleeGpaRange25To75": "4.22 - 4.30",
+      "yieldRate": 40.58,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.240053+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Admin",
+      "programName": "Public Administration",
+      "cipCode": "44.0401",
+      "applicants": 876,
+      "admits": 127,
+      "acceptanceRateEstimate": 14.5,
+      "formula": "127/876",
+      "admitGpaRange25To75": "4.20 - 4.29",
+      "enrolleeGpaRange25To75": "4.21 - 4.29",
+      "yieldRate": 36.22,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.240072+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 24248,
+      "admits": 2220,
+      "acceptanceRateEstimate": 9.16,
+      "formula": "2220/24248",
+      "admitGpaRange25To75": "4.19 - 4.30",
+      "enrolleeGpaRange25To75": "4.17 - 4.30",
+      "yieldRate": 51.4,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.240091+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Los Angeles",
+      "campusCode": "UCLA",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 10486,
+      "admits": 721,
+      "acceptanceRateEstimate": 6.88,
+      "formula": "721/10486",
+      "admitGpaRange25To75": "4.16 - 4.30",
+      "enrolleeGpaRange25To75": "4.13 - 4.30",
+      "yieldRate": 49.93,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:23.240109+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 1625,
+      "admits": 1476,
+      "acceptanceRateEstimate": 90.83,
+      "formula": "1476/1625",
+      "admitGpaRange25To75": "3.50 - 4.08",
+      "enrolleeGpaRange25To75": "3.28 - 3.74",
+      "yieldRate": 3.18,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351108+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 3674,
+      "admits": 3382,
+      "acceptanceRateEstimate": 92.05,
+      "formula": "3382/3674",
+      "admitGpaRange25To75": "3.45 - 4.06",
+      "enrolleeGpaRange25To75": "3.26 - 3.95",
+      "yieldRate": 3.64,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351142+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 11565,
+      "admits": 11206,
+      "acceptanceRateEstimate": 96.9,
+      "formula": "11206/11565",
+      "admitGpaRange25To75": "3.69 - 4.21",
+      "enrolleeGpaRange25To75": "3.33 - 3.93",
+      "yieldRate": 5.38,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351166+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 10012,
+      "admits": 9646,
+      "acceptanceRateEstimate": 96.34,
+      "formula": "9646/10012",
+      "admitGpaRange25To75": "3.62 - 4.18",
+      "enrolleeGpaRange25To75": "3.30 - 3.93",
+      "yieldRate": 4.54,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351187+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 3176,
+      "admits": 2909,
+      "acceptanceRateEstimate": 91.59,
+      "formula": "2909/3176",
+      "admitGpaRange25To75": "3.48 - 4.11",
+      "enrolleeGpaRange25To75": "3.26 - 3.87",
+      "yieldRate": 2.58,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351207+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 3227,
+      "admits": 3008,
+      "acceptanceRateEstimate": 93.21,
+      "formula": "3008/3227",
+      "admitGpaRange25To75": "3.66 - 4.20",
+      "enrolleeGpaRange25To75": "3.15 - 3.80",
+      "yieldRate": 3.22,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351227+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Health",
+      "programName": "Public Health",
+      "cipCode": "51.2201",
+      "applicants": 2452,
+      "admits": 2313,
+      "acceptanceRateEstimate": 94.33,
+      "formula": "2313/2452",
+      "admitGpaRange25To75": "3.45 - 4.08",
+      "enrolleeGpaRange25To75": "3.32 - 4.00",
+      "yieldRate": 3.93,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351245+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 8622,
+      "admits": 8049,
+      "acceptanceRateEstimate": 93.35,
+      "formula": "8049/8622",
+      "admitGpaRange25To75": "3.47 - 4.08",
+      "enrolleeGpaRange25To75": "3.18 - 3.79",
+      "yieldRate": 3.09,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351264+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Merced",
+      "campusCode": "UCM",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 5013,
+      "admits": 4576,
+      "acceptanceRateEstimate": 91.28,
+      "formula": "4576/5013",
+      "admitGpaRange25To75": "3.40 - 4.02",
+      "enrolleeGpaRange25To75": "3.23 - 3.82",
+      "yieldRate": 5.66,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:24.351283+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 5364,
+      "admits": 4847,
+      "acceptanceRateEstimate": 90.36,
+      "formula": "4847/5364",
+      "admitGpaRange25To75": "3.46 - 4.06",
+      "enrolleeGpaRange25To75": "3.26 - 3.81",
+      "yieldRate": 8.64,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.524864+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 8228,
+      "admits": 7448,
+      "acceptanceRateEstimate": 90.52,
+      "formula": "7448/8228",
+      "admitGpaRange25To75": "3.45 - 4.05",
+      "enrolleeGpaRange25To75": "3.33 - 3.88",
+      "yieldRate": 14.98,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.524904+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 5068,
+      "admits": 4111,
+      "acceptanceRateEstimate": 81.12,
+      "formula": "4111/5068",
+      "admitGpaRange25To75": "3.96 - 4.25",
+      "enrolleeGpaRange25To75": "3.73 - 4.08",
+      "yieldRate": 5.74,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.524928+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Education",
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "applicants": 1488,
+      "admits": 1284,
+      "acceptanceRateEstimate": 86.29,
+      "formula": "1284/1488",
+      "admitGpaRange25To75": "3.41 - 4.00",
+      "enrolleeGpaRange25To75": "3.32 - 3.73",
+      "yieldRate": 13.01,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.524949+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 11480,
+      "admits": 9615,
+      "acceptanceRateEstimate": 83.75,
+      "formula": "9615/11480",
+      "admitGpaRange25To75": "3.84 - 4.22",
+      "enrolleeGpaRange25To75": "3.66 - 4.01",
+      "yieldRate": 10.32,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.524969+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 15719,
+      "admits": 13023,
+      "acceptanceRateEstimate": 82.85,
+      "formula": "13023/15719",
+      "admitGpaRange25To75": "3.85 - 4.22",
+      "enrolleeGpaRange25To75": "3.68 - 4.04",
+      "yieldRate": 11.35,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.524989+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 187,
+      "admits": 160,
+      "acceptanceRateEstimate": 85.56,
+      "formula": "160/187",
+      "admitGpaRange25To75": "3.59 - 4.15",
+      "enrolleeGpaRange25To75": "3.41 - 3.51",
+      "yieldRate": 3.12,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.525010+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 3035,
+      "admits": 2687,
+      "acceptanceRateEstimate": 88.53,
+      "formula": "2687/3035",
+      "admitGpaRange25To75": "3.69 - 4.20",
+      "enrolleeGpaRange25To75": "3.45 - 3.88",
+      "yieldRate": 8.08,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.525029+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Admin",
+      "programName": "Public Administration",
+      "cipCode": "44.0401",
+      "applicants": 1639,
+      "admits": 1527,
+      "acceptanceRateEstimate": 93.17,
+      "formula": "1527/1639",
+      "admitGpaRange25To75": "3.50 - 4.12",
+      "enrolleeGpaRange25To75": "3.24 - 3.74",
+      "yieldRate": 8.06,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.525049+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 14902,
+      "admits": 13379,
+      "acceptanceRateEstimate": 89.78,
+      "formula": "13379/14902",
+      "admitGpaRange25To75": "3.53 - 4.09",
+      "enrolleeGpaRange25To75": "3.33 - 3.81",
+      "yieldRate": 11.2,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.525068+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Riverside",
+      "campusCode": "UCR",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 3753,
+      "admits": 3231,
+      "acceptanceRateEstimate": 86.09,
+      "formula": "3231/3753",
+      "admitGpaRange25To75": "3.44 - 4.00",
+      "enrolleeGpaRange25To75": "3.28 - 3.69",
+      "yieldRate": 13.31,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:25.525088+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 10271,
+      "admits": 3619,
+      "acceptanceRateEstimate": 35.24,
+      "formula": "3619/10271",
+      "admitGpaRange25To75": "4.03 - 4.26",
+      "enrolleeGpaRange25To75": "3.92 - 4.23",
+      "yieldRate": 10.61,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659057+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 383,
+      "admits": 162,
+      "acceptanceRateEstimate": 42.3,
+      "formula": "162/383",
+      "admitGpaRange25To75": "4.11 - 4.29",
+      "enrolleeGpaRange25To75": "4.00 - 4.26",
+      "yieldRate": 16.67,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659094+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 5865,
+      "admits": 1989,
+      "acceptanceRateEstimate": 33.91,
+      "formula": "1989/5865",
+      "admitGpaRange25To75": "4.19 - 4.29",
+      "enrolleeGpaRange25To75": "4.14 - 4.29",
+      "yieldRate": 9.15,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659120+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 12679,
+      "admits": 2694,
+      "acceptanceRateEstimate": 21.25,
+      "formula": "2694/12679",
+      "admitGpaRange25To75": "4.21 - 4.30",
+      "enrolleeGpaRange25To75": "4.18 - 4.30",
+      "yieldRate": 12.55,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659143+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 21225,
+      "admits": 8909,
+      "acceptanceRateEstimate": 41.97,
+      "formula": "8909/21225",
+      "admitGpaRange25To75": "4.11 - 4.29",
+      "enrolleeGpaRange25To75": "4.04 - 4.28",
+      "yieldRate": 11.95,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659166+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 5201,
+      "admits": 1553,
+      "acceptanceRateEstimate": 29.86,
+      "formula": "1553/5201",
+      "admitGpaRange25To75": "4.04 - 4.27",
+      "enrolleeGpaRange25To75": "4.00 - 4.25",
+      "yieldRate": 16.55,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659188+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 13760,
+      "admits": 7558,
+      "acceptanceRateEstimate": 54.93,
+      "formula": "7558/13760",
+      "admitGpaRange25To75": "4.11 - 4.28",
+      "enrolleeGpaRange25To75": "4.00 - 4.26",
+      "yieldRate": 10.48,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659210+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 33738,
+      "admits": 12720,
+      "acceptanceRateEstimate": 37.7,
+      "formula": "12720/33738",
+      "admitGpaRange25To75": "4.07 - 4.28",
+      "enrolleeGpaRange25To75": "4.00 - 4.26",
+      "yieldRate": 13.4,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659232+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Barbara",
+      "campusCode": "UCSB",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 7051,
+      "admits": 2890,
+      "acceptanceRateEstimate": 40.99,
+      "formula": "2890/7051",
+      "admitGpaRange25To75": "4.00 - 4.26",
+      "enrolleeGpaRange25To75": "3.97 - 4.25",
+      "yieldRate": 11.45,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:26.659253+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 5945,
+      "admits": 4022,
+      "acceptanceRateEstimate": 67.65,
+      "formula": "4022/5945",
+      "admitGpaRange25To75": "3.80 - 4.17",
+      "enrolleeGpaRange25To75": "3.65 - 4.04",
+      "yieldRate": 6.99,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850510+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 6725,
+      "admits": 4465,
+      "acceptanceRateEstimate": 66.39,
+      "formula": "4465/6725",
+      "admitGpaRange25To75": "3.79 - 4.15",
+      "enrolleeGpaRange25To75": "3.70 - 4.00",
+      "yieldRate": 7.12,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850544+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 5952,
+      "admits": 4725,
+      "acceptanceRateEstimate": 79.39,
+      "formula": "4725/5952",
+      "admitGpaRange25To75": "3.92 - 4.25",
+      "enrolleeGpaRange25To75": "3.79 - 4.10",
+      "yieldRate": 11.98,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850571+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Education",
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "applicants": 536,
+      "admits": 348,
+      "acceptanceRateEstimate": 64.93,
+      "formula": "348/536",
+      "admitGpaRange25To75": "3.76 - 4.16",
+      "enrolleeGpaRange25To75": "3.63 - 4.00",
+      "yieldRate": 7.18,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850593+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 5134,
+      "admits": 3961,
+      "acceptanceRateEstimate": 77.15,
+      "formula": "3961/5134",
+      "admitGpaRange25To75": "3.85 - 4.22",
+      "enrolleeGpaRange25To75": "3.72 - 4.04",
+      "yieldRate": 12.5,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850615+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 14258,
+      "admits": 10997,
+      "acceptanceRateEstimate": 77.13,
+      "formula": "10997/14258",
+      "admitGpaRange25To75": "3.86 - 4.22",
+      "enrolleeGpaRange25To75": "3.72 - 4.04",
+      "yieldRate": 10.51,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850770+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 3822,
+      "admits": 2939,
+      "acceptanceRateEstimate": 76.9,
+      "formula": "2939/3822",
+      "admitGpaRange25To75": "3.81 - 4.17",
+      "enrolleeGpaRange25To75": "3.72 - 4.06",
+      "yieldRate": 23.99,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850812+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 3148,
+      "admits": 2506,
+      "acceptanceRateEstimate": 79.61,
+      "formula": "2506/3148",
+      "admitGpaRange25To75": "3.88 - 4.25",
+      "enrolleeGpaRange25To75": "3.70 - 4.10",
+      "yieldRate": 8.42,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850840+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Admin",
+      "programName": "Public Administration",
+      "cipCode": "44.0401",
+      "applicants": 192,
+      "admits": 124,
+      "acceptanceRateEstimate": 64.58,
+      "formula": "124/192",
+      "admitGpaRange25To75": "3.83 - 4.16",
+      "enrolleeGpaRange25To75": "4.00 - 4.11",
+      "yieldRate": 4.84,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850864+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 10831,
+      "admits": 7308,
+      "acceptanceRateEstimate": 67.47,
+      "formula": "7308/10831",
+      "admitGpaRange25To75": "3.81 - 4.18",
+      "enrolleeGpaRange25To75": "3.68 - 4.03",
+      "yieldRate": 3.76,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850886+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, Santa Cruz",
+      "campusCode": "UCSC",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 9848,
+      "admits": 6727,
+      "acceptanceRateEstimate": 68.31,
+      "formula": "6727/9848",
+      "admitGpaRange25To75": "3.82 - 4.20",
+      "enrolleeGpaRange25To75": "3.73 - 4.04",
+      "yieldRate": 8.31,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:27.850908+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Architecture",
+      "programName": "Architecture",
+      "cipCode": "04.0901",
+      "applicants": 495,
+      "admits": 153,
+      "acceptanceRateEstimate": 30.91,
+      "formula": "153/495",
+      "admitGpaRange25To75": "4.00 - 4.25",
+      "enrolleeGpaRange25To75": "3.93 - 4.26",
+      "yieldRate": 21.57,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.949912+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Arts & Humanities",
+      "programName": "Arts and Humanities",
+      "cipCode": "24.0101",
+      "applicants": 7812,
+      "admits": 2699,
+      "acceptanceRateEstimate": 34.55,
+      "formula": "2699/7812",
+      "admitGpaRange25To75": "4.06 - 4.26",
+      "enrolleeGpaRange25To75": "4.00 - 4.24",
+      "yieldRate": 14.52,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.949945+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Business",
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 9040,
+      "admits": 1937,
+      "acceptanceRateEstimate": 21.43,
+      "formula": "1937/9040",
+      "admitGpaRange25To75": "4.13 - 4.29",
+      "enrolleeGpaRange25To75": "4.10 - 4.26",
+      "yieldRate": 17.6,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.949968+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Computer Science",
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "applicants": 10785,
+      "admits": 2143,
+      "acceptanceRateEstimate": 19.87,
+      "formula": "2143/10785",
+      "admitGpaRange25To75": "4.16 - 4.30",
+      "enrolleeGpaRange25To75": "4.12 - 4.29",
+      "yieldRate": 27.11,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.949988+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Education",
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "applicants": 1100,
+      "admits": 336,
+      "acceptanceRateEstimate": 30.55,
+      "formula": "336/1100",
+      "admitGpaRange25To75": "4.08 - 4.25",
+      "enrolleeGpaRange25To75": "3.95 - 4.19",
+      "yieldRate": 15.48,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950008+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Engineering",
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 20205,
+      "admits": 3938,
+      "acceptanceRateEstimate": 19.49,
+      "formula": "3938/20205",
+      "admitGpaRange25To75": "4.17 - 4.30",
+      "enrolleeGpaRange25To75": "4.12 - 4.29",
+      "yieldRate": 27.27,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950028+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Life Sciences",
+      "programName": "Biology / Life Sciences",
+      "cipCode": "26.0101",
+      "applicants": 25093,
+      "admits": 8177,
+      "acceptanceRateEstimate": 32.59,
+      "formula": "8177/25093",
+      "admitGpaRange25To75": "4.15 - 4.29",
+      "enrolleeGpaRange25To75": "4.11 - 4.28",
+      "yieldRate": 21.43,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950047+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other Health Science",
+      "programName": "Nursing / Health Science",
+      "cipCode": "51.0000",
+      "applicants": 2939,
+      "admits": 815,
+      "acceptanceRateEstimate": 27.73,
+      "formula": "815/2939",
+      "admitGpaRange25To75": "4.09 - 4.26",
+      "enrolleeGpaRange25To75": "4.04 - 4.24",
+      "yieldRate": 20.25,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950065+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Other/Interdisciplinary",
+      "programName": "Interdisciplinary Studies",
+      "cipCode": "30.0000",
+      "applicants": 10626,
+      "admits": 3246,
+      "acceptanceRateEstimate": 30.55,
+      "formula": "3246/10626",
+      "admitGpaRange25To75": "4.09 - 4.28",
+      "enrolleeGpaRange25To75": "4.04 - 4.26",
+      "yieldRate": 20.33,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950084+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Physical Sciences/Math",
+      "programName": "Mathematics / Physical Sciences",
+      "cipCode": "27.0101",
+      "applicants": 12511,
+      "admits": 4924,
+      "acceptanceRateEstimate": 39.36,
+      "formula": "4924/12511",
+      "admitGpaRange25To75": "4.13 - 4.29",
+      "enrolleeGpaRange25To75": "4.07 - 4.26",
+      "yieldRate": 20.74,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950102+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Public Health",
+      "programName": "Public Health",
+      "cipCode": "51.2201",
+      "applicants": 1760,
+      "admits": 305,
+      "acceptanceRateEstimate": 17.33,
+      "formula": "305/1760",
+      "admitGpaRange25To75": "4.08 - 4.26",
+      "enrolleeGpaRange25To75": "4.00 - 4.27",
+      "yieldRate": 14.43,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950121+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Social Sciences",
+      "programName": "Social Sciences",
+      "cipCode": "45.0101",
+      "applicants": 24878,
+      "admits": 6501,
+      "acceptanceRateEstimate": 26.13,
+      "formula": "6501/24878",
+      "admitGpaRange25To75": "4.08 - 4.28",
+      "enrolleeGpaRange25To75": "4.02 - 4.25",
+      "yieldRate": 19.41,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950139+00:00"
+      }
+    },
+    {
+      "schoolName": "University of California, San Diego",
+      "campusCode": "UCSD",
+      "cycleYear": 2025,
+      "source": "UCOP_FRESHMAN_ADMISSION_BY_DISCIPLINE",
+      "sourceUrl": "https://www.universityofcalifornia.edu/about-us/information-center/freshman-admission-discipline",
+      "tableauUrl": "https://visualizedata.ucop.edu/t/Public/views/Freshmanadmissionbydiscipline/Bybroaddiscipline",
+      "officialNote": "UC Information Center Freshman admission by discipline dashboard; broad discipline groupings of majors/CIP codes.",
+      "broadDiscipline": "Undeclared",
+      "programName": "Undeclared",
+      "cipCode": "24.0102",
+      "applicants": 9433,
+      "admits": 3281,
+      "acceptanceRateEstimate": 34.78,
+      "formula": "3281/9433",
+      "admitGpaRange25To75": "4.06 - 4.27",
+      "enrolleeGpaRange25To75": "4.00 - 4.23",
+      "yieldRate": 12.92,
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_TABLEAU_DASHBOARD",
+        "validatorCount": 2,
+        "validators": [
+          "official_ucop_tableau_source",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:06:28.950157+00:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-01T01:10:14.117970+00:00",
+    "source": "PURDUE_CLASS_PROFILE_2025",
+    "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+    "records": 14,
+    "cycleYear": 2025,
+    "notes": "Official Purdue admissions profile. Rates are official published admit rates but raw applicant/admit counts are not published on the page, so imported as OFFICIAL_REAL_LEGACY rather than strict VERIFIED_REAL."
+  },
+  "programRates": [
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Agriculture",
+      "cipCode": "01.0000",
+      "acceptanceRateEstimate": 55.8,
+      "broadDiscipline": "College of Agriculture"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "acceptanceRateEstimate": 70.5,
+      "broadDiscipline": "College of Education"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "acceptanceRateEstimate": 34.7,
+      "broadDiscipline": "College of Engineering"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Health and Human Sciences",
+      "cipCode": "51.0000",
+      "acceptanceRateEstimate": 48.7,
+      "broadDiscipline": "College of Health and Human Sciences"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Liberal Arts",
+      "cipCode": "24.0101",
+      "acceptanceRateEstimate": 53.9,
+      "broadDiscipline": "College of Liberal Arts"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Pharmacy",
+      "cipCode": "51.2001",
+      "acceptanceRateEstimate": 73.9,
+      "broadDiscipline": "College of Pharmacy"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Science",
+      "cipCode": "40.0101",
+      "acceptanceRateEstimate": 46.0,
+      "broadDiscipline": "College of Science"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Veterinary Medicine",
+      "cipCode": "51.2401",
+      "acceptanceRateEstimate": 30.2,
+      "broadDiscipline": "College of Veterinary Medicine"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "acceptanceRateEstimate": 45.9,
+      "broadDiscipline": "Daniels School of Business"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Exploratory Studies / Undeclared",
+      "cipCode": "24.0102",
+      "acceptanceRateEstimate": 68.4,
+      "broadDiscipline": "Exploratory Studies"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Polytechnic / Technology",
+      "cipCode": "15.0000",
+      "acceptanceRateEstimate": 47.1,
+      "broadDiscipline": "Polytechnic Institute"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Professional Flight Technology / Aviation",
+      "cipCode": "49.0102",
+      "acceptanceRateEstimate": 7.7,
+      "broadDiscipline": "Competitive Major: Flight"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "acceptanceRateEstimate": 42.9,
+      "broadDiscipline": "Competitive Major: Computer Science"
+    },
+    {
+      "schoolName": "Purdue University",
+      "cycleYear": 2025,
+      "source": "PURDUE_CLASS_PROFILE_2025",
+      "sourceUrl": "https://admission.purdue.edu/become-student/class-profile/",
+      "officialNote": "Purdue Undergraduate Admissions Class Profile, Enrollment by College or School and Enrollment by Competitive Majors.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:10:14.117475+00:00"
+      },
+      "programName": "Nursing",
+      "cipCode": "51.3801",
+      "acceptanceRateEstimate": 28.9,
+      "broadDiscipline": "Competitive Major: Nursing"
+    }
+  ]
+}

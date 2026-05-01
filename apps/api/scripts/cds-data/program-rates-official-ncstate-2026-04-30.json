@@ -1,0 +1,220 @@
+{
+  "_meta": {
+    "source": "NC State High School Counselor Information Packet",
+    "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+    "generatedAt": "2026-05-01T01:21:15.121Z",
+    "records": 10
+  },
+  "programRates": [
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Agriculture and Life Sciences",
+      "programName": "College of Agriculture and Life Sciences",
+      "cipCode": "NCSU-COLLEGE-01",
+      "applicants": 3474,
+      "acceptanceRateEstimate": 45.4,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Design",
+      "programName": "College of Design",
+      "cipCode": "NCSU-COLLEGE-02",
+      "applicants": 1346,
+      "acceptanceRateEstimate": 23,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Education",
+      "programName": "College of Education",
+      "cipCode": "NCSU-COLLEGE-03",
+      "applicants": 861,
+      "acceptanceRateEstimate": 47.2,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Engineering",
+      "programName": "College of Engineering",
+      "cipCode": "NCSU-COLLEGE-04",
+      "applicants": 12433,
+      "acceptanceRateEstimate": 41.7,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Humanities and Social Sciences",
+      "programName": "College of Humanities and Social Sciences",
+      "cipCode": "NCSU-COLLEGE-05",
+      "applicants": 6852,
+      "acceptanceRateEstimate": 32.9,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Natural Resources",
+      "programName": "College of Natural Resources",
+      "cipCode": "NCSU-COLLEGE-06",
+      "applicants": 2054,
+      "acceptanceRateEstimate": 42.1,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "College of Sciences",
+      "programName": "College of Sciences",
+      "cipCode": "NCSU-COLLEGE-07",
+      "applicants": 6551,
+      "acceptanceRateEstimate": 47.5,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "Poole College of Management",
+      "programName": "Poole College of Management",
+      "cipCode": "NCSU-COLLEGE-08",
+      "applicants": 6994,
+      "acceptanceRateEstimate": 33,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "University College",
+      "programName": "University College",
+      "cipCode": "NCSU-COLLEGE-09",
+      "applicants": 2855,
+      "acceptanceRateEstimate": 64.5,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "North Carolina State University",
+      "campusCode": "NCSU",
+      "cycleYear": 2024,
+      "source": "OFFICIAL_PROGRAM_PROFILE",
+      "sourceUrl": "https://admissions.ncsu.edu/wp-content/uploads/sites/30/2024/09/WEB-2025-UGA-Digital-HS-Packet.pdf",
+      "officialNote": "NC State High School Counselor Information Packet, 2024 First-Year Admitted Student Data by College. The PDF publishes applications and admit rate by college; admitted counts are not separately listed.",
+      "broadDiscipline": "Wilson College of Textiles",
+      "programName": "Wilson College of Textiles",
+      "cipCode": "NCSU-COLLEGE-10",
+      "applicants": 506,
+      "acceptanceRateEstimate": 75.7,
+      "formula": "official admit rate published by college; admits count not separately published",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_pdf_source"],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    }
+  ]
+}
