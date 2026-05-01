@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
@@ -89,10 +89,13 @@ export class CounselorBackfillService {
   private readonly logger = new Logger(CounselorBackfillService.name);
 
   constructor(
+    @Inject(PrismaService)
     private readonly prisma: PrismaService,
+    @Inject(CounselorEngineService)
     private readonly counselor: CounselorEngineService,
+    @Inject(PredictionTransformerService)
     private readonly transformer: PredictionTransformerService,
-    @Optional() private readonly redis?: RedisService,
+    @Optional() @Inject(RedisService) private readonly redis?: RedisService,
   ) {}
 
   async runBackfill(

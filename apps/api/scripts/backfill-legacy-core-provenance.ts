@@ -73,7 +73,7 @@ function shouldPatch(entry: Record<string, unknown>): boolean {
   if (isHeuristic(entry) || alreadyReal(entry)) return false;
   const status = String(entry.realDataStatus ?? '').toUpperCase();
   if (!status) return true;
-  return TERMINAL_STATUSES.has(status);
+  return !TERMINAL_STATUSES.has(status);
 }
 
 function patchFor(entry: Record<string, unknown>) {
@@ -95,8 +95,7 @@ function patchFor(entry: Record<string, unknown>) {
         : source === 'LEGACY_DB_VALUE'
           ? 'LEGACY_DB'
           : 'OFFICIAL_OR_SCRAPED_LEGACY',
-    confidence:
-      typeof entry.confidence === 'number' ? entry.confidence : 0.7,
+    confidence: typeof entry.confidence === 'number' ? entry.confidence : 0.7,
     validatorCount:
       typeof entry.validatorCount === 'number' ? entry.validatorCount : 0,
     verifiedAt: new Date().toISOString(),

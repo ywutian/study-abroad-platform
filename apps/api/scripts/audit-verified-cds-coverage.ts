@@ -23,6 +23,14 @@ function parseArgs() {
 }
 
 function valueFor(school: Record<string, unknown>, field: string) {
+  if (field === 'programRates') {
+    const count = record(school._count).programs;
+    return typeof count === 'number' ? count : null;
+  }
+  if (field === 'cdsAdmitBands') {
+    const count = record(school._count).cdsAdmitBands;
+    return typeof count === 'number' ? count : null;
+  }
   const value = school[field];
   if (value instanceof Prisma.Decimal) return value.toNumber();
   return value ?? null;
@@ -56,6 +64,7 @@ function fieldBucket(provenance: Record<string, unknown> | null) {
   if (
     realDataStatus === 'OFFICIAL_BLANK' ||
     realDataStatus === 'OFFICIAL_BLANK_SECTION' ||
+    realDataStatus === 'NO_PUBLIC_PROGRAM_DATA' ||
     realDataStatus === 'NO_PUBLIC_REAL_DATA' ||
     source === 'PERMANENT_HEURISTIC' ||
     Boolean(provenance?.permanent)
@@ -70,7 +79,20 @@ function fieldBucket(provenance: Record<string, unknown> | null) {
     return 'blocked';
   }
   if (realDataStatus === 'MANUAL_REVIEW') return 'manualReview';
+  if (
+    realDataStatus === 'PENDING' ||
+    realDataStatus === 'SOURCE_FOUND' ||
+    realDataStatus === 'TERMINAL_CANDIDATE' ||
+    realDataStatus === 'SUSPICIOUS' ||
+    source === 'SOURCE_FOUND' ||
+    source === 'TERMINAL_CANDIDATE' ||
+    source === 'SUSPICIOUS'
+  ) {
+    return 'manualReview';
+  }
   if (tier === 'INFERRED' || source.includes('HEURISTIC')) return 'heuristic';
+  if (realDataStatus === 'OFFICIAL_REAL_LEGACY' && source)
+    return 'legacyOfficialUnverified';
   if (tier === 'OFFICIAL' && source) return 'legacyOfficialUnverified';
   return 'unknown';
 }
@@ -87,7 +109,18 @@ async function main() {
       acceptanceRate: true,
       intlAcceptanceRate: true,
       oosAcceptanceRate: true,
+      sat25: true,
+      sat75: true,
+      gpaDistribution: true,
+      edAcceptanceRate: true,
+      eaAcceptanceRate: true,
       metadata: true,
+      _count: {
+        select: {
+          cdsAdmitBands: true,
+          programs: true,
+        },
+      },
     },
     orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
   });
@@ -98,7 +131,15 @@ async function main() {
     const provenance = record(meta.provenance);
     const fields = args.fields.map((field) => {
       const prov = record(provenance[field]);
-      const bucket = fieldBucket(prov);
+      const rawValue = valueFor(school as Record<string, unknown>, field);
+      let bucket = fieldBucket(prov);
+      if (
+        bucket === 'unknown' &&
+        (field === 'programRates' || field === 'cdsAdmitBands') &&
+        Number(rawValue ?? 0) > 0
+      ) {
+        bucket = 'verifiedReal';
+      }
       fieldTotals[field] ??= {
         verifiedReal: 0,
         partialReal: 0,
@@ -110,12 +151,12 @@ async function main() {
         unknown: 0,
         missing: 0,
       };
-      const filled = valueFor(school as Record<string, unknown>, field) != null;
+      const filled = rawValue != null;
       if (!filled) fieldTotals[field].missing += 1;
       fieldTotals[field][bucket] += 1;
       return {
         field,
-        value: valueFor(school as Record<string, unknown>, field),
+        value: rawValue,
         bucket,
         source: prov.source ?? null,
         tier: prov.tier ?? null,

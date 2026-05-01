@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import type {
@@ -22,7 +22,7 @@ export interface AnchorResolution {
 
 @Injectable()
 export class AnchorResolverService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async resolveAnchor(
     profile: ProfileInput,

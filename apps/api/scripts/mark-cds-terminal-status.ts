@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 type TerminalStatus =
   | 'OFFICIAL_BLANK'
   | 'OFFICIAL_BLOCKED'
+  | 'NO_PUBLIC_PROGRAM_DATA'
   | 'NO_PUBLIC_REAL_DATA'
   | 'MANUAL_REVIEW'
   | 'PERMANENT_HEURISTIC';
@@ -15,6 +16,7 @@ type TerminalStatus =
 const TERMINAL_STATUSES = new Set<TerminalStatus>([
   'OFFICIAL_BLANK',
   'OFFICIAL_BLOCKED',
+  'NO_PUBLIC_PROGRAM_DATA',
   'NO_PUBLIC_REAL_DATA',
   'MANUAL_REVIEW',
   'PERMANENT_HEURISTIC',
@@ -85,6 +87,7 @@ function sourceFor(status: TerminalStatus) {
 
 function tierFor(status: TerminalStatus) {
   if (status === 'PERMANENT_HEURISTIC') return 'INFERRED';
+  if (status === 'NO_PUBLIC_PROGRAM_DATA') return 'UNAVAILABLE';
   return 'UNAVAILABLE';
 }
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import { AnchorResolverService } from './anchor-resolver.service';
@@ -103,8 +103,11 @@ export class CounselorEngineService {
   private readonly logger = new Logger(CounselorEngineService.name);
 
   constructor(
+    @Inject(PrismaService)
     private readonly prisma: PrismaService,
-    @Optional() private readonly anchorResolver?: AnchorResolverService,
+    @Optional()
+    @Inject(AnchorResolverService)
+    private readonly anchorResolver?: AnchorResolverService,
   ) {}
 
   /**
