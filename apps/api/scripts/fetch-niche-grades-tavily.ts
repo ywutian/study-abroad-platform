@@ -93,8 +93,8 @@ function extractGrade(text: string, keywords: string[]): string | null {
   for (const kw of keywords) {
     const idx = lower.indexOf(kw.toLowerCase());
     if (idx === -1) continue;
-    // Look at 200 chars around the keyword for a grade
-    const window = text.slice(Math.max(0, idx - 50), idx + 200);
+    // Look at 200 chars AFTER and 200 chars BEFORE the keyword for a grade
+    const window = text.slice(Math.max(0, idx - 200), idx + 200);
     const matches = [...window.matchAll(GRADE_RE)];
     for (const m of matches) {
       if (VALID_GRADES.has(m[1])) return m[1];
@@ -105,10 +105,21 @@ function extractGrade(text: string, keywords: string[]): string | null {
 
 // Broad extraction: scan the entire combined text for grade-adjacent patterns
 function extractGradeBroad(text: string, keywords: string[]): string | null {
-  // Pattern: keyword followed closely by grade, e.g. "Overall Grade A+" or "Safety: A"
+  // Pattern 1: keyword followed closely by grade, e.g. "Overall Grade A+" or "Safety: A"
   for (const kw of keywords) {
     const re = new RegExp(
       kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^A-Z]{0,30}([ABCDF][+-]?)',
+      'i',
+    );
+    const m = text.match(re);
+    if (m && VALID_GRADES.has(m[1])) return m[1];
+  }
+  // Pattern 2: "grade X+. Keyword" — Niche's structured format where grade precedes the label
+  // e.g. "grade A+. Overall Grade" or "grade B. Safety"
+  for (const kw of keywords) {
+    const re = new RegExp(
+      'grade\\s+([ABCDF][+-]?)\\.?\\s*' +
+        kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
       'i',
     );
     const m = text.match(re);
@@ -200,7 +211,23 @@ async function main() {
         continue;
       }
 
-      const grades = extractAllGrades(nicheResults);
+      let grades = extractAllGrades(nicheResults);
+
+      // Fallback: if no grades found, try a more targeted query that pulls the academics subpage
+      // (Niche formats grades as "grade A+. Overall Grade" on subpages — Tavily sometimes only returns main page)
+      if (!grades.overall && !grades.safety && !grades.life && !grades.food) {
+        const fallbackQuery = `"${school.name}" site:niche.com/colleges overall grade academics`;
+        const fallbackResults = await tavilySearch(
+          fallbackQuery,
+          nextKey(keys),
+        );
+        const fallbackNiche = fallbackResults.filter((r) =>
+          r.url.includes('niche.com/colleges/'),
+        );
+        if (fallbackNiche.length > 0) {
+          grades = extractAllGrades([...nicheResults, ...fallbackNiche]);
+        }
+      }
 
       if (!grades.overall && !grades.safety && !grades.life && !grades.food) {
         console.log(
