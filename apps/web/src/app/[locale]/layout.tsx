@@ -9,6 +9,9 @@ import {
   COLOR_PALETTES,
   COLOR_PALETTE_STORAGE_KEY,
   DEFAULT_COLOR_PALETTE,
+  DEFAULT_HERO_VISUAL_ID,
+  HERO_VISUAL_IDS,
+  HERO_VISUAL_STORAGE_KEY,
   getThemeCssText,
 } from '@study-abroad/shared';
 import { locales } from '@/lib/i18n/config';
@@ -102,6 +105,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var k=${JSON.stringify(COLOR_PALETTE_STORAGE_KEY)};var p=localStorage.getItem(k);var d=document.documentElement;var a=${JSON.stringify(COLOR_PALETTES)};var m={warm:${JSON.stringify(DEFAULT_COLOR_PALETTE)},slate:"linear-indigo"};var n=m[p]||p;if(a.indexOf(n)>-1){d.setAttribute('data-color-palette',n)}else{d.setAttribute('data-color-palette',${JSON.stringify(DEFAULT_COLOR_PALETTE)})}}catch(e){}})()`,
+          }}
+        />
+        <script
+          id="hero-visual-init"
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k=${JSON.stringify(HERO_VISUAL_STORAGE_KEY)};var v=localStorage.getItem(k);var d=document.documentElement;var a=${JSON.stringify(HERO_VISUAL_IDS)};if(a.indexOf(v)>-1){d.setAttribute('data-hero-visual',v)}else{d.setAttribute('data-hero-visual',${JSON.stringify(DEFAULT_HERO_VISUAL_ID)})}}catch(e){}})()`,
           }}
         />
       </head>

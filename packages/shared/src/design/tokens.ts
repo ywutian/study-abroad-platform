@@ -702,6 +702,94 @@ export type ColorThemeDefinition = {
 
 export type ThemePackageDefinition = ColorThemeDefinition;
 
+export const HERO_VISUAL_IDS = [
+  'matrix-premium',
+  'deer-moon-monolith',
+  'framer-orbit',
+  'lovable-aura',
+  'beige-editorial',
+  'command-minimal',
+] as const;
+
+export type HeroVisualId = (typeof HERO_VISUAL_IDS)[number];
+
+export type HeroVisualDefinition = {
+  id: HeroVisualId;
+  labelZh: string;
+  labelEn: string;
+  descriptionZh: string;
+  descriptionEn: string;
+  tone: 'product' | 'brand' | 'dark-tech' | 'aura' | 'editorial' | 'minimal';
+};
+
+export const DEFAULT_HERO_VISUAL_ID: HeroVisualId = 'matrix-premium';
+export const HERO_VISUAL_STORAGE_KEY = 'lumni-hero-visual';
+
+export const HERO_VISUAL_DEFINITIONS = [
+  {
+    id: 'matrix-premium',
+    labelZh: '矩阵高级版',
+    labelEn: 'Matrix Premium',
+    descriptionZh: '默认玻璃产品工作台，鹿月作为精致品牌章。',
+    descriptionEn: 'Default glass product workbench with the deer-moon as a refined brand seal.',
+    tone: 'product',
+  },
+  {
+    id: 'deer-moon-monolith',
+    labelZh: '鹿月黑金章',
+    labelEn: 'Deer Moon Monolith',
+    descriptionZh: '黑色鹿角托月品牌装置，悬浮说明产品能力。',
+    descriptionEn: 'Black deer-and-moon brand monolith with product context on hover.',
+    tone: 'brand',
+  },
+  {
+    id: 'framer-orbit',
+    labelZh: 'Framer 光轨',
+    labelEn: 'Framer Orbit',
+    descriptionZh: '局部暗色科技光轨，页面整体仍保持清亮。',
+    descriptionEn: 'Localized dark-tech orbit visuals while the page stays bright.',
+    tone: 'dark-tech',
+  },
+  {
+    id: 'lovable-aura',
+    labelZh: 'Lovable 光晕',
+    labelEn: 'Lovable Aura',
+    descriptionZh: '蓝粉橙柔和光晕，降低可爱感并保持企业质感。',
+    descriptionEn: 'Soft blue, rose, and orange aura with a polished enterprise feel.',
+    tone: 'aura',
+  },
+  {
+    id: 'beige-editorial',
+    labelZh: '米色杂志',
+    labelEn: 'Beige Editorial',
+    descriptionZh: 'Claude-like 米色、高级留白和黑金细节。',
+    descriptionEn: 'Claude-like beige, editorial whitespace, and black-gold details.',
+    tone: 'editorial',
+  },
+  {
+    id: 'command-minimal',
+    labelZh: '极简指挥台',
+    labelEn: 'Command Minimal',
+    descriptionZh: '最稳重的企业级 cockpit，信息密度更克制。',
+    descriptionEn: 'The most restrained enterprise cockpit with calmer information density.',
+    tone: 'minimal',
+  },
+] as const satisfies readonly HeroVisualDefinition[];
+
+export function parseHeroVisualId(value: unknown): HeroVisualId {
+  if (typeof value !== 'string') return DEFAULT_HERO_VISUAL_ID;
+  return HERO_VISUAL_IDS.includes(value as HeroVisualId)
+    ? (value as HeroVisualId)
+    : DEFAULT_HERO_VISUAL_ID;
+}
+
+export function getHeroVisualDefinition(id: HeroVisualId): HeroVisualDefinition {
+  return (
+    HERO_VISUAL_DEFINITIONS.find((definition) => definition.id === id) ??
+    HERO_VISUAL_DEFINITIONS[0]
+  );
+}
+
 export type ThemeStyleMeta = {
   typographyPreset: ThemeTypographyPreset;
   radiusPreset: ThemeRadiusPreset;
