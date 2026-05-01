@@ -60,9 +60,10 @@ const SCORECARD_FIELDS = [
   // Campus
   'latest.student.size',
   'latest.student.demographics.student_faculty_ratio',
-  // Loan default (2yr CDR)
-  'latest.repayment.1_yr_repayment.completers.rate',
-  'latest.repayment.3_yr_repayment.completers.rate',
+  // Loan default (3yr cohort default rate — official CDR)
+  'latest.repayment.3_yr_default_rate',
+  // School type
+  'school.ownership',
 ].join(',');
 
 interface ScorecardResult {
@@ -83,8 +84,8 @@ interface ScorecardResult {
   'latest.student.retention_rate.four_year.full_time': number | null;
   'latest.student.size': number | null;
   'latest.student.demographics.student_faculty_ratio': number | null;
-  'latest.repayment.1_yr_repayment.completers.rate': number | null;
-  'latest.repayment.3_yr_repayment.completers.rate': number | null;
+  'latest.repayment.3_yr_default_rate': number | null;
+  'school.ownership': number | null; // 1=public, 2=private nonprofit, 3=private for-profit
 }
 
 function toPercent(v: number | null): number | null {
@@ -102,9 +103,19 @@ function toInt(v: number | null): number | null {
 function buildUpdate(sc: ScorecardResult): Prisma.SchoolUpdateInput {
   const update: Prisma.SchoolUpdateInput = {};
 
-  // Salary 6yr
+  // Salary 6yr post-grad
   const salary6yr = sc['latest.earnings.6_yrs_after_entry.median'];
   if (salary6yr && salary6yr > 0) update.salary6YrPostGrad = toInt(salary6yr);
+
+  // Salary 10yr (avgSalary)
+  const salary10yr = sc['latest.earnings.10_yrs_after_entry.median'];
+  if (salary10yr && salary10yr > 0) update.avgSalary = toInt(salary10yr);
+
+  // School type: private = ownership 2 (nonprofit) or 3 (for-profit)
+  const ownership = sc['school.ownership'];
+  if (ownership !== null && ownership !== undefined) {
+    update.isPrivate = ownership !== 1;
+  }
 
   // Average net price
   const netPrice =
@@ -133,13 +144,11 @@ function buildUpdate(sc: ScorecardResult): Prisma.SchoolUpdateInput {
     update.monthlyLoanPayment = Math.round(medianDebt / 120);
   }
 
-  // Loan default rate — use 3yr repayment failure rate as proxy
-  // (official CDR not directly in Scorecard v2, but 1yr/3yr repayment rates are)
-  // loanDefaultRate here = 1 - 3yr_repayment_rate (those NOT repaying)
-  const repay3yr = sc['latest.repayment.3_yr_repayment.completers.rate'];
-  if (repay3yr !== null && repay3yr >= 0) {
-    const defaultProxy = (1 - repay3yr) * 100;
-    update.loanDefaultRate = (Math.round(defaultProxy * 100) / 100) as any;
+  // Loan default rate — official 3-year cohort default rate (CDR)
+  // Scorecard returns as decimal (0-1); store as percent (0-100)
+  const cdr3yr = sc['latest.repayment.3_yr_default_rate'];
+  if (cdr3yr !== null && cdr3yr !== undefined) {
+    update.loanDefaultRate = (Math.round(cdr3yr * 10000) / 100) as any; // 2 decimal places
   }
 
   // Total enrollment
@@ -223,6 +232,7 @@ async function main() {
       { roomAndBoard: null },
       { retentionRate: null },
       { studentFacultyRatio: null },
+      { loanDefaultRate: null },
     ];
   }
 
