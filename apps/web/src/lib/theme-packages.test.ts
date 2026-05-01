@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   COLOR_THEME_CATEGORIES,
   COLOR_THEME_DEFINITIONS,
+  EXPERIMENTAL_COLOR_PALETTE_IDS,
+  FEATURED_COLOR_PALETTE_IDS,
   getThemeColors,
   getThemeCssText,
   getThemePreview,
@@ -64,6 +66,27 @@ describe('global theme packages', () => {
     });
 
     expect(new Set(signatures).size).toBeGreaterThanOrEqual(145);
+  });
+
+  it('curates a premium default set while keeping the full library searchable', () => {
+    expect(FEATURED_COLOR_PALETTE_IDS.length).toBeGreaterThanOrEqual(12);
+    expect(FEATURED_COLOR_PALETTE_IDS.length).toBeLessThanOrEqual(16);
+    expect(new Set(FEATURED_COLOR_PALETTE_IDS).size).toBe(FEATURED_COLOR_PALETTE_IDS.length);
+
+    const featuredDefinitions = FEATURED_COLOR_PALETTE_IDS.map((id) =>
+      COLOR_THEME_DEFINITIONS.find((theme) => theme.id === id)
+    );
+    expect(featuredDefinitions.every((theme) => theme?.featured)).toBe(true);
+
+    const experimentalSet = new Set(EXPERIMENTAL_COLOR_PALETTE_IDS);
+    expect(EXPERIMENTAL_COLOR_PALETTE_IDS.length).toBeGreaterThanOrEqual(8);
+    expect(FEATURED_COLOR_PALETTE_IDS.some((id) => experimentalSet.has(id))).toBe(false);
+
+    const nonFeaturedTheme = COLOR_THEME_DEFINITIONS.find(
+      (theme) => !theme.featured && !theme.experimental
+    );
+    expect(nonFeaturedTheme).toBeDefined();
+    expect(COLOR_THEME_DEFINITIONS.map((theme) => theme.id)).toContain(nonFeaturedTheme!.id);
   });
 
   it('gives every category a distinct enterprise accent sample', () => {
