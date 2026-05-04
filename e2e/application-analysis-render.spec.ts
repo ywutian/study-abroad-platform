@@ -7,6 +7,14 @@ const VIEWPORTS = [
 ] as const;
 
 async function openFixture(page: Page, caseId: string, locale: string) {
+  await page.route('**/api/v1/auth/refresh', async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Unauthenticated' }),
+    });
+  });
+
   await page.goto(`/${locale}/qa/application-analysis/${caseId}`, {
     waitUntil: 'commit',
     timeout: 90_000,
