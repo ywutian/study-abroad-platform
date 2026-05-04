@@ -3,3 +3,5 @@ node_modules
 .env
 
 /generated/prisma
+scripts/cds-data/*-ledger-*.json
+scripts/cds-data/*-worklist-*.json
