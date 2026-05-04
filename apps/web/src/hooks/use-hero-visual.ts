@@ -30,7 +30,9 @@ function subscribeDom(onChange: () => void) {
 
   const onStorage = (event: StorageEvent) => {
     if (event.key !== HERO_VISUAL_STORAGE_KEY && event.key !== null) return;
-    applyHeroVisual(parseHeroVisualId(event.newValue ?? localStorage.getItem(HERO_VISUAL_STORAGE_KEY)));
+    applyHeroVisual(
+      parseHeroVisualId(event.newValue ?? localStorage.getItem(HERO_VISUAL_STORAGE_KEY))
+    );
     onChange();
   };
 
@@ -43,7 +45,13 @@ function subscribeDom(onChange: () => void) {
 
 export function HeroVisualManager() {
   useEffect(() => {
-    applyHeroVisual(readFromStorage());
+    const next = readFromStorage();
+    applyHeroVisual(next);
+    try {
+      localStorage.setItem(HERO_VISUAL_STORAGE_KEY, next);
+    } catch {
+      /* quota / private mode */
+    }
   }, []);
 
   return null;

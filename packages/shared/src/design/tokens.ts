@@ -27,9 +27,9 @@ export const colors = {
     mutedForeground: '#6f665b',
     accent: '#f4e6c2',
     accentForeground: '#1d1813',
-    success: '#6f7b58',
+    success: '#5f6f4b',
     warning: '#b7832f',
-    error: '#b85c58',
+    error: '#a94844',
     info: '#6574ff',
     violet: '#6574ff',
     pink: '#e76f8a',
@@ -703,7 +703,8 @@ export type ColorThemeDefinition = {
 export type ThemePackageDefinition = ColorThemeDefinition;
 
 export const HERO_VISUAL_IDS = [
-  'matrix-premium',
+  'classic-matrix',
+  'command-center',
   'deer-moon-monolith',
   'framer-orbit',
   'lovable-aura',
@@ -719,20 +720,30 @@ export type HeroVisualDefinition = {
   labelEn: string;
   descriptionZh: string;
   descriptionEn: string;
-  tone: 'product' | 'brand' | 'dark-tech' | 'aura' | 'editorial' | 'minimal';
+  tone: 'classic' | 'command' | 'brand' | 'dark-tech' | 'aura' | 'editorial' | 'minimal';
 };
 
-export const DEFAULT_HERO_VISUAL_ID: HeroVisualId = 'matrix-premium';
+export const DEFAULT_HERO_VISUAL_ID: HeroVisualId = 'command-center';
 export const HERO_VISUAL_STORAGE_KEY = 'lumni-hero-visual';
 
 export const HERO_VISUAL_DEFINITIONS = [
   {
-    id: 'matrix-premium',
-    labelZh: '矩阵高级版',
-    labelEn: 'Matrix Premium',
-    descriptionZh: '默认玻璃产品工作台，鹿月作为精致品牌章。',
-    descriptionEn: 'Default glass product workbench with the deer-moon as a refined brand seal.',
-    tone: 'product',
+    id: 'classic-matrix',
+    labelZh: '旧版矩阵',
+    labelEn: 'Classic Matrix',
+    descriptionZh: '旧版高级截图风，浅冷白网格、玻璃矩阵和浮动 AI 卡片。',
+    descriptionEn:
+      'Classic premium screenshot style with pale grid, glass matrix, and floating AI cards.',
+    tone: 'classic',
+  },
+  {
+    id: 'command-center',
+    labelZh: '鹿月指挥台',
+    labelEn: 'Command Center',
+    descriptionZh: '新版鹿月品牌工作台，保留产品 cockpit 但降低整屏染色。',
+    descriptionEn:
+      'New deer-moon product cockpit with neutral surfaces and restrained brand accents.',
+    tone: 'command',
   },
   {
     id: 'deer-moon-monolith',
@@ -778,6 +789,7 @@ export const HERO_VISUAL_DEFINITIONS = [
 
 export function parseHeroVisualId(value: unknown): HeroVisualId {
   if (typeof value !== 'string') return DEFAULT_HERO_VISUAL_ID;
+  if (value === 'matrix-premium') return DEFAULT_HERO_VISUAL_ID;
   return HERO_VISUAL_IDS.includes(value as HeroVisualId)
     ? (value as HeroVisualId)
     : DEFAULT_HERO_VISUAL_ID;
@@ -785,8 +797,7 @@ export function parseHeroVisualId(value: unknown): HeroVisualId {
 
 export function getHeroVisualDefinition(id: HeroVisualId): HeroVisualDefinition {
   return (
-    HERO_VISUAL_DEFINITIONS.find((definition) => definition.id === id) ??
-    HERO_VISUAL_DEFINITIONS[0]
+    HERO_VISUAL_DEFINITIONS.find((definition) => definition.id === id) ?? HERO_VISUAL_DEFINITIONS[0]
   );
 }
 
@@ -2886,7 +2897,7 @@ export const EXPERIMENTAL_COLOR_PALETTE_IDS = COLOR_THEME_DEFINITION_LIST.filter
 
 export const COLOR_PALETTES = COLOR_THEME_DEFINITIONS.map((theme) => theme.id) as ColorPalette[];
 
-export const DEFAULT_COLOR_PALETTE: ColorPalette = 'lumni-warm';
+export const DEFAULT_COLOR_PALETTE: ColorPalette = 'cobalt-saas';
 
 const legacyColorPaletteAliases: Record<string, ColorPalette> = {
   warm: 'lumni-warm',
@@ -4194,6 +4205,8 @@ function createThemeAppearanceCssVars(
     '--theme-card-bg': `color-mix(in oklab, var(--ds-card) ${percent(surfaceAlpha)}, transparent)`,
     '--theme-popover-bg': `color-mix(in oklab, var(--ds-popover) ${percent(popoverAlpha)}, transparent)`,
     '--theme-control-bg': `color-mix(in oklab, var(--ds-background) ${percent(controlAlpha)}, var(--ds-card))`,
+    '--theme-control-hover-bg': `color-mix(in oklab, var(--ds-primary) ${percent(0.04 + colorPresence * 0.08)}, var(--theme-control-bg))`,
+    '--theme-control-selected-bg': `color-mix(in oklab, var(--ds-primary) ${percent(0.1 + colorPresence * 0.1)}, var(--ds-card))`,
     '--theme-border-strong-dynamic': `color-mix(in oklab, var(--ds-border-strong) ${borderBoost}, var(--ds-foreground))`,
     '--theme-brand-tint': `color-mix(in oklab, var(--ds-info) ${brandPresencePct}, var(--ds-card))`,
     '--theme-glow-1': `color-mix(in oklab, var(--ds-info) ${glowPct}, transparent)`,
@@ -4217,6 +4230,21 @@ function createThemeAppearanceCssVars(
     '--theme-button-default-fg': buttonForeground,
     '--theme-button-default-border':
       style.buttonPreset === 'brutal' ? 'var(--ds-foreground)' : 'var(--ds-primary)',
+    '--theme-button-primary-bg': 'var(--ds-primary)',
+    '--theme-button-primary-fg': 'var(--ds-primary-foreground)',
+    '--theme-button-primary-border': 'var(--ds-primary)',
+    '--theme-button-secondary-bg': `color-mix(in oklab, var(--ds-primary) ${percent(0.06 + colorPresence * 0.08)}, var(--theme-control-bg))`,
+    '--theme-button-secondary-fg': 'var(--ds-foreground)',
+    '--theme-button-secondary-border': `color-mix(in oklab, var(--ds-primary) ${percent(0.18 + colorPresence * 0.14)}, var(--ds-border))`,
+    '--theme-button-tertiary-bg': 'var(--theme-control-bg)',
+    '--theme-button-tertiary-fg': 'var(--ds-foreground)',
+    '--theme-button-tertiary-border': 'var(--ds-border)',
+    '--theme-button-danger-bg': 'var(--ds-destructive)',
+    '--theme-button-danger-fg': 'var(--ds-destructive-foreground)',
+    '--theme-button-warning-bg': 'var(--ds-warning)',
+    '--theme-button-warning-fg': 'var(--ds-warning-foreground)',
+    '--theme-button-success-bg': 'var(--ds-success)',
+    '--theme-button-success-fg': 'var(--ds-success-foreground)',
     '--theme-button-outline-bg': `color-mix(in oklab, var(--ds-card) ${percent(controlAlpha)}, transparent)`,
     '--theme-card-border-width': card.borderWidth,
     '--theme-card-shadow': shadows.card,
@@ -4246,6 +4274,8 @@ export const THEME_APPEARANCE_CSS_VAR_NAMES = [
   '--theme-card-bg',
   '--theme-popover-bg',
   '--theme-control-bg',
+  '--theme-control-hover-bg',
+  '--theme-control-selected-bg',
   '--theme-brand-tint',
   '--theme-border-strong-dynamic',
   '--theme-glow-1',
@@ -4268,6 +4298,21 @@ export const THEME_APPEARANCE_CSS_VAR_NAMES = [
   '--theme-button-default-bg',
   '--theme-button-default-fg',
   '--theme-button-default-border',
+  '--theme-button-primary-bg',
+  '--theme-button-primary-fg',
+  '--theme-button-primary-border',
+  '--theme-button-secondary-bg',
+  '--theme-button-secondary-fg',
+  '--theme-button-secondary-border',
+  '--theme-button-tertiary-bg',
+  '--theme-button-tertiary-fg',
+  '--theme-button-tertiary-border',
+  '--theme-button-danger-bg',
+  '--theme-button-danger-fg',
+  '--theme-button-warning-bg',
+  '--theme-button-warning-fg',
+  '--theme-button-success-bg',
+  '--theme-button-success-fg',
   '--theme-button-outline-bg',
   '--theme-card-border-width',
   '--theme-card-shadow',

@@ -61,11 +61,11 @@ describe('colors', () => {
     });
 
     it('has the correct success color', () => {
-      expect(colors.light.success).toBe('#6f7b58');
+      expect(colors.light.success).toBe('#5f6f4b');
     });
 
     it('has the correct error color', () => {
-      expect(colors.light.error).toBe('#b85c58');
+      expect(colors.light.error).toBe('#a94844');
     });
 
     it('has the correct warning color', () => {
