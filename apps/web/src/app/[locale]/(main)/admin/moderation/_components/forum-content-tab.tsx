@@ -221,26 +221,31 @@ export function ForumContentTab({ pageSize, onDeleteRequest }: ForumContentTabPr
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-10 w-10 md:h-8 md:w-8"
                             onClick={() => pinMutation.mutate(post.id)}
                             title={post.isPinned ? t('contentMod.unpin') : t('contentMod.pin')}
+                            aria-label={post.isPinned ? t('contentMod.unpin') : t('contentMod.pin')}
                           >
                             <Pin className={`h-4 w-4 ${post.isPinned ? 'text-blue-500' : ''}`} />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-10 w-10 md:h-8 md:w-8"
                             onClick={() => lockMutation.mutate(post.id)}
                             title={post.isLocked ? t('contentMod.unlock') : t('contentMod.lock')}
+                            aria-label={
+                              post.isLocked ? t('contentMod.unlock') : t('contentMod.lock')
+                            }
                           >
                             <Lock className={`h-4 w-4 ${post.isLocked ? 'text-amber-500' : ''}`} />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive"
+                            className="h-10 w-10 text-destructive md:h-8 md:w-8"
                             onClick={() => onDeleteRequest({ type: 'post', id: post.id })}
+                            aria-label={t('contentMod.deletePost')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

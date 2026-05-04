@@ -1,29 +1,30 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { isSafeUrl } from '@/lib/utils/url';
-import { useTranslations, useLocale } from 'next-intl';
+import { schoolRoutes } from '@study-abroad/shared';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Globe, GraduationCap, Loader2, Search, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
 import { RankingBadge } from '@/components/ui/ranking-badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { apiClient } from '@/lib/api';
-import { schoolRoutes } from '@study-abroad/shared';
-import { Search, GraduationCap, X, Loader2, Globe } from 'lucide-react';
-import { toast } from 'sonner';
-import { getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
+import { formatAcceptanceRate, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { type SchoolRanking } from '@/lib/utils/ranking';
+import { isSafeUrl } from '@/lib/utils/url';
 
 interface School {
   id: string;
@@ -154,6 +155,7 @@ export function SchoolSelector({
                 <button
                   onClick={() => toggleSchool(school)}
                   className="ml-1 rounded-full p-0.5 hover:bg-muted"
+                  aria-label={t('removeSelected', { school: getSchoolName(school, locale) })}
                 >
                   <X className="h-3 w-3" />
                 </button>

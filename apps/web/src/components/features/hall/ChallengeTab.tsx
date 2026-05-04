@@ -105,10 +105,9 @@ export function ChallengeTab() {
     refetch();
   }, [queryClient, refetch]);
 
+  const challengeSchools = Array.isArray(challenge?.schools) ? challenge.schools : [];
   const allGuessed =
-    challenge?.schools &&
-    challenge.schools.length > 0 &&
-    challenge.schools.every((s) => guesses[s.caseId]);
+    challengeSchools.length > 0 && challengeSchools.every((s) => guesses[s.caseId]);
 
   if (isLoading) {
     return (
@@ -130,7 +129,11 @@ export function ChallengeTab() {
     );
   }
 
-  const { applicantProfile } = challenge;
+  const applicantProfile = challenge.applicantProfile ?? {
+    activityCount: 0,
+    activityHighlights: [],
+  };
+  const schools = Array.isArray(challenge.schools) ? challenge.schools : [];
 
   return (
     <motion.div
@@ -251,10 +254,10 @@ export function ChallengeTab() {
       {/* Schools to Predict */}
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          {t('challenge.predictResults')} ({challenge.schools.length} {t('challenge.schools')})
+          {t('challenge.predictResults')} ({schools.length} {t('challenge.schools')})
         </h3>
 
-        {challenge.schools.map((school) => {
+        {schools.map((school) => {
           const schoolResult = result?.results.find((r) => r.caseId === school.caseId);
 
           return (

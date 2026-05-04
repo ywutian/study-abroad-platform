@@ -406,7 +406,7 @@ export default function ProfilePage() {
               <Button
                 onClick={handleSave}
                 disabled={m.updateMutation.isPending}
-                className="px-6 gap-2 bg-primary hover:opacity-90"
+                className="gap-2 px-6"
               >
                 <Save className="h-4 w-4" />
                 {m.updateMutation.isPending ? t('common.loading') : t('common.save')}

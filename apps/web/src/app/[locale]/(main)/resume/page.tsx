@@ -86,6 +86,7 @@ export default function ResumePage() {
     queryKey: ['resumes'],
     queryFn: () => apiClient.get<ResumeItem[]>(resumeRoutes.list()),
   });
+  const resumeItems = Array.isArray(resumes) ? resumes : [];
 
   const createMutation = useMutation({
     mutationFn: (dto: { title: string; type: ResumeType; importFromProfile: boolean }) =>
@@ -143,7 +144,9 @@ export default function ResumePage() {
             {t('new')}
           </Button>
         }
-        stats={resumes ? [{ label: tc('total'), value: resumes.length, icon: Layers }] : undefined}
+        stats={
+          resumes ? [{ label: tc('total'), value: resumeItems.length, icon: Layers }] : undefined
+        }
       />
 
       {isLoading ? (
@@ -158,7 +161,7 @@ export default function ResumePage() {
             </Card>
           ))}
         </div>
-      ) : !resumes || resumes.length === 0 ? (
+      ) : resumeItems.length === 0 ? (
         <EmptyState
           type="first-time"
           title={t('title')}
@@ -173,8 +176,9 @@ export default function ResumePage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {resumes.map((resume) => {
-            const TypeIcon = TYPE_ICONS[resume.type];
+          {resumeItems.map((resume) => {
+            const resumeType = resume.type ?? 'COLLEGE_APPLICATION';
+            const TypeIcon = TYPE_ICONS[resumeType];
             return (
               <Card
                 key={resume.id}
@@ -191,7 +195,7 @@ export default function ResumePage() {
                         <h3 className="text-sm font-medium truncate">
                           {resume.title || t('untitled')}
                         </h3>
-                        <p className="text-xs text-muted-foreground">{t(`types.${resume.type}`)}</p>
+                        <p className="text-xs text-muted-foreground">{t(`types.${resumeType}`)}</p>
                       </div>
                     </div>
 

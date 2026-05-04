@@ -4,7 +4,9 @@
  * 用于 SEO 优化，支持多种 schema.org 类型
  */
 
-import Script from 'next/script';
+'use client';
+
+import { useEffect, useMemo } from 'react';
 
 // 组织信息
 interface OrganizationSchema {
@@ -195,16 +197,33 @@ function generateSchema(data: SchemaType): object {
 }
 
 export function JsonLd({ data }: JsonLdProps) {
-  const schema = generateSchema(data);
+  const schema = useMemo(() => generateSchema(data), [data]);
+  const schemaText = useMemo(() => JSON.stringify(schema), [schema]);
 
-  return (
-    <Script
-      id={`json-ld-${data.type}`}
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      strategy="afterInteractive"
-    />
-  );
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      return;
+    }
+
+    const id = `json-ld-${data.type}`;
+    const existing = document.getElementById(id);
+    const script =
+      existing instanceof HTMLScriptElement ? existing : document.createElement('script');
+
+    script.id = id;
+    script.type = 'application/ld+json';
+    script.textContent = schemaText;
+
+    if (!existing) {
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      script.remove();
+    };
+  }, [data.type, schemaText]);
+
+  return null;
 }
 
 // 便捷组件

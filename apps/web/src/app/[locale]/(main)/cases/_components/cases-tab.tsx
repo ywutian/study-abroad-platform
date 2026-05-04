@@ -21,7 +21,7 @@ import { CaseCard, SubmitCaseDialog } from '@/components/features';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, CheckCircle, XCircle, Clock, Sparkles, X, BookOpen } from 'lucide-react';
+import { Search, Plus, CheckCircle, XCircle, Clock, Sparkles, BookOpen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTour, TOURS, getCasesTourSteps } from '@/components/features/onboarding/tour-provider';
 
@@ -86,7 +86,11 @@ export function CasesTab() {
     refetch,
   } = useQuery({
     queryKey: ['cases', filters],
-    queryFn: () => apiClient.get<any>(caseRoutes.list(), { params: filters as any }),
+    queryFn: () =>
+      apiClient.get<any>(caseRoutes.list(), {
+        params: filters as any,
+        suppressErrorToast: true,
+      }),
     retry: 2,
     staleTime: STALE_TIME.DYNAMIC,
     refetchOnWindowFocus: false,
@@ -116,7 +120,7 @@ export function CasesTab() {
       <AnimatePresence>
         {guideVisible && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={false}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="mb-4 overflow-hidden"
@@ -345,7 +349,7 @@ export function CasesTab() {
       {isLoading ? (
         <LoadingState variant="card" count={6} />
       ) : isError ? (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
           <Card className="overflow-hidden">
             <div className="h-1 bg-destructive" />
             <CardContent className="py-8">
@@ -368,7 +372,7 @@ export function CasesTab() {
             {caseItems.map((caseItem: any, index: number) => (
               <motion.div
                 key={caseItem.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
@@ -394,7 +398,7 @@ export function CasesTab() {
           </AnimatePresence>
         </div>
       ) : (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={false} animate={{ opacity: 1, y: 0 }}>
           <Card className="overflow-hidden">
             <div className="h-1 bg-success/50" />
             <CardContent className="py-10">

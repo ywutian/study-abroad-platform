@@ -36,6 +36,7 @@ import {
   MessageSquareWarning,
   Database,
   Key,
+  Palette,
   type LucideIcon,
 } from 'lucide-react';
 import { RoleBadge } from './role-badge';
@@ -239,6 +240,12 @@ export function AdminSidebar() {
           label: t('sidebar.auditLogs'),
           requiredPermission: 'audit:view',
         },
+        {
+          href: '/admin/theme-styles',
+          icon: Palette,
+          label: t('sidebar.themeStyles'),
+          minRole: 'ADMIN',
+        },
       ],
     },
     {
@@ -399,8 +406,10 @@ function SidebarGroup({
   return (
     <div className="mb-1">
       <button
+        type="button"
+        aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-3 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+        className="flex min-h-10 w-full items-center justify-between rounded-md px-3 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground/70 transition-colors hover:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:min-h-8"
       >
         {group.title}
         <ChevronDown

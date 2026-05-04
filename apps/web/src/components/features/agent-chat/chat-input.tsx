@@ -134,7 +134,7 @@ export function ChatInput({
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
+              className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground sm:h-9 sm:w-9"
               disabled={disabled || isLoading}
               aria-label={tAria('attachFile')}
             >
@@ -143,7 +143,7 @@ export function ChatInput({
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
+              className="h-10 w-10 rounded-full text-muted-foreground hover:text-foreground sm:h-9 sm:w-9"
               disabled={disabled || isLoading}
               aria-label={tAria('voiceInput')}
             >
@@ -237,6 +237,7 @@ export function ChatInput({
                     void handleSend();
                   }}
                   disabled={!hasContent || disabled}
+                  aria-label={tAria('sendMessage')}
                   className={cn(
                     'h-10 w-10 rounded-full transition-all duration-200',
                     hasContent

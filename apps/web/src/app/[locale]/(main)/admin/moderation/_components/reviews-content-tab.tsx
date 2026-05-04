@@ -151,9 +151,10 @@ export function ReviewsContentTab({ pageSize, onDeleteRequest }: ReviewsContentT
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-10 w-10 md:h-8 md:w-8"
                               onClick={() => unhideReviewMutation.mutate(review.id)}
                               title={t('contentMod.unhideReview')}
+                              aria-label={t('contentMod.unhideReview')}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -161,9 +162,10 @@ export function ReviewsContentTab({ pageSize, onDeleteRequest }: ReviewsContentT
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-10 w-10 md:h-8 md:w-8"
                               onClick={() => hideReviewMutation.mutate(review.id)}
                               title={t('contentMod.hideReview')}
+                              aria-label={t('contentMod.hideReview')}
                             >
                               <EyeOff className="h-4 w-4" />
                             </Button>
@@ -171,8 +173,9 @@ export function ReviewsContentTab({ pageSize, onDeleteRequest }: ReviewsContentT
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive"
+                            className="h-10 w-10 text-destructive md:h-8 md:w-8"
                             onClick={() => onDeleteRequest({ type: 'review', id: review.id })}
+                            aria-label={t('contentMod.deleteReview')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

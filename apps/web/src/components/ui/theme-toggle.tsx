@@ -1,10 +1,11 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
+import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Moon, Sun, Monitor } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useThemeTransition } from '@/hooks/use-theme-transition';
+
 import { useHydrated } from '@/hooks/use-hydration';
+import { useThemeTransition } from '@/hooks/use-theme-transition';
 import { cn } from '@/lib/utils';
 
 interface ThemeToggleProps {
@@ -30,6 +31,7 @@ export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) 
       )}
       aria-label={mounted ? (isDark ? t('switchToLight') : t('switchToDark')) : t('switchToDark')}
       suppressHydrationWarning
+      style={{ minHeight: 40, minWidth: 40 }}
     >
       <div className="relative w-5 h-5">
         {/* 在 mounted 之前显示一个占位符，避免 hydration 不匹配 */}

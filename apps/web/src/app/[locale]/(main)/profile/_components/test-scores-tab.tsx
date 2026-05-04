@@ -34,7 +34,7 @@ export function TestScoresTab({
           </CardTitle>
           <CardDescription>{t('profile.testScoresDesc')}</CardDescription>
         </div>
-        <Button onClick={onAddScore} className="gap-2 bg-primary hover:opacity-90">
+        <Button onClick={onAddScore} className="gap-2">
           <Plus className="h-4 w-4" />
           {t('profile.actions.addScore')}
         </Button>

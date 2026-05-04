@@ -129,7 +129,7 @@ export function ConversationsSection() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10 md:h-8 md:w-8"
                           onClick={() => setViewConvId(conv.id)}
                           aria-label={tAria('viewConversation')}
                         >

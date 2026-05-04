@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, BellRing, CheckCheck, Trash2, CheckCircle, Sparkles } from 'lucide-react';
@@ -33,6 +33,11 @@ export default function NotificationsPage() {
   const locale = useLocale();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
+  const [isClientReady, setIsClientReady] = useState(false);
+
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   // Fetch notifications
   const { data: notifications = [], isLoading } = useQuery({
@@ -50,6 +55,8 @@ export default function NotificationsPage() {
     refetchInterval: 30000,
   });
   const unreadCount = unreadData?.count || 0;
+  const displayNotifications = isClientReady ? notifications : [];
+  const displayUnreadCount = isClientReady ? unreadCount : 0;
 
   // Mark as read
   const markAsReadMutation = useMutation({
@@ -96,8 +103,11 @@ export default function NotificationsPage() {
   });
 
   const filteredNotifications = useMemo(
-    () => (activeTab === 'unread' ? notifications.filter((n) => !n.read) : notifications),
-    [notifications, activeTab]
+    () =>
+      activeTab === 'unread'
+        ? displayNotifications.filter((notification) => !notification.read)
+        : displayNotifications,
+    [displayNotifications, activeTab]
   );
 
   const grouped = useMemo(() => groupByDate(filteredNotifications), [filteredNotifications]);
@@ -112,11 +122,11 @@ export default function NotificationsPage() {
         icon={Bell}
         color="blue"
         stats={
-          unreadCount > 0
+          displayUnreadCount > 0
             ? [
                 {
                   label: t('tabs.unread'),
-                  value: unreadCount,
+                  value: displayUnreadCount,
                   icon: BellRing,
                 },
               ]
@@ -124,7 +134,7 @@ export default function NotificationsPage() {
         }
         actions={
           <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
+            {displayUnreadCount > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -135,7 +145,7 @@ export default function NotificationsPage() {
                 {t('markAllRead')}
               </Button>
             )}
-            {notifications.length > 0 && (
+            {displayNotifications.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -176,9 +186,9 @@ export default function NotificationsPage() {
           onClick={() => setActiveTab('all')}
         >
           {t('tabs.all')}
-          {notifications.length > 0 && (
+          {displayNotifications.length > 0 && (
             <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">
-              {notifications.length}
+              {displayNotifications.length}
             </Badge>
           )}
         </Button>
@@ -188,14 +198,14 @@ export default function NotificationsPage() {
           onClick={() => setActiveTab('unread')}
         >
           {t('tabs.unread')}
-          {unreadCount > 0 && (
-            <Badge className="ml-1.5 h-5 px-1.5 text-xs bg-primary">{unreadCount}</Badge>
+          {displayUnreadCount > 0 && (
+            <Badge className="ml-1.5 h-5 px-1.5 text-xs bg-primary">{displayUnreadCount}</Badge>
           )}
         </Button>
       </div>
 
       {/* Content */}
-      {isLoading ? (
+      {!isClientReady || isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}>

@@ -156,11 +156,14 @@ export default function TeamDetailPage() {
     );
   }
 
+  const members = Array.isArray(team.members) ? team.members : [];
+  const memberCount = typeof team.memberCount === 'number' ? team.memberCount : members.length;
+  const joinPolicy = team.joinPolicy || 'INVITE_ONLY';
   const schoolName = team.school ? getSchoolName(team.school, locale) : null;
   const countLabel =
     team.maxMembers != null
-      ? t('memberCount', { current: team.memberCount, max: team.maxMembers })
-      : `${team.memberCount}`;
+      ? t('memberCount', { current: memberCount, max: team.maxMembers })
+      : `${memberCount}`;
 
   return (
     <PageContainer maxWidth="6xl">
@@ -179,7 +182,7 @@ export default function TeamDetailPage() {
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   {schoolName && <Badge variant="secondary">{schoolName}</Badge>}
                   <Badge variant="outline">
-                    {team.joinPolicy === 'OPEN' ? t('joinPolicy.open') : t('joinPolicy.inviteOnly')}
+                    {joinPolicy === 'OPEN' ? t('joinPolicy.open') : t('joinPolicy.inviteOnly')}
                   </Badge>
                   <span className="text-caption text-muted-foreground">{countLabel}</span>
                 </div>
@@ -187,7 +190,7 @@ export default function TeamDetailPage() {
               <div className="flex flex-wrap items-center gap-2">
                 {team.isMember ? (
                   <Badge>{t('member')}</Badge>
-                ) : team.joinPolicy === 'OPEN' ? (
+                ) : joinPolicy === 'OPEN' ? (
                   <Button onClick={handleJoin}>{isLoggedIn ? t('join') : t('loginToJoin')}</Button>
                 ) : (
                   <span className="text-muted-foreground text-sm">
@@ -242,11 +245,11 @@ export default function TeamDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {team.members.length === 0 ? (
+            {members.length === 0 ? (
               <p className="text-muted-foreground text-sm">{t('empty.noMembers')}</p>
             ) : (
               <ul className="space-y-2">
-                {team.members.map((m) => (
+                {members.map((m) => (
                   <li
                     key={m.id}
                     className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"

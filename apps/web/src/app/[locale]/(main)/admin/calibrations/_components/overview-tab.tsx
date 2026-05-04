@@ -79,10 +79,12 @@ export function OverviewTab() {
     queryFn: () => apiClient.get(adminRoutes.calibrationsStats()),
   });
 
-  const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery<Suggestion[]>({
+  const { data: suggestionsData = [], isLoading: suggestionsLoading } = useQuery<Suggestion[]>({
     queryKey: ['adminCalibrationSuggestions'],
     queryFn: () => apiClient.get(adminRoutes.calibrationsSuggestions()),
   });
+
+  const suggestions = Array.isArray(suggestionsData) ? suggestionsData : [];
 
   function handleQuickCalibrate(s: Suggestion) {
     const displayName = locale === 'zh' && s.schoolNameZh ? s.schoolNameZh : s.schoolName;
@@ -96,7 +98,7 @@ export function OverviewTab() {
 
   // Prepare chart data
   const chartData =
-    stats?.calibrationBuckets.map((b) => ({
+    (stats?.calibrationBuckets ?? []).map((b) => ({
       range: b.predictedRange,
       predicted: Math.round((BUCKET_MIDPOINTS[b.predictedRange] ?? 0.5) * 100),
       actual: Math.round(b.actualAdmitRate * 100),

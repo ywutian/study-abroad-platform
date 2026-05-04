@@ -94,12 +94,16 @@
     "rankingTooltipOverall": "US News National University Overall Ranking",
     "aria": {
       "moreOptions": "More options",
+      "goBack": "Go back",
       "close": "Close",
       "copy": "Copy",
       "copyReferralCode": "Copy referral code",
+      "showSection": "Show section",
+      "hideSection": "Hide section",
       "deleteSection": "Delete section",
       "deleteItem": "Delete",
       "viewItem": "View",
+      "viewEntity": "View entity",
       "viewConversation": "View conversation",
       "viewMemory": "View memory",
       "deleteMemory": "Delete memory",
@@ -147,6 +151,42 @@
       "recommendDesc": "Recommendations should explain fit through profile readiness and intended major.",
       "verification": "Data verification",
       "verificationDesc": "Rankings, admit rates, and school details use verified data styling."
+    },
+    "prediction": {
+      "title": "Prediction loop",
+      "description": "Prediction quality depends on profile readiness, school selection, data confidence, and outcome review.",
+      "profile": "Profile inputs",
+      "profileDesc": "GPA, tests, activities, awards, and major directly affect prediction confidence.",
+      "selection": "School selection",
+      "selectionDesc": "Choose at least one school before running predictions.",
+      "confidence": "Confidence",
+      "confidenceDesc": "Generated results expose data completeness and explainable outputs.",
+      "review": "Outcome review",
+      "reviewDesc": "Reported outcomes help calibrate future prediction quality."
+    },
+    "essays": {
+      "title": "Essay workflow loop",
+      "description": "Prompts, drafts, AI review, and polish stay in one governed writing flow.",
+      "pipeline": "Essay pipeline",
+      "pipelineDesc": "Each essay should map to a school, prompt, and current state.",
+      "draft": "Draft status",
+      "draftDesc": "New essays start as editable drafts before review.",
+      "review": "AI review",
+      "reviewDesc": "AI guidance must explain reason, impact, and next step.",
+      "polish": "Polish confirmation",
+      "polishDesc": "Users confirm polish changes before applying them."
+    },
+    "timeline": {
+      "title": "Timeline loop",
+      "description": "School deadlines, personal events, and task completion should stay in one planning rhythm.",
+      "coverage": "Coverage",
+      "coverageDesc": "Every selected school should have a generated or linked application timeline.",
+      "risk": "Deadline risk",
+      "riskDesc": "Deadlines within 30 days need early visibility.",
+      "tasks": "Task state",
+      "tasksDesc": "School and personal tasks share Ready / Blocked semantics.",
+      "sync": "Data sync",
+      "syncDesc": "Global and personal events stay synchronized after subscription."
     }
   },
   "dashboard": {
@@ -155,6 +195,29 @@
     "subtitle": "Continue your application journey",
     "editProfile": "Edit Profile",
     "quickAccess": "Quick Access",
+    "commandCenter": {
+      "label": "Next Best Action",
+      "secondary": "Secondary shortcuts",
+      "gapCount": "{count} profile gaps",
+      "signals": {
+        "profile": "Profile",
+        "schools": "Schools",
+        "essays": "Essays",
+        "deadlines": "30-day deadlines"
+      },
+      "actions": {
+        "profile": "Complete your application profile",
+        "profileDesc": "GPA, scores, activities, and intended major directly improve recommendation and prediction quality.",
+        "schools": "Build a usable school portfolio",
+        "schoolsDesc": "Add reach, match, and safety schools so predictions and essays have the right context.",
+        "essays": "Start the core essay workflow",
+        "essaysDesc": "Your school list is ready enough to generate school-level essay tasks and material gaps.",
+        "deadlines": "Review upcoming deadlines",
+        "deadlinesDesc": "{count} application or personal deadlines need attention in the next 30 days.",
+        "review": "Review your application strategy",
+        "reviewDesc": "Your core signals are in place. Generate predictions, calibrate the list, and plan the next round."
+      }
+    },
     "recentActivity": "Recent Activity",
     "noRecentActivity": "No recent activity",
     "startExploring": "Start Exploring",
@@ -199,6 +262,29 @@
       "resumeDesc": "Create professional resumes with AI assistance",
       "timeline": "Timeline",
       "timelineDesc": "Track deadlines and plan your application journey"
+    },
+    "commandCenter": {
+      "label": "Application Command Center",
+      "secondary": "Next best actions",
+      "gapCount": "{count} profile gaps",
+      "actions": {
+        "profile": "Complete your applicant profile",
+        "profileDesc": "Add the academic and activity signals Lumni needs to calibrate predictions.",
+        "schools": "Build a balanced school list",
+        "schoolsDesc": "Add reach, target, and safety schools before running deeper analysis.",
+        "essays": "Start your first essay workspace",
+        "essaysDesc": "Create drafts and let Lumni organize prompts, revisions, and review notes.",
+        "deadlines": "Clear upcoming application tasks",
+        "deadlinesDesc": "{count} deadline tasks need attention before your next submission window.",
+        "review": "Review your admissions route",
+        "reviewDesc": "Your core setup is ready. Check predictions and refine the route with fresh signals."
+      },
+      "signals": {
+        "profile": "Profile",
+        "schools": "Schools",
+        "essays": "Essays",
+        "deadlines": "Deadlines"
+      }
     },
     "onboarding": {
       "title": "Welcome",
@@ -791,6 +877,8 @@
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "hasAccount": "Already have an account?",
       "signIn": "Sign in",
       "agreeTerms": "I agree to the Terms of Service and Privacy Policy",
@@ -953,6 +1041,7 @@
     "referral": "Invite Friends",
     "mobile": {
       "home": "Home",
+      "schools": "Schools",
       "cases": "Cases",
       "prediction": "Predict",
       "profile": "Profile"
@@ -961,6 +1050,7 @@
       "ai": "Smart AI assistant for study abroad questions",
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
+      "cases": "Explore real admission outcomes and application stories",
       "hall": "Admissions officer evaluation and rank comparison",
       "essayGallery": "Browse excellent admission essay examples",
       "chat": "Real-time chat with verified users",
@@ -1180,7 +1270,15 @@
     "targetSchools": "Target Schools",
     "targetSchoolsDesc": "Select your target schools",
     "schoolSelection": {
+      "portfolioSummary": "Portfolio Summary",
+      "bindingConflicts": "Binding conflicts",
+      "deadlines30Days": "30-day deadlines",
+      "essayCount": "Essay count",
+      "viewDetails": "View details",
+      "moreActions": "More school actions",
       "toggleDetails": "Toggle school details",
+      "defaultRound": "Default application round",
+      "roundForSchool": "Application round for {school}",
       "roundFilter": "Filter by Round",
       "allRounds": "All Rounds",
       "dataDisclaimer": "School data is sourced from public databases and may not reflect the most recent updates. Please verify with official school websites.",
@@ -1252,11 +1350,35 @@
     "completeness": "Profile Completeness",
     "completenessHint": "Complete your profile for more accurate predictions",
     "completenessComplete": "Profile complete",
+    "readiness": {
+      "title": "Readiness Signals",
+      "signals": "signals ready",
+      "highImpact": "High impact",
+      "mediumImpact": "Medium impact",
+      "recommendationImpact": "Improves recommendations",
+      "recommendedFixes": "Recommended fixes",
+      "fixSignal": "Add {signal}",
+      "reviewTargets": "Review target schools",
+      "allSet": "All key profile signals are ready.",
+      "primaryActions": "Primary actions"
+    },
     "quickStart": {
       "title": "Quick Start",
       "description": "Complete the following steps to quickly fill in your profile",
       "fillGpa": "Fill GPA",
       "fillScore": "Fill Scores"
+    },
+    "readiness": {
+      "title": "Profile Readiness",
+      "signals": "signals",
+      "highImpact": "Improves prediction quality",
+      "mediumImpact": "Improves recommendation ranking",
+      "recommendationImpact": "Improves major and school fit",
+      "recommendedFixes": "Recommended Fixes",
+      "primaryActions": "Primary Actions",
+      "fixSignal": "Complete {signal}",
+      "reviewTargets": "Review target schools",
+      "allSet": "Core profile signals are ready for predictions, essays, and portfolio calibration."
     },
     "nextSteps": {
       "title": "Next Steps",
@@ -2233,6 +2355,11 @@
       "reviewComment": "Review Comment (Optional)",
       "processing": "Processing...",
       "back": "Back",
+      "close": "Close review",
+      "enterFullscreen": "Enter fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "dislike": "Mark as not ready",
+      "like": "Mark as strong",
       "evaluating": "Evaluating {major} application",
       "unknownMajor": "Undeclared",
       "noMajor": "Undeclared",
@@ -2676,6 +2803,12 @@
       "themesTab": "Themes",
       "customizeTab": "Customize",
       "customizeTitle": "Customize",
+      "heroVisualTitle": "Hero visual",
+      "heroVisualDesc": "Switch between the classic premium matrix, the newer deer-moon cockpit, and experimental brand visuals without changing the palette.",
+      "saveToAdmin": "Save to admin style library",
+      "savingToAdmin": "Saving...",
+      "saveToAdminSuccess": "Saved to admin style library",
+      "saveToAdminError": "Could not save this style. Please try again.",
       "presetTitle": "Presets",
       "textureTitle": "Enterprise appearance",
       "resetTheme": "Reset theme",
@@ -2806,6 +2939,7 @@
     "a11y": {
       "currentAccount": "Current Account",
       "mainContent": "Main Content",
+      "closeMenu": "Close Menu",
       "openMenu": "Open Menu",
       "skipToMain": "Skip to main content",
       "skipToNav": "Skip to navigation",
@@ -2973,6 +3107,8 @@
     "successTitle": "Thank You",
     "successDesc": "We take every feedback seriously",
     "submitFailed": "Submission failed, please retry",
+    "thumbsUp": "Mark as helpful",
+    "thumbsDown": "Mark as not helpful",
     "thumbsUpThanks": "Thanks for the positive feedback!",
     "thumbsDownThanks": "Thanks for the feedback, we will improve",
     "placeholders": {
@@ -3095,7 +3231,8 @@
     "transferRate": "Transfer Rate",
     "rankingTooltip": "{source} {year} Ranking",
     "rankingTooltipOverall": "US News National University Overall Ranking",
-    "visitWebsite": "Visit {school} official website"
+    "visitWebsite": "Visit {school} official website",
+    "removeSelected": "Remove {school}"
   },
   "createList": {
     "title": "Create List",
@@ -4838,6 +4975,7 @@
       "viewFullCase": "View Full Case",
       "essayPrompt": "Essay Prompt",
       "writeWithPrompt": "Write with this prompt",
+      "copyEssay": "Copy essay",
       "yearLabel": "Year",
       "tabs": {
         "original": "Original Essay",
@@ -4893,6 +5031,7 @@
     },
     "mutualFollow": "Mutual Follow",
     "search": "Search users...",
+    "clearSearch": "Clear follower search",
     "blocked": "Blocked",
     "unblock": "Unblock",
     "empty": {
@@ -6501,6 +6640,7 @@
       "verifications": "Verifications",
       "health": "System Health",
       "team": "Team",
+      "themeStyles": "Style Library",
       "featureFlags": "Feature Flags",
       "devTools": "Developer Tools",
       "menu": "Menu",
@@ -6514,10 +6654,92 @@
         "system": "System"
       }
     },
+    "themeStyles": {
+      "title": "Admin Style Library",
+      "description": "Debug, compare, and verify color palettes, hero visuals, and appearance combinations saved from Theme Studio.",
+      "palette": "Palette",
+      "heroVisual": "Hero visual",
+      "savedBy": "Saved by",
+      "updatedAt": "Updated {value}",
+      "sourcePath": "Source {value}",
+      "emptyTitle": "No saved styles yet",
+      "emptyDescription": "When an admin clicks \"Save to admin style library\" in the homepage palette menu, it will appear here.",
+      "exportDiagnostics": "Export diagnostics",
+      "resetLocal": "Reset local",
+      "localDebugging": "Debugging locally",
+      "localOnly": "Only affects this browser; it is not published to users",
+      "preview": "Preview",
+      "applyLocal": "Apply locally",
+      "applied": "Applied",
+      "compare": "Compare",
+      "comparing": "Comparing",
+      "markVerified": "Mark verified",
+      "verified": "Verified",
+      "compareWorkbench": "A/B Compare Workbench",
+      "clearCompare": "Clear compare",
+      "compareNeedsTwo": "Choose one more style to compare side by side",
+      "desktopPreview": "Desktop preview",
+      "mobilePreview": "Mobile preview",
+      "tokensPreview": "Token data",
+      "diagnostics": "Diagnostics",
+      "revision": "Revision",
+      "items": "Items",
+      "parseStatus": "Parse status",
+      "checksumStatus": "Checksum",
+      "duplicates": "Duplicate signatures",
+      "discarded": "Discarded items",
+      "diagnosticIssues": "Diagnostic issues",
+      "diagnosticsClean": "Style library diagnostics are clean",
+      "localSnapshot": "Local snapshot",
+      "missingVars": "{count} missing variables",
+      "noLocalSnapshot": "No local snapshot yet",
+      "themeMatrix": "Enterprise Theme Matrix",
+      "themeMatrixDescription": "Certifies every palette, hero visual, light/dark mode, token contract, and route coverage before a style is marked verified.",
+      "themeMatrixUnavailable": "Theme certification matrix is unavailable.",
+      "matrixPassed": "{count} passed",
+      "matrixWarning": "{count} warnings",
+      "matrixFailed": "{count} failed",
+      "defaultPalette": "Default palette",
+      "defaultHero": "Default hero",
+      "defaultTheme": "Default",
+      "brandVisual": "Brand visual",
+      "matrixTotal": "Matrix entries",
+      "matrixIssues": "Matrix issues",
+      "buttonVariants": "Button variants",
+      "certificationScore": "Certification score",
+      "routeCoverage": "Route coverage",
+      "buttonContrast": "Button text contrast",
+      "surfaceContrast": "Button surface contrast",
+      "certificationIssues": "Certification issues",
+      "tokensShort": "Tokens {value}%",
+      "contrastShort": "Contrast {value}%",
+      "routesShort": "Routes {value}%",
+      "status": {
+        "draft": "Draft",
+        "approved": "Approved",
+        "active": "Active",
+        "archived": "Archived",
+        "verified": "Verified"
+      },
+      "validation": {
+        "unknown": "Unverified",
+        "passed": "Passed",
+        "warning": "Warning",
+        "failed": "Failed"
+      },
+      "certification": {
+        "passed": "Certified",
+        "warning": "Review",
+        "failed": "Failed"
+      }
+    },
     "pagination": {
       "showing": "Showing {from}-{to} of {total}",
       "page": "Page {current} / {total}",
-      "perPage": "Per page"
+      "perPage": "Per page",
+      "pageSize": "Rows per page",
+      "previous": "Previous page",
+      "next": "Next page"
     },
     "stats": {
       "totalUsers": "Total Users",
@@ -6588,6 +6810,7 @@
       "joinDate": "Join Date",
       "cases": "Cases",
       "reviews": "Reviews",
+      "actions": "Actions",
       "delete": "Delete",
       "noResults": "No Results",
       "noResultsDesc": "Try adjusting your search",
@@ -6685,6 +6908,8 @@
       "activeReviewers": "Active Reviewers",
       "reviewer": "Reviewer Activity",
       "today": "Today",
+      "week": "Week",
+      "month": "Month",
       "thisWeek": "Week",
       "thisMonth": "Month",
       "period": "Period",
@@ -8950,7 +9175,8 @@
       "proofTypes": {
         "offer_letter": "Offer Letter",
         "enrollment_proof": "Enrollment Proof",
-        "student_id": "Student ID"
+        "student_id": "Student ID",
+        "other": "Other proof"
       },
       "detail": {
         "title": "Verification Detail",
@@ -8976,6 +9202,7 @@
       "filterRejected": "Rejected",
       "selectAll": "Select all items",
       "selectItem": "Select item",
+      "clearSelection": "Clear selected verifications",
       "selectedCount": "{count} item(s) selected",
       "bulkApprove": "Approve All",
       "bulkReject": "Reject All",
@@ -9281,6 +9508,9 @@
       "active": "Active",
       "descriptionLabel": "Description",
       "optionalDescription": "Optional description",
+      "unknownTemplate": "Untitled template",
+      "editAriaLabel": "Edit {name}",
+      "deleteAriaLabel": "Delete {name}",
       "emptyTitle": "No Activity Templates",
       "emptyDescription": "Click Create to add a new activity template"
     }
@@ -9394,6 +9624,7 @@
     "notScraped": "Not Scraped",
     "failed": "Failed",
     "school": "School",
+    "unknownSchool": "Unknown school",
     "sourceType": "Source",
     "lastScraped": "Last Scraped",
     "statusLabel": "Status",

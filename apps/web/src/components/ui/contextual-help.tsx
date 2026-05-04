@@ -35,7 +35,7 @@ export function ContextualHelp({
         <button
           type="button"
           className={cn(
-            'inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors cursor-help focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:w-8',
             className
           )}
           aria-label={title}

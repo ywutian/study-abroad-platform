@@ -91,7 +91,10 @@ export default function ChatPage() {
     queryKey: ['conversations'],
     queryFn: () => apiClient.get<Conversation[]>(chatRoutes.conversations()),
   });
-  const conversations = useMemo(() => conversationsData || [], [conversationsData]);
+  const conversations = useMemo(
+    () => (Array.isArray(conversationsData) ? conversationsData : []),
+    [conversationsData]
+  );
 
   // Auto-select conversation from URL param (e.g. /chat?conversation=xxx)
   const autoSelectedRef = useRef(false);
@@ -138,7 +141,7 @@ export default function ChatPage() {
   // Fix: single useMemo for sorted messages (prevents reference instability)
   const sortedMessages = useMemo(() => {
     if (!messagesPages?.pages) return [];
-    return messagesPages.pages.flat().reverse();
+    return messagesPages.pages.flatMap((page) => (Array.isArray(page) ? page : [])).reverse();
   }, [messagesPages?.pages]);
 
   // ── Mutations ─────────────────────────────────────────────

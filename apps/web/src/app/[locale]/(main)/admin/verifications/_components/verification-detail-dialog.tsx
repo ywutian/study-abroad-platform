@@ -50,6 +50,12 @@ interface VerificationDetailDialogProps {
   isReviewPending: boolean;
 }
 
+const PROOF_TYPE_KEYS = new Set(['offer_letter', 'enrollment_proof', 'student_id', 'other']);
+
+function normalizeProofType(value?: string | null) {
+  return value && PROOF_TYPE_KEYS.has(value) ? value : 'other';
+}
+
 export function VerificationDetailDialog({
   open,
   onOpenChange,
@@ -123,7 +129,11 @@ export function VerificationDetailDialog({
                 {t('verifications.detail.proofPreview')}
               </h4>
               <p className="text-sm mb-2">
-                {t(`verifications.proofTypes.${detail.proofType}` as Parameters<typeof t>[0])}
+                {t(
+                  `verifications.proofTypes.${normalizeProofType(detail.proofType)}` as Parameters<
+                    typeof t
+                  >[0]
+                )}
               </p>
               {detail.proofUrl && (
                 <div className="relative w-full max-h-60 overflow-hidden rounded-lg border">

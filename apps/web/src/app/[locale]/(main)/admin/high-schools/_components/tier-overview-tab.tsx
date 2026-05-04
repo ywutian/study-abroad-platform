@@ -356,7 +356,7 @@ function SchoolCard({
         {curricula.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {curricula.map((c) => (
-              <Badge key={c} variant="outline" className="text-[10px] px-1.5 py-0">
+              <Badge key={c} variant="outline" className="text-2xs px-1.5 py-0">
                 {c}
               </Badge>
             ))}
@@ -367,7 +367,7 @@ function SchoolCard({
         <Button
           size="icon"
           variant="ghost"
-          className="absolute right-1 top-1 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute right-1 top-1 h-10 w-10 opacity-100 transition-opacity md:h-8 md:w-8 md:opacity-0 md:group-hover:opacity-100"
           onClick={(e) => {
             e.stopPropagation();
             onEdit(school);

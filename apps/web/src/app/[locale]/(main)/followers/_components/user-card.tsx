@@ -84,7 +84,12 @@ export function UserCard({
         {/* Card body */}
         <div className="flex items-center gap-4 p-4">
           {/* Avatar - clickable for preview */}
-          <button onClick={onPreview} className="shrink-0 focus:outline-none">
+          <button
+            type="button"
+            aria-label={`${t('followers.userProfile')}: ${displayName}`}
+            onClick={onPreview}
+            className="shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <Avatar
               className={cn(
                 'h-12 w-12 ring-2 ring-offset-2 ring-offset-background transition-all',
@@ -113,9 +118,11 @@ export function UserCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <button
+                type="button"
+                aria-label={`${t('followers.userProfile')}: ${displayName}`}
                 onClick={onPreview}
                 className={cn(
-                  'font-semibold truncate text-left hover:underline',
+                  'min-h-10 truncate rounded text-left font-semibold hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-6',
                   isBlocked ? 'text-muted-foreground' : 'text-foreground'
                 )}
               >
@@ -124,8 +131,10 @@ export function UserCard({
               {isMutual && (
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger>
-                      <ArrowUpDown className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex h-5 w-5 items-center justify-center">
+                        <ArrowUpDown className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                      </span>
                     </TooltipTrigger>
                     <TooltipContent>{t('followers.mutualFollow')}</TooltipContent>
                   </Tooltip>
@@ -142,14 +151,14 @@ export function UserCard({
               {isMutual && (
                 <Badge
                   variant="secondary"
-                  className="gap-1 bg-green-500/10 text-green-700 dark:text-green-400 border-0 text-[10px] px-1.5 py-0"
+                  className="gap-1 bg-green-500/10 text-green-700 dark:text-green-400 border-0 text-2xs px-1.5 py-0"
                 >
                   <UserCheck className="h-2.5 w-2.5" />
                   {t('followers.mutualFollow')}
                 </Badge>
               )}
               {isBlocked && (
-                <Badge variant="destructive" className="gap-1 text-[10px]">
+                <Badge variant="destructive" className="gap-1 text-2xs">
                   <Shield className="h-2.5 w-2.5" />
                   {t('followers.blocked')}
                 </Badge>
@@ -166,7 +175,8 @@ export function UserCard({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      aria-label={`${t('followers.userProfile')}: ${displayName}`}
+                      className="h-10 w-10 text-muted-foreground hover:text-foreground sm:h-8 sm:w-8"
                       onClick={onPreview}
                     >
                       <Eye className="h-4 w-4" />
@@ -182,7 +192,8 @@ export function UserCard({
               <Button
                 size="sm"
                 variant="default"
-                className="h-8 gap-1.5 text-xs"
+                aria-label={t('followers.actions.follow')}
+                className="h-10 gap-1.5 text-xs sm:h-8"
                 onClick={onFollow}
                 disabled={followPending}
               >
@@ -203,7 +214,8 @@ export function UserCard({
                     <Button
                       size="icon"
                       variant="outline"
-                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:border-primary/30"
+                      aria-label={t('followers.actions.sendMessage')}
+                      className="h-10 w-10 text-muted-foreground hover:border-primary/30 hover:text-primary sm:h-8 sm:w-8"
                       onClick={onMessage}
                     >
                       <MessageSquare className="h-4 w-4" />
@@ -222,7 +234,8 @@ export function UserCard({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      aria-label={t('followers.actions.unfollow')}
+                      className="h-10 w-10 text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:h-8 sm:w-8"
                       onClick={onUnfollow}
                     >
                       <UserMinus className="h-4 w-4" />
@@ -235,7 +248,12 @@ export function UserCard({
 
             {/* Unblock button */}
             {isBlocked && onUnblock && (
-              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={onUnblock}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-10 text-xs sm:h-8"
+                onClick={onUnblock}
+              >
                 {t('followers.unblock')}
               </Button>
             )}

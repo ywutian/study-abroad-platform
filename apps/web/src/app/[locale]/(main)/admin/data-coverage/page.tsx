@@ -101,20 +101,21 @@ export default function AdminDataCoveragePage() {
     },
   });
 
-  const rows = coverage.data?.items ?? [];
+  const rows = useMemo(() => coverage.data?.items ?? [], [coverage.data?.items]);
   const problemRows = useMemo(
     () =>
       rows
         .filter(
           (row) =>
             !row.criticalComplete ||
-            row.heuristicCritical.length > 0 ||
-            row.terminalCritical.length > 0 ||
-            row.staleCritical.length > 0
+            (row.heuristicCritical ?? []).length > 0 ||
+            (row.terminalCritical ?? []).length > 0 ||
+            (row.staleCritical ?? []).length > 0
         )
         .slice(0, 80),
     [rows]
   );
+  const totals = coverage.data?.totals;
 
   return (
     <div className="space-y-6">
@@ -126,12 +127,12 @@ export default function AdminDataCoveragePage() {
       />
 
       <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
-        <MetricCard label={t('metrics.schools')} value={coverage.data?.totals.schools} />
-        <MetricCard label={t('metrics.complete')} value={coverage.data?.totals.criticalComplete} />
-        <MetricCard label={t('metrics.missing')} value={coverage.data?.totals.missingAnyCritical} />
-        <MetricCard label={t('metrics.heuristic')} value={coverage.data?.totals.heuristicFields} />
-        <MetricCard label={t('metrics.official')} value={coverage.data?.totals.officialFields} />
-        <MetricCard label={t('metrics.terminal')} value={coverage.data?.totals.terminalFields} />
+        <MetricCard label={t('metrics.schools')} value={totals?.schools} />
+        <MetricCard label={t('metrics.complete')} value={totals?.criticalComplete} />
+        <MetricCard label={t('metrics.missing')} value={totals?.missingAnyCritical} />
+        <MetricCard label={t('metrics.heuristic')} value={totals?.heuristicFields} />
+        <MetricCard label={t('metrics.official')} value={totals?.officialFields} />
+        <MetricCard label={t('metrics.terminal')} value={totals?.terminalFields} />
       </div>
 
       <Card>
@@ -227,19 +228,27 @@ export default function AdminDataCoveragePage() {
                     </td>
                     <td className="px-3 py-2">
                       <Badge variant={row.criticalComplete ? 'secondary' : 'destructive'}>
-                        {row.missingCritical.length ? row.missingCritical.join(', ') : t('none')}
+                        {(row.missingCritical ?? []).length
+                          ? (row.missingCritical ?? []).join(', ')
+                          : t('none')}
                       </Badge>
                     </td>
                     <td className="px-3 py-2">
                       <div className="space-y-1 text-xs">
-                        <FieldList label={t('table.heuristic')} fields={row.heuristicCritical} />
-                        <FieldList label={t('table.terminal')} fields={row.terminalCritical} />
-                        <FieldList label={t('table.stale')} fields={row.staleCritical} />
+                        <FieldList
+                          label={t('table.heuristic')}
+                          fields={row.heuristicCritical ?? []}
+                        />
+                        <FieldList
+                          label={t('table.terminal')}
+                          fields={row.terminalCritical ?? []}
+                        />
+                        <FieldList label={t('table.stale')} fields={row.staleCritical ?? []} />
                       </div>
                     </td>
                     <td className="px-3 py-2">
                       <div className="space-y-2">
-                        {row.fields
+                        {(row.fields ?? [])
                           .filter((field) => field.filled || field.isTerminal)
                           .slice(0, 10)
                           .map((field) => (
