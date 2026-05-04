@@ -85,10 +85,17 @@ export function ChatConversationList({
                     const displayName = getConversationTitle(conv);
                     const isVerified = conv.otherUser?.role === 'VERIFIED';
                     const isSelected = selectedId === conv.id;
+                    const groupAvatar = Array.isArray(conv.avatarSummary)
+                      ? conv.avatarSummary.find(Boolean)
+                      : undefined;
                     const fallbackInitial =
                       conv.kind === 'MATCH_GROUP'
                         ? 'G'
                         : getDisplayName(conv.otherUser)?.[0]?.toUpperCase() || '?';
+                    const avatarSrc =
+                      conv.kind === 'DIRECT'
+                        ? (conv.otherUser?.profile?.avatarUrl ?? undefined)
+                        : (groupAvatar ?? undefined);
 
                     return (
                       <motion.div
@@ -111,13 +118,7 @@ export function ChatConversationList({
                       >
                         <div className="relative">
                           <Avatar className="h-11 w-11 border-2 border-background shadow">
-                            <AvatarImage
-                              src={
-                                conv.kind === 'DIRECT'
-                                  ? conv.otherUser?.profile?.avatarUrl
-                                  : conv.avatarSummary.find(Boolean) || undefined
-                              }
-                            />
+                            <AvatarImage src={avatarSrc} />
                             <AvatarFallback className="bg-primary text-white font-medium">
                               {fallbackInitial}
                             </AvatarFallback>

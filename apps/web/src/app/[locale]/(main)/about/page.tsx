@@ -155,23 +155,20 @@ export default function AboutPage() {
     <PageContainer maxWidth="5xl">
       {/* Hero Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
-        className="relative mb-12 overflow-hidden rounded-xl bg-primary/5 p-8 sm:p-12 text-center"
+        className="relative mb-12 overflow-hidden border-b border-border px-4 pb-12 pt-10 text-center"
       >
-        {/* Decorative elements */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br bg-primary/10 blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-56 w-[min(42rem,92vw)] -translate-x-1/2 rounded-full bg-[color:var(--theme-glow-1)] opacity-70 blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-px w-full -translate-x-1/2 bg-gradient-to-r from-transparent via-border to-transparent" />
 
         <div className="relative z-10">
           <Badge className="mb-4" variant="purple">
             <Globe className="h-3 w-3 mr-1" />
             {t('badge')}
           </Badge>
-          <h1 className="text-display mb-4 text-primary bg-clip-text text-transparent">
-            {t('title')}
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="mx-auto mb-4 max-w-3xl text-display text-foreground">{t('title')}</h1>
+          <p className="mx-auto max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
             {t('subtitle')}
           </p>
         </div>
@@ -184,11 +181,11 @@ export default function AboutPage() {
           return (
             <motion.div
               key={stat.labelKey}
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="text-center overflow-hidden hover:shadow-lg transition-shadow">
+              <Card className="text-center overflow-hidden">
                 <div className={cn('h-1 bg-gradient-to-r', stat.gradient)} />
                 <CardContent className="pt-6 pb-6">
                   <div
@@ -212,11 +209,7 @@ export default function AboutPage() {
 
       {/* Mission & Vision */}
       <div className="grid gap-6 md:grid-cols-2 mb-12">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
           <Card className="h-full overflow-hidden">
             <div className="h-1 bg-primary" />
             <CardHeader>
@@ -233,11 +226,7 @@ export default function AboutPage() {
           </Card>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <motion.div initial={false} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
           <Card className="h-full overflow-hidden">
             <div className="h-1 bg-primary dark:bg-primary" />
             <CardHeader>
@@ -258,7 +247,7 @@ export default function AboutPage() {
       {/* Values */}
       <div className="mb-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="text-center mb-8"
@@ -274,11 +263,11 @@ export default function AboutPage() {
             return (
               <motion.div
                 key={value.titleKey}
-                initial={{ opacity: 0, y: 20 }}
+                initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
               >
-                <Card className="text-center h-full hover:shadow-lg transition-all duration-300 group">
+                <Card className="text-center h-full group">
                   <CardContent className="pt-6">
                     <div
                       className={cn(
@@ -302,7 +291,7 @@ export default function AboutPage() {
       {/* Timeline */}
       <div className="mb-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="text-center mb-8"
@@ -320,7 +309,7 @@ export default function AboutPage() {
               return (
                 <motion.div
                   key={item.year}
-                  initial={{ opacity: 0, x: isEven ? -20 : 20 }}
+                  initial={false}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + index * 0.1 }}
                   className={cn(
@@ -334,7 +323,7 @@ export default function AboutPage() {
                       isEven ? 'sm:pr-8 sm:text-right' : 'sm:pl-8'
                     )}
                   >
-                    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                    <Card className="overflow-hidden">
                       <div
                         className={cn('h-1 bg-gradient-to-r', {
                           'bg-primary': item.color === 'blue' || item.color === 'violet',
@@ -385,7 +374,7 @@ export default function AboutPage() {
       {/* Team */}
       <div className="mb-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
           className="text-center mb-8"
@@ -399,11 +388,11 @@ export default function AboutPage() {
           {team.map((member, index) => (
             <motion.div
               key={member.nameKey}
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6 + index * 0.1 }}
             >
-              <Card className="text-center hover:shadow-lg transition-all duration-300 overflow-hidden group">
+              <Card className="text-center overflow-hidden group">
                 <div className={cn('h-1 bg-gradient-to-r', member.gradient)} />
                 <CardContent className="pt-6">
                   <Avatar
@@ -427,11 +416,7 @@ export default function AboutPage() {
       </div>
 
       {/* Contact CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-      >
+      <motion.div initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
         <Card className="overflow-hidden">
           <div className="h-1.5 bg-primary" />
           <CardContent className="py-10 text-center">

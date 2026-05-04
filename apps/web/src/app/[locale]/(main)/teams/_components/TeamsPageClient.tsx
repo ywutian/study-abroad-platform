@@ -2276,7 +2276,12 @@ function ToggleBadge({
   label: string;
 }) {
   return (
-    <button type="button" onClick={onClick}>
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className="inline-flex min-h-10 items-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-8"
+    >
       <Badge variant={active ? 'default' : 'outline'} className="gap-1.5 px-3 py-1.5">
         <Icon className="h-3.5 w-3.5" />
         {label}

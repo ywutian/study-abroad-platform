@@ -317,20 +317,20 @@ export default function AssessmentPage() {
       <PageHeader title={t('title')} description={t('description')} icon={Brain} color="violet" />
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger value="intro">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4">
+          <TabsTrigger value="intro" className="min-w-0 text-xs sm:text-sm">
             <Sparkles className="h-4 w-4 mr-2" />
             {t('tabs.intro')}
           </TabsTrigger>
-          <TabsTrigger value="mbti">
+          <TabsTrigger value="mbti" className="min-w-0 text-xs sm:text-sm">
             <Brain className="h-4 w-4 mr-2" />
             {t('tabs.mbti')}
           </TabsTrigger>
-          <TabsTrigger value="holland">
+          <TabsTrigger value="holland" className="min-w-0 text-xs sm:text-sm">
             <Compass className="h-4 w-4 mr-2" />
             {t('tabs.holland')}
           </TabsTrigger>
-          <TabsTrigger value="history">
+          <TabsTrigger value="history" className="min-w-0 text-xs sm:text-sm">
             <Trophy className="h-4 w-4 mr-2" />
             {t('tabs.history')}
           </TabsTrigger>
@@ -400,6 +400,7 @@ export default function AssessmentPage() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setShowAiPanel(true)}
+        aria-label={t('aiAssistant.title')}
         className={cn(
           'fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center',
           'rounded-full bg-primary text-white shadow-lg',

@@ -5,7 +5,7 @@ import { Link } from '@/lib/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Home, BookOpen, Target, User } from 'lucide-react';
+import { GraduationCap, Home, Target, User } from 'lucide-react';
 import { useHydrated } from '@/hooks/use-hydration';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 
@@ -24,10 +24,10 @@ const tabs: TabItem[] = [
     matchPaths: ['/dashboard', '/'],
   },
   {
-    href: '/cases',
-    icon: BookOpen,
-    labelKey: 'cases',
-    matchPaths: ['/cases'],
+    href: '/schools',
+    icon: GraduationCap,
+    labelKey: 'schools',
+    matchPaths: ['/schools'],
   },
   {
     href: '/prediction',

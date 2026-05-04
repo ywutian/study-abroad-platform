@@ -107,6 +107,7 @@ export function VerifiedTab() {
     queryKey: ['verified-ranking-years'],
     queryFn: () => apiClient.get(`${API_ROUTES.HALLS}/verified-ranking/years`),
   });
+  const verifiedYears = Array.isArray(years) ? years : [];
 
   const { data, isLoading, isFetching } = useQuery<VerifiedRankingResponse>({
     queryKey: ['verified-ranking', filter, year, offset],
@@ -250,7 +251,7 @@ export function VerifiedTab() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('filters.all')}</SelectItem>
-                {years?.map((y) => (
+                {verifiedYears.map((y) => (
                   <SelectItem key={y} value={y.toString()}>
                     {y}
                   </SelectItem>

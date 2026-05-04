@@ -479,7 +479,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
     >
       {/* 顶部导航 */}
       <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10">
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={onClose} aria-label={t('review.close')}>
           <X className="h-5 w-5" />
         </Button>
 
@@ -500,7 +500,12 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
           ))}
         </div>
 
-        <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(!isFullscreen)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          aria-label={t(isFullscreen ? 'review.exitFullscreen' : 'review.enterFullscreen')}
+        >
           {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
         </Button>
       </div>
@@ -585,6 +590,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
           <Button
             variant="outline"
             size="lg"
+            aria-label={t('review.dislike')}
             className="rounded-full h-14 w-14 border-rose-500/50 hover:bg-rose-500/10"
             onClick={() => handleSwipe('left')}
           >
@@ -606,6 +612,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
           <Button
             variant="outline"
             size="lg"
+            aria-label={t('review.like')}
             className="rounded-full h-14 w-14 border-emerald-500/50 hover:bg-emerald-500/10"
             onClick={() => handleSwipe('right')}
           >

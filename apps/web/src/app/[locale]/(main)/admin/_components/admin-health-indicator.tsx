@@ -18,6 +18,10 @@ interface AdminHealthIndicatorProps {
 
 export function AdminHealthIndicator({ health }: AdminHealthIndicatorProps) {
   const t = useTranslations('admin');
+  const status = health?.status ?? 'unknown';
+  const components =
+    health?.components && typeof health.components === 'object' ? health.components : {};
+  const componentEntries = Object.entries(components);
 
   return (
     <motion.div
@@ -36,31 +40,31 @@ export function AdminHealthIndicator({ health }: AdminHealthIndicatorProps) {
           {health ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                {health.status === 'healthy' ? (
+                {status === 'healthy' ? (
                   <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                 ) : (
                   <XCircle className="h-5 w-5 text-amber-500" />
                 )}
-                <span className="font-medium capitalize">{health.status}</span>
-                <Badge variant={health.status === 'healthy' ? 'success' : 'warning'}>
-                  {health.status === 'healthy'
-                    ? t('dashboard.allOperational')
-                    : t('dashboard.degraded')}
+                <span className="font-medium capitalize">{status}</span>
+                <Badge variant={status === 'healthy' ? 'success' : 'warning'}>
+                  {status === 'healthy' ? t('dashboard.allOperational') : t('dashboard.degraded')}
                 </Badge>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.entries(health.components).map(([name, component]) => (
-                  <div key={name} className="flex items-center gap-2 rounded-md border px-3 py-2">
-                    <div
-                      className={cn(
-                        'h-2 w-2 rounded-full',
-                        component.status === 'healthy' ? 'bg-emerald-500' : 'bg-amber-500'
-                      )}
-                    />
-                    <span className="text-sm capitalize">{name}</span>
-                  </div>
-                ))}
-              </div>
+              {componentEntries.length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {componentEntries.map(([name, component]) => (
+                    <div key={name} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                      <div
+                        className={cn(
+                          'h-2 w-2 rounded-full',
+                          component.status === 'healthy' ? 'bg-emerald-500' : 'bg-amber-500'
+                        )}
+                      />
+                      <span className="text-sm capitalize">{name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">{t('dashboard.loadingHealth')}</p>

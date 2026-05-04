@@ -240,11 +240,14 @@ export default function ResumeEditPage() {
     );
   }
 
-  const TypeIcon = TYPE_ICONS[resume.type] ?? FileText;
-  const existingSectionTypes = new Set(resume.sections.map((s) => s.type));
+  const resumeType = resume.type ?? 'COLLEGE_APPLICATION';
+  const resumeStatus = resume.status ?? 'DRAFT';
+  const resumeSections = Array.isArray(resume.sections) ? resume.sections : [];
+  const TypeIcon = TYPE_ICONS[resumeType] ?? FileText;
+  const existingSectionTypes = new Set(resumeSections.map((s) => s.type));
   const availableSectionTypes = ALL_SECTION_TYPES.filter((st) => !existingSectionTypes.has(st));
 
-  const previewSections: SectionConfig[] = resume.sections.map((s) => ({
+  const previewSections: SectionConfig[] = resumeSections.map((s) => ({
     id: s.id,
     type: s.type,
     title: s.title,
@@ -258,7 +261,12 @@ export default function ResumeEditPage() {
       <div className="flex flex-col gap-2 border-b bg-background px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Link href="/resume">
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Go back">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 sm:h-9 sm:w-9"
+              aria-label={tc('aria.goBack')}
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -288,10 +296,10 @@ export default function ResumeEditPage() {
           </div>
 
           <Badge variant="secondary" className="text-xs">
-            {t(`types.${resume.type}`)}
+            {t(`types.${resumeType}`)}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {t(`status.${resume.status}`)}
+            {t(`status.${resumeStatus}`)}
           </Badge>
         </div>
 
@@ -318,7 +326,12 @@ export default function ResumeEditPage() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8" aria-label="More options">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 sm:h-8 sm:w-8"
+                aria-label={tc('aria.moreOptions')}
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -334,11 +347,11 @@ export default function ResumeEditPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => {
-                  const next = resume.status === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+                  const next = resumeStatus === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
                   updateResumeMutation.mutate({ status: next });
                 }}
               >
-                {resume.status === 'ACTIVE' ? t('status.DRAFT') : t('status.ACTIVE')}
+                {resumeStatus === 'ACTIVE' ? t('status.DRAFT') : t('status.ACTIVE')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -350,7 +363,7 @@ export default function ResumeEditPage() {
         {/* Editor panel */}
         <div className="w-full overflow-y-auto p-4 lg:w-1/2 lg:border-r">
           <div className="mx-auto max-w-2xl space-y-4">
-            {resume.sections.map((section) => (
+            {resumeSections.map((section) => (
               <SectionCard
                 key={section.id}
                 section={section}

@@ -7,10 +7,19 @@ import { apiClient } from '@/lib/api';
 import { API_ROUTES, schoolListRoutes, timelineRoutes } from '@study-abroad/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Plus, GraduationCap, Loader2, Info } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  GraduationCap,
+  Info,
+  ListChecks,
+  Loader2,
+  Plus,
+  ShieldCheck,
+} from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
-import { PageContainer, PageHeader } from '@/components/layout';
+import { EnterpriseStatusStrip, PageContainer, PageHeader } from '@/components/layout';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,10 +51,76 @@ import {
   getCategoryColor,
 } from './_components/timeline.helpers';
 
+function listFromResponse<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (!value || typeof value !== 'object') return [];
+
+  const record = value as { items?: unknown; data?: unknown; results?: unknown };
+  if (Array.isArray(record.items)) return record.items as T[];
+  if (Array.isArray(record.data)) return record.data as T[];
+  if (Array.isArray(record.results)) return record.results as T[];
+  return [];
+}
+
+function overviewFromResponse(
+  value: unknown,
+  timelines: TimelineResponse[],
+  personalEvents: PersonalEventResponse[]
+): TimelineOverviewType | null {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const record = value as Partial<TimelineOverviewType>;
+    if (
+      typeof record.totalSchools === 'number' ||
+      typeof record.totalPersonalEvents === 'number' ||
+      Array.isArray(record.upcomingDeadlines)
+    ) {
+      return {
+        totalSchools: record.totalSchools ?? timelines.length,
+        submitted: record.submitted ?? timelines.filter((tl) => tl.status === 'SUBMITTED').length,
+        inProgress:
+          record.inProgress ??
+          timelines.filter((tl) => tl.status !== 'SUBMITTED' && tl.status !== 'NOT_STARTED').length,
+        notStarted:
+          record.notStarted ?? timelines.filter((tl) => tl.status === 'NOT_STARTED').length,
+        upcomingDeadlines: Array.isArray(record.upcomingDeadlines)
+          ? record.upcomingDeadlines
+          : timelines,
+        overdueTasks: Array.isArray(record.overdueTasks) ? record.overdueTasks : [],
+        totalPersonalEvents: record.totalPersonalEvents ?? personalEvents.length,
+        personalInProgress:
+          record.personalInProgress ??
+          personalEvents.filter((event) => event.status !== 'COMPLETED').length,
+        personalCompleted:
+          record.personalCompleted ??
+          personalEvents.filter((event) => event.status === 'COMPLETED').length,
+        upcomingPersonalEvents: Array.isArray(record.upcomingPersonalEvents)
+          ? record.upcomingPersonalEvents
+          : personalEvents,
+      };
+    }
+  }
+
+  if (!timelines.length && !personalEvents.length) return null;
+  return {
+    totalSchools: timelines.length,
+    submitted: timelines.filter((tl) => tl.status === 'SUBMITTED').length,
+    inProgress: timelines.filter((tl) => tl.status !== 'SUBMITTED' && tl.status !== 'NOT_STARTED')
+      .length,
+    notStarted: timelines.filter((tl) => tl.status === 'NOT_STARTED').length,
+    upcomingDeadlines: timelines,
+    overdueTasks: [],
+    totalPersonalEvents: personalEvents.length,
+    personalInProgress: personalEvents.filter((event) => event.status !== 'COMPLETED').length,
+    personalCompleted: personalEvents.filter((event) => event.status === 'COMPLETED').length,
+    upcomingPersonalEvents: personalEvents,
+  };
+}
+
 // ============ Page Component ============
 
 export default function TimelinePage() {
   const t = useTranslations('timeline');
+  const statusT = useTranslations('enterpriseStatus');
   const format = useFormatter();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,34 +164,52 @@ export default function TimelinePage() {
 
   // ============ Queries ============
 
-  const { data: overview, isLoading: overviewLoading } = useQuery<TimelineOverviewType>({
+  const { data: overviewRaw, isLoading: overviewLoading } = useQuery<unknown>({
     queryKey: ['timeline-overview'],
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/overview`),
   });
 
-  const { data: timelines = [], isLoading: timelinesLoading } = useQuery<TimelineResponse[]>({
+  const { data: timelinesRaw, isLoading: timelinesLoading } = useQuery<unknown>({
     queryKey: ['timelines'],
     queryFn: () => apiClient.get(API_ROUTES.TIMELINES),
   });
+  const timelines = useMemo(() => listFromResponse<TimelineResponse>(timelinesRaw), [timelinesRaw]);
 
-  const { data: globalEvents = [] } = useQuery<GlobalEvent[]>({
+  const { data: globalEventsRaw } = useQuery<unknown>({
     queryKey: ['global-events'],
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/global-events`),
   });
+  const globalEvents = useMemo(
+    () => listFromResponse<GlobalEvent>(globalEventsRaw),
+    [globalEventsRaw]
+  );
 
-  const { data: personalEvents = [], isLoading: personalLoading } = useQuery<
-    PersonalEventResponse[]
-  >({
+  const { data: personalEventsRaw, isLoading: personalLoading } = useQuery<unknown>({
     queryKey: ['personal-events'],
     queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/personal-events`),
   });
+  const personalEvents = useMemo(
+    () => listFromResponse<PersonalEventResponse>(personalEventsRaw),
+    [personalEventsRaw]
+  );
 
-  const { data: schoolListItems = [] } = useQuery<
-    Array<{ id: string; schoolId: string; school: { id: string; name: string; nameZh?: string } }>
-  >({
+  const { data: schoolListItemsRaw } = useQuery<unknown>({
     queryKey: ['school-lists'],
     queryFn: () => apiClient.get(schoolListRoutes.list()),
   });
+  const schoolListItems = useMemo(
+    () =>
+      listFromResponse<{
+        id: string;
+        schoolId: string;
+        school: { id: string; name: string; nameZh?: string };
+      }>(schoolListItemsRaw),
+    [schoolListItemsRaw]
+  );
+  const overview = useMemo(
+    () => overviewFromResponse(overviewRaw, timelines, personalEvents),
+    [overviewRaw, timelines, personalEvents]
+  );
 
   const generateTimelineMutation = useMutation({
     mutationFn: (schoolIds: string[]) =>
@@ -214,6 +307,17 @@ export default function TimelinePage() {
   const hasTimelines = timelines.length > 0;
   const hasPersonalEvents = personalEvents.length > 0;
   const hasAny = hasTimelines || hasPersonalEvents;
+  const deadlineRiskCount = useMemo(() => {
+    const schoolRisk = timelines.filter((item) => {
+      const days = getDaysUntil(item.deadline);
+      return days !== null && days >= 0 && days <= 30;
+    }).length;
+    const personalRisk = personalEvents.filter((item) => {
+      const days = getDaysUntil(item.deadline ?? item.eventDate);
+      return days !== null && days >= 0 && days <= 30;
+    }).length;
+    return schoolRisk + personalRisk;
+  }, [timelines, personalEvents]);
 
   const schoolsWithoutTimeline = useMemo(() => {
     const timelineSchoolIds = new Set(timelines.map((tl) => tl.schoolId));
@@ -284,11 +388,20 @@ export default function TimelinePage() {
         color="blue"
         actions={
           <>
-            <Button variant="outline" size="sm" onClick={() => setShowCreateEvent(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-h-10 sm:min-h-9"
+              onClick={() => setShowCreateEvent(true)}
+            >
               <Plus className="h-4 w-4 mr-1" />
               {t('personalEvents.create')}
             </Button>
-            <Button onClick={() => router.push('/schools')} size="sm">
+            <Button
+              onClick={() => router.push('/schools')}
+              size="sm"
+              className="min-h-10 sm:min-h-9"
+            >
               <Plus className="h-4 w-4 mr-1" />
               {t('addSchool')}
             </Button>
@@ -296,16 +409,58 @@ export default function TimelinePage() {
         }
       />
 
+      <EnterpriseStatusStrip
+        title={statusT('timeline.title')}
+        description={statusT('timeline.description')}
+        items={[
+          {
+            tone: schoolsWithoutTimeline.length > 0 ? 'attention' : 'ready',
+            label: statusT('timeline.coverage'),
+            value:
+              schoolsWithoutTimeline.length > 0
+                ? String(schoolsWithoutTimeline.length)
+                : statusT('states.ready'),
+            description: statusT('timeline.coverageDesc'),
+            icon: GraduationCap,
+          },
+          {
+            tone: deadlineRiskCount > 0 ? 'attention' : 'ready',
+            label: statusT('timeline.risk'),
+            value: deadlineRiskCount > 0 ? String(deadlineRiskCount) : statusT('states.ready'),
+            description: statusT('timeline.riskDesc'),
+            icon: AlertTriangle,
+          },
+          {
+            tone: hasAny ? 'ready' : 'blocked',
+            label: statusT('timeline.tasks'),
+            value: hasAny ? statusT('states.ready') : statusT('states.blocked'),
+            description: statusT('timeline.tasksDesc'),
+            icon: ListChecks,
+          },
+          {
+            tone: upcomingGlobalEvents.length > 0 ? 'verified' : 'attention',
+            label: statusT('timeline.sync'),
+            value:
+              upcomingGlobalEvents.length > 0
+                ? statusT('states.verified')
+                : statusT('states.nextAction'),
+            description: statusT('timeline.syncDesc'),
+            icon: ShieldCheck,
+          },
+        ]}
+      />
+
       {/* Tab navigation */}
-      <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+      <div className="flex w-fit gap-1 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] p-1 shadow-[var(--theme-button-shadow)]">
         {(['all', 'school', 'personal'] as TabType[]).map((tab) => (
           <button
             key={tab}
+            type="button"
             onClick={() => handleTabChange(tab)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`min-h-10 px-4 py-2 text-sm font-medium rounded-md transition-colors sm:min-h-9 ${
               activeTab === tab
-                ? 'bg-background shadow-sm text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'bg-[color:var(--theme-control-selected-bg)] shadow-sm text-foreground'
+                : 'text-muted-foreground hover:bg-[color:var(--theme-control-hover-bg)] hover:text-foreground'
             }`}
           >
             {t(`tabs.${tab}`)}
@@ -324,11 +479,15 @@ export default function TimelinePage() {
             <h3 className="text-lg font-semibold mb-2">{t('empty.title')}</h3>
             <p className="text-muted-foreground mb-4 max-w-md">{t('empty.description')}</p>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowCreateEvent(true)}>
+              <Button
+                variant="outline"
+                className="min-h-10"
+                onClick={() => setShowCreateEvent(true)}
+              >
                 <Plus className="h-4 w-4 mr-1" />
                 {t('personalEvents.create')}
               </Button>
-              <Button onClick={() => router.push('/schools')}>
+              <Button className="min-h-10" onClick={() => router.push('/schools')}>
                 <Plus className="h-4 w-4 mr-1" />
                 {t('empty.action')}
               </Button>
@@ -405,7 +564,7 @@ export default function TimelinePage() {
 
       {/* Dynamic calculation note */}
       {hasAny && (
-        <div className="p-3 bg-muted/50 rounded-lg flex items-start gap-2 text-sm">
+        <div className="flex items-start gap-2 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-3 text-sm">
           <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
           <span className="text-muted-foreground">{t('dynamicNote')}</span>
         </div>

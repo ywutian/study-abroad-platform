@@ -181,7 +181,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                   <h3 className="text-lg font-bold text-foreground">{displayName}</h3>
                   <div className="flex items-center justify-center gap-2 mt-1.5">
                     {user.role === 'VERIFIED' && (
-                      <Badge variant="success" className="gap-1 text-[10px]">
+                      <Badge variant="success" className="gap-1 text-2xs">
                         <BadgeCheck className="h-3 w-3" />
                         {t('followers.verified')}
                       </Badge>
@@ -189,7 +189,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                     {isMutualFollow && (
                       <Badge
                         variant="secondary"
-                        className="gap-1 text-[10px] bg-green-500/10 text-green-700 dark:text-green-400 border-0"
+                        className="gap-1 text-2xs bg-green-500/10 text-green-700 dark:text-green-400 border-0"
                       >
                         <ArrowUpDown className="h-3 w-3" />
                         {t('followers.mutual')}
@@ -223,7 +223,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                 ].map((stat) => (
                   <div key={stat.label} className="text-center py-1">
                     <div className={cn('text-xl font-bold', stat.accent)}>{stat.value}</div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</div>
+                    <div className="text-2xs text-muted-foreground mt-0.5">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -277,6 +277,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                 {user.isFollowing ? (
                   <Button
                     variant="outline"
+                    aria-label={t('followers.actions.unfollow')}
                     className="flex-1 h-10"
                     onClick={() => unfollowMutation.mutate()}
                     disabled={unfollowMutation.isPending}
@@ -292,6 +293,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
                   </Button>
                 ) : (
                   <Button
+                    aria-label={t('followers.actions.follow')}
                     className="flex-1 h-10"
                     onClick={() => followMutation.mutate()}
                     disabled={followMutation.isPending}

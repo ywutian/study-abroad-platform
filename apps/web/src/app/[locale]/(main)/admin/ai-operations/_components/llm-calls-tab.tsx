@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -69,7 +69,11 @@ export function LlmCallsTab() {
     },
   });
 
-  const totalPages = data ? Math.ceil(data.total / data.pageSize) : 0;
+  const rows = Array.isArray(data?.data) ? data.data : [];
+  const total = typeof data?.total === 'number' ? data.total : rows.length;
+  const pageSize = typeof data?.pageSize === 'number' && data.pageSize > 0 ? data.pageSize : 20;
+  const currentPage = typeof data?.page === 'number' ? data.page : page;
+  const totalPages = Math.ceil(total / pageSize);
 
   return (
     <Card>
@@ -79,7 +83,7 @@ export function LlmCallsTab() {
           <CardTitle className="text-base">{t('llmCalls.title')}</CardTitle>
           {data && (
             <Badge variant="secondary" className="ml-auto">
-              {data.total} {t('llmCalls.total')}
+              {total} {t('llmCalls.total')}
             </Badge>
           )}
         </div>
@@ -141,7 +145,7 @@ export function LlmCallsTab() {
         {/* Table */}
         {isLoading ? (
           <p className="text-sm text-muted-foreground py-8 text-center">{t('llmCalls.loading')}</p>
-        ) : data && data.data.length > 0 ? (
+        ) : rows.length > 0 ? (
           <>
             <Table>
               <TableHeader>
@@ -157,11 +161,11 @@ export function LlmCallsTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.data.map((row) => {
+                {rows.map((row) => {
                   const meta = row.metadata || {};
                   const isExpanded = expandedRow === row.id;
                   return (
-                    <>
+                    <Fragment key={row.id}>
                       <TableRow
                         key={row.id}
                         className="cursor-pointer hover:bg-muted/50"
@@ -235,7 +239,7 @@ export function LlmCallsTab() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </TableBody>
@@ -245,9 +249,9 @@ export function LlmCallsTab() {
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
                 {t('llmCalls.showing', {
-                  from: (data.page - 1) * data.pageSize + 1,
-                  to: Math.min(data.page * data.pageSize, data.total),
-                  total: data.total,
+                  from: (currentPage - 1) * pageSize + 1,
+                  to: Math.min(currentPage * pageSize, total),
+                  total,
                 })}
               </p>
               <div className="flex gap-2">

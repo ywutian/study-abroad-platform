@@ -134,7 +134,7 @@ export function SuggestionsTab() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-success hover:text-success"
+                          className="h-10 w-10 text-success hover:text-success md:h-8 md:w-8"
                           onClick={() => {
                             setApproveTarget(suggestion);
                             setSelectedType('private');
@@ -147,7 +147,7 @@ export function SuggestionsTab() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          className="h-10 w-10 text-destructive hover:text-destructive md:h-8 md:w-8"
                           onClick={() => rejectMutation.mutate(suggestion.id)}
                           disabled={rejectMutation.isPending}
                           aria-label={t('suggestions.rejectAriaLabel', { name: suggestion.name })}

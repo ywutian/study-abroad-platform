@@ -1,11 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { adminRoutes } from '@study-abroad/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Bell,
+  CheckCircle2,
+  Clock,
+  Database,
+  Globe,
+  Loader2,
+  RefreshCw,
+  XCircle,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ListSkeleton } from '@/components/ui/loading-state';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -13,23 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ListSkeleton } from '@/components/ui/loading-state';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { apiClient } from '@/lib/api';
-import { adminRoutes } from '@study-abroad/shared';
-import { Progress } from '@/components/ui/progress';
 import { useAdminProgress } from '@/hooks/use-admin-progress';
-import { toast } from 'sonner';
-import {
-  Database,
-  Globe,
-  Bell,
-  RefreshCw,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-} from 'lucide-react';
+import { apiClient } from '@/lib/api';
 
 interface DataSyncJob {
   id: string;
@@ -184,7 +185,7 @@ export function DataSyncTab() {
             <div className="flex items-center gap-2 pt-2">
               {JOBS_WITH_LIMIT.includes(job.id) && (
                 <Select value={triggerLimit} onValueChange={setTriggerLimit}>
-                  <SelectTrigger className="w-[100px]">
+                  <SelectTrigger aria-label={t('limitPlaceholder')} className="w-[100px]">
                     <SelectValue placeholder={t('limitPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>

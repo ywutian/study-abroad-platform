@@ -110,9 +110,9 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
     <div className="flex gap-2">
       {isBookmarked ? (
         <Button
-          variant="secondary"
+          variant="warning"
           size="sm"
-          className="gap-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20"
+          className="gap-2"
           onClick={handleBookmarkRemove}
           disabled={removeBookmarkMutation.isPending}
         >
@@ -125,7 +125,7 @@ export function SchoolBookmarkButton({ schoolId, canShare }: SchoolBookmarkButto
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-500/30"
+              className="gap-2"
               disabled={addBookmarkMutation.isPending}
             >
               <Bookmark className="h-4 w-4" />

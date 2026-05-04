@@ -65,6 +65,7 @@ export default function ReferralPage() {
     queryFn: () => apiClient.get<ReferralListData>(userRoutes.referrals()),
     enabled: !!user,
   });
+  const referrals = Array.isArray(referralList?.referrals) ? referralList.referrals : [];
 
   const handleCopy = useCallback(async (text: string, type: 'code' | 'link') => {
     try {
@@ -351,9 +352,9 @@ export default function ReferralPage() {
                   <CardTitle className="text-lg text-foreground">{t('history')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {referralList && referralList.referrals.length > 0 ? (
+                  {referrals.length > 0 ? (
                     <div className="space-y-3">
-                      {referralList.referrals.map((referral) => (
+                      {referrals.map((referral) => (
                         <div
                           key={referral.id}
                           className="flex items-center justify-between rounded-lg border border-border p-4 transition-colors hover:bg-muted/50"
