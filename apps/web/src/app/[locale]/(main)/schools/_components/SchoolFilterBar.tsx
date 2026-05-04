@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import { Globe, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Globe, Search } from 'lucide-react';
 import { schoolRoutes } from '@study-abroad/shared';
 import { AdvancedSchoolFilter } from '@/components/features';
 import { Badge } from '@/components/ui/badge';
@@ -47,8 +46,6 @@ interface SchoolFilterBarProps {
   onSearchChange: (value: string) => void;
   country: string;
   onCountryChange: (value: string) => void;
-  sortBy: string;
-  onSortByChange: (value: string) => void;
   advancedFilters: SchoolFilters;
   onAdvancedFiltersChange: (filters: SchoolFilters) => void;
   onResetAdvancedFilters: () => void;
@@ -66,8 +63,6 @@ export function SchoolFilterBar({
   onSearchChange,
   country,
   onCountryChange,
-  sortBy,
-  onSortByChange,
   advancedFilters,
   onAdvancedFiltersChange,
   onResetAdvancedFilters,
@@ -83,7 +78,7 @@ export function SchoolFilterBar({
 
   const { data: availableCountries } = useQuery<AvailableCountry[]>({
     queryKey: ['schools', 'countries'],
-    queryFn: () => apiClient.get(schoolRoutes.countries()),
+    queryFn: () => apiClient.get(schoolRoutes.countries(), { suppressErrorToast: true }),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -136,52 +131,6 @@ export function SchoolFilterBar({
                 ))}
               </SelectContent>
             </Select>
-          )}
-
-          <Select value={sortBy} onValueChange={onSortByChange}>
-            <SelectTrigger>
-              <SlidersHorizontal className="mr-2 h-4 w-4 text-muted-foreground" />
-              <SelectValue placeholder={t('sortBy')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rank">{t('sort.rank')}</SelectItem>
-              <SelectItem value="name">{t('sort.name')}</SelectItem>
-              <SelectItem value="acceptance">{t('sort.acceptance')}</SelectItem>
-              <SelectItem value="salary">{t('sort.salary')}</SelectItem>
-              <SelectItem value="weighted">{t('weightSort')}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {(search || (showCountryFilter && country !== 'ALL')) && (
-            <div className="flex flex-wrap gap-2">
-              {search && (
-                <Badge variant="secondary" className="gap-1 pr-1">
-                  <Search className="h-3 w-3" />
-                  {search}
-                  <button
-                    onClick={() => onSearchChange('')}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-              {showCountryFilter && country !== 'ALL' && (
-                <Badge variant="secondary" className="gap-1 pr-1">
-                  <Globe className="h-3 w-3" />
-                  {(() => {
-                    const match = countries.find((c) => c.value === country);
-                    return match ? t(`countries.${match.labelKey}`) : country;
-                  })()}
-                  <button
-                    onClick={() => onCountryChange('ALL')}
-                    className="ml-1 rounded-full p-0.5 hover:bg-muted"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              )}
-            </div>
           )}
         </div>
 
