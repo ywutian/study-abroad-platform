@@ -110,7 +110,7 @@ export class PredictionMlPrimaryService {
     locale: string,
   ): Promise<MlPrimaryResult> {
     // Step 1: Base rate (school-level acceptance rate adjusted for round, intl, China, major)
-    const majorCompetitiveness = await this.resolveMajorCompetitiveness(
+    const majorInfo = await this.resolveMajorCompetitiveness(
       school.id,
       profileMetrics.targetMajorCategory,
     );
@@ -118,7 +118,8 @@ export class PredictionMlPrimaryService {
       school,
       profileInput,
       round,
-      majorCompetitiveness,
+      majorInfo.competitiveness,
+      majorInfo.acceptanceRate,
     );
 
     // Step 2: Determine tier from labeled data count
@@ -448,13 +449,15 @@ export class PredictionMlPrimaryService {
 
   /**
    * Resolve major competitiveness for a school+major combination.
-   * Returns the competitiveness score (1-5) or undefined if no data.
+   * Returns both the competitiveness score (1-5) AND the school-specific
+   * acceptance rate when available, so callers can prefer data-driven rates
+   * over the 5-band hardcoded multiplier.
    */
   private async resolveMajorCompetitiveness(
     schoolId: string,
     targetMajorCategory?: string,
-  ): Promise<number | undefined> {
-    if (!targetMajorCategory) return undefined;
+  ): Promise<{ competitiveness?: number; acceptanceRate?: number }> {
+    if (!targetMajorCategory) return {};
 
     // Resolve free-text major to CIP code for precise lookup
     const cipCode = resolveMajorToCip(targetMajorCategory);
@@ -466,10 +469,18 @@ export class PredictionMlPrimaryService {
             schoolId,
             programName: { contains: targetMajorCategory, mode: 'insensitive' },
           }, // Fallback text search
-      select: { competitiveness: true },
+      select: { competitiveness: true, acceptanceRateEstimate: true },
     });
 
-    return program?.competitiveness ?? undefined;
+    if (!program) return {};
+
+    return {
+      competitiveness: program.competitiveness ?? undefined,
+      acceptanceRate:
+        program.acceptanceRateEstimate != null
+          ? Number(program.acceptanceRateEstimate)
+          : undefined,
+    };
   }
 
   /** Convert internal hook type enum to user-friendly label */

@@ -654,6 +654,70 @@ describe('calculateOverallScore', () => {
         SCORING_WEIGHTS.award,
     ).toBeCloseTo(1, 4);
   });
+
+  it('should boost overall when essayQualityScore is high (10/10)', () => {
+    const profile: ProfileMetrics = {
+      gpa: 3.7,
+      gpaScale: 4.0,
+      satScore: 1450,
+      activityCount: 5,
+      awardCount: 2,
+      nationalAwardCount: 1,
+      internationalAwardCount: 0,
+    };
+    const baseline = calculateOverallScore(profile, {});
+    const withGreatEssay = calculateOverallScore(
+      { ...profile, essayQualityScore: 10 },
+      {},
+    );
+    const withWeakEssay = calculateOverallScore(
+      { ...profile, essayQualityScore: 2 },
+      {},
+    );
+    // Great essay (10/10) should raise overall
+    expect(withGreatEssay).toBeGreaterThan(baseline);
+    // Weak essay (2/10) should lower overall vs no-essay baseline
+    expect(withWeakEssay).toBeLessThan(baseline);
+  });
+
+  it('should accept essayQualityScore on legacy 0-100 scale', () => {
+    const profile: ProfileMetrics = {
+      gpa: 3.7,
+      gpaScale: 4.0,
+      activityCount: 5,
+      awardCount: 2,
+      nationalAwardCount: 1,
+      internationalAwardCount: 0,
+    };
+    const score10 = calculateOverallScore(
+      { ...profile, essayQualityScore: 8 },
+      {},
+    );
+    const score100 = calculateOverallScore(
+      { ...profile, essayQualityScore: 80 },
+      {},
+    );
+    // 8/10 and 80/100 should produce identical overall scores
+    expect(score10).toBeCloseTo(score100, 4);
+  });
+
+  it('should not penalize when essayQualityScore is missing (graceful fallback)', () => {
+    const profile: ProfileMetrics = {
+      gpa: 3.7,
+      gpaScale: 4.0,
+      activityCount: 5,
+      awardCount: 2,
+      nationalAwardCount: 1,
+      internationalAwardCount: 0,
+    };
+    const noEssay = calculateOverallScore(profile, {});
+    // Same profile without essayQualityScore field
+    const explicitUndefined = calculateOverallScore(
+      { ...profile, essayQualityScore: undefined },
+      {},
+    );
+    expect(noEssay).toBe(explicitUndefined);
+  });
 });
 
 // ============================================

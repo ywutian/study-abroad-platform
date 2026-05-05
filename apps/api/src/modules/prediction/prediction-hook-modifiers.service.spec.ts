@@ -206,6 +206,63 @@ describe('PredictionHookModifiersService', () => {
       expect(result).toBeCloseTo(0.1, 2);
     });
 
+    it('should prefer program-specific rate over school rate × multiplier', async () => {
+      const school = makeSchool({ acceptanceRate: 11 }); // UCB
+      // UCB CS real rate is 6.45%, not 11% × 0.30 = 3.3%
+      const result = await service.getBaseRate(
+        school,
+        makeProfile(),
+        'RD',
+        5, // competitiveness=5 → would normally apply 0.30 multiplier
+        6.45, // programAcceptanceRate
+      );
+      // Expect 6.45% directly, NOT 11% × 0.30 = 3.3%
+      expect(result).toBeCloseTo(0.0645, 3);
+    });
+
+    it('should ignore program rate for ED round (round-specific rates win)', async () => {
+      const school = makeSchool({
+        acceptanceRate: 11,
+        edAcceptanceRate: 18,
+      });
+      const result = await service.getBaseRate(
+        school,
+        makeProfile(),
+        'ED',
+        5,
+        6.45, // program rate ignored for ED → ED rate × 5-band multiplier still applies
+      );
+      // 18% ED rate × 0.30 (comp=5 multiplier) = 5.4%
+      expect(result).toBeCloseTo(0.054, 3);
+    });
+
+    it('should fall back to 5-band multiplier when programRate is undefined', async () => {
+      const school = makeSchool({ acceptanceRate: 10 });
+      const result = await service.getBaseRate(
+        school,
+        makeProfile(),
+        'RD',
+        5,
+        undefined,
+      );
+      // 0.10 × 0.30 = 0.03 (5-band fallback)
+      expect(result).toBeCloseTo(0.03, 2);
+    });
+
+    it('should handle program rates already in 0-1 range (decimal)', async () => {
+      const school = makeSchool({ acceptanceRate: 11 });
+      // Some callers may pass 0.0645 instead of 6.45
+      const result = await service.getBaseRate(
+        school,
+        makeProfile(),
+        'RD',
+        5,
+        0.0645,
+      );
+      // 0.0645 is < 1, should NOT be divided by 100 again
+      expect(result).toBeCloseTo(0.0645, 4);
+    });
+
     it('should clamp result to minimum 0.005', async () => {
       // Chinese applicant + ultra-selective + hyper-competitive major
       const school = makeSchool({

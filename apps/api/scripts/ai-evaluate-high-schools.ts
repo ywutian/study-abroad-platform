@@ -53,7 +53,9 @@ async function callLLM(prompt: string): Promise<string> {
       model,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
-      max_tokens: 1000,
+      // Newer OpenAI models (gpt-4o, gpt-4.1, o3) require max_completion_tokens
+      // instead of the deprecated max_tokens param.
+      max_completion_tokens: 1000,
     }),
   });
 

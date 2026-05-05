@@ -132,11 +132,33 @@ export class PredictionHookModifiersService {
     profile: ProfileInput,
     round: string,
     majorCompetitiveness?: number,
+    /**
+     * Per-school per-major acceptance rate from SchoolProgram (CDS Section J).
+     * When set, this OVERRIDES the school-level rate and the 5-band multiplier
+     * because it's more accurate than `school.acceptanceRate × heuristic_mult`.
+     * Format: percentage (e.g. 6.45 means 6.45%) — same as school.acceptanceRate.
+     */
+    programAcceptanceRate?: number,
   ): Promise<number> {
     // Step 1: Select the most specific acceptance rate
     let baseRate: number;
 
-    if (
+    // Step 1.5: If program-specific rate is available, prefer it over school-level.
+    // This is more accurate than `school_rate × competitiveness_multiplier`.
+    // Only applies to RD round (ED/EA have their own round-specific rates).
+    const useProgramRate =
+      programAcceptanceRate != null &&
+      Number.isFinite(programAcceptanceRate) &&
+      programAcceptanceRate > 0 &&
+      (round === 'RD' || round === 'REGULAR' || !round);
+
+    if (useProgramRate) {
+      baseRate = programAcceptanceRate!;
+      this.logger.debug(
+        `Using program-specific rate: ${baseRate.toFixed(2)}% ` +
+          `(school-level was ${school.acceptanceRate}%)`,
+      );
+    } else if (
       (round === 'ED' || round === 'SCEA' || round === 'REA') &&
       school.edAcceptanceRate != null
     ) {
@@ -167,8 +189,9 @@ export class PredictionHookModifiersService {
       }
     }
 
-    // Step 3: Major selectivity multiplier
-    if (majorCompetitiveness != null) {
+    // Step 3: Major selectivity multiplier — SKIP when we already used the
+    // program-specific rate (which already encodes major selectivity).
+    if (!useProgramRate && majorCompetitiveness != null) {
       const majorMultiplier =
         getMajorSelectivityMultiplier(majorCompetitiveness);
       if (majorMultiplier !== 1.0) {

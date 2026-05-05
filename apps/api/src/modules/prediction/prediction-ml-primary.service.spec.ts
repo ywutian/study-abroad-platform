@@ -226,6 +226,7 @@ describe('PredictionMlPrimaryService', () => {
         profileInput,
         'ED',
         undefined, // majorCompetitiveness (schoolProgram.findFirst returns null)
+        undefined, // programAcceptanceRate (no program data)
       );
     });
 
@@ -593,7 +594,10 @@ describe('PredictionMlPrimaryService', () => {
           where: expect.objectContaining({
             schoolId: 'school-1',
           }),
-          select: { competitiveness: true },
+          select: {
+            competitiveness: true,
+            acceptanceRateEstimate: true,
+          },
         }),
       );
     });
@@ -601,6 +605,7 @@ describe('PredictionMlPrimaryService', () => {
     it('should pass competitiveness to getBaseRate', async () => {
       mockPrisma.schoolProgram.findFirst.mockResolvedValue({
         competitiveness: 5,
+        acceptanceRateEstimate: null,
       });
 
       await service.predictForSchool(
@@ -619,6 +624,33 @@ describe('PredictionMlPrimaryService', () => {
         expect.anything(),
         'RD',
         5, // competitiveness from schoolProgram
+        undefined, // no program-specific rate
+      );
+    });
+
+    it('should pass program-specific rate when available', async () => {
+      mockPrisma.schoolProgram.findFirst.mockResolvedValue({
+        competitiveness: 5,
+        acceptanceRateEstimate: 6.45,
+      });
+
+      await service.predictForSchool(
+        'profile-1',
+        makeSchool(),
+        makeProfileInput(),
+        makeSchoolInput(),
+        makeProfileMetrics({ targetMajorCategory: 'Computer Science' }),
+        makeSchoolMetrics(),
+        'RD',
+        'en',
+      );
+
+      expect(mockHookModifiers.getBaseRate).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'RD',
+        5, // competitiveness
+        6.45, // program-specific rate
       );
     });
 
@@ -639,6 +671,7 @@ describe('PredictionMlPrimaryService', () => {
         expect.anything(),
         expect.anything(),
         'RD',
+        undefined,
         undefined,
       );
     });
@@ -667,6 +700,7 @@ describe('PredictionMlPrimaryService', () => {
         expect.anything(),
         expect.anything(),
         'RD',
+        undefined,
         undefined,
       );
     });

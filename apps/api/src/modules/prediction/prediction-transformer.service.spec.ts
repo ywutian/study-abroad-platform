@@ -162,7 +162,7 @@ describe('PredictionTransformerService', () => {
   });
 
   describe('enrichWithEssayQuality', () => {
-    it('should add essay quality score from AI result', async () => {
+    it('should add essay quality score from AI result (normalize 0-100 to 0-10)', async () => {
       mockPrisma.essayAIResult.findFirst.mockResolvedValue({
         output: JSON.stringify({ overallScore: 85 }),
       });
@@ -170,7 +170,20 @@ describe('PredictionTransformerService', () => {
       const profile = { testScores: [], activities: [], awards: [] } as any;
       const result = await service.enrichWithEssayQuality(profile, 'prof-1');
 
-      expect(result.essayQualityScore).toBe(85);
+      // 85/100 normalized to 8.5/10 scale (transformer normalizes for downstream
+      // ProfileMetrics/ProfileInput consumers which expect the 0-10 range)
+      expect(result.essayQualityScore).toBe(8.5);
+    });
+
+    it('should accept already-normalized 0-10 scores unchanged', async () => {
+      mockPrisma.essayAIResult.findFirst.mockResolvedValue({
+        output: JSON.stringify({ overallScore: 7.5 }),
+      });
+
+      const profile = { testScores: [], activities: [], awards: [] } as any;
+      const result = await service.enrichWithEssayQuality(profile, 'prof-1');
+
+      expect(result.essayQualityScore).toBe(7.5);
     });
 
     it('should not fail when no essay result exists', async () => {
