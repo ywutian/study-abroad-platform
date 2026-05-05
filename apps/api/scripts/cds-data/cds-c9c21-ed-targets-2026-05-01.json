@@ -1,0 +1,155 @@
+{
+  "_meta": {
+    "extractedAt": "2026-05-01T10:52:22.307Z",
+    "source": "CDS C9 (GPA distribution) + C21 (ED/EA) via LLM",
+    "model": "gpt-4.1-mini",
+    "input": "scripts/cds-data/cds-pdf-registry-ed-targets-2026-05-01.json",
+    "success": 7,
+    "failures": 4
+  },
+  "schools": [
+    {
+      "schoolNameNorm": "university of chicago",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.896,
+        "3.50-3.74": 0.0662,
+        "3.25-3.49": 0.0341,
+        "3.00-3.24": 0.0029,
+        "<3.00": 0.001
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA bands mapped by summing 4.0 and 3.75-3.99 bands (0.6265 + 0.2695 = 0.896). The original data reported percentages for 4.0 as 62.65%, 3.75-3.99 as 26.95%, 3.50-3.74 as 6.62%, 3.25-3.49 as 3.41%, 3.00-3.24 as 0.29%, 2.50-2.99 as 0.10%, 2.0-2.49 and below 2.0 as 0%. C21 Early Decision and Early Action sections show that the institution offers both ED and EA but did not provide number of applicants or admits for either; therefore these fields are null."
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "The CDS 2024-2025 for Tufts University does not provide a high school GPA distribution for first-time, first-year students enrolled (C9). It states 0.00% for all GPA ranges. The Early Decision plan is offered, but no numbers for applications or admitted students under ED or EA are provided in the extracted text."
+    },
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "cycleYear": 2024,
+      "sourceUrl": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.928,
+        "3.50-3.74": 0.057,
+        "3.25-3.49": 0.009,
+        "3.00-3.24": 0.004,
+        "<3.00": 0.002
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of Michigan, Ann Arbor does not offer an early decision plan (C21). They have an early action plan but did not report number of applicants or admits for Early Action for Fall 2024."
+    },
+    {
+      "schoolNameNorm": "new york university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/2024-2025%20(pdf,%20file%20size%20907KB).pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.72,
+        "3.50-3.74": 0.22,
+        "3.25-3.49": 0.05,
+        "3.00-3.24": 0.01,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Decision is offered but number of applicants and admits not reported. No Early Action plan offered."
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "cycleYear": 2024,
+      "sourceUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.99,
+        "3.50-3.74": 0.01,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "University of North Carolina at Chapel Hill does not offer Early Decision plans according to CDS-C21. Early Action plan exists but no counts for applicants or admits are reported."
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "cycleYear": 2024,
+      "sourceUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf",
+      "gpaDistribution": null,
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "C9 GPA distribution data not reported (all ranges show 0.00%). C21 Early Decision and Early Action plans offered but no numerical data on applications or admits reported."
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "cycleYear": 2024,
+      "sourceUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf",
+      "gpaDistribution": {
+        "3.75-4.00": 0.94,
+        "3.50-3.74": 0.06,
+        "3.25-3.49": 0,
+        "3.00-3.24": 0,
+        "<3.00": 0
+      },
+      "edAcceptanceRate": null,
+      "eaAcceptanceRate": null,
+      "edApplied": null,
+      "edAdmitted": null,
+      "eaApplied": null,
+      "eaAdmitted": null,
+      "notes": "Early Decision is offered (Yes), but number of applicants and admits not reported; Early Action is offered with closing date 11/1 and notification date 1/23, non-restrictive, but no applicants/admits data provided."
+    }
+  ],
+  "failures": [
+    {
+      "schoolNameNorm": "university of notre dame",
+      "sourceUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf",
+      "error": "Download failed 404: https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "sourceUrl": "https://oire.georgetown.edu/wp-content/uploads/2025/10/CDS_2024-25.pdf",
+      "error": "fetch failed"
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "sourceUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/08/CDS_2024-2025_FINAL.pdf",
+      "error": "Download failed 404: https://oir.usc.edu/wp-content/uploads/sites/3/2025/08/CDS_2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "sourceUrl": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf",
+      "error": "fetch failed"
+    }
+  ]
+}
