@@ -2,12 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   COLOR_THEME_CATEGORIES,
   COLOR_THEME_DEFINITIONS,
+  DEFAULT_COLOR_PALETTE,
+  DEFAULT_HERO_VISUAL_ID,
   EXPERIMENTAL_COLOR_PALETTE_IDS,
   FEATURED_COLOR_PALETTE_IDS,
+  HERO_VISUAL_DEFINITIONS,
+  HERO_VISUAL_IDS,
   getThemeColors,
   getThemeCssText,
   getThemePreview,
   getThemeStyleMeta,
+  parseHeroVisualId,
   type ColorPalette,
 } from '@study-abroad/shared';
 
@@ -124,5 +129,29 @@ describe('global theme packages', () => {
     expect(css).toContain('--theme-card-shadow');
     expect(css).toContain('html:not(.dark)[data-color-palette="studio-black-blue"]');
     expect(css).toContain('html.dark[data-color-palette="contrast-cyan"]');
+  });
+
+  it('defines the premium homepage hero visual library', () => {
+    expect(HERO_VISUAL_DEFINITIONS).toHaveLength(7);
+    expect(HERO_VISUAL_IDS).toHaveLength(7);
+    expect(DEFAULT_COLOR_PALETTE).toBe('cobalt-saas');
+    expect(DEFAULT_HERO_VISUAL_ID).toBe('command-center');
+    expect(new Set(HERO_VISUAL_IDS).size).toBe(HERO_VISUAL_IDS.length);
+    expect(HERO_VISUAL_IDS).toEqual([
+      'classic-matrix',
+      'command-center',
+      'deer-moon-monolith',
+      'framer-orbit',
+      'lovable-aura',
+      'beige-editorial',
+      'command-minimal',
+    ]);
+  });
+
+  it('falls back and migrates legacy hero visual ids', () => {
+    expect(parseHeroVisualId('command-center')).toBe('command-center');
+    expect(parseHeroVisualId('matrix-premium')).toBe(DEFAULT_HERO_VISUAL_ID);
+    expect(parseHeroVisualId('not-a-hero')).toBe(DEFAULT_HERO_VISUAL_ID);
+    expect(parseHeroVisualId(undefined)).toBe(DEFAULT_HERO_VISUAL_ID);
   });
 });
