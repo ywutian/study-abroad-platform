@@ -235,8 +235,12 @@ describe('AuditLogService', () => {
         'HIGH_SCHOOL_APPROVED',
         'HIGH_SCHOOL_CALIBRATED',
         'HIGH_SCHOOL_TIER_CHANGED',
+        'THEME_STYLE_SAVE',
+        'THEME_STYLE_UPDATE',
+        'THEME_STYLE_ROLLBACK',
+        'THEME_STYLE_VALIDATE_FAILED',
       ]),
     );
-    expect(Object.values(AuditAction)).toHaveLength(28);
+    expect(Object.values(AuditAction)).toHaveLength(32);
   });
 });
