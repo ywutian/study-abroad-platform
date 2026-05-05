@@ -128,6 +128,27 @@
       "tryAgain": "Try again"
     }
   },
+  "enterpriseStatus": {
+    "states": {
+      "ready": "Ready",
+      "attention": "Needs attention",
+      "blocked": "Blocked",
+      "verified": "Verified",
+      "nextAction": "Next action"
+    },
+    "schools": {
+      "title": "School selection loop",
+      "description": "Discovery, portfolio balance, AI recommendations, and data verification use one application-state language.",
+      "catalog": "School catalog",
+      "catalogDesc": "Explore schools from one governed source instead of judging by page styling alone.",
+      "portfolio": "Portfolio balance",
+      "portfolioDesc": "Reach / Match / Safety balance affects prediction and deadline planning.",
+      "recommend": "AI recommendation",
+      "recommendDesc": "Recommendations should explain fit through profile readiness and intended major.",
+      "verification": "Data verification",
+      "verificationDesc": "Rankings, admit rates, and school details use verified data styling."
+    }
+  },
   "dashboard": {
     "welcome": "Welcome back, {name}",
     "user": "User",
@@ -3120,7 +3141,51 @@
     "noResults": "No schools found",
     "tryDifferentSearch": "Try searching with different keywords",
     "resultsCount": "{count} schools total",
-    "showingTruncated": "Showing first {shown} of {total} schools. Narrow your filters to see more.",
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total}",
+      "page": "Page {current} of {total}",
+      "perPage": "Per page",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "toolbar": {
+      "view": "View",
+      "viewCard": "Cards",
+      "viewList": "List",
+      "density": "Density",
+      "densityComfortable": "Comfortable",
+      "densityCompact": "Compact",
+      "sortLabel": "Sort by",
+      "resetAll": "Reset all",
+      "removeFilter": "Remove filter",
+      "rangeReadout": "Showing {from}–{to} of {total}",
+      "chip": {
+        "search": "Search",
+        "country": "Country",
+        "state": "State",
+        "region": "Region",
+        "ranking": "Ranking",
+        "acceptance": "Acceptance",
+        "tuition": "Tuition",
+        "size": "Size",
+        "salary": "Salary",
+        "schoolType": "Type",
+        "testOptional": "Test optional",
+        "needBlind": "Need-blind",
+        "hasEarlyDecision": "Early decision"
+      }
+    },
+    "list": {
+      "colRank": "Rank",
+      "colSchool": "School",
+      "colLocation": "Location",
+      "colAcceptance": "Acceptance",
+      "colStudents": "Students",
+      "colSalary": "Salary (median)",
+      "colTags": "Tags",
+      "colActions": "Actions",
+      "testOptional": "Test optional"
+    },
     "country": "Country",
     "countries": {
       "all": "All Countries",

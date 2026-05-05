@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { type SelectedSchool } from '@/components/features/schools/FloatingAddButton';
+import {
+  FloatingAddButton,
+  type SelectedSchool,
+} from '@/components/features/schools/FloatingAddButton';
 import {
   buildSchoolQueryParams,
   countActiveSchoolFilters,
-  SCHOOL_BROWSE_PAGE_SIZE,
+  SCHOOL_BROWSE_DEFAULT_PAGE_SIZE,
   type SchoolSortBy,
   type SchoolWeightParams,
   type SchoolFilters,
@@ -22,7 +25,29 @@ import { toast } from 'sonner';
 
 import { SchoolFilterBar } from './SchoolFilterBar';
 import { SchoolGrid } from './SchoolGrid';
+import { SchoolListView } from './SchoolListView';
+import { SchoolPagination } from './SchoolPagination';
+import { SchoolToolbar, type SchoolDensity, type SchoolViewMode } from './SchoolToolbar';
 import { type School } from './schools-types';
+
+const COUNTRY_LABEL_KEYS: Record<string, string> = {
+  US: 'us',
+  USA: 'us',
+  UK: 'uk',
+  GB: 'uk',
+  CA: 'canada',
+  AU: 'australia',
+  DE: 'germany',
+  JP: 'japan',
+};
+
+const VIEW_STORAGE_KEY = 'schools.browse.viewMode';
+const DENSITY_STORAGE_KEY = 'schools.browse.density';
+
+interface AvailableCountry {
+  code: string;
+  count: number;
+}
 
 const WEIGHT_PRESETS: Record<string, SchoolWeightParams> = {
   balanced: { ranking: 30, acceptanceRate: 25, tuition: 25, salary: 20 },
@@ -47,9 +72,78 @@ export function BrowseTab() {
   const [activePreset, setActivePreset] = useState<string>('balanced');
   const [fitWeights, setFitWeights] = useState<SchoolWeightParams>(WEIGHT_PRESETS.balanced);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(SCHOOL_BROWSE_DEFAULT_PAGE_SIZE);
+
+  // View / density state (localStorage-persisted)
+  const [viewMode, setViewMode] = useState<SchoolViewMode>('card');
+  const [density, setDensity] = useState<SchoolDensity>('comfortable');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const v = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (v === 'card' || v === 'list') setViewMode(v);
+      const d = window.localStorage.getItem(DENSITY_STORAGE_KEY);
+      if (d === 'comfortable' || d === 'compact') setDensity(d);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const handleViewModeChange = useCallback((mode: SchoolViewMode) => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(VIEW_STORAGE_KEY, mode);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const handleDensityChange = useCallback((d: SchoolDensity) => {
+    setDensity(d);
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(DENSITY_STORAGE_KEY, d);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  // Country list (fetched once, used for both filter dropdown and chip labels)
+  const { data: availableCountries } = useQuery<AvailableCountry[]>({
+    queryKey: ['schools', 'countries'],
+    queryFn: () =>
+      apiClient.get<AvailableCountry[]>(schoolRoutes.countries(), {
+        suppressErrorToast: true,
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const countriesT = useTranslations('schools.countries');
+  const countryLabel = useMemo(() => {
+    if (country === 'ALL') return '';
+    const labelKey = COUNTRY_LABEL_KEYS[country] ?? country.toLowerCase();
+    try {
+      return countriesT(labelKey as any);
+    } catch {
+      return country;
+    }
+  }, [country, countriesT]);
+  const showCountryFilter = (availableCountries?.length ?? 0) > 1;
+
   // Selection state
   const [addedSchools, setAddedSchools] = useState<Set<string>>(new Set());
   const [selectedSchools, setSelectedSchools] = useState<SelectedSchool[]>([]);
+
+  // Reset to page 1 whenever any filter / sort / weight / pageSize changes
+  useEffect(() => {
+    setPage(1);
+  }, [search, country, advancedFilters, sortBy, fitWeights, pageSize]);
 
   // Derived filter counts
   const activeAdvancedFilterCount = useMemo(
@@ -68,17 +162,19 @@ export function BrowseTab() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['schools', search, country, advancedFilters, sortBy, fitWeights],
+    queryKey: ['schools', search, country, advancedFilters, sortBy, fitWeights, page, pageSize],
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: buildSchoolQueryParams({
           search,
           country,
           filters: advancedFilters,
-          pageSize: SCHOOL_BROWSE_PAGE_SIZE,
+          page,
+          pageSize,
           sortBy,
           weights: fitWeights,
         }),
+        suppressErrorToast: true,
       }),
     staleTime: STALE_TIME.DYNAMIC,
     retry: 2,
@@ -162,6 +258,14 @@ export function BrowseTab() {
 
   const schools = useMemo(() => schoolsData?.items || [], [schoolsData?.items]);
   const total = schoolsData?.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const handlePageChange = useCallback((nextPage: number) => {
+    setPage(nextPage);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
 
   // Callbacks
   const toggleSchoolSelection = useCallback((school: School, checked: boolean) => {
@@ -212,8 +316,6 @@ export function BrowseTab() {
           onSearchChange={setSearch}
           country={country}
           onCountryChange={handleCountryChange}
-          sortBy={sortBy}
-          onSortByChange={(v) => setSortBy(v as SchoolSortBy)}
           advancedFilters={advancedFilters}
           onAdvancedFiltersChange={setAdvancedFilters}
           onResetAdvancedFilters={() => setAdvancedFilters(defaultAdvancedFilters)}
@@ -235,26 +337,85 @@ export function BrowseTab() {
         />
       </aside>
 
-      <section className="min-w-0">
-        <SchoolGrid
-          schools={schools}
+      <section className="min-w-0 space-y-4">
+        <SchoolToolbar
           total={total}
-          isLoading={isLoading}
-          isError={isError}
-          onRefetch={() => refetch()}
-          hasAuth={!!accessToken}
+          page={page}
+          pageSize={pageSize}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          density={density}
+          onDensityChange={handleDensityChange}
+          search={search}
+          onClearSearch={() => setSearch('')}
+          country={country}
+          showCountryChip={showCountryFilter}
+          countryLabel={countryLabel}
+          onClearCountry={() => handleCountryChange('ALL')}
+          advancedFilters={advancedFilters}
+          onAdvancedFiltersChange={setAdvancedFilters}
+          onResetAll={resetAllFilters}
+        />
+
+        {viewMode === 'list' && !isLoading && !isError && schools.length > 0 ? (
+          <>
+            <SchoolListView
+              schools={schools}
+              hasAuth={!!accessToken}
+              onToggleSelection={toggleSchoolSelection}
+              isSchoolSelected={isSchoolSelected}
+              addedSchools={addedSchools}
+              onAddToList={(schoolId, round) => addToListMutation.mutate({ schoolId, round })}
+              isAddingToList={addToListMutation.isPending}
+              sortBy={sortBy}
+              onSortByChange={setSortBy}
+              density={density}
+            />
+            <SchoolPagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={setPageSize}
+            />
+          </>
+        ) : (
+          <SchoolGrid
+            schools={schools}
+            total={total}
+            isLoading={isLoading}
+            isError={isError}
+            onRefetch={() => refetch()}
+            hasAuth={!!accessToken}
+            onToggleSelection={toggleSchoolSelection}
+            isSchoolSelected={isSchoolSelected}
+            addedSchools={addedSchools}
+            onAddToList={(schoolId, round) => addToListMutation.mutate({ schoolId, round })}
+            isAddingToList={addToListMutation.isPending}
+            hasFilters={hasFilters}
+            onResetAllFilters={resetAllFilters}
+            page={page}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            onPageSizeChange={setPageSize}
+            density={density}
+          />
+        )}
+
+        {/* Bottom spacer for floating bar (shared by both views) */}
+        {selectedSchools.length > 0 && <div className="h-16" />}
+
+        {/* Floating batch add bar (shared by both views) */}
+        <FloatingAddButton
           selectedSchools={selectedSchools}
-          onToggleSelection={toggleSchoolSelection}
-          isSchoolSelected={isSchoolSelected}
-          addedSchools={addedSchools}
-          onAddToList={(schoolId, round) => addToListMutation.mutate({ schoolId, round })}
-          isAddingToList={addToListMutation.isPending}
-          hasFilters={hasFilters}
-          onResetAllFilters={resetAllFilters}
-          onBatchAdd={handleBatchAdd}
-          onRemoveSelected={(id) => setSelectedSchools((prev) => prev.filter((s) => s.id !== id))}
-          onClearSelected={() => setSelectedSchools([])}
-          isBatchAdding={batchAddMutation.isPending}
+          onAdd={handleBatchAdd}
+          onRemove={(id) => setSelectedSchools((prev) => prev.filter((s) => s.id !== id))}
+          onClear={() => setSelectedSchools([])}
+          isAdding={batchAddMutation.isPending}
         />
       </section>
     </div>
