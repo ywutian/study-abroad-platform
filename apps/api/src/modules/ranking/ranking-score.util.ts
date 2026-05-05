@@ -1,10 +1,17 @@
 import { Prisma } from '@prisma/client';
+import { nicheGradeToScore } from '@study-abroad/shared/scoring';
 
 export interface RankingWeights {
   usNewsRank: number;
   acceptanceRate: number;
   tuition: number;
   avgSalary: number;
+  // Niche qualitative fit signals (each 0-100 weight, optional). They affect
+  // ranking only — never admission probability.
+  nicheOverall: number;
+  safetyGrade: number;
+  studentLifeGrade: number;
+  campusFoodGrade: number;
 }
 
 export interface RankingScoreInput {
@@ -12,6 +19,10 @@ export interface RankingScoreInput {
   acceptanceRate?: number | Prisma.Decimal | null;
   tuition?: number | null;
   avgSalary?: number | null;
+  nicheOverallGrade?: string | null;
+  nicheSafetyGrade?: string | null;
+  nicheLifeGrade?: string | null;
+  nicheFoodGrade?: string | null;
 }
 
 export interface RankingStats {
@@ -19,6 +30,10 @@ export interface RankingStats {
   acceptanceRate: { min: number; max: number };
   tuition: { min: number; max: number };
   avgSalary: { min: number; max: number };
+  nicheOverall: { min: number; max: number };
+  safetyGrade: { min: number; max: number };
+  studentLifeGrade: { min: number; max: number };
+  campusFoodGrade: { min: number; max: number };
 }
 
 function toFiniteNumber(value: number | Prisma.Decimal | null | undefined) {
@@ -34,6 +49,17 @@ function safeMinMax(values: number[]) {
   };
 }
 
+const ALL_WEIGHT_KEYS: (keyof RankingWeights)[] = [
+  'usNewsRank',
+  'acceptanceRate',
+  'tuition',
+  'avgSalary',
+  'nicheOverall',
+  'safetyGrade',
+  'studentLifeGrade',
+  'campusFoodGrade',
+];
+
 export function sanitizeRankingWeights(
   weights: Partial<RankingWeights>,
 ): RankingWeights {
@@ -42,6 +68,10 @@ export function sanitizeRankingWeights(
     acceptanceRate: Number(weights.acceptanceRate) || 0,
     tuition: Number(weights.tuition) || 0,
     avgSalary: Number(weights.avgSalary) || 0,
+    nicheOverall: Number(weights.nicheOverall) || 0,
+    safetyGrade: Number(weights.safetyGrade) || 0,
+    studentLifeGrade: Number(weights.studentLifeGrade) || 0,
+    campusFoodGrade: Number(weights.campusFoodGrade) || 0,
   };
 }
 
@@ -49,8 +79,8 @@ export function normalizeRankingWeights(
   weights: Partial<RankingWeights>,
 ): RankingWeights {
   const validWeights = sanitizeRankingWeights(weights);
-  const totalWeight = Object.values(validWeights).reduce(
-    (sum, weight) => sum + weight,
+  const totalWeight = ALL_WEIGHT_KEYS.reduce(
+    (sum, key) => sum + validWeights[key],
     0,
   );
 
@@ -58,37 +88,47 @@ export function normalizeRankingWeights(
     return validWeights;
   }
 
-  return {
-    usNewsRank: (validWeights.usNewsRank / totalWeight) * 100,
-    acceptanceRate: (validWeights.acceptanceRate / totalWeight) * 100,
-    tuition: (validWeights.tuition / totalWeight) * 100,
-    avgSalary: (validWeights.avgSalary / totalWeight) * 100,
-  };
+  const normalized = {} as RankingWeights;
+  for (const key of ALL_WEIGHT_KEYS) {
+    normalized[key] = (validWeights[key] / totalWeight) * 100;
+  }
+  return normalized;
 }
 
 export function calculateRankingStats<T extends RankingScoreInput>(
   schools: T[],
 ): RankingStats {
+  const numericValues = (extract: (s: T) => number | null) =>
+    schools.map(extract).filter((v): v is number => v != null);
+
   return {
     usNewsRank: safeMinMax(
-      schools
-        .map((school) => toFiniteNumber(school.usNewsRank))
-        .filter((v): v is number => v != null),
+      numericValues((school) => toFiniteNumber(school.usNewsRank)),
     ),
     acceptanceRate: safeMinMax(
-      schools
-        .map((school) => toFiniteNumber(school.acceptanceRate))
-        .filter((v): v is number => v != null),
+      numericValues((school) => toFiniteNumber(school.acceptanceRate)),
     ),
     tuition: safeMinMax(
-      schools
-        .map((school) => toFiniteNumber(school.tuition))
-        .filter((v): v is number => v != null),
+      numericValues((school) => toFiniteNumber(school.tuition)),
     ),
     avgSalary: safeMinMax(
-      schools
-        .map((school) => toFiniteNumber(school.avgSalary))
-        .filter((v): v is number => v != null),
+      numericValues((school) => toFiniteNumber(school.avgSalary)),
+    ),
+    // Niche grade scores are already normalized to [0, 1] by nicheGradeToScore;
+    // we keep min/max so calculateSchoolScore uses the same code path as the
+    // numeric dimensions. With a [0, 1] domain the normalization is a no-op
+    // when min=0 / max=1.
+    nicheOverall: safeMinMax(
+      numericValues((school) => nicheGradeToScore(school.nicheOverallGrade)),
+    ),
+    safetyGrade: safeMinMax(
+      numericValues((school) => nicheGradeToScore(school.nicheSafetyGrade)),
+    ),
+    studentLifeGrade: safeMinMax(
+      numericValues((school) => nicheGradeToScore(school.nicheLifeGrade)),
+    ),
+    campusFoodGrade: safeMinMax(
+      numericValues((school) => nicheGradeToScore(school.nicheFoodGrade)),
     ),
   };
 }
@@ -103,36 +143,50 @@ export function calculateSchoolScore<T extends RankingScoreInput>(
   const acceptanceRate = toFiniteNumber(school.acceptanceRate);
   const tuition = toFiniteNumber(school.tuition);
   const avgSalary = toFiniteNumber(school.avgSalary);
+  const nicheOverall = nicheGradeToScore(school.nicheOverallGrade);
+  const safety = nicheGradeToScore(school.nicheSafetyGrade);
+  const life = nicheGradeToScore(school.nicheLifeGrade);
+  const food = nicheGradeToScore(school.nicheFoodGrade);
+
+  // For "lower is better" dimensions, invert: 1 - normalized
+  // For "higher is better" dimensions, use raw normalized value
+  const normalizeAsc = (
+    value: number,
+    s: { min: number; max: number },
+  ): number => (value - s.min) / (s.max - s.min || 1);
+  const normalizeDesc = (
+    value: number,
+    s: { min: number; max: number },
+  ): number => 1 - normalizeAsc(value, s);
 
   if (rank !== null) {
-    const normalized =
-      1 -
-      (rank - stats.usNewsRank.min) /
-        (stats.usNewsRank.max - stats.usNewsRank.min || 1);
-    score += normalized * weights.usNewsRank;
+    score += normalizeDesc(rank, stats.usNewsRank) * weights.usNewsRank;
   }
-
   if (acceptanceRate !== null) {
-    const normalized =
-      1 -
-      (acceptanceRate - stats.acceptanceRate.min) /
-        (stats.acceptanceRate.max - stats.acceptanceRate.min || 1);
-    score += normalized * weights.acceptanceRate;
+    score +=
+      normalizeDesc(acceptanceRate, stats.acceptanceRate) *
+      weights.acceptanceRate;
   }
-
   if (tuition !== null) {
-    const normalized =
-      1 -
-      (tuition - stats.tuition.min) /
-        (stats.tuition.max - stats.tuition.min || 1);
-    score += normalized * weights.tuition;
+    score += normalizeDesc(tuition, stats.tuition) * weights.tuition;
   }
-
   if (avgSalary !== null) {
-    const normalized =
-      (avgSalary - stats.avgSalary.min) /
-      (stats.avgSalary.max - stats.avgSalary.min || 1);
-    score += normalized * weights.avgSalary;
+    score += normalizeAsc(avgSalary, stats.avgSalary) * weights.avgSalary;
+  }
+  if (nicheOverall !== null) {
+    score +=
+      normalizeAsc(nicheOverall, stats.nicheOverall) * weights.nicheOverall;
+  }
+  if (safety !== null) {
+    score += normalizeAsc(safety, stats.safetyGrade) * weights.safetyGrade;
+  }
+  if (life !== null) {
+    score +=
+      normalizeAsc(life, stats.studentLifeGrade) * weights.studentLifeGrade;
+  }
+  if (food !== null) {
+    score +=
+      normalizeAsc(food, stats.campusFoodGrade) * weights.campusFoodGrade;
   }
 
   return score;

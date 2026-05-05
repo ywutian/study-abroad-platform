@@ -39,7 +39,7 @@ describe('RankingController', () => {
     jest.clearAllMocks();
   });
 
-  it('POST /calculate should call calculateRanking with weights', async () => {
+  it('POST /calculate should call calculateRanking with sanitized weights', async () => {
     const weights = {
       usNewsRank: 0.4,
       acceptanceRate: 0.2,
@@ -51,11 +51,18 @@ describe('RankingController', () => {
 
     const result = await controller.calculateRanking(weights);
 
-    expect(rankingService.calculateRanking).toHaveBeenCalledWith(weights);
+    // Controller calls sanitizeRankingWeights which fills in niche defaults (0)
+    expect(rankingService.calculateRanking).toHaveBeenCalledWith({
+      ...weights,
+      nicheOverall: 0,
+      safetyGrade: 0,
+      studentLifeGrade: 0,
+      campusFoodGrade: 0,
+    });
     expect(result).toEqual(expected);
   });
 
-  it('POST / should call saveRanking with user.id, name, weights, isPublic', async () => {
+  it('POST / should call saveRanking with user.id, name, sanitized weights, isPublic', async () => {
     const data = {
       name: 'My Ranking',
       isPublic: true,
@@ -73,10 +80,34 @@ describe('RankingController', () => {
     expect(rankingService.saveRanking).toHaveBeenCalledWith(
       'user-1',
       'My Ranking',
-      weights,
+      {
+        ...weights,
+        nicheOverall: 0,
+        safetyGrade: 0,
+        studentLifeGrade: 0,
+        campusFoodGrade: 0,
+      },
       true,
     );
     expect(result).toEqual(expected);
+  });
+
+  it('POST /calculate should accept and forward niche weights', async () => {
+    const weights = {
+      usNewsRank: 20,
+      acceptanceRate: 10,
+      tuition: 10,
+      avgSalary: 10,
+      nicheOverall: 30,
+      safetyGrade: 10,
+      studentLifeGrade: 5,
+      campusFoodGrade: 5,
+    };
+    (rankingService.calculateRanking as jest.Mock).mockResolvedValue([]);
+
+    await controller.calculateRanking(weights);
+
+    expect(rankingService.calculateRanking).toHaveBeenCalledWith(weights);
   });
 
   it('GET /me should call getUserRankings with user.id', async () => {
