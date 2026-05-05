@@ -1,6 +1,37 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import {
+  COLOR_THEME_CATEGORIES,
+  COLOR_THEME_DEFINITIONS,
+  type ColorPalette,
+  type ColorThemeCategory,
+  EXPERIMENTAL_COLOR_PALETTE_IDS,
+  FEATURED_COLOR_PALETTE_IDS,
+  getColorThemeCategoryLabel,
+  getColorThemeDefinition,
+  getColorThemeDescription,
+  getColorThemeLabel,
+  getThemePreview,
+  getThemeStyleMeta,
+  HERO_VISUAL_DEFINITIONS,
+  type HeroVisualDefinition,
+  type HeroVisualId,
+  normalizeThemeAppearanceOverrides,
+  parseColorPalette,
+  resolveThemeAppearanceControls,
+  THEME_APPEARANCE_PRESETS,
+  THEME_BUTTON_PRESETS,
+  THEME_CARD_PRESETS,
+  THEME_DENSITY_PRESETS,
+  THEME_MOTION_PRESETS,
+  THEME_RADIUS_PRESETS,
+  THEME_SHADOW_PRESETS,
+  adminRoutes,
+  type ThemeAppearanceNumericKey,
+  type ThemeAppearanceOverrides,
+  type ThemeAppearancePresetId,
+} from '@study-abroad/shared';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Check,
   Clock3,
@@ -13,33 +44,9 @@ import {
   Star,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  COLOR_THEME_CATEGORIES,
-  COLOR_THEME_DEFINITIONS,
-  EXPERIMENTAL_COLOR_PALETTE_IDS,
-  FEATURED_COLOR_PALETTE_IDS,
-  THEME_APPEARANCE_PRESETS,
-  THEME_BUTTON_PRESETS,
-  THEME_CARD_PRESETS,
-  THEME_DENSITY_PRESETS,
-  THEME_MOTION_PRESETS,
-  THEME_RADIUS_PRESETS,
-  THEME_SHADOW_PRESETS,
-  getColorThemeCategoryLabel,
-  getColorThemeDescription,
-  getColorThemeDefinition,
-  getColorThemeLabel,
-  getThemePreview,
-  getThemeStyleMeta,
-  normalizeThemeAppearanceOverrides,
-  parseColorPalette,
-  resolveThemeAppearanceControls,
-  type ColorPalette,
-  type ColorThemeCategory,
-  type ThemeAppearanceNumericKey,
-  type ThemeAppearancePresetId,
-  type ThemeAppearanceOverrides,
-} from '@study-abroad/shared';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -49,8 +56,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useAuthStore } from '@/stores/auth';
 import { useColorPalette } from '@/hooks/use-color-palette';
+import { useHeroVisual } from '@/hooks/use-hero-visual';
 import { useThemeAppearanceOverrides } from '@/hooks/use-theme-appearance-overrides';
+import { apiClient } from '@/lib/api';
+import { usePathname } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 type ColorPaletteMenuProps = {
@@ -81,6 +92,61 @@ const numericControls: ThemeAppearanceNumericKey[] = [
   'colorPresence',
 ];
 
+const heroPreviewStyles: Record<
+  HeroVisualDefinition['tone'],
+  { canvas: string; panel: string; accent: string; ink: string; glow: string }
+> = {
+  classic: {
+    canvas: '#f8fafc',
+    panel: '#ffffff',
+    accent: '#2563eb',
+    ink: '#0f172a',
+    glow: 'rgba(96,165,250,0.34)',
+  },
+  command: {
+    canvas: '#f7f8fb',
+    panel: '#ffffff',
+    accent: '#d5a94f',
+    ink: '#111827',
+    glow: 'rgba(221,184,90,0.28)',
+  },
+  brand: {
+    canvas: '#11100f',
+    panel: '#1b1713',
+    accent: '#ddb85a',
+    ink: '#fff7ea',
+    glow: 'rgba(221,184,90,0.34)',
+  },
+  'dark-tech': {
+    canvas: '#050505',
+    panel: '#111111',
+    accent: '#6574ff',
+    ink: '#ffffff',
+    glow: 'rgba(101,116,255,0.42)',
+  },
+  aura: {
+    canvas: '#fbfbff',
+    panel: '#ffffff',
+    accent: '#ff5aa5',
+    ink: '#151515',
+    glow: 'rgba(255,90,165,0.32)',
+  },
+  editorial: {
+    canvas: '#f7f1e6',
+    panel: '#fff9ef',
+    accent: '#1d1813',
+    ink: '#1d1813',
+    glow: 'rgba(221,184,90,0.2)',
+  },
+  minimal: {
+    canvas: '#f8fafc',
+    panel: '#ffffff',
+    accent: '#111827',
+    ink: '#111827',
+    glow: 'rgba(15,23,42,0.12)',
+  },
+};
+
 function readPaletteList(key: string): ColorPalette[] {
   if (typeof localStorage === 'undefined') return [];
   try {
@@ -100,6 +166,68 @@ function writePaletteList(key: string, values: ColorPalette[]) {
   } catch {
     /* private browsing / quota */
   }
+}
+
+function HeroVisualPreview({ tone }: { tone: HeroVisualDefinition['tone'] }) {
+  const style = heroPreviewStyles[tone];
+
+  return (
+    <div
+      className="relative h-20 overflow-hidden rounded-[var(--theme-radius-card)] border"
+      style={{
+        background: style.canvas,
+        borderColor: tone === 'brand' || tone === 'dark-tech' ? '#2b2b2b' : '#d7dde6',
+      }}
+    >
+      <div
+        className="absolute -right-6 -top-6 h-16 w-16 rounded-full blur-2xl"
+        style={{ background: style.glow }}
+      />
+      <div
+        className="absolute left-3 top-3 h-12 w-20 rounded-lg border shadow-sm"
+        style={{
+          background: style.panel,
+          borderColor:
+            tone === 'brand' || tone === 'dark-tech' ? 'rgba(255,255,255,0.12)' : '#d7dde6',
+        }}
+      >
+        <div className="flex gap-1 p-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ef4444]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#f59e0b]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#10b981]" />
+        </div>
+        <div
+          className="mx-2 mt-1 h-1.5 rounded-full"
+          style={{ background: style.ink, opacity: 0.18 }}
+        />
+        <div className="mx-2 mt-1.5 h-1.5 w-8 rounded-full" style={{ background: style.accent }} />
+      </div>
+      <div
+        className="absolute bottom-3 right-3 h-8 w-8 rounded-full border shadow-sm"
+        style={{
+          background: style.panel,
+          borderColor:
+            tone === 'brand' || tone === 'dark-tech' ? 'rgba(255,255,255,0.14)' : '#d7dde6',
+        }}
+      >
+        <div
+          className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ background: style.accent, opacity: tone === 'minimal' ? 1 : 0.72 }}
+        />
+      </div>
+      <div
+        className="absolute bottom-4 left-28 h-2 w-12 rounded-full"
+        style={{ background: style.accent }}
+      />
+      <div
+        className="absolute bottom-7 left-28 h-2 w-16 rounded-full"
+        style={{
+          background: style.ink,
+          opacity: tone === 'brand' || tone === 'dark-tech' ? 0.34 : 0.12,
+        }}
+      />
+    </div>
+  );
 }
 
 function RangeControl({
@@ -184,7 +312,11 @@ function SegmentControl<T extends string>({
 export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   const t = useTranslations('ui.colorPalette');
   const locale = useLocale();
+  const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
   const { palette, setPalette } = useColorPalette();
+  const { heroVisual, setHeroVisual } = useHeroVisual();
   const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
   const {
     overridesByPalette,
@@ -206,6 +338,27 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   const selectedDefinition = getColorThemeDefinition(palette);
   const selectedStyle = getThemeStyleMeta(palette, selectedOverrides);
   const selectedControls = resolveThemeAppearanceControls(palette, selectedOverrides);
+  const selectedHeroVisual = HERO_VISUAL_DEFINITIONS.find(
+    (definition) => definition.id === heroVisual
+  );
+  const canSaveToAdminLibrary = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+
+  const saveThemeStyleMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post(adminRoutes.themeStyles(), {
+        palette,
+        heroVisual,
+        appearanceOverrides: selectedOverrides,
+        sourcePath: pathname,
+      }),
+    onSuccess: () => {
+      toast.success(t('saveToAdminSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['adminThemeStyles'] });
+    },
+    onError: () => {
+      toast.error(t('saveToAdminError'));
+    },
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -237,7 +390,10 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
     if (activeGroup === 'featured') return FEATURED_COLOR_PALETTE_IDS;
     if (activeGroup === 'experimental') return EXPERIMENTAL_COLOR_PALETTE_IDS;
     if (activeGroup === 'more') {
-      const hiddenFromMore = new Set([...FEATURED_COLOR_PALETTE_IDS, ...EXPERIMENTAL_COLOR_PALETTE_IDS]);
+      const hiddenFromMore = new Set([
+        ...FEATURED_COLOR_PALETTE_IDS,
+        ...EXPERIMENTAL_COLOR_PALETTE_IDS,
+      ]);
       return allThemeIds.filter((id) => !hiddenFromMore.has(id));
     }
     if (activeGroup === 'all') return allThemeIds;
@@ -305,15 +461,16 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
           className={cn('rounded-[var(--theme-radius-button)] px-3', className)}
           aria-label={t('menuLabel')}
           suppressHydrationWarning
+          style={{ minHeight: 40, minWidth: 40 }}
         >
           <Palette className="h-3.5 w-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="top-2 bottom-2 h-[calc(100dvh-1rem)] max-h-none w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] min-w-0 translate-y-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] gap-0 overflow-hidden !bg-[#fbf8f2] p-0 text-[#211c17] !backdrop-blur-none dark:!bg-[#101010] dark:text-zinc-50 sm:top-4 sm:bottom-4 sm:h-[calc(100dvh-2rem)] sm:w-[min(1480px,calc(100vw-2rem))] sm:max-w-[min(1480px,calc(100vw-2rem))]"
+        className="top-2 bottom-2 h-[calc(100dvh-1rem)] max-h-none w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] min-w-0 translate-y-0 grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] gap-0 overflow-hidden !bg-[color:var(--theme-popover-bg)] p-0 text-popover-foreground !backdrop-blur-none sm:top-4 sm:bottom-4 sm:h-[calc(100dvh-2rem)] sm:w-[min(1480px,calc(100vw-2rem))] sm:max-w-[min(1480px,calc(100vw-2rem))]"
         showCloseButton
       >
-        <DialogHeader className="min-w-0 overflow-hidden border-b border-[#ded4c5] !bg-[#fbf8f2] px-4 py-4 dark:border-zinc-800 dark:!bg-[#101010] sm:px-6">
+        <DialogHeader className="min-w-0 overflow-hidden border-b border-border bg-[color:var(--theme-popover-bg)] px-4 py-4 sm:px-6">
           <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
             <div className="min-w-0">
               <DialogTitle className="text-xl">{t('studioTitle')}</DialogTitle>
@@ -399,13 +556,66 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
           </div>
         </DialogHeader>
 
-        <div className="grid min-h-0 min-w-0 grid-cols-1 overflow-hidden !bg-[#f7f1e8] dark:!bg-[#0c0c0c] lg:grid-cols-[minmax(0,1fr)_390px]">
+        <div className="grid min-h-0 min-w-0 grid-cols-1 overflow-hidden bg-[color:var(--theme-canvas-soft)] lg:grid-cols-[minmax(0,1fr)_390px]">
           <div
             className={cn(
               'min-h-0 min-w-0 overflow-y-auto p-4 sm:p-5',
               activePanel === 'customize' && 'hidden lg:block'
             )}
           >
+            <section className="mb-4 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-card-bg)] p-3 shadow-[var(--theme-card-shadow)]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                    <Layers3 className="h-3.5 w-3.5" />
+                    {t('heroVisualTitle')}
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {t('heroVisualDesc')}
+                  </p>
+                </div>
+                {selectedHeroVisual ? (
+                  <span className="w-fit rounded-[var(--theme-radius-badge)] border bg-[color:var(--theme-control-bg)] px-2 py-1 text-2xs font-medium text-muted-foreground">
+                    {labelLocale === 'zh' ? selectedHeroVisual.labelZh : selectedHeroVisual.labelEn}
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+                {HERO_VISUAL_DEFINITIONS.map((definition) => {
+                  const active = heroVisual === definition.id;
+                  const label = labelLocale === 'zh' ? definition.labelZh : definition.labelEn;
+                  const description =
+                    labelLocale === 'zh' ? definition.descriptionZh : definition.descriptionEn;
+
+                  return (
+                    <button
+                      key={definition.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setHeroVisual(definition.id as HeroVisualId)}
+                      className={cn(
+                        'grid gap-2 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-2 text-left transition hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
+                        active && 'border-primary ring-2 ring-primary/20'
+                      )}
+                    >
+                      <HeroVisualPreview tone={definition.tone} />
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="truncate text-xs font-semibold text-foreground">
+                            {label}
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-2xs leading-4 text-muted-foreground">
+                            {description}
+                          </p>
+                        </div>
+                        {active ? <Check className="h-4 w-4 shrink-0 text-primary" /> : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
             {filteredThemes.length === 0 ? (
               <div className="flex min-h-[280px] items-center justify-center rounded-[var(--theme-radius-card)] border border-dashed bg-[color:var(--theme-card-bg)] text-sm text-muted-foreground">
                 {t('noResults')}
@@ -527,7 +737,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
 
           <aside
             className={cn(
-              'min-h-0 min-w-0 overflow-y-auto border-t !bg-[#fbf8f2] p-4 dark:!bg-[#101010] sm:p-5 lg:border-l lg:border-t-0',
+              'min-h-0 min-w-0 overflow-y-auto border-t border-border bg-[color:var(--theme-surface)] p-4 sm:p-5 lg:border-l lg:border-t-0',
               activePanel === 'themes' && 'hidden lg:block'
             )}
           >
@@ -585,6 +795,55 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
                 </div>
               </div>
             </div>
+
+            <section className="mt-5 grid gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  <Layers3 className="h-3.5 w-3.5" />
+                  {t('heroVisualTitle')}
+                </div>
+                {selectedHeroVisual ? (
+                  <span className="truncate rounded-[var(--theme-radius-badge)] border bg-[color:var(--theme-control-bg)] px-2 py-1 text-2xs font-medium text-muted-foreground">
+                    {labelLocale === 'zh' ? selectedHeroVisual.labelZh : selectedHeroVisual.labelEn}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">{t('heroVisualDesc')}</p>
+              <div className="grid gap-2">
+                {HERO_VISUAL_DEFINITIONS.map((definition) => {
+                  const active = heroVisual === definition.id;
+                  const label = labelLocale === 'zh' ? definition.labelZh : definition.labelEn;
+                  const description =
+                    labelLocale === 'zh' ? definition.descriptionZh : definition.descriptionEn;
+
+                  return (
+                    <button
+                      key={definition.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setHeroVisual(definition.id as HeroVisualId)}
+                      className={cn(
+                        'grid gap-2 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-2 text-left transition hover:border-primary/50',
+                        active && 'border-primary ring-2 ring-primary/20'
+                      )}
+                    >
+                      <HeroVisualPreview tone={definition.tone} />
+                      <div className="flex items-start justify-between gap-3 px-1 pb-1">
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-foreground">
+                            {label}
+                          </div>
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                            {description}
+                          </p>
+                        </div>
+                        {active ? <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
 
             <section className="mt-5 grid gap-3">
               <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
@@ -668,6 +927,19 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
             </section>
 
             <div className="mt-6 grid grid-cols-2 gap-2 border-t pt-4">
+              {canSaveToAdminLibrary ? (
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  className="col-span-2"
+                  onClick={() => saveThemeStyleMutation.mutate()}
+                  disabled={saveThemeStyleMutation.isPending}
+                >
+                  <Star className="h-3.5 w-3.5" />
+                  {saveThemeStyleMutation.isPending ? t('savingToAdmin') : t('saveToAdmin')}
+                </Button>
+              ) : null}
               <Button type="button" variant="outline" size="sm" onClick={resetCurrentOverrides}>
                 <RotateCcw className="h-3.5 w-3.5" />
                 {t('resetTheme')}
