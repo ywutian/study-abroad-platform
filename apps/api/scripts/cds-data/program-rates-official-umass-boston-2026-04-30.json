@@ -1,0 +1,136 @@
+{
+  "_meta": {
+    "createdAt": "2026-04-30T19:27:00-07:00",
+    "source": "Official UMass Boston Office of Institutional Research Table 23",
+    "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+    "notes": "Fall 2025 freshman completed applications and admitted counts by college."
+  },
+  "programRates": [
+    {
+      "schoolName": "University of Massachusetts Boston",
+      "cycleYear": 2025,
+      "source": "UMASS_BOSTON_IR_TABLE23",
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+      "officialNote": "Official Office of Institutional Research Table 23, Undergraduate Admissions by College - Fall 2021 - Fall 2025.",
+      "programName": "College of Liberal Arts",
+      "broadDiscipline": "Liberal Arts",
+      "cipCode": "UMB-COLLEGE-LIBERAL-ARTS",
+      "applicants": 7735,
+      "admits": 6427,
+      "acceptanceRateEstimate": 83.09,
+      "formula": "6,427 admitted / 7,735 completed freshman applications = 83.09%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_IR_PDF",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T19:27:00-07:00"
+      }
+    },
+    {
+      "schoolName": "University of Massachusetts Boston",
+      "cycleYear": 2025,
+      "source": "UMASS_BOSTON_IR_TABLE23",
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+      "officialNote": "Official Office of Institutional Research Table 23, Undergraduate Admissions by College - Fall 2021 - Fall 2025.",
+      "programName": "College of Science and Mathematics",
+      "broadDiscipline": "Science and Mathematics",
+      "cipCode": "UMB-COLLEGE-SCIENCE-MATHEMATICS",
+      "applicants": 7490,
+      "admits": 6702,
+      "acceptanceRateEstimate": 89.48,
+      "formula": "6,702 admitted / 7,490 completed freshman applications = 89.48%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_IR_PDF",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T19:27:00-07:00"
+      }
+    },
+    {
+      "schoolName": "University of Massachusetts Boston",
+      "cycleYear": 2025,
+      "source": "UMASS_BOSTON_IR_TABLE23",
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+      "officialNote": "Official Office of Institutional Research Table 23, Undergraduate Admissions by College - Fall 2021 - Fall 2025.",
+      "programName": "College of Management",
+      "broadDiscipline": "Business",
+      "cipCode": "UMB-COLLEGE-MANAGEMENT",
+      "applicants": 3358,
+      "admits": 2870,
+      "acceptanceRateEstimate": 85.47,
+      "formula": "2,870 admitted / 3,358 completed freshman applications = 85.47%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_IR_PDF",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T19:27:00-07:00"
+      }
+    },
+    {
+      "schoolName": "University of Massachusetts Boston",
+      "cycleYear": 2025,
+      "source": "UMASS_BOSTON_IR_TABLE23",
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+      "officialNote": "Official Office of Institutional Research Table 23, Undergraduate Admissions by College - Fall 2021 - Fall 2025.",
+      "programName": "College of Nursing and Health Sciences",
+      "broadDiscipline": "Nursing and Health Sciences",
+      "cipCode": "UMB-COLLEGE-NURSING-HEALTH-SCIENCES",
+      "applicants": 2516,
+      "admits": 2064,
+      "acceptanceRateEstimate": 82.03,
+      "formula": "2,064 admitted / 2,516 completed freshman applications = 82.03%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_IR_PDF",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T19:27:00-07:00"
+      }
+    },
+    {
+      "schoolName": "University of Massachusetts Boston",
+      "cycleYear": 2025,
+      "source": "UMASS_BOSTON_IR_TABLE23",
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+      "officialNote": "Official Office of Institutional Research Table 23, Undergraduate Admissions by College - Fall 2021 - Fall 2025.",
+      "programName": "College of Education and Human Development",
+      "broadDiscipline": "Education and Human Development",
+      "cipCode": "UMB-COLLEGE-EDUCATION-HUMAN-DEVELOPMENT",
+      "applicants": 765,
+      "admits": 606,
+      "acceptanceRateEstimate": 79.22,
+      "formula": "606 admitted / 765 completed freshman applications = 79.22%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_IR_PDF",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T19:27:00-07:00"
+      }
+    },
+    {
+      "schoolName": "University of Massachusetts Boston",
+      "cycleYear": 2025,
+      "source": "UMASS_BOSTON_IR_TABLE23",
+      "sourceUrl": "https://www.umb.edu/media/umassboston/editor-uploads/institutional-research-assessment-planning/TABLE23-Undergraduate-Admissions-by-College.pdf",
+      "officialNote": "Official Office of Institutional Research Table 23, Undergraduate Admissions by College - Fall 2021 - Fall 2025.",
+      "programName": "School for the Environment",
+      "broadDiscipline": "Environment",
+      "cipCode": "UMB-SCHOOL-ENVIRONMENT",
+      "applicants": 376,
+      "admits": 337,
+      "acceptanceRateEstimate": 89.63,
+      "formula": "337 admitted / 376 completed freshman applications = 89.63%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_IR_PDF",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T19:27:00-07:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-01T01:11:01.254353+00:00",
+    "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+    "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+    "records": 13,
+    "cycleYear": 2025,
+    "notes": "Official UIUC admit-rate page. Rates are official published rates but raw applicant/admit counts are not included on the page."
+  },
+  "programRates": [
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Agriculture / Environmental Sciences",
+      "cipCode": "01.0000",
+      "acceptanceRateEstimate": 48.5,
+      "broadDiscipline": "College of Agricultural, Consumer & Environmental Sciences"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Applied Health Sciences",
+      "cipCode": "51.0000",
+      "acceptanceRateEstimate": 28.0,
+      "broadDiscipline": "College of Applied Health Sciences"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Education",
+      "cipCode": "13.0101",
+      "acceptanceRateEstimate": 42.6,
+      "broadDiscipline": "College of Education"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Fine and Applied Arts",
+      "cipCode": "50.0000",
+      "acceptanceRateEstimate": 40.8,
+      "broadDiscipline": "College of Fine & Applied Arts"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Liberal Arts and Sciences",
+      "cipCode": "24.0101",
+      "acceptanceRateEstimate": 36.4,
+      "broadDiscipline": "College of Liberal Arts & Sciences"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Media / Communications",
+      "cipCode": "09.0100",
+      "acceptanceRateEstimate": 42.8,
+      "broadDiscipline": "College of Media"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Exploratory Studies / Undeclared",
+      "cipCode": "24.0102",
+      "acceptanceRateEstimate": 53.4,
+      "broadDiscipline": "Division of Exploratory Studies"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "acceptanceRateEstimate": 20.9,
+      "broadDiscipline": "Gies College of Business"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "acceptanceRateEstimate": 21.2,
+      "broadDiscipline": "Grainger College of Engineering"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Information Sciences / Data Science",
+      "cipCode": "11.0401",
+      "acceptanceRateEstimate": 48.1,
+      "broadDiscipline": "School of Information Sciences"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Social Work",
+      "cipCode": "44.0701",
+      "acceptanceRateEstimate": 44.6,
+      "broadDiscipline": "School of Social Work"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "acceptanceRateEstimate": 7.4,
+      "broadDiscipline": "Computer Science Programs"
+    },
+    {
+      "schoolName": "University of Illinois Urbana-Champaign",
+      "cycleYear": 2025,
+      "source": "UIUC_FIRST_YEAR_ADMIT_RATES_2025",
+      "sourceUrl": "https://www.admissions.illinois.edu/apply/freshman/admit-rate",
+      "officialNote": "Illinois Undergraduate Admissions first-year admit rates by academic community and computer science programs.",
+      "verification": {
+        "realDataStatus": "OFFICIAL_REAL_LEGACY",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 1,
+        "validators": ["official_admissions_profile"],
+        "verifiedAt": "2026-05-01T01:11:01.253956+00:00"
+      },
+      "programName": "Computer Science + X",
+      "cipCode": "11.0199",
+      "acceptanceRateEstimate": 17.4,
+      "broadDiscipline": "Computer Science Programs"
+    }
+  ]
+}

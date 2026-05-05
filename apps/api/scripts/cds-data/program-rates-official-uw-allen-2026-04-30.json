@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-01T01:11:43.387603+00:00",
+    "source": "UW_ALLEN_DIRECT_TO_MAJOR_2025",
+    "sourceUrl": "https://www.cs.washington.edu/academics/undergraduate/admissions/direct-major/",
+    "records": 2,
+    "cycleYear": 2025,
+    "notes": "Official Allen School DTM data publishes residency-specific applicant/admit counts; SchoolProgram currently stores one school-level rate, so this file uses the aggregate 2025 rate across all residency groups."
+  },
+  "programRates": [
+    {
+      "schoolName": "University of Washington",
+      "cycleYear": 2025,
+      "source": "UW_ALLEN_DIRECT_TO_MAJOR_2025",
+      "sourceUrl": "https://www.cs.washington.edu/academics/undergraduate/admissions/direct-major/",
+      "officialNote": "UW Allen School Direct to Major first-year admissions statistics. Overall rate computed from published WA resident, domestic non-resident, and international counts.",
+      "applicants": 6946,
+      "admits": 810,
+      "acceptanceRateEstimate": 11.66,
+      "formula": "810/6946",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_PAGE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:11:43.387603+00:00"
+      },
+      "programName": "Computer Science (CS)",
+      "cipCode": "11.0101",
+      "broadDiscipline": "Allen School Direct to Major"
+    },
+    {
+      "schoolName": "University of Washington",
+      "cycleYear": 2025,
+      "source": "UW_ALLEN_DIRECT_TO_MAJOR_2025",
+      "sourceUrl": "https://www.cs.washington.edu/academics/undergraduate/admissions/direct-major/",
+      "officialNote": "UW Allen School Direct to Major first-year admissions statistics. Overall rate computed from published WA resident, domestic non-resident, and international counts.",
+      "applicants": 6946,
+      "admits": 810,
+      "acceptanceRateEstimate": 11.66,
+      "formula": "810/6946",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_PAGE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "formula_admits_div_applicants_matches_rate"
+        ],
+        "verifiedAt": "2026-05-01T01:11:43.387603+00:00"
+      },
+      "programName": "Computer Engineering",
+      "cipCode": "14.0901",
+      "broadDiscipline": "Allen School Direct to Major"
+    }
+  ]
+}

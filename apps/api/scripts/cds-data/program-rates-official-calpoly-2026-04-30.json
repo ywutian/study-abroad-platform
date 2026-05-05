@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-01T01:12:55.126666+00:00",
+    "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+    "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+    "records": 6,
+    "cycleYear": 2025,
+    "notes": "Official college-level first-year selected profile. Selected/applied used as admit-rate proxy; school says it evaluates and admits by major, but this page publishes college-level counts only."
+  },
+  "programRates": [
+    {
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "cycleYear": 2025,
+      "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+      "officialNote": "Cal Poly Admissions 2025 Preliminary Newly Selected First-Year Student Profile; college-level applied and selected counts.",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "selected_div_applied_formula"
+        ],
+        "verifiedAt": "2026-05-01T01:12:55.126666+00:00"
+      },
+      "programName": "Agriculture / Environmental Sciences",
+      "cipCode": "01.0000",
+      "applicants": 7038,
+      "admits": 2922,
+      "acceptanceRateEstimate": 41.52,
+      "formula": "2922/7038",
+      "broadDiscipline": "College of Agriculture, Food & Environmental Sciences"
+    },
+    {
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "cycleYear": 2025,
+      "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+      "officialNote": "Cal Poly Admissions 2025 Preliminary Newly Selected First-Year Student Profile; college-level applied and selected counts.",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "selected_div_applied_formula"
+        ],
+        "verifiedAt": "2026-05-01T01:12:55.126666+00:00"
+      },
+      "programName": "Architecture / Environmental Design",
+      "cipCode": "04.0901",
+      "applicants": 3859,
+      "admits": 1044,
+      "acceptanceRateEstimate": 27.05,
+      "formula": "1044/3859",
+      "broadDiscipline": "College of Architecture & Environmental Design"
+    },
+    {
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "cycleYear": 2025,
+      "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+      "officialNote": "Cal Poly Admissions 2025 Preliminary Newly Selected First-Year Student Profile; college-level applied and selected counts.",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "selected_div_applied_formula"
+        ],
+        "verifiedAt": "2026-05-01T01:12:55.126666+00:00"
+      },
+      "programName": "Business / Management",
+      "cipCode": "52.0101",
+      "applicants": 10800,
+      "admits": 2955,
+      "acceptanceRateEstimate": 27.36,
+      "formula": "2955/10800",
+      "broadDiscipline": "Business"
+    },
+    {
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "cycleYear": 2025,
+      "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+      "officialNote": "Cal Poly Admissions 2025 Preliminary Newly Selected First-Year Student Profile; college-level applied and selected counts.",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "selected_div_applied_formula"
+        ],
+        "verifiedAt": "2026-05-01T01:12:55.126666+00:00"
+      },
+      "programName": "Engineering",
+      "cipCode": "14.0101",
+      "applicants": 21393,
+      "admits": 5008,
+      "acceptanceRateEstimate": 23.41,
+      "formula": "5008/21393",
+      "broadDiscipline": "Engineering"
+    },
+    {
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "cycleYear": 2025,
+      "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+      "officialNote": "Cal Poly Admissions 2025 Preliminary Newly Selected First-Year Student Profile; college-level applied and selected counts.",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "selected_div_applied_formula"
+        ],
+        "verifiedAt": "2026-05-01T01:12:55.126666+00:00"
+      },
+      "programName": "Liberal Arts",
+      "cipCode": "24.0101",
+      "applicants": 12805,
+      "admits": 3960,
+      "acceptanceRateEstimate": 30.93,
+      "formula": "3960/12805",
+      "broadDiscipline": "Liberal Arts"
+    },
+    {
+      "schoolName": "California Polytechnic State University, San Luis Obispo",
+      "cycleYear": 2025,
+      "source": "CAL_POLY_FIRST_YEAR_STUDENT_PROFILE_2025",
+      "sourceUrl": "https://www.calpoly.edu/admissions/first-year-student/selection-criteria/student-profile",
+      "officialNote": "Cal Poly Admissions 2025 Preliminary Newly Selected First-Year Student Profile; college-level applied and selected counts.",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_ADMISSIONS_PROFILE",
+        "validatorCount": 2,
+        "validators": [
+          "official_source_counts",
+          "selected_div_applied_formula"
+        ],
+        "verifiedAt": "2026-05-01T01:12:55.126666+00:00"
+      },
+      "programName": "Science and Mathematics",
+      "cipCode": "40.0101",
+      "applicants": 15276,
+      "admits": 4624,
+      "acceptanceRateEstimate": 30.27,
+      "formula": "4624/15276",
+      "broadDiscipline": "Science and Mathematics"
+    }
+  ]
+}

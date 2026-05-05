@@ -58,9 +58,17 @@
     "cds:discover": "tsx scripts/discover-cds-pdfs.ts",
     "cds:extract": "tsx scripts/extract-cds-c1.ts",
     "cds:marathon": "tsx scripts/tavily-cds-marathon.ts",
+    "data:exhaust": "tsx scripts/data-exhaustion-marathon.ts",
+    "data:exhaust:loop": "tsx scripts/data-exhaustion-marathon.ts --search --consume-worklists --apply-terminal-candidates --max-rounds 8",
+    "multi-source:exhaust": "tsx scripts/multi-source-data-marathon.ts",
+    "multi-source:exhaust:loop": "tsx scripts/multi-source-data-marathon.ts --search --consume --apply --adjudicate-suspicious --max-rounds 10",
     "cds:mark-terminal": "tsx scripts/mark-cds-terminal-status.ts",
     "cds:retrieval-plan": "tsx scripts/generate-retrieval-plan-from-audit.ts",
-    "run:data-pipeline": "tsx scripts/run-full-data-pipeline.ts"
+    "run:data-pipeline": "tsx scripts/run-full-data-pipeline.ts",
+    "sync:scorecard": "tsx scripts/sync-scorecard-comprehensive.ts",
+    "sync:scorecard:dry": "tsx scripts/sync-scorecard-comprehensive.ts --dry-run",
+    "sync:niche": "tsx scripts/fetch-niche-grades-tavily.ts",
+    "sync:niche:dry": "tsx scripts/fetch-niche-grades-tavily.ts --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",

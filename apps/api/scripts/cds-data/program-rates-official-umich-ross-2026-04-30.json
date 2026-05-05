@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "createdAt": "2026-04-30T18:58:00-07:00",
+    "source": "Official Michigan Ross BBA Student Experience page",
+    "sourceUrl": "https://michiganross.umich.edu/undergraduate/bba/student-experience",
+    "notes": "Official page states 10,827 applicants and 840 admitted for students earning First-Year Admission in 2024."
+  },
+  "programRates": [
+    {
+      "schoolName": "University of Michigan, Ann Arbor",
+      "cycleYear": 2024,
+      "source": "MICHIGAN_ROSS_OFFICIAL_BBA_PROFILE",
+      "sourceUrl": "https://michiganross.umich.edu/undergraduate/bba/student-experience",
+      "officialNote": "Michigan Ross BBA Student Experience page: figures are for students earning First-Year Admission in 2024.",
+      "programName": "Bachelor of Business Administration",
+      "broadDiscipline": "Business",
+      "cipCode": "UMICH-ROSS-BBA",
+      "applicants": 10827,
+      "admits": 840,
+      "acceptanceRateEstimate": 7.76,
+      "formula": "840 admitted / 10,827 applicants = 7.76%",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_PROFILE",
+        "validatorCount": 2,
+        "validators": ["official_source_url", "admits_div_applicants_formula"],
+        "verifiedAt": "2026-04-30T18:58:00-07:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "_meta": {
+    "generatedAt": "2026-05-01T01:45:19.844Z",
+    "source": "Cornell official University Factbook Undergraduate admissions Tableau dashboard",
+    "notes": "Official dashboard exposes first-year applications, acceptances, entering students by college. Rows use Fall 2025 data."
+  },
+  "programRates": [
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Agriculture & Life Sciences",
+      "programName": "Cornell College of Agriculture and Life Sciences",
+      "cipCode": "CORNELL-COLLEGE-CALS",
+      "applicants": 7974,
+      "admits": 965,
+      "acceptanceRateEstimate": 12.1,
+      "formula": "965/7974*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Architecture, Art & Planning",
+      "programName": "Cornell College of Architecture, Art, and Planning",
+      "cipCode": "CORNELL-COLLEGE-AAP",
+      "applicants": 2146,
+      "admits": 224,
+      "acceptanceRateEstimate": 10.44,
+      "formula": "224/2146*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Arts & Sciences",
+      "programName": "Cornell College of Arts and Sciences",
+      "cipCode": "CORNELL-COLLEGE-AS",
+      "applicants": 29003,
+      "admits": 2294,
+      "acceptanceRateEstimate": 7.91,
+      "formula": "2294/29003*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Brooks School",
+      "programName": "Cornell Brooks School of Public Policy",
+      "cipCode": "CORNELL-COLLEGE-BROOKS",
+      "applicants": 1289,
+      "admits": 132,
+      "acceptanceRateEstimate": 10.24,
+      "formula": "132/1289*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Engineering",
+      "programName": "Cornell College of Engineering",
+      "cipCode": "CORNELL-COLLEGE-ENGINEERING",
+      "applicants": 20257,
+      "admits": 1341,
+      "acceptanceRateEstimate": 6.62,
+      "formula": "1341/20257*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Dyson School",
+      "programName": "Cornell Dyson School of Applied Economics and Management",
+      "cipCode": "CORNELL-COLLEGE-DYSON",
+      "applicants": 5877,
+      "admits": 315,
+      "acceptanceRateEstimate": 5.36,
+      "formula": "315/5877*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Nolan School",
+      "programName": "Cornell Nolan School of Hotel Administration",
+      "cipCode": "CORNELL-COLLEGE-NOLAN",
+      "applicants": 1163,
+      "admits": 259,
+      "acceptanceRateEstimate": 22.27,
+      "formula": "259/1163*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Human Ecology",
+      "programName": "Cornell College of Human Ecology",
+      "cipCode": "CORNELL-COLLEGE-HUMAN-ECOLOGY",
+      "applicants": 3173,
+      "admits": 305,
+      "acceptanceRateEstimate": 9.61,
+      "formula": "305/3173*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    },
+    {
+      "schoolName": "Cornell University",
+      "cycleYear": 2025,
+      "source": "CORNELL_FACTBOOK_ADMISSIONS_BY_COLLEGE",
+      "sourceUrl": "https://irp.cornell.edu/university-factbook/undergraduate-admissions",
+      "tableauUrl": "https://tableau.cornell.edu/t/IRP/views/AdmissionsPublic/TrenddataFallfirst-year?:embed=y&:showVizHome=no",
+      "officialNote": "Cornell University Factbook public Tableau dashboard; Fall first-year data from UAO/IRP July Frozen File extracts, updated 2025-09-26. Imported 2025 college filter table values.",
+      "broadDiscipline": "Industrial & Labor Relations",
+      "programName": "Cornell School of Industrial and Labor Relations",
+      "cipCode": "CORNELL-COLLEGE-ILR",
+      "applicants": 1384,
+      "admits": 217,
+      "acceptanceRateEstimate": 15.68,
+      "formula": "217/1384*100",
+      "verification": {
+        "realDataStatus": "VERIFIED_REAL",
+        "sourceType": "OFFICIAL_PROGRAM_DASHBOARD",
+        "validatorCount": 3,
+        "validators": [
+          "official_factbook_url",
+          "public_tableau_dashboard",
+          "admits_div_applicants_formula"
+        ],
+        "verifiedAt": "2026-04-30T00:00:00.000Z"
+      }
+    }
+  ]
+}
