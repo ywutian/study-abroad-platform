@@ -6,11 +6,21 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/lib/i18n/navigation';
 import { motion } from 'framer-motion';
 import { PageContainer, PageHeader } from '@/components/layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { userRoutes } from '@study-abroad/shared';
-import { LayoutDashboard, User, ArrowRight } from 'lucide-react';
+import {
+  ArrowRight,
+  CalendarClock,
+  CheckCircle2,
+  FileText,
+  LayoutDashboard,
+  School,
+  User,
+} from 'lucide-react';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { Progress } from '@/components/ui/progress';
 import { QuickExperience } from '@/components/features/onboarding/quick-experience';
@@ -83,15 +93,155 @@ function getProfileGrade(completeness: number): {
   if (completeness >= 90)
     return {
       grade: 'A',
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bgColor: 'bg-emerald-500/10',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
     };
-  if (completeness >= 75)
-    return { grade: 'B+', color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-500/10' };
-  if (completeness >= 60) return { grade: 'B', color: 'text-blue-500', bgColor: 'bg-blue-500/10' };
-  if (completeness >= 40)
-    return { grade: 'C', color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-500/10' };
-  return { grade: 'D', color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-500/10' };
+  if (completeness >= 75) return { grade: 'B+', color: 'text-primary', bgColor: 'bg-primary/10' };
+  if (completeness >= 60) return { grade: 'B', color: 'text-primary', bgColor: 'bg-primary/10' };
+  if (completeness >= 40) return { grade: 'C', color: 'text-warning', bgColor: 'bg-warning/10' };
+  return { grade: 'D', color: 'text-destructive', bgColor: 'bg-destructive/10' };
+}
+
+function NextBestAction({
+  completeness,
+  schoolCount,
+  essayCount,
+  deadlineCount,
+  profileGaps,
+}: {
+  completeness: number;
+  schoolCount: number;
+  essayCount: number;
+  deadlineCount: number;
+  profileGaps: string[];
+}) {
+  const t = useTranslations();
+
+  const action =
+    completeness < 75
+      ? {
+          href: '/profile',
+          icon: User,
+          label: t('dashboard.commandCenter.actions.profile'),
+          description: t('dashboard.commandCenter.actions.profileDesc'),
+          cta: t('dashboard.editProfile'),
+        }
+      : schoolCount < 6
+        ? {
+            href: '/schools',
+            icon: School,
+            label: t('dashboard.commandCenter.actions.schools'),
+            description: t('dashboard.commandCenter.actions.schoolsDesc'),
+            cta: t('dashboard.modules.schools'),
+          }
+        : essayCount === 0
+          ? {
+              href: '/essays',
+              icon: FileText,
+              label: t('dashboard.commandCenter.actions.essays'),
+              description: t('dashboard.commandCenter.actions.essaysDesc'),
+              cta: t('dashboard.modules.essays'),
+            }
+          : deadlineCount > 0
+            ? {
+                href: '/timeline',
+                icon: CalendarClock,
+                label: t('dashboard.commandCenter.actions.deadlines'),
+                description: t('dashboard.commandCenter.actions.deadlinesDesc', {
+                  count: deadlineCount,
+                }),
+                cta: t('dashboard.modules.timeline'),
+              }
+            : {
+                href: '/prediction',
+                icon: CheckCircle2,
+                label: t('dashboard.commandCenter.actions.review'),
+                description: t('dashboard.commandCenter.actions.reviewDesc'),
+                cta: t('dashboard.modules.prediction'),
+              };
+
+  const ActionIcon = action.icon;
+  const signals = [
+    {
+      label: t('dashboard.commandCenter.signals.profile'),
+      value: `${completeness}%`,
+      complete: completeness >= 75,
+    },
+    {
+      label: t('dashboard.commandCenter.signals.schools'),
+      value: String(schoolCount),
+      complete: schoolCount >= 6,
+    },
+    {
+      label: t('dashboard.commandCenter.signals.essays'),
+      value: String(essayCount),
+      complete: essayCount > 0,
+    },
+    {
+      label: t('dashboard.commandCenter.signals.deadlines'),
+      value: String(deadlineCount),
+      complete: deadlineCount === 0,
+    },
+  ];
+
+  return (
+    <Card className="overflow-hidden border-primary/20 bg-[color:var(--theme-card-bg)]">
+      <CardContent className="p-5 sm:p-6">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="rounded-[var(--theme-radius-badge)]">
+                {t('dashboard.commandCenter.label')}
+              </Badge>
+              {profileGaps.length > 0 ? (
+                <span className="text-xs text-muted-foreground">
+                  {t('dashboard.commandCenter.gapCount', { count: profileGaps.length })}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-button)] bg-primary/10 text-primary">
+                    <ActionIcon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-semibold tracking-tight">{action.label}</h2>
+                    <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                      {action.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <Button asChild className="shrink-0 gap-2">
+                <Link href={action.href}>
+                  {action.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-2 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-3">
+            {signals.map((signal) => (
+              <div key={signal.label} className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className={[
+                      'h-2 w-2 shrink-0 rounded-full',
+                      signal.complete ? 'bg-success' : 'bg-warning',
+                    ].join(' ')}
+                  />
+                  <span className="truncate text-sm text-muted-foreground">{signal.label}</span>
+                </div>
+                <span className="font-medium tabular-nums">{signal.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function DashboardPage() {
@@ -195,7 +345,7 @@ export default function DashboardPage() {
       {/* Mini progress banner — shown when profile is incomplete */}
       {isHydrated && showIndicator && (
         <Link href="/profile">
-          <div className="flex items-center gap-3 rounded-lg border bg-amber-500/5 border-amber-500/20 px-4 py-2.5 hover:bg-amber-500/10 transition-colors cursor-pointer">
+          <div className="flex cursor-pointer items-center gap-3 rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 px-4 py-2.5 transition-colors hover:bg-warning/15">
             <Progress value={completeness} className="h-1.5 flex-1 max-w-[120px]" />
             <span className="text-sm text-muted-foreground">
               {t('dashboard.onboarding.progress', { pct: completeness })}
@@ -209,25 +359,16 @@ export default function DashboardPage() {
       )}
 
       <div className="space-y-8">
-        {/* Welcome Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
-        >
-          <div>
-            <h1 className="text-title">{t('dashboard.welcome', { name: displayName })}</h1>
-            <p className="text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
-          </div>
-          <Link href="/profile">
-            <Button variant="outline" size="sm">
-              <User className="w-4 h-4 mr-2" />
-              {t('dashboard.editProfile')}
-            </Button>
-          </Link>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <NextBestAction
+            completeness={completeness}
+            schoolCount={schoolCount}
+            essayCount={stableDashboard?.profile.essayCount ?? 0}
+            deadlineCount={todoList.filter((item) => item.daysLeft <= 30).length}
+            profileGaps={profileGaps}
+          />
         </motion.div>
 
-        {/* Quick Stats Row */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -259,7 +400,7 @@ export default function DashboardPage() {
           className="grid gap-6 lg:grid-cols-2"
         >
           <DashboardDeadlines todoList={todoList} />
-          <DashboardActivity activities={dashboard?.recentActivity ?? []} />
+          <DashboardActivity activities={stableDashboard?.recentActivity ?? []} />
         </motion.div>
       </div>
     </PageContainer>
