@@ -27,6 +27,8 @@
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "test:e2e:web": "playwright test e2e/core-pages.spec.ts",
+    "test:e2e:web:full-ui": "playwright test e2e/full-ui-surface.spec.ts",
+    "test:e2e:web:full-ui:update": "FULL_UI_VISUAL_DIFF=1 playwright test e2e/full-ui-surface.spec.ts --update-snapshots",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
     "prepare": "husky",
@@ -57,7 +59,8 @@
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys",
     "check": "pnpm lint:all && pnpm test",
     "preflight": "pnpm --filter api db:generate && pnpm lint:all && pnpm test",
-    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test"
+    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test",
+    "verify:full-platform": "tsx scripts/verify-full-platform.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
