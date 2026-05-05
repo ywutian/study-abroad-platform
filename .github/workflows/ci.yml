@@ -230,7 +230,7 @@ jobs:
 
       - name: Upload API coverage
         if: needs.detect-changes.outputs.api == 'true' || github.event_name == 'push'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./apps/api/coverage/lcov.info
