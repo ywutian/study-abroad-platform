@@ -61,7 +61,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.5';
+export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.6';
 
 export interface CounselorFactor {
   name: string;
@@ -199,7 +199,7 @@ export class CounselorEngineService {
       testBand: encodedDimensions.has('test')
         ? suppressed('Test score')
         : testBandMultiplier(profile, school),
-      round: roundMultiplier(resolvedRound),
+      round: roundMultiplier(resolvedRound, school),
       legacyHook: legacyHookMultiplier(profile, school),
       firstGen: firstGenMultiplier(profile),
       athlete: athleteMultiplier(profile),
@@ -214,10 +214,30 @@ export class CounselorEngineService {
     } as Record<string, ModifierResult>;
 
     // ---- Step 3: combine + clip -----------------------------------------
-    const product = Object.values(modifierResults).reduce(
-      (acc, m) => acc * m.multiplier,
-      1.0,
-    );
+    // GPA and test scores are correlated in admissions; treating them as
+    // independent multipliers double-penalizes consistent profiles. When both
+    // modifiers are active (no Tier 1 encoding), we replace the gpa×test
+    // product with their geometric mean: a 3.90 GPA + 1560 SAT applicant gets
+    // ~×0.65 instead of ×0.42 at MIT, which prevents top-school predictions
+    // from collapsing to the floor for a typical-strong applicant.
+    //
+    // When one dimension is encoded (Tier 1 cell already accounts for GPA or
+    // test), the suppressed multiplier is 1.0 anyway, so geometric mean has
+    // no effect — we still multiply normally.
+    const bothAcademicActive =
+      !encodedDimensions.has('gpa') && !encodedDimensions.has('test');
+    const academicProduct = bothAcademicActive
+      ? Math.sqrt(
+          modifierResults.gpaBand.multiplier *
+            modifierResults.testBand.multiplier,
+        )
+      : modifierResults.gpaBand.multiplier *
+        modifierResults.testBand.multiplier;
+
+    const product = Object.entries(modifierResults).reduce((acc, [key, m]) => {
+      if (key === 'gpaBand' || key === 'testBand') return acc;
+      return acc * m.multiplier;
+    }, academicProduct);
     const raw = anchor * product;
     // Anchored clip: never more than 2.5× or less than 0.3× the school baseline.
     const lowerBound = Math.max(0.02, anchor * 0.3);
@@ -241,6 +261,24 @@ export class CounselorEngineService {
         impact: mr.impact,
         weight: Math.abs(mr.multiplier - 1.0),
         detail: `${mr.evidence} (×${mr.multiplier.toFixed(2)})`,
+      });
+    }
+    // Surface the geometric-mean combination when both academic dimensions
+    // are active and at least one is non-neutral. Educates the user that
+    // GPA + SAT are co-evaluated, not independently penalized.
+    if (
+      bothAcademicActive &&
+      (modifierResults.gpaBand.multiplier !== 1.0 ||
+        modifierResults.testBand.multiplier !== 1.0)
+    ) {
+      const naive =
+        modifierResults.gpaBand.multiplier *
+        modifierResults.testBand.multiplier;
+      factors.push({
+        name: 'Combined academic signal (geometric mean)',
+        impact: 'neutral',
+        weight: 0,
+        detail: `GPA ×${modifierResults.gpaBand.multiplier.toFixed(2)} and test ×${modifierResults.testBand.multiplier.toFixed(2)} are co-evaluated as ×${academicProduct.toFixed(2)} (geometric mean) instead of ×${naive.toFixed(2)} (product) to avoid double-penalizing consistent profiles.`,
       });
     }
     // Add the final clamp note if the raw value was clipped — operational
