@@ -357,6 +357,9 @@ export const adminRoutes = {
   // Audit Logs
   auditLogs: () => `${API_ROUTES.ADMIN}/audit-logs`,
 
+  // Cache health (M1 of long-term cache architecture)
+  cacheHealth: () => `${API_ROUTES.ADMIN}/cache-health`,
+
   // Theme style library
   themeStyles: () => `${API_ROUTES.ADMIN}/theme-styles`,
   themeStyleById: (id: string) => `${API_ROUTES.ADMIN}/theme-styles/${id}`,

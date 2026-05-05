@@ -20,6 +20,7 @@ import { AdminCdsPipelineController } from './admin-cds-pipeline.controller';
 import { AdminSchoolDataPipelineController } from './admin-school-data-pipeline.controller';
 import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.service';
 import { AdminThemeStyleController } from './admin-theme-style.controller';
+import { AdminCacheHealthController } from './admin-cache-health.controller';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
@@ -52,6 +53,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminCdsPipelineController,
     AdminSchoolDataPipelineController,
     AdminThemeStyleController,
+    AdminCacheHealthController,
   ],
   providers: [
     AdminService,

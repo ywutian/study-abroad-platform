@@ -6642,6 +6642,7 @@
       "team": "Team",
       "themeStyles": "Style Library",
       "featureFlags": "Feature Flags",
+      "cacheHealth": "Cache Health",
       "devTools": "Developer Tools",
       "menu": "Menu",
       "adminNav": "Admin Navigation",
@@ -6652,6 +6653,69 @@
         "management": "Management",
         "ai": "AI System",
         "system": "System"
+      }
+    },
+    "cacheHealth": {
+      "title": "Cache Health",
+      "description": "Per-pod Redis observability — operation counts, latency percentiles, hot key prefixes, and recent errors. Counters reset on pod restart.",
+      "refresh": "Refresh",
+      "reset": "Reset counters",
+      "resetSuccess": "Metrics reset for this pod.",
+      "loadError": "Could not load cache health",
+      "loadErrorDesc": "The metrics endpoint itself errored. This usually means the API is down — check Cloud Run logs.",
+      "summary": {
+        "connection": "Connection",
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "latencyHint": "Ping {ms}ms",
+        "totalOps": "Total operations",
+        "uptimeHint": "Pod uptime: {uptime}",
+        "hitRatio": "Hit ratio",
+        "hitRatioHint": "{hits} hits · {misses} misses",
+        "errorRate": "Error rate",
+        "errorsHint": "{count} errors total"
+      },
+      "alerts": {
+        "quotaExceeded": {
+          "title": "Redis quota exceeded",
+          "body": "{count} operations were rejected with 'max requests limit'. Upstash free tier is capped at 500K commands/month per instance — upgrade the plan or shard onto more instances."
+        }
+      },
+      "ops": {
+        "title": "Operations breakdown",
+        "description": "Counts and latency per operation kind. `read` is GET-like; `write` is SET-like; `atomic` includes INCR/DECR/setNX (Lua-safe).",
+        "empty": "No operations recorded yet.",
+        "cols": {
+          "kind": "Kind",
+          "count": "Count",
+          "errors": "Errors",
+          "hitRatio": "Hit ratio",
+          "avgMs": "Avg ms",
+          "p95Ms": "p95 ms",
+          "p99Ms": "p99 ms",
+          "maxMs": "Max ms"
+        }
+      },
+      "hotKeys": {
+        "title": "Hot key prefixes",
+        "description": "Top 20 most-accessed key prefixes. Prefixes are grouped to the second colon (e.g. `school:detail:abc123` → `school:detail:*`). Use this to identify candidates for L1 in-process caching or CDN edge caching.",
+        "empty": "No keys recorded yet.",
+        "cols": {
+          "prefix": "Prefix",
+          "count": "Count",
+          "lastSeen": "Last seen"
+        }
+      },
+      "errors": {
+        "title": "Recent errors",
+        "description": "Last 50 errors, newest first. Look at `kind` to differentiate quota / timeout / connection / auth failures.",
+        "cols": {
+          "time": "Time",
+          "kind": "Kind",
+          "op": "Op",
+          "key": "Key",
+          "message": "Message"
+        }
       }
     },
     "themeStyles": {
