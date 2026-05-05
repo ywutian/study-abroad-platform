@@ -100,7 +100,7 @@ export function ActivitiesTab({
               {t('profile.aiSort')}
             </Button>
           )}
-          <Button onClick={onAddActivity} className="gap-2 bg-warning hover:opacity-90">
+          <Button variant="warning" onClick={onAddActivity} className="gap-2">
             <Plus className="h-4 w-4" />
             {t('profile.actions.addActivity')}
           </Button>
@@ -250,7 +250,7 @@ export function ActivitiesTab({
                             {activity.gradeLevels.map((g: number) => (
                               <span
                                 key={g}
-                                className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary"
+                                className="rounded-full bg-primary/10 px-1.5 py-0.5 text-2xs text-primary"
                               >
                                 {g}th
                               </span>

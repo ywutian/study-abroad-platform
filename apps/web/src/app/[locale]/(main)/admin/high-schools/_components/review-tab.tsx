@@ -116,7 +116,7 @@ export function ReviewTab() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-10 w-10 md:h-8 md:w-8"
                         onClick={() => openEdit(school)}
                         aria-label={t('tierOverview.editAriaLabel', { name: school.name })}
                       >

@@ -6,16 +6,18 @@
  * 使用企业级 Hydration 安全方案
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Maximize2, MessageCircle, Minimize2, Minus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+
 import { Button } from '@/components/ui/button';
-import { MessageCircle, X, Minus, Maximize2, Minimize2 } from 'lucide-react';
+import { useHydrated } from '@/hooks/use-hydration';
+import { cn } from '@/lib/utils';
+
 import { AgentChat } from './agent-chat';
 import { useFloatingChatBridgeStore } from './floating-chat-bridge';
-import { useHydrated } from '@/hooks/use-hydration';
 
 interface FloatingChatProps {
   defaultOpen?: boolean;
@@ -23,6 +25,7 @@ interface FloatingChatProps {
 
 export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const t = useTranslations('agentChat');
+  const tCommon = useTranslations('common');
 
   // 企业级 Hydration 安全方案：使用 useSyncExternalStore
   const isHydrated = useHydrated();
@@ -107,6 +110,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={isFullscreen ? t('minimize') : t('maximize')}
                   className="h-7 w-7"
                   onClick={() => setIsFullscreen(!isFullscreen)}
                 >
@@ -120,6 +124,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={t('minimize')}
                 className="h-7 w-7"
                 onClick={() => setIsMinimized(!isMinimized)}
               >
@@ -128,6 +133,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={tCommon('close')}
                 className="h-7 w-7"
                 onClick={() => setIsOpen(false)}
               >
@@ -163,6 +169,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           className="fixed bottom-6 right-6 z-50"
         >
           <Button
+            aria-label={t('title')}
             onClick={() => {
               setIsOpen(true);
               setIsMinimized(false);
@@ -176,6 +183,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
               'relative'
             )}
           >
+            <span className="sr-only">{t('title')}</span>
             <MessageCircle className="h-6 w-6" />
 
             {/* Unread Badge */}

@@ -169,7 +169,7 @@ export function PromptSelector({
             <span className="text-xs font-medium text-primary">{t('linked')}</span>
             <Badge
               variant={TYPE_VARIANT_MAP[selectedPrompt.type] ?? 'outline'}
-              className="text-[10px] px-1.5 py-0"
+              className="text-2xs px-1.5 py-0"
             >
               {formatType(selectedPrompt.type)}
             </Badge>
@@ -201,12 +201,7 @@ export function PromptSelector({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-1.5 text-xs border-primary/20 bg-primary/10 text-primary hover:bg-primary/15"
-        >
+        <Button type="button" variant="secondary" size="sm" className="gap-1.5 text-xs">
           <Search className="h-3.5 w-3.5" />
           {t('linkPrompt')}
         </Button>
@@ -308,18 +303,18 @@ export function PromptSelector({
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Badge
                             variant={TYPE_VARIANT_MAP[prompt.type] ?? 'outline'}
-                            className="text-[10px] px-1.5 py-0"
+                            className="text-2xs px-1.5 py-0"
                           >
                             {formatType(prompt.type)}
                           </Badge>
                           {prompt.wordLimit && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-2xs text-muted-foreground">
                               {t('wordLimit', { count: prompt.wordLimit })}
                             </span>
                           )}
                           <Badge
                             variant={prompt.isRequired ? 'default' : 'outline'}
-                            className="text-[10px] px-1.5 py-0"
+                            className="text-2xs px-1.5 py-0"
                           >
                             {prompt.isRequired ? t('required') : t('optional')}
                           </Badge>

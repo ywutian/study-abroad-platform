@@ -128,7 +128,7 @@ export function SchoolSelectorCard({
                   )}
                   <button
                     onClick={() => onRemove(school.id)}
-                    className="ml-1 hover:text-destructive"
+                    className="-mr-2 ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-destructive/10 hover:text-destructive md:h-8 md:w-8"
                     aria-label={t('common.remove')}
                   >
                     <X className="h-3 w-3" />

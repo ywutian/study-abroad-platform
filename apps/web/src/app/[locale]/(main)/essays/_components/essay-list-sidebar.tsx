@@ -16,6 +16,15 @@ import type { Essay } from '@/types/essay';
 const STEP_ICONS = [Target, Search, BookOpen] as const;
 const STEP_LINKS = ['/profile?tab=schools', 'action:create', '/cases?tab=essays'] as const;
 
+function toValidDate(value: unknown) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value as string | number | Date);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 interface EssayListSidebarProps {
   essays: Essay[] | undefined;
   isLoading: boolean;
@@ -54,34 +63,38 @@ export function EssayListSidebar({
           ) : essays && essays.length > 0 ? (
             <ScrollArea className="h-[500px] pr-2">
               <div className="space-y-2">
-                {essays.map((essay, index) => (
-                  <motion.div
-                    key={essay.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={cn(
-                      'cursor-pointer rounded-xl border p-4 transition-all duration-200',
-                      'hover:border-rose-500/40 hover:bg-rose-500/5 hover:shadow-sm',
-                      selectedEssayId === essay.id && 'border-rose-500 bg-rose-500/5 shadow-sm'
-                    )}
-                    onClick={() => onSelect(essay)}
-                  >
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <h4 className="font-semibold line-clamp-1">{essay.title}</h4>
-                      <Badge variant="info" className="shrink-0">
-                        {essay.wordCount || getWordCount(essay.content)} {t('common.words')}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {essay.prompt || essay.content.slice(0, 100)}
-                    </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {fmt.dateTime(new Date(essay.updatedAt), 'medium')}
-                    </div>
-                  </motion.div>
-                ))}
+                {essays.map((essay, index) => {
+                  const updatedAt = toValidDate(essay.updatedAt);
+
+                  return (
+                    <motion.div
+                      key={essay.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={cn(
+                        'cursor-pointer rounded-xl border p-4 transition-all duration-200',
+                        'hover:border-rose-500/40 hover:bg-rose-500/5 hover:shadow-sm',
+                        selectedEssayId === essay.id && 'border-rose-500 bg-rose-500/5 shadow-sm'
+                      )}
+                      onClick={() => onSelect(essay)}
+                    >
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <h4 className="font-semibold line-clamp-1">{essay.title}</h4>
+                        <Badge variant="info" className="shrink-0">
+                          {essay.wordCount || getWordCount(essay.content)} {t('common.words')}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {essay.prompt || essay.content.slice(0, 100)}
+                      </p>
+                      <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {updatedAt ? fmt.dateTime(updatedAt, 'medium') : t('common.notAvailable')}
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </ScrollArea>
           ) : (

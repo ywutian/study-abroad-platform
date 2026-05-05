@@ -37,6 +37,19 @@ type AuthorityStats = {
   generatedAt: string;
 };
 
+const EMPTY_AUTHORITY_BUCKETS: AuthorityBuckets = {
+  total: 0,
+  AUTHORITATIVE: 0,
+  PREVIEW: 0,
+  NULL: 0,
+};
+
+const EMPTY_INVARIANT_CHECKS: AuthorityStats['invariantChecks'] = {
+  resultNullCount: 0,
+  snapshotNullCount: 0,
+  previewRowsWithOutcomeLabel: 0,
+};
+
 type DataInventory = {
   schools: {
     total: number;
@@ -121,6 +134,9 @@ export default function AdminPredictionHealthPage() {
 
   const anyLoading = authorityQ.isLoading || inventoryQ.isLoading || readinessQ.isLoading;
   const anyError = authorityQ.error || inventoryQ.error || readinessQ.error;
+  const authorityResultBuckets = authorityQ.data?.result ?? EMPTY_AUTHORITY_BUCKETS;
+  const authoritySnapshotBuckets = authorityQ.data?.snapshot ?? EMPTY_AUTHORITY_BUCKETS;
+  const invariantChecks = authorityQ.data?.invariantChecks ?? EMPTY_INVARIANT_CHECKS;
 
   const refetchAll = () => {
     authorityQ.refetch();
@@ -174,12 +190,12 @@ export default function AdminPredictionHealthPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <AuthorityBucketCard
                   label={t('authority.resultsTable')}
-                  buckets={authorityQ.data.result}
+                  buckets={authorityResultBuckets}
                   t={t}
                 />
                 <AuthorityBucketCard
                   label={t('authority.snapshotsTable')}
-                  buckets={authorityQ.data.snapshot}
+                  buckets={authoritySnapshotBuckets}
                   t={t}
                 />
               </div>
@@ -189,23 +205,23 @@ export default function AdminPredictionHealthPage() {
                   <InvariantRow
                     okLabel={t('authority.resultNullOk')}
                     violatedLabel={t('authority.resultNullViolated', {
-                      count: authorityQ.data.invariantChecks.resultNullCount,
+                      count: invariantChecks.resultNullCount,
                     })}
-                    violated={authorityQ.data.invariantChecks.resultNullCount > 0}
+                    violated={invariantChecks.resultNullCount > 0}
                   />
                   <InvariantRow
                     okLabel={t('authority.snapshotNullOk')}
                     violatedLabel={t('authority.snapshotNullViolated', {
-                      count: authorityQ.data.invariantChecks.snapshotNullCount,
+                      count: invariantChecks.snapshotNullCount,
                     })}
-                    violated={authorityQ.data.invariantChecks.snapshotNullCount > 0}
+                    violated={invariantChecks.snapshotNullCount > 0}
                   />
                   <InvariantRow
                     okLabel={t('authority.previewWithOutcomeOk')}
                     violatedLabel={t('authority.previewWithOutcomeViolated', {
-                      count: authorityQ.data.invariantChecks.previewRowsWithOutcomeLabel,
+                      count: invariantChecks.previewRowsWithOutcomeLabel,
                     })}
-                    violated={authorityQ.data.invariantChecks.previewRowsWithOutcomeLabel > 0}
+                    violated={invariantChecks.previewRowsWithOutcomeLabel > 0}
                   />
                 </ul>
               </div>

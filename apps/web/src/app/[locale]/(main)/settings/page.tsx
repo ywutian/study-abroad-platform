@@ -1,35 +1,44 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useTheme } from 'next-themes';
+import {
+  COLOR_PALETTES,
+  type ColorPalette,
+  DEFAULT_COLOR_PALETTE,
+  getColorThemeLabel,
+  userRoutes,
+} from '@study-abroad/shared';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import {
-  User,
-  Shield,
   Bell,
-  Moon,
-  Sun,
-  CreditCard,
-  HelpCircle,
-  FileText,
-  Lock,
-  Trash2,
-  LogOut,
   ChevronRight,
-  Languages,
-  Settings,
-  Palette,
-  Sparkles,
   Clock,
+  CreditCard,
+  FileText,
+  HelpCircle,
+  Languages,
+  Lock,
+  LogOut,
+  Moon,
+  Palette,
+  Settings,
+  Shield,
+  Sparkles,
+  Sun,
+  Trash2,
+  User,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import { PageContainer, PageHeader } from '@/components/layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Select,
   SelectContent,
@@ -38,22 +47,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useAuthStore } from '@/stores/auth';
-import { useRouter, usePathname } from '@/lib/i18n/navigation';
+import { Switch } from '@/components/ui/switch';
+import { useColorPalette } from '@/hooks/use-color-palette';
+import { apiClient } from '@/lib/api';
+import { usePathname, useRouter } from '@/lib/i18n/navigation';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
-import { apiClient } from '@/lib/api';
-import {
-  COLOR_PALETTES,
-  DEFAULT_COLOR_PALETTE,
-  getColorThemeLabel,
-  userRoutes,
-  type ColorPalette,
-} from '@study-abroad/shared';
-import { useColorPalette } from '@/hooks/use-color-palette';
+import { useAuthStore } from '@/stores/auth';
 
 interface SettingSection {
   id: string;
@@ -476,7 +476,7 @@ function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: bool
 
       {item.type === 'select' && (
         <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>
-          <SelectTrigger className="h-9 w-[12rem] min-w-[10rem] shrink-0">
+          <SelectTrigger aria-label={item.label} className="h-9 w-[12rem] min-w-[10rem] shrink-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="max-h-[420px]">

@@ -128,6 +128,7 @@ export function WeightConfigPanel({
                       transition={{ duration: 0.2, ease: 'easeOut' }}
                     />
                     <Slider
+                      aria-label={t(`ranking.${key}`)}
                       value={[weights[key]]}
                       onValueChange={([v]) => onWeightChange(key, v)}
                       max={100}
