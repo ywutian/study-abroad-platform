@@ -357,6 +357,15 @@ export const adminRoutes = {
   // Audit Logs
   auditLogs: () => `${API_ROUTES.ADMIN}/audit-logs`,
 
+  // Theme style library
+  themeStyles: () => `${API_ROUTES.ADMIN}/theme-styles`,
+  themeStyleById: (id: string) => `${API_ROUTES.ADMIN}/theme-styles/${id}`,
+  themeStyleValidate: () => `${API_ROUTES.ADMIN}/theme-styles/validate`,
+  themeStyleDiagnostics: () => `${API_ROUTES.ADMIN}/theme-styles/diagnostics`,
+  themeStyleCertification: () => `${API_ROUTES.ADMIN}/theme-styles/certification`,
+  themeStyleCertify: () => `${API_ROUTES.ADMIN}/theme-styles/certify`,
+  themeStyleRollback: () => `${API_ROUTES.ADMIN}/theme-styles/rollback`,
+
   // Reports
   reports: () => `${API_ROUTES.ADMIN}/reports`,
   reportById: (id: string) => `${API_ROUTES.ADMIN}/reports/${id}`,
