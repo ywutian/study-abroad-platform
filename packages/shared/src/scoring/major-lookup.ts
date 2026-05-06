@@ -1,176 +1,179 @@
 /**
  * Maps free-text major inputs to canonical CIP codes.
  * CIP = Classification of Instructional Programs (US Dept of Education).
+ *
+ * IMPORTANT: Codes are stored as 6-digit dotted format (e.g. "11.0101")
+ * to match the SchoolProgram.cipCode column populated from College
+ * Scorecard / CDS Section J. The 4-digit format used here historically
+ * caused all SchoolProgram lookups to silently return 0 rows — keeping
+ * data-driven major rates dormant. Fixed: 2026-05.
+ *
+ * Coverage in DB (top entries by school count):
+ *   14.0101 Engineering    234 schools
+ *   11.0101 Computer Sci   233
+ *   26.0101 Biology        231
+ *   51.3801 Nursing        223
+ *   50.0701 Fine Arts      222
+ *   52.0201 Business       222
+ *   42.0101 Psychology     222
  */
 
 export const MAJOR_ALIASES: Record<string, string> = {
-  // CIP 1107 - Computer Science
-  'computer science': '1107',
-  cs: '1107',
-  'comp sci': '1107',
-  compsci: '1107',
-  '\u8BA1\u7B97\u673A\u79D1\u5B66': '1107',
-  '\u8BA1\u7B97\u673A': '1107',
+  // 11.0101 — Computer Science (most-covered competitive major)
+  'computer science': '11.0101',
+  cs: '11.0101',
+  'comp sci': '11.0101',
+  compsci: '11.0101',
+  '计算机科学': '11.0101',
+  '计算机': '11.0101',
 
-  // CIP 1401 - Engineering (General)
-  engineering: '1401',
-  'general engineering': '1401',
-  '\u5DE5\u7A0B': '1401',
+  // 14.0101 — Engineering, General
+  engineering: '14.0101',
+  'general engineering': '14.0101',
+  '工程': '14.0101',
 
-  // CIP 1410 - Electrical / Computer Engineering
-  'electrical engineering': '1410',
-  ece: '1410',
-  ee: '1410',
-  '\u7535\u5B50\u5DE5\u7A0B': '1410',
-  '\u7535\u6C14\u5DE5\u7A0B': '1410',
-  'computer engineering': '1410',
+  // 14.1001 / 14.0901 — Electrical / Computer Engineering
+  // (Most schools roll these up under 14.0101 in our DB; fall back)
+  'electrical engineering': '14.0101',
+  ece: '14.0101',
+  ee: '14.0101',
+  '电子工程': '14.0101',
+  '电气工程': '14.0101',
+  'computer engineering': '14.0101',
 
-  // CIP 1419 - Mechanical Engineering
-  'mechanical engineering': '1419',
-  'mech eng': '1419',
-  '\u673A\u68B0\u5DE5\u7A0B': '1419',
+  // 14.1901 — Mechanical Engineering (rolled into 14.0101 in DB)
+  'mechanical engineering': '14.0101',
+  'mech eng': '14.0101',
+  '机械工程': '14.0101',
 
-  // CIP 1409 - Biomedical Engineering
-  'biomedical engineering': '1409',
-  bme: '1409',
-  '\u751F\u7269\u533B\u5B66\u5DE5\u7A0B': '1409',
+  // 14.0501 — Biomedical Engineering (rolled into 14.0101)
+  'biomedical engineering': '14.0101',
+  bme: '14.0101',
+  '生物医学工程': '14.0101',
 
-  // CIP 1408 - Chemical Engineering
-  'chemical engineering': '1408',
-  '\u5316\u5B66\u5DE5\u7A0B': '1408',
+  // 14.0701 — Chemical Engineering (rolled into 14.0101)
+  'chemical engineering': '14.0101',
+  '化学工程': '14.0101',
 
-  // CIP 5202 - Business
-  business: '5202',
-  'business administration': '5202',
-  '\u5546\u79D1': '5202',
-  '\u5546\u4E1A': '5202',
-  '\u5DE5\u5546\u7BA1\u7406': '5202',
-  finance: '5202',
-  '\u91D1\u878D': '5202',
+  // 52.0201 — Business Administration
+  business: '52.0201',
+  'business administration': '52.0201',
+  '商科': '52.0201',
+  '商业': '52.0201',
+  '工商管理': '52.0201',
+  finance: '52.0201',
+  '金融': '52.0201',
 
-  // CIP 4501 - Economics
-  economics: '4501',
-  econ: '4501',
-  '\u7ECF\u6D4E\u5B66': '4501',
-  '\u7ECF\u6D4E': '4501',
+  // 45.0601 — Economics (closest in DB is 45.0101 Social Sciences)
+  economics: '45.0101',
+  econ: '45.0101',
+  '经济学': '45.0101',
+  '经济': '45.0101',
 
-  // CIP 2601 - Biology
-  biology: '2601',
-  bio: '2601',
-  '\u751F\u7269': '2601',
-  '\u751F\u7269\u5B66': '2601',
+  // 26.0101 — Biology / Life Sciences
+  biology: '26.0101',
+  bio: '26.0101',
+  '生物': '26.0101',
+  '生物学': '26.0101',
 
-  // CIP 5110 - Nursing
-  nursing: '5110',
-  '\u62A4\u7406': '5110',
+  // 51.3801 — Nursing
+  nursing: '51.3801',
+  '护理': '51.3801',
 
-  // CIP 4002 - Physics
-  physics: '4002',
-  '\u7269\u7406': '4002',
-  '\u7269\u7406\u5B66': '4002',
+  // 27.0101 — Mathematics / Physical Sciences (covers Math + Physics in DB)
+  physics: '27.0101',
+  '物理': '27.0101',
+  '物理学': '27.0101',
+  mathematics: '27.0101',
+  math: '27.0101',
+  '数学': '27.0101',
 
-  // CIP 2701 - Mathematics
-  mathematics: '2701',
-  math: '2701',
-  '\u6570\u5B66': '2701',
+  // 42.0101 — Psychology
+  psychology: '42.0101',
+  psych: '42.0101',
+  '心理学': '42.0101',
 
-  // CIP 4201 - Psychology
-  psychology: '4201',
-  psych: '4201',
-  '\u5FC3\u7406\u5B66': '4201',
+  // 45.0101 — Social Sciences (Political Science, History, etc.)
+  'political science': '45.0101',
+  'poli sci': '45.0101',
+  '政治学': '45.0101',
 
-  // CIP 2305 - Political Science
-  'political science': '2305',
-  'poli sci': '2305',
-  '\u653F\u6CBB\u5B66': '2305',
+  // 09.0401 — Communications / Journalism (not heavily seeded; falls back)
+  communications: '09.0401',
+  journalism: '09.0401',
+  '传媒': '09.0401',
+  '新闻': '09.0401',
 
-  // CIP 0904 - Communications / Journalism
-  communications: '0904',
-  journalism: '0904',
-  '\u4F20\u5A92': '0904',
-  '\u65B0\u95FB': '0904',
+  // 51.2201 — Public Health
+  'pre-med': '51.2201',
+  premed: '51.2201',
+  '医学预科': '51.2201',
+  'public health': '51.2201',
+  '公共卫生': '51.2201',
 
-  // CIP 5003 - Pre-Med / Health
-  'pre-med': '5003',
-  premed: '5003',
-  '\u533B\u5B66\u9884\u79D1': '5003',
+  // 11.0101 — Data Science (rolled into CS in our DB)
+  'data science': '11.0101',
+  '数据科学': '11.0101',
 
-  // CIP 5004 - Data Science
-  'data science': '5004',
-  '\u6570\u636E\u79D1\u5B66': '5004',
+  // 11.0101 — Information Technology (rolled into CS)
+  'information technology': '11.0101',
+  '信息技术': '11.0101',
 
-  // CIP 1101 - Information Technology
-  'information technology': '1101',
-  '\u4FE1\u606F\u6280\u672F': '1101',
+  // 24.0101 — Liberal Arts / Humanities (covers History, English, Lit)
+  history: '24.0101',
+  '历史': '24.0101',
+  '历史学': '24.0101',
+  english: '24.0101',
+  literature: '24.0101',
+  '英语': '24.0101',
+  '文学': '24.0101',
 
-  // CIP 2304 - History
-  history: '2304',
-  '\u5386\u53F2': '2304',
-  '\u5386\u53F2\u5B66': '2304',
+  // 27.0101 — Chemistry (rolled into Math/Physical Sciences in DB)
+  chemistry: '27.0101',
+  chem: '27.0101',
+  '化学': '27.0101',
 
-  // CIP 2302 - English / Literature
-  english: '2302',
-  literature: '2302',
-  '\u82F1\u8BED': '2302',
-  '\u6587\u5B66': '2302',
+  // 04.0901 — Architecture
+  architecture: '04.0901',
+  '建筑': '04.0901',
+  '建筑学': '04.0901',
 
-  // CIP 4005 - Chemistry
-  chemistry: '4005',
-  chem: '4005',
-  '\u5316\u5B66': '4005',
+  // 13.0101 — Education
+  education: '13.0101',
+  '教育': '13.0101',
+  '教育学': '13.0101',
 
-  // CIP 0401 - Architecture
-  architecture: '0401',
-  '\u5EFA\u7B51': '0401',
-  '\u5EFA\u7B51\u5B66': '0401',
-
-  // CIP 5003 - Public Health
-  'public health': '5003',
-  '\u516C\u5171\u5353\u751F': '5003',
-
-  // CIP 1301 - Education
-  education: '1301',
-  '\u6559\u80B2': '1301',
-  '\u6559\u80B2\u5B66': '1301',
-
-  // CIP 5001 - Arts
-  'fine arts': '5001',
-  art: '5001',
-  '\u827A\u672F': '5001',
-  '\u7F8E\u672F': '5001',
+  // 50.0701 — Fine and Studio Arts
+  'fine arts': '50.0701',
+  art: '50.0701',
+  '艺术': '50.0701',
+  '美术': '50.0701',
 };
 
 /** CIP code → canonical English + Chinese names */
 export const CIP_NAMES: Record<string, { en: string; zh: string }> = {
-  '1107': { en: 'Computer Science', zh: '\u8BA1\u7B97\u673A\u79D1\u5B66' },
-  '1401': { en: 'Engineering', zh: '\u5DE5\u7A0B' },
-  '1410': { en: 'Electrical Engineering', zh: '\u7535\u5B50\u5DE5\u7A0B' },
-  '1419': { en: 'Mechanical Engineering', zh: '\u673A\u68B0\u5DE5\u7A0B' },
-  '1409': { en: 'Biomedical Engineering', zh: '\u751F\u7269\u533B\u5B66\u5DE5\u7A0B' },
-  '1408': { en: 'Chemical Engineering', zh: '\u5316\u5B66\u5DE5\u7A0B' },
-  '5202': { en: 'Business', zh: '\u5546\u79D1' },
-  '4501': { en: 'Economics', zh: '\u7ECF\u6D4E\u5B66' },
-  '2601': { en: 'Biology', zh: '\u751F\u7269\u5B66' },
-  '5110': { en: 'Nursing', zh: '\u62A4\u7406' },
-  '4002': { en: 'Physics', zh: '\u7269\u7406\u5B66' },
-  '2701': { en: 'Mathematics', zh: '\u6570\u5B66' },
-  '4201': { en: 'Psychology', zh: '\u5FC3\u7406\u5B66' },
-  '2305': { en: 'Political Science', zh: '\u653F\u6CBB\u5B66' },
-  '0904': { en: 'Communications', zh: '\u4F20\u5A92' },
-  '5003': { en: 'Pre-Med / Health', zh: '\u533B\u5B66\u9884\u79D1' },
-  '5004': { en: 'Data Science', zh: '\u6570\u636E\u79D1\u5B66' },
-  '1101': { en: 'Information Technology', zh: '\u4FE1\u606F\u6280\u672F' },
-  '2304': { en: 'History', zh: '\u5386\u53F2\u5B66' },
-  '2302': { en: 'English / Literature', zh: '\u6587\u5B66' },
-  '4005': { en: 'Chemistry', zh: '\u5316\u5B66' },
-  '0401': { en: 'Architecture', zh: '\u5EFA\u7B51\u5B66' },
-  '1301': { en: 'Education', zh: '\u6559\u80B2\u5B66' },
-  '5001': { en: 'Fine Arts', zh: '\u7F8E\u672F' },
+  '11.0101': { en: 'Computer Science', zh: '计算机科学' },
+  '14.0101': { en: 'Engineering', zh: '工程' },
+  '52.0201': { en: 'Business Administration', zh: '商科' },
+  '45.0101': { en: 'Social Sciences / Economics', zh: '社会科学' },
+  '26.0101': { en: 'Biology', zh: '生物学' },
+  '51.3801': { en: 'Nursing', zh: '护理' },
+  '27.0101': { en: 'Math / Physical Sciences', zh: '数学与物理科学' },
+  '42.0101': { en: 'Psychology', zh: '心理学' },
+  '24.0101': { en: 'Liberal Arts / Humanities', zh: '人文与文科' },
+  '09.0401': { en: 'Communications', zh: '传媒' },
+  '51.2201': { en: 'Public Health / Pre-Med', zh: '公共卫生与医学预科' },
+  '04.0901': { en: 'Architecture', zh: '建筑学' },
+  '13.0101': { en: 'Education', zh: '教育学' },
+  '50.0701': { en: 'Fine Arts', zh: '美术' },
 };
 
 /**
- * Resolve free-text major input to a 4-digit CIP code.
+ * Resolve free-text major input to a 6-digit dotted CIP code (e.g. "11.0101").
  * Returns null if no match found.
+ *
+ * The output format matches School.programs[].cipCode in the DB so callers
+ * can `prisma.schoolProgram.findFirst({ where: { schoolId, cipCode } })`.
  */
 export function resolveMajorToCip(targetMajor: string): string | null {
   const normalized = targetMajor.trim().toLowerCase();

@@ -118,7 +118,7 @@ export class HistoricalBacktestService {
         if (!r) continue;
 
         const actualBinary: 0 | 1 = c.result === 'ADMITTED' ? 1 : 0;
-        const pred = clamp01(r.probability);
+        const pred = clamp01(r.probability ?? 0);
         const brier = (pred - actualBinary) ** 2;
         const logLoss = -(
           actualBinary * Math.log(pred + 1e-12) +

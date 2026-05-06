@@ -1,21 +1,11 @@
 import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { RankingService } from './ranking.service';
+import { sanitizeRankingWeights } from './ranking-score.util';
+import { CalculateRankingDto, SaveRankingDto } from './dto';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
-
-interface CalculateRankingDto {
-  usNewsRank: number;
-  acceptanceRate: number;
-  tuition: number;
-  avgSalary: number;
-}
-
-interface SaveRankingDto extends CalculateRankingDto {
-  name: string;
-  isPublic?: boolean;
-}
 
 @ApiTags('rankings')
 @ThrottleRelaxed()
@@ -27,7 +17,7 @@ export class RankingController {
   @Public()
   @ApiOperation({ summary: 'Calculate custom ranking' })
   async calculateRanking(@Body() weights: CalculateRankingDto) {
-    return this.rankingService.calculateRanking(weights);
+    return this.rankingService.calculateRanking(sanitizeRankingWeights(weights));
   }
 
   @Post()
@@ -38,7 +28,12 @@ export class RankingController {
     @Body() data: SaveRankingDto,
   ) {
     const { name, isPublic = false, ...weights } = data;
-    return this.rankingService.saveRanking(user.id, name, weights, isPublic);
+    return this.rankingService.saveRanking(
+      user.id,
+      name,
+      sanitizeRankingWeights(weights),
+      isPublic,
+    );
   }
 
   @Get('me')

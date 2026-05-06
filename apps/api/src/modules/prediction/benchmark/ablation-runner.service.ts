@@ -163,14 +163,15 @@ export class AblationRunnerService {
           variant: key,
           schoolId: r.schoolId,
           schoolName: r.schoolName,
-          probability: r.probability,
+          probability: r.probability ?? 0,
           probabilityLow: r.probabilityLow,
           probabilityHigh: r.probabilityHigh,
           tier: r.tier,
           confidence: r.confidence,
         };
         if (base && key !== 'baseline') {
-          row.deltaVsBaselinePp = (r.probability - base.probability) * 100;
+          row.deltaVsBaselinePp =
+            ((r.probability ?? 0) - (base.probability ?? 0)) * 100;
           row.tierChangedFromBaseline = r.tier !== base.tier;
         }
         rows.push(row);
@@ -183,7 +184,9 @@ export class AblationRunnerService {
         const rs = (variantResults.get(key) ?? []).map((r) => {
           const base = baselineBySchool.get(r.schoolId);
           return {
-            delta: base ? (r.probability - base.probability) * 100 : 0,
+            delta: base
+              ? ((r.probability ?? 0) - (base.probability ?? 0)) * 100
+              : 0,
             flipped: base ? r.tier !== base.tier : false,
           };
         });
@@ -212,7 +215,8 @@ export class AblationRunnerService {
 
   private avgProb(results: PredictionResultDto[]): string {
     if (results.length === 0) return '0';
-    const avg = results.reduce((s, r) => s + r.probability, 0) / results.length;
+    const avg =
+      results.reduce((s, r) => s + (r.probability ?? 0), 0) / results.length;
     return avg.toFixed(3);
   }
 }

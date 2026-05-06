@@ -13,3 +13,4 @@ export * from './hs-quality';
 export * from './hs-confidence';
 export * from './english-proficiency';
 export * from './spike-coherence';
+export * from './niche-grade';

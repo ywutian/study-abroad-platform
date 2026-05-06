@@ -76,7 +76,7 @@ export class PredictionBenchmarkEvaluatorService {
       );
 
       return {
-        probability: mlResult.probability,
+        probability: mlResult.probability ?? 0,
         tier: mlResult.tier,
         confidence: mlResult.confidence,
         modelVersion: mlResult.modelVersion ?? 'v5-ml-primary',

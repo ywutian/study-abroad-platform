@@ -129,7 +129,8 @@ export function gpaBandMultiplier(
   school: SchoolInput,
 ): ModifierResult {
   const gpa = profile.gpa;
-  const scale = profile.gpaScale && profile.gpaScale > 0 ? profile.gpaScale : 4.0;
+  const scale =
+    profile.gpaScale && profile.gpaScale > 0 ? profile.gpaScale : 4.0;
   const gpa4 = gpa != null ? (gpa / scale) * 4.0 : null;
 
   // ── Data-driven path: school publishes its CDS C9 GPA distribution ────────
@@ -482,7 +483,10 @@ export function roundMultiplier(
     const clamped = Math.max(1.0, Math.min(4.0, ratio));
     return {
       multiplier: clamped,
-      label: r === 'ED2' ? 'Early Decision 2 (school-published)' : 'Early Decision (school-published)',
+      label:
+        r === 'ED2'
+          ? 'Early Decision 2 (school-published)'
+          : 'Early Decision (school-published)',
       evidence: `This school admits ${(edRate * 100).toFixed(1)}% of ED applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
       impact: 'positive',
     };

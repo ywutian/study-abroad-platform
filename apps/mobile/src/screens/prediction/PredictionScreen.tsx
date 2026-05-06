@@ -42,9 +42,9 @@ import { useAuthStore } from '@/stores';
 interface PredictionResultItem {
   schoolId: string;
   schoolName: string;
-  probability: number;
+  probability: number | null;
   confidence: 'low' | 'medium' | 'high';
-  tier: 'reach' | 'match' | 'safety';
+  tier: 'reach' | 'match' | 'safety' | 'unavailable';
   factors: Array<{ name: string; impact: string; detail: string }>;
   suggestions: string[];
   schoolMeta?: {
@@ -72,8 +72,8 @@ interface DashboardResponse {
       intlAcceptanceRate?: number | null;
       needBlindInternational?: boolean;
     } | null;
-    probability: number;
-    tier: 'reach' | 'match' | 'safety';
+    probability: number | null;
+    tier: 'reach' | 'match' | 'safety' | 'unavailable';
     confidence: 'low' | 'medium' | 'high';
     roundContext?: string | null;
     confidenceReason?: string;
@@ -104,12 +104,15 @@ export function mapDashboardToPredictions(
         }
       : undefined,
     roundContext: p.roundContext,
-    contextualBaseline: resolveContextualBaseline({
-      schoolMeta: p.school,
-      isInternational,
-      roundContext: p.roundContext,
-      probability: p.probability,
-    }),
+    contextualBaseline:
+      p.probability == null
+        ? null
+        : resolveContextualBaseline({
+            schoolMeta: p.school,
+            isInternational,
+            roundContext: p.roundContext,
+            probability: p.probability,
+          }),
     confidenceReason: p.confidenceReason,
     sourceSummary: p.sourceSummary,
     uncertaintyReasons: p.uncertaintyReasons,
@@ -249,6 +252,8 @@ export default function PredictionScreen() {
         return t('prediction.recommendation.match');
       case 'safety':
         return t('prediction.recommendation.safety');
+      case 'unavailable':
+        return 'Unavailable';
       default:
         return rec;
     }
@@ -468,20 +473,32 @@ export default function PredictionScreen() {
                             ? 'success'
                             : prediction.tier === 'match'
                               ? 'warning'
-                              : 'error'
+                              : prediction.tier === 'reach'
+                                ? 'error'
+                                : 'secondary'
                         }
                       >
                         {getRecommendationLabel(prediction.tier)}
                       </Badge>
                     </View>
                     <View style={styles.rateContainer}>
-                      <AnimatedCounter
-                        value={Math.round(prediction.probability * 100)}
-                        suffix="%"
-                        style={[styles.rate, { color: getRecommendationColor(prediction.tier) }]}
-                      />
+                      {prediction.probability == null ? (
+                        <Text
+                          style={[styles.rate, { color: getRecommendationColor(prediction.tier) }]}
+                        >
+                          --
+                        </Text>
+                      ) : (
+                        <AnimatedCounter
+                          value={Math.round(prediction.probability * 100)}
+                          suffix="%"
+                          style={[styles.rate, { color: getRecommendationColor(prediction.tier) }]}
+                        />
+                      )}
                       <Text style={[styles.rateLabel, { color: colors.foregroundMuted }]}>
-                        {t('prediction.probability')}
+                        {prediction.probability == null
+                          ? 'Not enough data'
+                          : t('prediction.probability')}
                       </Text>
                       {prediction.contextualBaseline && (
                         <>

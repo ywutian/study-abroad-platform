@@ -8,13 +8,29 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Save, Play, Sparkles, Trophy, Percent, DollarSign, TrendingUp } from 'lucide-react';
+import {
+  Save,
+  Play,
+  Sparkles,
+  Trophy,
+  Percent,
+  DollarSign,
+  TrendingUp,
+  Star,
+  Shield,
+  Heart,
+  UtensilsCrossed,
+} from 'lucide-react';
 
 interface RankingWeights {
   usNewsRank: number;
   acceptanceRate: number;
   tuition: number;
   avgSalary: number;
+  nicheOverall: number;
+  safetyGrade: number;
+  studentLifeGrade: number;
+  campusFoodGrade: number;
 }
 
 const WEIGHT_CONFIG = [
@@ -49,6 +65,38 @@ const WEIGHT_CONFIG = [
     textColor: 'text-emerald-500',
     barColor: 'bg-emerald-500',
     descKey: null,
+  },
+  {
+    key: 'nicheOverall',
+    icon: Star,
+    bgColor: 'bg-yellow-500/10',
+    textColor: 'text-yellow-500',
+    barColor: 'bg-yellow-500',
+    descKey: 'nicheOverallHint',
+  },
+  {
+    key: 'safetyGrade',
+    icon: Shield,
+    bgColor: 'bg-sky-500/10',
+    textColor: 'text-sky-500',
+    barColor: 'bg-sky-500',
+    descKey: 'safetyGradeHint',
+  },
+  {
+    key: 'studentLifeGrade',
+    icon: Heart,
+    bgColor: 'bg-rose-500/10',
+    textColor: 'text-rose-500',
+    barColor: 'bg-rose-500',
+    descKey: 'studentLifeGradeHint',
+  },
+  {
+    key: 'campusFoodGrade',
+    icon: UtensilsCrossed,
+    bgColor: 'bg-orange-500/10',
+    textColor: 'text-orange-500',
+    barColor: 'bg-orange-500',
+    descKey: 'campusFoodGradeHint',
   },
 ] as const;
 

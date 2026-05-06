@@ -17,6 +17,10 @@ interface RankingWeights {
   acceptanceRate: number;
   tuition: number;
   avgSalary: number;
+  nicheOverall: number;
+  safetyGrade: number;
+  studentLifeGrade: number;
+  campusFoodGrade: number;
 }
 
 export default function RankingPage() {
@@ -25,8 +29,13 @@ export default function RankingPage() {
   const [weights, setWeights] = useState<RankingWeights>({
     usNewsRank: 30,
     acceptanceRate: 20,
-    tuition: 25,
-    avgSalary: 25,
+    tuition: 20,
+    avgSalary: 20,
+    // Niche fit dimensions default off so users opt in
+    nicheOverall: 10,
+    safetyGrade: 0,
+    studentLifeGrade: 0,
+    campusFoodGrade: 0,
   });
   const [rankingName, setRankingName] = useState('');
 

@@ -196,26 +196,26 @@
     "editProfile": "编辑档案",
     "quickAccess": "快速入口",
     "commandCenter": {
-      "label": "下一步最佳行动",
-      "secondary": "二级快捷入口",
+      "label": "申请指挥中心",
+      "secondary": "下一步重点",
       "gapCount": "{count} 个档案缺口",
+      "actions": {
+        "profile": "完善申请档案",
+        "profileDesc": "补齐学术、活动和目标信息，让 Lumni 更准确地校准预测。",
+        "schools": "建立均衡选校清单",
+        "schoolsDesc": "加入冲刺、匹配和保底学校，再进行更深入的申请分析。",
+        "essays": "开启第一组文书工作台",
+        "essaysDesc": "创建草稿，让 Lumni 帮你整理题目、修改进度和评审建议。",
+        "deadlines": "处理即将截止的任务",
+        "deadlinesDesc": "还有 {count} 个截止任务需要在下一次提交窗口前确认。",
+        "review": "复盘你的录取路线",
+        "reviewDesc": "核心设置已经就绪，可以检查预测结果，并用最新信号继续优化路线。"
+      },
       "signals": {
         "profile": "档案",
-        "schools": "选校",
+        "schools": "学校",
         "essays": "文书",
-        "deadlines": "30 天截止"
-      },
-      "actions": {
-        "profile": "先补齐申请画像",
-        "profileDesc": "GPA、标化、活动和专业方向会直接影响推荐与预测质量。",
-        "schools": "建立可用的选校组合",
-        "schoolsDesc": "先把冲刺、匹配和保底学校放进清单，后续预测与文书才有上下文。",
-        "essays": "开始处理核心文书",
-        "essaysDesc": "你已有基础清单，可以优先生成学校级文书任务和材料缺口。",
-        "deadlines": "检查近期截止日期",
-        "deadlinesDesc": "未来 30 天内有 {count} 个申请或个人事项需要确认。",
-        "review": "复核申请策略",
-        "reviewDesc": "你的核心资料已具备，可以生成预测、校准清单并安排下一轮任务。"
+        "deadlines": "截止"
       }
     },
     "recentActivity": "最近动态",
@@ -262,29 +262,6 @@
       "resumeDesc": "利用 AI 辅助创建专业简历",
       "timeline": "时间线",
       "timelineDesc": "追踪截止日期，规划申请旅程"
-    },
-    "commandCenter": {
-      "label": "申请指挥中心",
-      "secondary": "下一步重点",
-      "gapCount": "{count} 个档案缺口",
-      "actions": {
-        "profile": "完善申请档案",
-        "profileDesc": "补齐学术、活动和目标信息，让 Lumni 更准确地校准预测。",
-        "schools": "建立均衡选校清单",
-        "schoolsDesc": "加入冲刺、匹配和保底学校，再进行更深入的申请分析。",
-        "essays": "开启第一组文书工作台",
-        "essaysDesc": "创建草稿，让 Lumni 帮你整理题目、修改进度和评审建议。",
-        "deadlines": "处理即将截止的任务",
-        "deadlinesDesc": "还有 {count} 个截止任务需要在下一次提交窗口前确认。",
-        "review": "复盘你的录取路线",
-        "reviewDesc": "核心设置已经就绪，可以检查预测结果，并用最新信号继续优化路线。"
-      },
-      "signals": {
-        "profile": "档案",
-        "schools": "学校",
-        "essays": "文书",
-        "deadlines": "截止"
-      }
     },
     "onboarding": {
       "title": "欢迎使用",
@@ -1197,16 +1174,16 @@
     "completenessHint": "完善档案可以获得更准确的预测",
     "completenessComplete": "档案已完善",
     "readiness": {
-      "title": "档案就绪信号",
-      "signals": "项已就绪",
-      "highImpact": "高影响",
-      "mediumImpact": "中等影响",
-      "recommendationImpact": "提升推荐质量",
-      "recommendedFixes": "建议优先补齐",
-      "fixSignal": "补充{signal}",
-      "reviewTargets": "检查目标院校",
-      "allSet": "关键档案信号已全部就绪。",
-      "primaryActions": "主要操作"
+      "title": "申请画像准备度",
+      "signals": "项信号",
+      "highImpact": "影响预测质量",
+      "mediumImpact": "影响推荐排序",
+      "recommendationImpact": "影响专业与学校匹配",
+      "recommendedFixes": "推荐补齐",
+      "primaryActions": "主要操作",
+      "fixSignal": "补齐 {signal}",
+      "reviewTargets": "复核目标院校",
+      "allSet": "核心画像已就绪，可以进入预测、文书和组合校准。"
     },
     "basicInfo": "基本信息",
     "basicInfoDesc": "填写你的基本信息",
@@ -1351,18 +1328,6 @@
       "description": "完成以下步骤快速完善你的档案",
       "fillGpa": "填写 GPA",
       "fillScore": "填写成绩"
-    },
-    "readiness": {
-      "title": "申请画像准备度",
-      "signals": "项信号",
-      "highImpact": "影响预测质量",
-      "mediumImpact": "影响推荐排序",
-      "recommendationImpact": "影响专业与学校匹配",
-      "recommendedFixes": "推荐补齐",
-      "primaryActions": "主要操作",
-      "fixSignal": "补齐 {signal}",
-      "reviewTargets": "复核目标院校",
-      "allSet": "核心画像已就绪，可以进入预测、文书和组合校准。"
     },
     "nextSteps": {
       "title": "下一步",
@@ -3470,7 +3435,8 @@
     },
     "specialConditions": {
       "testOptional": "可选考试"
-    }
+    },
+    "showingTruncated": "显示前 200 所，共 {total} 所。请缩小筛选范围查看更多。"
   },
   "applicationAnalysis": {
     "title": "申请分析",

@@ -5,6 +5,15 @@ import { SchoolService } from '../school/school.service';
 import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
+// Niche-grade weights default to 0 in numeric-only tests so existing
+// expectations are preserved. Override individually when testing Niche logic.
+const ZERO_NICHE_WEIGHTS = {
+  nicheOverall: 0,
+  safetyGrade: 0,
+  studentLifeGrade: 0,
+  campusFoodGrade: 0,
+};
+
 describe('RankingService', () => {
   let service: RankingService;
   let prisma: PrismaService;
@@ -86,7 +95,13 @@ describe('RankingService', () => {
     id: mockRankingId,
     userId: mockUserId,
     name: 'My Custom Ranking',
-    weights: { usNewsRank: 40, acceptanceRate: 20, tuition: 20, avgSalary: 20 },
+    weights: {
+      usNewsRank: 40,
+      acceptanceRate: 20,
+      tuition: 20,
+      avgSalary: 20,
+      ...ZERO_NICHE_WEIGHTS,
+    },
     isPublic: false,
     createdAt: new Date('2025-06-01'),
     updatedAt: new Date('2025-06-01'),
@@ -142,6 +157,7 @@ describe('RankingService', () => {
         acceptanceRate: 20,
         tuition: 20,
         avgSalary: 20,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -179,6 +195,7 @@ describe('RankingService', () => {
         acceptanceRate: 0,
         tuition: 0,
         avgSalary: 0,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -204,6 +221,7 @@ describe('RankingService', () => {
         acceptanceRate: 10,
         tuition: 10,
         avgSalary: 10,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -229,6 +247,7 @@ describe('RankingService', () => {
         acceptanceRate: 0,
         tuition: 0,
         avgSalary: 100,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -282,6 +301,7 @@ describe('RankingService', () => {
         acceptanceRate: 25,
         tuition: 25,
         avgSalary: 25,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -302,6 +322,7 @@ describe('RankingService', () => {
         acceptanceRate: 25,
         tuition: 25,
         avgSalary: 25,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -319,6 +340,7 @@ describe('RankingService', () => {
         acceptanceRate: 50,
         tuition: 0,
         avgSalary: 0,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const result = await service.calculateRanking(weights);
@@ -326,6 +348,80 @@ describe('RankingService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].rank).toBe(1);
       expect(result[0].id).toBe('school-a');
+    });
+
+    it('should rank by Niche grades when only niche weights are set', async () => {
+      // School with A+ overall outranks school with C overall when overall niche is the sole factor.
+      const aPlus = createMockSchool({
+        id: 'school-aplus',
+        name: 'A+ School',
+        usNewsRank: 100,
+        nicheOverallGrade: 'A+',
+        nicheSafetyGrade: 'A',
+        nicheLifeGrade: 'A',
+        nicheFoodGrade: 'A',
+      });
+      const cSchool = createMockSchool({
+        id: 'school-c-niche',
+        name: 'C School',
+        usNewsRank: 1,
+        nicheOverallGrade: 'C',
+        nicheSafetyGrade: 'C',
+        nicheLifeGrade: 'C',
+        nicheFoodGrade: 'C',
+      });
+      (schoolService.findAllWithMetrics as jest.Mock).mockResolvedValue([
+        aPlus,
+        cSchool,
+      ]);
+
+      const weights: RankingWeights = {
+        usNewsRank: 0,
+        acceptanceRate: 0,
+        tuition: 0,
+        avgSalary: 0,
+        nicheOverall: 50,
+        safetyGrade: 20,
+        studentLifeGrade: 15,
+        campusFoodGrade: 15,
+      };
+
+      const result = await service.calculateRanking(weights);
+
+      expect(result).toHaveLength(2);
+      // A+ school should rank first despite worse usNewsRank
+      expect(result[0].id).toBe('school-aplus');
+      expect(result[0].score).toBe(100);
+    });
+
+    it('should ignore Niche weights when grade is null', async () => {
+      // School with null niche grades + zero numeric weights → score 0
+      const noNiche = createMockSchool({
+        id: 'school-no-niche',
+        nicheOverallGrade: null,
+        nicheSafetyGrade: null,
+        nicheLifeGrade: null,
+        nicheFoodGrade: null,
+      });
+      (schoolService.findAllWithMetrics as jest.Mock).mockResolvedValue([
+        noNiche,
+      ]);
+
+      const weights: RankingWeights = {
+        usNewsRank: 0,
+        acceptanceRate: 0,
+        tuition: 0,
+        avgSalary: 0,
+        nicheOverall: 100,
+        safetyGrade: 0,
+        studentLifeGrade: 0,
+        campusFoodGrade: 0,
+      };
+
+      const result = await service.calculateRanking(weights);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].score).toBe(0);
     });
   });
 
@@ -340,6 +436,7 @@ describe('RankingService', () => {
         acceptanceRate: 20,
         tuition: 20,
         avgSalary: 20,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       (prisma.customRanking.create as jest.Mock).mockResolvedValue(
@@ -370,6 +467,7 @@ describe('RankingService', () => {
         acceptanceRate: 25,
         tuition: 25,
         avgSalary: 25,
+        ...ZERO_NICHE_WEIGHTS,
       };
 
       const publicRanking = { ...mockCustomRanking, isPublic: true };

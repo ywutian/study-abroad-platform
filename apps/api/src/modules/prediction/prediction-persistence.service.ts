@@ -114,6 +114,13 @@ export class PredictionPersistenceService {
     result: InternalPredictionResult,
   ): Promise<SavedPredictionRefs> {
     try {
+      if (result.probability == null) {
+        this.logger.warn(
+          `Skipping PredictionResult persistence for unavailable prediction profile=${profileId} school=${schoolId}`,
+        );
+        return {};
+      }
+
       const modelVersion = result.modelVersion ?? DEFAULT_MODEL_VERSION;
       const policyVersionId = await this.resolvePersistedPolicyVersionId(
         result.policyVersionId,

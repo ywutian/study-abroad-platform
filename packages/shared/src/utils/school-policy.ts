@@ -12,7 +12,7 @@ export function isSchoolTestingPolicy(value: unknown): value is SchoolTestingPol
 }
 
 export function resolveSchoolTestingPolicyValue(input: TestingPolicyInput): SchoolTestingPolicy {
-  if (isSchoolTestingPolicy(input.testingPolicy)) {
+  if (isSchoolTestingPolicy(input.testingPolicy) && input.testingPolicy !== 'UNKNOWN') {
     return input.testingPolicy;
   }
   if (input.testOptional === true) return 'OPTIONAL';
@@ -24,6 +24,7 @@ export function toLegacyTestOptionalFlag(input: TestingPolicyInput): boolean | u
   const policy = resolveSchoolTestingPolicyValue(input);
   if (policy === 'OPTIONAL') return true;
   if (policy === 'REQUIRED') return false;
+  if (policy === 'BLIND') return false;
   if (input.testOptional != null) return input.testOptional;
   return undefined;
 }
