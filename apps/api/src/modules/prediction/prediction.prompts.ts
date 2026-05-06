@@ -99,6 +99,11 @@ export interface SchoolInput {
   testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
+  edAcceptanceRate?: number;
+  ed2AcceptanceRate?: number;
+  eaAcceptanceRate?: number;
+  institutionType?: string;
+  gpaDistribution?: unknown;
   applicationRound?: string;
   fieldTrustWeights?: Record<string, number>;
   averagePredictionWeight?: number;

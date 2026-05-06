@@ -6,11 +6,19 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { AlertTriangle, CheckCircle2, History, Info, Target } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Gauge,
+  History,
+  Info,
+  ListChecks,
+  Target,
+} from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
-import { PageContainer } from '@/components/layout';
+import { EnterpriseStatusStrip, PageContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api/client';
 import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
@@ -46,6 +54,7 @@ interface SchoolListItemApi {
 
 export default function PredictionPage() {
   const t = useTranslations();
+  const statusT = useTranslations('enterpriseStatus');
   const searchParams = useSearchParams();
   const hasAutoRun = useRef(false);
 
@@ -292,6 +301,47 @@ export default function PredictionPage() {
       <PageContainer maxWidth="default">
         <PredictionHeader dataCompleteness={responseMetadata.dataCompleteness} />
 
+        <EnterpriseStatusStrip
+          title={statusT('prediction.title')}
+          description={statusT('prediction.description')}
+          items={[
+            {
+              tone: hasProfileGaps ? 'attention' : 'ready',
+              label: statusT('prediction.profile'),
+              value: hasProfileGaps ? statusT('states.attention') : statusT('states.ready'),
+              description: statusT('prediction.profileDesc'),
+              icon: ListChecks,
+            },
+            {
+              tone: selectedSchools.length > 0 ? 'ready' : 'blocked',
+              label: statusT('prediction.selection'),
+              value:
+                selectedSchools.length > 0
+                  ? String(selectedSchools.length)
+                  : statusT('states.blocked'),
+              description: statusT('prediction.selectionDesc'),
+              icon: Target,
+            },
+            {
+              tone: results.length > 0 ? 'verified' : 'attention',
+              label: statusT('prediction.confidence'),
+              value:
+                responseMetadata.dataCompleteness != null
+                  ? `${responseMetadata.dataCompleteness}%`
+                  : statusT('states.attention'),
+              description: statusT('prediction.confidenceDesc'),
+              icon: Gauge,
+            },
+            {
+              tone: results.length > 0 ? 'ready' : 'attention',
+              label: statusT('prediction.review'),
+              value: results.length > 0 ? statusT('states.ready') : statusT('states.nextAction'),
+              description: statusT('prediction.reviewDesc'),
+              icon: CheckCircle2,
+            },
+          ]}
+        />
+
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as 'predict' | 'history')}
@@ -315,26 +365,26 @@ export default function PredictionPage() {
           <>
             {/* Data completeness checklist for sparse profiles */}
             {profileData && hasProfileGaps && (
-              <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+              <div className="mb-4 rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 p-3">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                    <p className="text-sm font-medium text-foreground">
                       {t('prediction.dataChecklistTitle')}
                     </p>
-                    <p className="mt-1 text-sm text-amber-900/80 dark:text-amber-100/80">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {t('prediction.dataChecklistDesc')}
                     </p>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                       {profileChecklist.map((item) => (
                         <div
                           key={item.key}
-                          className="flex items-center gap-2 rounded-md bg-background/60 px-2.5 py-1.5 text-xs"
+                          className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
                         >
                           <CheckCircle2
                             className={
                               item.complete
-                                ? 'h-3.5 w-3.5 text-emerald-600'
+                                ? 'h-3.5 w-3.5 text-success'
                                 : 'h-3.5 w-3.5 text-muted-foreground'
                             }
                           />
@@ -347,7 +397,7 @@ export default function PredictionPage() {
                     variant="outline"
                     size="sm"
                     asChild
-                    className="shrink-0 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                    className="shrink-0 border-warning/35 text-warning"
                   >
                     <Link href="/profile">{t('prediction.completeProfile')}</Link>
                   </Button>
@@ -388,18 +438,16 @@ export default function PredictionPage() {
             {results.length > 0 ? (
               <>
                 {ucExpandedFrom && (
-                  <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
-                    <Info className="h-4 w-4 mt-1 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div className="mb-4 flex items-start gap-3 rounded-[var(--theme-radius-card)] border border-primary/20 bg-[color:var(--theme-control-selected-bg)] p-3">
+                    <Info className="h-4 w-4 mt-1 text-primary shrink-0" />
                     <div className="flex-1 text-sm">
-                      <p className="text-blue-900 dark:text-blue-100">
-                        {t('prediction.ucExpandedDesc')}
-                      </p>
+                      <p className="text-foreground">{t('prediction.ucExpandedDesc')}</p>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleCollapseUc}
-                      className="shrink-0 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
+                      className="shrink-0 border-primary/35 text-primary"
                     >
                       {t('prediction.ucCollapseToOriginal')}
                     </Button>

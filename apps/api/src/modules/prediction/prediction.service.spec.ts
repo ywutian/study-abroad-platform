@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PredictionService } from './prediction.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
+import { CaseIncentiveService } from '../points/incentive.service';
+import { PredictionService } from './prediction.service';
 import { PredictionTransformerService } from './prediction-transformer.service';
 import { PredictionStatisticalEngine } from './prediction-statistical-engine.service';
 import { PredictionAiEngine } from './prediction-ai-engine.service';
@@ -12,319 +14,151 @@ import { PredictionHistoricalService } from './prediction-historical.service';
 import { PredictionMemoryService } from './prediction-memory.service';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PredictionPolicyService } from './prediction-policy.service';
+import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { ModelRegistryService } from './ml/model-registry.service';
 import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
 import { ModelMonitorService } from './ml/model-monitor.service';
-import { PredictionPolicyService } from './prediction-policy.service';
-import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
-import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
-import { CounselorEngineService } from './counselor/counselor-engine.service';
 import { DistillationService } from './benchmark/distillation.service';
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
+import { DistillationObservationService } from './distillation/distillation-observation.service';
+import { CounselorEngineService } from './counselor/counselor-engine.service';
 
-// Mock score-calculator utils
-jest.mock('./utils/score-calculator', () => ({
-  calculateOverallScore: jest.fn().mockReturnValue(70),
-  calculateProbability: jest.fn().mockReturnValue(0.45),
-  calculateTier: jest.fn().mockReturnValue('match'),
-  calculateConfidence: jest.fn().mockReturnValue('medium'),
-  normalizeGpa: jest.fn().mockReturnValue(3.8),
-  parseRange: jest.fn((val) => {
-    if (typeof val === 'string') {
-      const num = parseFloat(val);
-      return isNaN(num) ? null : num;
-    }
-    return null;
-  }),
-  calculateSelectivityIndex: jest.fn().mockReturnValue(0.5),
-  resolveContextualAcceptanceRate: jest.fn().mockReturnValue(null),
-  enforceMonotonicity: jest.fn().mockImplementation((arr) => arr),
-  TIER_POINTS: { 5: 25, 4: 15, 3: 8, 2: 4, 1: 2 },
-  LEVEL_POINTS: {
-    INTERNATIONAL: 20,
-    NATIONAL: 15,
-    STATE: 8,
-    REGIONAL: 5,
-    SCHOOL: 2,
-  },
-}));
-
-// Mock prompt-builder
-jest.mock('./utils/prompt-builder', () => ({
-  buildPredictionPrompt: jest.fn().mockReturnValue('Mock prediction prompt'),
-}));
-
-// Mock shared scoring
-jest.mock('@study-abroad/shared/scoring', () => ({
-  extractFeatureVector: jest.fn().mockReturnValue({}),
-  imputeFeatures: jest.fn().mockReturnValue({}),
-  featureVectorToArray: jest.fn().mockReturnValue([]),
-  predict: jest.fn().mockReturnValue(0.5),
-  predictGBDT: jest.fn().mockReturnValue(0.5),
-  explainPrediction: jest.fn().mockReturnValue([]),
-  resolveMajorToCip: jest.fn().mockReturnValue(null),
-  CIP_NAMES: {},
-  ROUND_MULTIPLIERS: {
-    ED: 1.35,
-    ED2: 1.25,
-    REA: 1.15,
-    SCEA: 1.15,
-    EA: 1.1,
-    ROLLING: 1.05,
-    RD: 1.0,
-  },
-}));
-
-// Mock ml/tier-strategy
-jest.mock('./ml/tier-strategy', () => ({
-  getSelectivityBand: jest.fn().mockReturnValue('mid'),
-}));
-
-const mockProfileInput = {
-  gpa: 3.8,
+const mockProfile = {
+  id: 'profile-1',
+  userId: 'user-1',
+  gpa: '3.9',
   gpaScale: 4,
-  testScores: [
-    { type: 'SAT', score: 1500 },
-    { type: 'TOEFL', score: 110 },
-  ],
+  targetMajor: 'Computer Science',
+  applicationRound: 'RD',
+  nationality: 'US',
+  firstGeneration: false,
+  recruitedAthlete: false,
+  testScores: [{ type: 'SAT', score: 1500, subScores: {} }],
   activities: [],
   awards: [],
-  targetMajor: 'Computer Science',
+  education: [],
 };
 
-const mockSchoolInput = {
+const mockSchool = {
   id: 'school-1',
-  name: 'MIT',
+  name: 'Massachusetts Institute of Technology',
+  nameZh: '麻省理工',
+  country: 'US',
+  state: 'MA',
   acceptanceRate: 4,
   satAvg: 1540,
-  usNewsRank: 1,
+  sat25: 1510,
+  sat75: 1580,
+  act25: 34,
+  act75: 36,
+  usNewsRank: 2,
+  isPrivate: true,
+  needBlindInternational: true,
+  intlAcceptanceRate: null,
+  oosAcceptanceRate: null,
+  edAcceptanceRate: null,
+  eaAcceptanceRate: null,
+  gpaDistribution: null,
 };
 
-const mockProfileMetrics = {
-  gpa: 3.8,
-  satScore: 1500,
-  activityScore: 70,
-  awardScore: 50,
-};
+function counselorResult(overrides: Record<string, unknown> = {}) {
+  return {
+    probability: 0.42,
+    anchor: 0.04,
+    tier: 2,
+    anchorSource: 'scorecard (acceptanceRate + SAT bands)',
+    factors: [
+      {
+        name: 'School baseline admit rate',
+        impact: 'neutral',
+        weight: 1,
+        detail: 'Anchored at 4.0% (scorecard, Tier 2)',
+      },
+    ],
+    modifierResults: {
+      gpaBand: {
+        multiplier: 1.1,
+        label: 'GPA',
+        evidence: 'fixture',
+        impact: 'positive',
+      },
+    },
+    missingFields: [],
+    sourceContributions: [],
+    ruleVersion: 'counselor-cold-start-v2.0-data-activated',
+    ...overrides,
+  };
+}
 
-const mockSchoolMetrics = {
-  acceptanceRate: 4,
-  satAvg: 1540,
-  usNewsRank: 1,
-};
-
-const mockStatsResult = {
-  probability: 0.35,
-  factors: [
-    { name: 'GPA', impact: 'positive', weight: 0.3, detail: 'Strong GPA' },
-  ],
-  comparison: {
-    gpaPercentile: 85,
-    testScorePercentile: 80,
-    activityStrength: 'strong',
-  },
-};
-
-const mockAiResult = {
-  probability: 0.3,
-  factors: [
-    { name: 'GPA', impact: 'positive', weight: 0.3, detail: 'Strong GPA' },
-  ],
-  suggestions: ['Consider research experience'],
-  comparison: {
-    gpaPercentile: 85,
-    testScorePercentile: 80,
-    activityStrength: 'strong',
-  },
-};
-
-const mockFusedResult = {
-  probability: 0.33,
-  probabilityLow: 0.26,
-  probabilityHigh: 0.4,
-  crossEngineConsistency: 0.85,
-  engineScores: {
-    stats: 0.35,
-    ai: 0.3,
-    historical: null,
-    fusionMethod: 'weighted_ensemble_2_stats_ai',
-  },
-};
-
-const mockMemoryContext = {
-  previousPredictions: [],
-  knownPreferences: [],
-  profileInsights: [],
-  memoryAdjustments: new Map<string, number>(),
-};
-
-describe('PredictionService', () => {
+describe('PredictionService counselor primary', () => {
   let service: PredictionService;
-  let prisma: PrismaService;
-  let _redis: RedisService;
-  let aiEngine: PredictionAiEngine;
-  let cacheService: PredictionCacheService;
-  let memoryService: PredictionMemoryService;
-  let persistenceService: PredictionPersistenceService;
-  let reportingService: PredictionReportingService;
-  let mlPrimaryService: PredictionMlPrimaryService;
-  let featureFlagService: FeatureFlagService;
-  let distillationService: DistillationService;
-  let compliantDistillationService: CompliantDistillationService;
-  let counselorEngine: CounselorEngineService;
-
-  const mockProfile = {
-    id: 'profile-1',
-    userId: 'user-1',
-    gpa: '3.8',
-    gpaScale: 4,
-    grade: '12',
-    currentSchoolType: 'HIGH_SCHOOL',
-    targetMajor: 'Computer Science',
-    testScores: [
-      { type: 'SAT', score: 1500, subScores: {} },
-      { type: 'TOEFL', score: 110, subScores: {} },
-    ],
-    activities: [
-      {
-        category: 'RESEARCH',
-        role: 'Lead',
-        hoursPerWeek: 10,
-        weeksPerYear: 40,
-      },
-      {
-        category: 'SPORTS',
-        role: 'Captain',
-        hoursPerWeek: 15,
-        weeksPerYear: 30,
-      },
-    ],
-    awards: [
-      {
-        name: 'Science Olympiad',
-        level: 'NATIONAL',
-        competition: { level: 'NATIONAL' },
-      },
-      {
-        name: 'Math Competition',
-        level: 'STATE',
-        competition: { level: 'STATE' },
-      },
-    ],
-  };
-
-  const mockSchool = {
-    id: 'school-1',
-    name: 'MIT',
-    nameZh: '麻省理工',
-    acceptanceRate: 4,
-    satAvg: 1540,
-    sat25: 1500,
-    sat75: 1580,
-    actAvg: 35,
-    act25: 34,
-    act75: 36,
-    usNewsRank: 1,
-    graduationRate: 95,
-  };
+  let prisma: any;
+  let aiEngine: any;
+  let fusionEngine: any;
+  let cacheService: any;
+  let persistenceService: any;
+  let counselorEngine: any;
 
   beforeEach(async () => {
+    prisma = {
+      profile: { findUnique: jest.fn().mockResolvedValue(mockProfile) },
+      school: { findMany: jest.fn().mockResolvedValue([mockSchool]) },
+      schoolListItem: { findMany: jest.fn().mockResolvedValue([]) },
+      assessmentResult: { findMany: jest.fn().mockResolvedValue([]) },
+      schoolProgram: { findMany: jest.fn().mockResolvedValue([]) },
+      predictionResult: {
+        findMany: jest.fn().mockResolvedValue([]),
+        update: jest.fn(),
+      },
+    };
+    aiEngine = { predictWithAI: jest.fn() };
+    fusionEngine = { fusePredictions: jest.fn() };
+    cacheService = {
+      hashProfileData: jest.fn().mockReturnValue('profile-hash'),
+      getFromCache: jest.fn().mockResolvedValue(null),
+      saveToCache: jest.fn().mockResolvedValue(undefined),
+      invalidateUserCache: jest.fn().mockResolvedValue(undefined),
+    };
+    persistenceService = {
+      savePrediction: jest.fn().mockResolvedValue({
+        predictionResultId: 'prediction-result-1',
+        predictionSnapshotId: 'prediction-snapshot-1',
+      }),
+    };
+    counselorEngine = {
+      compute: jest.fn().mockResolvedValue(counselorResult()),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PredictionService,
-        {
-          provide: PrismaService,
-          useValue: {
-            profile: {
-              findUnique: jest.fn(),
-            },
-            school: {
-              findMany: jest.fn(),
-            },
-            admissionCase: {
-              findMany: jest.fn().mockResolvedValue([]),
-              groupBy: jest.fn().mockResolvedValue([]),
-            },
-            schoolProgram: {
-              findMany: jest.fn().mockResolvedValue([]),
-            },
-            predictionResult: {
-              findMany: jest.fn().mockResolvedValue([]),
-              upsert: jest.fn().mockResolvedValue({ id: 'pred-1' }),
-            },
-            assessmentResult: {
-              findMany: jest.fn().mockResolvedValue([]),
-            },
-            schoolListItem: {
-              findMany: jest.fn().mockResolvedValue([]),
-            },
-          },
-        },
+        { provide: PrismaService, useValue: prisma },
         {
           provide: RedisService,
           useValue: {
-            getJSON: jest.fn().mockResolvedValue(null),
-            setJSON: jest.fn().mockResolvedValue(undefined),
-            del: jest.fn().mockResolvedValue(1),
             setNX: jest.fn().mockResolvedValue(true),
+            del: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
           provide: PredictionTransformerService,
-          useValue: {
-            profileToInput: jest.fn().mockReturnValue(mockProfileInput),
-            schoolToInput: jest.fn().mockReturnValue(mockSchoolInput),
-            extractProfileMetrics: jest
-              .fn()
-              .mockReturnValue(mockProfileMetrics),
-            extractSchoolMetrics: jest.fn().mockReturnValue(mockSchoolMetrics),
-            evaluateDataCompleteness: jest.fn().mockReturnValue(0.75),
-            adjustConfidenceForSchoolTrust: jest
-              .fn()
-              .mockImplementation((confidence) => confidence),
-            enrichWithEssayQuality: jest
-              .fn()
-              .mockImplementation((input) => Promise.resolve(input)),
-          },
+          useClass: PredictionTransformerService,
         },
         {
           provide: PredictionStatisticalEngine,
-          useValue: {
-            predictWithStats: jest.fn().mockReturnValue(mockStatsResult),
-          },
+          useValue: { predictWithStats: jest.fn() },
         },
-        {
-          provide: PredictionAiEngine,
-          useValue: {
-            predictWithAI: jest.fn().mockResolvedValue(mockAiResult),
-          },
-        },
-        {
-          provide: PredictionFusionEngine,
-          useValue: {
-            fusePredictions: jest.fn().mockReturnValue({ ...mockFusedResult }),
-          },
-        },
-        {
-          provide: PredictionCacheService,
-          useValue: {
-            getCacheKey: jest
-              .fn()
-              .mockReturnValue('prediction:profile-1:school-1'),
-            getFromCache: jest.fn().mockResolvedValue(null),
-            saveToCache: jest.fn().mockResolvedValue(undefined),
-            hashProfileData: jest.fn().mockReturnValue('mock-hash'),
-            invalidateUserCache: jest.fn().mockResolvedValue(undefined),
-          },
-        },
+        { provide: PredictionAiEngine, useValue: aiEngine },
+        { provide: PredictionFusionEngine, useValue: fusionEngine },
+        { provide: PredictionCacheService, useValue: cacheService },
         {
           provide: PredictionCalibrationService,
           useValue: {
-            getSchoolCalibrations: jest.fn().mockResolvedValue({}),
             getPlattCalibration: jest.fn().mockResolvedValue(null),
-            applyPlattCalibration: jest.fn().mockImplementation((p) => p),
-            invalidateCalibrationCache: jest.fn().mockResolvedValue(undefined),
+            getSchoolCalibrations: jest.fn().mockResolvedValue({}),
+            invalidateCalibrationCache: jest.fn(),
+            applyPlattCalibration: jest.fn(),
           },
         },
         {
@@ -339,60 +173,23 @@ describe('PredictionService', () => {
         {
           provide: PredictionMemoryService,
           useValue: {
-            getMemoryContext: jest.fn().mockResolvedValue(mockMemoryContext),
+            getMemoryContext: jest.fn().mockResolvedValue({
+              previousPredictions: [],
+              knownPreferences: [],
+              profileInsights: [],
+              memoryAdjustments: new Map(),
+            }),
             recordPredictionToMemory: jest.fn().mockResolvedValue(undefined),
-            recordBridgePredictionToMemory: jest
-              .fn()
-              .mockResolvedValue(undefined),
+            recordBridgePredictionToMemory: jest.fn(),
           },
         },
-        {
-          provide: PredictionPersistenceService,
-          useValue: {
-            savePrediction: jest.fn().mockResolvedValue(undefined),
-          },
-        },
+        { provide: PredictionPersistenceService, useValue: persistenceService },
         {
           provide: PredictionReportingService,
           useValue: {
-            getPredictionHistory: jest.fn().mockResolvedValue([]),
-            reportActualResult: jest.fn().mockResolvedValue(undefined),
-            getCalibrationData: jest.fn().mockResolvedValue({
-              totalPredictions: 100,
-              withActualResults: 20,
-              calibrationBuckets: [
-                { range: '0-20', predicted: 10, actual: 8, count: 5 },
-                { range: '20-40', predicted: 30, actual: 25, count: 5 },
-                { range: '40-60', predicted: 50, actual: 48, count: 5 },
-                { range: '60-80', predicted: 70, actual: 65, count: 3 },
-                { range: '80-100', predicted: 90, actual: 85, count: 2 },
-              ],
-            }),
-          },
-        },
-        {
-          provide: CaseIncentiveService,
-          useValue: {
-            charge: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-        {
-          provide: ModelRegistryService,
-          useValue: {
-            getChampionModel: jest.fn().mockResolvedValue(null),
-          },
-        },
-        {
-          provide: ShadowEvaluatorService,
-          useValue: {
-            runIfActive: jest.fn().mockResolvedValue(undefined),
-            submitShadowEvaluation: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-        {
-          provide: ModelMonitorService,
-          useValue: {
-            recordPrediction: jest.fn().mockResolvedValue(undefined),
+            getPredictionHistory: jest.fn(),
+            reportActualResult: jest.fn(),
+            getCalibrationData: jest.fn(),
           },
         },
         {
@@ -400,1001 +197,152 @@ describe('PredictionService', () => {
           useValue: {
             resolveServedPolicyVersionId: jest
               .fn()
-              .mockReturnValue('v3-enterprise'),
-            buildTracePayload: jest.fn().mockReturnValue(undefined),
+              .mockResolvedValue('policy-v1'),
+            buildTracePayload: jest.fn().mockReturnValue({
+              policyVersionId: 'policy-v1',
+              cohortKey: 'US__US_HS',
+              roundContext: 'RD',
+              priorTier: 'school_overall_fallback',
+              driftSignalIds: [],
+              relationshipSignalIds: [],
+              calibrationPath: [],
+              uncertaintyReasons: [],
+              sourceSummary: [],
+            }),
           },
+        },
+        { provide: CaseIncentiveService, useValue: { charge: jest.fn() } },
+        {
+          provide: ModelRegistryService,
+          useValue: { getChampionModel: jest.fn() },
+        },
+        {
+          provide: ShadowEvaluatorService,
+          useValue: { runIfActive: jest.fn() },
+        },
+        {
+          provide: ModelMonitorService,
+          useValue: { recordPrediction: jest.fn() },
         },
         {
           provide: PredictionMlPrimaryService,
-          useValue: {
-            predictForSchool: jest.fn(),
-          },
+          useValue: { predictForSchool: jest.fn() },
         },
         {
           provide: FeatureFlagService,
-          useValue: {
-            isEnabled: jest.fn().mockResolvedValue(false),
-          },
+          useValue: { isEnabled: jest.fn().mockResolvedValue(false) },
         },
+        { provide: DistillationService, useValue: {} },
+        { provide: CompliantDistillationService, useValue: {} },
         {
-          provide: DistillationService,
-          useValue: {
-            getPhase1LiveTeacherSignals: jest.fn().mockResolvedValue([]),
-            computeBlendDecision: jest
-              .fn()
-              .mockImplementation((probability) => ({
-                teacherSignals: [],
-                teacherEnsemble: null,
-                pairwiseMae: null,
-                disagreementFactor: 0,
-                effectiveW: 0,
-                blendedPrePlatt: probability,
-                hasSignal: false,
-              })),
-          },
+          provide: DistillationObservationService,
+          useValue: { record: jest.fn() },
         },
-        {
-          provide: CompliantDistillationService,
-          useValue: {
-            buildInputSummary: jest.fn().mockReturnValue({
-              sat: 1500,
-              act: null,
-              gpaNormalized: 0.95,
-              nationality: 'CN',
-              curriculumType: 'AP',
-              highSchoolType: 'INTL_CN',
-              isInternational: true,
-            }),
-            resolveCohortKey: jest.fn().mockReturnValue('CN__CHINA_INTL'),
-            evaluatePrediction: jest.fn().mockResolvedValue(null),
-          },
-        },
-        {
-          provide: CounselorEngineService,
-          useValue: {
-            // Default: return a Tier-2 counselor result with probability 0.55.
-            // Tests can override via mockResolvedValueOnce / mockImplementationOnce.
-            compute: jest.fn().mockResolvedValue({
-              probability: 0.55,
-              anchor: 0.5,
-              tier: 2,
-              anchorSource: 'scorecard (acceptanceRate + SAT bands)',
-              factors: [
-                {
-                  name: 'School baseline admit rate',
-                  impact: 'neutral',
-                  weight: 1,
-                  detail: 'Anchored at 50.0% (scorecard, Tier 2)',
-                },
-                {
-                  name: 'GPA above 75th percentile',
-                  impact: 'positive',
-                  weight: 0.3,
-                  detail: 'GPA 3.85 above 75th (×1.30)',
-                },
-              ],
-              modifierResults: {},
-              missingFields: [],
-              sourceContributions: [],
-              ruleVersion: 'counselor-cold-start-v1.1',
-            }),
-          },
-        },
+        { provide: CounselorEngineService, useValue: counselorEngine },
       ],
     }).compile();
 
-    service = module.get<PredictionService>(PredictionService);
-    prisma = module.get<PrismaService>(PrismaService);
-    _redis = module.get<RedisService>(RedisService);
-    aiEngine = module.get<PredictionAiEngine>(PredictionAiEngine);
-    cacheService = module.get<PredictionCacheService>(PredictionCacheService);
-    memoryService = module.get<PredictionMemoryService>(
-      PredictionMemoryService,
-    );
-    persistenceService = module.get<PredictionPersistenceService>(
-      PredictionPersistenceService,
-    );
-    reportingService = module.get<PredictionReportingService>(
-      PredictionReportingService,
-    );
-    mlPrimaryService = module.get<PredictionMlPrimaryService>(
-      PredictionMlPrimaryService,
-    );
-    featureFlagService = module.get<FeatureFlagService>(FeatureFlagService);
-    distillationService = module.get<DistillationService>(DistillationService);
-    compliantDistillationService = module.get<CompliantDistillationService>(
-      CompliantDistillationService,
-    );
-    counselorEngine = module.get<CounselorEngineService>(
-      CounselorEngineService,
-    );
+    service = module.get(PredictionService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  it('serves counselor directly and drops fusion response fields', async () => {
+    const output = await service.predict('profile-1', ['school-1'], true, 'en');
+
+    expect(output.results).toHaveLength(1);
+    expect(output.results[0]).toMatchObject({
+      schoolId: 'school-1',
+      probability: 0.42,
+      predictionMethod: 'counselor',
+      modelVersion: 'counselor-cold-start-v2.0-data-activated',
+    });
+    expect(output.results[0].engineScores).toBeUndefined();
+    expect(output.results[0].crossEngineConsistency).toBeUndefined();
+    expect(aiEngine.predictWithAI).not.toHaveBeenCalled();
+    expect(fusionEngine.fusePredictions).not.toHaveBeenCalled();
+    expect(cacheService.saveToCache).toHaveBeenCalledWith(
+      'profile-1',
+      'school-1',
+      expect.objectContaining({ predictionMethod: 'counselor' }),
+      'profile-hash',
+      'policy-v1',
+      'counselor-v2',
+    );
+
+    const persisted = persistenceService.savePrediction.mock.calls[0][2];
+    expect(persisted.servedTrace.engine).toBe('counselor');
+    expect(persisted.servedTrace.counselor.ruleVersion).toBe(
+      'counselor-cold-start-v2.0-data-activated',
+    );
+    expect(persisted.servedTrace.shadow).toBeUndefined();
   });
 
-  describe('predict', () => {
-    beforeEach(() => {
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue(mockProfile);
-      (prisma.school.findMany as jest.Mock).mockResolvedValue([mockSchool]);
-      // Reset fusePredictions to return a fresh copy each call
-      const fusionEngine = service['fusionEngine'];
-      (fusionEngine.fusePredictions as jest.Mock).mockImplementation(() => ({
-        ...mockFusedResult,
-        engineScores: { ...mockFusedResult.engineScores },
-      }));
-    });
+  it('uses per-school application round in the counselor call', async () => {
+    prisma.schoolListItem.findMany.mockResolvedValue([
+      { schoolId: 'school-1', round: 'EA' },
+    ]);
 
-    it('should return prediction results for given schools', async () => {
-      const output = await service.predict('profile-1', ['school-1']);
+    const output = await service.predict('profile-1', ['school-1'], true, 'en');
 
-      expect(output.results).toHaveLength(1);
-      expect(output.results[0].schoolId).toBe('school-1');
-      expect(output.results[0].probability).toBeGreaterThanOrEqual(0.05);
-      expect(output.results[0].probability).toBeLessThanOrEqual(0.95);
-      expect(output.dataCompleteness).toBeGreaterThanOrEqual(0);
-      expect(output.memoryContext).toBeDefined();
-    });
+    expect(counselorEngine.compute).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      'EA',
+    );
+    expect(output.results[0].roundContext).toBe('EA');
+  });
 
-    it('should return empty results if profile not found', async () => {
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue(null);
-
-      const output = await service.predict('nonexistent', ['school-1']);
-      expect(output.results).toEqual([]);
-      expect(output.dataCompleteness).toBe(0);
-    });
-
-    it('should use cached result when available', async () => {
-      const cachedResult = {
-        schoolId: 'school-1',
-        schoolName: 'MIT',
-        probability: 0.35,
-        tier: 'reach',
-        confidence: 'medium',
-        fromCache: true,
-      };
-      (cacheService.getFromCache as jest.Mock).mockResolvedValue(cachedResult);
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results).toHaveLength(1);
-      expect(output.results[0].fromCache).toBe(true);
-      // AI should NOT have been called since we got a cache hit
-      expect(aiEngine.predictWithAI).not.toHaveBeenCalled();
-    });
-
-    it('should bypass prediction cache when forceRefresh is true', async () => {
-      const output = await service.predict('profile-1', ['school-1'], true);
-
-      // forceRefresh skips the prediction cache lookup, so predict should run engines
-      expect(output.results).toHaveLength(1);
-      // AI should have been called (not short-circuited by cache)
-      expect(aiEngine.predictWithAI).toHaveBeenCalled();
-      // dataCompleteness should be threaded through to the AI engine
-      const callArgs = (aiEngine.predictWithAI as jest.Mock).mock.calls[0];
-      const lastArg = callArgs[callArgs.length - 1];
-      expect(typeof lastArg).toBe('number');
-    });
-
-    it('should include tier classification (reach/match/safety)', async () => {
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results[0].tier).toBeDefined();
-      expect(['reach', 'match', 'safety']).toContain(output.results[0].tier);
-    });
-
-    it('should include confidence interval', async () => {
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results[0].probabilityLow).toBeDefined();
-      expect(output.results[0].probabilityHigh).toBeDefined();
-      expect(output.results[0].probabilityLow).toBeLessThanOrEqual(
-        output.results[0].probability,
-      );
-      expect(output.results[0].probabilityHigh).toBeGreaterThanOrEqual(
-        output.results[0].probability,
-      );
-    });
-
-    it('should return a user-facing confidence explanation instead of a raw level key', async () => {
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results[0].confidenceReason).toBeDefined();
-      expect(output.results[0].confidenceReason).not.toBe('medium');
-      expect(output.results[0].confidenceReason).toContain('参考程度');
-    });
-
-    it('should fall back to profile applicationRound when no per-school round exists', async () => {
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockProfile,
-        applicationRound: 'EA',
-      });
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results[0].roundContext).toBe('EA');
-    });
-
-    it('should classify tier using contextual acceptance rate', async () => {
-      const scoreCalculator = jest.requireMock('./utils/score-calculator');
-      scoreCalculator.resolveContextualAcceptanceRate.mockReturnValue({
-        rate: 16.5,
-        rawRate: 15,
-        baseType: 'international',
-        roundContext: 'EA',
-        roundAdjusted: true,
-      });
-      (service['transformer'].profileToInput as jest.Mock).mockReturnValue({
-        ...mockProfileInput,
-        isInternational: true,
-      });
-      (service['transformer'].schoolToInput as jest.Mock).mockReturnValue({
-        ...mockSchoolInput,
-        acceptanceRate: 49.2,
-        intlAcceptanceRate: 15,
-        applicationRound: 'EA',
-      });
-      (
-        service['transformer'].extractSchoolMetrics as jest.Mock
-      ).mockReturnValue({
-        ...mockSchoolMetrics,
-        acceptanceRate: 49.2,
-      });
-
-      await service.predict('profile-1', ['school-1']);
-
-      expect(scoreCalculator.calculateTier).toHaveBeenCalledWith(
-        mockFusedResult.probability * 1.1,
-        expect.objectContaining({ acceptanceRate: 16.5 }),
-      );
-    });
-
-    it('should preserve a positive EA round lift even when AI is less optimistic', async () => {
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockProfile,
-        applicationRound: 'EA',
-      });
-      (aiEngine.predictWithAI as jest.Mock).mockImplementation(
-        async (_profile, school) => ({
-          ...mockAiResult,
-          probability: school.applicationRound === 'EA' ? 0.35 : 0.45,
-        }),
-      );
-
-      const eaOutput = await service.predict('profile-1', ['school-1'], true);
-
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockProfile,
-        applicationRound: 'RD',
-      });
-      const rdOutput = await service.predict('profile-1', ['school-1'], true);
-
-      expect(eaOutput.results[0].roundContext).toBe('EA');
-      expect(rdOutput.results[0].roundContext).toBe('RD');
-      expect(eaOutput.results[0].probability).toBeGreaterThan(
-        rdOutput.results[0].probability,
-      );
-    });
-
-    it('should include factor analysis', async () => {
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results[0].factors).toBeDefined();
-      expect(Array.isArray(output.results[0].factors)).toBe(true);
-    });
-
-    it('should cache prediction result in Redis', async () => {
-      await service.predict('profile-1', ['school-1']);
-
-      expect(cacheService.saveToCache).toHaveBeenCalledWith(
-        'profile-1',
-        'school-1',
-        expect.any(Object),
-        expect.any(String),
-        'v3-enterprise',
-        'v4',
-      );
-    });
-
-    it('should persist prediction to database', async () => {
-      await service.predict('profile-1', ['school-1']);
-
-      expect(persistenceService.savePrediction).toHaveBeenCalled();
-    });
-
-    it('should handle multiple schools', async () => {
-      const school2 = { ...mockSchool, id: 'school-2', name: 'Stanford' };
-      (prisma.school.findMany as jest.Mock).mockResolvedValue([
-        mockSchool,
-        school2,
-      ]);
-
-      const output = await service.predict('profile-1', [
-        'school-1',
-        'school-2',
-      ]);
-
-      expect(output.results).toHaveLength(2);
-    });
-
-    it('should gracefully handle AI prediction failure', async () => {
-      (aiEngine.predictWithAI as jest.Mock).mockRejectedValue(
-        new Error('AI service timeout'),
-      );
-      // When AI fails, fusePredictions should return stats_only result
-      const fusionEngine = service['fusionEngine'];
-      (fusionEngine.fusePredictions as jest.Mock).mockImplementation(() => ({
-        probability: 0.35,
-        probabilityLow: 0.28,
-        probabilityHigh: 0.42,
-        crossEngineConsistency: 1.0,
-        engineScores: {
-          stats: 0.35,
-          ai: null,
-          historical: null,
-          fusionMethod: 'stats_only',
-        },
-      }));
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      // Should still return results from stats engine
-      expect(output.results).toHaveLength(1);
-      expect(output.results[0].probability).toBeDefined();
-    });
-
-    it('should record predictions to memory system', async () => {
-      await service.predict('profile-1', ['school-1']);
-
-      expect(memoryService.recordPredictionToMemory).toHaveBeenCalled();
-    });
-
-    it('should persist served ML-Primary results when v5 feature flag is enabled', async () => {
-      (featureFlagService.isEnabled as jest.Mock)
-        .mockResolvedValueOnce(true)
-        .mockResolvedValueOnce(false);
-      (mlPrimaryService.predictForSchool as jest.Mock).mockResolvedValue({
-        schoolId: 'school-1',
-        schoolName: 'MIT',
-        probability: 0.42,
-        probabilityLow: 0.36,
-        probabilityHigh: 0.48,
-        confidence: 'medium',
-        tier: 'match',
+  it('returns Tier 4 unavailable without persistence or cache writes', async () => {
+    counselorEngine.compute.mockResolvedValueOnce(
+      counselorResult({
+        probability: 0,
+        anchor: 0,
+        tier: 4,
+        anchorSource: 'none',
         factors: [],
-        suggestions: [],
-        comparison: {
-          gpaPercentile: 80,
-          testScorePercentile: 78,
-          activityStrength: 'strong',
-        },
-        modelVersion: 'v5-ml-primary',
-        policyVersionId: 'v5-ml-primary',
-        applicationRound: 'RD',
-      });
+        insufficientData: { reason: 'school_missing_acceptance_rate' },
+        modifierResults: {},
+        missingFields: ['school.acceptanceRate'],
+        sourceContributions: [],
+      }),
+    );
 
-      const output = await service.predict('profile-1', ['school-1']);
+    const output = await service.predict('profile-1', ['school-1'], true, 'en');
 
-      expect(output.results[0].modelVersion).toBe('v5-ml-primary');
-      expect(aiEngine.predictWithAI).not.toHaveBeenCalled();
-      expect(cacheService.saveToCache).toHaveBeenCalledWith(
-        'profile-1',
-        'school-1',
-        expect.objectContaining({ modelVersion: 'v5-ml-primary' }),
-        expect.any(String),
-        'v3-enterprise',
-        'v5',
-      );
-      expect(persistenceService.savePrediction).toHaveBeenCalledWith(
-        'profile-1',
-        'school-1',
-        expect.objectContaining({ modelVersion: 'v5-ml-primary' }),
-      );
+    expect(output.results).toHaveLength(1);
+    expect(output.results[0]).toMatchObject({
+      probability: null,
+      tier: 'unavailable',
+      predictionMethod: 'insufficient_data',
+      insufficientData: {
+        tier: 4,
+        reason: 'school_missing_acceptance_rate',
+      },
     });
-
-    it('should keep distillation disabled when the feature flag is off', async () => {
-      await service.predict('profile-1', ['school-1']);
-
-      expect(
-        distillationService.getPhase1LiveTeacherSignals,
-      ).not.toHaveBeenCalled();
-      expect(distillationService.computeBlendDecision).not.toHaveBeenCalled();
-    });
-
-    it('should apply the pre-Platt distillation variant when the feature flag is on', async () => {
-      (featureFlagService.isEnabled as jest.Mock)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(true);
-      const calibrationService = service['calibrationService'];
-      (calibrationService.getPlattCalibration as jest.Mock).mockResolvedValue({
-        a: 1,
-        b: 0,
-      });
-      (
-        calibrationService.applyPlattCalibration as jest.Mock
-      ).mockImplementation((probability) => probability);
-      (
-        distillationService.getPhase1LiveTeacherSignals as jest.Mock
-      ).mockResolvedValue([
-        {
-          sourceKey: 'campusreel-static',
-          sourceLabel: 'CampusReel Static Teacher',
-          probability: 0.61,
-          weight: 0.3,
-          confidence: 'medium',
-          kind: 'static',
-          rawPayload: {},
-        },
-      ]);
-      (distillationService.computeBlendDecision as jest.Mock).mockReturnValue({
-        teacherSignals: [
-          {
-            sourceKey: 'campusreel-static',
-            sourceLabel: 'CampusReel Static Teacher',
-            probability: 0.61,
-            weight: 0.3,
-            confidence: 'medium',
-            kind: 'static',
-            rawPayload: {},
-          },
-        ],
-        teacherEnsemble: 0.61,
-        pairwiseMae: null,
-        disagreementFactor: 1,
-        effectiveW: 0.2,
-        blendedPrePlatt: 0.4,
-        hasSignal: true,
-      });
-
-      const output = await service.predict('profile-1', ['school-1'], true);
-
-      expect(
-        distillationService.getPhase1LiveTeacherSignals,
-      ).toHaveBeenCalledWith(mockProfileInput, 'school-1');
-      expect(calibrationService.applyPlattCalibration).toHaveBeenCalledWith(
-        0.4,
-        { a: 1, b: 0 },
-      );
-      expect(output.results[0].probability).toBeCloseTo(0.4, 6);
-    });
-
-    it('should leave the probability unchanged when distillation has no teacher signal', async () => {
-      (featureFlagService.isEnabled as jest.Mock)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(true);
-      (
-        distillationService.getPhase1LiveTeacherSignals as jest.Mock
-      ).mockResolvedValue([]);
-      (distillationService.computeBlendDecision as jest.Mock).mockReturnValue({
-        teacherSignals: [],
-        teacherEnsemble: null,
-        pairwiseMae: null,
-        disagreementFactor: 0,
-        effectiveW: 0,
-        blendedPrePlatt: mockFusedResult.probability,
-        hasSignal: false,
-      });
-
-      const output = await service.predict('profile-1', ['school-1'], true);
-
-      expect(output.results[0].probability).toBeCloseTo(
-        mockFusedResult.probability,
-        6,
-      );
-    });
-
-    it('should apply the compliant distillation blend when live mode is enabled', async () => {
-      (featureFlagService.isEnabled as jest.Mock)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(false)
-        .mockResolvedValueOnce(true);
-      (
-        compliantDistillationService.evaluatePrediction as jest.Mock
-      ).mockResolvedValueOnce({
-        decision: {
-          hasSignal: true,
-          teacherSignals: [
-            {
-              key: 'scorecard-v1',
-              label: 'Scorecard Conditional Probability',
-              sourceName: 'distillation:scorecard-v1',
-              sourceType: 'OFFICIAL_FEDERAL',
-              configuredWeight: 0.12,
-              effectiveBlendWeight: 0.12,
-              probability: 0.61,
-              active: true,
-              confidence: 'medium',
-              missingReasons: [],
-            },
-          ],
-          coverageTier: 'CN_ENHANCED',
-          cohortKey: 'CN__CHINA_INTL',
-          blendedPrePlatt: 0.47,
-          totalConfiguredWeight: 0.12,
-          totalEffectiveWeight: 0.12,
-          liveEligible: true,
-        },
-        stage: 'DISTILLATION_LIVE',
-        applyLiveBlend: true,
-      });
-
-      const output = await service.predict('profile-1', ['school-1'], true);
-
-      expect(
-        compliantDistillationService.evaluatePrediction,
-      ).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ourProbPrePlatt: mockFusedResult.probability,
-          servedProbability: mockFusedResult.probability,
-        }),
-        { shadowEnabled: false, liveEnabled: true },
-      );
-      expect(output.results[0].probability).toBeCloseTo(0.47, 6);
-      expect(output.results[0].modelVersion).toBe('v3-enterprise');
-      expect(output.results[0].cohortKey).toBe('CN__CHINA_INTL');
-      const persistedResult = (persistenceService.savePrediction as jest.Mock)
-        .mock.calls[0][2];
-      expect(persistedResult.servedTrace.distillation).toMatchObject({
-        stage: 'DISTILLATION_LIVE',
-        applyLiveBlend: true,
-        liveEligible: true,
-        activeTeacherKeys: ['scorecard-v1'],
-        candidateServedProbability: 0.47,
-        servedProbability: 0.47,
-      });
-    });
-
-    it('should serve the fusion result when compliant live blend is off', async () => {
-      const output = await service.predict('profile-1', ['school-1'], true);
-
-      expect(
-        compliantDistillationService.evaluatePrediction,
-      ).not.toHaveBeenCalled();
-      expect(output.results[0].modelVersion).toBe('v3-enterprise');
-      expect(output.results[0].probability).toBeCloseTo(
-        mockFusedResult.probability,
-        6,
-      );
-    });
-
-    // ====================================================================
-    // Counselor mode (PR-2) — feature-flag-gated cold-start engine override
-    // ====================================================================
-    describe('counselor mode (prediction-counselor-mode-v1 flag)', () => {
-      it('serves fusion (default) when counselor flag is OFF', async () => {
-        (featureFlagService.isEnabled as jest.Mock).mockResolvedValue(false);
-
-        const output = await service.predict('profile-1', ['school-1'], true);
-
-        expect(counselorEngine.compute).not.toHaveBeenCalled();
-        expect(output.results[0].probability).toBeCloseTo(
-          mockFusedResult.probability,
-          6,
-        );
-        // No counselor metadata in trace
-        const trace = (output.results[0] as any).servedTrace;
-        if (trace) expect(trace.engine).not.toBe('counselor');
-      });
-
-      it('overrides served probability with counselor result when flag is ON', async () => {
-        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
-          (key: string) =>
-            Promise.resolve(key === 'prediction-counselor-mode-v1'),
-        );
-
-        const output = await service.predict('profile-1', ['school-1'], true);
-
-        expect(counselorEngine.compute).toHaveBeenCalledTimes(1);
-        // Default counselor mock returns probability 0.55
-        expect(output.results[0].probability).toBeCloseTo(0.55, 6);
-        expect(output.results[0].confidence).toBe('medium');
-        expect(output.results[0].confidenceReason).toContain('rules-of-thumb');
-      });
-
-      it('preserves fusion result in servedTrace.shadow.fusion for retroactive comparison', async () => {
-        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
-          (key: string) =>
-            Promise.resolve(key === 'prediction-counselor-mode-v1'),
-        );
-
-        const output = await service.predict('profile-1', ['school-1'], true);
-
-        const persistedResult = (persistenceService.savePrediction as jest.Mock)
-          .mock.calls[0][2];
-        const trace = persistedResult.servedTrace;
-        expect(trace.engine).toBe('counselor');
-        expect(trace.counselor).toBeDefined();
-        expect(trace.counselor.tier).toBe(2);
-        expect(trace.shadow?.fusion).toBeDefined();
-        // Fusion's original probability is captured in shadow even though the
-        // user-facing `probability` is counselor's. This is the path that
-        // retroactive Brier comparison will use once outcome labels accumulate.
-        expect(trace.shadow.fusion.probability).toBeCloseTo(
-          mockFusedResult.probability,
-          6,
-        );
-      });
-
-      it('falls back to fusion when counselor returns Tier 4 (insufficient data)', async () => {
-        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
-          (key: string) =>
-            Promise.resolve(key === 'prediction-counselor-mode-v1'),
-        );
-        (counselorEngine.compute as jest.Mock).mockResolvedValueOnce({
-          probability: 0,
-          anchor: 0,
-          tier: 4,
-          anchorSource: 'none',
-          factors: [],
-          insufficientData: { reason: 'school_missing_acceptance_rate' },
-          modifierResults: {},
-        });
-
-        const output = await service.predict('profile-1', ['school-1'], true);
-
-        // Tier 4 = silent counselor; fusion result preserved unchanged
-        expect(output.results[0].probability).toBeCloseTo(
-          mockFusedResult.probability,
-          6,
-        );
-        const trace = (output.results[0] as any).servedTrace;
-        if (trace) expect(trace.engine).not.toBe('counselor');
-      });
-
-      it('falls back to fusion (logs but does not throw) when counselor compute throws', async () => {
-        (featureFlagService.isEnabled as jest.Mock).mockImplementation(
-          (key: string) =>
-            Promise.resolve(key === 'prediction-counselor-mode-v1'),
-        );
-        (counselorEngine.compute as jest.Mock).mockRejectedValueOnce(
-          new Error('database lookup failed'),
-        );
-
-        // Should not reject — fusion result is the safety net
-        const output = await service.predict('profile-1', ['school-1'], true);
-
-        expect(output.results[0].probability).toBeCloseTo(
-          mockFusedResult.probability,
-          6,
-        );
-      });
-
-      it('checks the flag with profile.userId for deterministic per-user rollout', async () => {
-        (featureFlagService.isEnabled as jest.Mock).mockResolvedValue(false);
-
-        await service.predict('profile-1', ['school-1'], true);
-
-        // Rollout must be deterministic per real user, not per transient
-        // profile row, so repeated sessions see the same engine.
-        expect(featureFlagService.isEnabled).toHaveBeenCalledWith(
-          'prediction-counselor-mode-v1',
-          expect.objectContaining({ userId: 'user-1' }),
-        );
-      });
-    });
+    expect(output.results[0].sourceSummary?.[0]?.label).toBe(
+      'Insufficient data',
+    );
+    expect(persistenceService.savePrediction).not.toHaveBeenCalled();
+    expect(cacheService.saveToCache).not.toHaveBeenCalled();
   });
 
-  describe('invalidateUserCache', () => {
-    it('should delete all cached predictions for a profile', async () => {
-      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([
-        { schoolId: 'school-1' },
-        { schoolId: 'school-2' },
-      ]);
-
-      await service.invalidateUserCache('profile-1');
-
-      expect(cacheService.invalidateUserCache).toHaveBeenCalledWith(
-        'profile-1',
-        ['school-1', 'school-2'],
-      );
-    });
-
-    it('should handle empty prediction history', async () => {
-      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([]);
-
-      await expect(
-        service.invalidateUserCache('profile-1'),
-      ).resolves.not.toThrow();
-    });
-
-    it('should not throw if cache deletion fails', async () => {
-      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([
-        { schoolId: 'school-1' },
-      ]);
-      (cacheService.invalidateUserCache as jest.Mock).mockRejectedValue(
-        new Error('Redis error'),
-      );
-
-      await expect(
-        service.invalidateUserCache('profile-1'),
-      ).resolves.not.toThrow();
-    });
-  });
-
-  describe('fusePredictions (via predict)', () => {
-    beforeEach(() => {
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue(mockProfile);
-      (prisma.school.findMany as jest.Mock).mockResolvedValue([mockSchool]);
-    });
-
-    it('should use stats-only fusion when AI and historical fail', async () => {
-      (aiEngine.predictWithAI as jest.Mock).mockRejectedValue(
-        new Error('AI failed'),
-      );
-      const fusionEngine = service['fusionEngine'];
-      (fusionEngine.fusePredictions as jest.Mock).mockReturnValue({
-        probability: 0.35,
-        probabilityLow: 0.28,
-        probabilityHigh: 0.42,
-        crossEngineConsistency: 1.0,
-        engineScores: {
-          stats: 0.35,
-          ai: null,
-          historical: null,
-          fusionMethod: 'stats_only',
-        },
-      });
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results).toHaveLength(1);
-      expect(output.results[0].engineScores?.fusionMethod).toBe('stats_only');
-    });
-
-    it('should use 2-engine fusion when AI succeeds but no historical data', async () => {
-      const fusionEngine = service['fusionEngine'];
-      (fusionEngine.fusePredictions as jest.Mock).mockReturnValue({
-        probability: 0.33,
-        probabilityLow: 0.26,
-        probabilityHigh: 0.4,
-        crossEngineConsistency: 0.85,
-        engineScores: {
-          stats: 0.35,
-          ai: 0.3,
-          historical: null,
-          fusionMethod: 'weighted_ensemble_2_stats_ai',
-        },
-      });
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results).toHaveLength(1);
-      // AI succeeded, but historical returned null → stats + ai = weighted_ensemble_2_stats_ai
-      const method = output.results[0].engineScores?.fusionMethod;
-      expect(method).toBe('weighted_ensemble_2_stats_ai');
-    });
-
-    it('should clamp probability between 0.05 and 0.95', async () => {
-      // When school calibration is applied (adj > 0), probability is clamped to 0.98
-      const calibrationService = service['calibrationService'];
-      (calibrationService.getSchoolCalibrations as jest.Mock).mockResolvedValue(
-        {
-          'school-1': 1.0,
-        },
-      );
-      const fusionEngine = service['fusionEngine'];
-      (fusionEngine.fusePredictions as jest.Mock).mockReturnValue({
-        probability: 0.99,
-        probabilityLow: 0.92,
-        probabilityHigh: 0.99,
-        crossEngineConsistency: 0.9,
-        engineScores: {
-          stats: 0.99,
-          ai: 0.99,
-          historical: null,
-          fusionMethod: 'weighted_ensemble_2_stats_ai',
-        },
-      });
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results[0].probability).toBeLessThanOrEqual(0.98);
-    });
-  });
-
-  describe('reportActualResult', () => {
-    it('should update prediction result with actual outcome', async () => {
-      await service.reportActualResult('profile-1', 'school-1', 'ADMITTED');
-
-      expect(reportingService.reportActualResult).toHaveBeenCalledWith(
-        'profile-1',
-        'school-1',
-        'ADMITTED',
-        undefined,
-      );
-    });
-  });
-
-  describe('getPredictionHistory', () => {
-    it('should return paginated prediction history for a profile', async () => {
-      const mockPaginated = {
-        items: [
-          {
-            id: 'pred-1',
-            schoolId: 'school-1',
-            probability: 0.45,
-            tier: 'match',
-            createdAt: new Date(),
-            school: mockSchool,
-          },
-        ],
-        total: 1,
-        page: 1,
-        pageSize: 20,
-        totalPages: 1,
-      };
-      (reportingService.getPredictionHistory as jest.Mock).mockResolvedValue(
-        mockPaginated,
-      );
-
-      const results = await service.getPredictionHistory('profile-1');
-      expect(results.items).toHaveLength(1);
-      expect(results.total).toBe(1);
-    });
-  });
-
-  describe('getCalibrationData', () => {
-    it('should return calibration statistics', async () => {
-      const result = await service.getCalibrationData();
-
-      expect(result).toBeDefined();
-      expect(result.totalPredictions).toBe(100);
-      expect(result.withActualResults).toBe(20);
-      expect(result.calibrationBuckets).toHaveLength(5);
-    });
-  });
-
-  describe('memory integration', () => {
-    beforeEach(() => {
-      (prisma.profile.findUnique as jest.Mock).mockResolvedValue(mockProfile);
-      (prisma.school.findMany as jest.Mock).mockResolvedValue([mockSchool]);
-      // Reset fusePredictions to return a fresh copy each call
-      const fusionEngine = service['fusionEngine'];
-      (fusionEngine.fusePredictions as jest.Mock).mockImplementation(() => ({
-        ...mockFusedResult,
-        engineScores: { ...mockFusedResult.engineScores },
-      }));
-    });
-
-    it('should retrieve memory context before prediction', async () => {
-      await service.predict('profile-1', ['school-1']);
-
-      expect(memoryService.getMemoryContext).toHaveBeenCalled();
-    });
-
-    it('should record school entities after prediction', async () => {
-      await service.predict('profile-1', ['school-1']);
-
-      expect(memoryService.recordPredictionToMemory).toHaveBeenCalled();
-    });
-
-    it('should proceed without memory when manager is unavailable', async () => {
-      // Create service without memory manager — PredictionMemoryService handles graceful degradation
-      // Mock getMemoryContext to return empty context (simulating unavailable memory)
-      (memoryService.getMemoryContext as jest.Mock).mockResolvedValue({
-        previousPredictions: [],
-        knownPreferences: [],
-        profileInsights: [],
-        memoryAdjustments: new Map<string, number>(),
-      });
-
-      const output = await service.predict('profile-1', ['school-1']);
-
-      expect(output.results).toHaveLength(1);
-    });
-  });
-
-  describe('generateSuggestions (private)', () => {
-    const baseProfile = {
-      gpa: 3.9,
-      testScores: [{ type: 'SAT', score: 1500 }],
-      activities: [],
-      awards: [],
-      targetMajor: undefined,
-    } as any;
-
-    const baseSchool = { name: 'MIT', acceptanceRate: 0.04 } as any;
-
-    it('returns AI suggestions when >= 3 are provided', () => {
-      const aiSuggestions = [
-        'suggestion 1',
-        'suggestion 2',
-        'suggestion 3',
-        'suggestion 4',
-      ];
-      const result = service['generateSuggestions'](
-        'reach',
-        'high',
-        baseProfile,
-        baseSchool,
-        aiSuggestions,
-        'en',
-      );
-      expect(result).toEqual(aiSuggestions.slice(0, 4));
-      // Should not contain fallback templates
-      expect(
-        result.every((s: string) => !s.includes('USACO') && !s.includes('RSI')),
-      ).toBe(true);
-    });
-
-    it('uses CS programs for CS student reach tier', () => {
-      const csProfile = { ...baseProfile, targetMajor: 'Computer Science' };
-      const result = service['generateSuggestions'](
-        'reach',
-        'medium',
-        csProfile,
-        baseSchool,
-        [],
-        'en',
-      );
-      // Should contain CS-specific programs
-      const joined = result.join(' ');
-      expect(joined).toMatch(/MITES|Google CSSI|COSMOS/);
-    });
-
-    it('uses humanities programs for humanities student match tier', () => {
-      const humProfile = { ...baseProfile, targetMajor: 'English Literature' };
-      const result = service['generateSuggestions'](
-        'match',
-        'medium',
-        humProfile,
-        baseSchool,
-        [],
-        'en',
-      );
-      const joined = result.join(' ');
-      expect(joined).toMatch(/TASP|Scholastic|John Locke|Concord Review/);
-    });
-
-    it('deduplicates programs already in activities', () => {
-      const csProfile = {
-        ...baseProfile,
+  it('previewPredict defaults to counselor and exposes trace only when requested', async () => {
+    const output = await service.previewPredict(
+      {
+        gpa: 3.9,
+        gpaScale: 4,
         targetMajor: 'Computer Science',
-        activities: [{ name: 'USACO', category: 'COMPETITION' }],
-      };
-      const result = service['generateSuggestions'](
-        'reach',
-        'medium',
-        csProfile,
-        baseSchool,
-        [],
-        'en',
-      );
-      const joined = result.join(' ');
-      // USACO should not appear since student already does it
-      expect(joined).not.toContain('USACO');
-    });
+        testScores: [{ type: 'SAT', score: 1500 }],
+        activities: [],
+        awards: [],
+      },
+      ['school-1'],
+      { includeServedTrace: true, applicationRound: 'RD', locale: 'en' },
+    );
 
-    it('returns GENERAL programs when no targetMajor', () => {
-      const result = service['generateSuggestions'](
-        'reach',
-        'medium',
-        baseProfile,
-        baseSchool,
-        [],
-        'en',
-      );
-      const joined = result.join(' ');
-      expect(joined).toMatch(/YYGS|MITES|MOSTEC/);
-    });
-
-    it('returns zh content when locale is zh', () => {
-      const csProfile = { ...baseProfile, targetMajor: 'Computer Science' };
-      const result = service['generateSuggestions'](
-        'reach',
-        'medium',
-        csProfile,
-        baseSchool,
-        [],
-        'zh',
-      );
-      const joined = result.join(' ');
-      expect(joined).toMatch(/冲刺校|文书|早申/);
-    });
+    expect(output.results).toHaveLength(1);
+    expect(output.results[0].predictionMethod).toBe('counselor');
+    expect((output.results[0] as any).servedTrace.engine).toBe('counselor');
+    expect(persistenceService.savePrediction).not.toHaveBeenCalled();
+    expect(cacheService.saveToCache).not.toHaveBeenCalled();
   });
 });

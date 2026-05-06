@@ -86,7 +86,7 @@ export function PredictionHistoryTab() {
         </CardHeader>
         <CardContent className="space-y-2">
           {items.map((item) => {
-            const prob = Math.round(item.probability * 100);
+            const prob = item.probability == null ? null : Math.round(item.probability * 100);
             const tier = item.tier as keyof typeof TIER_STYLES | undefined;
             const tierStyle = tier ? TIER_STYLES[tier] : undefined;
             const outcomeResult = item.latestOutcomeLabel?.result ?? item.actualResult;
@@ -127,16 +127,20 @@ export function PredictionHistoryTab() {
                   <span
                     className={cn(
                       'text-lg font-bold tabular-nums',
-                      prob >= 60
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : prob >= 30
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-red-600 dark:text-red-400'
+                      prob == null
+                        ? 'text-muted-foreground'
+                        : prob >= 60
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : prob >= 30
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-red-600 dark:text-red-400'
                     )}
                   >
-                    {prob}%
+                    {prob == null ? 'Unavailable' : `${prob}%`}
                   </span>
-                  {prob >= 60 ? (
+                  {prob == null ? (
+                    <Minus className="h-4 w-4 text-muted-foreground" />
+                  ) : prob >= 60 ? (
                     <TrendingUp className="h-4 w-4 text-emerald-500" />
                   ) : prob >= 30 ? (
                     <Minus className="h-4 w-4 text-amber-500" />

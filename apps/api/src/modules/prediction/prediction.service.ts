@@ -78,6 +78,7 @@ import { buildNormalizedSchoolProvenance } from '../school/school-provenance.hel
 // ============================================
 
 const MODEL_VERSION = 'v3-enterprise';
+const COUNSELOR_ENGINE_MODE = 'counselor-v2';
 const SCHOOL_META_QUALITY_FIELDS = [
   'acceptanceRate',
   'intlAcceptanceRate',
@@ -391,6 +392,21 @@ export class PredictionService {
     };
   }
 
+  private probabilitySortValue(
+    result: Pick<PredictionResultDto, 'probability'>,
+  ): number {
+    return result.probability == null ? -1 : result.probability;
+  }
+
+  private numericPredictionResults(
+    results: PredictionResultDto[],
+  ): Array<PredictionResultDto & { probability: number }> {
+    return results.filter(
+      (result): result is PredictionResultDto & { probability: number } =>
+        result.probability != null && Number.isFinite(result.probability),
+    );
+  }
+
   /** @deprecated Use PredictionTransformerService.extractProfileMetrics() directly */
   private extractProfileMetrics(profile: ProfileInput): ProfileMetrics {
     return this.transformer.extractProfileMetrics(profile);
@@ -407,6 +423,243 @@ export class PredictionService {
     school: SchoolInput,
   ): number {
     return this.transformer.evaluateDataCompleteness(profile, school);
+  }
+
+  private async buildCounselorPrimaryResult(params: {
+    profileId: string;
+    profileInput: ProfileInput;
+    school: any;
+    schoolInput: SchoolInput;
+    schoolMetrics: SchoolMetrics;
+    locale: string;
+    applicationRound?: string;
+    policyVersionId?: string;
+    profileHash?: string;
+    persist: boolean;
+  }): Promise<PredictionResultDto> {
+    if (!this.counselorEngine) {
+      throw new Error('Counselor engine is not available');
+    }
+
+    const {
+      profileId,
+      profileInput,
+      school,
+      schoolInput,
+      schoolMetrics,
+      locale,
+      applicationRound,
+      policyVersionId,
+      profileHash,
+      persist,
+    } = params;
+    const resolvedPolicyVersionId = policyVersionId ?? MODEL_VERSION;
+    const resolvedApplicationRound =
+      applicationRound ?? schoolInput.applicationRound ?? 'RD';
+    const counselorResult = await this.counselorEngine.compute(
+      profileInput,
+      schoolInput,
+      resolvedApplicationRound,
+    );
+    const schoolName =
+      locale === 'zh'
+        ? school.nameZh || school.name
+        : school.name || school.nameZh;
+
+    const builtTrace = this.policyService.buildTracePayload({
+      policyVersionId: resolvedPolicyVersionId,
+      profile: profileInput,
+      school: schoolInput,
+      roundContext: resolvedApplicationRound,
+      confidence: counselorResult.tier === 4 ? 'low' : 'medium',
+      schoolMeta: {
+        acceptanceRate: schoolInput.acceptanceRate,
+        intlAcceptanceRate: schoolInput.intlAcceptanceRate,
+        oosAcceptanceRate: schoolInput.oosAcceptanceRate,
+        usNewsRank: schoolInput.usNewsRank,
+        graduationRate: schoolInput.graduationRate,
+      },
+    });
+    const baseTrace =
+      builtTrace ??
+      ({
+        policyVersionId: resolvedPolicyVersionId,
+        cohortKey: 'UNKNOWN',
+        roundContext: resolvedApplicationRound,
+        priorTier: 'counselor',
+        driftSignalIds: [],
+        relationshipSignalIds: [],
+        calibrationPath: [],
+        uncertaintyReasons: [],
+        sourceSummary: [],
+      } as PredictionTracePayload);
+
+    if (counselorResult.tier === 4) {
+      const reason =
+        counselorResult.insufficientData?.reason ??
+        'Limited public data — predictions are not available for this school yet.';
+      const sourceSummary = [
+        {
+          label: 'Insufficient data',
+          detail: reason,
+        },
+      ];
+      const uncertaintyReasons = [
+        'Limited public data — predictions are not available for this school yet.',
+        ...counselorResult.missingFields.map(
+          (field) =>
+            `Missing ${field}; this signal was skipped neutrally instead of penalized.`,
+        ),
+      ];
+      const result: InternalPredictionResult = {
+        schoolId: school.id,
+        schoolName,
+        probability: null,
+        probabilityLow: undefined,
+        probabilityHigh: undefined,
+        confidence: 'low',
+        tier: 'unavailable',
+        factors: [],
+        suggestions: [],
+        comparison: undefined,
+        modelVersion: counselorResult.ruleVersion,
+        servedPolicyVersionId: resolvedPolicyVersionId,
+        cohortKey: baseTrace.cohortKey,
+        roundContext: resolvedApplicationRound,
+        predictionMethod: 'insufficient_data',
+        sourceSummary,
+        uncertaintyReasons,
+        confidenceReason:
+          'Public admission-rate data is too limited for a numeric estimate.',
+        insufficientData: {
+          tier: 4,
+          reason,
+        },
+        policyVersionId: resolvedPolicyVersionId,
+        applicationRound: resolvedApplicationRound,
+        selectivityBand: undefined,
+        servedTrace: {
+          ...baseTrace,
+          engine: 'counselor',
+          sourceSummary,
+          uncertaintyReasons,
+          counselor: {
+            anchor: counselorResult.anchor,
+            anchorSource: counselorResult.anchorSource,
+            tier: counselorResult.tier,
+            modifiers: counselorResult.modifierResults,
+            missingFields: counselorResult.missingFields,
+            sourceContributions: counselorResult.sourceContributions,
+            ruleVersion: counselorResult.ruleVersion,
+          },
+          insufficientData: {
+            tier: 4,
+            reason,
+          },
+        } as any,
+      };
+      return persist ? this.toPublicPredictionResult(result) : result;
+    }
+
+    const tierContext = resolveContextualAcceptanceRate({
+      schoolMeta: {
+        acceptanceRate: schoolInput.acceptanceRate,
+        intlAcceptanceRate: schoolInput.intlAcceptanceRate,
+      },
+      isInternational: Boolean(profileInput.isInternational),
+      roundContext: resolvedApplicationRound,
+    });
+    const tierSchoolMetrics = tierContext
+      ? { ...schoolMetrics, acceptanceRate: tierContext.rate }
+      : schoolMetrics;
+    const tier = calculateTier(counselorResult.probability, tierSchoolMetrics);
+    const sourceSummary = [
+      {
+        label: 'Counselor estimate',
+        detail: `${counselorResult.anchorSource}; anchor ${(counselorResult.anchor * 100).toFixed(1)}%; Tier ${counselorResult.tier}; ${counselorResult.ruleVersion}`,
+      },
+    ];
+    const uncertaintyReasons = [
+      'Cold-start rules-of-thumb estimate; essays, recommendations, and institutional priorities are not fully modeled.',
+      ...baseTrace.uncertaintyReasons,
+      ...counselorResult.missingFields.map(
+        (field) =>
+          `Missing ${field}; this signal was skipped neutrally instead of penalized.`,
+      ),
+    ];
+    const confidenceReason = this.generateConfidenceReason(
+      'medium',
+      profileInput,
+      sourceSummary,
+      uncertaintyReasons,
+      locale,
+    );
+    const result: InternalPredictionResult = {
+      schoolId: school.id,
+      schoolName,
+      probability: counselorResult.probability,
+      probabilityLow: Math.max(0.02, counselorResult.probability - 0.05),
+      probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
+      confidence: 'medium',
+      tier,
+      factors: counselorResult.factors as any,
+      suggestions: this.generateSuggestions(
+        tier,
+        'medium',
+        profileInput,
+        schoolInput,
+        undefined,
+        locale,
+      ),
+      comparison: undefined,
+      modelVersion: counselorResult.ruleVersion,
+      servedPolicyVersionId: resolvedPolicyVersionId,
+      cohortKey: baseTrace.cohortKey,
+      roundContext: resolvedApplicationRound,
+      predictionMethod: 'counselor',
+      sourceSummary,
+      uncertaintyReasons,
+      confidenceReason,
+      policyVersionId: resolvedPolicyVersionId,
+      applicationRound: resolvedApplicationRound,
+      selectivityBand: getSelectivityBand(
+        calculateSelectivityIndex(schoolMetrics),
+      ),
+      servedTrace: {
+        ...baseTrace,
+        engine: 'counselor',
+        calibrationPath: ['counselor_anchor_clip'],
+        sourceSummary,
+        uncertaintyReasons,
+        counselor: {
+          anchor: counselorResult.anchor,
+          anchorSource: counselorResult.anchorSource,
+          tier: counselorResult.tier,
+          modifiers: counselorResult.modifierResults,
+          missingFields: counselorResult.missingFields,
+          sourceContributions: counselorResult.sourceContributions,
+          ruleVersion: counselorResult.ruleVersion,
+        },
+      } as any,
+    };
+
+    if (persist) {
+      const savedRefs =
+        (await this.savePrediction(profileId, school.id, result)) ?? {};
+      if (savedRefs.predictionResultId) {
+        result.id = savedRefs.predictionResultId;
+      }
+      await this.saveToCache(
+        profileId,
+        school.id,
+        this.toPublicPredictionResult(result),
+        profileHash,
+        policyVersionId,
+        COUNSELOR_ENGINE_MODE,
+      );
+    }
+
+    return persist ? this.toPublicPredictionResult(result) : result;
   }
 
   // ==================== 引擎 1: 统计算法 (delegated to PredictionStatisticalEngine) ====================
@@ -487,9 +740,10 @@ export class PredictionService {
   } {
     const violations: string[] = [];
     const warnings: string[] = [];
+    const numericResults = this.numericPredictionResults(results);
 
     // 为每个结果计算 selectivity index
-    const withSel = results
+    const withSel = numericResults
       .filter((r) => r.schoolMeta)
       .map((r) => ({
         result: r,
@@ -522,7 +776,7 @@ export class PredictionService {
 
     // Check 3: 概率碰撞 (精度 0.01 + 0.1 双重检测)
     const probMap = new Map<string, string[]>();
-    for (const r of results) {
+    for (const r of numericResults) {
       const key = r.probability.toFixed(2);
       if (!probMap.has(key)) probMap.set(key, []);
       probMap.get(key)!.push(r.schoolName);
@@ -534,7 +788,7 @@ export class PredictionService {
     }
     // Coarse collision detection (1 decimal place)
     const coarseMap = new Map<string, string[]>();
-    for (const r of results) {
+    for (const r of numericResults) {
       const key = r.probability.toFixed(1);
       if (!coarseMap.has(key)) coarseMap.set(key, []);
       coarseMap.get(key)!.push(r.schoolName);
@@ -690,7 +944,8 @@ export class PredictionService {
     const includeServedTrace =
       options?.includeServedTrace ?? includeShadowDistillation;
     const overrideApplicationRound = options?.applicationRound;
-    const counselorMode = options?.counselorMode ?? false;
+    const counselorMode =
+      options?.counselorMode ?? Boolean(this.counselorEngine);
 
     if (schoolIds.length === 0) {
       return { results: [], dataCompleteness: 0 };
@@ -793,11 +1048,12 @@ export class PredictionService {
     // Batch validation + monotonicity (same invariants as the live path)
     this.validateBatchResults(results);
     if (!counselorMode) {
-      enforceMonotonicity(results);
+      enforceMonotonicity(this.numericPredictionResults(results) as any);
 
       // School-level calibration multipliers (Platt happens inside predictForSchool)
       const calibrationMap = await this.getSchoolCalibrations();
       for (const r of results) {
+        if (r.probability == null) continue;
         const adj = calibrationMap[r.schoolId];
         if (adj != null && adj > 0) {
           r.probability = Math.min(0.98, r.probability * adj);
@@ -809,7 +1065,9 @@ export class PredictionService {
       }
     }
 
-    results.sort((a, b) => b.probability - a.probability);
+    results.sort(
+      (a, b) => this.probabilitySortValue(b) - this.probabilitySortValue(a),
+    );
     return { results, dataCompleteness };
   }
 
@@ -1088,7 +1346,10 @@ export class PredictionService {
         counselorModeEnabled = false;
       }
     }
-    const predictionEngineMode = counselorModeEnabled ? 'counselor-v1' : 'v4';
+    counselorModeEnabled = Boolean(this.counselorEngine);
+    const predictionEngineMode = counselorModeEnabled
+      ? COUNSELOR_ENGINE_MODE
+      : 'v4';
 
     if (!forceRefresh) {
       for (const school of schools) {
@@ -1182,11 +1443,12 @@ export class PredictionService {
       // 单调性约束: 保证 selectivity 更高的学校 probability 更低.
       // Counselor mode skips this legacy post-processing so its hard
       // [anchor × 0.3, anchor × 2.5] clamp cannot be mutated after compute().
-      enforceMonotonicity(results);
+      enforceMonotonicity(this.numericPredictionResults(results) as any);
 
       // 学校级校准：从 DB 加载 SchoolCalibration 乘数（如 BU 过严时可设 >1）
       const calibrationMap = await this.getSchoolCalibrations();
       for (const r of results) {
+        if (r.probability == null) continue;
         const adj = calibrationMap[r.schoolId];
         if (adj != null && adj > 0) {
           r.probability = Math.min(0.98, r.probability * adj);
@@ -1199,9 +1461,12 @@ export class PredictionService {
     }
 
     // 按概率降序排序
-    results.sort((a, b) => b.probability - a.probability);
+    results.sort(
+      (a, b) => this.probabilitySortValue(b) - this.probabilitySortValue(a),
+    );
 
     const cachedCount = results.filter((r) => r.fromCache).length;
+    const numericResults = this.numericPredictionResults(results);
     this.logger.log('Prediction completed', {
       profileId,
       totalSchools: results.length,
@@ -1209,10 +1474,10 @@ export class PredictionService {
       freshResults: results.length - cachedCount,
       dataCompleteness,
       avgProbability:
-        results.length > 0
+        numericResults.length > 0
           ? Math.round(
-              (results.reduce((s, r) => s + r.probability, 0) /
-                results.length) *
+              (numericResults.reduce((s, r) => s + r.probability, 0) /
+                numericResults.length) *
                 100,
             )
           : 0,
@@ -1282,6 +1547,9 @@ export class PredictionService {
           applicationRound || 'RD',
           locale,
         );
+        if (mlResult.probability == null) {
+          throw new Error('ML-primary returned an unavailable probability');
+        }
 
         if (v5Shadow) {
           // Shadow mode: log comparison, fall through to legacy
@@ -1317,7 +1585,10 @@ export class PredictionService {
             : mlResult.probability;
 
           if (compliantEvaluation?.applyLiveBlend) {
-            this.applyProbabilityDelta(mlResult, candidateServedProbability);
+            this.applyProbabilityDelta(
+              mlResult as typeof mlResult & { probability: number },
+              candidateServedProbability,
+            );
           }
 
           mlResult.cohortKey =
@@ -1382,6 +1653,21 @@ export class PredictionService {
       schoolInput.applicationRound = applicationRound;
     }
     const schoolMetrics = this.extractSchoolMetrics(schoolInput);
+
+    if (counselorModeEnabled && this.counselorEngine) {
+      return this.buildCounselorPrimaryResult({
+        profileId,
+        profileInput,
+        school,
+        schoolInput,
+        schoolMetrics,
+        locale,
+        applicationRound,
+        policyVersionId,
+        profileHash,
+        persist,
+      });
+    }
 
     // Inject major competitiveness into profileInput for prompt builder
     if (programData) {
@@ -2022,17 +2308,19 @@ export class PredictionService {
       if (savedRefs.predictionResultId) {
         result.id = savedRefs.predictionResultId;
       }
-      await this.recordCompliantDistillationObservation({
-        savedRefs,
-        policyVersionId: resolvedPolicyVersionId,
-        evaluation: compliantEvaluation,
-        servedProbability: result.probability,
-        candidateServedProbability: compliantEvaluation?.applyLiveBlend
-          ? result.probability
-          : compliantCandidateServedProbability,
-        applicationRound: resolvedApplicationRound,
-        selectivityBand,
-      });
+      if (result.probability != null) {
+        await this.recordCompliantDistillationObservation({
+          savedRefs,
+          policyVersionId: resolvedPolicyVersionId,
+          evaluation: compliantEvaluation,
+          servedProbability: result.probability,
+          candidateServedProbability: compliantEvaluation?.applyLiveBlend
+            ? result.probability
+            : compliantCandidateServedProbability,
+          applicationRound: resolvedApplicationRound,
+          selectivityBand,
+        });
+      }
 
       // 保存到缓存 after persistence so feedback widgets can use result.id on
       // subsequent cache hits too.
@@ -2042,7 +2330,7 @@ export class PredictionService {
         this.toPublicPredictionResult(result),
         profileHash,
         policyVersionId,
-        counselorModeEnabled ? 'counselor-v1' : 'v4',
+        counselorModeEnabled ? COUNSELOR_ENGINE_MODE : 'v4',
       );
     }
 
