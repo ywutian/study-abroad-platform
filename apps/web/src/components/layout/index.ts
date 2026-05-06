@@ -6,3 +6,5 @@ export { MobileTabBar } from './mobile-tab-bar';
 export { PageTransitionWrapper, PageContent, PageHeaderMotion } from './page-transition';
 export { SkipLinks, MainContent } from './skip-link';
 export { FocusTrap } from './focus-trap';
+export { EnterpriseStatusStrip } from './enterprise-status-strip';
+export type { EnterpriseStatusItem, EnterpriseStatusTone } from './enterprise-status-strip';

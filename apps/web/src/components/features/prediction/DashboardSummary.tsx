@@ -22,7 +22,10 @@ export const DashboardSummary = memo(function DashboardSummary({
 
   const probRange = useMemo(() => {
     if (data.predictions.length === 0) return { min: 0, max: 0 };
-    const probs = data.predictions.map((p) => Math.round(p.probability * 100));
+    const probs = data.predictions
+      .filter((p) => p.probability != null)
+      .map((p) => Math.round((p.probability ?? 0) * 100));
+    if (probs.length === 0) return { min: 0, max: 0 };
     return { min: Math.min(...probs), max: Math.max(...probs) };
   }, [data.predictions]);
 

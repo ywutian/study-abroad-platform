@@ -18,7 +18,7 @@ export interface PredictionRequest {
   forceRefresh?: boolean;
 }
 
-export type TierType = 'reach' | 'match' | 'safety';
+export type TierType = 'reach' | 'match' | 'safety' | 'unavailable';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
 export type SchoolIntlAidPolicy = 'NEED_BLIND' | 'NEED_AWARE' | 'UNKNOWN';
@@ -41,6 +41,11 @@ export interface SchoolPolicyContext {
 export interface PredictionSourceSummary {
   label: string;
   detail?: string;
+}
+
+export interface PredictionInsufficientData {
+  tier: 4;
+  reason: string;
 }
 
 export interface SchoolPredictionDataQuality {
@@ -106,7 +111,7 @@ export interface PredictionResult {
   id?: string;
   schoolId: string;
   schoolName: string;
-  probability: number;
+  probability: number | null;
   probabilityLow?: number;
   probabilityHigh?: number;
   confidence: ConfidenceLevel;
@@ -123,10 +128,11 @@ export interface PredictionResult {
   actualResult?: string;
   cohortKey?: string;
   roundContext?: string;
-  predictionMethod?: 'fusion' | 'counselor';
+  predictionMethod?: 'fusion' | 'counselor' | 'insufficient_data';
   sourceSummary?: PredictionSourceSummary[];
   uncertaintyReasons?: string[];
   confidenceReason?: string;
+  insufficientData?: PredictionInsufficientData;
   latestOutcomeLabel?: PredictionOutcomeLabel;
   policyContext?: SchoolPolicyContext;
   schoolMeta?: {

@@ -49,6 +49,8 @@ export interface ProfileMetrics {
   isFirstGen?: boolean;
   /** Whether the student needs financial aid (for need-aware penalty) */
   needsFinancialAid?: boolean;
+  /** AI essay review score. Accepts either 0-10 or legacy 0-100 scale. */
+  essayQualityScore?: number;
 }
 
 /** 历史录取数据分布（用于数据驱动评分） */
@@ -71,6 +73,24 @@ export interface SchoolMetrics {
   usNewsRank?: number;
   /** 4年毕业率 (0-100), College Scorecard */
   graduationRate?: number;
+  /** Test policy: REQUIRED | OPTIONAL | BLIND | UNKNOWN. When BLIND, test scores must not affect prediction. */
+  testingPolicy?: string;
+  /** ED admit rate as 0-100 percentage when published. */
+  edAcceptanceRate?: number;
+  /** ED2 admit rate as 0-100 percentage when published. */
+  ed2AcceptanceRate?: number;
+  /** EA admit rate as 0-100 percentage when published. */
+  eaAcceptanceRate?: number;
+  /** International admit rate as 0-100 percentage when published. */
+  intlAcceptanceRate?: number;
+  /** Out-of-state admit rate as 0-100 percentage when published. */
+  oosAcceptanceRate?: number;
+  /** Whether the school has Early Decision. */
+  hasEarlyDecision?: boolean;
+  /** Institution category from Prisma InstitutionType. */
+  institutionType?: string;
+  /** CDS GPA distribution JSON if available. */
+  gpaDistribution?: unknown;
 }
 
 export interface ScoreBreakdown {

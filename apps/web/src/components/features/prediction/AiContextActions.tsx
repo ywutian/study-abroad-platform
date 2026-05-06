@@ -44,11 +44,17 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
             r.probabilityLow && r.probabilityHigh
               ? ` (${(r.probabilityLow * 100).toFixed(0)}-${(r.probabilityHigh * 100).toFixed(0)}%)`
               : '';
-          return `- ${r.schoolName}: ${(r.probability * 100).toFixed(0)}%${range} [${r.tier}] (${r.factors.map((f) => `${f.name}: ${f.detail}`).join(', ')})`;
+          const probability =
+            r.probability == null ? 'not enough data' : `${(r.probability * 100).toFixed(0)}%`;
+          return `- ${r.schoolName}: ${probability}${range} [${r.tier}] (${r.factors.map((f) => `${f.name}: ${f.detail}`).join(', ')})`;
         })
         .join('\n');
       const resultsShort = results
-        .map((r) => `- ${r.schoolName}: ${(r.probability * 100).toFixed(0)}%`)
+        .map((r) => {
+          const probability =
+            r.probability == null ? 'not enough data' : `${(r.probability * 100).toFixed(0)}%`;
+          return `- ${r.schoolName}: ${probability}`;
+        })
         .join('\n');
 
       items.push(
@@ -114,13 +120,14 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
 
   const predictionContext = useMemo(() => {
     if (results.length === 0) return undefined;
+    const numericResults = results.filter((r) => r.probability != null);
     return {
       type: 'prediction-results' as const,
       source: 'prediction_page' as const,
       results: results.map((r) => ({
         schoolId: r.schoolId,
         schoolName: r.schoolName,
-        probability: r.probability,
+        probability: r.probability ?? 0,
         tier: r.tier,
         confidence: r.confidence,
         source: r.source,
@@ -138,7 +145,11 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
         reach: results.filter((r) => r.tier === 'reach').length,
         match: results.filter((r) => r.tier === 'match').length,
         safety: results.filter((r) => r.tier === 'safety').length,
-        avgProbability: results.reduce((acc, r) => acc + r.probability, 0) / results.length,
+        avgProbability:
+          numericResults.length > 0
+            ? numericResults.reduce((acc, r) => acc + (r.probability ?? 0), 0) /
+              numericResults.length
+            : 0,
       },
     };
   }, [results]);
@@ -149,7 +160,7 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
       results.map((result) => [
         result.schoolId,
         {
-          probability: result.probability,
+          probability: result.probability ?? 0,
           tier: result.tier,
           confidence: result.confidence,
           source: result.source,

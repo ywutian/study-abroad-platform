@@ -31,6 +31,20 @@ const CATEGORY_FILTERS: Array<PredictionFeedbackCategory | 'ALL'> = [
   'OTHER',
 ];
 
+function isValidSentiment(value: unknown): value is PredictionFeedbackSentiment {
+  return value === 'POSITIVE' || value === 'UNSURE' || value === 'NEGATIVE';
+}
+
+function isValidCategory(value: unknown): value is PredictionFeedbackCategory {
+  return (
+    value === 'TOO_HIGH' ||
+    value === 'TOO_LOW' ||
+    value === 'FACTORS_WRONG' ||
+    value === 'NEVER_MOVES' ||
+    value === 'OTHER'
+  );
+}
+
 export default function AdminPredictionFeedbackPage() {
   const t = useTranslations('admin.predictionFeedback');
   const [sentiment, setSentiment] = useState<PredictionFeedbackSentiment | 'ALL'>('ALL');
@@ -51,6 +65,7 @@ export default function AdminPredictionFeedbackPage() {
     [category, daysAgo, engineSnapshot, schoolId, sentiment]
   );
   const feedback = useAdminPredictionFeedback(filters);
+  const feedbackItems = Array.isArray(feedback.data?.items) ? feedback.data.items : [];
 
   return (
     <div className="space-y-6">
@@ -152,52 +167,64 @@ export default function AdminPredictionFeedbackPage() {
             <CardContent className="pt-6 text-sm text-muted-foreground">{t('loading')}</CardContent>
           </Card>
         ) : null}
-        {feedback.data?.items.map((item) => (
-          <Card key={item.id}>
-            <CardContent className="space-y-3 pt-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{t(`sentiments.${item.sentiment}`)}</Badge>
-                  {item.category ? (
-                    <Badge variant="secondary">{t(`categories.${item.category}`)}</Badge>
-                  ) : null}
-                  <Badge variant="secondary">{item.engineSnapshot ?? t('unknownEngine')}</Badge>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(item.createdAt).toLocaleString()}
-                </span>
-              </div>
+        {feedbackItems.map((item) => {
+          const sentimentLabel = isValidSentiment(item.sentiment)
+            ? t(`sentiments.${item.sentiment}`)
+            : t('unknown');
+          const categoryLabel = isValidCategory(item.category)
+            ? t(`categories.${item.category}`)
+            : null;
+          const createdAt = item.createdAt ? new Date(item.createdAt) : null;
 
-              <div className="grid gap-3 md:grid-cols-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('school')}</p>
-                  <p className="text-sm font-medium">
-                    {item.school?.name ?? item.predictionResultId}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('probability')}</p>
-                  <p className="text-sm font-medium">
-                    {item.probabilitySnapshot != null
-                      ? `${(item.probabilitySnapshot * 100).toFixed(1)}%`
+          return (
+            <Card key={item.id}>
+              <CardContent className="space-y-3 pt-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline">{sentimentLabel}</Badge>
+                    {categoryLabel ? <Badge variant="secondary">{categoryLabel}</Badge> : null}
+                    <Badge variant="secondary">{item.engineSnapshot ?? t('unknownEngine')}</Badge>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {createdAt && Number.isFinite(createdAt.getTime())
+                      ? createdAt.toLocaleString()
                       : t('unknown')}
-                  </p>
+                  </span>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('user')}</p>
-                  <p className="text-sm font-medium">{item.userEmail ?? item.userId}</p>
-                </div>
-              </div>
 
-              {item.notes ? (
-                <p className="rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">
-                  {item.notes}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
-        ))}
-        {!feedback.isLoading && feedback.data?.items.length === 0 ? (
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('school')}</p>
+                    <p className="text-sm font-medium">
+                      {item.school?.name ?? item.predictionResultId ?? t('unknown')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('probability')}</p>
+                    <p className="text-sm font-medium">
+                      {item.probabilitySnapshot != null
+                        ? `${(item.probabilitySnapshot * 100).toFixed(1)}%`
+                        : t('unknown')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('user')}</p>
+                    <p className="text-sm font-medium">
+                      {item.userEmail ?? item.userId ?? t('unknown')}
+                    </p>
+                  </div>
+                </div>
+
+                {item.notes ? (
+                  <p className="rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">
+                    {item.notes}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          );
+        })}
+        {!feedback.isLoading && feedbackItems.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-sm text-muted-foreground">{t('empty')}</CardContent>
           </Card>

@@ -197,7 +197,10 @@ export class RecommendationToolsService implements IToolHandlerProvider {
               ? 'medium'
               : 'low',
         probability: prediction.probability,
-        percentage: `${Math.round(prediction.probability * 100)}%`,
+        percentage:
+          prediction.probability == null
+            ? 'N/A'
+            : `${Math.round(prediction.probability * 100)}%`,
         confidence: prediction.confidence,
         tier: prediction.tier,
         confidenceReason: prediction.confidenceReason,
