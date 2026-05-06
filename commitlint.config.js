@@ -16,6 +16,7 @@ module.exports = {
         'ci', // CI/CD changes
         'chore', // Maintenance tasks
         'revert', // Revert previous commit
+        'i18n', // Translation / locale file changes
       ],
     ],
     'subject-case': [0],
