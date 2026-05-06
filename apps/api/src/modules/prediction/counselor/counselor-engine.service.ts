@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { resolveMajorToCip } from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import { AnchorResolverService } from './anchor-resolver.service';
@@ -35,10 +36,9 @@ import {
  * is the most defensible signal you can ship without data. When labels accumulate
  * (~Feb 2027 estimate), a follow-up architecture can layer light ML on top.
  *
- * This service is invoked from `PredictionService.predictForSchool` when the
- * `prediction-counselor-mode-v1` feature flag is enabled. The legacy
- * fusion+distillation path runs in parallel (in shadow) and is captured in
- * `servedTrace.shadow` for retrospective comparison.
+ * This service is invoked from `PredictionService.predictForSchool` as the
+ * primary served path. The fusion+distillation pipeline is intentionally not
+ * computed for new counselor-primary responses.
  */
 
 export type CounselorTier = 1 | 2 | 3 | 4;
@@ -61,7 +61,8 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.5';
+export const COUNSELOR_RULE_VERSION =
+  'counselor-cold-start-v2.0-data-activated';
 
 export interface CounselorFactor {
   name: string;
@@ -199,7 +200,7 @@ export class CounselorEngineService {
       testBand: encodedDimensions.has('test')
         ? suppressed('Test score')
         : testBandMultiplier(profile, school),
-      round: roundMultiplier(resolvedRound),
+      round: roundMultiplier(resolvedRound, school),
       legacyHook: legacyHookMultiplier(profile, school),
       firstGen: firstGenMultiplier(profile),
       athlete: athleteMultiplier(profile),
@@ -444,27 +445,35 @@ export class CounselorEngineService {
     school: SchoolInput,
   ): Promise<number | null> {
     if (!profile.targetMajor) return null;
-    // Loose fuzzy match — SchoolProgram uses CIP codes and friendly names
-    // (`programName` field; not `name`). The precise CIP mapping lives in
-    // major-selectivity-teacher; counselor does the simpler programName-contains
-    // lookup. If no hit, returns null and majorMultiplier returns neutral.
-    const program = await this.prisma.schoolProgram.findFirst({
+
+    const targetCip = resolveMajorToCip(profile.targetMajor);
+    const cipProgram = targetCip
+      ? await this.prisma.schoolProgram.findFirst({
+          where: {
+            schoolId: school.id,
+            cipCode: targetCip,
+          },
+          select: { acceptanceRateEstimate: true },
+        })
+      : null;
+
+    if (cipProgram?.acceptanceRateEstimate) {
+      const raw = cipProgram.acceptanceRateEstimate.toNumber();
+      if (raw > 0) return raw > 1 ? raw / 100 : raw;
+    }
+
+    const fuzzyProgram = await this.prisma.schoolProgram.findFirst({
       where: {
         schoolId: school.id,
-        OR: [
-          {
-            programName: {
-              contains: profile.targetMajor,
-              mode: 'insensitive',
-            },
-          },
-          { cipCode: profile.targetMajor },
-        ],
+        programName: {
+          contains: profile.targetMajor,
+          mode: 'insensitive',
+        },
       },
       select: { acceptanceRateEstimate: true },
     });
-    if (!program?.acceptanceRateEstimate) return null;
-    const raw = program.acceptanceRateEstimate.toNumber();
+    if (!fuzzyProgram?.acceptanceRateEstimate) return null;
+    const raw = fuzzyProgram.acceptanceRateEstimate.toNumber();
     if (raw <= 0) return null;
     return raw > 1 ? raw / 100 : raw;
   }

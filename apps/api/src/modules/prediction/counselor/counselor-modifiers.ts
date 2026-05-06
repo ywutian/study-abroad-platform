@@ -45,6 +45,115 @@ const NEUTRAL: ModifierResult = {
   impact: 'neutral',
 };
 
+const GPA_DISTRIBUTION_BANDS = [
+  { key: '<3.00', min: Number.NEGATIVE_INFINITY, max: 3.0 },
+  { key: '3.00-3.24', min: 3.0, max: 3.25 },
+  { key: '3.25-3.49', min: 3.25, max: 3.5 },
+  { key: '3.50-3.74', min: 3.5, max: 3.75 },
+  { key: '3.75-4.00', min: 3.75, max: Number.POSITIVE_INFINITY },
+] as const;
+
+type GpaDistributionBand = (typeof GPA_DISTRIBUTION_BANDS)[number]['key'];
+type NormalizedGpaDistribution = Record<GpaDistributionBand, number>;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function readNumericField(
+  source: Record<string, unknown>,
+  keys: string[],
+): number | null {
+  for (const key of keys) {
+    const raw = source[key];
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+    if (typeof raw === 'string' && raw.trim()) {
+      const parsed = Number(raw);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+  return null;
+}
+
+function normalizeGpaDistribution(
+  raw: unknown,
+): NormalizedGpaDistribution | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const source = raw as Record<string, unknown>;
+  const aliases: Record<GpaDistributionBand, string[]> = {
+    '<3.00': ['<3.00', '<3.0', 'lt3', 'lt3.00', 'below3', 'below_3_00'],
+    '3.00-3.24': ['3.00-3.24', '3.0-3.24', '3.00_3.24', '3_00_3_24'],
+    '3.25-3.49': ['3.25-3.49', '3.25_3.49', '3_25_3_49'],
+    '3.50-3.74': ['3.50-3.74', '3.5-3.74', '3.50_3.74', '3_50_3_74'],
+    '3.75-4.00': ['3.75-4.00', '3.75-4.0', '3.75_4.00', '3_75_4_00'],
+  };
+
+  const values = {} as NormalizedGpaDistribution;
+  for (const band of GPA_DISTRIBUTION_BANDS) {
+    const value = readNumericField(source, aliases[band.key]);
+    if (value == null || value < 0) return null;
+    values[band.key] = value;
+  }
+
+  const rawSum = Object.values(values).reduce((sum, value) => sum + value, 0);
+  if (rawSum <= 0) return null;
+  const divisor = rawSum > 2 ? 100 : 1;
+  const normalized = Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [key, value / divisor]),
+  ) as NormalizedGpaDistribution;
+  const sum = Object.values(normalized).reduce((acc, value) => acc + value, 0);
+  if (sum < 0.95 || sum > 1.05) return null;
+  return normalized;
+}
+
+function resolveGpaBand(
+  gpa: number | undefined,
+  gpaScale: number | undefined,
+): GpaDistributionBand | null {
+  if (gpa == null || !Number.isFinite(gpa)) return null;
+  const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
+  const gpa4 = (gpa / scale) * 4.0;
+  for (const band of GPA_DISTRIBUTION_BANDS) {
+    if (gpa4 >= band.min && gpa4 < band.max) return band.key;
+  }
+  return '3.75-4.00';
+}
+
+function gpaDistributionMultiplier(
+  profile: ProfileInput,
+  school: SchoolInput,
+): ModifierResult | null {
+  const distribution = normalizeGpaDistribution(school.gpaDistribution);
+  if (!distribution) return null;
+  const band = resolveGpaBand(profile.gpa, profile.gpaScale);
+  if (!band) return null;
+  const bandIndex = GPA_DISTRIBUTION_BANDS.findIndex(
+    (item) => item.key === band,
+  );
+  if (bandIndex < 0) return null;
+
+  const below = GPA_DISTRIBUTION_BANDS.slice(0, bandIndex).reduce(
+    (sum, item) => sum + distribution[item.key],
+    0,
+  );
+  const percentile = clamp(below + distribution[band] / 2, 0, 1);
+  const multiplier = clamp(0.4 + 0.7 * percentile, 0.15, 1.3);
+  const gpa = profile.gpa?.toFixed(2) ?? 'unknown';
+  const pct = Math.round(percentile * 100);
+  const impact =
+    multiplier >= 1.05
+      ? 'positive'
+      : multiplier <= 0.75
+        ? 'negative'
+        : 'neutral';
+  return {
+    multiplier,
+    label: 'GPA distribution percentile',
+    evidence: `GPA ${gpa} maps to the ${band} CDS C9 band; midpoint admit-distribution percentile is ~${pct}%`,
+    impact,
+  };
+}
+
 /**
  * Convert a 4.0-scale GPA to an "equivalent SAT" score for percentile comparison
  * against a school's SAT 25/50/75 distribution. Standard mapping used in admissions
@@ -73,17 +182,17 @@ function gpaToEquivalentSat(
 }
 
 /**
- * Modifier #1: GPA-band relative to school SAT distribution.
- *
- * Why use SAT distribution instead of school's GPA distribution?
- * Schools rarely publish per-applicant GPA bands in CDS (Section C9 is sparse on
- * GPA), but SAT 25/75 is universally reported. Mapping GPA → equivalent SAT lets
- * us reuse the well-populated distribution for comparison.
+ * Modifier #1: GPA-band relative to school GPA distribution when available,
+ * with the legacy GPA→SAT-equivalent fallback for schools without valid CDS C9
+ * GPA bands.
  */
 export function gpaBandMultiplier(
   profile: ProfileInput,
   school: SchoolInput,
 ): ModifierResult {
+  const distributionResult = gpaDistributionMultiplier(profile, school);
+  if (distributionResult) return distributionResult;
+
   const equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
   if (equivSat == null) {
     return { ...NEUTRAL, label: 'GPA' };
@@ -236,37 +345,106 @@ export function testBandMultiplier(
   school: SchoolInput,
 ): ModifierResult {
   const testScores = profile.testScores ?? [];
-  let bestEquivSat: number | null = null;
-  let testLabel: string | null = null;
+  const candidates: ModifierResult[] = [];
 
-  const considerScore = (equiv: number | null, label: string) => {
-    if (equiv == null) return;
-    if (bestEquivSat == null || equiv > bestEquivSat) {
-      bestEquivSat = equiv;
-      testLabel = label;
+  const compareToBands = (
+    score: number,
+    label: string,
+    lower: number | undefined,
+    upper: number | undefined,
+    margin: number,
+  ): ModifierResult | null => {
+    if (!lower || !upper) return null;
+    if (score >= upper + margin / 2) {
+      return {
+        multiplier: 1.5,
+        label: 'Test score well above 75th percentile',
+        evidence: `${label} is well above the school's 75th percentile (${upper})`,
+        impact: 'positive',
+      };
     }
+    if (score >= upper) {
+      return {
+        multiplier: 1.2,
+        label: 'Test score above 75th percentile',
+        evidence: `${label} meets or exceeds the school's 75th percentile (${upper})`,
+        impact: 'positive',
+      };
+    }
+    if (score >= lower) {
+      return {
+        multiplier: 0.85,
+        label: 'Test score in middle 50',
+        evidence: `${label} falls between this school's 25th and 75th percentile (${lower}-${upper})`,
+        impact: 'neutral',
+      };
+    }
+    if (score >= lower - margin) {
+      return {
+        multiplier: 0.5,
+        label: 'Test score just below 25th percentile',
+        evidence: `${label} is below the 25th percentile (${lower}) but within the expected margin`,
+        impact: 'negative',
+      };
+    }
+    return {
+      multiplier: 0.3,
+      label: 'Test score well below 25th percentile',
+      evidence: `${label} is well below the school's 25th percentile (${lower})`,
+      impact: 'negative',
+    };
+  };
+
+  const considerSatEquivalent = (equiv: number | null, label: string) => {
+    if (equiv == null) return;
+    const result = compareToBands(
+      equiv,
+      label,
+      school.sat25,
+      school.sat75,
+      100,
+    );
+    if (result) candidates.push(result);
   };
 
   for (const ts of testScores) {
     if (!ts.score) continue;
     switch (ts.type) {
       case 'SAT':
-        considerScore(ts.score, `SAT ${ts.score}`);
+        considerSatEquivalent(ts.score, `SAT ${ts.score}`);
         break;
       case 'ACT':
-        considerScore(ts.score * 45, `ACT ${ts.score}`);
+        candidates.push(
+          compareToBands(
+            ts.score,
+            `ACT ${ts.score}`,
+            school.act25,
+            school.act75,
+            3,
+          ) ??
+            compareToBands(
+              ts.score * 45,
+              `ACT ${ts.score}`,
+              school.sat25,
+              school.sat75,
+              100,
+            ) ?? { ...NEUTRAL, label: 'ACT score' },
+        );
         break;
       case 'IB':
-        considerScore(ibToEquivalentSat(ts.score), `IB ${ts.score}`);
+        considerSatEquivalent(ibToEquivalentSat(ts.score), `IB ${ts.score}`);
         break;
       case 'A_LEVEL':
-        considerScore(
+        considerSatEquivalent(
           aLevelToEquivalentSat(ts.score),
           `A-Level (${ts.score} UCAS pts)`,
         );
         break;
       case 'GAOKAO':
-        considerScore(gaokaoToEquivalentSat(ts.score), `Gaokao ${ts.score}`);
+        considerSatEquivalent(
+          gaokaoToEquivalentSat(ts.score),
+          `Gaokao ${ts.score}`,
+        );
         break;
       default:
         // TOEFL/IELTS/AP/IGCSE/DUOLINGO — not used as primary admission test
@@ -279,7 +457,7 @@ export function testBandMultiplier(
   // Common App data shows top-private (<20% admit) test-optional admits
   // 5-10pp lower than test-submitters; apply 0.85× as conservative correction.
   // At less-selective schools, test-optional has no meaningful penalty.
-  if (bestEquivSat == null && profile.applyingTestOptional === true) {
+  if (candidates.length === 0 && profile.applyingTestOptional === true) {
     const overall = school.acceptanceRate;
     if (overall != null && overall > 0) {
       const overallNorm = overall > 1 ? overall / 100 : overall;
@@ -302,57 +480,14 @@ export function testBandMultiplier(
     };
   }
 
-  if (bestEquivSat == null || testLabel == null) {
+  const meaningfulCandidates = candidates.filter(
+    (candidate) =>
+      !(candidate.multiplier === 1 && candidate.impact === 'neutral'),
+  );
+  if (meaningfulCandidates.length === 0) {
     return { ...NEUTRAL, label: 'Test score' };
   }
-  const sat25 = school.sat25;
-  const sat75 = school.sat75;
-  if (!sat25 || !sat75) {
-    return {
-      multiplier: 1.0,
-      label: 'Test score',
-      evidence: `${testLabel} (no school percentile data; no adjustment)`,
-      impact: 'neutral',
-    };
-  }
-  if (bestEquivSat >= sat75 + 50) {
-    return {
-      multiplier: 1.5,
-      label: 'Test score well above 75th percentile',
-      evidence: `${testLabel} is more than 50 points above the school's 75th percentile (${sat75})`,
-      impact: 'positive',
-    };
-  }
-  if (bestEquivSat >= sat75) {
-    return {
-      multiplier: 1.2,
-      label: 'Test score above 75th percentile',
-      evidence: `${testLabel} meets or exceeds the school's 75th percentile (${sat75})`,
-      impact: 'positive',
-    };
-  }
-  if (bestEquivSat >= sat25) {
-    return {
-      multiplier: 0.85,
-      label: 'Test score in middle 50',
-      evidence: `${testLabel} falls between this school's 25th and 75th percentile (${sat25}-${sat75})`,
-      impact: 'neutral',
-    };
-  }
-  if (bestEquivSat >= sat25 - 100) {
-    return {
-      multiplier: 0.5,
-      label: 'Test score just below 25th percentile',
-      evidence: `${testLabel} is below the 25th percentile (${sat25}) but within 100 points`,
-      impact: 'negative',
-    };
-  }
-  return {
-    multiplier: 0.3,
-    label: 'Test score well below 25th percentile',
-    evidence: `${testLabel} is more than 100 points below the school's 25th percentile (${sat25})`,
-    impact: 'negative',
-  };
+  return meaningfulCandidates.sort((a, b) => b.multiplier - a.multiplier)[0];
 }
 
 /**
@@ -362,8 +497,56 @@ export function testBandMultiplier(
  * splits separately. ED 2.5× is the typical Ivy/peer ratio (Penn 35% ED vs
  * 7% RD ≈ 5×, but average across all ED schools is ~2-3×). RD = 1.0 baseline.
  */
-export function roundMultiplier(round: string | undefined): ModifierResult {
+export function roundMultiplier(
+  round: string | undefined,
+  school?: Pick<
+    SchoolInput,
+    | 'acceptanceRate'
+    | 'edAcceptanceRate'
+    | 'ed2AcceptanceRate'
+    | 'eaAcceptanceRate'
+  >,
+): ModifierResult {
   const r = (round ?? 'RD').toUpperCase();
+  const overall = normalizeRate(school?.acceptanceRate);
+  const roundRate =
+    r === 'ED2'
+      ? (normalizeRate(school?.ed2AcceptanceRate) ??
+        normalizeRate(school?.edAcceptanceRate))
+      : r === 'REA' || r === 'SCEA'
+        ? (normalizeRate(school?.eaAcceptanceRate) ??
+          normalizeRate(school?.edAcceptanceRate))
+        : r === 'ED'
+          ? normalizeRate(school?.edAcceptanceRate)
+          : r === 'EA'
+            ? normalizeRate(school?.eaAcceptanceRate)
+            : null;
+
+  if (overall && roundRate && ['ED', 'ED2', 'REA', 'SCEA', 'EA'].includes(r)) {
+    if (roundRate < overall) {
+      return {
+        multiplier: 1.0,
+        label: `${r} round (data anomaly neutralized)`,
+        evidence: `${r} published admit rate (${(roundRate * 100).toFixed(1)}%) is below the overall admit rate (${(overall * 100).toFixed(1)}%); treated neutrally pending data review.`,
+        impact: 'neutral',
+      };
+    }
+    const multiplier = clamp(roundRate / overall, 1.0, 3.5);
+    return {
+      multiplier,
+      label:
+        r === 'EA'
+          ? 'Early Action (published rate)'
+          : r === 'ED2'
+            ? 'Early Decision 2 (published rate)'
+            : r === 'REA' || r === 'SCEA'
+              ? 'Restrictive Early Action (published rate)'
+              : 'Early Decision (published rate)',
+      evidence: `${r} published admit rate ${(roundRate * 100).toFixed(1)}% vs overall ${(overall * 100).toFixed(1)}%; multiplier capped at 3.5× for outlier safety.`,
+      impact: multiplier > 1.05 ? 'positive' : 'neutral',
+    };
+  }
+
   switch (r) {
     case 'ED':
       return {
