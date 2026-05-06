@@ -27,6 +27,8 @@
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "test:e2e:web": "playwright test e2e/core-pages.spec.ts",
+    "test:e2e:web:full-ui": "playwright test e2e/full-ui-surface.spec.ts",
+    "test:e2e:web:full-ui:update": "FULL_UI_VISUAL_DIFF=1 playwright test e2e/full-ui-surface.spec.ts --update-snapshots",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
     "prepare": "husky",
@@ -57,14 +59,15 @@
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys",
     "check": "pnpm lint:all && pnpm test",
     "preflight": "pnpm --filter api db:generate && pnpm lint:all && pnpm test",
-    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test"
+    "prepush": "pnpm --filter api db:generate && pnpm --filter api exec tsc --noEmit --project tsconfig.build.json && pnpm --filter web exec tsc --noEmit && pnpm --filter study-abroad-mobile exec tsc --noEmit && pnpm test",
+    "verify:full-platform": "tsx scripts/verify-full-platform.ts"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.1",
-    "@commitlint/config-conventional": "^20.4.1",
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
     "@cyclonedx/cdxgen": "^11.3.2",
-    "@eslint/js": "^9.39.2",
-    "@playwright/test": "^1.58.2",
+    "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^9.39.2",
@@ -72,14 +75,14 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^16.5.0",
     "husky": "^9.1.7",
-    "knip": "^6.0.5",
-    "lint-staged": "^16.2.7",
-    "prettier": "^3.2.5",
+    "knip": "^6.11.0",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
     "ts-morph": "^27.0.2",
     "tsx": "^4.21.0",
-    "turbo": "^2.3.0",
+    "turbo": "^2.9.9",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.53.1"
+    "typescript-eslint": "^8.59.2"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

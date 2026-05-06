@@ -72,8 +72,9 @@ export function PermissionsTab() {
 
   useEffect(() => {
     if (!permissions) return;
+    const permissionEntries = Array.isArray(permissions) ? permissions : [];
     const map: Record<string, Record<string, boolean>> = { OPERATOR: {}, ADMIN: {} };
-    for (const entry of permissions) {
+    for (const entry of permissionEntries) {
       if (entry.role === 'OPERATOR' || entry.role === 'ADMIN') {
         map[entry.role][entry.permission] = entry.granted;
       }
@@ -277,6 +278,7 @@ function UserPermissionEditor() {
     queryKey: ['adminOperators'],
     queryFn: () => apiClient.get<Operator[]>(adminRoutes.operators()),
   });
+  const operatorList = Array.isArray(operators) ? operators : [];
 
   // Get user permissions when selected
   const { data: userPerms, isLoading: userPermsLoading } = useQuery({
@@ -359,18 +361,18 @@ function UserPermissionEditor() {
     const val = userOverrides[permission];
     if (val === true)
       return (
-        <Badge variant="success" className="text-[10px]">
+        <Badge variant="success" className="text-2xs">
           {t('team.permissions.granted')}
         </Badge>
       );
     if (val === false)
       return (
-        <Badge variant="destructive" className="text-[10px]">
+        <Badge variant="destructive" className="text-2xs">
           {t('team.permissions.denied')}
         </Badge>
       );
     return (
-      <Badge variant="outline" className="text-[10px]">
+      <Badge variant="outline" className="text-2xs">
         {t('team.permissions.inherit')}
       </Badge>
     );
@@ -394,7 +396,7 @@ function UserPermissionEditor() {
             <SelectValue placeholder={t('team.permissions.selectUser')} />
           </SelectTrigger>
           <SelectContent>
-            {operators?.map((op) => (
+            {operatorList.map((op) => (
               <SelectItem key={op.id} value={op.id}>
                 <div className="flex items-center gap-2">
                   <span>{op.profile?.nickname || op.profile?.realName || op.email}</span>

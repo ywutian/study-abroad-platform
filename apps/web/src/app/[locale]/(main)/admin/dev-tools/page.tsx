@@ -171,7 +171,7 @@ export default function AdminDevToolsPage() {
                 </p>
                 <pre className="mt-2 text-2xs font-mono bg-muted/50 p-2 rounded overflow-x-auto">
                   {`curl -H "Authorization: Bearer $TOKEN" \\
-  https://study-abroad-api-1032896108391.us-central1.run.app/api/v1/admin/...`}
+  https://api.example.com/api/v1/admin/...`}
                 </pre>
               </div>
             </>

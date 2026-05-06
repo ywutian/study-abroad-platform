@@ -47,6 +47,7 @@ interface RequestConfig extends RequestInit {
   skipAuth?: boolean;
   directApi?: boolean;
   skipApiVersion?: boolean;
+  suppressErrorToast?: boolean;
 }
 
 /**
@@ -101,6 +102,7 @@ class ApiClient {
       skipAuth: explicitSkipAuth,
       directApi = false,
       skipApiVersion = false,
+      suppressErrorToast = false,
       ...init
     } = config;
     // 自动为认证端点跳过 Token 逻辑（防御性编程，即使调用者忘记传 skipAuth 也不会出错）
@@ -172,13 +174,13 @@ class ApiClient {
           const i18n = API_I18N[locale];
 
           // 特定状态码由 API client 直接弹 toast（全局处理器会跳过这些状态码）
-          if (response.status === 403) {
+          if (!suppressErrorToast && response.status === 403) {
             toast.error(i18n.forbidden);
           } else if (response.status === 404) {
             // 404 不显示 toast
-          } else if (response.status === 429) {
+          } else if (!suppressErrorToast && response.status === 429) {
             toast.error(i18n.rateLimited);
-          } else if (response.status >= 500) {
+          } else if (!suppressErrorToast && response.status >= 500) {
             toast.error(i18n.serverError);
           }
 

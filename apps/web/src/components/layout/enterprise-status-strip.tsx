@@ -36,7 +36,7 @@ const toneMeta: Record<
   verified: {
     icon: ShieldCheck,
     badge: 'default',
-    className: 'border-primary/25 bg-[color:var(--theme-control-selected-bg)]',
+    className: 'border-primary/25 bg-primary/10',
   },
 };
 

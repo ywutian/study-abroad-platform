@@ -1,0 +1,59 @@
+{
+  "schools": [
+    {
+      "schoolNameNorm": "university of chicago",
+      "schoolName": "University of Chicago",
+      "selectedUrl": "https://data.uchicago.edu/files/2024/06/UChicago_CDS_2023-24.pdf"
+    },
+    {
+      "schoolNameNorm": "university of notre dame",
+      "schoolName": "University of Notre Dame",
+      "selectedUrl": "https://www3.nd.edu/~instres/CDS/2024-2025/CDS_2024-2025.pdf"
+    },
+    {
+      "schoolNameNorm": "tufts university",
+      "schoolName": "Tufts University",
+      "selectedUrl": "https://provost.tufts.edu/institutionalresearch/wp-content/uploads/sites/5/CDS_2024-2025-1.pdf"
+    },
+    {
+      "schoolNameNorm": "georgetown university",
+      "schoolName": "Georgetown University",
+      "selectedUrl": "https://oire.georgetown.edu/wp-content/uploads/2025/10/CDS_2024-25.pdf"
+    },
+    {
+      "schoolNameNorm": "university of michigan, ann arbor",
+      "schoolName": "University of Michigan, Ann Arbor",
+      "selectedUrl": "https://obp.umich.edu/wp-content/uploads/pubdata/cds/CDS_2024-25_UMAA.pdf"
+    },
+    {
+      "schoolNameNorm": "new york university",
+      "schoolName": "New York University",
+      "selectedUrl": "https://www.nyu.edu/content/dam/nyu/institutionalResearch/documents/cds-on-website/2024-2025%20(pdf,%20file%20size%20907KB).pdf"
+    },
+    {
+      "schoolNameNorm": "university of southern california",
+      "schoolName": "University of Southern California",
+      "selectedUrl": "https://oir.usc.edu/wp-content/uploads/sites/3/2025/08/CDS_2024-2025_FINAL.pdf"
+    },
+    {
+      "schoolNameNorm": "georgia institute of technology",
+      "schoolName": "Georgia Institute of Technology",
+      "selectedUrl": "https://irp.gatech.edu/files/CDS/CDS_2024-2025_FINAL_20FEB2025.pdf"
+    },
+    {
+      "schoolNameNorm": "university of north carolina at chapel hill",
+      "schoolName": "University of North Carolina at Chapel Hill",
+      "selectedUrl": "https://oira.unc.edu/wp-content/uploads/sites/297/2025/08/CDS_UNCCH_2024-25_20250829.pdf"
+    },
+    {
+      "schoolNameNorm": "wake forest university",
+      "schoolName": "Wake Forest University",
+      "selectedUrl": "https://prod.wp.cdn.aws.wfu.edu/sites/202/2025/07/CDS-2024-2025-fillable-WFU.pdf"
+    },
+    {
+      "schoolNameNorm": "university of florida",
+      "schoolName": "University of Florida",
+      "selectedUrl": "https://data-apps.ir.aa.ufl.edu/public/cds/CDS_2024-2025_UFMAIN_Post_v1.pdf"
+    }
+  ]
+}

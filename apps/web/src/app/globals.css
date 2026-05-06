@@ -813,6 +813,39 @@
    🛠️ 工具类
    ======================================== */
 @layer utilities {
+  .app-shell {
+    background:
+      linear-gradient(
+        180deg,
+        var(--theme-canvas) 0%,
+        var(--background) 42%,
+        var(--theme-canvas-soft) 100%
+      );
+  }
+
+  .app-shell-bg {
+    background:
+      radial-gradient(
+        circle at 12% 0%,
+        color-mix(in oklab, var(--ds-info) 7%, transparent),
+        transparent 28rem
+      ),
+      radial-gradient(
+        circle at 88% 6%,
+        color-mix(in oklab, var(--ds-warning) 6%, transparent),
+        transparent 24rem
+      ),
+      linear-gradient(color-mix(in oklab, var(--ds-foreground) 3.5%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in oklab, var(--ds-foreground) 3.5%, transparent) 1px, transparent 1px);
+    background-size:
+      auto,
+      auto,
+      56px 56px,
+      56px 56px;
+    mask-image: linear-gradient(to bottom, black, transparent 72%);
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 72%);
+  }
+
   /* 动画类 */
   .animate-toast-slide-in {
     animation: toast-slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
@@ -2064,6 +2097,50 @@
       var(--theme-canvas-soft) 54%,
       var(--theme-surface) 100%
     );
+  }
+
+  .landing-hero-shell {
+    isolation: isolate;
+    background:
+      radial-gradient(circle at 78% 16%, var(--theme-glow-2), transparent 30rem),
+      radial-gradient(circle at 18% 12%, var(--theme-glow-1), transparent 26rem);
+  }
+
+  .landing-hero-shell[data-hero-visual='command-center'] {
+    background:
+      radial-gradient(circle at 74% 22%, color-mix(in oklab, var(--ds-warning) 16%, transparent), transparent 24rem),
+      radial-gradient(circle at 18% 12%, color-mix(in oklab, var(--ds-info) 9%, transparent), transparent 26rem);
+  }
+
+  .landing-hero-shell[data-hero-visual='deer-moon-monolith'] {
+    background:
+      radial-gradient(circle at 76% 22%, rgba(15, 13, 10, 0.08), transparent 24rem),
+      radial-gradient(circle at 50% 8%, color-mix(in oklab, var(--ds-warning) 10%, transparent), transparent 30rem);
+  }
+
+  .landing-hero-shell[data-hero-visual='framer-orbit'] {
+    background:
+      radial-gradient(circle at 76% 24%, rgba(101, 116, 255, 0.15), transparent 24rem),
+      radial-gradient(circle at 88% 68%, rgba(231, 111, 138, 0.11), transparent 26rem);
+  }
+
+  .landing-hero-shell[data-hero-visual='lovable-aura'] {
+    background:
+      radial-gradient(circle at 70% 24%, rgba(88, 134, 255, 0.18), transparent 25rem),
+      radial-gradient(circle at 82% 60%, rgba(255, 80, 166, 0.14), transparent 28rem),
+      radial-gradient(circle at 56% 88%, rgba(255, 144, 64, 0.12), transparent 30rem);
+  }
+
+  .landing-hero-shell[data-hero-visual='beige-editorial'] {
+    background:
+      radial-gradient(circle at 76% 18%, rgba(221, 184, 90, 0.13), transparent 24rem),
+      linear-gradient(180deg, rgba(247, 241, 230, 0.62), transparent 72%);
+  }
+
+  .landing-hero-shell[data-hero-visual='command-minimal'] {
+    background:
+      radial-gradient(circle at 76% 20%, rgba(15, 23, 42, 0.08), transparent 22rem),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 76%);
   }
 
   .landing-glass-edge {

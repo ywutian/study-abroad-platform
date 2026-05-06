@@ -93,6 +93,11 @@ const STATUS_BADGE: Record<
 };
 
 const PAGE_SIZE = 20;
+const PROOF_TYPE_KEYS = new Set(['offer_letter', 'enrollment_proof', 'student_id', 'other']);
+
+function normalizeProofType(value?: string | null) {
+  return value && PROOF_TYPE_KEYS.has(value) ? value : 'other';
+}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -298,8 +303,9 @@ export default function AdminVerificationsPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10 md:h-8 md:w-8"
             onClick={() => setSelectedItems(new Set())}
+            aria-label={t('verifications.clearSelection')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -358,7 +364,11 @@ export default function AdminVerificationsPage() {
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-1">
                         <FileText className="h-3 w-3" />
-                        {t(`verifications.proofTypes.${item.proofType}` as Parameters<typeof t>[0])}
+                        {t(
+                          `verifications.proofTypes.${normalizeProofType(item.proofType)}` as Parameters<
+                            typeof t
+                          >[0]
+                        )}
                       </span>
                       <span className="flex items-center gap-1">
                         <GraduationCap className="h-3 w-3" />

@@ -28,7 +28,12 @@ export interface SchoolWeightParams {
 
 export type TuitionPresetValue = 'ALL' | '20-30' | '30-40' | '40-50' | '50+' | 'CUSTOM';
 
-export const SCHOOL_BROWSE_PAGE_SIZE = 100;
+export const SCHOOL_BROWSE_PAGE_SIZE_OPTIONS = [12, 24, 48, 96] as const;
+export const SCHOOL_BROWSE_DEFAULT_PAGE_SIZE = 24;
+/**
+ * @deprecated Use SCHOOL_BROWSE_DEFAULT_PAGE_SIZE; kept for backwards compatibility.
+ */
+export const SCHOOL_BROWSE_PAGE_SIZE = SCHOOL_BROWSE_DEFAULT_PAGE_SIZE;
 
 export const SCHOOL_FILTER_DEFAULTS = {
   rankMin: 1,
@@ -111,13 +116,17 @@ export function buildSchoolQueryParams(input: {
   search?: string;
   country?: string;
   filters?: SchoolFilters;
+  page?: number;
   pageSize?: number;
   sortBy?: SchoolSortBy;
   weights?: SchoolWeightParams;
 }): Record<string, string> {
   const params: Record<string, string> = {
-    pageSize: String(input.pageSize ?? SCHOOL_BROWSE_PAGE_SIZE),
+    pageSize: String(input.pageSize ?? SCHOOL_BROWSE_DEFAULT_PAGE_SIZE),
   };
+  if (input.page && input.page > 1) {
+    params.page = String(input.page);
+  }
   const search = input.search?.trim();
   const country = input.country && input.country !== 'ALL' ? input.country : undefined;
   const filters = sanitizeSchoolFilters(input.filters ?? {}, country);

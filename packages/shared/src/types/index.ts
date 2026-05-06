@@ -20,3 +20,4 @@ export * from './application-analysis-workflow';
 export * from './application-analysis-render';
 export * from './owned-site-assessment';
 export * from './competitor-benchmark';
+export * from './theme-style';

@@ -24,8 +24,10 @@ export function RegisterProgress({ steps, currentStep, onStepClick }: RegisterPr
                 type="button"
                 onClick={() => index < currentStep && onStepClick(index)}
                 disabled={index > currentStep}
+                aria-label={step.label}
+                aria-current={index === currentStep ? 'step' : undefined}
                 className={cn(
-                  'w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all',
+                  'flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-all sm:h-9 sm:w-9',
                   index < currentStep &&
                     'bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90',
                   index === currentStep &&

@@ -27,21 +27,18 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-card/95 group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-2xl group-[.toaster]:rounded-2xl group-[.toaster]:backdrop-blur-xl group-[.toaster]:animate-toast-slide-in',
+            'group toast group-[.toaster]:rounded-[var(--theme-radius-card)] group-[.toaster]:border-border group-[.toaster]:bg-[color:var(--theme-popover-bg)] group-[.toaster]:text-foreground group-[.toaster]:shadow-[var(--theme-card-hover-shadow)] group-[.toaster]:backdrop-blur-[var(--theme-backdrop-blur)] group-[.toaster]:animate-toast-slide-in',
           description: 'group-[.toast]:text-muted-foreground group-[.toast]:text-sm',
           actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-lg group-[.toast]:font-medium group-[.toast]:transition-all group-[.toast]:hover:scale-105',
+            'group-[.toast]:bg-[color:var(--theme-button-primary-bg)] group-[.toast]:text-[color:var(--theme-button-primary-fg)] group-[.toast]:rounded-[var(--theme-radius-button)] group-[.toast]:font-medium group-[.toast]:transition-all group-[.toast]:hover:opacity-95',
           cancelButton:
-            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:rounded-lg',
+            'group-[.toast]:bg-[color:var(--theme-button-tertiary-bg)] group-[.toast]:text-[color:var(--theme-button-tertiary-fg)] group-[.toast]:rounded-[var(--theme-radius-button)] group-[.toast]:border group-[.toast]:border-border',
           closeButton:
-            'group-[.toast]:bg-transparent group-[.toast]:border-none group-[.toast]:text-muted-foreground group-[.toast]:hover:text-foreground group-[.toast]:transition-colors',
-          success:
-            'group-[.toaster]:border-success/40 group-[.toaster]:bg-success/8 [&>div>svg]:text-success group-[.toaster]:shadow-success/10',
-          error:
-            'group-[.toaster]:border-destructive/40 group-[.toaster]:bg-destructive/8 [&>div>svg]:text-destructive group-[.toaster]:shadow-destructive/10',
-          warning:
-            'group-[.toaster]:border-warning/40 group-[.toaster]:bg-warning/8 [&>div>svg]:text-warning group-[.toaster]:shadow-warning/10',
-          info: 'group-[.toaster]:border-primary/40 group-[.toaster]:bg-primary/8 [&>div>svg]:text-primary group-[.toaster]:shadow-primary/10',
+            '!h-10 !w-10 !min-h-10 !min-w-10 sm:!h-8 sm:!w-8 sm:!min-h-8 sm:!min-w-8 group-[.toast]:bg-transparent group-[.toast]:border-none group-[.toast]:text-muted-foreground group-[.toast]:hover:text-foreground group-[.toast]:transition-colors',
+          success: 'group-[.toaster]:border-success/35 [&>div>svg]:text-success',
+          error: 'group-[.toaster]:border-destructive/35 [&>div>svg]:text-destructive',
+          warning: 'group-[.toaster]:border-warning/35 [&>div>svg]:text-warning',
+          info: 'group-[.toaster]:border-primary/35 [&>div>svg]:text-primary',
         },
         duration: 3500,
       }}
@@ -61,7 +58,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-bg': 'var(--card)',
           '--normal-text': 'var(--card-foreground)',
           '--normal-border': 'var(--border)',
-          '--border-radius': '1rem',
+          '--border-radius': 'var(--theme-radius-card)',
         } as React.CSSProperties
       }
       {...props}
@@ -200,7 +197,7 @@ export function toastAIComplete(message: string, description?: string) {
   return sonnerToast(message, {
     description,
     icon: <Sparkles className="size-5 text-primary animate-scale-in" />,
-    className: 'border-primary/30 bg-primary/5',
+    className: 'border-primary/30 bg-[color:var(--theme-control-selected-bg)]',
     duration: 5000,
   });
 }
@@ -212,7 +209,7 @@ export function toastLoginSuccess(message: string, description?: string) {
   return sonnerToast(message, {
     description,
     icon: <PartyPopper className="size-5 text-success animate-scale-in" />,
-    className: 'border-success/40 bg-success/8 shadow-lg shadow-success/10',
+    className: 'border-success/40 bg-success/10 shadow-[var(--theme-card-shadow)]',
     duration: 2500,
   });
 }

@@ -31,7 +31,7 @@ export function AwardsTab({ awards, onAddAward, onEditAward, onDeleteAward }: Aw
           </CardTitle>
           <CardDescription>{t('profile.awardsDesc')}</CardDescription>
         </div>
-        <Button onClick={onAddAward} className="gap-2 bg-warning hover:opacity-90">
+        <Button variant="warning" onClick={onAddAward} className="gap-2">
           <Plus className="h-4 w-4" />
           {t('profile.actions.addAward')}
         </Button>

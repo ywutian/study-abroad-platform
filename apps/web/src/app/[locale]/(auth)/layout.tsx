@@ -59,20 +59,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   ];
 
   return (
-    <div className="relative min-h-screen flex bg-background overflow-hidden">
+    <div className="app-shell relative flex min-h-screen overflow-hidden bg-background text-foreground">
       <Suspense fallback={null}>
         <AuthRedirect />
       </Suspense>
-      {/* 简洁网格背景 */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] bg-[size:80px_80px] opacity-30" />
-      </div>
+      <div className="app-shell-bg pointer-events-none fixed inset-0" />
 
       {/* Logo - 固定在左上角 */}
       <div className="absolute left-6 top-6 z-20 sm:left-8 sm:top-8">
         <Link
           href={user ? '/dashboard' : '/'}
-          className="group flex items-center gap-2.5 text-xl font-bold text-foreground hover:opacity-80 transition-all"
+          className="group flex items-center gap-2.5 text-xl font-bold text-foreground transition-opacity hover:opacity-80"
         >
           <LumniMark className="h-10 w-10 border-2" iconClassName="h-5 w-5" />
           <span className="font-bold">Lumni</span>
@@ -80,19 +77,21 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* 左侧装饰区 */}
-      <div className="hidden lg:flex lg:w-[55%] flex-col justify-center items-center p-12 xl:p-16 relative border-r border-border">
+      <div className="relative hidden flex-col items-center justify-center border-r border-border/70 p-12 lg:flex lg:w-[55%] xl:p-16">
         <div className="max-w-xl space-y-10">
           {/* 主标题 */}
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-primary/20 bg-primary/5">
+            <div className="inline-flex items-center gap-2 rounded-[var(--theme-radius-badge)] border border-border bg-[color:var(--theme-card-bg)] px-4 py-2 shadow-[var(--theme-button-shadow)]">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">{t('auth.layout.subtitle')}</span>
+              <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                {t('auth.layout.subtitle')}
+              </span>
             </div>
-            <h1 className="text-display text-foreground">
+            <h1 className="text-display max-w-[12ch] text-balance text-foreground">
               {t('auth.layout.heroTitle')}
-              <span className="block mt-2 text-primary">{t('auth.layout.heroHighlight')}</span>
+              <span className="mt-2 block text-primary">{t('auth.layout.heroHighlight')}</span>
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-md whitespace-pre-line">
+            <p className="max-w-md whitespace-pre-line text-lg leading-relaxed text-muted-foreground">
               {t('auth.layout.heroDesc')}
             </p>
           </div>
@@ -102,12 +101,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group flex items-center gap-3 p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors"
+                className="group flex items-center gap-3 rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)] transition-colors hover:border-primary/30"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/20 bg-primary/5 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[var(--theme-radius-button)] border border-primary/20 bg-primary/5 text-primary">
                   <feature.icon className="h-5 w-5" />
                 </div>
-                <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                <span className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground">
                   {t(`auth.layout.features.${feature.key}`)}
                 </span>
               </div>
@@ -115,13 +114,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* 用户评价 */}
-          <div className="pt-8 border-t border-border">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="border-t border-border pt-8">
+            <div className="mb-4 flex items-center gap-2">
               <div className="flex -space-x-2">
                 {testimonials.map((item, i) => (
                   <div
                     key={i}
-                    className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold ring-2 ring-background"
+                    className="flex h-8 w-8 items-center justify-center rounded-[var(--theme-radius-button)] bg-primary text-xs font-semibold text-primary-foreground ring-2 ring-background"
                   >
                     {item.avatar}
                   </div>
@@ -136,11 +135,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 {t('auth.layout.testimonials.rating')}
               </span>
             </div>
-            <blockquote className="text-muted-foreground italic text-sm leading-relaxed border-l-2 border-primary/30 pl-4">
+            <blockquote className="border-l-2 border-primary/30 pl-4 text-sm italic leading-relaxed text-muted-foreground">
               &ldquo;{t(`auth.layout.testimonials.items.${testimonials[0].key}.quote`)}&rdquo;
             </blockquote>
             <div className="mt-3 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[var(--theme-radius-button)] bg-primary text-sm font-semibold text-primary-foreground">
                 {testimonials[0].avatar}
               </div>
               <div>
@@ -157,9 +156,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* 右侧表单区 */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
+      <div className="relative z-10 flex flex-1 items-center justify-center px-4 pb-10 pt-24 sm:px-6 lg:p-8">
         <FadeInView direction="right" delay={0.1}>
-          <div className="relative w-full max-w-[420px]">{children}</div>
+          <div className="relative w-full max-w-[440px] rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-6 shadow-[var(--theme-card-shadow)] sm:p-8">
+            <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            {children}
+          </div>
         </FadeInView>
       </div>
     </div>

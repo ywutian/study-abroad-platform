@@ -1,28 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  MessageSquarePlus,
   Bug,
-  Lightbulb,
+  Camera,
+  Check,
   HelpCircle,
+  Lightbulb,
+  Loader2,
+  MessageSquarePlus,
+  Send,
   ThumbsUp,
   X,
-  Send,
-  Check,
-  Loader2,
-  Camera,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import { useHydrated } from '@/hooks/use-hydration';
+import { cn } from '@/lib/utils';
 
 // 反馈类型
 type FeedbackType = 'bug' | 'feature' | 'question' | 'other';
@@ -132,7 +133,7 @@ export function FeedbackWidget() {
 
       setStep('success');
       toast.success(t('successTitle'));
-    } catch (_error) {
+    } catch {
       toast.error(t('submitFailed'));
     } finally {
       setSubmitting(false);
@@ -155,6 +156,7 @@ export function FeedbackWidget() {
         <Button
           variant="outline"
           size="sm"
+          aria-label={t('button')}
           className="fixed right-4 bottom-4 z-50 h-10 w-10 rounded-full border-2 px-0 shadow-lg transition-transform hover:scale-105 sm:right-auto sm:bottom-6 sm:left-6 sm:h-12 sm:w-auto sm:rounded-md sm:px-4"
         >
           <MessageSquarePlus className="h-5 w-5 sm:mr-2" />
@@ -214,6 +216,7 @@ export function FeedbackWidget() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t('selectType')}
                   className="h-8 w-8"
                   onClick={() => setStep('type')}
                 >
@@ -343,7 +346,8 @@ export function QuickFeedbackButton({
         <Button
           variant={feedback === 'up' ? 'default' : 'ghost'}
           size="sm"
-          className="h-8 px-2"
+          className="h-10 min-w-10 px-2 sm:h-8 sm:min-w-8"
+          aria-label={t('thumbsUp')}
           onClick={() => handleFeedback('up')}
           disabled={feedback !== null}
         >
@@ -352,7 +356,8 @@ export function QuickFeedbackButton({
         <Button
           variant={feedback === 'down' ? 'default' : 'ghost'}
           size="sm"
-          className="h-8 px-2"
+          className="h-10 min-w-10 px-2 sm:h-8 sm:min-w-8"
+          aria-label={t('thumbsDown')}
           onClick={() => handleFeedback('down')}
           disabled={feedback !== null}
         >

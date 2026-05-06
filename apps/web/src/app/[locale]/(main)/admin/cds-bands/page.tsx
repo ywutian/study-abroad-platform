@@ -102,10 +102,11 @@ export default function AdminCdsBandsPage() {
   });
 
   const priorityRows = useMemo(
-    () => coverage.data?.items.filter((item) => item.priority).slice(0, 30) ?? [],
+    () => (coverage.data?.items ?? []).filter((item) => item.priority).slice(0, 30),
     [coverage.data?.items]
   );
   const selectedRows = rows.data?.items ?? [];
+  const totals = coverage.data?.totals;
 
   return (
     <div className="space-y-6">
@@ -117,20 +118,13 @@ export default function AdminCdsBandsPage() {
       />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <MetricCard label={t('metrics.totalCells')} value={coverage.data?.totals.totalCells} />
-        <MetricCard label={t('metrics.schoolsReady')} value={coverage.data?.totals.schoolsReady} />
+        <MetricCard label={t('metrics.totalCells')} value={totals?.totalCells} />
+        <MetricCard label={t('metrics.schoolsReady')} value={totals?.schoolsReady} />
         <MetricCard
           label={t('metrics.priorityReady')}
-          value={
-            coverage.data
-              ? `${coverage.data.totals.priorityReady}/${coverage.data.totals.prioritySchools}`
-              : undefined
-          }
+          value={totals ? `${totals.priorityReady}/${totals.prioritySchools}` : undefined}
         />
-        <MetricCard
-          label={t('metrics.schoolsWithAny')}
-          value={coverage.data?.totals.schoolsWithAnyCells}
-        />
+        <MetricCard label={t('metrics.schoolsWithAny')} value={totals?.schoolsWithAnyCells} />
       </div>
 
       <Card>
