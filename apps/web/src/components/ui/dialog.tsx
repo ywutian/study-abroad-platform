@@ -19,8 +19,17 @@ function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
-function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
-  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
+function DialogClose({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
+  return (
+    <DialogPrimitive.Close
+      data-slot="dialog-close"
+      className={cn(
+        'inline-flex min-h-10 min-w-10 items-center justify-center sm:min-h-8 sm:min-w-8',
+        className
+      )}
+      {...props}
+    />
+  );
 }
 
 function DialogOverlay({
@@ -65,11 +74,17 @@ function DialogContent({
             <DialogPrimitive.Title>Dialog</DialogPrimitive.Title>
           </VisuallyHidden.Root>
         )}
+        {!hasDialogDescription(children) && (
+          <VisuallyHidden.Root asChild>
+            {/* @i18n-skip a11y fallback, announced by screen readers only */}
+            <DialogPrimitive.Description>Dialog content</DialogPrimitive.Description>
+          </VisuallyHidden.Root>
+        )}
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none sm:top-4 sm:right-4 sm:size-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -99,6 +114,30 @@ function hasDialogTitle(children: React.ReactNode): boolean {
           if (
             React.isValidElement(headerChild) &&
             (headerChild.props as Record<string, unknown>)?.['data-slot'] === 'dialog-title'
+          ) {
+            found = true;
+          }
+        });
+      }
+    }
+  });
+  return found;
+}
+
+function hasDialogDescription(children: React.ReactNode): boolean {
+  let found = false;
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    if ((child.props as Record<string, unknown>)?.['data-slot'] === 'dialog-description') {
+      found = true;
+    }
+    if ((child.props as Record<string, unknown>)?.['data-slot'] === 'dialog-header') {
+      const headerChildren = (child.props as { children?: React.ReactNode })?.children;
+      if (headerChildren) {
+        React.Children.forEach(headerChildren, (headerChild) => {
+          if (
+            React.isValidElement(headerChild) &&
+            (headerChild.props as Record<string, unknown>)?.['data-slot'] === 'dialog-description'
           ) {
             found = true;
           }

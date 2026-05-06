@@ -1,63 +1,65 @@
 'use client';
 
+import { chatRoutes } from '@study-abroad/shared';
+import { useQuery } from '@tanstack/react-query';
+import {
+  BarChart3,
+  BookOpen,
+  Calendar,
+  Check,
+  ChevronDown,
+  ClipboardList,
+  FileText,
+  Gift,
+  Globe,
+  GraduationCap,
+  HelpCircle,
+  LayoutDashboard,
+  Lock,
+  LogOut,
+  Menu,
+  MessageSquare,
+  MessagesSquare,
+  PenTool,
+  Rocket,
+  Settings,
+  Shield,
+  Sparkles,
+  TrendingUp,
+  Trophy,
+  User,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Link, usePathname } from '@/lib/i18n/navigation';
+
+import { ClientOnly } from '@/components/common/client-only';
+import { HelpCenter, NotificationCenter } from '@/components/features';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { ColorPaletteMenu } from '@/components/ui/color-palette-menu';
+import { CountBadge } from '@/components/ui/count-badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
-import {
-  ChevronDown,
-  Globe,
-  LayoutDashboard,
-  GraduationCap,
-  TrendingUp,
-  BookOpen,
-  MessageSquare,
-  Sparkles,
-  ClipboardList,
-  Calendar,
-  FileText,
-  Lock,
-  Users,
-  Trophy,
-  User,
-  Settings,
-  LogOut,
-  Check,
-  Shield,
-  PenTool,
-  Rocket,
-  Gift,
-  Menu,
-  BarChart3,
-  MessagesSquare,
-  UserPlus,
-  HelpCircle,
-} from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Logo } from '@/components/ui/logo';
-import { CountBadge } from '@/components/ui/count-badge';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { ColorPaletteMenu } from '@/components/ui/color-palette-menu';
-import { ClientOnly } from '@/components/common/client-only';
-import { MobileNav } from './mobile-nav';
-import { NotificationCenter, HelpCenter } from '@/components/features';
-import { useAuthStore } from '@/stores';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
-import { localeNames, type Locale } from '@/lib/i18n/config';
-import { useRouter } from '@/lib/i18n/navigation';
-import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
-import { chatRoutes } from '@study-abroad/shared';
+import { type Locale, localeNames } from '@/lib/i18n/config';
+import { Link, usePathname } from '@/lib/i18n/navigation';
+import { useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores';
+
+import { MobileNav } from './mobile-nav';
 
 // ============================================================================
 // SSR-safe placeholders (prevent CLS while interactive sections hydrate)
@@ -69,7 +71,7 @@ function MoreMenuPlaceholder() {
 
 function HeaderActionsPlaceholder() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="hidden items-center gap-2 sm:flex">
       <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
       <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
       <div className="h-8 w-8 rounded-lg bg-muted/60 animate-pulse" />
@@ -290,11 +292,14 @@ function HeaderActions() {
   const { user, logout } = useAuthStore();
 
   const switchLocale = (newLocale: Locale) => {
-    router.replace(pathname, { locale: newLocale });
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
+    const businessPath = currentPath.replace(/^\/(?:en|zh)(?=\/|$)/, '') || '/';
+    const search = typeof window !== 'undefined' ? window.location.search : '';
+    router.replace(`${businessPath}${search}`, { locale: newLocale });
   };
 
   return (
-    <div className="flex items-center gap-1 lg:gap-2">
+    <div className="hidden items-center gap-1 sm:flex lg:gap-2">
       {/* Language Switcher */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -455,12 +460,18 @@ export function Header() {
     { href: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
     { href: '/schools', label: t('nav.schools'), icon: GraduationCap },
     { href: '/prediction', label: t('nav.prediction'), icon: TrendingUp },
-    { href: '/cases', label: t('nav.cases'), icon: BookOpen },
     { href: '/essays', label: t('nav.essays'), icon: PenTool },
+    { href: '/profile', label: t('nav.profile'), icon: User },
   ];
 
   // Research & Discover — "I want to research schools and learn from others"
   const researchNavItems: NavItemDef[] = [
+    {
+      href: '/cases',
+      label: t('nav.cases'),
+      icon: BookOpen,
+      description: t('nav.descriptions.cases'),
+    },
     {
       href: '/ranking',
       label: t('nav.ranking'),
@@ -579,7 +590,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-[color:var(--theme-popover-bg)] backdrop-blur-[var(--theme-backdrop-blur)]">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-[color:var(--theme-surface)]/96 shadow-[0_1px_0_color-mix(in_oklab,var(--ds-foreground)_4%,transparent)] backdrop-blur-sm">
       <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-6">
         {/* Left: Hamburger (mobile) + Logo + Navigation */}
         <div className="flex items-center gap-1 lg:gap-2">

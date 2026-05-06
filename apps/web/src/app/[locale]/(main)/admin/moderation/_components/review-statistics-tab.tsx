@@ -53,10 +53,18 @@ export function ReviewStatisticsTab() {
 
   if (!data) return null;
 
-  const { overall, perReviewer } = data;
+  const overall = data.overall ?? {
+    queueDepth: 0,
+    pendingReports: 0,
+    pendingStaging: 0,
+    throughputToday: 0,
+    throughputTrend: [],
+  };
+  const perReviewer = Array.isArray(data.perReviewer) ? data.perReviewer : [];
 
   // Simple bar chart using divs
-  const maxCount = Math.max(1, ...overall.throughputTrend.map((d) => d.count));
+  const trend = overall.throughputTrend ?? [];
+  const maxCount = Math.max(1, ...trend.map((d) => d.count));
 
   return (
     <div className="space-y-6">
@@ -69,7 +77,7 @@ export function ReviewStatisticsTab() {
               key={p}
               variant={period === p ? 'default' : 'ghost'}
               size="sm"
-              className="h-8 px-3 text-xs"
+              className="h-10 px-3 text-xs md:h-8"
               onClick={() => setPeriod(p)}
             >
               {t(p)}
@@ -138,13 +146,13 @@ export function ReviewStatisticsTab() {
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-1 h-24">
-            {overall.throughputTrend.map((day) => (
+            {trend.map((day) => (
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
                 <div
                   className="w-full rounded-t bg-primary/80 transition-all min-h-[2px]"
                   style={{ height: `${(day.count / maxCount) * 80}px` }}
                 />
-                <span className="text-[9px] text-muted-foreground">{day.date.slice(5)}</span>
+                <span className="text-2xs text-muted-foreground">{day.date.slice(5)}</span>
               </div>
             ))}
           </div>

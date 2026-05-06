@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
 import { Badge } from '@/components/ui/badge';
 import {
+  AlertTriangle,
   Target,
   Plus,
   Trash2,
@@ -28,11 +29,16 @@ import {
   Loader2,
   Info,
   Calendar,
-  DollarSign,
-  Users,
-  ExternalLink,
   Sparkles,
+  MoreHorizontal,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/navigation';
@@ -146,7 +152,7 @@ function SchoolEssayPrompts({ schoolId }: { schoolId: string }) {
             <div className="flex items-center gap-1.5 flex-wrap">
               <span
                 className={cn(
-                  'inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium',
+                  'inline-flex items-center rounded px-1.5 py-0.5 text-2xs font-medium',
                   ESSAY_TYPE_STYLES[prompt.type] || ESSAY_TYPE_STYLES.OTHER
                 )}
               >
@@ -155,17 +161,17 @@ function SchoolEssayPrompts({ schoolId }: { schoolId: string }) {
                 })}
               </span>
               {prompt.wordLimit && (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-2xs text-muted-foreground">
                   {prompt.wordLimit} {t('profile.schoolSelection.words')}
                 </span>
               )}
               {prompt.isRequired === false && (
-                <span className="text-[10px] text-muted-foreground italic">
+                <span className="text-2xs italic text-muted-foreground">
                   {t('profile.schoolSelection.optional')}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
               {locale === 'zh' && prompt.promptZh ? prompt.promptZh : prompt.prompt}
             </p>
           </div>
@@ -219,6 +225,68 @@ export function SchoolSelectionTab({
     if (roundFilter === 'ALL') return targetSchools;
     return targetSchools.filter((s) => s.round === roundFilter);
   }, [targetSchools, roundFilter]);
+  const portfolioSummary = useMemo(() => {
+    const tiers = targetSchools.reduce(
+      (acc, school) => {
+        const tier = school.prediction?.tier;
+        if (tier === 'reach' || tier === 'match' || tier === 'safety') {
+          acc[tier] += 1;
+        } else {
+          acc.unknown += 1;
+        }
+        return acc;
+      },
+      { reach: 0, match: 0, safety: 0, unknown: 0 }
+    );
+    const now = Date.now();
+    const thirtyDays = now + 30 * 24 * 60 * 60 * 1000;
+    const nextThirtyDayDeadlines = targetSchools.reduce((count, school) => {
+      return (
+        count +
+        (school.deadlines ?? []).filter((deadline) => {
+          const time = new Date(deadline.applicationDeadline).getTime();
+          return Number.isFinite(time) && time >= now && time <= thirtyDays;
+        }).length
+      );
+    }, 0);
+    const bindingConflicts = targetSchools.filter(
+      (school) =>
+        school.round && getBindingConflict(targetSchools, school.round, school.id, locale) !== null
+    ).length;
+    const essayCount = targetSchools.reduce(
+      (count, school) => count + (school.essayPromptCount ?? 0),
+      0
+    );
+    return { tiers, bindingConflicts, nextThirtyDayDeadlines, essayCount };
+  }, [targetSchools, locale]);
+
+  const askAiForSchool = (school: TargetSchool) => {
+    if (!school.prediction) return;
+    openFloatingAgentChat({
+      message: t('profile.schoolSelection.askAiPrompt', {
+        schoolName: getSchoolName(school, locale),
+        probability: Math.round(school.prediction.probability * 100),
+      }),
+      context: {
+        type: 'selected-schools',
+        source: 'profile_school_list',
+        schools: [
+          {
+            id: school.id,
+            name: school.name,
+            nameZh: school.nameZh,
+            usNewsRank: school.usNewsRank,
+            acceptanceRate: school.acceptanceRate,
+            prediction: {
+              probability: school.prediction.probability,
+              tier: school.prediction.tier as 'reach' | 'match' | 'safety' | undefined,
+            },
+          },
+        ],
+      },
+      agentHint: AgentType.SCHOOL,
+    });
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -233,7 +301,10 @@ export function SchoolSelectionTab({
         </div>
         <div className="flex items-center gap-2">
           <Select value={defaultRound} onValueChange={onDefaultRoundChange}>
-            <SelectTrigger className="h-9 w-24 text-xs">
+            <SelectTrigger
+              className="h-10 w-28 text-xs sm:h-9 sm:w-24"
+              aria-label={t('profile.schoolSelection.defaultRound')}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -244,7 +315,7 @@ export function SchoolSelectionTab({
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={onOpenSchoolSelector} className="gap-2 bg-destructive hover:opacity-90">
+          <Button onClick={onOpenSchoolSelector} className="gap-2">
             <Plus className="h-4 w-4" />
             {t('profile.actions.addSchool')}
           </Button>
@@ -252,13 +323,67 @@ export function SchoolSelectionTab({
       </CardHeader>
       <CardContent>
         {targetSchools.length > 0 && (
+          <div className="mb-4 grid gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-4 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))]">
+            <div>
+              <div className="text-sm font-semibold">
+                {t('profile.schoolSelection.portfolioSummary')}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <Badge
+                  variant="outline"
+                  className="border-destructive/30 bg-destructive/10 text-destructive"
+                >
+                  {t('dashboard.stats.reach')} {portfolioSummary.tiers.reach}
+                </Badge>
+                <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
+                  {t('dashboard.stats.target')} {portfolioSummary.tiers.match}
+                </Badge>
+                <Badge variant="outline" className="border-success/30 bg-success/10 text-success">
+                  {t('dashboard.stats.safety')} {portfolioSummary.tiers.safety}
+                </Badge>
+              </div>
+            </div>
+            <div className="rounded-[var(--theme-radius-button)] border bg-background/60 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {t('profile.schoolSelection.bindingConflicts')}
+              </div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums">
+                {portfolioSummary.bindingConflicts}
+              </div>
+            </div>
+            <div className="rounded-[var(--theme-radius-button)] border bg-background/60 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Calendar className="h-3.5 w-3.5" />
+                {t('profile.schoolSelection.deadlines30Days')}
+              </div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums">
+                {portfolioSummary.nextThirtyDayDeadlines}
+              </div>
+            </div>
+            <div className="rounded-[var(--theme-radius-button)] border bg-background/60 p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <FileText className="h-3.5 w-3.5" />
+                {t('profile.schoolSelection.essayCount')}
+              </div>
+              <div className="mt-1 text-2xl font-semibold tabular-nums">
+                {portfolioSummary.essayCount}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {targetSchools.length > 0 && (
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-1">
               <Filter className="h-3.5 w-3.5" />
               {t('profile.schoolSelection.roundFilter')}
             </div>
             <Select value={roundFilter} onValueChange={setRoundFilter}>
-              <SelectTrigger className="h-8 w-36 text-xs">
+              <SelectTrigger
+                className="h-10 w-40 text-xs sm:h-8 sm:w-36"
+                aria-label={t('profile.schoolSelection.roundFilter')}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -287,7 +412,7 @@ export function SchoolSelectionTab({
           <div className="grid gap-3 sm:grid-cols-2">
             {filteredSchools.map((school, index) => (
               <motion.div
-                key={school.id}
+                key={school._listItemId ?? `${school.id}-${index}`}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
@@ -392,7 +517,12 @@ export function SchoolSelectionTab({
                               }
                             }}
                           >
-                            <SelectTrigger className="h-7 w-[72px] text-xs font-medium">
+                            <SelectTrigger
+                              className="h-10 w-20 text-xs font-medium sm:h-8 sm:w-[72px]"
+                              aria-label={t('profile.schoolSelection.roundForSchool', {
+                                school: getSchoolName(school, locale),
+                              })}
+                            >
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -407,11 +537,15 @@ export function SchoolSelectionTab({
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Info
-                                    className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400 shrink-0 cursor-help"
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-10 w-10 shrink-0 text-warning hover:text-warning sm:h-8 sm:w-8"
                                     aria-label={t('profile.schoolSelection.roundsNoDeadlineData')}
-                                    role="img"
-                                  />
+                                  >
+                                    <Info className="h-3.5 w-3.5" />
+                                  </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p className="text-xs max-w-[200px]">
@@ -424,86 +558,74 @@ export function SchoolSelectionTab({
                         </>
                       );
                     })()}
-                    {(school.essayPromptCount ?? 0) > 0 && (
+                    {(school.essayPromptCount ?? 0) > 0 ? (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 text-primary gap-1 px-2"
+                        className="h-10 gap-1 px-3 sm:h-8 sm:px-2"
                         onClick={() => router.push(`/essays?schoolId=${school.id}`)}
                       >
                         <PenLine className="h-3.5 w-3.5" />
                         <span className="text-xs">{t('profile.schoolSelection.writeEssay')}</span>
                       </Button>
-                    )}
-                    {school.prediction && (
+                    ) : (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-8 text-primary gap-1 px-2"
+                        className="h-10 gap-1 px-3 sm:h-8 sm:px-2"
                         onClick={() =>
-                          openFloatingAgentChat({
-                            message: t('profile.schoolSelection.askAiPrompt', {
-                              schoolName: getSchoolName(school, locale),
-                              probability: Math.round(school.prediction!.probability * 100),
-                            }),
-                            context: {
-                              type: 'selected-schools',
-                              source: 'profile_school_list',
-                              schools: [
-                                {
-                                  id: school.id,
-                                  name: school.name,
-                                  nameZh: school.nameZh,
-                                  usNewsRank: school.usNewsRank,
-                                  acceptanceRate: school.acceptanceRate,
-                                  prediction: {
-                                    probability: school.prediction?.probability,
-                                    tier: school.prediction?.tier as
-                                      | 'reach'
-                                      | 'match'
-                                      | 'safety'
-                                      | undefined,
-                                  },
-                                },
-                              ],
-                            },
-                            agentHint: AgentType.SCHOOL,
-                          })
+                          setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)
                         }
                       >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span className="text-xs">{t('profile.schoolSelection.askAi')}</span>
+                        <Info className="h-3.5 w-3.5" />
+                        <span className="text-xs">{t('profile.schoolSelection.viewDetails')}</span>
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-                      aria-label={t('profile.actions.delete')}
-                      onClick={() => {
-                        if (school._listItemId) {
-                          onRemoveSchool(school._listItemId);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label={t('profile.schoolSelection.toggleDetails')}
-                      onClick={() =>
-                        setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)
-                      }
-                    >
-                      <ChevronDown
-                        className={cn(
-                          'h-3.5 w-3.5 transition-transform',
-                          expandedSchoolId === school.id && 'rotate-180'
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 sm:h-8 sm:w-8"
+                          aria-label={t('profile.schoolSelection.moreActions')}
+                        >
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {school.prediction && (
+                          <DropdownMenuItem onClick={() => askAiForSchool(school)}>
+                            <Sparkles className="h-4 w-4" />
+                            {t('profile.schoolSelection.askAi')}
+                          </DropdownMenuItem>
                         )}
-                      />
-                    </Button>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)
+                          }
+                        >
+                          <ChevronDown
+                            className={cn(
+                              'h-4 w-4 transition-transform',
+                              expandedSchoolId === school.id && 'rotate-180'
+                            )}
+                          />
+                          {t('profile.schoolSelection.toggleDetails')}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => {
+                            if (school._listItemId) {
+                              onRemoveSchool(school._listItemId);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {t('profile.actions.delete')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 

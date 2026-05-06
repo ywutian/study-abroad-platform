@@ -135,8 +135,10 @@ export function SectionCard({
           <div className="flex items-center gap-2 min-w-0">
             <button
               type="button"
+              aria-label={expanded ? tc('aria.hideSection') : tc('aria.showSection')}
+              aria-expanded={expanded}
               onClick={() => setExpanded(!expanded)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-8 sm:w-8"
             >
               <ChevronDown
                 className={cn('h-4 w-4 transition-transform', !expanded && '-rotate-90')}
@@ -156,9 +158,9 @@ export function SectionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={onToggleVisibility}
-              aria-label={section.isVisible ? 'Hide section' : 'Show section'}
+              aria-label={section.isVisible ? tc('aria.hideSection') : tc('aria.showSection')}
             >
               {section.isVisible ? (
                 <Eye className="h-3.5 w-3.5" />
@@ -169,7 +171,7 @@ export function SectionCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-destructive hover:text-destructive"
+              className="h-10 w-10 text-destructive hover:text-destructive sm:h-8 sm:w-8"
               onClick={onDelete}
               aria-label={tc('aria.deleteSection')}
             >

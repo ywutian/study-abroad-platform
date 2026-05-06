@@ -63,7 +63,8 @@ export function RegisterStepAccount({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? ta('hidePassword') : ta('showPassword')}
+                  className="absolute bottom-0 right-0 top-0 flex min-h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -93,7 +94,8 @@ export function RegisterStepAccount({
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showConfirmPassword ? ta('hidePassword') : ta('showPassword')}
+                  className="absolute bottom-0 right-0 top-0 flex min-h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                   tabIndex={-1}
                 >
                   {showConfirmPassword ? (
@@ -128,7 +130,7 @@ export function RegisterStepAccount({
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
+            className="flex min-h-10 items-center gap-2 pt-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <Gift className="h-4 w-4" />
             <span>{t('referral.yourCode', { defaultValue: 'Have a referral code?' })}</span>

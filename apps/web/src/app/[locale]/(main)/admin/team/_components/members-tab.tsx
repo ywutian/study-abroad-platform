@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations, useFormatter } from 'next-intl';
+import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { adminRoutes } from '@study-abroad/shared';
@@ -44,12 +44,14 @@ interface OperatorStats {
 export function MembersTab() {
   const t = useTranslations('admin');
   const fmt = useFormatter();
+  const locale = useLocale();
   const [selectedOperator, setSelectedOperator] = useState<string | null>(null);
 
   const { data: operators, isLoading } = useQuery({
     queryKey: ['adminOperators'],
     queryFn: () => apiClient.get<Operator[]>(adminRoutes.operators()),
   });
+  const operatorList = Array.isArray(operators) ? operators : [];
 
   const { data: operatorStats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminOperatorStats', selectedOperator],
@@ -59,7 +61,7 @@ export function MembersTab() {
 
   if (isLoading) return <ListSkeleton />;
 
-  if (!operators || operators.length === 0) {
+  if (operatorList.length === 0) {
     return (
       <EmptyState
         type="no-data"
@@ -84,7 +86,7 @@ export function MembersTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {operators.map((op) => (
+              {operatorList.map((op) => (
                 <TableRow key={op.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -99,7 +101,11 @@ export function MembersTab() {
                   </TableCell>
                   <TableCell>{op.stats?.casesReviewed ?? op._count?.reviewsGiven ?? 0}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    {op.lastLoginAt ? fmt.relativeTime(new Date(op.lastLoginAt)) : '—'}
+                    {op.lastLoginAt
+                      ? fmt.dateTime(new Date(op.lastLoginAt), {
+                          dateStyle: locale === 'zh' ? 'short' : 'medium',
+                        })
+                      : '—'}
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" onClick={() => setSelectedOperator(op.id)}>

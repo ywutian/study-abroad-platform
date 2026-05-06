@@ -134,7 +134,7 @@ export function DeadlinesTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-10 w-10 md:h-8 md:w-8"
                         onClick={() => onEdit(d)}
                         aria-label={tAria('editDeadline')}
                       >
@@ -143,7 +143,7 @@ export function DeadlinesTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-destructive"
+                        className="h-10 w-10 text-destructive md:h-8 md:w-8"
                         onClick={() => onDelete(d.id)}
                         aria-label={tAria('deleteDeadline')}
                       >

@@ -45,121 +45,18 @@ const NEUTRAL: ModifierResult = {
   impact: 'neutral',
 };
 
-const GPA_DISTRIBUTION_BANDS = [
-  { key: '<3.00', min: Number.NEGATIVE_INFINITY, max: 3.0 },
-  { key: '3.00-3.24', min: 3.0, max: 3.25 },
-  { key: '3.25-3.49', min: 3.25, max: 3.5 },
-  { key: '3.50-3.74', min: 3.5, max: 3.75 },
-  { key: '3.75-4.00', min: 3.75, max: Number.POSITIVE_INFINITY },
-] as const;
-
-type GpaDistributionBand = (typeof GPA_DISTRIBUTION_BANDS)[number]['key'];
-type NormalizedGpaDistribution = Record<GpaDistributionBand, number>;
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function readNumericField(
-  source: Record<string, unknown>,
-  keys: string[],
-): number | null {
-  for (const key of keys) {
-    const raw = source[key];
-    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
-    if (typeof raw === 'string' && raw.trim()) {
-      const parsed = Number(raw);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-  }
-  return null;
-}
-
-function normalizeGpaDistribution(
-  raw: unknown,
-): NormalizedGpaDistribution | null {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-  const source = raw as Record<string, unknown>;
-  const aliases: Record<GpaDistributionBand, string[]> = {
-    '<3.00': ['<3.00', '<3.0', 'lt3', 'lt3.00', 'below3', 'below_3_00'],
-    '3.00-3.24': ['3.00-3.24', '3.0-3.24', '3.00_3.24', '3_00_3_24'],
-    '3.25-3.49': ['3.25-3.49', '3.25_3.49', '3_25_3_49'],
-    '3.50-3.74': ['3.50-3.74', '3.5-3.74', '3.50_3.74', '3_50_3_74'],
-    '3.75-4.00': ['3.75-4.00', '3.75-4.0', '3.75_4.00', '3_75_4_00'],
-  };
-
-  const values = {} as NormalizedGpaDistribution;
-  for (const band of GPA_DISTRIBUTION_BANDS) {
-    const value = readNumericField(source, aliases[band.key]);
-    if (value == null || value < 0) return null;
-    values[band.key] = value;
-  }
-
-  const rawSum = Object.values(values).reduce((sum, value) => sum + value, 0);
-  if (rawSum <= 0) return null;
-  const divisor = rawSum > 2 ? 100 : 1;
-  const normalized = Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [key, value / divisor]),
-  ) as NormalizedGpaDistribution;
-  const sum = Object.values(normalized).reduce((acc, value) => acc + value, 0);
-  if (sum < 0.95 || sum > 1.05) return null;
-  return normalized;
-}
-
-function resolveGpaBand(
-  gpa: number | undefined,
-  gpaScale: number | undefined,
-): GpaDistributionBand | null {
-  if (gpa == null || !Number.isFinite(gpa)) return null;
-  const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
-  const gpa4 = (gpa / scale) * 4.0;
-  for (const band of GPA_DISTRIBUTION_BANDS) {
-    if (gpa4 >= band.min && gpa4 < band.max) return band.key;
-  }
-  return '3.75-4.00';
-}
-
-function gpaDistributionMultiplier(
-  profile: ProfileInput,
-  school: SchoolInput,
-): ModifierResult | null {
-  const distribution = normalizeGpaDistribution(school.gpaDistribution);
-  if (!distribution) return null;
-  const band = resolveGpaBand(profile.gpa, profile.gpaScale);
-  if (!band) return null;
-  const bandIndex = GPA_DISTRIBUTION_BANDS.findIndex(
-    (item) => item.key === band,
-  );
-  if (bandIndex < 0) return null;
-
-  const below = GPA_DISTRIBUTION_BANDS.slice(0, bandIndex).reduce(
-    (sum, item) => sum + distribution[item.key],
-    0,
-  );
-  const percentile = clamp(below + distribution[band] / 2, 0, 1);
-  const multiplier = clamp(0.4 + 0.7 * percentile, 0.15, 1.3);
-  const gpa = profile.gpa?.toFixed(2) ?? 'unknown';
-  const pct = Math.round(percentile * 100);
-  const impact =
-    multiplier >= 1.05
-      ? 'positive'
-      : multiplier <= 0.75
-        ? 'negative'
-        : 'neutral';
-  return {
-    multiplier,
-    label: 'GPA distribution percentile',
-    evidence: `GPA ${gpa} maps to the ${band} CDS C9 band; midpoint admit-distribution percentile is ~${pct}%`,
-    impact,
-  };
-}
-
 /**
  * Convert a 4.0-scale GPA to an "equivalent SAT" score for percentile comparison
  * against a school's SAT 25/50/75 distribution. Standard mapping used in admissions
- * consulting (Compass Education Group, College Vine):
- *   3.95+ → 1500   |  3.85 → 1450  |  3.75 → 1400  |  3.65 → 1350
- *   3.50  → 1300   |  3.25 → 1230  |  3.00 → 1150  |  <3.0 → 1050
+ * consulting (Compass Education Group, College Vine), with finer resolution at the
+ * top end where elite-school sat25 values cluster at 1510-1520:
+ *   3.97+ → 1540  |  3.93 → 1520  |  3.88 → 1490  |  3.83 → 1460
+ *   3.75  → 1420  |  3.65 → 1350  |  3.50 → 1300   |  3.25 → 1230
+ *   3.00  → 1150  |  <3.0 → 1050
+ *
+ * The top-end steps were coarsened in the original table (50-point jumps at 3.85/3.95)
+ * which placed GPA 3.90 at 1450 — below MIT/Harvard sat25 of 1510-1520 and triggering
+ * an unwarranted ×0.50 penalty for a genuinely competitive applicant.
  *
  * Returns null if GPA is missing or unparseable.
  */
@@ -171,9 +68,11 @@ function gpaToEquivalentSat(
   // Normalize to 4.0 scale
   const scale = gpaScale && gpaScale > 0 ? gpaScale : 4.0;
   const gpa4 = (gpa / scale) * 4.0;
-  if (gpa4 >= 3.95) return 1500;
-  if (gpa4 >= 3.85) return 1450;
-  if (gpa4 >= 3.75) return 1400;
+  if (gpa4 >= 3.97) return 1540;
+  if (gpa4 >= 3.93) return 1520;
+  if (gpa4 >= 3.88) return 1490;
+  if (gpa4 >= 3.83) return 1460;
+  if (gpa4 >= 3.75) return 1420;
   if (gpa4 >= 3.65) return 1350;
   if (gpa4 >= 3.5) return 1300;
   if (gpa4 >= 3.25) return 1230;
@@ -182,17 +81,108 @@ function gpaToEquivalentSat(
 }
 
 /**
- * Modifier #1: GPA-band relative to school GPA distribution when available,
- * with the legacy GPA→SAT-equivalent fallback for schools without valid CDS C9
- * GPA bands.
+ * Modifier #1: GPA-band relative to school SAT distribution.
+ *
+ * Why use SAT distribution instead of school's GPA distribution?
+ * Schools rarely publish per-applicant GPA bands in CDS (Section C9 is sparse on
+ * GPA), but SAT 25/75 is universally reported. Mapping GPA → equivalent SAT lets
+ * us reuse the well-populated distribution for comparison.
  */
+/**
+ * Compute applicant's GPA percentile within a school's enrolled freshman class
+ * given the CDS C9 distribution. Bands are interpolated linearly within their
+ * range. Returns the % of enrolled freshmen with a strictly LOWER GPA.
+ */
+function gpaPercentileFromDistribution(
+  applicantGpa: number,
+  distribution: Record<string, number>,
+): number | null {
+  // Canonical bands ordered from highest to lowest
+  const bands: Array<{ min: number; max: number; pct: number }> = [
+    { min: 3.75, max: 4.0, pct: Number(distribution['3.75-4.00']) || 0 },
+    { min: 3.5, max: 3.74, pct: Number(distribution['3.50-3.74']) || 0 },
+    { min: 3.25, max: 3.49, pct: Number(distribution['3.25-3.49']) || 0 },
+    { min: 3.0, max: 3.24, pct: Number(distribution['3.00-3.24']) || 0 },
+    { min: 0.0, max: 2.99, pct: Number(distribution['<3.00']) || 0 },
+  ];
+  // Total mass should be ~1.0; bail if not
+  const total = bands.reduce((a, b) => a + b.pct, 0);
+  if (total < 0.85 || total > 1.15) return null;
+
+  // Walk from lowest band up; accumulate mass below applicant
+  let cum = 0;
+  for (let i = bands.length - 1; i >= 0; i--) {
+    const b = bands[i];
+    if (applicantGpa < b.min) return cum * 100;
+    if (applicantGpa <= b.max) {
+      // Linear interpolation within band
+      const frac = (applicantGpa - b.min) / Math.max(b.max - b.min, 0.01);
+      return (cum + b.pct * frac) * 100;
+    }
+    cum += b.pct;
+  }
+  return cum * 100; // applicant >= top band
+}
+
 export function gpaBandMultiplier(
   profile: ProfileInput,
   school: SchoolInput,
 ): ModifierResult {
-  const distributionResult = gpaDistributionMultiplier(profile, school);
-  if (distributionResult) return distributionResult;
+  const gpa = profile.gpa;
+  const scale =
+    profile.gpaScale && profile.gpaScale > 0 ? profile.gpaScale : 4.0;
+  const gpa4 = gpa != null ? (gpa / scale) * 4.0 : null;
 
+  // ── Data-driven path: school publishes its CDS C9 GPA distribution ────────
+  if (
+    gpa4 != null &&
+    school.gpaDistribution &&
+    Object.keys(school.gpaDistribution).length > 0
+  ) {
+    const pct = gpaPercentileFromDistribution(gpa4, school.gpaDistribution);
+    if (pct != null) {
+      if (pct >= 75) {
+        return {
+          multiplier: 1.3,
+          label: 'GPA above school 75th percentile (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} sits at the ~${pct.toFixed(0)}th percentile of this school's enrolled freshmen`,
+          impact: 'positive',
+        };
+      }
+      if (pct >= 50) {
+        return {
+          multiplier: 1.1,
+          label: 'GPA above school median (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+          impact: 'positive',
+        };
+      }
+      if (pct >= 25) {
+        return {
+          multiplier: 0.85,
+          label: 'GPA below school median (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+          impact: 'negative',
+        };
+      }
+      if (pct >= 10) {
+        return {
+          multiplier: 0.5,
+          label: 'GPA below school 25th percentile (school-published)',
+          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+          impact: 'negative',
+        };
+      }
+      return {
+        multiplier: 0.15,
+        label: 'GPA well below school distribution (school-published)',
+        evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
+        impact: 'negative',
+      };
+    }
+  }
+
+  // ── Heuristic fallback: GPA → equivalent SAT against school sat25/75 ──────
   const equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
   if (equivSat == null) {
     return { ...NEUTRAL, label: 'GPA' };
@@ -227,9 +217,9 @@ export function gpaBandMultiplier(
   if (equivSat >= sat25) {
     return {
       multiplier: 0.85,
-      label: 'GPA in middle 50',
+      label: 'GPA below school median',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) sits between 25th and 50th percentile (${sat25}-${sat50 ?? sat75})`,
-      impact: 'neutral',
+      impact: 'negative',
     };
   }
   if (equivSat >= sat25 - 100) {
@@ -345,106 +335,37 @@ export function testBandMultiplier(
   school: SchoolInput,
 ): ModifierResult {
   const testScores = profile.testScores ?? [];
-  const candidates: ModifierResult[] = [];
+  let bestEquivSat: number | null = null;
+  let testLabel: string | null = null;
 
-  const compareToBands = (
-    score: number,
-    label: string,
-    lower: number | undefined,
-    upper: number | undefined,
-    margin: number,
-  ): ModifierResult | null => {
-    if (!lower || !upper) return null;
-    if (score >= upper + margin / 2) {
-      return {
-        multiplier: 1.5,
-        label: 'Test score well above 75th percentile',
-        evidence: `${label} is well above the school's 75th percentile (${upper})`,
-        impact: 'positive',
-      };
-    }
-    if (score >= upper) {
-      return {
-        multiplier: 1.2,
-        label: 'Test score above 75th percentile',
-        evidence: `${label} meets or exceeds the school's 75th percentile (${upper})`,
-        impact: 'positive',
-      };
-    }
-    if (score >= lower) {
-      return {
-        multiplier: 0.85,
-        label: 'Test score in middle 50',
-        evidence: `${label} falls between this school's 25th and 75th percentile (${lower}-${upper})`,
-        impact: 'neutral',
-      };
-    }
-    if (score >= lower - margin) {
-      return {
-        multiplier: 0.5,
-        label: 'Test score just below 25th percentile',
-        evidence: `${label} is below the 25th percentile (${lower}) but within the expected margin`,
-        impact: 'negative',
-      };
-    }
-    return {
-      multiplier: 0.3,
-      label: 'Test score well below 25th percentile',
-      evidence: `${label} is well below the school's 25th percentile (${lower})`,
-      impact: 'negative',
-    };
-  };
-
-  const considerSatEquivalent = (equiv: number | null, label: string) => {
+  const considerScore = (equiv: number | null, label: string) => {
     if (equiv == null) return;
-    const result = compareToBands(
-      equiv,
-      label,
-      school.sat25,
-      school.sat75,
-      100,
-    );
-    if (result) candidates.push(result);
+    if (bestEquivSat == null || equiv > bestEquivSat) {
+      bestEquivSat = equiv;
+      testLabel = label;
+    }
   };
 
   for (const ts of testScores) {
     if (!ts.score) continue;
     switch (ts.type) {
       case 'SAT':
-        considerSatEquivalent(ts.score, `SAT ${ts.score}`);
+        considerScore(ts.score, `SAT ${ts.score}`);
         break;
       case 'ACT':
-        candidates.push(
-          compareToBands(
-            ts.score,
-            `ACT ${ts.score}`,
-            school.act25,
-            school.act75,
-            3,
-          ) ??
-            compareToBands(
-              ts.score * 45,
-              `ACT ${ts.score}`,
-              school.sat25,
-              school.sat75,
-              100,
-            ) ?? { ...NEUTRAL, label: 'ACT score' },
-        );
+        considerScore(ts.score * 45, `ACT ${ts.score}`);
         break;
       case 'IB':
-        considerSatEquivalent(ibToEquivalentSat(ts.score), `IB ${ts.score}`);
+        considerScore(ibToEquivalentSat(ts.score), `IB ${ts.score}`);
         break;
       case 'A_LEVEL':
-        considerSatEquivalent(
+        considerScore(
           aLevelToEquivalentSat(ts.score),
           `A-Level (${ts.score} UCAS pts)`,
         );
         break;
       case 'GAOKAO':
-        considerSatEquivalent(
-          gaokaoToEquivalentSat(ts.score),
-          `Gaokao ${ts.score}`,
-        );
+        considerScore(gaokaoToEquivalentSat(ts.score), `Gaokao ${ts.score}`);
         break;
       default:
         // TOEFL/IELTS/AP/IGCSE/DUOLINGO — not used as primary admission test
@@ -457,7 +378,7 @@ export function testBandMultiplier(
   // Common App data shows top-private (<20% admit) test-optional admits
   // 5-10pp lower than test-submitters; apply 0.85× as conservative correction.
   // At less-selective schools, test-optional has no meaningful penalty.
-  if (candidates.length === 0 && profile.applyingTestOptional === true) {
+  if (bestEquivSat == null && profile.applyingTestOptional === true) {
     const overall = school.acceptanceRate;
     if (overall != null && overall > 0) {
       const overallNorm = overall > 1 ? overall / 100 : overall;
@@ -480,73 +401,115 @@ export function testBandMultiplier(
     };
   }
 
-  const meaningfulCandidates = candidates.filter(
-    (candidate) =>
-      !(candidate.multiplier === 1 && candidate.impact === 'neutral'),
-  );
-  if (meaningfulCandidates.length === 0) {
+  if (bestEquivSat == null || testLabel == null) {
     return { ...NEUTRAL, label: 'Test score' };
   }
-  return meaningfulCandidates.sort((a, b) => b.multiplier - a.multiplier)[0];
+  const sat25 = school.sat25;
+  const sat75 = school.sat75;
+  if (!sat25 || !sat75) {
+    return {
+      multiplier: 1.0,
+      label: 'Test score',
+      evidence: `${testLabel} (no school percentile data; no adjustment)`,
+      impact: 'neutral',
+    };
+  }
+  if (bestEquivSat >= sat75 + 50) {
+    return {
+      multiplier: 1.5,
+      label: 'Test score well above 75th percentile',
+      evidence: `${testLabel} is more than 50 points above the school's 75th percentile (${sat75})`,
+      impact: 'positive',
+    };
+  }
+  if (bestEquivSat >= sat75) {
+    return {
+      multiplier: 1.2,
+      label: 'Test score above 75th percentile',
+      evidence: `${testLabel} meets or exceeds the school's 75th percentile (${sat75})`,
+      impact: 'positive',
+    };
+  }
+  if (bestEquivSat >= sat25) {
+    return {
+      multiplier: 0.85,
+      label: 'Test score in middle 50',
+      evidence: `${testLabel} falls between this school's 25th and 75th percentile (${sat25}-${sat75})`,
+      impact: 'neutral',
+    };
+  }
+  if (bestEquivSat >= sat25 - 100) {
+    return {
+      multiplier: 0.5,
+      label: 'Test score just below 25th percentile',
+      evidence: `${testLabel} is below the 25th percentile (${sat25}) but within 100 points`,
+      impact: 'negative',
+    };
+  }
+  return {
+    multiplier: 0.3,
+    label: 'Test score well below 25th percentile',
+    evidence: `${testLabel} is more than 100 points below the school's 25th percentile (${sat25})`,
+    impact: 'negative',
+  };
 }
 
 /**
  * Modifier #3: Application round.
  *
- * Multipliers from CDS Section C21 across ~40 schools that publish ED/EA/RD
- * splits separately. ED 2.5× is the typical Ivy/peer ratio (Penn 35% ED vs
- * 7% RD ≈ 5×, but average across all ED schools is ~2-3×). RD = 1.0 baseline.
+ * When the school publishes its own ED/EA admit rate (CDS Section C21), use
+ * the actual ratio `edRate / overallRate` (clamped to [1.0, 4.0]). This is
+ * the data-driven path — ED at HYPSM ~1.3-1.5×, T20 ED ~2-2.5×, T50 ED ~1.8×.
+ *
+ * Fallback heuristic multipliers from peer-school averages: ED 2.5× is the
+ * typical Ivy/peer ratio. RD = 1.0 baseline.
  */
 export function roundMultiplier(
   round: string | undefined,
-  school?: Pick<
-    SchoolInput,
-    | 'acceptanceRate'
-    | 'edAcceptanceRate'
-    | 'ed2AcceptanceRate'
-    | 'eaAcceptanceRate'
-  >,
+  school?: SchoolInput & {
+    edAcceptanceRate?: number | null;
+    eaAcceptanceRate?: number | null;
+    acceptanceRate?: number | null;
+  },
 ): ModifierResult {
   const r = (round ?? 'RD').toUpperCase();
-  const overall = normalizeRate(school?.acceptanceRate);
-  const roundRate =
-    r === 'ED2'
-      ? (normalizeRate(school?.ed2AcceptanceRate) ??
-        normalizeRate(school?.edAcceptanceRate))
-      : r === 'REA' || r === 'SCEA'
-        ? (normalizeRate(school?.eaAcceptanceRate) ??
-          normalizeRate(school?.edAcceptanceRate))
-        : r === 'ED'
-          ? normalizeRate(school?.edAcceptanceRate)
-          : r === 'EA'
-            ? normalizeRate(school?.eaAcceptanceRate)
-            : null;
+  const overallRate = normalizeRate(school?.acceptanceRate);
+  const edRate = normalizeRate(school?.edAcceptanceRate);
+  const eaRate = normalizeRate(school?.eaAcceptanceRate);
 
-  if (overall && roundRate && ['ED', 'ED2', 'REA', 'SCEA', 'EA'].includes(r)) {
-    if (roundRate < overall) {
-      return {
-        multiplier: 1.0,
-        label: `${r} round (data anomaly neutralized)`,
-        evidence: `${r} published admit rate (${(roundRate * 100).toFixed(1)}%) is below the overall admit rate (${(overall * 100).toFixed(1)}%); treated neutrally pending data review.`,
-        impact: 'neutral',
-      };
-    }
-    const multiplier = clamp(roundRate / overall, 1.0, 3.5);
+  // Data-driven path: school publishes its own ED/EA rate
+  if ((r === 'ED' || r === 'ED2') && edRate != null && overallRate != null) {
+    const ratio = edRate / overallRate;
+    const clamped = Math.max(1.0, Math.min(4.0, ratio));
     return {
-      multiplier,
+      multiplier: clamped,
+      label:
+        r === 'ED2'
+          ? 'Early Decision 2 (school-published)'
+          : 'Early Decision (school-published)',
+      evidence: `This school admits ${(edRate * 100).toFixed(1)}% of ED applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+      impact: 'positive',
+    };
+  }
+  if (
+    (r === 'EA' || r === 'REA' || r === 'SCEA') &&
+    eaRate != null &&
+    overallRate != null
+  ) {
+    const ratio = eaRate / overallRate;
+    const clamped = Math.max(1.0, Math.min(2.5, ratio));
+    return {
+      multiplier: clamped,
       label:
         r === 'EA'
-          ? 'Early Action (published rate)'
-          : r === 'ED2'
-            ? 'Early Decision 2 (published rate)'
-            : r === 'REA' || r === 'SCEA'
-              ? 'Restrictive Early Action (published rate)'
-              : 'Early Decision (published rate)',
-      evidence: `${r} published admit rate ${(roundRate * 100).toFixed(1)}% vs overall ${(overall * 100).toFixed(1)}%; multiplier capped at 3.5× for outlier safety.`,
-      impact: multiplier > 1.05 ? 'positive' : 'neutral',
+          ? 'Early Action (school-published)'
+          : 'Restrictive Early Action (school-published)',
+      evidence: `This school admits ${(eaRate * 100).toFixed(1)}% of ${r === 'EA' ? 'EA' : 'REA/SCEA'} applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+      impact: 'positive',
     };
   }
 
+  // Heuristic fallback (unchanged from v1.2)
   switch (r) {
     case 'ED':
       return {
@@ -834,9 +797,16 @@ function normalizeRate(raw: number | null | undefined): number | null {
  *        most state publics — intl admit rate ≈ overall per published CDS)
  *      - Moderately selective (20-40%): 0.85× need-blind / 0.7× need-aware
  *        — intl pool somewhat competitive (BU, USC, UCSD, UCD, UCI)
- *      - Highly selective (< 20%): 0.5× need-blind / 0.4× need-aware — the
- *        original peer-school calibration applies (HYPMSP, NYU, top T20)
- *   3. Unknown selectivity: assume highly-selective (conservative default)
+ *      - Highly selective (10-20%): 0.80× need-blind / 0.75× need-aware
+ *        — limited but real intl penalty; 10-20% schools are selective but
+ *        not in HYPSM tier (Georgetown, Emory, Tufts, WashU pattern)
+ *      - Elite (< 10%): 0.50× need-blind / 0.45× need-aware — calibrated
+ *        from CDS 2024-25 ratios: MIT 1.96%/4.55%=0.43, Yale
+ *        1.94%/3.65%=0.53, Princeton 2.11%/4.62%=0.46 → 0.50 midpoint for
+ *        need-blind elite (HYPSM, MIT, Princeton, Yale, Amherst, Dartmouth);
+ *        Cornell 0.41×, Northwestern 0.68×, Columbia 0.64× → 0.45 midpoint
+ *        for need-aware elite (NYU, top T15)
+ *   3. Unknown selectivity: assume elite (conservative default)
  *
  * Domestic applicants always return NEUTRAL (no change).
  */
@@ -899,22 +869,48 @@ export function intlMultiplier(
     };
   }
 
-  // Highly selective (< 20% admit rate, or unknown selectivity).
-  // Calibrated from actual CDS data: MIT 0.43, Yale 0.53, Princeton 0.46 → ~0.47 avg.
+  // Highly selective (10-20% admit rate): differentiated from elite tier.
+  // Schools like Georgetown, Emory, Tufts, WashU — meaningful intl penalty
+  // but not as severe as the HYPSM/Cornell/Northwestern tier.
+  if (overallRate != null && overallRate >= 0.1) {
+    if (school.needBlindInternational) {
+      return {
+        multiplier: 0.8,
+        label: 'International (need-blind, highly selective)',
+        evidence:
+          'International pool sees a ~0.8× penalty at this need-blind highly-selective school',
+        impact: 'negative',
+      };
+    }
+    return {
+      multiplier: 0.75,
+      label: 'International (need-aware, highly selective)',
+      evidence:
+        'International applicants face ~0.75× the domestic admit rate at need-aware highly-selective schools (10-20% admit rate)',
+      impact: 'negative',
+    };
+  }
+
+  // Elite (< 10% admit rate, or unknown selectivity).
+  // Calibrated from actual CDS 2024-25 data:
+  //   need-blind: MIT 1.96%/4.55%=0.43, Yale 1.94%/3.65%=0.53,
+  //               Princeton 2.11%/4.62%=0.46 → 0.50 midpoint
+  //   need-aware: Cornell 0.41×, Northwestern 0.68×, Columbia 0.64×
+  //               → 0.45 conservative midpoint
   if (school.needBlindInternational) {
     return {
       multiplier: 0.5,
-      label: 'International (need-blind school)',
+      label: 'International (need-blind, elite school)',
       evidence:
-        'International pool sees ~0.5× the domestic admit rate at need-blind elite schools (calibrated from MIT 1.96%/4.55%, Yale 1.94%/3.65%, Princeton 2.11%/4.62%)',
+        'International pool sees ~0.5× the domestic admit rate at need-blind elite schools (calibrated from MIT 1.96%/4.55%=0.43, Yale 1.94%/3.65%=0.53, Princeton 2.11%/4.62%=0.46; covers HYPSM, MIT, Princeton, Yale, Amherst, Dartmouth)',
       impact: 'negative',
     };
   }
   return {
-    multiplier: 0.4,
-    label: 'International (need-aware, highly selective school)',
+    multiplier: 0.45,
+    label: 'International (need-aware, elite school)',
     evidence:
-      'International applicants face ~0.4× the domestic admit rate at need-aware highly-selective schools',
+      'International applicants face ~0.45× the domestic admit rate at need-aware elite schools (<10% admit rate); calibrated from Cornell/Northwestern/Columbia CDS data',
     impact: 'negative',
   };
 }

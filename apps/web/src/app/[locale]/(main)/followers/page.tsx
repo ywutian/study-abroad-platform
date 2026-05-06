@@ -194,7 +194,7 @@ export default function FollowersPage() {
       {/* Tabs + Search */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
-          <TabsList className="bg-muted/50 h-10">
+          <TabsList className="grid h-auto min-h-10 w-full grid-cols-3 bg-muted/50 sm:flex sm:w-auto">
             {(['followers', 'following', 'blocked'] as const).map((tab) => {
               const icons = { followers: Users, following: Heart, blocked: Shield };
               const Icon = icons[tab];
@@ -202,14 +202,14 @@ export default function FollowersPage() {
                 <TabsTrigger
                   key={tab}
                   value={tab}
-                  className="gap-2 h-8 data-[state=active]:shadow-sm data-[state=active]:bg-background"
+                  className="min-h-10 min-w-10 gap-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:min-h-8"
                 >
                   <Icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{t(`followers.tabs.${tab}`)}</span>
                   {tabCounts[tab] > 0 && (
                     <Badge
                       variant="secondary"
-                      className="h-5 min-w-[20px] px-1.5 text-[10px] font-semibold"
+                      className="h-5 min-w-[20px] px-1.5 text-2xs font-semibold"
                     >
                       {tabCounts[tab]}
                     </Badge>
@@ -230,8 +230,10 @@ export default function FollowersPage() {
             />
             {searchQuery && (
               <button
+                type="button"
+                aria-label={t('followers.clearSearch')}
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-1 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground sm:h-8 sm:w-8"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

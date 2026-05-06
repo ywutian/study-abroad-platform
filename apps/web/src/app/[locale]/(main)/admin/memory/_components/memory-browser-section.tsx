@@ -207,7 +207,7 @@ export function MemoryBrowserSection() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="h-10 w-10 md:h-8 md:w-8"
                             onClick={() => setViewMemory(mem)}
                             aria-label={tAria('viewMemory')}
                           >
@@ -216,7 +216,7 @@ export function MemoryBrowserSection() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive"
+                            className="h-10 w-10 text-destructive md:h-8 md:w-8"
                             onClick={() => setDeleteMemoryId(mem.id)}
                             aria-label={tAria('deleteMemory')}
                           >

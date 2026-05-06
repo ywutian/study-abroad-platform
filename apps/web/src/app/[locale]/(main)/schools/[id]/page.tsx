@@ -312,9 +312,9 @@ export default function SchoolDetailPage() {
             {aiActions.map((action) => (
               <Button
                 key={action.id}
-                variant="outline"
+                variant="secondary"
                 size="sm"
-                className="gap-1.5 text-xs hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all"
+                className="gap-1.5 text-xs"
                 onClick={() => {
                   openFloatingAgentChat({
                     message: action.message,
@@ -344,31 +344,31 @@ export default function SchoolDetailPage() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="bg-muted/50 h-11">
+        <TabsList className="h-11 bg-muted/50">
           <TabsTrigger
             value="overview"
-            className="gap-2 data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
+            className="min-w-10 gap-2 data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400"
           >
             <GraduationCap className="h-4 w-4" />
             <span className="hidden sm:inline">{t('school.tabs.overview')}</span>
           </TabsTrigger>
           <TabsTrigger
             value="admission"
-            className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            className="min-w-10 gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           >
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">{t('school.tabs.admission')}</span>
           </TabsTrigger>
           <TabsTrigger
             value="essays"
-            className="gap-2 data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600 dark:data-[state=active]:text-rose-400"
+            className="min-w-10 gap-2 data-[state=active]:bg-rose-500/10 data-[state=active]:text-rose-600 dark:data-[state=active]:text-rose-400"
           >
             <FileText className="h-4 w-4" />
             <span className="hidden sm:inline">{t('school.tabs.essays')}</span>
           </TabsTrigger>
           <TabsTrigger
             value="cases"
-            className="gap-2 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            className="min-w-10 gap-2 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
           >
             <Trophy className="h-4 w-4" />
             <span className="hidden sm:inline">{t('school.tabs.cases')}</span>

@@ -46,7 +46,10 @@ export function PaginationControls({
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">{t('perPage')}</span>
             <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-              <SelectTrigger className="h-8 w-[70px]">
+              <SelectTrigger
+                className="h-10 w-[76px] md:h-8 md:w-[70px]"
+                aria-label={t('pageSize')}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -61,9 +64,10 @@ export function PaginationControls({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10 md:h-8 md:w-8"
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
+            aria-label={t('previous')}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -73,9 +77,10 @@ export function PaginationControls({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10 md:h-8 md:w-8"
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
+            aria-label={t('next')}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

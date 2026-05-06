@@ -25,11 +25,11 @@ import {
   hasVerifiedFieldSource,
 } from '@/components/features/schools/school-display-utils';
 import { TrustBadge } from '@/components/features/schools/TrustBadge';
-import { FloatingAddButton, SelectedSchool } from '@/components/features/schools/FloatingAddButton';
 import { Link } from '@/lib/i18n/navigation';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
 import { type School } from './schools-types';
+import { SchoolPagination } from './SchoolPagination';
 
 interface SchoolGridProps {
   schools: School[];
@@ -38,7 +38,6 @@ interface SchoolGridProps {
   isError: boolean;
   onRefetch: () => void;
   hasAuth: boolean;
-  selectedSchools: SelectedSchool[];
   onToggleSelection: (school: School, checked: boolean) => void;
   isSchoolSelected: (schoolId: string) => boolean;
   addedSchools: Set<string>;
@@ -46,10 +45,12 @@ interface SchoolGridProps {
   isAddingToList: boolean;
   hasFilters: boolean;
   onResetAllFilters: () => void;
-  onBatchAdd: (schoolIds: string[], tier: string, round: string) => void;
-  onRemoveSelected: (id: string) => void;
-  onClearSelected: () => void;
-  isBatchAdding: boolean;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+  density?: 'comfortable' | 'compact';
 }
 
 function CommunityMetric({ label, value }: { label: string; value: number }) {
@@ -72,12 +73,10 @@ function NicheGradePill({ label, grade }: { label: string; grade: string }) {
 
 export function SchoolGrid({
   schools,
-  total,
   isLoading,
   isError,
   onRefetch,
   hasAuth,
-  selectedSchools,
   onToggleSelection,
   isSchoolSelected,
   addedSchools,
@@ -85,10 +84,13 @@ export function SchoolGrid({
   isAddingToList,
   hasFilters,
   onResetAllFilters,
-  onBatchAdd,
-  onRemoveSelected,
-  onClearSelected,
-  isBatchAdding,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  onPageChange,
+  onPageSizeChange,
+  density = 'comfortable',
 }: SchoolGridProps) {
   const t = useTranslations('schools');
   const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
@@ -96,25 +98,14 @@ export function SchoolGrid({
   const locale = useLocale();
   const format = useFormatter();
 
+  const isCompact = density === 'compact';
+  const cardContentPadding = isCompact ? 'pt-3' : 'pt-4';
+  const metricBlockPadding = isCompact ? 'p-2.5' : 'p-3';
+  const titleRowMargin = isCompact ? 'mb-2' : 'mb-2.5';
+  const locationRowMargin = isCompact ? 'mb-2' : 'mb-3';
+
   return (
     <>
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">{t('resultsCount', { count: total })}</p>
-          {schools.length > 0 && total > schools.length ? (
-            <p className="text-xs text-muted-foreground">
-              {t('showingTruncated', { shown: schools.length, total })}
-            </p>
-          ) : null}
-        </div>
-        {selectedSchools.length > 0 && (
-          <Badge variant="secondary" className="gap-1">
-            {t('selectedCount', { count: selectedSchools.length })}
-          </Badge>
-        )}
-      </div>
-
       {/* Schools Grid */}
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -198,62 +189,71 @@ export function SchoolGrid({
               >
                 <Card
                   className={cn(
-                    'h-full hover:shadow-lg transition-all duration-300 hover:border-primary/50 cursor-pointer group overflow-hidden',
-                    isSelected && 'ring-2 ring-primary/50 bg-primary/5'
+                    'group relative h-full cursor-pointer overflow-hidden transition-all duration-200 hover:border-primary/45 hover:shadow-[var(--theme-card-hover-shadow)]',
+                    isSelected && 'border-primary/45 ring-2 ring-primary/25'
                   )}
                 >
-                  <div className="h-1 bg-primary group-hover:h-1.5 transition-all" />
-                  <CardContent className="pt-4">
-                    {/* Batch selection checkbox */}
-                    {hasAuth && (
-                      <div className="flex items-center justify-end mb-2">
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) =>
-                            onToggleSelection(school, checked as boolean)
-                          }
-                          disabled={isAdded}
-                          className="shrink-0"
-                        />
-                      </div>
-                    )}
+                  <div className="h-px bg-primary/55 transition-all group-hover:h-1" />
 
-                    <Link href={`/schools/${school.id}`}>
-                      <div className="flex items-start gap-3 mb-3">
+                  {/* Batch selection checkbox — absolute top-left */}
+                  {hasAuth && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => onToggleSelection(school, checked as boolean)}
+                        disabled={isAdded}
+                        className="shrink-0 bg-background/80 backdrop-blur-sm"
+                      />
+                    </div>
+                  )}
+
+                  {/* Ranking + fit score — absolute top-right */}
+                  <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1">
+                    <RankingBadge
+                      rankings={school.rankings}
+                      usNewsRank={school.usNewsRank}
+                      variant="amber"
+                    />
+                    {school.fitScore != null && (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 text-2xs bg-background/80 backdrop-blur-sm"
+                      >
+                        {t('fitScore', { score: Math.round(school.fitScore) })}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <CardContent className={cardContentPadding}>
+                    <Link href={`/schools/${school.id}`} className="block">
+                      {/* Title row reserves room for absolute badges (top-right) and checkbox (top-left) */}
+                      <div
+                        className={cn(
+                          'flex items-start gap-3 pr-24',
+                          titleRowMargin,
+                          hasAuth && 'pl-8'
+                        )}
+                      >
                         <SchoolLogo
                           logoUrl={school.logoUrl}
                           website={school.website}
                           name={getSchoolName(school, locale)}
                           size="md"
-                          className="border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all"
+                          className="border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                                {getSchoolName(school, locale)}
-                              </h3>
-                              {hasSupplementalRanking && (
-                                <Badge variant="secondary" className="mt-1 text-2xs">
-                                  {t('supplementalRanking')}
-                                </Badge>
-                              )}
-                            </div>
-                            <RankingBadge
-                              rankings={school.rankings}
-                              usNewsRank={school.usNewsRank}
-                              variant="amber"
-                            />
-                            {school.fitScore != null && (
-                              <Badge variant="outline" className="shrink-0 text-2xs">
-                                {t('fitScore', { score: Math.round(school.fitScore) })}
-                              </Badge>
-                            )}
-                          </div>
+                          <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                            {getSchoolName(school, locale)}
+                          </h3>
                           {getSchoolSubName(school, locale) && (
                             <p className="text-xs text-muted-foreground truncate mt-0.5">
                               {getSchoolSubName(school, locale)}
                             </p>
+                          )}
+                          {hasSupplementalRanking && (
+                            <Badge variant="secondary" className="mt-1 text-2xs">
+                              {t('supplementalRanking')}
+                            </Badge>
                           )}
                         </div>
                       </div>
@@ -274,7 +274,12 @@ export function SchoolGrid({
                         </div>
                       )}
 
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
+                      <div
+                        className={cn(
+                          'flex items-center gap-1.5 text-sm text-muted-foreground',
+                          locationRowMargin
+                        )}
+                      >
                         <MapPin className="h-3.5 w-3.5 shrink-0 text-rose-500" />
                         <span className="truncate">
                           {school.city && `${school.city}, `}
@@ -284,7 +289,12 @@ export function SchoolGrid({
                       </div>
 
                       {/* Data metrics */}
-                      <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-muted/50 group-hover:bg-muted/70 transition-colors">
+                      <div
+                        className={cn(
+                          'grid grid-cols-2 gap-2 rounded-[var(--theme-radius-card)] border border-border/60 bg-muted/35 transition-colors group-hover:bg-muted/50',
+                          metricBlockPadding
+                        )}
+                      >
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
                             <Award className="h-3 w-3" />
@@ -442,17 +452,17 @@ export function SchoolGrid({
         </Card>
       )}
 
-      {/* Bottom spacer for floating bar */}
-      {selectedSchools.length > 0 && <div className="h-16" />}
-
-      {/* Floating batch add bar */}
-      <FloatingAddButton
-        selectedSchools={selectedSchools}
-        onAdd={onBatchAdd}
-        onRemove={onRemoveSelected}
-        onClear={onClearSelected}
-        isAdding={isBatchAdding}
-      />
+      {/* Pagination */}
+      {!isLoading && !isError && schools.length > 0 && (
+        <SchoolPagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     </>
   );
 }

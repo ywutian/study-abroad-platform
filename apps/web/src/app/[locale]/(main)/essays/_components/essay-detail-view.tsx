@@ -145,9 +145,8 @@ export function EssayDetailView({
                   {t('common.edit')}
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="soft-destructive"
                   size="sm"
-                  className="text-destructive hover:bg-destructive/10"
                   onClick={() => onDelete(selectedEssay.id)}
                 >
                   <Trash2 className="h-4 w-4" />

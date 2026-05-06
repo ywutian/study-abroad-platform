@@ -19,6 +19,8 @@ import { AdminSchoolRatesService } from './admin-school-rates.service';
 import { AdminCdsPipelineController } from './admin-cds-pipeline.controller';
 import { AdminSchoolDataPipelineController } from './admin-school-data-pipeline.controller';
 import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.service';
+import { AdminThemeStyleController } from './admin-theme-style.controller';
+import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
 import { NotificationModule } from '../notification/notification.module';
@@ -49,6 +51,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminSchoolRatesController,
     AdminCdsPipelineController,
     AdminSchoolDataPipelineController,
+    AdminThemeStyleController,
   ],
   providers: [
     AdminService,
@@ -59,6 +62,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminProgressGateway,
     AdminSchoolRatesService,
     AdminSchoolDataCoverageService,
+    AuditLogService,
     PermissionGuard,
   ],
   exports: [AdminService, AdminReviewService],

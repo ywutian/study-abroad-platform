@@ -1,7 +1,5 @@
-'use client';
-
-import { LucideIcon } from 'lucide-react';
 import { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type PageHeaderColor = 'blue' | 'violet' | 'amber' | 'emerald' | 'rose' | 'slate' | 'indigo';
@@ -42,34 +40,40 @@ const variantConfig: Record<
   { shell: string; divider: string; statCard: string }
 > = {
   marketing: {
-    shell: 'relative mb-10 border-b pb-8',
+    shell: 'relative mb-10 border-b pb-8 pt-2',
     divider: 'border-[color:var(--ds-border)]',
-    statCard: 'rounded-2xl border bg-[color:var(--ds-surface-subtle)] p-4',
+    statCard:
+      'rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]',
   },
   entry: {
     shell: 'relative mb-8 border-b pb-6',
     divider: 'border-border',
-    statCard: 'rounded-xl border border-border bg-card p-4',
+    statCard:
+      'rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]',
   },
   tool: {
     shell: 'relative mb-8 border-b pb-6',
     divider: 'border-border',
-    statCard: 'rounded-xl border border-border bg-card p-4',
+    statCard:
+      'rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]',
   },
   ai: {
-    shell: 'relative mb-8 rounded-3xl border p-6',
-    divider: 'border-[color:var(--ds-border)] bg-[color:var(--ds-info-surface)]/85',
-    statCard: 'rounded-2xl border border-[color:var(--ds-border)] bg-card/80 p-4',
+    shell: 'relative mb-8 border-b pb-6',
+    divider: 'border-border',
+    statCard:
+      'rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]',
   },
   community: {
-    shell: 'relative mb-8 rounded-3xl border p-6',
-    divider: 'border-border bg-muted/40',
-    statCard: 'rounded-2xl border border-border bg-card/80 p-4',
+    shell: 'relative mb-8 border-b pb-6',
+    divider: 'border-border',
+    statCard:
+      'rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]',
   },
   admin: {
-    shell: 'relative mb-8 rounded-2xl border p-6',
-    divider: 'border-border bg-card',
-    statCard: 'rounded-xl border border-border bg-muted/40 p-4',
+    shell: 'relative mb-8 border-b pb-6',
+    divider: 'border-border',
+    statCard:
+      'rounded-[var(--theme-radius-card)] border border-border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]',
   },
 };
 
@@ -183,7 +187,7 @@ export function PageHeader({
               {Icon ? (
                 <div
                   className={cn(
-                    'flex h-12 w-12 items-center justify-center rounded-xl border',
+                    'flex h-11 w-11 items-center justify-center rounded-[var(--theme-radius-card)] border shadow-[var(--theme-card-shadow)]',
                     accent.iconBg,
                     accent.icon
                   )}
@@ -192,9 +196,11 @@ export function PageHeader({
                 </div>
               ) : null}
               <div>
-                <h1 className="text-title">{title}</h1>
+                <h1 className="text-title tracking-tight">{title}</h1>
                 {description ? (
-                  <p className="mt-1 max-w-3xl text-body-sm text-muted-foreground">{description}</p>
+                  <p className="mt-1 max-w-3xl text-body-sm leading-6 text-muted-foreground">
+                    {description}
+                  </p>
                 ) : null}
               </div>
             </div>

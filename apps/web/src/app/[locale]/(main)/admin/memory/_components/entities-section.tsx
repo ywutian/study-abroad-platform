@@ -40,6 +40,7 @@ import { EntityItem, ENTITY_TYPES, entityTypeBadge, formatDate } from './types';
 
 export function EntitiesSection() {
   const t = useTranslations('admin.memory');
+  const tAria = useTranslations('common.aria');
   const [entityFilters, setEntityFilters] = useState({ userId: '', type: '' });
   const [entityPage, setEntityPage] = useState(1);
   const entityPageSize = 20;
@@ -137,8 +138,9 @@ export function EntitiesSection() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10 md:h-8 md:w-8"
                           onClick={() => setViewEntity(entity)}
+                          aria-label={`${tAria('viewEntity')} ${entity.name}`}
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
