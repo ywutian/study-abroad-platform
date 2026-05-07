@@ -22,7 +22,7 @@ import type {
   PredictionOutcomeQueryDto,
   ReviewPredictionOutcomeDto,
 } from '../admin/dto';
-import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
+// ShadowEvaluatorService removed 2026-05-07 with the ML platform layer.
 import { DistillationStatsRollupService } from './distillation/distillation-stats-rollup.service';
 
 type ReportedOutcomeResult =
@@ -48,7 +48,6 @@ export class PredictionReportingService {
     @Optional() private readonly memoryManager?: MemoryManagerService,
     @Optional()
     private readonly calibrationService?: PredictionCalibrationService,
-    @Optional() private readonly shadowEvaluator?: ShadowEvaluatorService,
     @Optional()
     private readonly distillationRollups?: DistillationStatsRollupService,
   ) {}
@@ -556,24 +555,8 @@ export class PredictionReportingService {
       );
     }
 
-    if (
-      this.shadowEvaluator &&
-      reviewed.calibrationEligible &&
-      reviewed.canonicalRecord &&
-      ['ADMITTED', 'REJECTED'].includes(reviewed.canonicalRecord.result)
-    ) {
-      const predictedProb = Number(existing.predictionResult.probability);
-      const actualResult = reviewed.canonicalRecord.result === 'ADMITTED';
-      fireAndForget(
-        this.shadowEvaluator.onOutcomeReported(
-          existing.predictionResult.selectivityBand ?? null,
-          predictedProb,
-          actualResult,
-        ),
-        this.logger,
-        'Failed to record shadow outcome feedback',
-      );
-    }
+    // Shadow evaluator outcome feedback removed 2026-05-07 with the ML
+    // platform layer (no champion model, no shadow path to feed).
 
     if (this.distillationRollups) {
       fireAndForget(

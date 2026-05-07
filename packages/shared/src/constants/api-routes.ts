@@ -485,19 +485,9 @@ export const adminRoutes = {
   calibrationsPlattStatus: () => `${API_ROUTES.ADMIN}/calibrations/platt-status`,
   calibrationsRetrain: () => `${API_ROUTES.ADMIN}/calibrations/retrain`,
 
-  // Prediction diagnostic (real-case ingest)
-  predictionsDiagIngestCases: () => `${API_ROUTES.ADMIN}/predictions/diag/ingest-cases`,
-  predictionsDiagRealCasesTemplate: () =>
-    `${API_ROUTES.ADMIN}/predictions/diag/real-cases-template`,
-  predictionsBenchmarkProfiles: () => `${API_ROUTES.ADMIN}/predictions/benchmark/profiles`,
-  predictionsBenchmarkSources: () => `${API_ROUTES.ADMIN}/predictions/benchmark/sources`,
-  predictionsBenchmarkSourceSession: (key: string) =>
-    `${API_ROUTES.ADMIN}/predictions/benchmark/sources/${key}/session`,
-  predictionsBenchmarkRuns: () => `${API_ROUTES.ADMIN}/predictions/benchmark/runs`,
-  predictionsBenchmarkRunById: (id: string) =>
-    `${API_ROUTES.ADMIN}/predictions/benchmark/runs/${id}`,
-  predictionsBenchmarkRunReport: (id: string) =>
-    `${API_ROUTES.ADMIN}/predictions/benchmark/runs/${id}/report`,
+  // Prediction diag/benchmark route helpers removed 2026-05-07 along with
+  // the ML platform layer (admin/predictions/diag/* and benchmark/*
+  // controllers were deleted; counselor mode is the served path).
   predictionsDistillationOverview: () => `${API_ROUTES.ADMIN}/predictions/distillation/overview`,
   predictionsDistillationDaily: () => `${API_ROUTES.ADMIN}/predictions/distillation/daily`,
   predictionsDistillationSchools: () => `${API_ROUTES.ADMIN}/predictions/distillation/schools`,
