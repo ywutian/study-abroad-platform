@@ -14,7 +14,6 @@ import { PREDICTION_LOCK_TTL } from './prediction-error';
 
 import { PredictionResultDto } from './dto';
 import { InternalPredictionResult } from './prediction-persistence.service';
-import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 import { CounselorEngineService } from './counselor/counselor-engine.service';
 import { clampPercentRate } from '../../common/utils/percent.util';
@@ -30,21 +29,11 @@ import {
   calculateSelectivityIndex,
   resolveContextualAcceptanceRate,
 } from './utils/score-calculator';
-import {
-  extractFeatureVector,
-  imputeFeatures,
-  featureVectorToArray,
-  predict as mlPredict,
-  predictGBDT,
-  explainPrediction,
-  resolveMajorToCip,
-  CIP_NAMES,
-} from '@study-abroad/shared/scoring';
-import type { TrainedModel } from '@study-abroad/shared/scoring';
-import { ModelRegistryService } from './ml/model-registry.service';
-import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
-import { ModelMonitorService } from './ml/model-monitor.service';
-import { getSelectivityBand } from './ml/tier-strategy';
+import { resolveMajorToCip, CIP_NAMES } from '@study-abroad/shared/scoring';
+// 2026-05-07: ML platform layer (ml/, prediction-ml-primary, ml.controller,
+// diagnostic-ingest) deleted because counselor mode is at 100% rollout and
+// ModelRegistry never had a CHAMPION. ShadowEvaluator/ModelMonitor/etc. are
+// no longer wired. Restore via git history if real ML training resumes.
 import { PredictionTransformerService } from './prediction-transformer.service';
 import { PredictionStatisticalEngine } from './prediction-statistical-engine.service';
 import { PredictionAiEngine } from './prediction-ai-engine.service';
@@ -62,7 +51,7 @@ import {
   PredictionPolicyService,
   type PredictionTracePayload,
 } from './prediction-policy.service';
-import { DistillationService } from './benchmark/distillation.service';
+// `DistillationService` (benchmark variant) removed 2026-05-07 with benchmark/
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 import { DistillationObservationService } from './distillation/distillation-observation.service';
 import {
@@ -140,12 +129,9 @@ export class PredictionService {
     private reportingService: PredictionReportingService,
     private policyService: PredictionPolicyService,
     @Optional() private caseIncentiveService?: CaseIncentiveService,
-    @Optional() private modelRegistry?: ModelRegistryService,
-    @Optional() private shadowEvaluator?: ShadowEvaluatorService,
-    @Optional() private modelMonitor?: ModelMonitorService,
-    @Optional() private mlPrimaryService?: PredictionMlPrimaryService,
+    // ML platform services (modelRegistry, shadowEvaluator, modelMonitor,
+    // mlPrimaryService, distillationService) deleted 2026-05-07.
     @Optional() private featureFlagService?: FeatureFlagService,
-    @Optional() private distillationService?: DistillationService,
     @Optional()
     private compliantDistillationService?: CompliantDistillationService,
     @Optional()
@@ -622,9 +608,9 @@ export class PredictionService {
       confidenceReason,
       policyVersionId: resolvedPolicyVersionId,
       applicationRound: resolvedApplicationRound,
-      selectivityBand: getSelectivityBand(
-        calculateSelectivityIndex(schoolMetrics),
-      ),
+      // selectivityBand was computed via ml/tier-strategy; analytics-only
+      // metadata, not used by counselor. Removed with ml/ deletion 2026-05-07.
+      selectivityBand: undefined,
       servedTrace: {
         ...baseTrace,
         engine: 'counselor',
@@ -1283,38 +1269,24 @@ export class PredictionService {
     // Pre-compute feature flags once per prediction request. `profileId` is a
     // Profile.id, not a User.id, so use the already-loaded profile.userId for
     // deterministic rollout hashing.
-    let v5MlPrimary = false;
-    let v5Shadow = false;
-    let useDistillationBlend = false;
+    // ML primary path deleted 2026-05-07; flags retained as always-false
+    // locals so downstream signatures (predictForSchool params) are unchanged.
+    const v5MlPrimary = false;
+    const v5Shadow = false;
+    const useDistillationBlend = false;
     let compliantDistillationShadow = false;
     let compliantDistillationLive = false;
     let counselorModeEnabled = false;
     if (this.featureFlagService && profile.userId) {
       try {
+        // ML primary + benchmark distillation feature flags removed
+        // 2026-05-07 (services deleted). Only counselor + compliant
+        // distillation flags remain.
         [
-          v5MlPrimary,
-          v5Shadow,
-          useDistillationBlend,
           compliantDistillationShadow,
           compliantDistillationLive,
           counselorModeEnabled,
         ] = await Promise.all([
-          this.mlPrimaryService
-            ? this.featureFlagService.isEnabled('prediction-ml-primary', {
-                userId: profile.userId,
-              })
-            : Promise.resolve(false),
-          this.mlPrimaryService
-            ? this.featureFlagService.isEnabled('prediction-shadow', {
-                userId: profile.userId,
-              })
-            : Promise.resolve(false),
-          this.distillationService
-            ? this.featureFlagService.isEnabled(
-                'prediction-distillation-blend',
-                { userId: profile.userId },
-              )
-            : Promise.resolve(false),
           this.compliantDistillationService
             ? this.featureFlagService.isEnabled(
                 'prediction-compliant-distillation-shadow',
@@ -1338,9 +1310,6 @@ export class PredictionService {
         ]);
       } catch {
         // Feature flag check failed, stay on legacy served behavior.
-        v5MlPrimary = false;
-        v5Shadow = false;
-        useDistillationBlend = false;
         compliantDistillationShadow = false;
         compliantDistillationLive = false;
         counselorModeEnabled = false;
@@ -1526,125 +1495,9 @@ export class PredictionService {
     counselorModeEnabled = false,
     persist = true,
   ): Promise<PredictionResultDto> {
-    // === v5 ML-Primary feature flag branch ===
-    if (
-      this.mlPrimaryService &&
-      !counselorModeEnabled &&
-      (v5MlPrimary || v5Shadow)
-    ) {
-      try {
-        const schoolInputV5 = this.schoolToInput(school);
-        if (applicationRound) schoolInputV5.applicationRound = applicationRound;
-        const schoolMetricsV5 = this.extractSchoolMetrics(schoolInputV5);
-
-        const mlResult = await this.mlPrimaryService.predictForSchool(
-          profileId,
-          school,
-          profileInput,
-          schoolInputV5,
-          profileMetrics,
-          schoolMetricsV5,
-          applicationRound || 'RD',
-          locale,
-        );
-        if (mlResult.probability == null) {
-          throw new Error('ML-primary returned an unavailable probability');
-        }
-
-        if (v5Shadow) {
-          // Shadow mode: log comparison, fall through to legacy
-          this.logger.debug(
-            `[Shadow] ML-Primary: ${mlResult.probability.toFixed(3)} for ${school.name}`,
-          );
-        } else {
-          const compliantEvaluation = await this.evaluateCompliantDistillation(
-            {
-              profileId,
-              profileInput,
-              profileMetrics,
-              school,
-              schoolInput: schoolInputV5,
-              ourProbPrePlatt: mlResult.probability,
-              servedProbability: mlResult.probability,
-              applicationRound: applicationRound || 'RD',
-              selectivityBand: mlResult.selectivityBand ?? null,
-            },
-            {
-              shadowEnabled: compliantDistillationShadow,
-              liveEnabled: compliantDistillationLive,
-            },
-          );
-          const candidateServedProbability = compliantEvaluation
-            ? this.computeDistillationCandidateServedProbability(
-                compliantEvaluation.decision,
-                mlResult.probability,
-                null,
-                true,
-                compliantEvaluation.applyLiveBlend,
-              )
-            : mlResult.probability;
-
-          if (compliantEvaluation?.applyLiveBlend) {
-            this.applyProbabilityDelta(
-              mlResult as typeof mlResult & { probability: number },
-              candidateServedProbability,
-            );
-          }
-
-          mlResult.cohortKey =
-            compliantEvaluation?.decision.cohortKey ?? mlResult.cohortKey;
-          mlResult.servedTrace = this.withCompliantDistillationTrace(
-            (mlResult.servedTrace ?? {}) as object,
-            compliantEvaluation,
-            candidateServedProbability,
-            mlResult.probability,
-          ) as any;
-
-          // ML-Primary mode: cache, persist, and return the served result
-          let savedRefs: SavedPredictionRefs = {};
-          if (persist) {
-            this.cacheService
-              .saveToCache(
-                profileId,
-                school.id,
-                this.toPublicPredictionResult(mlResult),
-                profileHash,
-                policyVersionId,
-                'v5',
-              )
-              .catch(() => {
-                /* swallow cache errors */
-              });
-            savedRefs =
-              (await this.savePrediction(profileId, school.id, mlResult)) ?? {};
-            await this.recordCompliantDistillationObservation({
-              savedRefs,
-              policyVersionId:
-                mlResult.policyVersionId ?? mlResult.servedPolicyVersionId,
-              evaluation: compliantEvaluation,
-              servedProbability: mlResult.probability,
-              candidateServedProbability,
-              applicationRound: applicationRound || 'RD',
-              selectivityBand: mlResult.selectivityBand ?? null,
-            });
-            if (this.modelMonitor) {
-              this.modelMonitor
-                .recordPrediction(mlResult.probability)
-                .catch(() => {
-                  /* swallow */
-                });
-            }
-          }
-          return persist ? this.toPublicPredictionResult(mlResult) : mlResult;
-        }
-      } catch (err) {
-        this.logger.warn(
-          'ML-Primary pipeline failed, falling back to legacy',
-          err,
-        );
-      }
-    }
-    // === End v5 branch ===
+    // v5 ML-Primary branch removed 2026-05-07 along with the ML platform layer.
+    // Counselor mode is the served path when enabled; otherwise the legacy
+    // statistical/AI/historical fusion path below runs without ML overlay.
 
     const schoolInput = this.schoolToInput(school);
 
@@ -1740,8 +1593,11 @@ export class PredictionService {
           )
         : null;
 
-    // === 引擎 4: ML Model (Tier 2+) ===
-    let mlResult: {
+    // === 引擎 4: ML Model — REMOVED 2026-05-07 ===
+    // The ModelRegistry/champion model path was archived along with the ML
+    // platform layer (no CHAMPION model was ever trained; counselor mode is
+    // 100% rollout). Fusion now blends only stats/AI/historical signals.
+    type MlResult = {
       probability: number;
       modelTier: number;
       contributions?: Array<{
@@ -1749,104 +1605,11 @@ export class PredictionService {
         contribution: number;
         direction: 'positive' | 'negative';
       }>;
-    } | null = null;
-    const selectivityBand = getSelectivityBand(
-      calculateSelectivityIndex(schoolMetrics),
-    );
-
-    if (this.modelRegistry) {
-      try {
-        // Try band-specific model first, fall back to global
-        const championModel =
-          (await this.modelRegistry.getChampionModel(selectivityBand)) ??
-          (await this.modelRegistry.getChampionModel(null));
-
-        if (championModel) {
-          const fv = extractFeatureVector(profileMetrics, schoolMetrics, {
-            activityDetails: profileMetrics.activityDetails,
-            isPrivateSchool: school.isPrivate,
-            tuition: school.tuition,
-            usNewsRank: school.usNewsRank,
-          });
-
-          const modelTyped = championModel;
-          const featureMedians =
-            'featureMedians' in modelTyped ? modelTyped.featureMedians : {};
-          const imputed = imputeFeatures(fv, featureMedians);
-
-          let prob: number;
-          let contributions:
-            | Array<{
-                feature: string;
-                contribution: number;
-                direction: 'positive' | 'negative';
-              }>
-            | undefined;
-
-          if ('trees' in modelTyped) {
-            // GBDT model
-            const featureArray = featureVectorToArray(
-              imputed,
-              modelTyped.featureNames as any,
-            );
-            prob = predictGBDT(modelTyped, featureArray);
-          } else {
-            // Logistic regression model
-            const lrModel = modelTyped;
-            const featureArray = featureVectorToArray(
-              imputed,
-              lrModel.featureNames as any,
-            );
-            prob = mlPredict(lrModel, featureArray);
-            contributions = explainPrediction(lrModel, featureArray).map(
-              (c: any) => ({
-                feature: c.feature,
-                contribution: c.contribution,
-                direction: c.direction,
-              }),
-            );
-          }
-
-          const tier =
-            'metadata' in modelTyped
-              ? (modelTyped as TrainedModel).metadata.tier
-              : 4;
-          mlResult = {
-            probability: Math.max(0.05, Math.min(0.95, prob)),
-            modelTier: tier,
-            contributions,
-          };
-
-          // Shadow evaluation (non-blocking)
-          if (this.shadowEvaluator) {
-            const featureArray = featureVectorToArray(
-              imputed,
-              ('featureNames' in modelTyped
-                ? modelTyped.featureNames
-                : []) as any,
-            );
-            this.shadowEvaluator
-              .runIfActive(featureArray, mlResult.probability, selectivityBand)
-              .catch(() => {
-                /* swallow */
-              });
-          }
-
-          // Record prediction for drift monitoring (non-blocking)
-          if (this.modelMonitor) {
-            this.modelMonitor
-              .recordPrediction(mlResult.probability)
-              .catch(() => {
-                /* swallow */
-              });
-          }
-        }
-      } catch (err) {
-        this.logger.debug(
-          `ML prediction skipped: ${String(err instanceof Error ? err.message : err)}`,
-        );
-      }
-    }
+    } | null;
+    // Use `as` cast to prevent TS narrowing the const type to literal null —
+    // downstream code still references `mlResult?.probability` etc. for now.
+    const mlResult = null as MlResult;
+    const selectivityBand: string | null = null;
 
     // 记忆增强调整
     const memoryAdjustment =
@@ -1995,44 +1758,9 @@ export class PredictionService {
       );
     }
 
-    const useLegacyBenchmarkBlend =
-      useDistillationBlend &&
-      !(compliantDistillationShadow || compliantDistillationLive);
-
-    if (useLegacyBenchmarkBlend && this.distillationService) {
-      try {
-        // Blend after our local major/feeder/round adjustments, before Platt.
-        const distillation = this.distillationService.computeBlendDecision(
-          fusedResult.probability,
-          await this.distillationService.getPhase1LiveTeacherSignals(
-            profileInput,
-            school.id,
-          ),
-        );
-
-        if (distillation.hasSignal) {
-          const delta = distillation.blendedPrePlatt - fusedResult.probability;
-          fusedResult.probability = distillation.blendedPrePlatt;
-          fusedResult.probabilityLow = Math.max(
-            0.01,
-            Math.min(
-              fusedResult.probability,
-              fusedResult.probabilityLow + delta,
-            ),
-          );
-          fusedResult.probabilityHigh = Math.max(
-            fusedResult.probability,
-            Math.min(0.99, fusedResult.probabilityHigh + delta),
-          );
-        }
-      } catch (error) {
-        this.logger.warn(
-          `Distillation blend skipped for school ${school.id}: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      }
-    }
+    // Legacy benchmark distillation blend removed 2026-05-07 with the
+    // benchmark/ folder. Compliant distillation (above) remains the only
+    // blending path when its feature flags are enabled.
 
     // Platt scaling 校准（当有足够历史数据时）
     // Apply after deterministic modifiers so calibration operates on the
@@ -2165,7 +1893,7 @@ export class PredictionService {
       // Internal fields for DB persistence (not in public DTO)
       policyVersionId: resolvedPolicyVersionId,
       applicationRound: resolvedApplicationRound,
-      selectivityBand,
+      selectivityBand: selectivityBand ?? undefined,
       servedTrace: servedTrace ?? undefined,
     };
 

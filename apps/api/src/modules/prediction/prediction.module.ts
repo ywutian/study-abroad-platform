@@ -3,16 +3,10 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PredictionService } from './prediction.service';
 import { PredictionController } from './prediction.controller';
 import { AdminPredictionFeedbackController } from './admin-prediction-feedback.controller';
-import { PredictionMlController } from './prediction-ml.controller';
 import { RedisModule } from '../../common/redis/redis.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
 import { SchoolModule } from '../school/school.module';
 import { PointsModule } from '../points/points.module';
-import { ModelRegistryService } from './ml/model-registry.service';
-import { TrainingDataService } from './ml/training-data.service';
-import { ModelTrainerService } from './ml/model-trainer.service';
-import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
-import { ModelMonitorService } from './ml/model-monitor.service';
 import { PredictionTransformerService } from './prediction-transformer.service';
 import { PredictionStatisticalEngine } from './prediction-statistical-engine.service';
 import { PredictionAiEngine } from './prediction-ai-engine.service';
@@ -28,16 +22,25 @@ import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionWorkflowService } from './prediction-workflow.service';
 import { PredictionPolicyShadowService } from './prediction-policy-shadow.service';
 import { PredictionHookModifiersService } from './prediction-hook-modifiers.service';
-import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
-import { DiagnosticIngestService } from './diagnostic-ingest.service';
-import {
-  BENCHMARK_CONTROLLERS,
-  BENCHMARK_PROVIDERS,
-} from './benchmark/benchmark-providers';
 import { DistillationModule } from './distillation/distillation.module';
 import { CounselorEngineModule } from './counselor/counselor-engine.module';
 import { forwardRef } from '@nestjs/common';
 
+/**
+ * Prediction Module — counselor primary architecture
+ *
+ * As of 2026-05-07, the served prediction path is the CounselorEngine
+ * (industry-standard rules-of-thumb anchored on CDS admit bands).
+ *
+ * The legacy ML platform layer (ml/, benchmark/, prediction-ml-primary,
+ * prediction-ml.controller, diagnostic-ingest) was removed because:
+ *   1. ModelRegistry never had a CHAMPION model trained (no labeled outcomes)
+ *   2. Counselor mode is at 100% rollout and overrides any ML output
+ *   3. CollegeVine / PrepScholar / Niche all use rule-based, not ML
+ *
+ * If real ML training resumes (after ≥50 verified outcomes per cohort),
+ * restore via `git log --diff-filter=D -- apps/api/src/modules/prediction/ml/`.
+ */
 @Module({
   imports: [
     RedisModule,
@@ -50,18 +53,12 @@ import { forwardRef } from '@nestjs/common';
     // endpoint while prediction depends on the distillation services for
     // the served blend. forwardRef defers both resolutions to runtime.
     forwardRef(() => DistillationModule),
-    // Cold-start counselor engine — PredictionService injects
-    // CounselorEngineService when the prediction-counselor-mode-v1 feature
-    // flag is enabled. No circular dependency: counselor only depends on
-    // PrismaModule.
+    // Cold-start counselor engine — primary served path. PredictionService
+    // injects CounselorEngineService when the prediction-counselor-mode-v1
+    // feature flag is enabled.
     CounselorEngineModule,
   ],
-  controllers: [
-    PredictionController,
-    AdminPredictionFeedbackController,
-    PredictionMlController,
-    ...BENCHMARK_CONTROLLERS,
-  ],
+  controllers: [PredictionController, AdminPredictionFeedbackController],
   providers: [
     PredictionTransformerService,
     PredictionStatisticalEngine,
@@ -78,15 +75,7 @@ import { forwardRef } from '@nestjs/common';
     PredictionPolicyService,
     PredictionWorkflowService,
     PredictionPolicyShadowService,
-    ModelRegistryService,
-    TrainingDataService,
-    ModelTrainerService,
-    ShadowEvaluatorService,
-    ModelMonitorService,
     PredictionHookModifiersService,
-    PredictionMlPrimaryService,
-    ...BENCHMARK_PROVIDERS,
-    DiagnosticIngestService,
   ],
   exports: [
     PredictionService,

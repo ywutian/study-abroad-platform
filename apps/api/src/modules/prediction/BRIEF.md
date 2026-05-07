@@ -2,13 +2,13 @@
 
 ## Purpose
 
-ML-powered admission probability prediction using multi-engine fusion (statistical, AI, historical case-matching).
+Counselor-primary admission probability prediction. Industry-standard rules-of-thumb anchored on CDS admit bands; falls back to AR+SAT bands then AR-only when CDS is unavailable.
 
 ## Key Files
 
 - `prediction.controller.ts` — predict / history / dashboard / school detail / report result / calibration
-- `prediction.service.ts` — orchestrates 13 sub-services; engines: statistical + ai + fusion
-- `prediction-ml-primary.service.ts` — v5 shadow/served; `prediction-calibration.service.ts` — Platt; `prediction-policy.service.ts` — gates
+- `prediction.service.ts` — orchestrates sub-services; primary path is `counselor/CounselorEngineService` when feature flag is enabled
+- `prediction-calibration.service.ts` — Platt scaling for legacy fusion path; `prediction-policy.service.ts` — feature flag gates
 
 ## Data Model
 
@@ -40,6 +40,7 @@ Consumer rule: any read feeding stats / training / distillation / UI trend **mus
 
 ## Gotchas
 
-- v5 ML-primary may be in shadow mode; school agent must serve the actually-served result
+- Counselor mode is the primary served path; legacy fusion runs only when the counselor flag is disabled
 - `servedTrace` and internal policy gates must NOT be exposed to regular users
 - Points charged before prediction; refunded on failure via `safeRefund`
+- ML platform layer (ml/, benchmark/, prediction-ml-primary, diagnostic-ingest) was removed 2026-05-07; restore via `git log --diff-filter=D` if real ML training resumes
