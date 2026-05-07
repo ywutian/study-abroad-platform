@@ -1,8 +1,8 @@
 {
   "id": "028-ucm-china-intl-strong-rd",
   "description": "UCM + China intl + strong RD (no highSchoolLocation)",
-  "rationale": "UCM still uses a high Tier 1 academic anchor, but the latest real intl/OOS data path no longer assumes every strong international applicant should hit the 0.98 ceiling. Current counselor output is 77.6%, which is still a high-admit outcome but reflects the verified residency-rate adjustment rather than a generic 0.95× heuristic. Range [0.74, 0.82] guards this behavior.",
-  "lastReviewedAt": "2026-04-30",
+  "rationale": "UCM uses a high Tier 1 academic anchor; combined with counselor v1.6 (origin/main) intl/OOS adjustments and Phase C gpaDistribution + ED/EA + ACT bands modifiers, the served output is ~0.87 for a strong China intl SAT 1500 applicant. UCM admits ~85% intl per IPEDS, so a strong applicant landing in the high 80s is consistent with 'less-selective school = essentially admit'. Range [0.84, 0.92] guards this behavior post-merge of counselor v1.6 + Phase C math.",
+  "lastReviewedAt": "2026-05-06",
   "profile": {
     "gpa": 3.9,
     "gpaScale": 4,
@@ -17,6 +17,6 @@
   },
   "schoolName": "University of California, Merced",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.74, 0.82],
+  "expectedProbabilityRange": [0.84, 0.92],
   "tags": ["uc-system", "international", "regression-pr8"]
 }
