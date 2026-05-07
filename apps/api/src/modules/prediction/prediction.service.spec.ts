@@ -15,11 +15,9 @@ import { PredictionMemoryService } from './prediction-memory.service';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
 import { PredictionPolicyService } from './prediction-policy.service';
-import { PredictionMlPrimaryService } from './prediction-ml-primary.service';
-import { ModelRegistryService } from './ml/model-registry.service';
-import { ShadowEvaluatorService } from './ml/shadow-evaluator.service';
-import { ModelMonitorService } from './ml/model-monitor.service';
-import { DistillationService } from './benchmark/distillation.service';
+// ML platform services (PredictionMlPrimaryService, ModelRegistryService,
+// ShadowEvaluatorService, ModelMonitorService, benchmark DistillationService)
+// removed 2026-05-07; counselor mode is the only served path.
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 import { DistillationObservationService } from './distillation/distillation-observation.service';
 import { CounselorEngineService } from './counselor/counselor-engine.service';
@@ -213,26 +211,9 @@ describe('PredictionService counselor primary', () => {
         },
         { provide: CaseIncentiveService, useValue: { charge: jest.fn() } },
         {
-          provide: ModelRegistryService,
-          useValue: { getChampionModel: jest.fn() },
-        },
-        {
-          provide: ShadowEvaluatorService,
-          useValue: { runIfActive: jest.fn() },
-        },
-        {
-          provide: ModelMonitorService,
-          useValue: { recordPrediction: jest.fn() },
-        },
-        {
-          provide: PredictionMlPrimaryService,
-          useValue: { predictForSchool: jest.fn() },
-        },
-        {
           provide: FeatureFlagService,
           useValue: { isEnabled: jest.fn().mockResolvedValue(false) },
         },
-        { provide: DistillationService, useValue: {} },
         { provide: CompliantDistillationService, useValue: {} },
         {
           provide: DistillationObservationService,
