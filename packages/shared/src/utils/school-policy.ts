@@ -12,7 +12,12 @@ export function isSchoolTestingPolicy(value: unknown): value is SchoolTestingPol
 }
 
 export function resolveSchoolTestingPolicyValue(input: TestingPolicyInput): SchoolTestingPolicy {
-  if (isSchoolTestingPolicy(input.testingPolicy) && input.testingPolicy !== 'UNKNOWN') {
+  // Preserve explicit testingPolicy (including UNKNOWN) — gold case 007
+  // ("Unknown school policy should remain explicit instead of being inferred
+  // into a false optional/required label") regresses if we infer over an
+  // explicit UNKNOWN. testOptional inference only fires when no explicit
+  // testingPolicy was supplied.
+  if (isSchoolTestingPolicy(input.testingPolicy)) {
     return input.testingPolicy;
   }
   if (input.testOptional === true) return 'OPTIONAL';
