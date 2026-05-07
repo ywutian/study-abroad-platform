@@ -50,6 +50,8 @@ jobs:
             web:
               - 'apps/web/**'
               - 'packages/shared/**'
+              - 'e2e/**'
+              - 'playwright.config.ts'
               - 'pnpm-lock.yaml'
             mobile:
               - 'apps/mobile/**'
