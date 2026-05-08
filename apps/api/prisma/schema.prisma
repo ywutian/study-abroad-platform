@@ -107,6 +107,14 @@ enum TestingPolicy {
   UNKNOWN
 }
 
+enum InstitutionType {
+  RESEARCH_UNIVERSITY
+  LIBERAL_ARTS
+  ART_DESIGN
+  MUSIC_CONSERVATORY
+  SPECIALTY
+}
+
 enum AwardLevel {
   SCHOOL
   REGIONAL
@@ -1054,7 +1062,8 @@ model School {
   graduationRate Decimal? @db.Decimal(5, 2) // 4-year graduation rate %
 
   // School Type
-  isPrivate Boolean @default(false)
+  isPrivate       Boolean          @default(false)
+  institutionType InstitutionType?
 
   // International student info
   needBlindInternational Boolean  @default(false)
