@@ -29,6 +29,7 @@ interface RecommendedUser {
   email: string;
   role: string;
   profile?: {
+    nickname?: string;
     targetMajor?: string;
     grade?: string;
     visibility?: string;
@@ -53,7 +54,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
   const queryClient = useQueryClient();
 
   const {
-    data: users,
+    data: usersData,
     isLoading,
     refetch,
     isRefetching,
@@ -74,6 +75,8 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
     },
   });
 
+  const users = Array.isArray(usersData) ? usersData : [];
+
   if (isLoading) {
     return (
       <Card className={cn('overflow-hidden border-border', className)}>
@@ -90,7 +93,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
     );
   }
 
-  if (!users || users.length === 0) {
+  if (users.length === 0) {
     return null;
   }
 
@@ -122,86 +125,92 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
       <CardContent className="pb-4">
         <ScrollArea className="w-full whitespace-nowrap">
           <div className="flex gap-3 pb-2">
-            {users.map((user, index) => (
-              <motion.div
-                key={user.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.04 }}
-                className="w-40 shrink-0"
-              >
-                <Card className="h-full overflow-hidden border-border hover:border-primary/30 hover:shadow-sm transition-all duration-200">
-                  <CardContent className="p-3.5 text-center flex flex-col h-full">
-                    {/* Avatar */}
-                    <div className="relative mx-auto w-fit">
-                      <Avatar className="h-14 w-14 ring-2 ring-offset-2 ring-offset-background ring-primary/20">
-                        <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-white text-lg font-bold">
-                          {user.email[0].toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {user.role === 'VERIFIED' && (
-                        <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full p-0.5 ring-2 ring-background">
-                          <BadgeCheck className="h-3 w-3 text-white" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Name & Badge */}
-                    <div className="mt-2.5">
-                      <p className="font-semibold text-sm truncate text-foreground">
-                        {user.email.split('@')[0]}
-                      </p>
-                      {user.role === 'VERIFIED' && (
-                        <Badge variant="success" className="mt-1 text-[10px] px-1.5 py-0">
-                          {t('verification.status.verified')}
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Info - flex-1 to push button to bottom */}
-                    <div className="flex-1 flex flex-col justify-center mt-2.5 space-y-1 text-[11px] text-muted-foreground min-h-[2rem]">
-                      {user.profile?.targetMajor && (
-                        <div className="flex items-center justify-center gap-1">
-                          <GraduationCap className="h-3 w-3" />
-                          <span className="truncate max-w-[110px]">{user.profile.targetMajor}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-center gap-2.5">
-                        {user.stats && user.stats.followers > 0 && (
-                          <span className="flex items-center gap-0.5">
-                            <Users className="h-2.5 w-2.5" />
-                            {user.stats.followers}
-                          </span>
-                        )}
-                        {user.stats && user.stats.cases > 0 && (
-                          <span className="flex items-center gap-0.5">
-                            <FileText className="h-2.5 w-2.5" />
-                            {user.stats.cases}
-                          </span>
+            {users.map((user, index) => {
+              const displayName = user.profile?.nickname || user.email.split('@')[0];
+              return (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="w-40 shrink-0"
+                >
+                  <Card className="h-full overflow-hidden border-border hover:border-primary/30 hover:shadow-sm transition-all duration-200">
+                    <CardContent className="p-3.5 text-center flex flex-col h-full">
+                      {/* Avatar */}
+                      <div className="relative mx-auto w-fit">
+                        <Avatar className="h-14 w-14 ring-2 ring-offset-2 ring-offset-background ring-primary/20">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-white text-lg font-bold">
+                            {displayName[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {user.role === 'VERIFIED' && (
+                          <div className="absolute -bottom-0.5 -right-0.5 bg-green-500 rounded-full p-0.5 ring-2 ring-background">
+                            <BadgeCheck className="h-3 w-3 text-white" />
+                          </div>
                         )}
                       </div>
-                    </div>
 
-                    {/* Follow Button - always at bottom */}
-                    <Button
-                      size="sm"
-                      className="w-full h-8 text-xs mt-2.5"
-                      onClick={() => followMutation.mutate(user.id)}
-                      disabled={followMutation.isPending}
-                    >
-                      {followMutation.isPending ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <UserPlus className="h-3.5 w-3.5 mr-1" />
-                          {t('followers.follow')}
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                      {/* Name & Badge */}
+                      <div className="mt-2.5">
+                        <p className="font-semibold text-sm truncate text-foreground">
+                          {displayName}
+                        </p>
+                        {user.role === 'VERIFIED' && (
+                          <Badge variant="success" className="mt-1 text-2xs px-1.5 py-0">
+                            {t('verification.status.verified')}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Info - flex-1 to push button to bottom */}
+                      <div className="flex-1 flex flex-col justify-center mt-2.5 space-y-1 text-2xs text-muted-foreground min-h-[2rem]">
+                        {user.profile?.targetMajor && (
+                          <div className="flex items-center justify-center gap-1">
+                            <GraduationCap className="h-3 w-3" />
+                            <span className="truncate max-w-[110px]">
+                              {user.profile.targetMajor}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-center gap-2.5">
+                          {user.stats && user.stats.followers > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              <Users className="h-2.5 w-2.5" />
+                              {user.stats.followers}
+                            </span>
+                          )}
+                          {user.stats && user.stats.cases > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              <FileText className="h-2.5 w-2.5" />
+                              {user.stats.cases}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Follow Button - always at bottom */}
+                      <Button
+                        size="sm"
+                        aria-label={t('followers.actions.follow')}
+                        className="mt-2.5 h-10 w-full text-xs sm:h-8"
+                        onClick={() => followMutation.mutate(user.id)}
+                        disabled={followMutation.isPending}
+                      >
+                        {followMutation.isPending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <UserPlus className="h-3.5 w-3.5 mr-1" />
+                            {t('followers.follow')}
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>

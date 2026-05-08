@@ -75,6 +75,7 @@ export function ActivityTab() {
     queryKey: ['adminOperators'],
     queryFn: () => apiClient.get<Operator[]>(adminRoutes.operators()),
   });
+  const operatorList = Array.isArray(operators) ? operators : [];
 
   const { data: logsData, isLoading } = useQuery({
     queryKey: ['adminTeamActivity', memberFilter, actionFilter, page],
@@ -116,7 +117,7 @@ export function ActivityTab() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t('team.activity.allMembers')}</SelectItem>
-            {operators?.map((op) => (
+            {operatorList.map((op) => (
               <SelectItem key={op.id} value={op.id}>
                 {op.email}
               </SelectItem>

@@ -64,7 +64,7 @@ export function BadgeDisplay({
   className,
 }: BadgeDisplayProps) {
   const t = useTranslations('hall');
-  const config = BADGE_CONFIG[badge];
+  const config = BADGE_CONFIG[badge] ?? BADGE_CONFIG.bronze;
   const BadgeIcon = config.icon;
   const badgeLabel = t(`badges.${config.key}`);
 

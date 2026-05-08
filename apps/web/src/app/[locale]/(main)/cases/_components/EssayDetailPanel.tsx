@@ -278,13 +278,20 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0"
+                      className="h-10 w-10 p-0 sm:h-8 sm:w-8"
                       onClick={() => setUseSerif(!useSerif)}
                       title={useSerif ? 'Sans-serif' : 'Serif'}
+                      aria-label={useSerif ? 'Use sans-serif font' : 'Use serif font'}
                     >
                       <Type className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={handleCopy}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-10 w-10 p-0 sm:h-8 sm:w-8"
+                      onClick={handleCopy}
+                      aria-label={t('detail.copyEssay')}
+                    >
                       {copied ? (
                         <Check className="h-3.5 w-3.5 text-emerald-500" />
                       ) : (

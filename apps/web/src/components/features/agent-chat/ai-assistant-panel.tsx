@@ -119,6 +119,7 @@ export function AiAssistantPanel({
     >
       <Button
         size="lg"
+        aria-label={t('assistant')}
         className={cn(
           'h-14 w-14 rounded-full shadow-lg',
           'bg-gradient-to-br from-primary to-primary/80',
@@ -225,7 +226,7 @@ export function AiAssistantPanel({
         </SheetContent>
       </Sheet>
 
-      {triggerPosition === 'fixed' && !isOpen && fixedTrigger}
+      {triggerPosition === 'fixed' && !isOpen && !isControlled && fixedTrigger}
     </>
   );
 }

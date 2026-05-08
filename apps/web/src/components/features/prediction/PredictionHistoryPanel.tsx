@@ -143,7 +143,9 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
               >
                 <span className="text-muted-foreground">{formatDate(h.createdAt)}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{(h.probability * 100).toFixed(0)}%</span>
+                  <span className="font-medium">
+                    {h.probability == null ? 'Unavailable' : `${(h.probability * 100).toFixed(0)}%`}
+                  </span>
                   <Badge variant="outline" className={cn('text-2xs py-0 px-1.5', config.badge)}>
                     {t(`tier.${tier}`)}
                   </Badge>

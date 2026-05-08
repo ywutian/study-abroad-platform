@@ -1,8 +1,8 @@
 {
   "id": "005-ucla-strong-ca-instate-rd",
   "description": "UC Los Angeles — strong CA in-state applicant, RD",
-  "rationale": "UCLA anchor ~0.09. Strong stats × 1.2; in-state UC × 1.8 = ~2.16× anchor → 0.19. Below cap (0.225). Range [0.10, 0.25] reflects strong in-state applicant.",
-  "lastReviewedAt": "2026-04-26",
+  "rationale": "After the UCOP discipline data load, UCLA uses a Tier 1 CS-aware anchor. Strong CA in-state stats land just above the old 25% ceiling, while the official CS program selectivity factor keeps the estimate in the high-20s rather than letting generic in-state multipliers dominate. Range [0.10, 0.27] reflects this verified-data path.",
+  "lastReviewedAt": "2026-04-30",
   "profile": {
     "gpa": 3.9,
     "gpaScale": 4,
@@ -14,6 +14,6 @@
   },
   "schoolName": "University of California, Los Angeles",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.1, 0.25],
+  "expectedProbabilityRange": [0.1, 0.27],
   "tags": ["uc-system", "tier-2-algorithmic"]
 }

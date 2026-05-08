@@ -11,7 +11,7 @@ import { renderHook } from '@testing-library/react-native';
 // The global jest.setup.js has a default mock for @/stores/theme.
 // We override it here so we can control colorScheme per test.
 // Mock useThemeStore as a Zustand-style hook that accepts a selector
-const mockState = { colorScheme: 'light' as string | null, colorPalette: 'lumni-warm' };
+const mockState = { colorScheme: 'light' as string | null, colorPalette: 'default' };
 jest.mock('@/stores/theme', () => ({
   useThemeStore: jest.fn((selector?: (s: typeof mockState) => unknown) =>
     selector ? selector(mockState) : mockState
@@ -61,11 +61,11 @@ describe('colors', () => {
     });
 
     it('has the correct success color', () => {
-      expect(colors.light.success).toBe('#6f7b58');
+      expect(colors.light.success).toBe('#5f6f4b');
     });
 
     it('has the correct error color', () => {
-      expect(colors.light.error).toBe('#b85c58');
+      expect(colors.light.error).toBe('#a94844');
     });
 
     it('has the correct warning color', () => {
@@ -136,13 +136,13 @@ describe('colors', () => {
 describe('useColors', () => {
   afterEach(() => {
     mockState.colorScheme = 'light';
-    mockState.colorPalette = 'lumni-warm';
+    mockState.colorPalette = 'default';
     jest.restoreAllMocks();
   });
 
   it('returns light colors when colorScheme is light', () => {
     mockState.colorScheme = 'light';
-    mockState.colorPalette = 'lumni-warm';
+    mockState.colorPalette = 'default';
 
     const { result } = renderHook(() => useColors());
 

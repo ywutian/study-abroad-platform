@@ -31,10 +31,10 @@ export function PageTransitionWrapper({ children, className }: PageTransitionWra
   }
 
   return (
-    <AnimatePresence mode="popLayout">
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={pathname}
-        initial={{ opacity: 0, y: 8 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         transition={{
@@ -63,7 +63,7 @@ export function PageContent({ children, className }: PageTransitionWrapperProps)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{
         type: 'spring',
@@ -90,7 +90,7 @@ export function PageHeaderMotion({ children, className }: PageTransitionWrapperP
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -8 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{
         type: 'spring',

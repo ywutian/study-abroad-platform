@@ -20,6 +20,7 @@ export const NEED_BLIND_INTL_NAME_NORMS = [
   'yale university',
   'princeton university',
   'amherst college',
+  'dartmouth college',
 ] as const;
 
 export async function seedIntlSchools(

@@ -179,10 +179,17 @@ export class PredictionMemoryService {
   ): Promise<void> {
     if (!this.memoryManager || results.length === 0) return;
 
-    const topSchools = results.slice(0, 5);
+    const numericResults = results.filter(
+      (r): r is PredictionResultDto & { probability: number } =>
+        r.probability != null && Number.isFinite(r.probability),
+    );
+    if (numericResults.length === 0) return;
+
+    const topSchools = numericResults.slice(0, 5);
     const schoolNames = topSchools.map((r) => r.schoolName).join('、');
     const avgProbability = Math.round(
-      results.reduce((sum, r) => sum + r.probability * 100, 0) / results.length,
+      numericResults.reduce((sum, r) => sum + r.probability * 100, 0) /
+        numericResults.length,
     );
 
     // 判断是否为重复预测
@@ -192,8 +199,8 @@ export class PredictionMemoryService {
 
     // 决策记忆
     const content = isRepeat
-      ? `用户再次查看了${results.length}所学校的录取预测（${schoolNames}），平均录取概率${avgProbability}%。这表明对这些学校有持续关注。`
-      : `用户首次查看了${results.length}所学校的录取预测，包括${schoolNames}等，平均录取概率${avgProbability}%`;
+      ? `用户再次查看了${numericResults.length}所学校的录取预测（${schoolNames}），平均录取概率${avgProbability}%。这表明对这些学校有持续关注。`
+      : `用户首次查看了${numericResults.length}所学校的录取预测，包括${schoolNames}等，平均录取概率${avgProbability}%`;
 
     await this.memoryManager.remember(userId, {
       type: MemoryType.DECISION,
@@ -201,7 +208,7 @@ export class PredictionMemoryService {
       content,
       importance: isRepeat ? 0.8 : 0.7,
       metadata: {
-        schoolCount: results.length,
+        schoolCount: numericResults.length,
         topSchools: topSchools.map((r) => ({
           name: r.schoolName,
           probability: r.probability,

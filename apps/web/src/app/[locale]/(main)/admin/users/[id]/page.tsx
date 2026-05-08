@@ -99,6 +99,11 @@ export default function AdminUserDetailPage() {
     );
   }
 
+  const counts = user._count ?? { admissionCases: 0, reviewsGiven: 0 };
+  const todayUsage = usage?.today ?? { tokens: 0, cost: 0, calls: 0 };
+  const monthUsage = usage?.month ?? { tokens: 0, cost: 0, calls: 0 };
+  const remainingUsage = usage?.remaining ?? { daily: 0, monthly: 0 };
+
   return (
     <>
       <div className="flex items-center gap-3 mb-4">
@@ -202,27 +207,27 @@ export default function AdminUserDetailPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-muted-foreground">{t('userDetail.todayTokens')}</p>
-                      <p className="text-lg font-bold">{usage.today.tokens.toLocaleString()}</p>
+                      <p className="text-lg font-bold">{todayUsage.tokens.toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">
-                        {t('userDetail.remaining')}: {usage.remaining.daily.toLocaleString()}
+                        {t('userDetail.remaining')}: {remainingUsage.daily.toLocaleString()}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">{t('userDetail.monthTokens')}</p>
-                      <p className="text-lg font-bold">{usage.month.tokens.toLocaleString()}</p>
+                      <p className="text-lg font-bold">{monthUsage.tokens.toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">
-                        {t('userDetail.remaining')}: {usage.remaining.monthly.toLocaleString()}
+                        {t('userDetail.remaining')}: {remainingUsage.monthly.toLocaleString()}
                       </p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-muted-foreground">{t('userDetail.todayCost')}</p>
-                      <p className="text-sm font-medium">${usage.today.cost.toFixed(4)}</p>
+                      <p className="text-sm font-medium">${todayUsage.cost.toFixed(4)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">{t('userDetail.monthCost')}</p>
-                      <p className="text-sm font-medium">${usage.month.cost.toFixed(4)}</p>
+                      <p className="text-sm font-medium">${monthUsage.cost.toFixed(4)}</p>
                     </div>
                   </div>
                   {rateLimit && (
@@ -266,11 +271,11 @@ export default function AdminUserDetailPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <span className="text-sm">{t('userDetail.cases')}</span>
-                  <Badge variant="secondary">{user._count.admissionCases}</Badge>
+                  <Badge variant="secondary">{counts.admissionCases}</Badge>
                 </div>
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <span className="text-sm">{t('userDetail.reviews')}</span>
-                  <Badge variant="secondary">{user._count.reviewsGiven}</Badge>
+                  <Badge variant="secondary">{counts.reviewsGiven}</Badge>
                 </div>
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <span className="text-sm">{t('userDetail.locale')}</span>

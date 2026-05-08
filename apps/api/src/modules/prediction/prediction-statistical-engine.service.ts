@@ -91,10 +91,13 @@ export class PredictionStatisticalEngine {
     const baseRate = intlBaseRate ?? overallBaseRate;
 
     if (baseRate != null && baseRate > 0 && baseRate < 1) {
+      const isTestBlindForSignals = school.testingPolicy === 'BLIND';
       const missingCriticalSignals =
         Number(profileMetrics.gpa == null) +
         Number(
-          profileMetrics.satScore == null && profileMetrics.actScore == null,
+          !isTestBlindForSignals &&
+            profileMetrics.satScore == null &&
+            profileMetrics.actScore == null,
         ) +
         Number(profileMetrics.highSchoolTier == null);
       if (missingCriticalSignals >= 2) {
@@ -181,7 +184,20 @@ export class PredictionStatisticalEngine {
       });
     }
 
-    if (profileMetrics.satScore) {
+    // Test-blind schools (e.g. UC Berkeley) ignore SAT/ACT entirely. We surface
+    // a neutral informational factor instead of penalizing absent scores or
+    // rewarding strong ones — the school does not see test data at all.
+    const isTestBlindSchool = school.testingPolicy === 'BLIND';
+    if (isTestBlindSchool) {
+      factors.push({
+        name: isZh ? '标化成绩' : 'Standardized Test Scores',
+        impact: 'neutral',
+        weight: 0,
+        detail: isZh
+          ? '该校实行标化盲审政策，SAT/ACT 成绩不会被招生官查看，不影响录取概率'
+          : 'This school is test-blind; SAT/ACT scores are not reviewed and do not affect admissions probability',
+      });
+    } else if (profileMetrics.satScore) {
       const isGood = profileMetrics.satScore >= (schoolMetrics.satAvg || 1400);
       factors.push({
         name: isZh ? '标化成绩' : 'Standardized Test Scores',
@@ -279,6 +295,33 @@ export class PredictionStatisticalEngine {
         improvement: isZh
           ? '建议参加学科竞赛或其他有影响力的比赛'
           : 'Participate in academic competitions or other impactful contests',
+      });
+    }
+
+    if (profileMetrics.essayQualityScore != null) {
+      const essayScore =
+        profileMetrics.essayQualityScore > 10
+          ? profileMetrics.essayQualityScore / 10
+          : profileMetrics.essayQualityScore;
+      const boundedEssayScore = Math.max(0, Math.min(10, essayScore));
+      factors.push({
+        name: isZh ? '文书质量' : 'Essay Quality',
+        impact:
+          boundedEssayScore >= 8
+            ? 'positive'
+            : boundedEssayScore >= 6.5
+              ? 'neutral'
+              : 'negative',
+        weight: 0.07,
+        detail: isZh
+          ? `最近一次 AI 文书评审为 ${boundedEssayScore.toFixed(1)}/10，已作为软性申请质量信号纳入概率模型`
+          : `Latest AI essay review is ${boundedEssayScore.toFixed(1)}/10 and is included as a soft application-quality signal`,
+        improvement:
+          boundedEssayScore < 8
+            ? isZh
+              ? '建议继续强化具体故事、学校匹配度和个人反思深度'
+              : 'Strengthen concrete storytelling, school fit, and depth of reflection'
+            : undefined,
       });
     }
 

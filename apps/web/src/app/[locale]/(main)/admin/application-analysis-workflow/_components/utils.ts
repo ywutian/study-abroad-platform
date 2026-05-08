@@ -9,7 +9,8 @@ export const EVIDENCE_REVIEW_STATUSES = [
   'EXPIRED',
 ] as const;
 
-export function humanizeEnum(value: string) {
+export function humanizeEnum(value?: string | null) {
+  if (!value) return 'Unknown';
   return value
     .toLowerCase()
     .split('_')

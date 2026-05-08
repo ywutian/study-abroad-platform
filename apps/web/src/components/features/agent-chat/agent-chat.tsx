@@ -391,7 +391,7 @@ export function AgentChat({
                             variant="outline"
                             size="sm"
                             onClick={() => sendMessage(t(`quickActions.${action.messageKey}`))}
-                            className="text-xs rounded-full px-4 hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-all"
+                            className="h-10 min-h-10 rounded-full px-4 text-xs transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary sm:h-8 sm:min-h-8"
                           >
                             {t(`quickActions.${action.labelKey}`)}
                           </Button>
@@ -469,7 +469,7 @@ export function AgentChat({
                     variant="ghost"
                     size="sm"
                     onClick={() => sendMessage(t(`quickActions.${action.messageKey}`))}
-                    className="text-xs whitespace-nowrap h-7 rounded-full hover:bg-primary/5"
+                    className="h-10 min-h-10 whitespace-nowrap rounded-full text-xs hover:bg-primary/5 sm:h-7 sm:min-h-7"
                   >
                     {t(`quickActions.${action.labelKey}`)}
                   </Button>

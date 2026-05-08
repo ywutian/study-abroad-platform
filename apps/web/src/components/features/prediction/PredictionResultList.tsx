@@ -25,7 +25,7 @@ interface PredictionResultListProps {
 type SortBy = 'probability' | 'tier' | 'confidence';
 type FilterTier = TierType | 'all';
 
-const TIER_ORDER: Record<string, number> = { reach: 0, match: 1, safety: 2 };
+const TIER_ORDER: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
 const CONFIDENCE_ORDER: Record<string, number> = { low: 0, medium: 1, high: 2 };
 
 const VIRTUALIZATION_THRESHOLD = 15;
@@ -55,7 +55,7 @@ export function PredictionResultList({
     items = [...items].sort((a, b) => {
       switch (deferredSortBy) {
         case 'probability':
-          return b.probability - a.probability;
+          return (b.probability ?? -1) - (a.probability ?? -1);
         case 'tier':
           return (TIER_ORDER[a.tier] ?? 3) - (TIER_ORDER[b.tier] ?? 3);
         case 'confidence':
@@ -69,9 +69,15 @@ export function PredictionResultList({
   }, [results, deferredSortBy, deferredFilterTier]);
 
   const tierCounts = useMemo(() => {
-    const counts = { reach: 0, match: 0, safety: 0 };
+    const counts: Record<'reach' | 'match' | 'safety', number> = {
+      reach: 0,
+      match: 0,
+      safety: 0,
+    };
     results.forEach((r) => {
-      if (r.tier in counts) counts[r.tier]++;
+      if (r.tier === 'reach' || r.tier === 'match' || r.tier === 'safety') {
+        counts[r.tier]++;
+      }
     });
     return counts;
   }, [results]);
@@ -129,7 +135,7 @@ export function PredictionResultList({
             {t('filter.all')} ({results.length})
           </Badge>
         </button>
-        {(['reach', 'match', 'safety'] as TierType[]).map((tier) => {
+        {(['reach', 'match', 'safety'] as Array<Exclude<TierType, 'unavailable'>>).map((tier) => {
           const config = TIER_CONFIG[tier];
           return (
             <button

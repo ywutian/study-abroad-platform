@@ -82,7 +82,7 @@ export function HeroSection() {
       data-hero-visual={heroVisual}
       className={cn(
         'landing-hero-shell relative overflow-hidden pt-32 pb-20 sm:pt-36 lg:pt-44 lg:pb-28',
-        heroVisual !== 'matrix-premium' && 'landing-hero-alt'
+        heroVisual !== 'classic-matrix' && 'landing-hero-alt'
       )}
     >
       <div className="landing-canvas-texture" />
@@ -336,6 +336,9 @@ type HeroVisualSceneProps = {
 };
 
 function HeroVisualScene({ visual, copy, reduced, disclosure }: HeroVisualSceneProps) {
+  if (visual === 'command-center') {
+    return <CommandCenterHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
   if (visual === 'deer-moon-monolith') {
     return <DeerMoonMonolith copy={copy} reduced={reduced} disclosure={disclosure} />;
   }
@@ -639,6 +642,178 @@ function PremiumHeroConsole({
   );
 }
 
+function CommandCenterHero({
+  copy,
+  reduced,
+  disclosure,
+}: {
+  copy: HeroConsoleCopy;
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  const [activeRow, setActiveRow] = useState(1);
+  const [activeTask, setActiveTask] = useState(0);
+  const rowCount = copy.rows.length;
+  const taskCount = copy.tasks.length;
+
+  useEffect(() => {
+    if (reduced) return;
+    const timer = window.setInterval(() => {
+      setActiveRow((prev) => (prev + 1) % rowCount);
+      setActiveTask((prev) => (prev + 1) % taskCount);
+    }, 2600);
+
+    return () => window.clearInterval(timer);
+  }, [reduced, rowCount, taskCount]);
+
+  return (
+    <div className="relative mx-auto w-full max-w-[650px] lg:ml-8 xl:ml-14">
+      <motion.div
+        className="relative overflow-hidden rounded-[2rem] border border-[color:var(--landing-border)] bg-[#fbfcfd] p-5 text-[#111827] shadow-[0_34px_90px_rgba(15,23,42,0.14)] ring-1 ring-white/80"
+        animate={reduced ? undefined : { y: [0, -4, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(17,24,39,0.045)_1px,transparent_1px),linear-gradient(rgba(17,24,39,0.035)_1px,transparent_1px)] bg-[size:34px_34px]" />
+        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[color:var(--theme-glow-1)] opacity-70 blur-3xl" />
+        <div className="absolute -bottom-20 left-10 h-60 w-60 rounded-full bg-[color:var(--theme-glow-2)] opacity-55 blur-3xl" />
+
+        <div className="relative rounded-[1.45rem] border border-slate-200/85 bg-white/82 backdrop-blur-xl">
+          <div className="flex h-16 items-center justify-between border-b border-slate-200/80 px-5">
+            <div>
+              <div className="text-2xs uppercase tracking-[0.24em] text-slate-400">
+                {copy.workspace}
+              </div>
+              <div className="mt-1 text-xs text-slate-500">{copy.workflowLine}</div>
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs uppercase tracking-[0.16em] text-slate-500 shadow-sm">
+              <StatusDot status="success" pulse={!reduced} />
+              {copy.statusReady}
+            </div>
+          </div>
+
+          <div className="grid min-h-[520px] grid-cols-[0.88fr_1.12fr] gap-4 p-4">
+            <div className="relative flex flex-col justify-between overflow-hidden rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-5">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(221,184,90,0.22),transparent_35%)]" />
+              <div className="relative flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-2xs uppercase tracking-[0.24em] text-slate-400">
+                    {copy.signalLabel}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-slate-600">{copy.symbolLabel}</div>
+                </div>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-2xs uppercase tracking-[0.14em] text-slate-500">
+                  {copy.signalLabel.split(' ')[0]}
+                </span>
+              </div>
+
+              <BrandSeal className="relative mx-auto h-52 w-52" markClassName="text-[#111827]" />
+
+              <div className="relative rounded-[1rem] border border-slate-200 bg-white/90 p-4 shadow-sm">
+                <div className="text-2xs uppercase tracking-[0.2em] text-slate-400">
+                  {copy.profileLabel}
+                </div>
+                <div className="mt-2 text-lg font-semibold">{copy.profileMeta}</div>
+                <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                  <StatusDot status="success" pulse={!reduced} />
+                  {copy.statusLive}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-rows-[auto_1fr_auto] gap-4">
+              <div className="rounded-[1.25rem] border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="text-2xs uppercase tracking-[0.24em] text-slate-400">
+                  {copy.termLabel}
+                </div>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  {copy.title}
+                </h2>
+                <div className="mt-4 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">
+                  {copy.statusLive}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {copy.rows.map((row, index) => (
+                  <motion.div
+                    key={row.name}
+                    initial={false}
+                    animate={
+                      reduced
+                        ? undefined
+                        : {
+                            y: activeRow === index ? -2 : 0,
+                            scale: activeRow === index ? 1.015 : 1,
+                          }
+                    }
+                    transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                    className={cn(
+                      'grid grid-cols-[1fr_auto] items-center gap-3 rounded-[1rem] border bg-white px-4 py-3 shadow-sm transition',
+                      activeRow === index
+                        ? 'border-[color:var(--ds-primary)]/40 ring-2 ring-[color:var(--ds-primary)]/10'
+                        : 'border-slate-200'
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-slate-950">
+                        {row.name}
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500">{row.status}</div>
+                    </div>
+                    <AdmissionTierBadge tier={row.tone} probability={row.probability} />
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-[0.85fr_1.15fr] gap-3">
+                <div className="rounded-[1rem] border border-slate-200 bg-white p-4">
+                  <div className="text-2xs uppercase tracking-[0.2em] text-slate-400">
+                    {copy.tasksLabel}
+                  </div>
+                  <div className="mt-3 space-y-2.5">
+                    {copy.tasks.slice(0, 3).map((task, index) => (
+                      <div
+                        key={task}
+                        className="flex items-start gap-2 text-xs leading-5 text-slate-600"
+                      >
+                        <CheckCircle2
+                          className={cn(
+                            'mt-0.5 h-3.5 w-3.5 shrink-0',
+                            index <= activeTask ? 'text-[var(--ds-primary)]' : 'text-slate-300'
+                          )}
+                        />
+                        <span className={cn(index < activeTask && 'line-through opacity-55')}>
+                          {task}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="lumni-disclosure-on-light rounded-[1rem] border border-slate-200 bg-white p-4">
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-2xs uppercase tracking-[0.18em] text-slate-500">
+                    <StatusDot status="ai" pulse={!reduced} />
+                    {copy.assistantBadge}
+                  </div>
+                  <p className="mb-3 text-xs leading-5 text-slate-600">
+                    {copy.assistantMessages[1]}
+                  </p>
+                  <AIDisclosure
+                    inputs={disclosure.inputs}
+                    confidence={disclosure.confidence}
+                    limitations={disclosure.limitations}
+                  >
+                    {disclosure.trigger}
+                  </AIDisclosure>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function BrandSeal({ className, markClassName }: { className?: string; markClassName?: string }) {
   return (
     <div className={cn('relative flex items-center justify-center', className)}>
@@ -783,6 +958,7 @@ function DeerMoonMonolith({
               {copy.symbolLabel}
             </div>
             <div className="mt-3 text-2xl font-semibold tracking-tight">{copy.workspace}</div>
+            <div className="mt-4 text-sm leading-6 text-white/62">{copy.title}</div>
           </div>
           <div className="absolute bottom-0 right-0 rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-3 text-right">
             <div className="text-2xs uppercase tracking-[0.22em] text-white/42">
@@ -864,7 +1040,10 @@ function LovableAuraHero({
             <Sparkles className="h-4 w-4 text-[#6574ff]" />
             <span className="text-sm text-[var(--landing-muted)]">{copy.workflowLine}</span>
           </div>
-          <div className="mt-8 grid grid-cols-[0.92fr_1.08fr] gap-5">
+          <h2 className="mx-auto mt-6 max-w-[440px] text-center text-4xl font-semibold tracking-tight text-[#151515]">
+            {copy.title}
+          </h2>
+          <div className="mt-7 grid grid-cols-[0.92fr_1.08fr] gap-5">
             <div className="rounded-[1.75rem] border border-black/10 bg-white/86 p-5 shadow-xl">
               <BrandSeal className="mx-auto h-44 w-44" markClassName="text-[#201915]" />
               <div className="mt-5 text-center">

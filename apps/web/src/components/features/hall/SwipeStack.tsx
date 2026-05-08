@@ -231,6 +231,7 @@ export function SwipeStack({
               <Button
                 variant="outline"
                 size="lg"
+                aria-label={ts('rejectLabel')}
                 className={cn(
                   'h-12 w-12 sm:h-14 sm:w-14 rounded-full',
                   'border-2 border-destructive/50 hover:border-destructive',
@@ -252,6 +253,7 @@ export function SwipeStack({
               <Button
                 variant="outline"
                 size="lg"
+                aria-label={ts('skipLabel')}
                 className={cn(
                   'h-10 w-10 sm:h-12 sm:w-12 rounded-full',
                   'border-2 border-muted-foreground/50 hover:border-muted-foreground',
@@ -273,6 +275,7 @@ export function SwipeStack({
               <Button
                 variant="outline"
                 size="lg"
+                aria-label={ts('favoriteLabel')}
                 className={cn(
                   'h-10 w-10 sm:h-12 sm:w-12 rounded-full',
                   'border-2 border-warning/50 hover:border-warning',
@@ -294,6 +297,7 @@ export function SwipeStack({
               <Button
                 variant="outline"
                 size="lg"
+                aria-label={ts('admitLabel')}
                 className={cn(
                   'h-12 w-12 sm:h-14 sm:w-14 rounded-full',
                   'border-2 border-success/50 hover:border-success',

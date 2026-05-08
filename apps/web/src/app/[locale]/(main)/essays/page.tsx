@@ -3,9 +3,18 @@
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { Plus, PenTool, Sparkles, Wand2, Lightbulb, HelpCircle } from 'lucide-react';
+import {
+  Plus,
+  PenTool,
+  Sparkles,
+  Wand2,
+  Lightbulb,
+  HelpCircle,
+  FileText,
+  ShieldCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PageContainer, PageHeader } from '@/components/layout';
+import { EnterpriseStatusStrip, PageContainer, PageHeader } from '@/components/layout';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 import { AiAssistantPanel } from '@/components/features/agent-chat';
 import { EssayBrainstormDialog } from '@/components/features/essay-ai';
@@ -20,6 +29,7 @@ import { EssayFormDialog, EssayDeleteDialog } from './_components/essay-form-dia
 
 export default function EssaysPage() {
   const t = useTranslations();
+  const statusT = useTranslations('enterpriseStatus');
   const searchParams = useSearchParams();
   const schoolId = searchParams.get('schoolId');
   const promptId = searchParams.get('promptId');
@@ -83,6 +93,7 @@ export default function EssaysPage() {
       toast.error(t('essays.toast.selectParagraph'));
     }
   };
+  const essayCount = mgr.essays?.length ?? 0;
 
   return (
     <PageContainer>
@@ -92,15 +103,46 @@ export default function EssaysPage() {
         icon={PenTool}
         color="rose"
         actions={
-          <Button
-            data-tour="essay-new"
-            onClick={mgr.handleCreate}
-            className="gap-2 bg-destructive hover:opacity-90 text-destructive-foreground shadow-md"
-          >
+          <Button data-tour="essay-new" onClick={mgr.handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
             {t('essays.new')}
           </Button>
         }
+      />
+
+      <EnterpriseStatusStrip
+        title={statusT('essays.title')}
+        description={statusT('essays.description')}
+        items={[
+          {
+            tone: essayCount > 0 ? 'ready' : 'attention',
+            label: statusT('essays.pipeline'),
+            value: essayCount > 0 ? String(essayCount) : statusT('states.attention'),
+            description: statusT('essays.pipelineDesc'),
+            icon: FileText,
+          },
+          {
+            tone: mgr.selectedEssay ? 'ready' : 'blocked',
+            label: statusT('essays.draft'),
+            value: mgr.selectedEssay ? statusT('states.ready') : statusT('states.blocked'),
+            description: statusT('essays.draftDesc'),
+            icon: PenTool,
+          },
+          {
+            tone: mgr.reviewResult ? 'verified' : 'attention',
+            label: statusT('essays.review'),
+            value: mgr.reviewResult ? statusT('states.verified') : statusT('states.nextAction'),
+            description: statusT('essays.reviewDesc'),
+            icon: Sparkles,
+          },
+          {
+            tone: mgr.polishResult ? 'ready' : 'attention',
+            label: statusT('essays.polish'),
+            value: mgr.polishResult ? statusT('states.ready') : statusT('states.attention'),
+            description: statusT('essays.polishDesc'),
+            icon: ShieldCheck,
+          },
+        ]}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">

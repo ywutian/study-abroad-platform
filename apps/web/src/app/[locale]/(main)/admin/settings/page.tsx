@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { settingsRoutes } from '@study-abroad/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Save, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { toast } from 'sonner';
+
+import { PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CardSkeleton } from '@/components/ui/loading-state';
 import {
   Table,
   TableBody,
@@ -15,12 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PageHeader } from '@/components/layout';
-import { CardSkeleton } from '@/components/ui/loading-state';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiClient } from '@/lib/api';
-import { settingsRoutes } from '@study-abroad/shared';
-import { toast } from 'sonner';
-import { Settings, Save, Loader2 } from 'lucide-react';
 
 interface SystemSetting {
   key: string;
@@ -136,44 +137,50 @@ export default function AdminSettingsPage() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {fields.map((field) => (
-          <TableRow key={field.key}>
-            <TableCell className="font-medium">
-              {t(`settings.${field.labelGroup}.${field.labelKey}` as Parameters<typeof t>[0], {
-                defaultValue: field.key,
-              })}
-            </TableCell>
-            <TableCell>
-              <Input
-                value={getSettingValue(settings, field.key)}
-                onChange={(e) => handleValueChange(field.key, e.target.value)}
-                className="h-8"
-              />
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const val = editedValues[field.key] ?? getSettingValue(settings, field.key);
-                  updateMutation.mutate({ key: field.key, value: val });
-                  setEditedValues((prev) => {
-                    const next = { ...prev };
-                    delete next[field.key];
-                    return next;
-                  });
-                }}
-                disabled={updateMutation.isPending}
-              >
-                {updateMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+        {fields.map((field) => {
+          const fieldLabel = t(
+            `settings.${field.labelGroup}.${field.labelKey}` as Parameters<typeof t>[0],
+            {
+              defaultValue: field.key,
+            }
+          );
+
+          return (
+            <TableRow key={field.key}>
+              <TableCell className="font-medium">{fieldLabel}</TableCell>
+              <TableCell>
+                <Input
+                  value={getSettingValue(settings, field.key)}
+                  onChange={(e) => handleValueChange(field.key, e.target.value)}
+                  className="h-8"
+                />
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`${t('settings.save')} ${fieldLabel}`}
+                  onClick={() => {
+                    const val = editedValues[field.key] ?? getSettingValue(settings, field.key);
+                    updateMutation.mutate({ key: field.key, value: val });
+                    setEditedValues((prev) => {
+                      const next = { ...prev };
+                      delete next[field.key];
+                      return next;
+                    });
+                  }}
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

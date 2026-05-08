@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import HomePage from './page';
@@ -9,6 +10,7 @@ import { useAuthStore } from '@/stores';
 
 vi.mock('next/navigation', () => ({
   useParams: vi.fn(),
+  usePathname: vi.fn(() => '/'),
 }));
 
 vi.mock('@/stores', () => ({
@@ -58,11 +60,23 @@ describe('HomePage', () => {
 
   function renderHome(locale: 'zh' | 'en') {
     vi.mocked(useParams).mockReturnValue({ locale } as never);
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
 
     return render(
-      <NextIntlClientProvider locale={locale} messages={locale === 'zh' ? zhMessages : enMessages}>
-        <HomePage />
-      </NextIntlClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <NextIntlClientProvider
+          locale={locale}
+          messages={locale === 'zh' ? zhMessages : enMessages}
+        >
+          <HomePage />
+        </NextIntlClientProvider>
+      </QueryClientProvider>
     );
   }
 

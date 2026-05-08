@@ -25,7 +25,13 @@ function applyHeroVisual(next: HeroVisualId) {
 
 export function HeroVisualManager() {
   useEffect(() => {
-    applyHeroVisual(readFromStorage());
+    const next = readFromStorage();
+    applyHeroVisual(next);
+    try {
+      localStorage.setItem(HERO_VISUAL_STORAGE_KEY, next);
+    } catch {
+      /* quota / private mode */
+    }
   }, []);
 
   return null;

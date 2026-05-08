@@ -99,54 +99,65 @@ export function TemplatesTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.nameZh || '-'}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={TIER_COLORS[item.tier] ?? TIER_COLORS[4]}>
-                      {TIER_LABELS[item.tier] ?? `Tier ${item.tier}`}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
-                    {item.aliases?.length ? item.aliases.join(', ') : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={item.isActive ? 'default' : 'secondary'}
-                      className={
-                        item.isActive
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
-                          : 'bg-muted text-muted-foreground'
-                      }
-                    >
-                      {item.isActive ? 'Yes' : 'No'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => onEdit(item)}
+              {items.map((item) => {
+                const tier = Number.isFinite(item.tier) ? item.tier : 4;
+                const templateName = item.name || t('activityTemplates.unknownTemplate');
+
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{templateName}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.nameZh || '-'}</TableCell>
+                    <TableCell>{item.category}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={TIER_COLORS[tier] ?? TIER_COLORS[4]}>
+                        {TIER_LABELS[tier] ?? `Tier ${tier}`}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
+                      {item.aliases?.length ? item.aliases.join(', ') : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={item.isActive ? 'default' : 'secondary'}
+                        className={
+                          item.isActive
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : 'bg-muted text-muted-foreground'
+                        }
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => onDelete(item.id)}
-                        disabled={!item.isActive}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        {item.isActive ? 'Yes' : 'No'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 md:h-8 md:w-8"
+                          onClick={() => onEdit(item)}
+                          aria-label={t('activityTemplates.editAriaLabel', {
+                            name: templateName,
+                          })}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 text-destructive md:h-8 md:w-8"
+                          onClick={() => onDelete(item.id)}
+                          disabled={!item.isActive}
+                          aria-label={t('activityTemplates.deleteAriaLabel', {
+                            name: templateName,
+                          })}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </ScrollArea>

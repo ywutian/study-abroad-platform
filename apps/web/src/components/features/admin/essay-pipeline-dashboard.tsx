@@ -37,6 +37,58 @@ import type {
 import { StatusBadge, PipelineStatusBadge, formatDuration } from './essay-pipeline/pipeline-badges';
 import { TestScrapeDialog } from './essay-pipeline/test-scrape-dialog';
 
+function normalizeArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+
+  if (value && typeof value === 'object') {
+    const items = (value as { items?: unknown }).items;
+    if (Array.isArray(items)) {
+      return items as T[];
+    }
+  }
+
+  return [];
+}
+
+function normalizeCoverage(value: unknown): CoverageStats | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const coverage = value as Partial<CoverageStats>;
+  return {
+    year: Number(coverage.year ?? new Date().getFullYear()),
+    totalSchools: Number(coverage.totalSchools ?? 0),
+    schoolsWithPrompts: Number(coverage.schoolsWithPrompts ?? 0),
+    schoolsWithVerified: Number(coverage.schoolsWithVerified ?? 0),
+    coveragePercent: Number(coverage.coveragePercent ?? 0),
+    totalPrompts: Number(coverage.totalPrompts ?? 0),
+    pendingReview: Number(coverage.pendingReview ?? 0),
+  };
+}
+
+function safeDateLabel(value: unknown, fallback: string) {
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value as string | number | Date);
+  return Number.isNaN(date.getTime()) ? fallback : date.toLocaleString();
+}
+
+function safeDurationLabel(startedAt: unknown, completedAt: unknown, fallback: string) {
+  const start = startedAt ? new Date(startedAt as string | number | Date) : null;
+  const end = completedAt ? new Date(completedAt as string | number | Date) : null;
+
+  if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return fallback;
+  }
+
+  return formatDuration(start, end);
+}
+
 export function EssayPipelineDashboard() {
   const t = useTranslations('essayPipeline');
 
@@ -67,9 +119,9 @@ export function EssayPipelineDashboard() {
         apiClient.get<FreshnessItem[]>(adminRoutes.essayScraperFreshness()),
         apiClient.get<PipelineRun[]>(adminRoutes.essayScraperPipelineRuns()),
       ]);
-      setCoverage(coverageRes);
-      setFreshness(freshnessRes);
-      setPipelineRuns(runsRes);
+      setCoverage(normalizeCoverage(coverageRes));
+      setFreshness(normalizeArray<FreshnessItem>(freshnessRes));
+      setPipelineRuns(normalizeArray<PipelineRun>(runsRes));
     } catch {
       toast.error(t('loadFailed'));
     } finally {
@@ -152,14 +204,17 @@ export function EssayPipelineDashboard() {
   // ============ Filter Logic ============
 
   const filteredFreshness = freshness.filter((item) => {
+    const schoolName = item.school?.name ?? '';
+    const schoolNameZh = item.school?.nameZh ?? '';
+
     if (groupFilter !== 'all' && item.scrapeGroup !== groupFilter) return false;
     if (statusFilter === 'scraped' && !item.lastScrapedAt) return false;
     if (statusFilter === 'not_scraped' && item.lastScrapedAt) return false;
     if (statusFilter === 'failed' && item.lastStatus !== 'FAILED') return false;
     if (
       searchQuery &&
-      !item.school.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !(item.school.nameZh || '').includes(searchQuery)
+      !schoolName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !schoolNameZh.includes(searchQuery)
     )
       return false;
     return true;
@@ -314,12 +369,14 @@ export function EssayPipelineDashboard() {
                   filteredFreshness.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="text-muted-foreground">
-                        {item.school.usNewsRank || '-'}
+                        {item.school?.usNewsRank || '-'}
                       </TableCell>
                       <TableCell>
                         <div>
-                          <span className="font-medium">{item.school.name}</span>
-                          {item.school.nameZh && (
+                          <span className="font-medium">
+                            {item.school?.name ?? t('unknownSchool')}
+                          </span>
+                          {item.school?.nameZh && (
                             <span className="text-muted-foreground text-sm ml-2">
                               {item.school.nameZh}
                             </span>
@@ -333,9 +390,7 @@ export function EssayPipelineDashboard() {
                       </TableCell>
                       <TableCell className="text-sm">{item.sourceType}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {item.lastScrapedAt
-                          ? new Date(item.lastScrapedAt).toLocaleDateString()
-                          : t('never')}
+                        {safeDateLabel(item.lastScrapedAt, t('never'))}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={item.lastStatus} error={item.lastError} />
@@ -345,16 +400,20 @@ export function EssayPipelineDashboard() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleTestScrape(item.school.name)}
+                            onClick={() => handleTestScrape(item.school?.name ?? '')}
                             title={t('testScrape')}
+                            aria-label={t('testScrape')}
+                            disabled={!item.school?.name}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleSingleScrape(item.school.name)}
+                            onClick={() => handleSingleScrape(item.school?.name ?? '')}
                             title={t('scrapeNow')}
+                            aria-label={t('scrapeNow')}
+                            disabled={!item.school?.name}
                           >
                             <Play className="h-4 w-4" />
                           </Button>
@@ -417,11 +476,11 @@ export function EssayPipelineDashboard() {
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {new Date(run.startedAt).toLocaleString()}
+                        {safeDateLabel(run.startedAt, t('never'))}
                       </TableCell>
                       <TableCell className="text-sm">
                         {run.completedAt
-                          ? formatDuration(new Date(run.startedAt), new Date(run.completedAt))
+                          ? safeDurationLabel(run.startedAt, run.completedAt, t('never'))
                           : t('running')}
                       </TableCell>
                     </TableRow>

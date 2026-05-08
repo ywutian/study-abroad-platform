@@ -1,24 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, Globe, Menu, X } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+
+import { PageContainer } from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
+import { ColorPaletteMenu } from '@/components/ui/color-palette-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ColorPaletteMenu } from '@/components/ui/color-palette-menu';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { LumniMark } from '@/components/ui/lumni-mark';
-import { PageContainer } from '@/components/layout/page-container';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { type Locale } from '@/lib/i18n/config';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
+
 import { useHomeContent } from './home-content';
 
 const localeCodes: Record<Locale, string> = {
@@ -35,6 +38,7 @@ type NavItem = {
 export function LandingHeader() {
   const { user } = useAuthStore();
   const home = useHomeContent();
+  const tA11y = useTranslations('ui.a11y');
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as Locale;
@@ -149,15 +153,15 @@ export function LandingHeader() {
               </Link>
             </div>
 
-            <ColorPaletteMenu className="shrink-0 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]" />
-            <ThemeToggle className="shrink-0 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
+            <ColorPaletteMenu className="!h-10 !w-10 shrink-0 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]" />
+            <ThemeToggle className="!h-10 !w-10 shrink-0 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
+                  className="!h-10 min-w-10 rounded-[var(--theme-radius-button)] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)]"
                   suppressHydrationWarning
                 >
                   <Globe className="h-3.5 w-3.5" />
@@ -187,9 +191,9 @@ export function LandingHeader() {
             <Button
               variant="ghost"
               size="sm"
-              className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)] lg:hidden"
+              className="!h-10 min-w-10 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 px-3 text-[var(--landing-muted)] hover:bg-[color:var(--landing-surface-muted)] hover:text-[var(--landing-fg)] lg:hidden"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-label={mobileMenuOpen ? tA11y('closeMenu') : tA11y('openMenu')}
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
@@ -250,9 +254,9 @@ export function LandingHeader() {
         <div className="mt-4 flex items-center justify-end gap-2 border-t border-[color:var(--landing-border)] pt-4">
           <ColorPaletteMenu
             align="end"
-            className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]"
+            className="!h-10 !w-10 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)]"
           />
-          <ThemeToggle className="rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
+          <ThemeToggle className="!h-10 !w-10 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)]/80 text-[var(--landing-muted)] hover:text-[var(--landing-fg)]" />
         </div>
       </div>
     </>

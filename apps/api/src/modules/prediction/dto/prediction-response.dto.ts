@@ -112,6 +112,18 @@ export class PredictionSourceSummaryDto {
   detail?: string;
 }
 
+export class PredictionInsufficientDataDto {
+  @ApiProperty({ description: 'Counselor data tier sentinel', example: 4 })
+  tier: 4;
+
+  @ApiProperty({
+    description: 'Why a numeric prediction is unavailable',
+    example:
+      'Limited public data — predictions are not available for this school yet.',
+  })
+  reason: string;
+}
+
 export class PredictionOutcomeLabelDto {
   @ApiProperty({ description: 'Outcome label ID' })
   id: string;
@@ -185,8 +197,13 @@ export class PredictionResultDto {
   @ApiProperty({ description: 'School name' })
   schoolName: string;
 
-  @ApiProperty({ description: 'Admission probability (0-1)', example: 0.35 })
-  probability: number;
+  @ApiProperty({
+    description:
+      'Admission probability (0-1). Null when predictionMethod=insufficient_data.',
+    example: 0.35,
+    nullable: true,
+  })
+  probability: number | null;
 
   @ApiPropertyOptional({
     description: 'Confidence interval lower bound (0-1)',
@@ -209,10 +226,10 @@ export class PredictionResultDto {
 
   @ApiProperty({
     description: 'School tier classification',
-    enum: ['reach', 'match', 'safety'],
+    enum: ['reach', 'match', 'safety', 'unavailable'],
     example: 'reach',
   })
-  tier: 'reach' | 'match' | 'safety';
+  tier: 'reach' | 'match' | 'safety' | 'unavailable';
 
   @ApiProperty({
     description: 'List of impact factors',
@@ -226,8 +243,11 @@ export class PredictionResultDto {
   })
   suggestions: string[];
 
-  @ApiProperty({ description: 'Comparison data', type: PredictionComparison })
-  comparison: PredictionComparison;
+  @ApiPropertyOptional({
+    description: 'Comparison data',
+    type: PredictionComparison,
+  })
+  comparison?: PredictionComparison;
 
   @ApiPropertyOptional({
     description: 'Multi-engine score breakdown',
@@ -267,10 +287,10 @@ export class PredictionResultDto {
 
   @ApiPropertyOptional({
     description: 'Public served prediction method',
-    enum: ['fusion', 'counselor'],
+    enum: ['fusion', 'counselor', 'insufficient_data'],
     example: 'counselor',
   })
-  predictionMethod?: 'fusion' | 'counselor';
+  predictionMethod?: 'fusion' | 'counselor' | 'insufficient_data';
 
   @ApiPropertyOptional({
     description: 'Primary source summary shown to the user',
@@ -288,6 +308,12 @@ export class PredictionResultDto {
     description: 'Human-readable confidence explanation',
   })
   confidenceReason?: string;
+
+  @ApiPropertyOptional({
+    description: 'Insufficient data details when tier=unavailable',
+    type: PredictionInsufficientDataDto,
+  })
+  insufficientData?: PredictionInsufficientDataDto;
 
   @ApiPropertyOptional({
     description: 'Most recent outcome label attached to this prediction',

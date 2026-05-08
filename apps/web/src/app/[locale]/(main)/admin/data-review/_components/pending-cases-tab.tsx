@@ -305,7 +305,7 @@ export function PendingCasesTab() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-10 w-10 md:h-8 md:w-8"
                         onClick={() => approveMutation.mutate(c.id)}
                         disabled={isPending}
                         aria-label={ta('approve')}
@@ -315,7 +315,7 @@ export function PendingCasesTab() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-10 w-10 md:h-8 md:w-8"
                         onClick={() => setRejectId(c.id)}
                         disabled={isPending}
                         aria-label={ta('reject')}
@@ -325,7 +325,7 @@ export function PendingCasesTab() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-10 w-10 md:h-8 md:w-8"
                         onClick={() => openDetail(c)}
                         aria-label={ta('viewDetail')}
                       >

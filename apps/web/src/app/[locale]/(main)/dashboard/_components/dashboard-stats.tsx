@@ -49,8 +49,8 @@ export function DashboardStats({
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-violet-500/10 flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-violet-500" />
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">{t('dashboard.stats.schoolList')}</p>
@@ -60,7 +60,7 @@ export function DashboardStats({
                   {schoolTiers.reach > 0 && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 border-rose-300 text-rose-600 bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:bg-rose-950/30"
+                      className="border-destructive/30 bg-destructive/10 px-1.5 py-0 text-2xs text-destructive"
                     >
                       {t('dashboard.stats.reach')} {schoolTiers.reach}
                     </Badge>
@@ -68,7 +68,7 @@ export function DashboardStats({
                   {schoolTiers.target > 0 && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 border-blue-300 text-blue-600 bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:bg-blue-950/30"
+                      className="border-primary/30 bg-primary/10 px-1.5 py-0 text-2xs text-primary"
                     >
                       {t('dashboard.stats.target')} {schoolTiers.target}
                     </Badge>
@@ -76,7 +76,7 @@ export function DashboardStats({
                   {schoolTiers.safety > 0 && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 border-emerald-300 text-emerald-600 bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:bg-emerald-950/30"
+                      className="border-success/30 bg-success/10 px-1.5 py-0 text-2xs text-success"
                     >
                       {t('dashboard.stats.safety')} {schoolTiers.safety}
                     </Badge>
@@ -92,8 +92,8 @@ export function DashboardStats({
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-              <ListChecks className="w-6 h-6 text-amber-500" />
+            <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+              <ListChecks className="w-6 h-6 text-warning" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{t('dashboard.stats.pendingTasks')}</p>

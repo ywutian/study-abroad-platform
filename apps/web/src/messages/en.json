@@ -196,26 +196,26 @@
     "editProfile": "Edit Profile",
     "quickAccess": "Quick Access",
     "commandCenter": {
-      "label": "Next Best Action",
-      "secondary": "Secondary shortcuts",
+      "label": "Application Command Center",
+      "secondary": "Next best actions",
       "gapCount": "{count} profile gaps",
+      "actions": {
+        "profile": "Complete your applicant profile",
+        "profileDesc": "Add the academic and activity signals Lumni needs to calibrate predictions.",
+        "schools": "Build a balanced school list",
+        "schoolsDesc": "Add reach, target, and safety schools before running deeper analysis.",
+        "essays": "Start your first essay workspace",
+        "essaysDesc": "Create drafts and let Lumni organize prompts, revisions, and review notes.",
+        "deadlines": "Clear upcoming application tasks",
+        "deadlinesDesc": "{count} deadline tasks need attention before your next submission window.",
+        "review": "Review your admissions route",
+        "reviewDesc": "Your core setup is ready. Check predictions and refine the route with fresh signals."
+      },
       "signals": {
         "profile": "Profile",
         "schools": "Schools",
         "essays": "Essays",
-        "deadlines": "30-day deadlines"
-      },
-      "actions": {
-        "profile": "Complete your application profile",
-        "profileDesc": "GPA, scores, activities, and intended major directly improve recommendation and prediction quality.",
-        "schools": "Build a usable school portfolio",
-        "schoolsDesc": "Add reach, match, and safety schools so predictions and essays have the right context.",
-        "essays": "Start the core essay workflow",
-        "essaysDesc": "Your school list is ready enough to generate school-level essay tasks and material gaps.",
-        "deadlines": "Review upcoming deadlines",
-        "deadlinesDesc": "{count} application or personal deadlines need attention in the next 30 days.",
-        "review": "Review your application strategy",
-        "reviewDesc": "Your core signals are in place. Generate predictions, calibrate the list, and plan the next round."
+        "deadlines": "Deadlines"
       }
     },
     "recentActivity": "Recent Activity",
@@ -1475,16 +1475,16 @@
     "completenessHint": "Complete your profile for more accurate predictions",
     "completenessComplete": "Profile complete",
     "readiness": {
-      "title": "Readiness Signals",
-      "signals": "signals ready",
-      "highImpact": "High impact",
-      "mediumImpact": "Medium impact",
-      "recommendationImpact": "Improves recommendations",
-      "recommendedFixes": "Recommended fixes",
-      "fixSignal": "Add {signal}",
+      "title": "Profile Readiness",
+      "signals": "signals",
+      "highImpact": "Improves prediction quality",
+      "mediumImpact": "Improves recommendation ranking",
+      "recommendationImpact": "Improves major and school fit",
+      "recommendedFixes": "Recommended Fixes",
+      "primaryActions": "Primary Actions",
+      "fixSignal": "Complete {signal}",
       "reviewTargets": "Review target schools",
-      "allSet": "All key profile signals are ready.",
-      "primaryActions": "Primary actions"
+      "allSet": "Core profile signals are ready for predictions, essays, and portfolio calibration."
     },
     "quickStart": {
       "title": "Quick Start",
@@ -3619,7 +3619,8 @@
     },
     "specialConditions": {
       "testOptional": "Test Optional"
-    }
+    },
+    "showingTruncated": "Showing first 200 of {total} schools. Narrow your filters to see more."
   },
   "applicationAnalysis": {
     "title": "Application Analysis",

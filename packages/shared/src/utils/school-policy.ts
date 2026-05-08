@@ -12,6 +12,11 @@ export function isSchoolTestingPolicy(value: unknown): value is SchoolTestingPol
 }
 
 export function resolveSchoolTestingPolicyValue(input: TestingPolicyInput): SchoolTestingPolicy {
+  // Preserve explicit testingPolicy (including UNKNOWN) — gold case 007
+  // ("Unknown school policy should remain explicit instead of being inferred
+  // into a false optional/required label") regresses if we infer over an
+  // explicit UNKNOWN. testOptional inference only fires when no explicit
+  // testingPolicy was supplied.
   if (isSchoolTestingPolicy(input.testingPolicy)) {
     return input.testingPolicy;
   }
@@ -24,6 +29,7 @@ export function toLegacyTestOptionalFlag(input: TestingPolicyInput): boolean | u
   const policy = resolveSchoolTestingPolicyValue(input);
   if (policy === 'OPTIONAL') return true;
   if (policy === 'REQUIRED') return false;
+  if (policy === 'BLIND') return false;
   if (input.testOptional != null) return input.testOptional;
   return undefined;
 }

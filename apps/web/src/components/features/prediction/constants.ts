@@ -8,6 +8,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  AlertTriangle,
 } from 'lucide-react';
 import type { TierType, ConfidenceLevel } from './types';
 
@@ -41,6 +42,15 @@ export const TIER_CONFIG = {
     badge:
       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200',
     barColor: 'bg-emerald-500',
+  },
+  unavailable: {
+    icon: AlertTriangle,
+    bar: 'bg-muted',
+    bg: 'bg-muted/40',
+    border: 'border-border',
+    text: 'text-muted-foreground',
+    badge: 'bg-muted text-muted-foreground border-border',
+    barColor: 'bg-muted-foreground',
   },
 } as const;
 

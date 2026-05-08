@@ -175,6 +175,30 @@ export function ProfileAIAnalysis({
     );
   }
 
+  if (
+    !resolved.meta ||
+    !resolved.profileSummary ||
+    !resolved.portfolioSummary ||
+    !resolved.actionPlan
+  ) {
+    return (
+      <Card className={cn(className)}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Brain className="h-5 w-5 text-primary" />
+            {t('title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">{t('empty.title')}</p>
+            <p className="mt-2">{t('empty.description')}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const freshness = resolved.status ?? 'fresh';
   const state = resolved.meta.state ?? 'ready';
   const overallVerdict = resolved.overallVerdict?.trim()

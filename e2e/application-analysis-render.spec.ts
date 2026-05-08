@@ -7,6 +7,14 @@ const VIEWPORTS = [
 ] as const;
 
 async function openFixture(page: Page, caseId: string, locale: string) {
+  await page.route('**/api/v1/auth/refresh', async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Unauthenticated' }),
+    });
+  });
+
   await page.goto(`/${locale}/qa/application-analysis/${caseId}`, {
     waitUntil: 'commit',
     timeout: 90_000,
@@ -16,6 +24,19 @@ async function openFixture(page: Page, caseId: string, locale: string) {
   });
   await expect(page.getByTestId('analysis-state-badge')).toBeVisible({
     timeout: 90_000,
+  });
+  // Wait for late-rendering CardContent sections (e.g.
+  // analysis-section-unknowns) to hydrate before the per-section
+  // visibility loop runs. On slow CI machines, Next.js dev streaming
+  // could flush the CardHeader before CardContent finished, which made
+  // 007-unknown-policy-zh fail with "element(s) not found" against the
+  // default 5s assertion timeout. Local headless Chrome was fast enough
+  // to mask this; CI's runner consistently lost the race.
+  await page.waitForLoadState('networkidle', { timeout: 60_000 }).catch(() => {
+    /* best-effort — never block on a stuck network watcher */
+  });
+  await expect(page.getByTestId('analysis-section-actionPlan')).toBeVisible({
+    timeout: 30_000,
   });
 }
 
