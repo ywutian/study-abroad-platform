@@ -319,6 +319,7 @@ export function BrowseTab() {
           advancedFilters={advancedFilters}
           onAdvancedFiltersChange={setAdvancedFilters}
           onResetAdvancedFilters={() => setAdvancedFilters(defaultAdvancedFilters)}
+          onResetAll={resetAllFilters}
           activeAdvancedFilterCount={activeAdvancedFilterCount}
           activeFilterCount={activeFilterCount}
           activePreset={activePreset}

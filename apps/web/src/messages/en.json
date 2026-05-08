@@ -54,6 +54,7 @@
     "refresh": "Refresh",
     "status": "Status",
     "verified": "Verified",
+    "estimated": "Estimated",
     "words": "words",
     "optional": "(Optional)",
     "yes": "Yes",
@@ -263,29 +264,6 @@
       "timeline": "Timeline",
       "timelineDesc": "Track deadlines and plan your application journey"
     },
-    "commandCenter": {
-      "label": "Application Command Center",
-      "secondary": "Next best actions",
-      "gapCount": "{count} profile gaps",
-      "actions": {
-        "profile": "Complete your applicant profile",
-        "profileDesc": "Add the academic and activity signals Lumni needs to calibrate predictions.",
-        "schools": "Build a balanced school list",
-        "schoolsDesc": "Add reach, target, and safety schools before running deeper analysis.",
-        "essays": "Start your first essay workspace",
-        "essaysDesc": "Create drafts and let Lumni organize prompts, revisions, and review notes.",
-        "deadlines": "Clear upcoming application tasks",
-        "deadlinesDesc": "{count} deadline tasks need attention before your next submission window.",
-        "review": "Review your admissions route",
-        "reviewDesc": "Your core setup is ready. Check predictions and refine the route with fresh signals."
-      },
-      "signals": {
-        "profile": "Profile",
-        "schools": "Schools",
-        "essays": "Essays",
-        "deadlines": "Deadlines"
-      }
-    },
     "onboarding": {
       "title": "Welcome",
       "subtitle": "Follow the guide to get started",
@@ -404,7 +382,10 @@
     },
     "hero": {
       "eyebrow": "Lumni Command Center · Powered by GPT-5",
-      "headline": ["Illuminate your", "admissions route"],
+      "headline": [
+        "Illuminate your",
+        "admissions route"
+      ],
       "subtitle": "From school lists and essays to timelines and submission, Lumni turns a complex application season into a clear plan calibrated by real admissions data.",
       "features": [
         "Generate the first admissions route in 2 minutes",
@@ -442,7 +423,13 @@
         "profileLabel": "Amy Z. · Senior",
         "profileMeta": "GPA 3.92 · SAT 1540 · CS",
         "termLabel": "Fall 2026 · CS",
-        "sections": ["Overview", "Schools · 6", "Essays · 14", "Timeline", "Teams"],
+        "sections": [
+          "Overview",
+          "Schools · 6",
+          "Essays · 14",
+          "Timeline",
+          "Teams"
+        ],
         "title": "Admissions Route Hub",
         "assistantBadge": "AI Copilot",
         "assistantMessages": [
@@ -513,7 +500,16 @@
               "tone": "reach",
               "probability": 18,
               "deadline": "Jan 2",
-              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+              "spark": [
+                4,
+                5,
+                6,
+                5,
+                7,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "Carnegie Mellon · SCS",
@@ -521,7 +517,16 @@
               "tone": "reach",
               "probability": 24,
               "deadline": "Dec 1",
-              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+              "spark": [
+                3,
+                4,
+                5,
+                7,
+                6,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "UC Berkeley · EECS",
@@ -529,7 +534,16 @@
               "tone": "target",
               "probability": 42,
               "deadline": "Nov 30",
-              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+              "spark": [
+                5,
+                6,
+                5,
+                7,
+                8,
+                7,
+                9,
+                10
+              ]
             },
             {
               "name": "Georgia Tech",
@@ -537,7 +551,16 @@
               "tone": "target",
               "probability": 58,
               "deadline": "Oct 15",
-              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+              "spark": [
+                6,
+                7,
+                8,
+                7,
+                8,
+                9,
+                9,
+                10
+              ]
             },
             {
               "name": "UMich · CSE",
@@ -545,7 +568,16 @@
               "tone": "safety",
               "probability": 71,
               "deadline": "Nov 1",
-              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+              "spark": [
+                7,
+                7,
+                8,
+                9,
+                8,
+                9,
+                10,
+                10
+              ]
             }
           ]
         },
@@ -553,11 +585,31 @@
           "title": "UC Berkeley · EECS",
           "subtitle": "Composite fit · last updated 2h ago",
           "factors": [
-            { "label": "Academic profile", "score": 82, "tone": "safety" },
-            { "label": "Major demand", "score": 34, "tone": "reach" },
-            { "label": "Test scores (1520)", "score": 78, "tone": "safety" },
-            { "label": "Extracurricular depth", "score": 61, "tone": "target" },
-            { "label": "Geographic diversity", "score": 71, "tone": "safety" }
+            {
+              "label": "Academic profile",
+              "score": 82,
+              "tone": "safety"
+            },
+            {
+              "label": "Major demand",
+              "score": 34,
+              "tone": "reach"
+            },
+            {
+              "label": "Test scores (1520)",
+              "score": 78,
+              "tone": "safety"
+            },
+            {
+              "label": "Extracurricular depth",
+              "score": 61,
+              "tone": "target"
+            },
+            {
+              "label": "Geographic diversity",
+              "score": 71,
+              "tone": "safety"
+            }
           ]
         },
         "essay": {
@@ -567,14 +619,32 @@
           "coachLabel": "Coach",
           "coachNote": "Strong specificity in line 4. Consider tightening the second clause.",
           "scores": [
-            { "label": "Voice", "score": 92, "tone": "safety" },
-            { "label": "Specificity", "score": 76, "tone": "target" },
-            { "label": "Concision", "score": 54, "tone": "reach" }
+            {
+              "label": "Voice",
+              "score": 92,
+              "tone": "safety"
+            },
+            {
+              "label": "Specificity",
+              "score": 76,
+              "tone": "target"
+            },
+            {
+              "label": "Concision",
+              "score": 54,
+              "tone": "reach"
+            }
           ]
         },
         "badges": {
-          "matchScore": { "label": "Match score", "value": "+18%" },
-          "essayShipped": { "school": "UC Berkeley · CS", "status": "Essay shipped" }
+          "matchScore": {
+            "label": "Match score",
+            "value": "+18%"
+          },
+          "essayShipped": {
+            "school": "UC Berkeley · CS",
+            "status": "Essay shipped"
+          }
         },
         "socialProof": {
           "headline": "1,247 students applied this week",
@@ -589,7 +659,18 @@
           "Choate",
           "Exeter",
           "Sidwell"
-        ]
+        ],
+        "eyebrow": "New · AI-grade essay coach",
+        "eyebrowVersion": "v2.4",
+        "headline": {
+          "lead": "Your",
+          "italic": "real",
+          "suffix": "shortlist.",
+          "accent": "Calibrated, not curated."
+        },
+        "body": "Build a defensible college list grounded in your transcript, scores, and goals. Track every deadline, draft every essay, and ship applications with conviction.",
+        "primaryCta": "Start your shortlist",
+        "secondaryCta": "Watch 90s tour"
       },
       "centeredMark": {
         "eyebrowBadge": "New",
@@ -602,8 +683,14 @@
         "primaryCta": "Start free",
         "secondaryCta": "Watch 90s tour",
         "trustItems": [
-          { "icon": "check", "text": "Free for the first 3 schools" },
-          { "icon": "shield", "text": "SOC 2 · FERPA-aware" }
+          {
+            "icon": "check",
+            "text": "Free for the first 3 schools"
+          },
+          {
+            "icon": "shield",
+            "text": "SOC 2 · FERPA-aware"
+          }
         ],
         "counselorEyebrow": "Trusted by counselors at",
         "counselorSchools": [
@@ -790,7 +877,11 @@
             "patience is a virtue",
             "recipes are really stories told in flavors"
           ],
-          "chips": ["More personal", "Tighter rhythm", "Ending needs lift"]
+          "chips": [
+            "More personal",
+            "Tighter rhythm",
+            "Ending needs lift"
+          ]
         },
         "timeline": {
           "label": "Pacing map",
@@ -854,7 +945,11 @@
         "mentor": {
           "label": "Human oversight",
           "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
-          "points": ["List structure review", "Final essay direction", "Submission risk check"]
+          "points": [
+            "List structure review",
+            "Final essay direction",
+            "Submission risk check"
+          ]
         }
       }
     },
@@ -888,12 +983,24 @@
         "eyebrow": "Lumni dashboard",
         "title": "One surface for list strategy, essays, and pacing",
         "note": "School matrix · essay sprint · AI review",
-        "cards": ["School list", "Essay sprint", "Team signals"],
+        "cards": [
+          "School list",
+          "Essay sprint",
+          "Team signals"
+        ],
         "assistantBadge": "AI Copilot",
         "tip": "AI is checking overlap between MIT and CMU essays",
         "tasksLabel": "Today’s push",
-        "tasks": ["Refine the profile", "Finish GT Why Essay", "Confirm Purdue submission"],
-        "columns": ["School", "Tier", "Progress"]
+        "tasks": [
+          "Refine the profile",
+          "Finish GT Why Essay",
+          "Confirm Purdue submission"
+        ],
+        "columns": [
+          "School",
+          "Tier",
+          "Progress"
+        ]
       }
     },
     "social": {
@@ -950,7 +1057,10 @@
     },
     "cta": {
       "eyebrow": "Start now · Free",
-      "title": ["Stop wasting years", "to information gaps"],
+      "title": [
+        "Stop wasting years",
+        "to information gaps"
+      ],
       "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
       "primary": "Create free account",
       "secondary": "Book a 1:1 consult",
@@ -961,19 +1071,41 @@
       "columns": [
         {
           "title": "Product",
-          "links": ["AI matching", "Essay desk", "Timeline", "Probability", "Teams"]
+          "links": [
+            "AI matching",
+            "Essay desk",
+            "Timeline",
+            "Probability",
+            "Teams"
+          ]
         },
         {
           "title": "Resources",
-          "links": ["Student stories", "Help center", "About us", "Get started", "Terms"]
+          "links": [
+            "Student stories",
+            "Help center",
+            "About us",
+            "Get started",
+            "Terms"
+          ]
         },
         {
           "title": "Company",
-          "links": ["About the team", "Community", "Support", "Privacy", "Create account"]
+          "links": [
+            "About the team",
+            "Community",
+            "Support",
+            "Privacy",
+            "Create account"
+          ]
         },
         {
           "title": "Legal",
-          "links": ["Privacy policy", "Terms of service", "Help docs"]
+          "links": [
+            "Privacy policy",
+            "Terms of service",
+            "Help docs"
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · Admissions, no longer a black box.",
@@ -1491,18 +1623,6 @@
       "description": "Complete the following steps to quickly fill in your profile",
       "fillGpa": "Fill GPA",
       "fillScore": "Fill Scores"
-    },
-    "readiness": {
-      "title": "Profile Readiness",
-      "signals": "signals",
-      "highImpact": "Improves prediction quality",
-      "mediumImpact": "Improves recommendation ranking",
-      "recommendationImpact": "Improves major and school fit",
-      "recommendedFixes": "Recommended Fixes",
-      "primaryActions": "Primary Actions",
-      "fixSignal": "Complete {signal}",
-      "reviewTargets": "Review target schools",
-      "allSet": "Core profile signals are ready for predictions, essays, and portfolio calibration."
     },
     "nextSteps": {
       "title": "Next Steps",
@@ -3410,7 +3530,7 @@
     "noResults": "No schools found",
     "tryDifferentSearch": "Try searching with different keywords",
     "resultsCount": "{count} schools total",
-    "showingTruncated": "Showing {shown} of {total}. Refine filters to load more.",
+    "showingTruncated": "Showing first 200 of {total} schools. Narrow your filters to see more.",
     "pagination": {
       "showing": "Showing {from}–{to} of {total}",
       "page": "Page {current} of {total}",
@@ -3481,6 +3601,18 @@
     "students": "Students",
     "viewDetails": "View Details",
     "supplementalRanking": "Supplemental ranking",
+    "filtersTitle": "Filters",
+    "resetAll": "Reset all",
+    "sectionSchools": "Schools",
+    "sectionCountry": "Country & Region",
+    "sectionWeights": "Fit Score Weights",
+    "sectionFilters": "Advanced Filters",
+    "fitScoreMatch": "{score}% Match",
+    "trustLabel": "Trust",
+    "visitSite": "Visit site",
+    "visitSiteShort": "Visit",
+    "visitSiteUnavailable": "Website not available",
+    "addShort": "Add",
     "indices": {
       "legend": "Index Legend",
       "safetyIndex": "Safety Index",
@@ -3619,8 +3751,7 @@
     },
     "specialConditions": {
       "testOptional": "Test Optional"
-    },
-    "showingTruncated": "Showing first 200 of {total} schools. Narrow your filters to see more."
+    }
   },
   "applicationAnalysis": {
     "title": "Application Analysis",
