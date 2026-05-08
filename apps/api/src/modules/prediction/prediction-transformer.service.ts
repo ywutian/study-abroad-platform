@@ -329,13 +329,24 @@ export class PredictionTransformerService {
         (school as any).edAcceptanceRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
+      ed2AcceptanceRate: captureField(
+        'ed2AcceptanceRate',
+        (school as any).ed2AcceptanceRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
       eaAcceptanceRate: captureField(
         'eaAcceptanceRate',
         (school as any).eaAcceptanceRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
-      institutionType: (school as any).institutionType ?? undefined,
-      gpaDistribution: (school as any).gpaDistribution ?? null,
+      institutionType: captureField(
+        'institutionType',
+        (school as any).institutionType,
+      ),
+      gpaDistribution: captureField(
+        'gpaDistribution',
+        (school as any).gpaDistribution,
+      ),
       fieldTrustWeights,
       averagePredictionWeight:
         Object.keys(fieldTrustWeights).length > 0
@@ -406,11 +417,7 @@ export class PredictionTransformerService {
       isLegacy: profile.isLegacy,
       isFirstGen: profile.isFirstGen,
       needsFinancialAid: profile.needsFinancialAid,
-      // Demographic and context fields
-      urmStatus: profile.urmStatus,
-      recruitedAthlete: profile.recruitedAthlete,
-      isInternational: profile.isInternational,
-      educationSystem: profile.educationSystem,
+      essayQualityScore: profile.essayQualityScore,
     };
   }
 
@@ -431,15 +438,15 @@ export class PredictionTransformerService {
       act75: school.act75,
       usNewsRank: school.usNewsRank,
       graduationRate: school.graduationRate,
-      // Extended fields for richer scoring
       testingPolicy: school.testingPolicy,
-      edAcceptanceRate: (school as any).edAcceptanceRate,
-      eaAcceptanceRate: (school as any).eaAcceptanceRate,
+      edAcceptanceRate: school.edAcceptanceRate ?? undefined,
+      ed2AcceptanceRate: school.ed2AcceptanceRate ?? undefined,
+      eaAcceptanceRate: school.eaAcceptanceRate ?? undefined,
       intlAcceptanceRate: school.intlAcceptanceRate,
       oosAcceptanceRate: school.oosAcceptanceRate,
       hasEarlyDecision: school.hasEarlyDecision,
-      institutionType: (school as any).institutionType,
-      gpaDistribution: (school as any).gpaDistribution,
+      institutionType: school.institutionType,
+      gpaDistribution: school.gpaDistribution,
     };
   }
 
@@ -532,16 +539,23 @@ export class PredictionTransformerService {
           type: 'review',
         },
         orderBy: { createdAt: 'desc' },
-        select: { output: true },
+        select: { output: true, scores: true },
       });
 
-      if (latestReview?.output) {
+      if (latestReview?.output || latestReview?.scores) {
         // The output is the raw LLM response — use extractJsonFromLlm for robust parsing
         const parsed = extractJsonFromLlm<{ overallScore?: number }>(
-          latestReview.output,
+          latestReview.output ?? '',
         );
-        if (parsed && typeof parsed.overallScore === 'number') {
-          profileInput.essayQualityScore = parsed.overallScore;
+        const score =
+          parsed && typeof parsed.overallScore === 'number'
+            ? parsed.overallScore
+            : typeof (latestReview.scores as any)?.overallScore === 'number'
+              ? (latestReview.scores as any).overallScore
+              : undefined;
+        if (typeof score === 'number' && Number.isFinite(score)) {
+          profileInput.essayQualityScore =
+            score > 10 ? Math.round((score / 10) * 10) / 10 : score;
         }
       }
     } catch {
