@@ -77,6 +77,11 @@ export function HeroSection() {
     );
   }
 
+  // Dense-specific copy override: when heroVisual='dense-cockpit', the left
+  // column adopts the design-bundle copy (italic 'real', accent gradient line,
+  // version chip in eyebrow) instead of the shared home.hero.* copy.
+  const denseCopy = isDense ? (t.raw('hero.denseCockpit') as DenseCockpitCopy) : null;
+
   return (
     <section
       data-hero-visual={heroVisual}
@@ -100,18 +105,41 @@ export function HeroSection() {
           >
             <div className="landing-eyebrow-pill">
               <Sparkles className="h-3.5 w-3.5 text-[var(--lumni-gold-ink)]" />
-              <span>{home.hero.eyebrow}</span>
+              <span>{denseCopy ? denseCopy.eyebrow : home.hero.eyebrow}</span>
+              {denseCopy && (
+                <span className="ml-1 inline-flex items-center rounded-full bg-[color:var(--ds-foreground)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--landing-bg)]">
+                  {denseCopy.eyebrowVersion}
+                </span>
+              )}
             </div>
 
-            <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
-              <span className="block text-balance">{home.hero.headline[0]}</span>
-              <span className="landing-hero-accent mt-2 block text-balance">
-                {home.hero.headline[1]}
-              </span>
-            </h1>
+            {denseCopy ? (
+              <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
+                <span className="block text-balance">
+                  {denseCopy.headline.lead}{' '}
+                  <em
+                    className="italic text-[var(--landing-fg)]"
+                    style={{ fontWeight: 400 }}
+                  >
+                    {denseCopy.headline.italic}
+                  </em>{' '}
+                  {denseCopy.headline.suffix}
+                </span>
+                <span className="landing-hero-accent mt-2 block text-balance">
+                  {denseCopy.headline.accent}
+                </span>
+              </h1>
+            ) : (
+              <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
+                <span className="block text-balance">{home.hero.headline[0]}</span>
+                <span className="landing-hero-accent mt-2 block text-balance">
+                  {home.hero.headline[1]}
+                </span>
+              </h1>
+            )}
 
             <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--landing-muted)] sm:text-lg">
-              {home.hero.subtitle}
+              {denseCopy ? denseCopy.body : home.hero.subtitle}
             </p>
 
             <MobileLumniCommandPreview visual={heroVisual} />
@@ -122,7 +150,7 @@ export function HeroSection() {
                   size="lg"
                   className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] transition-colors hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
                 >
-                  {home.hero.primaryCta}
+                  {denseCopy ? denseCopy.primaryCta : home.hero.primaryCta}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -132,33 +160,47 @@ export function HeroSection() {
                   size="lg"
                   className="h-12 min-w-[140px] rounded-[var(--theme-radius-button)] border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/52 px-7 text-sm text-[var(--landing-fg)] transition-colors hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[160px] sm:px-8 sm:text-base"
                 >
-                  {home.hero.secondaryCta}
+                  {denseCopy ? (
+                    <>
+                      <Play className="h-3.5 w-3.5" />
+                      {denseCopy.secondaryCta}
+                    </>
+                  ) : (
+                    home.hero.secondaryCta
+                  )}
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-y-3 gap-x-6 text-sm text-[var(--landing-muted)] sm:grid-cols-2 max-w-lg">
-              {home.hero.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-2.5">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--lumni-gold-ink)]">
-                    <ChevronRight className="h-3 w-3" />
-                  </span>
-                  <span>{feature}</span>
+            {/* Features grid + trust/stat line are skipped for dense-cockpit
+                to match the design bundle (which uses social-proof row + a
+                bottom counselor logo strip instead). */}
+            {!isDense && (
+              <>
+                <div className="mt-8 grid grid-cols-1 gap-y-3 gap-x-6 text-sm text-[var(--landing-muted)] sm:grid-cols-2 max-w-lg">
+                  {home.hero.features.map((feature) => (
+                    <div key={feature} className="flex items-center gap-2.5">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--lumni-gold-ink)]">
+                        <ChevronRight className="h-3 w-3" />
+                      </span>
+                      <span>{feature}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-12 flex flex-col gap-4 border-t border-[color:var(--landing-border)] pt-6 sm:flex-row sm:items-center sm:gap-6">
-              <div className="flex items-center gap-3 text-xs leading-relaxed text-[var(--landing-subtle)]">
-                <ShieldCheck className="h-4 w-4 shrink-0 text-[var(--landing-muted)]" />
-                <span className="max-w-[280px]">{home.hero.trustLine}</span>
-              </div>
-              <div className="hidden h-8 w-px bg-[color:var(--landing-border)] sm:block" />
-              <div className="flex items-center gap-3 text-xs leading-relaxed text-[var(--landing-subtle)]">
-                <Zap className="h-4 w-4 shrink-0 text-[var(--lumni-gold-ink)]" />
-                <span className="max-w-[200px]">{home.hero.statLabel}</span>
-              </div>
-            </div>
+                <div className="mt-12 flex flex-col gap-4 border-t border-[color:var(--landing-border)] pt-6 sm:flex-row sm:items-center sm:gap-6">
+                  <div className="flex items-center gap-3 text-xs leading-relaxed text-[var(--landing-subtle)]">
+                    <ShieldCheck className="h-4 w-4 shrink-0 text-[var(--landing-muted)]" />
+                    <span className="max-w-[280px]">{home.hero.trustLine}</span>
+                  </div>
+                  <div className="hidden h-8 w-px bg-[color:var(--landing-border)] sm:block" />
+                  <div className="flex items-center gap-3 text-xs leading-relaxed text-[var(--landing-subtle)]">
+                    <Zap className="h-4 w-4 shrink-0 text-[var(--lumni-gold-ink)]" />
+                    <span className="max-w-[200px]">{home.hero.statLabel}</span>
+                  </div>
+                </div>
+              </>
+            )}
 
             {isDense && <DenseSocialProofRow />}
           </motion.div>
@@ -1202,6 +1244,12 @@ type DenseCockpitCopy = {
     matchScore: { label: string; value: string };
     essayShipped: { school: string; status: string };
   };
+  eyebrow: string;
+  eyebrowVersion: string;
+  headline: { lead: string; italic: string; suffix: string; accent: string };
+  body: string;
+  primaryCta: string;
+  secondaryCta: string;
   socialProof: { headline: string; subline: string };
   counselorEyebrow: string;
   counselorSchools: string[];
@@ -1276,6 +1324,12 @@ function DenseCockpitHero({
         className="relative z-10 overflow-hidden rounded-[16px] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)] shadow-[var(--landing-shadow-elevated)]"
         animate={reduced ? undefined : { y: [0, -3, 0] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        // Match design-bundle 3D tilt for the product window so it reads as a
+        // physical cockpit panel rather than a flat screenshot.
+        style={{
+          transform: reduced ? undefined : 'perspective(1600px) rotateY(-4deg) rotateX(2deg)',
+          transformOrigin: 'center',
+        }}
       >
         <div className="flex h-9 items-center gap-2.5 border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/60 px-3.5">
           <div className="flex gap-1.5">
