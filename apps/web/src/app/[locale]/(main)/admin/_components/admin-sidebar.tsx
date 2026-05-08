@@ -37,6 +37,7 @@ import {
   Database,
   Key,
   Palette,
+  Activity,
   type LucideIcon,
 } from 'lucide-react';
 import { RoleBadge } from './role-badge';
@@ -271,6 +272,7 @@ export function AdminSidebar() {
       items: [
         { href: '/admin/settings', icon: Settings, label: t('sidebar.settings') },
         { href: '/admin/feature-flags', icon: ToggleRight, label: t('sidebar.featureFlags') },
+        { href: '/admin/cache-health', icon: Activity, label: t('sidebar.cacheHealth') },
         { href: '/admin/dev-tools', icon: Key, label: t('sidebar.devTools') },
       ],
     },

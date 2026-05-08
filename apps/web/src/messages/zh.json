@@ -6755,6 +6755,7 @@
       "team": "团队",
       "themeStyles": "样式库",
       "featureFlags": "功能开关",
+      "cacheHealth": "缓存健康",
       "devTools": "开发者工具",
       "menu": "菜单",
       "adminNav": "管理导航",
@@ -6765,6 +6766,69 @@
         "management": "管理",
         "ai": "AI 系统",
         "system": "系统"
+      }
+    },
+    "cacheHealth": {
+      "title": "缓存健康",
+      "description": "单 pod 内 Redis 可观测性 — 操作计数、延迟分位、热 key 前缀和最近错误。每次 pod 重启后清零。",
+      "refresh": "刷新",
+      "reset": "重置计数器",
+      "resetSuccess": "本 pod 指标已重置。",
+      "loadError": "无法加载缓存健康数据",
+      "loadErrorDesc": "指标接口本身报错，通常意味着 API 不可用——请检查 Cloud Run 日志。",
+      "summary": {
+        "connection": "连接状态",
+        "connected": "已连接",
+        "disconnected": "已断开",
+        "latencyHint": "Ping 延迟 {ms}ms",
+        "totalOps": "总操作数",
+        "uptimeHint": "Pod 运行时长：{uptime}",
+        "hitRatio": "命中率",
+        "hitRatioHint": "{hits} 命中 · {misses} 未命中",
+        "errorRate": "错误率",
+        "errorsHint": "共 {count} 次错误"
+      },
+      "alerts": {
+        "quotaExceeded": {
+          "title": "Redis 配额已超限",
+          "body": "已有 {count} 次操作被 'max requests limit' 拒绝。Upstash 免费层每实例每月限 50 万命令——请升级套餐或扩容到更多分片。"
+        }
+      },
+      "ops": {
+        "title": "操作分类",
+        "description": "按操作类型分组的计数与延迟。`read` 是 GET 类；`write` 是 SET 类；`atomic` 包含 INCR/DECR/setNX（Lua 安全）。",
+        "empty": "尚未记录任何操作。",
+        "cols": {
+          "kind": "类型",
+          "count": "次数",
+          "errors": "错误",
+          "hitRatio": "命中率",
+          "avgMs": "平均 ms",
+          "p95Ms": "p95 ms",
+          "p99Ms": "p99 ms",
+          "maxMs": "最大 ms"
+        }
+      },
+      "hotKeys": {
+        "title": "热 key 前缀",
+        "description": "访问最频繁的前 20 个 key 前缀。前缀按第二个冒号分组（如 `school:detail:abc123` → `school:detail:*`）。用此识别 L1 进程内缓存或 CDN 边缘缓存的候选项。",
+        "empty": "尚未记录任何 key。",
+        "cols": {
+          "prefix": "前缀",
+          "count": "次数",
+          "lastSeen": "最近访问"
+        }
+      },
+      "errors": {
+        "title": "最近错误",
+        "description": "最近 50 条错误，最新优先。看 `kind` 区分配额／超时／连接／认证失败。",
+        "cols": {
+          "time": "时间",
+          "kind": "类型",
+          "op": "操作",
+          "key": "Key",
+          "message": "消息"
+        }
       }
     },
     "themeStyles": {
