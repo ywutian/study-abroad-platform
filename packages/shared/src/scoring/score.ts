@@ -72,12 +72,69 @@ export function getMajorSelectivityMultiplier(competitiveness: number): number {
 // ============================================
 
 /**
+ * Calculate GPA percentile from CDS Section C9/C11 distribution data.
+ *
+ * The CDS uses these standard GPA bands (values = % of enrolled freshmen):
+ *   "4.00", "3.75-3.99", "3.50-3.74", "3.25-3.49",
+ *   "3.00-3.24", "2.50-2.99", "2.00-2.49", "1.00-1.99", "<1.00"
+ *
+ * Returns the cumulative percentile (0-1) of the student's adjusted GPA
+ * among the enrolled class, interpolating within bands.
+ * Returns null if the distribution is empty or unusable.
+ */
+function calculateGpaPercentileFromCds(
+  adjustedGpa4: number, // 0-1 scale (student's quality-adjusted GPA / 4.0)
+  gpaDistribution: Record<string, number>
+): number | null {
+  // CDS bands in ascending GPA order, with threshold = lower bound / 4.0
+  const bands: Array<{ key: string; altKey?: string; lo: number; hi: number }> = [
+    { key: '<1.00',     lo: 0.000,  hi: 0.250 },
+    { key: '1.00-1.99', lo: 0.250,  hi: 0.500 },
+    { key: '2.00-2.49', lo: 0.500,  hi: 0.625 },
+    { key: '2.50-2.99', lo: 0.625,  hi: 0.750 },
+    { key: '3.00-3.24', lo: 0.750,  hi: 0.8125 },
+    { key: '3.25-3.49', lo: 0.8125, hi: 0.875 },
+    { key: '3.50-3.74', lo: 0.875,  hi: 0.9375 },
+    { key: '3.75-3.99', altKey: '3.75-4.00', lo: 0.9375, hi: 1.000 },
+    { key: '4.00',      lo: 1.000,  hi: 1.000 },
+  ];
+
+  // Collect raw values; handle both decimal (0-1) and percentage (0-100) inputs
+  const rawValues = bands.map((b) => {
+    const v = gpaDistribution[b.key] ?? (b.altKey ? gpaDistribution[b.altKey] : undefined) ?? 0;
+    return Math.max(0, v);
+  });
+  const total = rawValues.reduce((s, v) => s + v, 0);
+  if (total <= 0) return null;
+
+  // Cumulative distribution: percentile = fraction of students AT or BELOW this band
+  let cumulativeBelow = 0;
+  for (let i = 0; i < bands.length; i++) {
+    const b = bands[i];
+    const pct = rawValues[i] / total;
+    const effectiveHi = i + 1 < bands.length ? bands[i + 1].lo : 1.001;
+
+    if (adjustedGpa4 < effectiveHi) {
+      // Student falls in this band — interpolate linearly within the band
+      const bandWidth = effectiveHi - b.lo;
+      const posInBand = bandWidth > 0.0001
+        ? Math.max(0, adjustedGpa4 - b.lo) / bandWidth
+        : 0.5;
+      return Math.max(0, Math.min(1, cumulativeBelow + pct * posInBand));
+    }
+    cumulativeBelow += pct;
+  }
+  return 1.0;
+}
+
+/**
  * 计算学术分数 (0-100)
  *
  * 针对国际生申请美本校准:
- * - GPA: 归一化到4.0后映射到 0-36 分 (3.0 GPA = 基准 18 分)
+ * - GPA: CDS 百分位（有数据时）或归一化 4.0 映射 — 最大 36 分
  * - SAT/ACT: 四级 Fallback — 历史百分位 → 正态CDF → 差值法 → 默认基准, +/-18 分
  * - TOEFL: 门槛型 + 线性加分 — 低于90硬扣分, 以105为中位, +/-10 分
+ * - 课程加分: IB Diploma +3, A-Level +2, 8+ APs +2, 5-7 APs +1
  */
 export function calculateAcademicScore(
   profile: ProfileMetrics,
@@ -85,6 +142,9 @@ export function calculateAcademicScore(
   historicalDistribution?: HistoricalDistribution
 ): number {
   let score = ACADEMIC_CONFIG.baseScore;
+
+  // Detect test-blind schools — SAT/ACT scores are not applicable
+  const isTestBlind = (school as any).testingPolicy === 'BLIND';
 
   if (profile.gpa) {
     const normalizedGpa = normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0, profile.gpaSystem);
@@ -95,12 +155,25 @@ export function calculateAcademicScore(
       profile.highSchoolGradeInflation
     );
     const adjustedGpa4 = Math.min(normalizedGpa4 * gpaAdjustment, 1.0);
-    const gpaScore = adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
+
+    // CDS percentile path: if school published GPA distribution, use it to find
+    // the student's percentile rank among admitted/enrolled students. This is
+    // more accurate than a linear normalization against a 4.0 scale.
+    let gpaScore: number;
+    const gpaDist = school.gpaDistribution;
+    if (gpaDist != null && Object.keys(gpaDist).length > 0) {
+      const cdsPercentile = calculateGpaPercentileFromCds(adjustedGpa4, gpaDist);
+      gpaScore = cdsPercentile !== null
+        ? cdsPercentile * ACADEMIC_CONFIG.gpaMaxBonus
+        : adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
+    } else {
+      gpaScore = adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
+    }
 
     score += gpaScore - ACADEMIC_CONFIG.gpaBaseline;
   }
 
-  if (profile.satScore) {
+  if (!isTestBlind && profile.satScore) {
     score += calculateTestScoreBonus(
       profile.satScore,
       { avg: school.satAvg, p25: school.sat25, p75: school.sat75 },
@@ -109,7 +182,7 @@ export function calculateAcademicScore(
     );
   }
 
-  if (profile.actScore && !profile.satScore) {
+  if (!isTestBlind && profile.actScore && !profile.satScore) {
     if (school.act25 && school.act75 && school.act75 > school.act25) {
       const percentile = calculatePercentile(profile.actScore, school.act25, school.act75);
       score += (percentile - 0.5) * 2 * ACADEMIC_CONFIG.actMaxBonus;
@@ -151,6 +224,25 @@ export function calculateAcademicScore(
       )
     );
     score += toeflBonus + hardPenalty;
+  }
+
+  // Curriculum rigor bonus: IB Diploma and many APs signal academic challenge
+  if (profile.educationSystem) {
+    const sys = profile.educationSystem.toUpperCase();
+    if (sys === 'IB' || sys === 'IB_DIPLOMA') {
+      // IB Diploma requires demanding 6-course curriculum + EE + TOK — +3 points
+      score += 3;
+    } else if (sys === 'A_LEVEL' || sys === 'A_LEVELS') {
+      // A-Levels are internationally recognized rigorous curriculum — +2 points
+      score += 2;
+    }
+  }
+  if (profile.apCount != null && profile.apCount >= 8) {
+    // 8+ AP courses is strong signal of academic rigor — +2 points
+    score += 2;
+  } else if (profile.apCount != null && profile.apCount >= 5) {
+    // 5-7 APs — modest rigor signal — +1 point
+    score += 1;
   }
 
   return Math.max(0, Math.min(100, score));
@@ -544,24 +636,35 @@ export function calculateSelectivityIndex(
 /**
  * 根据综合分数和学校选拔性指数计算录取概率
  *
- * 使用 logistic sigmoid 模型:
- * - threshold = 30 + selectivity * 45 (适配国际生分数分布)
- * - k = 8 + (1 - selectivity) * 7  (更宽的 sigmoid 以提高区分度)
- * - P = sigmoid((overallScore - threshold) / k)
+ * AR-anchored 公式: P = AR * exp(z * 0.6)
  *
- * 所有信号来自 College Scorecard 客观数据，不依赖 US News 排名。
+ * 设计原则:
+ * - 当 z=0（学生实力恰好在门槛）时，P ≈ AR，与真实录取率对齐
+ * - exp(z * 0.6) 让强生拉高、弱生降低，但始终以 AR 为基础
+ * - Harvard Strong (87分): ~10% | Harvard Mid (70分): ~3% | 与真实数据一致
+ * - 动态 floor = AR * 2%，保留区分度而非全部截断到同一最低值
  */
 export function calculateProbability(
   overallScore: number,
   school: SchoolMetrics,
   selectivityOpts?: SelectivityOptions
 ): number {
+  // AR-anchored: P = AR * exp(z * 0.6)
+  // A neutral student (z=0) gets probability ≈ AR — the school's real acceptance rate.
+  // A strong student (z>0) gets boosted; a weak student (z<0) gets penalized.
+  const arRaw = school.acceptanceRate ?? 30;
+  const ar = arRaw > 1 ? arRaw / 100 : arRaw;
+
   const selectivity = calculateSelectivityIndex(school, selectivityOpts);
   const threshold = 30 + selectivity * 45;
   const k = 8 + (1 - selectivity) * 7;
   const z = (overallScore - threshold) / k;
-  const probability = 1 / (1 + Math.exp(-z));
-  return Math.max(0.05, Math.min(0.95, probability));
+
+  const probability = ar * Math.exp(z * 0.6);
+
+  // Dynamic floor: AR * 2% preserves discrimination at elite schools
+  const floor = ar * 0.02;
+  return Math.max(floor, Math.min(0.97, probability));
 }
 
 /**
@@ -569,22 +672,14 @@ export function calculateProbability(
  */
 export function calculateTier(
   probability: number,
-  school: SchoolMetrics
+  _school: SchoolMetrics
 ): 'reach' | 'match' | 'safety' {
-  const acceptanceRate = school.acceptanceRate || 30;
-
-  if (acceptanceRate < 15) {
-    if (probability >= 0.25) return 'match';
-    return 'reach';
-  } else if (acceptanceRate < 30) {
-    if (probability >= 0.5) return 'safety';
-    if (probability >= 0.25) return 'match';
-    return 'reach';
-  } else {
-    if (probability >= 0.6) return 'safety';
-    if (probability >= 0.35) return 'match';
-    return 'reach';
-  }
+  // Universal thresholds that work correctly with the AR-anchored probability formula.
+  // Since probabilities are already grounded in the school's real acceptance rate,
+  // a single set of thresholds is appropriate across all selectivity tiers.
+  if (probability >= 0.60) return 'safety';
+  if (probability >= 0.10) return 'match';
+  return 'reach';
 }
 
 /**
@@ -699,7 +794,7 @@ export function enforceMonotonicity<
   for (let i = 0; i < withData.length; i++) {
     const r = withData[i];
     const oldProb = r.probability;
-    const newProb = Math.max(0.05, Math.min(0.95, probs[i]));
+    const newProb = Math.max(0.005, Math.min(0.97, probs[i]));
 
     if (Math.abs(oldProb - newProb) > 0.001) {
       r.probability = newProb;

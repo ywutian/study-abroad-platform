@@ -99,14 +99,15 @@ export interface SchoolInput {
   testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
-  /** ED admit rate from CDS C21 (when published). Used for data-driven roundMultiplier. */
-  edAcceptanceRate?: number | null;
+  /** ED acceptance rate (0–100 percentage) */
+  edAcceptanceRate?: number;
   /** ED2 admit rate from CDS C21. */
-  ed2AcceptanceRate?: number | null;
-  /** EA / REA admit rate from CDS C21. */
-  eaAcceptanceRate?: number | null;
+  ed2AcceptanceRate?: number;
+  /** EA acceptance rate (0–100 percentage) */
+  eaAcceptanceRate?: number;
+  /** Institution type */
   institutionType?: string;
-  /** Enrolled freshman GPA distribution from CDS C9, e.g. { "3.75-4.00": 0.91, ... }. */
+  /** CDS Section C GPA distribution for admitted students */
   gpaDistribution?: Record<string, number> | null;
   applicationRound?: string;
   fieldTrustWeights?: Record<string, number>;

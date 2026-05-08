@@ -49,6 +49,16 @@ export interface ProfileMetrics {
   isFirstGen?: boolean;
   /** Whether the student needs financial aid (for need-aware penalty) */
   needsFinancialAid?: boolean;
+  /** URM status: 'UNDERREPRESENTED_MINORITY' | null */
+  urmStatus?: string | null;
+  /** Whether the student is a recruited athlete */
+  recruitedAthlete?: boolean;
+  /** Whether the student is an international applicant */
+  isInternational?: boolean;
+  /** Education system / curriculum: 'IB' | 'AP' | 'A_LEVEL' | 'GAOKAO' | etc. */
+  educationSystem?: string;
+  /** Number of AP/IB courses (curriculum rigor signal) */
+  apCount?: number;
   /** AI essay review score. Accepts either 0-10 or legacy 0-100 scale. */
   essayQualityScore?: number;
 }
@@ -73,24 +83,24 @@ export interface SchoolMetrics {
   usNewsRank?: number;
   /** 4年毕业率 (0-100), College Scorecard */
   graduationRate?: number;
-  /** Test policy: REQUIRED | OPTIONAL | BLIND | UNKNOWN. When BLIND, test scores must not affect prediction. */
+  /** Testing policy: 'REQUIRED' | 'OPTIONAL' | 'BLIND' */
   testingPolicy?: string;
-  /** ED admit rate as 0-100 percentage when published. */
+  /** ED acceptance rate (0–100 percentage) */
   edAcceptanceRate?: number;
   /** ED2 admit rate as 0-100 percentage when published. */
   ed2AcceptanceRate?: number;
-  /** EA admit rate as 0-100 percentage when published. */
+  /** EA acceptance rate (0–100 percentage) */
   eaAcceptanceRate?: number;
-  /** International admit rate as 0-100 percentage when published. */
+  /** International student acceptance rate (0–100 percentage) */
   intlAcceptanceRate?: number;
-  /** Out-of-state admit rate as 0-100 percentage when published. */
+  /** Out-of-state acceptance rate for public schools (0–100 percentage) */
   oosAcceptanceRate?: number;
-  /** Whether the school has Early Decision. */
+  /** Whether the school has an ED program */
   hasEarlyDecision?: boolean;
-  /** Institution category from Prisma InstitutionType. */
+  /** Institution type: RESEARCH_UNIVERSITY | LIBERAL_ARTS | ART_DESIGN | MUSIC_CONSERVATORY | SPECIALTY */
   institutionType?: string;
-  /** CDS GPA distribution JSON if available. */
-  gpaDistribution?: unknown;
+  /** CDS Section C GPA distribution for admitted students (percent in each band) */
+  gpaDistribution?: Record<string, number> | null;
 }
 
 export interface ScoreBreakdown {
