@@ -18,6 +18,7 @@ import {
   COLOR_THEME_DEFINITIONS,
   EXPERIMENTAL_COLOR_PALETTE_IDS,
   FEATURED_COLOR_PALETTE_IDS,
+  HERO_VISUAL_DEFINITIONS,
   THEME_APPEARANCE_PRESETS,
   THEME_BUTTON_PRESETS,
   THEME_CARD_PRESETS,
@@ -36,6 +37,7 @@ import {
   resolveThemeAppearanceControls,
   type ColorPalette,
   type ColorThemeCategory,
+  type HeroVisualId,
   type ThemeAppearanceNumericKey,
   type ThemeAppearancePresetId,
   type ThemeAppearanceOverrides,
@@ -50,6 +52,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useColorPalette } from '@/hooks/use-color-palette';
+import { useHeroVisual } from '@/hooks/use-hero-visual';
 import { useThemeAppearanceOverrides } from '@/hooks/use-theme-appearance-overrides';
 import { cn } from '@/lib/utils';
 
@@ -181,6 +184,121 @@ function SegmentControl<T extends string>({
   );
 }
 
+function HeroVisualThumb({ id }: { id: HeroVisualId }) {
+  // Each variant gets a tiny "schematic" preview; uses theme tokens so it
+  // adapts to whatever palette is active. No hardcoded colors.
+  const headlineSurface = id === 'deer-moon-monolith' ? '#0f0d0a' : 'var(--theme-surface)';
+  const ink = id === 'deer-moon-monolith' ? '#fff7ea' : 'var(--theme-hero-ink)';
+  const accent = id === 'deer-moon-monolith' ? '#ddb85a' : 'var(--theme-brand-mark)';
+  return (
+    <div
+      aria-hidden
+      className="relative h-16 w-full overflow-hidden rounded-[var(--theme-radius-card)] border"
+      style={{ background: headlineSurface, borderColor: 'var(--theme-border)' }}
+    >
+      {/* traffic dots */}
+      <div className="absolute left-2 top-2 flex gap-0.5">
+        <span className="h-1 w-1 rounded-full bg-[#e0826b]" />
+        <span className="h-1 w-1 rounded-full bg-[#dab469]" />
+        <span className="h-1 w-1 rounded-full bg-[#8a9670]" />
+      </div>
+      {id === 'centered-mark' || id === 'deer-moon-monolith' ? (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-full" style={{ background: accent, opacity: 0.85 }} />
+        </div>
+      ) : id === 'lovable-aura' ? (
+        <div className="absolute inset-0 flex items-center justify-center gap-1.5">
+          <span className="h-3 w-3 rounded-full" style={{ background: '#ff5aa5', opacity: 0.7 }} />
+          <span className="h-3 w-3 rounded-full" style={{ background: '#7aa8ff', opacity: 0.7 }} />
+        </div>
+      ) : id === 'framer-orbit' ? (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="h-7 w-10 rounded-md"
+            style={{ background: '#0f0d0a', boxShadow: 'inset 0 0 12px #5e6ad2' }}
+          />
+        </div>
+      ) : (
+        // dense-cockpit + matrix-premium + beige-editorial + command-minimal: tabbed window
+        <>
+          <div
+            className="absolute inset-x-3 top-5 h-1 rounded-full"
+            style={{ background: ink, opacity: 0.45 }}
+          />
+          {id === 'dense-cockpit' && (
+            <div
+              className="absolute right-2 top-2 h-2 w-6 rounded-sm"
+              style={{ background: accent }}
+            />
+          )}
+          <div className="absolute inset-x-3 bottom-2 grid gap-0.5">
+            <div className="h-1 rounded-full" style={{ background: accent, opacity: 0.85 }} />
+            <div className="h-1 w-3/4 rounded-full" style={{ background: ink, opacity: 0.4 }} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function HeroVisualPicker() {
+  const t = useTranslations('ui.colorPalette');
+  const locale = useLocale();
+  const { heroVisual, setHeroVisual } = useHeroVisual();
+  const labelLocale = locale.startsWith('zh') ? 'zh' : 'en';
+
+  return (
+    <section
+      aria-label={t('heroVisualTitle')}
+      className="mb-4 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-card-bg)] p-4 shadow-[var(--theme-card-shadow)]"
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {t('heroVisualTitle')}
+          </div>
+          <p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground">
+            {t('heroVisualDesc')}
+          </p>
+        </div>
+        <div className="shrink-0 rounded-full border bg-[color:var(--theme-control-bg)] px-2.5 py-1 text-2xs uppercase tracking-[0.16em] text-muted-foreground">
+          {labelLocale === 'zh'
+            ? HERO_VISUAL_DEFINITIONS.find((v) => v.id === heroVisual)?.labelZh
+            : HERO_VISUAL_DEFINITIONS.find((v) => v.id === heroVisual)?.labelEn}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7">
+        {HERO_VISUAL_DEFINITIONS.map((def) => {
+          const active = heroVisual === def.id;
+          const label = labelLocale === 'zh' ? def.labelZh : def.labelEn;
+          const description = labelLocale === 'zh' ? def.descriptionZh : def.descriptionEn;
+          return (
+            <button
+              key={def.id}
+              type="button"
+              onClick={() => setHeroVisual(def.id)}
+              aria-pressed={active}
+              className={cn(
+                'group flex flex-col gap-1.5 rounded-[var(--theme-radius-card)] border p-2 text-left transition hover:border-primary/50 hover:shadow-[var(--theme-card-hover-shadow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
+                active
+                  ? 'border-primary bg-[color:var(--theme-control-bg)] ring-2 ring-primary/30'
+                  : 'border-border bg-[color:var(--theme-card-bg)]'
+              )}
+            >
+              <HeroVisualThumb id={def.id} />
+              <div className="mt-0.5 flex items-center gap-1">
+                <span className="truncate text-xs font-semibold text-foreground">{label}</span>
+                {active && <Check className="h-3 w-3 shrink-0 text-primary" />}
+              </div>
+              <p className="line-clamp-2 text-2xs leading-4 text-muted-foreground">{description}</p>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   const t = useTranslations('ui.colorPalette');
   const locale = useLocale();
@@ -237,7 +355,10 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
     if (activeGroup === 'featured') return FEATURED_COLOR_PALETTE_IDS;
     if (activeGroup === 'experimental') return EXPERIMENTAL_COLOR_PALETTE_IDS;
     if (activeGroup === 'more') {
-      const hiddenFromMore = new Set([...FEATURED_COLOR_PALETTE_IDS, ...EXPERIMENTAL_COLOR_PALETTE_IDS]);
+      const hiddenFromMore = new Set([
+        ...FEATURED_COLOR_PALETTE_IDS,
+        ...EXPERIMENTAL_COLOR_PALETTE_IDS,
+      ]);
       return allThemeIds.filter((id) => !hiddenFromMore.has(id));
     }
     if (activeGroup === 'all') return allThemeIds;
@@ -406,6 +527,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
               activePanel === 'customize' && 'hidden lg:block'
             )}
           >
+            <HeroVisualPicker />
             {filteredThemes.length === 0 ? (
               <div className="flex min-h-[280px] items-center justify-center rounded-[var(--theme-radius-card)] border border-dashed bg-[color:var(--theme-card-bg)] text-sm text-muted-foreground">
                 {t('noResults')}

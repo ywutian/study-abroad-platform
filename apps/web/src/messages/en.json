@@ -491,6 +491,130 @@
             "tone": "safety"
           }
         ]
+      },
+      "denseCockpit": {
+        "tabs": {
+          "list": "School list",
+          "fit": "Fit analysis",
+          "essay": "Essays"
+        },
+        "url": "lumni.app/dashboard/sara-chen",
+        "list": {
+          "summary": "5 of 8 schools",
+          "tierLabels": {
+            "reach": "reach",
+            "target": "target",
+            "safety": "safety"
+          },
+          "rows": [
+            {
+              "name": "Stanford University",
+              "loc": "Stanford, CA",
+              "tone": "reach",
+              "probability": 18,
+              "deadline": "Jan 2",
+              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+            },
+            {
+              "name": "Carnegie Mellon · SCS",
+              "loc": "Pittsburgh, PA",
+              "tone": "reach",
+              "probability": 24,
+              "deadline": "Dec 1",
+              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+            },
+            {
+              "name": "UC Berkeley · EECS",
+              "loc": "Berkeley, CA",
+              "tone": "target",
+              "probability": 42,
+              "deadline": "Nov 30",
+              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+            },
+            {
+              "name": "Georgia Tech",
+              "loc": "Atlanta, GA",
+              "tone": "target",
+              "probability": 58,
+              "deadline": "Oct 15",
+              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+            },
+            {
+              "name": "UMich · CSE",
+              "loc": "Ann Arbor, MI",
+              "tone": "safety",
+              "probability": 71,
+              "deadline": "Nov 1",
+              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+            }
+          ]
+        },
+        "fit": {
+          "title": "UC Berkeley · EECS",
+          "subtitle": "Composite fit · last updated 2h ago",
+          "factors": [
+            { "label": "Academic profile", "score": 82, "tone": "safety" },
+            { "label": "Major demand", "score": 34, "tone": "reach" },
+            { "label": "Test scores (1520)", "score": 78, "tone": "safety" },
+            { "label": "Extracurricular depth", "score": 61, "tone": "target" },
+            { "label": "Geographic diversity", "score": 71, "tone": "safety" }
+          ]
+        },
+        "essay": {
+          "promptLabel": "Common App · Essay 1 · 487/650",
+          "body": "The first time I rebuilt my grandmother's recipe ledger, I was twelve and couldn't read Mandarin. I worked with a magnifying glass and a worn dictionary, treating each entry like a small archaeological site...",
+          "accentLine": " The kitchen became a translation lab",
+          "coachLabel": "Coach",
+          "coachNote": "Strong specificity in line 4. Consider tightening the second clause.",
+          "scores": [
+            { "label": "Voice", "score": 92, "tone": "safety" },
+            { "label": "Specificity", "score": 76, "tone": "target" },
+            { "label": "Concision", "score": 54, "tone": "reach" }
+          ]
+        },
+        "badges": {
+          "matchScore": { "label": "Match score", "value": "+18%" },
+          "essayShipped": { "school": "UC Berkeley · CS", "status": "Essay shipped" }
+        },
+        "socialProof": {
+          "headline": "1,247 students applied this week",
+          "subline": "Avg. 8.4 schools · 92% on-time submission"
+        },
+        "counselorEyebrow": "Trusted by counselors at",
+        "counselorSchools": [
+          "Andover",
+          "Stuyvesant",
+          "Harker",
+          "TJ Magnet",
+          "Choate",
+          "Exeter",
+          "Sidwell"
+        ]
+      },
+      "centeredMark": {
+        "eyebrowBadge": "New",
+        "eyebrow": "Coach v2.4 — read every essay in real time",
+        "headline": {
+          "lead": "A clearer path to",
+          "accent": "where you belong."
+        },
+        "subtitle": "Lumni turns your transcript, scores, and story into a defensible college list — and walks every essay with you, line by line.",
+        "primaryCta": "Start free",
+        "secondaryCta": "Watch 90s tour",
+        "trustItems": [
+          { "icon": "check", "text": "Free for the first 3 schools" },
+          { "icon": "shield", "text": "SOC 2 · FERPA-aware" }
+        ],
+        "counselorEyebrow": "Trusted by counselors at",
+        "counselorSchools": [
+          "Andover",
+          "Stuyvesant",
+          "Harker",
+          "TJ Magnet",
+          "Choate",
+          "Exeter",
+          "Sidwell"
+        ]
       }
     },
     "trust": {
@@ -3286,6 +3410,7 @@
     "noResults": "No schools found",
     "tryDifferentSearch": "Try searching with different keywords",
     "resultsCount": "{count} schools total",
+    "showingTruncated": "Showing {shown} of {total}. Refine filters to load more.",
     "pagination": {
       "showing": "Showing {from}–{to} of {total}",
       "page": "Page {current} of {total}",

@@ -5,6 +5,21 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { Newsreader, Inter } from 'next/font/google';
+
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-newsreader',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 import {
   COLOR_PALETTES,
   COLOR_PALETTE_STORAGE_KEY,
@@ -71,7 +86,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${newsreader.variable} ${inter.variable}`}
     >
       <head>
         <style nonce={nonce} dangerouslySetInnerHTML={{ __html: getThemeCssText() }} />
