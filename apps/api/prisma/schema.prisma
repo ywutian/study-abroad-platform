@@ -1125,6 +1125,7 @@ model School {
 
   // Relations
   metrics                           SchoolMetric[]
+  historicalData                    SchoolHistoricalData[]
   cdsAdmitBands                     SchoolCdsAdmitBand[]
   programs                          SchoolProgram[]
   cases                             AdmissionCase[]
@@ -1192,6 +1193,31 @@ model SchoolMetric {
 
   @@unique([schoolId, year, metricKey])
   @@index([schoolId])
+}
+
+/// Stores five-year scalar history without overwriting the latest service value
+/// on School. Generic by design (covers many display + prediction fields from the
+/// data marathon).
+model SchoolHistoricalData {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  field      String
+  year       Int
+  value      Json
+  source     String
+  confidence String  @default("LOW")
+  staleness  String
+  sourceUrl  String?
+  notes      String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schoolId, field, year, source])
+  @@index([schoolId, field, year])
+  @@index([field, year])
 }
 
 model SchoolCdsAdmitBand {
