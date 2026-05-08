@@ -701,7 +701,21 @@
           "Choate",
           "Exeter",
           "Sidwell"
-        ]
+        ],
+        "floatingChips": {
+          "match": {
+            "value": "+18% match",
+            "school": "Carnegie Mellon"
+          },
+          "essay": {
+            "school": "UC Berkeley",
+            "status": "Essay shipped"
+          },
+          "voice": {
+            "value": "Voice 92",
+            "label": "Specificity strong"
+          }
+        }
       }
     },
     "trust": {

@@ -701,7 +701,21 @@
           "Choate",
           "Exeter",
           "Sidwell"
-        ]
+        ],
+        "floatingChips": {
+          "match": {
+            "value": "匹配 +18%",
+            "school": "卡内基梅隆"
+          },
+          "essay": {
+            "school": "加州伯克利",
+            "status": "文书已交"
+          },
+          "voice": {
+            "value": "声纹 92",
+            "label": "具体度高"
+          }
+        }
       }
     },
     "trust": {
