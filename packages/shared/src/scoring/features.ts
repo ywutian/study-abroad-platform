@@ -76,6 +76,9 @@ export interface FeatureVector {
   // High School (1)
   highSchoolTierNorm: number;
 
+  // Test Policy (1)
+  isTestBlindSchool: number;
+
   // Application Context (4)
   roundED: number;
   roundEA: number;
@@ -105,6 +108,7 @@ export const FEATURE_NAMES_BASIC: (keyof FeatureVector)[] = [
   'overallScore',
   'heuristicProb',
   'academicFit',
+  'isTestBlindSchool',
 ];
 
 /** Feature names for Tier 3+ (full 44 features) */
@@ -156,6 +160,8 @@ export const FEATURE_NAMES_FULL: (keyof FeatureVector)[] = [
   'activitySelectivityInteraction',
   // High School
   'highSchoolTierNorm',
+  // Test Policy
+  'isTestBlindSchool',
   // Application Context
   'roundED',
   'roundEA',
@@ -195,15 +201,17 @@ export function extractFeatureVector(
     profile.gpa != null
       ? normalizeGpa(profile.gpa, profile.gpaScale ?? 4.0, profile.gpaSystem) / 4.0
       : NaN;
-  const satNorm = profile.satScore != null ? profile.satScore / 1600 : NaN;
-  const actNorm = profile.actScore != null ? profile.actScore / 36 : NaN;
+  // Test-blind schools: SAT/ACT are not applicable — zero out test features
+  const isTestBlindSchool = (school as any).testingPolicy === 'BLIND' ? 1 : 0;
+  const satNorm = !isTestBlindSchool && profile.satScore != null ? profile.satScore / 1600 : NaN;
+  const actNorm = !isTestBlindSchool && profile.actScore != null ? profile.actScore / 36 : NaN;
   const toeflNorm =
     profile.englishProficiencyScore != null
       ? profile.englishProficiencyScore
       : profile.toeflScore != null
         ? profile.toeflScore / 120
         : NaN;
-  const hasTestScore = profile.satScore != null || profile.actScore != null ? 1 : 0;
+  const hasTestScore = isTestBlindSchool ? 0 : (profile.satScore != null || profile.actScore != null ? 1 : 0);
   const hasToefl = profile.englishProficiencyScore != null || profile.toeflScore != null ? 1 : 0;
 
   let testCount = 0;
@@ -384,6 +392,7 @@ export function extractFeatureVector(
     awardSelectivityInteraction,
     activitySelectivityInteraction,
     highSchoolTierNorm,
+    isTestBlindSchool,
     roundED,
     roundEA,
     applicationYear,
@@ -589,6 +598,7 @@ function getDefaultMedians(): Record<keyof FeatureVector, number> {
     awardSelectivityInteraction: 0.15,
     activitySelectivityInteraction: 0.25,
     highSchoolTierNorm: 0.5,
+    isTestBlindSchool: 0,
     roundED: 0,
     roundEA: 0,
     applicationYear: 0.5,

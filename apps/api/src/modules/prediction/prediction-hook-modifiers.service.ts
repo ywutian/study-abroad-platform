@@ -116,7 +116,7 @@ export class PredictionHookModifiersService {
    * Get the effective base rate for a school+profile+round combination.
    *
    * Priority chain (each step modifies the rate from the previous):
-   *   1. ED-specific rate (edAcceptanceRate / ed2AcceptanceRate) > intlAcceptanceRate > overall acceptanceRate
+   *   1. ED-specific rate (edAcceptanceRate, shared for ED/ED2) > intlAcceptanceRate > overall acceptanceRate
    *   2. Chinese applicant adjustment (selectivity-tiered multiplier)
    *   3. Major selectivity multiplier (hyper-competitive programs like CS@CMU)
    *
@@ -125,7 +125,6 @@ export class PredictionHookModifiersService {
   async getBaseRate(
     school: SchoolMetrics & {
       edAcceptanceRate?: number;
-      ed2AcceptanceRate?: number;
       intlAcceptanceRate?: number;
       acceptanceRate: number;
     },
@@ -163,8 +162,9 @@ export class PredictionHookModifiersService {
       school.edAcceptanceRate != null
     ) {
       baseRate = school.edAcceptanceRate;
-    } else if (round === 'ED2' && school.ed2AcceptanceRate != null) {
-      baseRate = school.ed2AcceptanceRate;
+    } else if (round === 'ED2' && school.edAcceptanceRate != null) {
+      // ED2 uses the same ED rate since schools rarely publish separate ED2 rates
+      baseRate = school.edAcceptanceRate;
     } else if (profile.isInternational && school.intlAcceptanceRate != null) {
       baseRate = school.intlAcceptanceRate;
     } else {
