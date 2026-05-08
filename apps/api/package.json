@@ -27,6 +27,7 @@
     "db:seed:forum-communities": "ts-node prisma/seed-forum-communities.ts",
     "db:seed:competitions": "ts-node prisma/seed-competitions.ts",
     "db:seed:teams": "ts-node prisma/seed-teams.ts",
+    "db:seed:theme-styles": "tsx scripts/seed-theme-style-library.ts",
     "db:verify:seed": "tsx scripts/verify-seed.ts",
     "verify:school-facts": "ts-node --transpile-only scripts/verify-school-facts.ts",
     "gold:generate": "ts-node --transpile-only scripts/generate-application-analysis-gold-cases.ts",
