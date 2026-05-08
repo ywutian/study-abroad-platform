@@ -252,17 +252,16 @@ export function SchoolToolbar({
 
   return (
     <div className="rounded-[var(--theme-radius-card)] border border-border/60 bg-card/40 backdrop-blur-sm">
-      {/* Top row: total/range + controls */}
+      {/* Top row: result count + controls */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <div className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{t('resultsCount', { count: total })}</span>
+        <h2 className="text-lg font-bold text-foreground">
+          {t('resultsCount', { count: total })}
           {total > 0 && (
-            <>
-              {' · '}
-              <span>{tt('rangeReadout', { from, to, total })}</span>
-            </>
+            <span className="ml-2 text-xs font-normal text-muted-foreground/70">
+              · {tt('rangeReadout', { from, to, total })}
+            </span>
           )}
-        </div>
+        </h2>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Sort */}

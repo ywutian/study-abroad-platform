@@ -1,33 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useTranslations, useLocale, useFormatter } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { MapPin, GraduationCap, ChevronRight, Plus, Check, Users, Award, X } from 'lucide-react';
+import { GraduationCap, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SchoolLogo } from '@/components/features';
-import {
-  getSchoolCommunityRatingSummary,
-  getSchoolEnrollmentCount,
-  getSchoolFieldSource,
-  getTrustedValue,
-  hasVerifiedFieldSource,
-} from '@/components/features/schools/school-display-utils';
-import { TrustBadge } from '@/components/features/schools/TrustBadge';
-import { Link } from '@/lib/i18n/navigation';
-import { RankingBadge } from '@/components/ui/ranking-badge';
-import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
+import { SchoolCard } from './SchoolCard';
 import { type School } from './schools-types';
 import { SchoolPagination } from './SchoolPagination';
 
@@ -53,24 +32,6 @@ interface SchoolGridProps {
   density?: 'comfortable' | 'compact';
 }
 
-function CommunityMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-full border border-border/70 bg-background px-2.5 py-1 text-2xs font-medium">
-      <span className="text-muted-foreground">{label}</span>{' '}
-      <span className="text-foreground">{value.toFixed(1)}</span>
-    </div>
-  );
-}
-
-function NicheGradePill({ label, grade }: { label: string; grade: string }) {
-  return (
-    <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-2xs font-medium">
-      <span className="text-muted-foreground">{label}</span>{' '}
-      <span className="text-foreground">{grade}</span>
-    </div>
-  );
-}
-
 export function SchoolGrid({
   schools,
   isLoading,
@@ -90,38 +51,23 @@ export function SchoolGrid({
   totalPages,
   onPageChange,
   onPageSizeChange,
-  density = 'comfortable',
 }: SchoolGridProps) {
   const t = useTranslations('schools');
-  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const tc = useTranslations('common');
-  const locale = useLocale();
-  const format = useFormatter();
-
-  const isCompact = density === 'compact';
-  const cardContentPadding = isCompact ? 'pt-3' : 'pt-4';
-  const metricBlockPadding = isCompact ? 'p-2.5' : 'p-3';
-  const titleRowMargin = isCompact ? 'mb-2' : 'mb-2.5';
-  const locationRowMargin = isCompact ? 'mb-2' : 'mb-3';
 
   return (
     <>
-      {/* Schools Grid */}
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="h-1 bg-primary/20" />
-              <CardContent className="pt-4">
-                <div className="flex items-start gap-3 mb-3">
-                  <Skeleton className="h-12 w-12 rounded-xl" />
-                  <div className="flex-1">
-                    <Skeleton className="h-5 w-3/4 mb-2" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </div>
-                <Skeleton className="h-4 w-2/3 mb-3" />
-                <Skeleton className="h-16 w-full rounded-lg" />
+            <Card key={i} className="animate-pulse overflow-hidden p-0">
+              <div className="h-16 bg-muted/60" />
+              <CardContent className="space-y-3 px-4 pb-4 pt-3">
+                <Skeleton className="-mt-9 h-12 w-12 rounded-lg" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <Skeleton className="h-8 w-full rounded-md" />
               </CardContent>
             </Card>
           ))}
@@ -141,286 +87,30 @@ export function SchoolGrid({
         </Card>
       ) : schools.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {schools.map((school, index) => {
-            const isSelected = isSchoolSelected(school.id);
-            const isAdded = addedSchools.has(school.id);
-            const communityRatingSummary = getSchoolCommunityRatingSummary(school);
-            const enrollmentSource = getSchoolFieldSource(
-              school,
-              'totalEnrollment',
-              'studentCount'
-            );
-            const acceptanceSource = getSchoolFieldSource(school, 'acceptanceRate');
-            const enrollmentCount = hasVerifiedFieldSource(
-              school,
-              'totalEnrollment',
-              'studentCount'
-            )
-              ? getSchoolEnrollmentCount(school)
-              : undefined;
-            const trustedEnrollmentCount = getTrustedValue(
-              school,
-              enrollmentCount,
-              'totalEnrollment',
-              'studentCount'
-            );
-            const trustedAcceptanceRate = getTrustedValue(
-              school,
-              school.acceptanceRate,
-              'acceptanceRate'
-            );
-            const hasSupplementalRanking = Boolean(
-              school.usNewsRank || school.qsRank || school.rankings?.length
-            );
-            const nicheTags = [
-              { key: 'partyScene', label: t('niche.partyScene'), grade: school.nicheLifeGrade },
-              { key: 'campusFood', label: t('niche.campusFood'), grade: school.nicheFoodGrade },
-              { key: 'safety', label: t('niche.safety'), grade: school.nicheSafetyGrade },
-            ].filter((tag): tag is { key: string; label: string; grade: string } =>
-              Boolean(tag.grade)
-            );
-
-            return (
-              <motion.div
-                key={school.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.03, 0.3) }}
-              >
-                <Card
-                  className={cn(
-                    'group relative h-full cursor-pointer overflow-hidden transition-all duration-200 hover:border-primary/45 hover:shadow-[var(--theme-card-hover-shadow)]',
-                    isSelected && 'border-primary/45 ring-2 ring-primary/25'
-                  )}
-                >
-                  <div className="h-px bg-primary/55 transition-all group-hover:h-1" />
-
-                  {/* Batch selection checkbox — absolute top-left */}
-                  {hasAuth && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={(checked) => onToggleSelection(school, checked as boolean)}
-                        disabled={isAdded}
-                        className="shrink-0 bg-background/80 backdrop-blur-sm"
-                      />
-                    </div>
-                  )}
-
-                  {/* Ranking + fit score — absolute top-right */}
-                  <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-1">
-                    <RankingBadge
-                      rankings={school.rankings}
-                      usNewsRank={school.usNewsRank}
-                      variant="amber"
-                    />
-                    {school.fitScore != null && (
-                      <Badge
-                        variant="outline"
-                        className="shrink-0 text-2xs bg-background/80 backdrop-blur-sm"
-                      >
-                        {t('fitScore', { score: Math.round(school.fitScore) })}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <CardContent className={cardContentPadding}>
-                    <Link href={`/schools/${school.id}`} className="block">
-                      {/* Title row reserves room for absolute badges (top-right) and checkbox (top-left) */}
-                      <div
-                        className={cn(
-                          'flex items-start gap-3 pr-24',
-                          titleRowMargin,
-                          hasAuth && 'pl-8'
-                        )}
-                      >
-                        <SchoolLogo
-                          logoUrl={school.logoUrl}
-                          website={school.website}
-                          name={getSchoolName(school, locale)}
-                          size="md"
-                          className="border-violet-500/20 group-hover:border-violet-500/40 group-hover:scale-105 transition-all shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                            {getSchoolName(school, locale)}
-                          </h3>
-                          {getSchoolSubName(school, locale) && (
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">
-                              {getSchoolSubName(school, locale)}
-                            </p>
-                          )}
-                          {hasSupplementalRanking && (
-                            <Badge variant="secondary" className="mt-1 text-2xs">
-                              {t('supplementalRanking')}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {((school.testingPolicy && school.testingPolicy !== 'UNKNOWN') ||
-                        school.hasEarlyDecision) && (
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {school.testingPolicy && school.testingPolicy !== 'UNKNOWN' && (
-                            <Badge variant="outline" className="text-xs">
-                              {testingPolicyT(school.testingPolicy as any)}
-                            </Badge>
-                          )}
-                          {school.hasEarlyDecision && (
-                            <Badge variant="outline" className="text-xs">
-                              ED
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-
-                      <div
-                        className={cn(
-                          'flex items-center gap-1.5 text-sm text-muted-foreground',
-                          locationRowMargin
-                        )}
-                      >
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-rose-500" />
-                        <span className="truncate">
-                          {school.city && `${school.city}, `}
-                          {school.state && `${school.state}, `}
-                          {school.country}
-                        </span>
-                      </div>
-
-                      {/* Data metrics */}
-                      <div
-                        className={cn(
-                          'grid grid-cols-2 gap-2 rounded-[var(--theme-radius-card)] border border-border/60 bg-muted/35 transition-colors group-hover:bg-muted/50',
-                          metricBlockPadding
-                        )}
-                      >
-                        <div className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                            <Award className="h-3 w-3" />
-                            {t('acceptanceRate')}
-                          </div>
-                          <div
-                            className={cn(
-                              'font-semibold text-sm',
-                              trustedAcceptanceRate && trustedAcceptanceRate < 15
-                                ? 'text-rose-500'
-                                : trustedAcceptanceRate && trustedAcceptanceRate < 30
-                                  ? 'text-amber-500'
-                                  : ''
-                            )}
-                          >
-                            {trustedAcceptanceRate != null
-                              ? formatAcceptanceRate(trustedAcceptanceRate)
-                              : tc('notAvailable')}
-                          </div>
-                          <div className="mt-1 flex justify-center">
-                            <TrustBadge source={acceptanceSource} />
-                          </div>
-                        </div>
-                        <div className="text-center border-l border-border">
-                          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-                            <Users className="h-3 w-3" />
-                            {t('students')}
-                          </div>
-                          <div className="font-semibold text-sm">
-                            {trustedEnrollmentCount
-                              ? format.number(trustedEnrollmentCount, 'standard')
-                              : tc('notAvailable')}
-                          </div>
-                          <div className="mt-1 flex justify-center">
-                            <TrustBadge source={enrollmentSource} />
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        {nicheTags.length > 0 ? (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {nicheTags.map((tag) => (
-                              <NicheGradePill key={tag.key} label={tag.label} grade={tag.grade} />
-                            ))}
-                          </div>
-                        ) : communityRatingSummary.isPublic ? (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {communityRatingSummary.safetyAvg != null && (
-                              <CommunityMetric
-                                label={t('community.safetyShort')}
-                                value={communityRatingSummary.safetyAvg}
-                              />
-                            )}
-                            {communityRatingSummary.lifeAvg != null && (
-                              <CommunityMetric
-                                label={t('community.lifeShort')}
-                                value={communityRatingSummary.lifeAvg}
-                              />
-                            )}
-                            {communityRatingSummary.foodAvg != null && (
-                              <CommunityMetric
-                                label={t('community.foodShort')}
-                                value={communityRatingSummary.foodAvg}
-                              />
-                            )}
-                            <span className="text-2xs text-muted-foreground">
-                              {t('community.count', { count: communityRatingSummary.count })}
-                            </span>
-                          </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground">
-                            {communityRatingSummary.count > 0
-                              ? t('community.pendingCard', {
-                                  count: communityRatingSummary.count,
-                                  minCount: 5,
-                                })
-                              : t('community.noneCard')}
-                          </p>
-                        )}
-                      </div>
-                      {hasAuth ? (
-                        isAdded ? (
-                          <Button variant="secondary" size="sm" disabled>
-                            <Check className="h-4 w-4 mr-1" />
-                            {t('added')}
-                          </Button>
-                        ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" disabled={isAddingToList}>
-                                <Plus className="h-4 w-4 mr-1" />
-                                {t('addToList')}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              {(['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const).map((r) => (
-                                <DropdownMenuItem
-                                  key={r}
-                                  onClick={() => onAddToList(school.id, r)}
-                                  disabled={isAddingToList}
-                                >
-                                  {t('rounds.' + r)}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )
-                      ) : (
-                        <div className="flex items-center text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                          {t('viewDetails')}
-                          <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
+          {schools.map((school, index) => (
+            <motion.div
+              key={school.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3) }}
+              className="h-full"
+            >
+              <SchoolCard
+                school={school}
+                viewMode="grid"
+                hasAuth={hasAuth}
+                isSelected={isSchoolSelected(school.id)}
+                isAdded={addedSchools.has(school.id)}
+                onToggleSelection={onToggleSelection}
+                onAddToList={onAddToList}
+                isAddingToList={isAddingToList}
+              />
+            </motion.div>
+          ))}
         </div>
       ) : (
         <Card className="overflow-hidden">
-          <div className="h-1 bg-primary/40" />
+          <div className="h-1 bg-blue-500/40" />
           <CardContent className="py-8">
             {hasFilters ? (
               <EmptyState
@@ -452,7 +142,6 @@ export function SchoolGrid({
         </Card>
       )}
 
-      {/* Pagination */}
       {!isLoading && !isError && schools.length > 0 && (
         <SchoolPagination
           page={page}
