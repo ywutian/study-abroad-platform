@@ -47,6 +47,10 @@ import {
   type ThemeStyleValidationStatus,
 } from '@study-abroad/shared';
 import {
+  generateDefaultThemeStyleItems,
+  SYSTEM_SEED_ACTOR,
+} from './theme-style-defaults';
+import {
   CurrentUser,
   Roles,
   type CurrentUserPayload,
@@ -712,9 +716,40 @@ export class AdminThemeStyleController {
   ) {}
 
   private async readSetting() {
-    const setting = await this.prisma.systemSetting.findUnique({
+    let setting = await this.prisma.systemSetting.findUnique({
       where: { key: THEME_STYLE_SETTING_KEY },
     });
+
+    // Auto-seed on first read so /admin/theme-styles is never blank on a fresh
+    // deploy. The setting row is missing on a clean DB (e.g. just-deployed
+    // production); generate the curated 144-item default library and persist.
+    if (!setting) {
+      const items = generateDefaultThemeStyleItems();
+      const now = new Date().toISOString();
+      const stateNoChecksum = {
+        schemaVersion: THEME_STYLE_SCHEMA_VERSION,
+        revision: 1,
+        updatedAt: now,
+        updatedBy: SYSTEM_SEED_ACTOR as ThemeStyleActor,
+        items,
+        tombstones: [] as ThemeStyleTombstone[],
+      };
+      const seededValue = JSON.stringify({
+        ...stateNoChecksum,
+        checksum: checksumState(stateNoChecksum),
+      });
+      try {
+        setting = await this.prisma.systemSetting.create({
+          data: { key: THEME_STYLE_SETTING_KEY, value: seededValue },
+        });
+      } catch {
+        // Race condition (concurrent first-read inserted before us). Re-fetch.
+        setting = await this.prisma.systemSetting.findUnique({
+          where: { key: THEME_STYLE_SETTING_KEY },
+        });
+      }
+    }
+
     return { setting, read: readLibrary(setting?.value) };
   }
 
