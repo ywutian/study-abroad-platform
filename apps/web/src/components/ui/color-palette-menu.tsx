@@ -309,6 +309,7 @@ function SegmentControl<T extends string>({
   );
 }
 
+
 export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   const t = useTranslations('ui.colorPalette');
   const locale = useLocale();

@@ -132,8 +132,8 @@ describe('global theme packages', () => {
   });
 
   it('defines the premium homepage hero visual library', () => {
-    expect(HERO_VISUAL_DEFINITIONS).toHaveLength(7);
-    expect(HERO_VISUAL_IDS).toHaveLength(7);
+    expect(HERO_VISUAL_DEFINITIONS).toHaveLength(9);
+    expect(HERO_VISUAL_IDS).toHaveLength(9);
     expect(DEFAULT_COLOR_PALETTE).toBe('cobalt-saas');
     expect(DEFAULT_HERO_VISUAL_ID).toBe('command-center');
     expect(new Set(HERO_VISUAL_IDS).size).toBe(HERO_VISUAL_IDS.length);
@@ -145,6 +145,8 @@ describe('global theme packages', () => {
       'lovable-aura',
       'beige-editorial',
       'command-minimal',
+      'dense-cockpit',
+      'centered-mark',
     ]);
   });
 

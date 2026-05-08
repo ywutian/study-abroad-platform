@@ -552,6 +552,26 @@ export type ThemeCardPreset = 'flat' | 'bordered' | 'elevated' | 'glass' | 'edit
 export type ThemeShadowPreset = 'none' | 'subtle' | 'medium' | 'dramatic';
 export type ThemeTexturePreset = 'none' | 'grid' | 'paper' | 'noise' | 'glow';
 export type ThemeMotionPreset = 'quiet' | 'standard' | 'expressive';
+
+export type ThemeDnaPreset =
+  | 'warm-editorial'
+  | 'linear-hairline'
+  | 'stripe-glass'
+  | 'slate-cool-neutral'
+  | 'forest-old-money'
+  | 'midnight-prestige'
+  | 'dark-developer';
+
+export const THEME_DNA_PRESETS: ThemeDnaPreset[] = [
+  'warm-editorial',
+  'linear-hairline',
+  'stripe-glass',
+  'slate-cool-neutral',
+  'forest-old-money',
+  'midnight-prestige',
+  'dark-developer',
+];
+
 type HexColor = `#${string}`;
 
 export const THEME_RADIUS_PRESETS: ThemeRadiusPreset[] = ['sharp', 'standard', 'soft', 'pill'];
@@ -695,6 +715,7 @@ export type ColorThemeDefinition = {
   shadowPreset?: ThemeShadowPreset;
   texturePreset?: ThemeTexturePreset;
   motionPreset?: ThemeMotionPreset;
+  dnaPreset?: ThemeDnaPreset;
   featured?: boolean;
   experimental?: boolean;
   premiumRank?: number;
@@ -710,6 +731,8 @@ export const HERO_VISUAL_IDS = [
   'lovable-aura',
   'beige-editorial',
   'command-minimal',
+  'dense-cockpit',
+  'centered-mark',
 ] as const;
 
 export type HeroVisualId = (typeof HERO_VISUAL_IDS)[number];
@@ -785,6 +808,25 @@ export const HERO_VISUAL_DEFINITIONS = [
     descriptionEn: 'The most restrained enterprise cockpit with calmer information density.',
     tone: 'minimal',
   },
+  {
+    id: 'dense-cockpit',
+    labelZh: '高密度驾驶舱 · Pro',
+    labelEn: 'Dense Cockpit · Pro',
+    descriptionZh:
+      '浏览器外壳产品台 · 学校 / 匹配 / 文书三栏循环展示，配重磅金色徽章与升学官信任带。',
+    descriptionEn:
+      'Browser-chrome product console with cycling list / fit / essay tabs, accent badges, and a counselor trust band.',
+    tone: 'command',
+  },
+  {
+    id: 'centered-mark',
+    labelZh: '居中鹿月章 · Mark',
+    labelEn: 'Centered Mark',
+    descriptionZh: '鹿角与金月作为情感锚点居中展示，带鼠标视差倾斜与轻微倾斜的产品窗口。',
+    descriptionEn:
+      'Deer-moon mark as the emotional centerpiece with mouse-parallax tilt and a softly rotated product window.',
+    tone: 'brand',
+  },
 ] as const satisfies readonly HeroVisualDefinition[];
 
 export function parseHeroVisualId(value: unknown): HeroVisualId {
@@ -826,6 +868,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#ddb85a',
     featured: true,
     premiumRank: 1,
+    dnaPreset: 'warm-editorial',
   },
   {
     id: 'moon-gold',
@@ -925,6 +968,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#666666',
     neutral: 'pearl',
     darkPrimary: '#ffffff',
+    dnaPreset: 'linear-hairline',
   },
   {
     id: 'framer-black',
@@ -939,6 +983,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#ffffff',
     featured: true,
     premiumRank: 7,
+    dnaPreset: 'slate-cool-neutral',
   },
   {
     id: 'graphite-white',
@@ -1040,6 +1085,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     darkPrimary: '#93c5fd',
     featured: true,
     premiumRank: 9,
+    dnaPreset: 'stripe-glass',
   },
   {
     id: 'cobalt-saas',
@@ -1321,6 +1367,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     accent: '#22d3ee',
     neutral: 'charcoal',
     darkPrimary: '#93c5fd',
+    dnaPreset: 'dark-developer',
   },
   {
     id: 'terminal-lime',
@@ -1462,6 +1509,7 @@ const BASE_COLOR_THEME_DEFINITIONS = [
     labelEn: 'Archive Olive',
     descriptionZh: '橄榄灰，适合档案和任务管理。',
     descriptionEn: 'Olive-gray for archives and task-management views.',
+    dnaPreset: 'forest-old-money',
     primary: '#555d3c',
     accent: '#a3a06f',
     neutral: 'sage',
@@ -2003,6 +2051,7 @@ const EXTRA_COLOR_THEME_DEFINITIONS = [
     accent: '#c7a45b',
     neutral: 'slate',
     darkPrimary: '#c8d4ff',
+    dnaPreset: 'midnight-prestige',
   },
   {
     id: 'brass-black',
@@ -4335,6 +4384,232 @@ export function getThemeAppearanceOverrideCssVars(
   );
 }
 
+type DnaCssBundle = {
+  light?: Record<string, string>;
+  dark?: Record<string, string>;
+  shared?: Record<string, string>;
+};
+
+const DNA_PRESETS: Record<ThemeDnaPreset, DnaCssBundle> = {
+  'warm-editorial': {
+    shared: {
+      '--theme-font-display':
+        "var(--font-newsreader, 'Newsreader'), 'Tiempos', 'Source Serif Pro', Georgia, serif",
+      '--theme-font-eyebrow': "'Geist', 'Inter', system-ui, sans-serif",
+      '--theme-display-weight': '500',
+      '--theme-display-tracking': '-0.025em',
+      '--theme-display-leading': '1.0',
+      '--theme-radius-button-dna': '10px',
+      '--theme-radius-card-dna': '14px',
+      '--theme-nav-blur': 'saturate(180%) blur(12px)',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 88%, transparent)',
+      '--theme-nav-shadow': 'inset 0 -1px 0 0 var(--ds-border)',
+      '--theme-nav-link-tracking': '0',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tt': 'none',
+      '--theme-cta-radius': '12px',
+      '--theme-cta-shadow': '0 1px 2px rgba(29,24,19,0.05), 0 0 0 1px rgba(29,24,19,0.06)',
+      '--theme-cta-shadow-hover':
+        '0 6px 16px -4px rgba(29,24,19,0.18), 0 0 0 1px rgba(29,24,19,0.10)',
+      '--theme-cta-pad-y': '12px',
+      '--theme-cta-pad-x': '18px',
+      '--theme-hero-pad-y': '110px',
+      '--theme-hero-grid-show': '0',
+      '--theme-hero-grain-show': '1',
+      '--theme-hero-headline-style': 'italic-em',
+      '--theme-hero-eyebrow-tt': 'none',
+      '--theme-hero-eyebrow-tracking': '0',
+    },
+  },
+  'linear-hairline': {
+    shared: {
+      '--theme-font-display': "'Geist', 'Inter', system-ui, sans-serif",
+      '--theme-font-eyebrow': "'Geist Mono', 'JetBrains Mono', monospace",
+      '--theme-display-weight': '600',
+      '--theme-display-tracking': '-0.032em',
+      '--theme-display-leading': '1.02',
+      '--theme-radius-button-dna': '6px',
+      '--theme-radius-card-dna': '8px',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 80%, transparent)',
+      '--theme-nav-blur': 'saturate(180%) blur(20px)',
+      '--theme-nav-shadow': 'inset 0 -1px 0 0 var(--ds-border)',
+      '--theme-nav-height': '56px',
+      '--theme-nav-link-size': '13px',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tracking': '-0.01em',
+      '--theme-nav-link-tt': 'none',
+      '--theme-cta-bg': 'var(--ds-info)',
+      '--theme-cta-bg-hover': 'color-mix(in oklab, var(--ds-info) 88%, var(--ds-foreground))',
+      '--theme-cta-fg': '#ffffff',
+      '--theme-cta-radius': '6px',
+      '--theme-cta-shadow':
+        'inset 0 1px 0 rgba(255,255,255,0.10), 0 0 0 1px color-mix(in oklab, var(--ds-info) 30%, transparent), 0 1px 2px color-mix(in oklab, var(--ds-info) 20%, transparent)',
+      '--theme-cta-shadow-hover':
+        'inset 0 1px 0 rgba(255,255,255,0.10), 0 0 0 1px color-mix(in oklab, var(--ds-info) 50%, transparent), 0 4px 12px -2px color-mix(in oklab, var(--ds-info) 30%, transparent)',
+      '--theme-cta-pad-y': '8px',
+      '--theme-cta-pad-x': '12px',
+      '--theme-cta-tracking': '-0.012em',
+      '--theme-cta-weight': '500',
+      '--theme-hero-pad-y': '72px',
+      '--theme-hero-grid-show': '1',
+      '--theme-hero-grain-show': '0',
+      '--theme-hero-headline-style': 'normal',
+      '--theme-hero-eyebrow-tt': 'none',
+      '--theme-hero-eyebrow-tracking': '-0.01em',
+    },
+  },
+  'stripe-glass': {
+    shared: {
+      '--theme-font-display': "var(--font-inter, 'Inter'), 'Geist', system-ui, sans-serif",
+      '--theme-font-eyebrow': "'Inter', 'Geist', sans-serif",
+      '--theme-display-weight': '700',
+      '--theme-display-tracking': '-0.028em',
+      '--theme-display-leading': '1.05',
+      '--theme-radius-button-dna': '12px',
+      '--theme-radius-card-dna': '16px',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 70%, transparent)',
+      '--theme-nav-blur': 'saturate(180%) blur(24px)',
+      '--theme-nav-shadow': '0 1px 0 0 var(--ds-border), 0 8px 24px -16px rgba(10,37,64,0.10)',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tracking': '0',
+      '--theme-nav-link-tt': 'none',
+      '--theme-cta-bg':
+        'linear-gradient(180deg, var(--ds-info), color-mix(in oklab, var(--ds-info) 85%, var(--ds-foreground)))',
+      '--theme-cta-bg-hover':
+        'linear-gradient(180deg, color-mix(in oklab, var(--ds-info) 90%, white), var(--ds-info))',
+      '--theme-cta-fg': '#ffffff',
+      '--theme-cta-radius': '12px',
+      '--theme-cta-shadow':
+        '0 1px 2px rgba(99,91,255,0.20), inset 0 1px 0 rgba(255,255,255,0.20), 0 0 0 1px rgba(99,91,255,0.20)',
+      '--theme-cta-shadow-hover':
+        '0 12px 32px -8px rgba(99,91,255,0.40), inset 0 1px 0 rgba(255,255,255,0.20), 0 0 0 1px rgba(99,91,255,0.30)',
+      '--theme-cta-pad-y': '12px',
+      '--theme-cta-pad-x': '20px',
+      '--theme-hero-pad-y': '120px',
+      '--theme-hero-grid-show': '0',
+      '--theme-hero-grain-show': '0',
+      '--theme-hero-headline-style': 'normal',
+    },
+  },
+  'slate-cool-neutral': {
+    shared: {
+      '--theme-font-display': "var(--font-inter, 'Inter'), 'Geist', system-ui, sans-serif",
+      '--theme-font-eyebrow': "'Inter', sans-serif",
+      '--theme-display-weight': '600',
+      '--theme-display-tracking': '-0.024em',
+      '--theme-display-leading': '1.08',
+      '--theme-radius-button-dna': '8px',
+      '--theme-radius-card-dna': '10px',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 90%, transparent)',
+      '--theme-nav-blur': 'saturate(150%) blur(8px)',
+      '--theme-nav-shadow': 'inset 0 -1px 0 0 var(--ds-border)',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tracking': '-0.005em',
+      '--theme-nav-link-tt': 'none',
+      '--theme-cta-radius': '8px',
+      '--theme-cta-shadow': '0 1px 2px rgba(15,23,42,0.06), 0 0 0 1px rgba(15,23,42,0.08)',
+      '--theme-cta-shadow-hover':
+        '0 4px 12px -2px rgba(15,23,42,0.12), 0 0 0 1px rgba(15,23,42,0.10)',
+      '--theme-hero-pad-y': '88px',
+      '--theme-hero-grid-show': '1',
+      '--theme-hero-grain-show': '0',
+      '--theme-hero-headline-style': 'normal',
+    },
+  },
+  'forest-old-money': {
+    shared: {
+      '--theme-font-display':
+        "var(--font-newsreader, 'Newsreader'), 'Tiempos', 'Source Serif Pro', Georgia, serif",
+      '--theme-font-eyebrow': "'Inter', sans-serif",
+      '--theme-display-weight': '500',
+      '--theme-display-tracking': '-0.022em',
+      '--theme-display-leading': '1.06',
+      '--theme-radius-button-dna': '6px',
+      '--theme-radius-card-dna': '10px',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 92%, transparent)',
+      '--theme-nav-blur': 'saturate(140%) blur(8px)',
+      '--theme-nav-shadow': 'inset 0 -1px 0 0 var(--ds-border)',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tracking': '0.02em',
+      '--theme-nav-link-tt': 'uppercase',
+      '--theme-nav-link-size': '12px',
+      '--theme-cta-radius': '6px',
+      '--theme-cta-shadow': '0 1px 2px rgba(28,42,31,0.08), 0 0 0 1px rgba(28,42,31,0.10)',
+      '--theme-cta-shadow-hover':
+        '0 4px 12px -2px rgba(28,42,31,0.18), 0 0 0 1px rgba(28,42,31,0.14)',
+      '--theme-hero-pad-y': '120px',
+      '--theme-hero-grid-show': '0',
+      '--theme-hero-grain-show': '1',
+      '--theme-hero-headline-style': 'serif',
+      '--theme-hero-eyebrow-tt': 'uppercase',
+      '--theme-hero-eyebrow-tracking': '0.08em',
+    },
+  },
+  'midnight-prestige': {
+    shared: {
+      '--theme-font-display': "var(--font-inter, 'Inter'), 'Geist', system-ui, sans-serif",
+      '--theme-font-eyebrow': "'Inter', 'Geist', sans-serif",
+      '--theme-display-weight': '600',
+      '--theme-display-tracking': '-0.028em',
+      '--theme-display-leading': '1.04',
+      '--theme-radius-button-dna': '10px',
+      '--theme-radius-card-dna': '14px',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 70%, transparent)',
+      '--theme-nav-blur': 'saturate(180%) blur(20px)',
+      '--theme-nav-shadow': '0 1px 0 0 color-mix(in oklab, var(--ds-warning) 14%, transparent)',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tracking': '0',
+      '--theme-nav-link-tt': 'none',
+      '--theme-cta-bg': 'var(--ds-warning)',
+      '--theme-cta-bg-hover': 'color-mix(in oklab, var(--ds-warning) 92%, white)',
+      '--theme-cta-fg': 'var(--ds-foreground)',
+      '--theme-cta-radius': '10px',
+      '--theme-cta-shadow':
+        '0 1px 2px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.20), 0 0 0 1px color-mix(in oklab, var(--ds-warning) 30%, transparent)',
+      '--theme-cta-shadow-hover':
+        '0 12px 32px -8px color-mix(in oklab, var(--ds-warning) 40%, transparent), inset 0 1px 0 rgba(255,255,255,0.30)',
+      '--theme-hero-pad-y': '108px',
+      '--theme-hero-grid-show': '0',
+      '--theme-hero-grain-show': '0',
+      '--theme-hero-headline-style': 'normal',
+    },
+  },
+  'dark-developer': {
+    shared: {
+      '--theme-font-display': "'Geist', 'Inter', system-ui, sans-serif",
+      '--theme-font-eyebrow': "'Geist Mono', 'JetBrains Mono', monospace",
+      '--theme-display-weight': '600',
+      '--theme-display-tracking': '-0.030em',
+      '--theme-display-leading': '1.04',
+      '--theme-radius-button-dna': '6px',
+      '--theme-radius-card-dna': '8px',
+      '--theme-nav-bg': 'color-mix(in srgb, var(--ds-background) 80%, transparent)',
+      '--theme-nav-blur': 'saturate(180%) blur(20px)',
+      '--theme-nav-shadow': 'inset 0 -1px 0 0 var(--ds-border)',
+      '--theme-nav-link-weight': '500',
+      '--theme-nav-link-tracking': '-0.005em',
+      '--theme-nav-link-tt': 'none',
+      '--theme-cta-bg': 'var(--ds-info)',
+      '--theme-cta-bg-hover': 'color-mix(in oklab, var(--ds-info) 90%, white)',
+      '--theme-cta-fg': '#ffffff',
+      '--theme-cta-radius': '6px',
+      '--theme-cta-shadow':
+        'inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px color-mix(in oklab, var(--ds-info) 35%, transparent), 0 1px 2px rgba(0,0,0,0.30)',
+      '--theme-cta-shadow-hover':
+        'inset 0 1px 0 rgba(255,255,255,0.10), 0 0 0 1px color-mix(in oklab, var(--ds-info) 55%, transparent), 0 6px 16px -4px color-mix(in oklab, var(--ds-info) 40%, transparent)',
+      '--theme-hero-pad-y': '80px',
+      '--theme-hero-grid-show': '1',
+      '--theme-hero-grain-show': '0',
+      '--theme-hero-headline-style': 'normal',
+    },
+  },
+};
+
+export function getDnaCssBundle(preset: ThemeDnaPreset | undefined): DnaCssBundle {
+  if (!preset) return {};
+  return DNA_PRESETS[preset] ?? {};
+}
+
 function createWebThemeCssVars(
   light: WebThemeColorRow,
   dark: WebThemeColorRow,
@@ -4350,6 +4625,12 @@ function createWebThemeCssVars(
   const button = buttonVars[style.buttonPreset];
   const card = cardVars[style.cardPreset];
   const appearanceVars = createThemeAppearanceCssVars(palette, style);
+  const dnaBundle = getDnaCssBundle(
+    (getColorThemeDefinition(palette) as ColorThemeDefinition).dnaPreset
+  );
+  const dnaShared = dnaBundle.shared ?? {};
+  const dnaLight = { ...dnaShared, ...(dnaBundle.light ?? {}) };
+  const dnaDark = { ...dnaShared, ...(dnaBundle.dark ?? {}) };
   const lightHeroPanel =
     style.cardPreset === 'glass'
       ? mixHex(light.info, light.card, 0.08)
@@ -4457,6 +4738,7 @@ function createWebThemeCssVars(
       '--ds-surface-muted': surfacesLight.surfaceMuted,
       '--ds-surface-subtle': surfacesLight.surfaceSubtle,
       '--ds-info-surface': surfacesLight.infoSurface,
+      ...dnaLight,
     },
     dark: {
       '--theme-canvas': dark.background,
@@ -4553,6 +4835,7 @@ function createWebThemeCssVars(
       '--ds-surface-muted': surfacesDark.surfaceMuted,
       '--ds-surface-subtle': surfacesDark.surfaceSubtle,
       '--ds-info-surface': surfacesDark.infoSurface,
+      ...dnaDark,
     },
   } as const;
 }

@@ -263,6 +263,29 @@
       "timeline": "时间线",
       "timelineDesc": "追踪截止日期，规划申请旅程"
     },
+    "commandCenter": {
+      "label": "申请指挥中心",
+      "secondary": "下一步重点",
+      "gapCount": "{count} 个档案缺口",
+      "actions": {
+        "profile": "完善申请档案",
+        "profileDesc": "补齐学术、活动和目标信息，让 Lumni 更准确地校准预测。",
+        "schools": "建立均衡选校清单",
+        "schoolsDesc": "加入冲刺、匹配和保底学校，再进行更深入的申请分析。",
+        "essays": "开启第一组文书工作台",
+        "essaysDesc": "创建草稿，让 Lumni 帮你整理题目、修改进度和评审建议。",
+        "deadlines": "处理即将截止的任务",
+        "deadlinesDesc": "还有 {count} 个截止任务需要在下一次提交窗口前确认。",
+        "review": "复盘你的录取路线",
+        "reviewDesc": "核心设置已经就绪，可以检查预测结果，并用最新信号继续优化路线。"
+      },
+      "signals": {
+        "profile": "档案",
+        "schools": "学校",
+        "essays": "文书",
+        "deadlines": "截止"
+      }
+    },
     "onboarding": {
       "title": "欢迎使用",
       "subtitle": "跟随引导快速上手",
@@ -458,6 +481,130 @@
             "status": "待提交",
             "tone": "safety"
           }
+        ]
+      },
+      "denseCockpit": {
+        "tabs": {
+          "list": "学校列表",
+          "fit": "匹配分析",
+          "essay": "文书"
+        },
+        "url": "lumni.app/dashboard/sara-chen",
+        "list": {
+          "summary": "8 所中的 5 所",
+          "tierLabels": {
+            "reach": "冲刺",
+            "target": "匹配",
+            "safety": "保底"
+          },
+          "rows": [
+            {
+              "name": "斯坦福大学",
+              "loc": "Stanford, CA",
+              "tone": "reach",
+              "probability": 18,
+              "deadline": "1月2日",
+              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+            },
+            {
+              "name": "卡内基梅隆 · SCS",
+              "loc": "Pittsburgh, PA",
+              "tone": "reach",
+              "probability": 24,
+              "deadline": "12月1日",
+              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+            },
+            {
+              "name": "加州伯克利 · EECS",
+              "loc": "Berkeley, CA",
+              "tone": "target",
+              "probability": 42,
+              "deadline": "11月30日",
+              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+            },
+            {
+              "name": "佐治亚理工",
+              "loc": "Atlanta, GA",
+              "tone": "target",
+              "probability": 58,
+              "deadline": "10月15日",
+              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+            },
+            {
+              "name": "密歇根 · CSE",
+              "loc": "Ann Arbor, MI",
+              "tone": "safety",
+              "probability": 71,
+              "deadline": "11月1日",
+              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+            }
+          ]
+        },
+        "fit": {
+          "title": "加州伯克利 · EECS",
+          "subtitle": "综合匹配 · 2 小时前更新",
+          "factors": [
+            { "label": "学术档案", "score": 82, "tone": "safety" },
+            { "label": "专业热度", "score": 34, "tone": "reach" },
+            { "label": "标化成绩 (1520)", "score": 78, "tone": "safety" },
+            { "label": "活动深度", "score": 61, "tone": "target" },
+            { "label": "地理多样性", "score": 71, "tone": "safety" }
+          ]
+        },
+        "essay": {
+          "promptLabel": "Common App · 文书一 · 487/650",
+          "body": "我十二岁时第一次重修外婆的食谱本，那时还读不懂中文。我用放大镜和一本旧字典慢慢翻译，把每一条记录都当作一处微型考古现场……",
+          "accentLine": " 厨房成了我最早的翻译实验室",
+          "coachLabel": "Coach",
+          "coachNote": "第 4 行细节扎实，可以再压缩一下后半句。",
+          "scores": [
+            { "label": "语态", "score": 92, "tone": "safety" },
+            { "label": "具体性", "score": 76, "tone": "target" },
+            { "label": "凝练度", "score": 54, "tone": "reach" }
+          ]
+        },
+        "badges": {
+          "matchScore": { "label": "匹配分", "value": "+18%" },
+          "essayShipped": { "school": "加州伯克利 · CS", "status": "文书已提交" }
+        },
+        "socialProof": {
+          "headline": "本周 1,247 位同学完成申请",
+          "subline": "平均 8.4 所学校 · 92% 按时提交"
+        },
+        "counselorEyebrow": "受信于以下升学顾问",
+        "counselorSchools": [
+          "Andover",
+          "Stuyvesant",
+          "Harker",
+          "TJ Magnet",
+          "Choate",
+          "Exeter",
+          "Sidwell"
+        ]
+      },
+      "centeredMark": {
+        "eyebrowBadge": "新功能",
+        "eyebrow": "Coach v2.4 —— 实时阅读每一篇文书",
+        "headline": {
+          "lead": "一条更清晰的路 ——",
+          "accent": "通往真正属于你的地方。"
+        },
+        "subtitle": "Lumni 将你的成绩单、分数与故事，整理成一张站得住脚的学校清单，并陪你逐行打磨每一篇文书。",
+        "primaryCta": "免费开始",
+        "secondaryCta": "观看 90 秒导览",
+        "trustItems": [
+          { "icon": "check", "text": "前 3 所学校免费" },
+          { "icon": "shield", "text": "SOC 2 · FERPA 合规" }
+        ],
+        "counselorEyebrow": "受信于以下升学顾问",
+        "counselorSchools": [
+          "Andover",
+          "Stuyvesant",
+          "Harker",
+          "TJ Magnet",
+          "Choate",
+          "Exeter",
+          "Sidwell"
         ]
       }
     },
@@ -1329,6 +1476,18 @@
       "fillGpa": "填写 GPA",
       "fillScore": "填写成绩"
     },
+    "readiness": {
+      "title": "申请画像准备度",
+      "signals": "项信号",
+      "highImpact": "影响预测质量",
+      "mediumImpact": "影响推荐排序",
+      "recommendationImpact": "影响专业与学校匹配",
+      "recommendedFixes": "推荐补齐",
+      "primaryActions": "主要操作",
+      "fixSignal": "补齐 {signal}",
+      "reviewTargets": "复核目标院校",
+      "allSet": "核心画像已就绪，可以进入预测、文书和组合校准。"
+    },
     "nextSteps": {
       "title": "下一步",
       "prediction": "录取预测",
@@ -1753,6 +1912,14 @@
     "tuition": "学费",
     "tuitionHint": "年度学费金额",
     "avgSalary": "毕业薪资",
+    "nicheOverall": "Niche 综合评级",
+    "nicheOverallHint": "Niche.com 校园整体体验综合分",
+    "safetyGrade": "校园安全",
+    "safetyGradeHint": "Niche 校园安全与治安评级",
+    "studentLifeGrade": "学生生活",
+    "studentLifeGradeHint": "Niche 学生幸福度与校园文化评级",
+    "campusFoodGrade": "餐饮质量",
+    "campusFoodGradeHint": "Niche 校园食堂品质评级",
     "preview": "预览排名",
     "saveRanking": "保存榜单",
     "shareRanking": "分享榜单",
@@ -3227,6 +3394,7 @@
     "noResults": "没有找到学校",
     "tryDifferentSearch": "尝试使用不同的关键词搜索",
     "resultsCount": "共 {count} 所学校",
+    "showingTruncated": "已显示 {shown} 所，共 {total} 所。可缩小筛选范围以加载更多。",
     "pagination": {
       "showing": "第 {from}–{to} 条，共 {total} 条",
       "page": "第 {current} / {total} 页",

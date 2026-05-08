@@ -82,11 +82,22 @@ export function LandingHeader() {
         className={cn(
           'fixed inset-x-0 top-0 z-50 transition-all duration-300',
           scrolled
-            ? 'border-b border-[color:var(--landing-border-strong)] bg-[color:var(--landing-glass)] backdrop-blur-[var(--theme-backdrop-blur)]'
+            ? 'border-b border-[color:var(--landing-border-strong)] bg-[var(--theme-nav-bg,var(--landing-glass))] shadow-[var(--theme-nav-shadow,none)]'
             : 'border-b border-transparent bg-transparent'
         )}
+        style={
+          scrolled
+            ? {
+                backdropFilter:
+                  'var(--theme-nav-blur, saturate(160%) blur(var(--theme-backdrop-blur, 12px)))',
+              }
+            : undefined
+        }
       >
-        <PageContainer variant="marketing" className="flex h-[74px] items-center justify-between">
+        <PageContainer
+          variant="marketing"
+          className="flex h-[var(--theme-nav-height,74px)] items-center justify-between"
+        >
           <div className="flex items-center gap-5 lg:gap-8">
             <Link
               href={user ? '/dashboard' : '/'}

@@ -1,9 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { ArrowRight, CheckCircle2, ChevronRight, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Feather,
+  Lock,
+  Play,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TrendingUp,
+  School,
+  Zap,
+} from 'lucide-react';
 import { type HeroVisualId } from '@study-abroad/shared';
 import { AdmissionTierBadge, AIDisclosure, StatusDot } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
@@ -47,6 +61,21 @@ export function HeroSection() {
   const { heroVisual } = useHeroVisual();
   const t = useTranslations('home');
   const consoleCopy = t.raw('hero.console') as HeroConsoleCopy;
+  const isDense = heroVisual === 'dense-cockpit';
+  const isCentered = heroVisual === 'centered-mark';
+
+  if (isCentered) {
+    return (
+      <section
+        data-hero-visual={heroVisual}
+        className="landing-hero-shell landing-hero-alt relative overflow-hidden pt-28 pb-24 sm:pt-32 lg:pt-36 lg:pb-32"
+      >
+        <div className="landing-canvas-texture" />
+        <div className="landing-grid-mask absolute inset-0" />
+        <CenteredMarkHero reduced={!!prefersReducedMotion} />
+      </section>
+    );
+  }
 
   return (
     <section
@@ -58,6 +87,8 @@ export function HeroSection() {
     >
       <div className="landing-canvas-texture" />
       <div className="landing-grid-mask absolute inset-0" />
+
+      {isDense && <DeerMoonWatermark />}
 
       <PageContainer variant="marketing" className="relative">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14">
@@ -128,6 +159,8 @@ export function HeroSection() {
                 <span className="max-w-[200px]">{home.hero.statLabel}</span>
               </div>
             </div>
+
+            {isDense && <DenseSocialProofRow />}
           </motion.div>
 
           <motion.div
@@ -155,6 +188,8 @@ export function HeroSection() {
             />
           </motion.div>
         </div>
+
+        {isDense && <DenseCounselorRow />}
       </PageContainer>
     </section>
   );
@@ -318,6 +353,13 @@ function HeroVisualScene({ visual, copy, reduced, disclosure }: HeroVisualSceneP
   }
   if (visual === 'command-minimal') {
     return <CommandMinimalHero copy={copy} reduced={reduced} disclosure={disclosure} />;
+  }
+  if (visual === 'dense-cockpit') {
+    return <DenseCockpitHero reduced={reduced} disclosure={disclosure} />;
+  }
+  if (visual === 'centered-mark') {
+    // CenteredMarkHero owns its full hero block — see HeroSection early-branch.
+    return null;
   }
 
   return <PremiumHeroConsole copy={copy} reduced={reduced} disclosure={disclosure} />;
@@ -1107,5 +1149,744 @@ function CommandMinimalHero({
         </div>
       </div>
     </div>
+  );
+}
+
+/* ============================================================
+   Dense Cockpit (Pro) — browser-chrome console with cycling tabs
+   ============================================================ */
+
+type DenseListRow = {
+  name: string;
+  loc: string;
+  tone: 'reach' | 'target' | 'safety';
+  probability: number;
+  deadline: string;
+  spark: number[];
+};
+
+type DenseFitFactor = {
+  label: string;
+  score: number;
+  tone: 'reach' | 'target' | 'safety';
+};
+
+type DenseEssayScore = {
+  label: string;
+  score: number;
+  tone: 'reach' | 'target' | 'safety';
+};
+
+type DenseCockpitCopy = {
+  tabs: { list: string; fit: string; essay: string };
+  url: string;
+  list: {
+    summary: string;
+    tierLabels: { reach: string; target: string; safety: string };
+    rows: DenseListRow[];
+  };
+  fit: {
+    title: string;
+    subtitle: string;
+    factors: DenseFitFactor[];
+  };
+  essay: {
+    promptLabel: string;
+    body: string;
+    accentLine: string;
+    coachLabel: string;
+    coachNote: string;
+    scores: DenseEssayScore[];
+  };
+  badges: {
+    matchScore: { label: string; value: string };
+    essayShipped: { school: string; status: string };
+  };
+  socialProof: { headline: string; subline: string };
+  counselorEyebrow: string;
+  counselorSchools: string[];
+};
+
+const DENSE_TABS = ['list', 'fit', 'essay'] as const;
+type DenseTabId = (typeof DENSE_TABS)[number];
+
+function useDenseCockpitCopy(): DenseCockpitCopy {
+  const t = useTranslations('home');
+  return t.raw('hero.denseCockpit') as DenseCockpitCopy;
+}
+
+function DenseCockpitHero({
+  reduced,
+  disclosure,
+}: {
+  reduced: boolean;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  const copy = useDenseCockpitCopy();
+  const [tab, setTab] = useState<DenseTabId>('list');
+
+  useEffect(() => {
+    if (reduced) return;
+    const id = window.setInterval(() => {
+      setTab((current) => {
+        const idx = DENSE_TABS.indexOf(current);
+        return DENSE_TABS[(idx + 1) % DENSE_TABS.length];
+      });
+    }, 4500);
+    return () => window.clearInterval(id);
+  }, [reduced]);
+
+  return (
+    <div className="relative mx-auto w-full max-w-[600px]">
+      <div
+        aria-hidden
+        className="absolute -right-3 -top-5 z-30 hidden rotate-[2deg] items-center gap-2.5 rounded-[10px] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3.5 py-2 shadow-[var(--landing-shadow-elevated)] sm:flex"
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[color:var(--lumni-moon)] to-[color:var(--ds-warning)] text-white">
+          <TrendingUp className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-2xs font-medium text-[var(--landing-muted)]">
+            {copy.badges.matchScore.label}
+          </div>
+          <div className="font-mono text-base font-bold tracking-tight text-[var(--landing-fg)]">
+            {copy.badges.matchScore.value}
+          </div>
+        </div>
+      </div>
+
+      <div
+        aria-hidden
+        className="absolute -left-7 bottom-8 z-30 hidden -rotate-[2.5deg] items-center gap-2.5 rounded-[10px] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3.5 py-2 shadow-[var(--landing-shadow-elevated)] sm:flex"
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[color:var(--ds-foreground)] text-[color:var(--ds-warning)]">
+          <Check className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-2xs font-medium text-[var(--landing-muted)]">
+            {copy.badges.essayShipped.school}
+          </div>
+          <div className="text-xs font-semibold text-[var(--landing-fg)]">
+            {copy.badges.essayShipped.status}
+          </div>
+        </div>
+      </div>
+
+      <motion.div
+        className="relative z-10 overflow-hidden rounded-[16px] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] text-[var(--landing-fg)] shadow-[var(--landing-shadow-elevated)]"
+        animate={reduced ? undefined : { y: [0, -3, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <div className="flex h-9 items-center gap-2.5 border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/60 px-3.5">
+          <div className="flex gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#e0826b]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[color:var(--ds-warning)]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#8a9670]" />
+          </div>
+          <div className="flex h-5 flex-1 items-center justify-center gap-1.5 rounded-[5px] bg-[color:var(--landing-surface-muted)] font-mono text-2xs tracking-tight text-[var(--landing-muted)]">
+            <Lock className="h-2.5 w-2.5" aria-hidden />
+            {copy.url}
+          </div>
+          <kbd className="rounded-[4px] border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-1.5 py-0.5 font-mono text-2xs text-[var(--landing-muted)]">
+            ⌘K
+          </kbd>
+        </div>
+
+        <div
+          role="tablist"
+          className="flex gap-0 border-b border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-4"
+        >
+          {DENSE_TABS.map((id) => {
+            const label = copy.tabs[id];
+            const Icon = id === 'list' ? School : id === 'fit' ? Target : Feather;
+            const isActive = tab === id;
+            return (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setTab(id)}
+                className={cn(
+                  '-mb-px flex h-9 items-center gap-1.5 border-b-2 px-3.5 text-xs font-medium transition-colors',
+                  isActive
+                    ? 'border-[color:var(--ds-foreground)] text-[var(--landing-fg)]'
+                    : 'border-transparent text-[var(--landing-muted)] hover:text-[var(--landing-fg)]'
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="relative h-[380px] overflow-hidden bg-[color:var(--landing-surface)]">
+          {tab === 'list' && <DenseListPane copy={copy} reduced={reduced} />}
+          {tab === 'fit' && <DenseFitPane copy={copy} reduced={reduced} />}
+          {tab === 'essay' && <DenseEssayPane copy={copy} disclosure={disclosure} />}
+        </div>
+      </motion.div>
+
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[10%] -bottom-10 h-16 rounded-full bg-[color:var(--landing-border-strong)] opacity-40 blur-[20px]"
+      />
+    </div>
+  );
+}
+
+function DenseListPane({ copy, reduced }: { copy: DenseCockpitCopy; reduced: boolean }) {
+  return (
+    <div className="lumni-fade-in flex h-full flex-col gap-1.5 p-3.5">
+      <div className="flex items-center justify-between px-2 pb-3">
+        <div className="flex gap-2">
+          <DenseTierPill tone="reach" count={2} label={copy.list.tierLabels.reach} />
+          <DenseTierPill tone="target" count={2} label={copy.list.tierLabels.target} />
+          <DenseTierPill tone="safety" count={1} label={copy.list.tierLabels.safety} />
+        </div>
+        <span className="font-mono text-2xs text-[var(--landing-muted)]">{copy.list.summary}</span>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {copy.list.rows.map((row, index) => (
+          <div
+            key={row.name}
+            className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] items-center gap-3 rounded-lg bg-[color:var(--landing-surface-muted)]/50 px-3 py-2.5 ring-1 ring-inset ring-[color:var(--landing-border)]"
+            style={{
+              animation: reduced
+                ? undefined
+                : `lumni-fade-in 400ms ${100 + index * 60}ms backwards cubic-bezier(0.16,1,0.3,1)`,
+            }}
+          >
+            <ProbRing value={row.probability / 100} size={36} tone={row.tone} strokeWidth={3} />
+            <div className="min-w-0">
+              <div className="truncate text-xs font-semibold tracking-tight text-[var(--landing-fg)]">
+                {row.name}
+              </div>
+              <div className="text-2xs text-[var(--landing-muted)]">{row.loc}</div>
+            </div>
+            <Sparkline data={row.spark} width={64} height={22} tone={row.tone} />
+            <DenseTierBadge tone={row.tone} label={copy.list.tierLabels[row.tone]} />
+            <span className="min-w-[44px] text-right font-mono text-2xs text-[var(--landing-muted)]">
+              {row.deadline}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DenseFitPane({ copy, reduced }: { copy: DenseCockpitCopy; reduced: boolean }) {
+  return (
+    <div className="lumni-fade-in h-full p-3.5">
+      <div className="flex items-center justify-between px-2 pb-3.5">
+        <div>
+          <div className="text-xs font-semibold text-[var(--landing-fg)]">{copy.fit.title}</div>
+          <div className="mt-0.5 text-2xs text-[var(--landing-muted)]">{copy.fit.subtitle}</div>
+        </div>
+        <ProbRing value={0.42} size={48} tone="target" />
+      </div>
+      <div className="grid gap-2">
+        {copy.fit.factors.map((factor, index) => (
+          <div
+            key={factor.label}
+            className="rounded-lg bg-[color:var(--landing-surface-muted)]/50 px-3 py-2.5 ring-1 ring-inset ring-[color:var(--landing-border)]"
+            style={{
+              animation: reduced
+                ? undefined
+                : `lumni-fade-in 400ms ${100 + index * 60}ms backwards cubic-bezier(0.16,1,0.3,1)`,
+            }}
+          >
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-xs font-medium text-[var(--landing-fg)]">{factor.label}</span>
+              <span className="font-mono text-2xs font-semibold text-[var(--landing-muted)]">
+                {factor.score}
+              </span>
+            </div>
+            <div className="h-1 overflow-hidden rounded-full bg-[color:var(--landing-border)]">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-[width] duration-700 ease-out',
+                  factor.tone === 'reach'
+                    ? 'bg-[color:var(--ds-destructive)]'
+                    : factor.tone === 'target'
+                      ? 'bg-[color:var(--ds-warning)]'
+                      : 'bg-[color:var(--ds-success)]'
+                )}
+                style={{ width: `${factor.score}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DenseEssayPane({
+  copy,
+  disclosure,
+}: {
+  copy: DenseCockpitCopy;
+  disclosure: HeroVisualSceneProps['disclosure'];
+}) {
+  return (
+    <div className="lumni-fade-in grid h-full grid-cols-[1fr_220px] gap-3 p-3.5">
+      <div className="rounded-lg bg-[color:var(--landing-surface-muted)]/50 p-3.5 ring-1 ring-inset ring-[color:var(--landing-border)]">
+        <div className="mb-2 font-mono text-2xs text-[var(--landing-muted)]">
+          {copy.essay.promptLabel}
+        </div>
+        <div className="text-xs leading-relaxed text-[var(--landing-fg)]">
+          {copy.essay.body}
+          <span className="bg-[color:var(--ds-warning)]/35 underline decoration-[color:var(--ds-warning)] decoration-[1.5px] underline-offset-2">
+            {copy.essay.accentLine}
+          </span>
+          ...
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="rounded-lg bg-gradient-to-b from-[color:var(--landing-surface)] to-[color:var(--landing-surface-muted)] p-3 ring-1 ring-inset ring-[color:var(--landing-border)]">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <Sparkles className="h-2.5 w-2.5 text-[color:var(--ds-warning)]" aria-hidden />
+            <span className="text-2xs font-semibold uppercase tracking-[0.04em] text-[var(--lumni-gold-ink)]">
+              {copy.essay.coachLabel}
+            </span>
+          </div>
+          <p className="text-2xs leading-snug text-[var(--landing-muted)]">
+            {copy.essay.coachNote}
+          </p>
+        </div>
+        <div className="flex flex-col gap-2.5 rounded-lg bg-[color:var(--landing-surface-muted)]/50 p-3 ring-1 ring-inset ring-[color:var(--landing-border)]">
+          {copy.essay.scores.map((score) => (
+            <div key={score.label}>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-2xs text-[var(--landing-muted)]">{score.label}</span>
+                <span
+                  className={cn(
+                    'font-mono text-2xs font-semibold',
+                    score.tone === 'reach'
+                      ? 'text-[color:var(--ds-destructive)]'
+                      : score.tone === 'target'
+                        ? 'text-[color:var(--ds-warning)]'
+                        : 'text-[color:var(--ds-success)]'
+                  )}
+                >
+                  {score.score}
+                </span>
+              </div>
+              <div className="h-[3px] overflow-hidden rounded-full bg-[color:var(--landing-border)]">
+                <div
+                  className={cn(
+                    'h-full rounded-full',
+                    score.tone === 'reach'
+                      ? 'bg-[color:var(--ds-destructive)]'
+                      : score.tone === 'target'
+                        ? 'bg-[color:var(--ds-warning)]'
+                        : 'bg-[color:var(--ds-success)]'
+                  )}
+                  style={{ width: `${score.score}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="lumni-disclosure-on-light mt-1 border-t border-dashed border-[color:var(--landing-border)] pt-2.5">
+          <AIDisclosure
+            inputs={disclosure.inputs}
+            confidence={disclosure.confidence}
+            limitations={disclosure.limitations}
+          >
+            {disclosure.trigger}
+          </AIDisclosure>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DenseTierPill({
+  tone,
+  count,
+  label,
+}: {
+  tone: 'reach' | 'target' | 'safety';
+  count: number;
+  label: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--landing-surface-muted)] px-2 py-0.5 text-2xs font-medium text-[var(--landing-fg)] ring-1 ring-inset ring-[color:var(--landing-border)]">
+      <span
+        className={cn(
+          'h-1.5 w-1.5 rounded-full',
+          tone === 'reach'
+            ? 'bg-[color:var(--ds-destructive)]'
+            : tone === 'target'
+              ? 'bg-[color:var(--ds-warning)]'
+              : 'bg-[color:var(--ds-success)]'
+        )}
+      />
+      {count} {label}
+    </span>
+  );
+}
+
+function DenseTierBadge({ tone, label }: { tone: 'reach' | 'target' | 'safety'; label: string }) {
+  return (
+    <span
+      className={cn(
+        'rounded-full px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide',
+        tone === 'reach'
+          ? 'bg-[color:var(--ds-destructive)]/15 text-[color:var(--ds-destructive)]'
+          : tone === 'target'
+            ? 'bg-[color:var(--ds-warning)]/15 text-[color:var(--ds-warning)]'
+            : 'bg-[color:var(--ds-success)]/15 text-[color:var(--ds-success)]'
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+function DenseSocialProofRow() {
+  const copy = useDenseCockpitCopy();
+  const initials = ['SC', 'JP', 'AM', 'KW'];
+  const tones = [
+    'bg-[color:var(--ds-foreground)] text-[color:var(--ds-background)]',
+    'bg-[color:var(--ds-warning)] text-[color:var(--ds-foreground)]',
+    'bg-[color:var(--ds-success)] text-[color:var(--ds-foreground)]',
+    'bg-[color:var(--ds-info)] text-[color:var(--ds-foreground)]',
+  ];
+  return (
+    <div className="mt-7 flex items-center gap-5 border-t border-[color:var(--landing-border)] pt-6">
+      <div className="flex">
+        {initials.map((label, index) => (
+          <div
+            key={label}
+            aria-hidden
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-full text-2xs font-semibold ring-2 ring-[color:var(--landing-bg)]',
+              tones[index]
+            )}
+            style={{ marginLeft: index === 0 ? 0 : -10 }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+      <div className="min-w-0">
+        <div className="text-xs font-semibold text-[var(--landing-fg)]">
+          {copy.socialProof.headline}
+        </div>
+        <div className="mt-0.5 text-xs text-[var(--landing-muted)]">{copy.socialProof.subline}</div>
+      </div>
+    </div>
+  );
+}
+
+function DenseCounselorRow() {
+  const copy = useDenseCockpitCopy();
+  return (
+    <div className="relative mx-auto mt-20 hidden max-w-[1100px] px-8 text-center md:block">
+      <div className="mb-5 text-xs font-medium uppercase tracking-[0.08em] text-[var(--landing-muted)]">
+        {copy.counselorEyebrow}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-4 opacity-55">
+        {copy.counselorSchools.map((name) => (
+          <span
+            key={name}
+            className="text-lg font-semibold tracking-tight text-[var(--landing-fg)]"
+          >
+            {name}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DeerMoonWatermark() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute -left-12 top-32 z-0 hidden h-[620px] w-[620px] opacity-[0.07] lg:block"
+      style={{
+        maskImage: 'radial-gradient(circle at 50% 50%, black 50%, transparent 80%)',
+        WebkitMaskImage: 'radial-gradient(circle at 50% 50%, black 50%, transparent 80%)',
+      }}
+    >
+      <LumniMark
+        showDisc={false}
+        className="h-full w-full text-[var(--landing-fg)]"
+        iconClassName="h-full w-full"
+      />
+    </div>
+  );
+}
+
+/* ============================================================
+   Centered Mark — illustrative deer-moon centerpiece w/ parallax
+   ============================================================ */
+
+type CenteredMarkCopy = {
+  eyebrowBadge: string;
+  eyebrow: string;
+  headline: { lead: string; accent: string };
+  subtitle: string;
+  primaryCta: string;
+  secondaryCta: string;
+  trustItems: { icon: 'check' | 'shield'; text: string }[];
+  counselorEyebrow: string;
+  counselorSchools: string[];
+};
+
+function CenteredMarkHero({ reduced }: { reduced: boolean }) {
+  const t = useTranslations('home');
+  const copy = t.raw('hero.centeredMark') as CenteredMarkCopy;
+
+  return (
+    <div className="relative mx-auto max-w-[1280px] px-6">
+      <div className="mb-9 text-center">
+        <div className="landing-eyebrow-pill inline-flex">
+          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-b from-[color:var(--ds-warning)]/35 to-[color:var(--ds-warning)] px-2 py-0.5 text-2xs font-semibold text-[var(--landing-fg)]">
+            <Sparkles className="h-2.5 w-2.5" aria-hidden /> {copy.eyebrowBadge}
+          </span>
+          <span className="text-xs text-[var(--landing-muted)]">{copy.eyebrow}</span>
+          <ArrowRight className="h-3 w-3 text-[var(--landing-muted)]" aria-hidden />
+        </div>
+      </div>
+
+      <div className="relative mx-auto text-center">
+        <ParallaxDeerMoon reduced={reduced} />
+
+        <h1 className="mx-auto mt-10 max-w-[920px] text-balance text-[clamp(48px,7vw,84px)] font-semibold leading-[1.0] tracking-[-0.034em] text-[var(--landing-fg)]">
+          <span className="block">{copy.headline.lead}</span>
+          <span
+            className="block bg-gradient-to-b from-[color:var(--ds-warning)] to-[var(--lumni-gold-ink)] bg-clip-text italic text-transparent"
+            style={{ fontWeight: 400 }}
+          >
+            {copy.headline.accent}
+          </span>
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-[580px] text-balance text-lg leading-[1.55] text-[var(--landing-muted)]">
+          {copy.subtitle}
+        </p>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/register">
+            <Button
+              size="lg"
+              className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] bg-[var(--landing-fg)] px-7 text-sm font-medium text-[var(--landing-bg)] hover:bg-[var(--landing-fg)]/90 sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
+            >
+              {copy.primaryCta}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/cases">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-12 min-w-[160px] rounded-[var(--theme-radius-button)] border-[color:var(--landing-border-strong)] bg-[color:var(--landing-surface)]/52 px-7 text-sm text-[var(--landing-fg)] hover:bg-[color:var(--landing-surface-muted)] sm:h-14 sm:min-w-[180px] sm:px-8 sm:text-base"
+            >
+              <Play className="h-3.5 w-3.5" />
+              {copy.secondaryCta}
+            </Button>
+          </Link>
+        </div>
+
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-[var(--landing-muted)]">
+          {copy.trustItems.map((item, idx) => (
+            <span key={item.text} className="inline-flex items-center gap-2 whitespace-nowrap">
+              {idx > 0 && (
+                <span
+                  aria-hidden
+                  className="h-[3px] w-[3px] rounded-full bg-[color:var(--landing-border-strong)]"
+                />
+              )}
+              {item.icon === 'check' ? (
+                <Check className="h-3 w-3 text-[color:var(--ds-success)]" aria-hidden />
+              ) : (
+                <ShieldCheck className="h-3 w-3 text-[color:var(--ds-success)]" aria-hidden />
+              )}
+              {item.text}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative mx-auto mt-20 hidden max-w-[1100px] px-8 text-center md:block">
+        <div className="mb-5 text-xs font-medium uppercase tracking-[0.10em] text-[var(--landing-muted)]">
+          {copy.counselorEyebrow}
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 opacity-55">
+          {copy.counselorSchools.map((name) => (
+            <span
+              key={name}
+              className="text-lg font-semibold tracking-tight text-[var(--landing-fg)]"
+            >
+              {name}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ParallaxDeerMoon({ reduced }: { reduced: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (reduced) return;
+    function handle(event: MouseEvent) {
+      const node = ref.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (event.clientX - cx) / window.innerWidth;
+      const dy = (event.clientY - cy) / window.innerHeight;
+      setTilt({ x: dx * 6, y: dy * 6 });
+    }
+    window.addEventListener('mousemove', handle);
+    return () => window.removeEventListener('mousemove', handle);
+  }, [reduced]);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className="relative mx-auto"
+      style={{
+        width: 'min(420px, 80vw)',
+        height: 'min(420px, 80vw)',
+        perspective: 1200,
+        transform: `rotateX(${-tilt.y}deg) rotateY(${tilt.x}deg)`,
+        transition: 'transform 200ms cubic-bezier(0.16,1,0.3,1)',
+      }}
+    >
+      <div
+        className="absolute rounded-full"
+        style={{
+          inset: '8%',
+          background:
+            'radial-gradient(circle, color-mix(in oklab, var(--lumni-moon) 55%, transparent), color-mix(in oklab, var(--lumni-moon) 10%, transparent) 60%, transparent 75%)',
+          filter: 'blur(6px)',
+        }}
+      />
+      <LumniMark
+        className="relative h-full w-full text-[var(--landing-fg)]"
+        iconClassName="h-full w-full"
+      />
+    </div>
+  );
+}
+
+/* ============================================================
+   ProbRing & Sparkline — private SVG helpers used by DenseCockpit
+   ============================================================ */
+
+const TONE_VAR: Record<'reach' | 'target' | 'safety', string> = {
+  reach: 'var(--ds-destructive)',
+  target: 'var(--ds-warning)',
+  safety: 'var(--ds-success)',
+};
+
+function ProbRing({
+  value,
+  size,
+  tone,
+  strokeWidth = 3,
+}: {
+  value: number;
+  size: number;
+  tone: 'reach' | 'target' | 'safety';
+  strokeWidth?: number;
+}) {
+  const clamped = Math.max(0, Math.min(1, value));
+  const r = (size - strokeWidth) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - clamped);
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      role="img"
+      aria-label={`Probability ${Math.round(clamped * 100)}%`}
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="var(--landing-border)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={TONE_VAR[tone]}
+        strokeWidth={strokeWidth}
+        strokeDasharray={c}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontFamily="var(--font-mono, monospace)"
+        fontSize={size * 0.32}
+        fontWeight={600}
+        fill="var(--landing-fg)"
+      >
+        {Math.round(clamped * 100)}
+      </text>
+    </svg>
+  );
+}
+
+function Sparkline({
+  data,
+  width,
+  height,
+  tone,
+  strokeWidth = 1.5,
+}: {
+  data: number[];
+  width: number;
+  height: number;
+  tone: 'reach' | 'target' | 'safety';
+  strokeWidth?: number;
+}) {
+  if (data.length === 0) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const step = data.length > 1 ? width / (data.length - 1) : 0;
+  const points = data
+    .map((v, i) => {
+      const x = i * step;
+      const y = height - ((v - min) / range) * (height - strokeWidth) - strokeWidth / 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden>
+      <polyline
+        fill="none"
+        stroke={TONE_VAR[tone]}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
   );
 }
