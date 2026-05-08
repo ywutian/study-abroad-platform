@@ -1829,7 +1829,14 @@ function ParallaxDeerMoon({ reduced }: { reduced: boolean }) {
           filter: 'blur(6px)',
         }}
       />
+      {/* showDisc=false to drop the LumniMark's default rounded square
+          background — the design bundle's HeroCentered renders the antlered
+          deer head directly on the hero canvas (with the moon behind),
+          not framed in a brand chip.
+          showMoon=false so the radial-gradient div above is the moon. */}
       <LumniMark
+        showDisc={false}
+        showMoon={false}
         className="relative h-full w-full text-[var(--landing-fg)]"
         iconClassName="h-full w-full"
       />
