@@ -36,8 +36,22 @@ describe('AdminThemeStyleController', () => {
   };
   let auditLog: { log: jest.Mock };
 
+  // Valid empty-library JSON used by tests that want to start clean WITHOUT
+  // triggering controller's auto-seed (which writes 144 default items the first
+  // time SystemSetting row is missing).
+  const EMPTY_LIBRARY_VALUE = JSON.stringify({
+    schemaVersion: 2,
+    revision: 0,
+    updatedAt: null,
+    updatedBy: null,
+    items: [],
+    tombstones: [],
+  });
+
   beforeEach(() => {
-    storedValue = null;
+    // Default: pre-seeded empty library (no auto-seed). Tests that want to
+    // verify the auto-seed path explicitly set `storedValue = null`.
+    storedValue = EMPTY_LIBRARY_VALUE;
     updatedAt = new Date('2026-05-01T12:00:00.000Z');
     prisma = {
       systemSetting: {
@@ -88,12 +102,28 @@ describe('AdminThemeStyleController', () => {
     clientRequestId: 'request-1',
   };
 
-  it('returns an empty diagnostics envelope when no library exists', async () => {
+  it('returns an empty diagnostics envelope when library is pre-seeded empty', async () => {
     const response = await controller.listThemeStyles();
 
     expect(response.revision).toBe(0);
     expect(response.items).toEqual([]);
     expect(response.diagnostics.parseStatus).toBe('ok');
+  });
+
+  it('auto-seeds default library when SystemSetting row is missing', async () => {
+    // Override the pre-seed: simulate a fresh DB with no row at all.
+    storedValue = null;
+
+    const response = await controller.listThemeStyles();
+
+    // Curated 144-item default (16 palette categories × 9 hero variants).
+    expect(response.items.length).toBeGreaterThanOrEqual(100);
+    expect(response.revision).toBe(1);
+    expect(response.diagnostics.parseStatus).toBe('ok');
+    expect(prisma.systemSetting.create).toHaveBeenCalledTimes(1);
+    // Every hero variant should be represented at least once.
+    const distinctHeroes = new Set(response.items.map((i) => i.heroVisual));
+    expect(distinctHeroes.size).toBeGreaterThanOrEqual(7);
   });
 
   it('validates unknown palette and hero without saving', async () => {
@@ -161,7 +191,9 @@ describe('AdminThemeStyleController', () => {
     expect(response.revision).toBe(1);
     expect(response.checksum).toHaveLength(24);
     expect(response.items).toHaveLength(1);
-    expect(prisma.systemSetting.create).toHaveBeenCalledTimes(1);
+    // Pre-seed in beforeEach makes the row exist; persist calls updateMany
+    // (not create). Auto-seed-then-save path is covered separately.
+    expect(prisma.systemSetting.updateMany).toHaveBeenCalledTimes(1);
     expect(auditLog.log).toHaveBeenCalledWith(
       expect.objectContaining({
         action: AuditAction.THEME_STYLE_SAVE,
