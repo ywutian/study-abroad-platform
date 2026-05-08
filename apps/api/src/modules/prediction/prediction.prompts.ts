@@ -101,6 +101,8 @@ export interface SchoolInput {
   hasEarlyDecision?: boolean;
   /** ED acceptance rate (0–100 percentage) */
   edAcceptanceRate?: number;
+  /** ED2 admit rate from CDS C21. */
+  ed2AcceptanceRate?: number;
   /** EA acceptance rate (0–100 percentage) */
   eaAcceptanceRate?: number;
   /** Institution type */

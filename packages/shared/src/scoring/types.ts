@@ -87,6 +87,8 @@ export interface SchoolMetrics {
   testingPolicy?: string;
   /** ED acceptance rate (0–100 percentage) */
   edAcceptanceRate?: number;
+  /** ED2 admit rate as 0-100 percentage when published. */
+  ed2AcceptanceRate?: number;
   /** EA acceptance rate (0–100 percentage) */
   eaAcceptanceRate?: number;
   /** International student acceptance rate (0–100 percentage) */
