@@ -1691,6 +1691,11 @@ type CenteredMarkCopy = {
   trustItems: { icon: 'check' | 'shield'; text: string }[];
   counselorEyebrow: string;
   counselorSchools: string[];
+  floatingChips?: {
+    match?: { value: string; school: string };
+    essay?: { school: string; status: string };
+    voice?: { value: string; label: string };
+  };
 };
 
 function CenteredMarkHero({ reduced }: { reduced: boolean }) {
@@ -1710,7 +1715,7 @@ function CenteredMarkHero({ reduced }: { reduced: boolean }) {
       </div>
 
       <div className="relative mx-auto text-center">
-        <ParallaxDeerMoon reduced={reduced} />
+        <ParallaxDeerMoon reduced={reduced} chips={copy.floatingChips} />
 
         <h1 className="mx-auto mt-10 max-w-[920px] text-balance text-[clamp(48px,7vw,84px)] font-semibold leading-[1.0] tracking-[-0.034em] text-[var(--landing-fg)]">
           <span className="block">{copy.headline.lead}</span>
@@ -1787,7 +1792,13 @@ function CenteredMarkHero({ reduced }: { reduced: boolean }) {
   );
 }
 
-function ParallaxDeerMoon({ reduced }: { reduced: boolean }) {
+function ParallaxDeerMoon({
+  reduced,
+  chips,
+}: {
+  reduced: boolean;
+  chips?: CenteredMarkCopy['floatingChips'];
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
@@ -1811,7 +1822,7 @@ function ParallaxDeerMoon({ reduced }: { reduced: boolean }) {
     <div
       ref={ref}
       aria-hidden
-      className="relative mx-auto"
+      className="relative mx-auto text-[var(--landing-fg)]"
       style={{
         width: 'min(420px, 80vw)',
         height: 'min(420px, 80vw)',
@@ -1820,6 +1831,7 @@ function ParallaxDeerMoon({ reduced }: { reduced: boolean }) {
         transition: 'transform 200ms cubic-bezier(0.16,1,0.3,1)',
       }}
     >
+      {/* Outer ambient glow ring */}
       <div
         className="absolute rounded-full"
         style={{
@@ -1829,18 +1841,252 @@ function ParallaxDeerMoon({ reduced }: { reduced: boolean }) {
           filter: 'blur(6px)',
         }}
       />
-      {/* showDisc=false to drop the LumniMark's default rounded square
-          background — the design bundle's HeroCentered renders the antlered
-          deer head directly on the hero canvas (with the moon behind),
-          not framed in a brand chip.
-          showMoon=false so the radial-gradient div above is the moon. */}
-      <LumniMark
-        showDisc={false}
-        showMoon={false}
-        className="relative h-full w-full text-[var(--landing-fg)]"
-        iconClassName="h-full w-full"
-      />
+      {/* Detailed deer-moon SVG ported from the design bundle's DeerMoonMark:
+          textured moon disc + craters + highlight, stylized stag head + ears
+          + 7-tine antlers each side + eyes + nose + animated star sparkles. */}
+      <BundleDeerMoonSvg reduced={reduced} />
+      {/* Floating chips around the mark — design bundle FloatingChip composition */}
+      <BundleFloatingChips chips={chips} />
     </div>
+  );
+}
+
+/**
+ * Faithful port of the design bundle's DeerMoonMark SVG.
+ * viewBox 0 0 400 400. currentColor inherits the antler/deer ink color
+ * from the parent (set on the ParallaxDeerMoon container).
+ */
+function BundleDeerMoonSvg({ reduced }: { reduced: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 400 400"
+      width="100%"
+      height="100%"
+      style={{ position: 'relative', display: 'block' }}
+      aria-hidden
+    >
+      <defs>
+        <radialGradient id="lumniMoonGrad" cx="42%" cy="38%" r="60%">
+          <stop offset="0%" stopColor="var(--lumni-moon, #ddb85a)" />
+          <stop
+            offset="55%"
+            stopColor="var(--lumni-moon, #ddb85a)"
+            stopOpacity="0.85"
+          />
+          <stop
+            offset="100%"
+            stopColor="var(--lumni-moon-2, color-mix(in oklab, var(--lumni-moon, #ddb85a) 60%, var(--landing-fg)))"
+          />
+        </radialGradient>
+        <linearGradient id="lumniMoonShade" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
+          <stop offset="50%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="100%" stopColor="rgba(120,80,20,0.18)" />
+        </linearGradient>
+        <filter id="lumniMoonInset" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2" />
+        </filter>
+        <linearGradient id="lumniDeerGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="currentColor" />
+        </linearGradient>
+      </defs>
+
+      {/* Star sparks — twinkling */}
+      {[
+        [40, 60, 1.6] as const,
+        [78, 42, 1.0] as const,
+        [340, 80, 1.4] as const,
+        [364, 140, 0.9] as const,
+        [28, 220, 1.1] as const,
+        [60, 320, 1.5] as const,
+        [350, 280, 1.2] as const,
+        [380, 350, 0.9] as const,
+        [120, 30, 0.8] as const,
+        [260, 18, 1.0] as const,
+      ].map(([x, y, r], i) => (
+        <circle key={`s${i}`} cx={x} cy={y} r={r} fill="currentColor" opacity={0.35}>
+          {!reduced && (
+            <animate
+              attributeName="opacity"
+              values="0.15;0.55;0.15"
+              dur={`${2 + (i % 3) * 0.6}s`}
+              repeatCount="indefinite"
+              begin={`${i * 0.2}s`}
+            />
+          )}
+        </circle>
+      ))}
+      {/* Cross sparkles */}
+      <g
+        opacity="0.55"
+        stroke="var(--lumni-gold-ink, var(--ds-warning, #ddb85a))"
+        strokeWidth="1"
+        strokeLinecap="round"
+      >
+        <g transform="translate(54, 96)">
+          <line x1="-5" y1="0" x2="5" y2="0" />
+          <line x1="0" y1="-5" x2="0" y2="5" />
+        </g>
+        <g transform="translate(346, 220)">
+          <line x1="-7" y1="0" x2="7" y2="0" />
+          <line x1="0" y1="-7" x2="0" y2="7" />
+        </g>
+        <g transform="translate(110, 350)">
+          <line x1="-4" y1="0" x2="4" y2="0" />
+          <line x1="0" y1="-4" x2="0" y2="4" />
+        </g>
+      </g>
+
+      {/* Moon disc */}
+      <g transform="translate(200, 210)">
+        <circle r="135" fill="url(#lumniMoonGrad)" />
+        <circle r="135" fill="url(#lumniMoonShade)" />
+        <circle cx="-32" cy="-40" r="8" fill="rgba(120,80,20,0.10)" />
+        <circle cx="40" cy="-12" r="14" fill="rgba(120,80,20,0.08)" />
+        <circle cx="20" cy="48" r="10" fill="rgba(120,80,20,0.10)" />
+        <circle cx="-50" cy="38" r="6" fill="rgba(120,80,20,0.08)" />
+        <ellipse
+          cx="-44"
+          cy="-56"
+          rx="34"
+          ry="20"
+          fill="rgba(255,255,255,0.22)"
+          filter="url(#lumniMoonInset)"
+        />
+      </g>
+
+      {/* Stag head + antlers — front-facing, breaking out the top of the moon */}
+      <g transform="translate(200, 240)" fill="url(#lumniDeerGrad)">
+        <path d="M 0,86 C -10,86 -19,82 -25,74 C -32,64 -36,52 -36,40 C -36,28 -33,18 -30,10 C -28,2 -28,-6 -32,-16 C -36,-26 -38,-36 -38,-44 C -38,-50 -34,-52 -28,-50 C -20,-46 -12,-40 -6,-32 C -3,-28 -1,-26 0,-26 C 1,-26 3,-28 6,-32 C 12,-40 20,-46 28,-50 C 34,-52 38,-50 38,-44 C 38,-36 36,-26 32,-16 C 28,-6 28,2 30,10 C 33,18 36,28 36,40 C 36,52 32,64 25,74 C 19,82 10,86 0,86 Z" />
+        <path d="M -34,-44 C -48,-46 -58,-54 -62,-66 C -54,-62 -46,-56 -38,-50 Z" />
+        <path d="M 34,-44 C 48,-46 58,-54 62,-66 C 54,-62 46,-56 38,-50 Z" />
+
+        <g
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          stroke="url(#lumniDeerGrad)"
+          fill="none"
+        >
+          <path
+            d="M -28,-44 C -34,-58 -42,-72 -52,-94 C -58,-106 -62,-122 -60,-140"
+            strokeWidth="6"
+          />
+          <path d="M -34,-72 C -46,-78 -56,-86 -64,-98" strokeWidth="5" />
+          <path d="M -44,-90 C -56,-94 -68,-100 -78,-112" strokeWidth="5" />
+          <path d="M -54,-110 C -66,-114 -80,-116 -92,-122" strokeWidth="5" />
+          <path d="M -58,-128 C -70,-136 -80,-144 -84,-160" strokeWidth="5" />
+          <path d="M -60,-146 C -66,-160 -70,-176 -66,-194" strokeWidth="5" />
+          <path d="M -60,-146 C -52,-162 -44,-174 -34,-184" strokeWidth="4.5" />
+        </g>
+        <g
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          stroke="url(#lumniDeerGrad)"
+          fill="none"
+        >
+          <path
+            d="M 28,-44 C 34,-58 42,-72 52,-94 C 58,-106 62,-122 60,-140"
+            strokeWidth="6"
+          />
+          <path d="M 34,-72 C 46,-78 56,-86 64,-98" strokeWidth="5" />
+          <path d="M 44,-90 C 56,-94 68,-100 78,-112" strokeWidth="5" />
+          <path d="M 54,-110 C 66,-114 80,-116 92,-122" strokeWidth="5" />
+          <path d="M 58,-128 C 70,-136 80,-144 84,-160" strokeWidth="5" />
+          <path d="M 60,-146 C 66,-160 70,-176 66,-194" strokeWidth="5" />
+          <path d="M 60,-146 C 52,-162 44,-174 34,-184" strokeWidth="4.5" />
+        </g>
+
+        <ellipse
+          cx="-14"
+          cy="4"
+          rx="3"
+          ry="4"
+          fill="var(--lumni-gold-ink, var(--ds-warning, #ddb85a))"
+          opacity="0.9"
+        />
+        <ellipse
+          cx="14"
+          cy="4"
+          rx="3"
+          ry="4"
+          fill="var(--lumni-gold-ink, var(--ds-warning, #ddb85a))"
+          opacity="0.9"
+        />
+        <ellipse cx="0" cy="66" rx="7" ry="5" fill="currentColor" />
+      </g>
+    </svg>
+  );
+}
+
+function BundleFloatingChips({
+  chips,
+}: {
+  chips?: CenteredMarkCopy['floatingChips'];
+}) {
+  if (!chips) return null;
+  const items = [
+    chips.match && {
+      pos: { top: '6%', right: '-6%' } as React.CSSProperties,
+      rotate: 3,
+      iconBg:
+        'linear-gradient(135deg, var(--lumni-gold-ink, var(--ds-warning)), var(--ds-warning))',
+      icon: <TrendingUp className="h-3.5 w-3.5 text-[color:var(--landing-bg)]" />,
+      title: chips.match.value,
+      sub: chips.match.school,
+    },
+    chips.essay && {
+      pos: { top: '52%', left: '-8%' } as React.CSSProperties,
+      rotate: -4,
+      iconBg: 'var(--landing-fg)',
+      icon: (
+        <Check className="h-3.5 w-3.5 text-[color:var(--lumni-gold-ink,var(--ds-warning))]" />
+      ),
+      title: chips.essay.status,
+      sub: chips.essay.school,
+    },
+    chips.voice && {
+      pos: { bottom: '4%', right: '0%' } as React.CSSProperties,
+      rotate: 2,
+      iconBg: 'var(--ds-success)',
+      icon: <Feather className="h-3.5 w-3.5 text-[color:var(--landing-bg)]" />,
+      title: chips.voice.value,
+      sub: chips.voice.label,
+    },
+  ].filter(Boolean) as Array<{
+    pos: React.CSSProperties;
+    rotate: number;
+    iconBg: string;
+    icon: React.ReactElement;
+    title: string;
+    sub: string;
+  }>;
+
+  return (
+    <>
+      {items.map((it, i) => (
+        <div
+          key={i}
+          className="absolute z-20 hidden items-center gap-2.5 rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3 py-2 shadow-[var(--landing-shadow-elevated)] sm:flex"
+          style={{ ...it.pos, transform: `rotate(${it.rotate}deg)`, minWidth: 140 }}
+        >
+          <div
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+            style={{ background: it.iconBg }}
+          >
+            {it.icon}
+          </div>
+          <div className="min-w-0 text-left">
+            <div className="truncate text-xs font-semibold tracking-tight text-[var(--landing-fg)]">
+              {it.title}
+            </div>
+            <div className="mt-0.5 truncate text-[11px] text-[var(--landing-muted)]">
+              {it.sub}
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
   );
 }
 
