@@ -60,7 +60,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 const THEME_STYLE_SETTING_KEY = 'admin.themeStyleLibrary.v1';
 const THEME_STYLE_SCHEMA_VERSION = 2 as const;
-const MAX_THEME_STYLE_ITEMS = 120;
+// Cap fits the full 16 palette-category × 9 hero-variant seed (144) plus headroom
+// for hand-curated additions. JSON size floor (MAX_THEME_STYLE_JSON_BYTES) caps the
+// upper bound — at ~1.2 KB per item we have margin up to ~250 items.
+const MAX_THEME_STYLE_ITEMS = 200;
 const MAX_THEME_STYLE_JSON_BYTES = 300_000;
 
 type ThemeStyleLibraryState = {
