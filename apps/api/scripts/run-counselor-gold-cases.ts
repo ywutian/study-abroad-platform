@@ -71,10 +71,102 @@ const MINIMAL_CDS_FIXTURE = [
     source: 'gold-counselor-fixture:uc-merced:2024',
     sourceUrl: 'https://admissions.ucmerced.edu/',
   },
+  // UCSC Tier 1 cell — gold case 031-ucsc-china-intl-with-location-rd anchors here.
+  {
+    schoolNameNorm: 'university of california, santa cruz',
+    gpaBand: '3.75-4.00',
+    testType: 'GPA_ONLY',
+    testBand: 'ANY',
+    admitRate: 0.62,
+    sampleCount: 800,
+    cycleYear: 2024,
+    source: 'gold-counselor-fixture:uc-santa-cruz:2024',
+    sourceUrl: 'https://admissions.ucsc.edu/',
+  },
+] as const;
+
+// School-level fields needed by gold cases that the default seed leaves null
+// (intlAcceptanceRate, testingPolicy, etc. for UCM/UCSC). Without this, CI's
+// sparse seed data drives intlMultiplier into the heuristic fallback bucket
+// instead of the per-school ratio path the gold cases assume.
+const MINIMAL_SCHOOL_FIXTURE = [
+  {
+    schoolNameNorm: 'university of california, merced',
+    fields: {
+      acceptanceRate: 0.96,
+      intlAcceptanceRate: 0.81,
+      testingPolicy: 'BLIND' as const,
+      sat25: 1020,
+      sat75: 1220,
+      act25: 18,
+      act75: 24,
+      isPrivate: false,
+      state: 'CA',
+    },
+  },
+  {
+    schoolNameNorm: 'university of california, santa cruz',
+    fields: {
+      acceptanceRate: 0.65,
+      intlAcceptanceRate: 0.81,
+      oosAcceptanceRate: 0.82,
+      testingPolicy: 'BLIND' as const,
+      sat25: 1170,
+      sat75: 1390,
+      act25: 25,
+      act75: 32,
+      isPrivate: false,
+      state: 'CA',
+    },
+  },
 ] as const;
 
 function normalizeSchoolName(name: string): string {
   return name.trim().toLowerCase();
+}
+
+async function loadMinimalSchoolFixture(prisma: PrismaService) {
+  for (const row of MINIMAL_SCHOOL_FIXTURE) {
+    const school = await prisma.school.findUnique({
+      where: { nameNorm: row.schoolNameNorm },
+      select: { id: true },
+    });
+    if (!school) {
+      console.warn(
+        `⚠️  School fixture skipped: school not found (${row.schoolNameNorm})`,
+      );
+      continue;
+    }
+    // Only set fields that are currently null/undefined — avoid clobbering
+    // real DB values when this script is run against the dev DB.
+    const current = await prisma.school.findUnique({
+      where: { id: school.id },
+      select: {
+        acceptanceRate: true,
+        intlAcceptanceRate: true,
+        oosAcceptanceRate: true,
+        testingPolicy: true,
+        sat25: true,
+        sat75: true,
+        act25: true,
+        act75: true,
+        isPrivate: true,
+        state: true,
+      },
+    });
+    const update: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(row.fields)) {
+      if (current && (current as Record<string, unknown>)[key] == null) {
+        update[key] = value;
+      }
+    }
+    if (Object.keys(update).length > 0) {
+      await prisma.school.update({
+        where: { id: school.id },
+        data: update,
+      });
+    }
+  }
 }
 
 async function loadMinimalCdsFixture(prisma: PrismaService) {
@@ -143,6 +235,7 @@ async function main() {
   );
   const counselor = app.get(CounselorEngineService);
   const prisma = app.get(PrismaService);
+  await loadMinimalSchoolFixture(prisma);
   await loadMinimalCdsFixture(prisma);
 
   // Look up all unique schools by stable normalized name in one query (avoids
