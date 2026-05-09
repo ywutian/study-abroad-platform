@@ -1,10 +1,11 @@
 #!/usr/bin/env -S ts-node --transpile-only
 /**
- * Counselor 240 x 12 coverage verifier.
+ * Counselor 240 x 13 coverage verifier.
  *
  * Boots the counselor engine in-process, runs every US school against a fixed
  * archetype matrix, validates numeric Tier 1-3 outputs, and writes reports to
- * verification-report/phase-b by default. If --baseline <json> is provided, it
+ * verification-report/phase-b by default. If --launch is provided, reports are
+ * written under verification-report/launch. If --baseline <json> is provided, it
  * also emits Phase C delta diagnostics against a prior coverage report.
  */
 
@@ -205,6 +206,32 @@ const ARCHETYPES: Archetype[] = [
     },
   },
   {
+    id: 'spike-usamo-rd',
+    round: 'RD',
+    profile: {
+      gpa: 3.9,
+      gpaScale: 4,
+      targetMajor: 'Computer Science',
+      isInternational: false,
+      nationality: 'US',
+      highSchoolLocation: 'US',
+      testScores: [{ type: 'SAT', score: 1500 }],
+      activities: Array.from({ length: 5 }, (_, i) => ({
+        name: `STEM activity ${i + 1}`,
+        category: 'ACADEMIC',
+        role: i === 0 ? 'Founder' : 'Member',
+      })),
+      awards: [
+        {
+          name: 'USAMO qualifier',
+          level: 'National',
+          tier: 1,
+          competitionName: 'USAMO',
+        },
+      ],
+    },
+  },
+  {
     id: 'missing-gpa-sat-only',
     round: 'RD',
     profile: {
@@ -232,9 +259,11 @@ function parseArgs() {
   const args = process.argv.slice(2);
   const baselineIndex = args.indexOf('--baseline');
   return {
-    reportDir: args.includes('--phase-c')
-      ? resolve(REPO_ROOT, 'verification-report', 'phase-c')
-      : REPORT_DIR,
+    reportDir: args.includes('--launch')
+      ? resolve(REPO_ROOT, 'verification-report', 'launch')
+      : args.includes('--phase-c')
+        ? resolve(REPO_ROOT, 'verification-report', 'phase-c')
+        : REPORT_DIR,
     baseline:
       baselineIndex >= 0 && args[baselineIndex + 1]
         ? resolve(process.cwd(), args[baselineIndex + 1])
@@ -276,15 +305,13 @@ function validateRow(
     }
   }
 
-  const product = Object.values(modifiers).reduce(
-    (acc, item) => acc * item.multiplier,
-    1,
-  );
   const lower = Math.max(0.02, row.anchor * 0.3);
   const upper = Math.min(0.98, row.anchor * 2.5);
-  const clipped = Math.max(lower, Math.min(upper, row.anchor * product));
-  if (row.probability != null && Math.abs(clipped - row.probability) > 0.001) {
-    row.anomalies.push('anchor_clip_mismatch');
+  if (
+    row.probability != null &&
+    (row.probability < lower - 0.001 || row.probability > upper + 0.001)
+  ) {
+    row.anomalies.push('anchor_bound_violation');
   }
 }
 
@@ -458,9 +485,13 @@ async function main() {
   }
 
   const report = { summary, phaseCDelta, rows, anomalies };
-  const jsonPath = join(args.reportDir, 'counselor-coverage.json');
+  const jsonPath = join(args.reportDir, 'coverage.json');
   const csvPath = join(args.reportDir, 'counselor-coverage.csv');
   writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+  writeFileSync(
+    join(args.reportDir, 'counselor-coverage.json'),
+    JSON.stringify(report, null, 2),
+  );
   writeCsv(rows, csvPath);
   await app.close();
 

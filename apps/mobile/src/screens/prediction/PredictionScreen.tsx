@@ -120,7 +120,7 @@ export function mapDashboardToPredictions(
   }));
 }
 
-type AdmissionResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
+type AdmissionResult = 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN';
 
 interface PredictionProfileSummary {
   nationality?: string | null;
@@ -709,42 +709,43 @@ export default function PredictionScreen() {
           <Text style={[styles.reportLabel, { color: colors.foreground }]}>
             {t('prediction.selectResult')}
           </Text>
-          {(['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as AdmissionResult[]).map(
-            (result) => {
-              const isSelected = reportResult === result;
-              const resultColors: Record<AdmissionResult, string> = {
-                ADMITTED: colors.success,
-                REJECTED: colors.error,
-                WAITLISTED: colors.warning,
-                DEFERRED: colors.info,
-              };
-              return (
-                <TouchableOpacity
-                  key={result}
-                  onPress={() => setReportResult(result)}
+          {(
+            ['ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED', 'WITHDRAWN'] as AdmissionResult[]
+          ).map((result) => {
+            const isSelected = reportResult === result;
+            const resultColors: Record<AdmissionResult, string> = {
+              ADMITTED: colors.success,
+              REJECTED: colors.error,
+              WAITLISTED: colors.warning,
+              DEFERRED: colors.info,
+              WITHDRAWN: colors.foregroundMuted,
+            };
+            return (
+              <TouchableOpacity
+                key={result}
+                onPress={() => setReportResult(result)}
+                style={[
+                  styles.resultOption,
+                  { borderColor: isSelected ? resultColors[result] : colors.border },
+                  isSelected && { backgroundColor: withOpacity(resultColors[result], 0.1) },
+                ]}
+              >
+                <Ionicons
+                  name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                  size={20}
+                  color={isSelected ? resultColors[result] : colors.foregroundMuted}
+                />
+                <Text
                   style={[
-                    styles.resultOption,
-                    { borderColor: isSelected ? resultColors[result] : colors.border },
-                    isSelected && { backgroundColor: withOpacity(resultColors[result], 0.1) },
+                    styles.resultOptionText,
+                    { color: isSelected ? resultColors[result] : colors.foreground },
                   ]}
                 >
-                  <Ionicons
-                    name={isSelected ? 'radio-button-on' : 'radio-button-off'}
-                    size={20}
-                    color={isSelected ? resultColors[result] : colors.foregroundMuted}
-                  />
-                  <Text
-                    style={[
-                      styles.resultOptionText,
-                      { color: isSelected ? resultColors[result] : colors.foreground },
-                    ]}
-                  >
-                    {t(`prediction.results.${result.toLowerCase()}`)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            }
-          )}
+                  {t(`prediction.results.${result.toLowerCase()}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
           <AnimatedButton
             onPress={() => {
               if (reportSchoolId) {

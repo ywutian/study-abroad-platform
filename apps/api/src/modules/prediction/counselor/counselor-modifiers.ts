@@ -45,6 +45,10 @@ const NEUTRAL: ModifierResult = {
   impact: 'neutral',
 };
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 /**
  * Convert a 4.0-scale GPA to an "equivalent SAT" score for percentile comparison
  * against a school's SAT 25/50/75 distribution. Standard mapping used in admissions
@@ -88,40 +92,80 @@ function gpaToEquivalentSat(
  * GPA), but SAT 25/75 is universally reported. Mapping GPA → equivalent SAT lets
  * us reuse the well-populated distribution for comparison.
  */
+const GPA_DISTRIBUTION_BANDS = [
+  { key: '<3.00', min: Number.NEGATIVE_INFINITY, maxExclusive: 3.0 },
+  { key: '3.00-3.24', min: 3.0, maxExclusive: 3.25 },
+  { key: '3.25-3.49', min: 3.25, maxExclusive: 3.5 },
+  { key: '3.50-3.74', min: 3.5, maxExclusive: 3.75 },
+  { key: '3.75-4.00', min: 3.75, maxExclusive: Number.POSITIVE_INFINITY },
+] as const;
+
+type GpaDistributionBandKey = (typeof GPA_DISTRIBUTION_BANDS)[number]['key'];
+
+function readDistributionValue(
+  distribution: Record<string, unknown>,
+  key: GpaDistributionBandKey,
+): number | null {
+  const raw = distribution[key];
+  const value = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isFinite(value) || value < 0) return null;
+  return value;
+}
+
+function normalizeGpaDistribution(
+  distribution: Record<string, unknown>,
+): Array<{ key: GpaDistributionBandKey; pct: number }> | null {
+  const rawValues = GPA_DISTRIBUTION_BANDS.map((band) => ({
+    key: band.key,
+    value: readDistributionValue(distribution, band.key),
+  }));
+  if (rawValues.some((entry) => entry.value == null)) return null;
+
+  const rawTotal = rawValues.reduce(
+    (sum, entry) => sum + (entry.value ?? 0),
+    0,
+  );
+  if (rawTotal <= 0) return null;
+
+  const denominator = rawTotal > 2 ? 100 : 1;
+  const normalized = rawValues.map((entry) => ({
+    key: entry.key,
+    pct: (entry.value ?? 0) / denominator,
+  }));
+  const total = normalized.reduce((sum, entry) => sum + entry.pct, 0);
+  if (total < 0.95 || total > 1.05) return null;
+
+  return normalized.map((entry) => ({
+    key: entry.key,
+    pct: entry.pct / total,
+  }));
+}
+
 /**
- * Compute applicant's GPA percentile within a school's enrolled freshman class
- * given the CDS C9 distribution. Bands are interpolated linearly within their
- * range. Returns the % of enrolled freshmen with a strictly LOWER GPA.
+ * Compute applicant's cumulative-from-bottom percentile within a school's CDS
+ * C9 GPA distribution using a step function. Boundary convention is
+ * right-open: 3.75 is in the 3.75-4.00 band, not 3.50-3.74.
+ *
+ * Returns 0..1, where 0.5 means the applicant is near the middle of the
+ * enrolled-student GPA distribution.
  */
 function gpaPercentileFromDistribution(
   applicantGpa: number,
-  distribution: Record<string, number>,
+  distribution: Record<string, unknown>,
 ): number | null {
-  // Canonical bands ordered from highest to lowest
-  const bands: Array<{ min: number; max: number; pct: number }> = [
-    { min: 3.75, max: 4.0, pct: Number(distribution['3.75-4.00']) || 0 },
-    { min: 3.5, max: 3.74, pct: Number(distribution['3.50-3.74']) || 0 },
-    { min: 3.25, max: 3.49, pct: Number(distribution['3.25-3.49']) || 0 },
-    { min: 3.0, max: 3.24, pct: Number(distribution['3.00-3.24']) || 0 },
-    { min: 0.0, max: 2.99, pct: Number(distribution['<3.00']) || 0 },
-  ];
-  // Total mass should be ~1.0; bail if not
-  const total = bands.reduce((a, b) => a + b.pct, 0);
-  if (total < 0.85 || total > 1.15) return null;
+  if (!Number.isFinite(applicantGpa)) return null;
+  const normalized = normalizeGpaDistribution(distribution);
+  if (!normalized) return null;
 
-  // Walk from lowest band up; accumulate mass below applicant
-  let cum = 0;
-  for (let i = bands.length - 1; i >= 0; i--) {
-    const b = bands[i];
-    if (applicantGpa < b.min) return cum * 100;
-    if (applicantGpa <= b.max) {
-      // Linear interpolation within band
-      const frac = (applicantGpa - b.min) / Math.max(b.max - b.min, 0.01);
-      return (cum + b.pct * frac) * 100;
-    }
-    cum += b.pct;
-  }
-  return cum * 100; // applicant >= top band
+  const bandIndex = GPA_DISTRIBUTION_BANDS.findIndex(
+    (band) => applicantGpa >= band.min && applicantGpa < band.maxExclusive,
+  );
+  if (bandIndex < 0) return null;
+
+  const lowerMass = normalized
+    .slice(0, bandIndex)
+    .reduce((sum, band) => sum + band.pct, 0);
+  return clamp(lowerMass + normalized[bandIndex].pct / 2, 0, 1);
 }
 
 export function gpaBandMultiplier(
@@ -141,43 +185,18 @@ export function gpaBandMultiplier(
   ) {
     const pct = gpaPercentileFromDistribution(gpa4, school.gpaDistribution);
     if (pct != null) {
-      if (pct >= 75) {
-        return {
-          multiplier: 1.3,
-          label: 'GPA above school 75th percentile (school-published)',
-          evidence: `GPA ${gpa?.toFixed(2)} sits at the ~${pct.toFixed(0)}th percentile of this school's enrolled freshmen`,
-          impact: 'positive',
-        };
-      }
-      if (pct >= 50) {
-        return {
-          multiplier: 1.1,
-          label: 'GPA above school median (school-published)',
-          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
-          impact: 'positive',
-        };
-      }
-      if (pct >= 25) {
-        return {
-          multiplier: 0.85,
-          label: 'GPA below school median (school-published)',
-          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
-          impact: 'negative',
-        };
-      }
-      if (pct >= 10) {
-        return {
-          multiplier: 0.5,
-          label: 'GPA below school 25th percentile (school-published)',
-          evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
-          impact: 'negative',
-        };
-      }
+      const multiplier = clamp(0.4 + 0.7 * pct, 0.15, 1.3);
+      const percentile = pct * 100;
       return {
-        multiplier: 0.15,
-        label: 'GPA well below school distribution (school-published)',
-        evidence: `GPA ${gpa?.toFixed(2)} is at the ~${pct.toFixed(0)}th percentile of this school's enrolled class`,
-        impact: 'negative',
+        multiplier,
+        label: 'GPA percentile (school-published)',
+        evidence: `GPA ${gpa?.toFixed(2)} is around the ${percentile.toFixed(0)}th percentile of this school's CDS C9 enrolled-student GPA distribution`,
+        impact:
+          multiplier > 1.05
+            ? 'positive'
+            : multiplier < 0.95
+              ? 'negative'
+              : 'neutral',
       };
     }
   }
@@ -315,6 +334,54 @@ function gaokaoToEquivalentSat(gaokaoScore: number): number | null {
   return 1280;
 }
 
+function compareTestBand(
+  score: number,
+  p25: number,
+  p75: number,
+  testLabel: string,
+  pointUnit = 'points',
+): ModifierResult {
+  if (score >= p75 + (pointUnit === 'ACT' ? 1 : 50)) {
+    return {
+      multiplier: 1.5,
+      label: 'Test score well above 75th percentile',
+      evidence: `${testLabel} is above the school's 75th percentile (${p75})`,
+      impact: 'positive',
+    };
+  }
+  if (score >= p75) {
+    return {
+      multiplier: 1.2,
+      label: 'Test score above 75th percentile',
+      evidence: `${testLabel} meets or exceeds the school's 75th percentile (${p75})`,
+      impact: 'positive',
+    };
+  }
+  if (score >= p25) {
+    return {
+      multiplier: 0.85,
+      label: 'Test score in middle 50',
+      evidence: `${testLabel} falls between this school's 25th and 75th percentile (${p25}-${p75})`,
+      impact: 'neutral',
+    };
+  }
+  const nearBand = pointUnit === 'ACT' ? score >= p25 - 3 : score >= p25 - 100;
+  if (nearBand) {
+    return {
+      multiplier: 0.5,
+      label: 'Test score just below 25th percentile',
+      evidence: `${testLabel} is below the 25th percentile (${p25}) but close to the middle-50 range`,
+      impact: 'negative',
+    };
+  }
+  return {
+    multiplier: 0.3,
+    label: 'Test score well below 25th percentile',
+    evidence: `${testLabel} is well below the school's 25th percentile (${p25})`,
+    impact: 'negative',
+  };
+}
+
 /**
  * Modifier #2: Test-band relative to school SAT/ACT distribution.
  *
@@ -334,9 +401,20 @@ export function testBandMultiplier(
   profile: ProfileInput & { applyingTestOptional?: boolean },
   school: SchoolInput,
 ): ModifierResult {
+  if (school.testingPolicy === 'BLIND') {
+    return {
+      multiplier: 1.0,
+      label: 'Test-blind school (test ignored)',
+      evidence:
+        'This school does not consider SAT/ACT scores in admissions decisions; submitted scores are ignored.',
+      impact: 'neutral',
+    };
+  }
+
   const testScores = profile.testScores ?? [];
   let bestEquivSat: number | null = null;
   let testLabel: string | null = null;
+  let bestDirectAct: number | null = null;
 
   const considerScore = (equiv: number | null, label: string) => {
     if (equiv == null) return;
@@ -353,6 +431,9 @@ export function testBandMultiplier(
         considerScore(ts.score, `SAT ${ts.score}`);
         break;
       case 'ACT':
+        if (bestDirectAct == null || ts.score > bestDirectAct) {
+          bestDirectAct = ts.score;
+        }
         considerScore(ts.score * 45, `ACT ${ts.score}`);
         break;
       case 'IB':
@@ -374,36 +455,53 @@ export function testBandMultiplier(
     }
   }
 
-  // No test score AND user explicitly applying test-optional →
-  // Common App data shows top-private (<20% admit) test-optional admits
-  // 5-10pp lower than test-submitters; apply 0.85× as conservative correction.
-  // At less-selective schools, test-optional has no meaningful penalty.
-  if (bestEquivSat == null && profile.applyingTestOptional === true) {
-    const overall = school.acceptanceRate;
-    if (overall != null && overall > 0) {
-      const overallNorm = overall > 1 ? overall / 100 : overall;
-      if (overallNorm < 0.2) {
+  if (bestEquivSat == null || testLabel == null) {
+    if (school.testingPolicy === 'REQUIRED') {
+      return {
+        multiplier: 0.1,
+        label: 'Missing required test score',
+        evidence:
+          'This school requires SAT/ACT scores; no submitted score is a severe application weakness.',
+        impact: 'negative',
+      };
+    }
+
+    if (
+      school.testingPolicy === 'OPTIONAL' ||
+      profile.applyingTestOptional === true
+    ) {
+      const overallNorm = normalizeRate(school.acceptanceRate);
+      if (overallNorm != null && overallNorm < 0.2) {
         return {
           multiplier: 0.85,
-          label: 'Test-optional at highly selective school',
+          label: 'No test score at highly selective test-optional school',
           evidence:
-            'Common App data: top-30 private schools admit test-optional applicants 5-10pp lower than test-submitters; 0.85× conservative correction.',
+            'Common App data: highly selective test-optional schools admit no-score applicants lower than test-submitters; 0.85× conservative correction.',
           impact: 'negative',
         };
       }
+      return {
+        multiplier: 1.0,
+        label: 'No test score at less-selective test-optional school',
+        evidence:
+          'At schools with admit rates at or above 20%, no-score test-optional applications have no strong observed penalty.',
+        impact: 'neutral',
+      };
     }
-    return {
-      multiplier: 1.0,
-      label: 'Test-optional (less-selective school)',
-      evidence:
-        'At less-selective schools (admit rate ≥ 20%), test-optional has no significant effect on admit probability per Common App data.',
-      impact: 'neutral',
-    };
-  }
 
-  if (bestEquivSat == null || testLabel == null) {
     return { ...NEUTRAL, label: 'Test score' };
   }
+
+  if (bestDirectAct != null && school.act25 && school.act75) {
+    return compareTestBand(
+      bestDirectAct,
+      school.act25,
+      school.act75,
+      `ACT ${bestDirectAct}`,
+      'ACT',
+    );
+  }
+
   const sat25 = school.sat25;
   const sat75 = school.sat75;
   if (!sat25 || !sat75) {
@@ -414,44 +512,7 @@ export function testBandMultiplier(
       impact: 'neutral',
     };
   }
-  if (bestEquivSat >= sat75 + 50) {
-    return {
-      multiplier: 1.5,
-      label: 'Test score well above 75th percentile',
-      evidence: `${testLabel} is more than 50 points above the school's 75th percentile (${sat75})`,
-      impact: 'positive',
-    };
-  }
-  if (bestEquivSat >= sat75) {
-    return {
-      multiplier: 1.2,
-      label: 'Test score above 75th percentile',
-      evidence: `${testLabel} meets or exceeds the school's 75th percentile (${sat75})`,
-      impact: 'positive',
-    };
-  }
-  if (bestEquivSat >= sat25) {
-    return {
-      multiplier: 0.85,
-      label: 'Test score in middle 50',
-      evidence: `${testLabel} falls between this school's 25th and 75th percentile (${sat25}-${sat75})`,
-      impact: 'neutral',
-    };
-  }
-  if (bestEquivSat >= sat25 - 100) {
-    return {
-      multiplier: 0.5,
-      label: 'Test score just below 25th percentile',
-      evidence: `${testLabel} is below the 25th percentile (${sat25}) but within 100 points`,
-      impact: 'negative',
-    };
-  }
-  return {
-    multiplier: 0.3,
-    label: 'Test score well below 25th percentile',
-    evidence: `${testLabel} is more than 100 points below the school's 25th percentile (${sat25})`,
-    impact: 'negative',
-  };
+  return compareTestBand(bestEquivSat, sat25, sat75, testLabel);
 }
 
 /**
@@ -468,36 +529,100 @@ export function roundMultiplier(
   round: string | undefined,
   school?: SchoolInput & {
     edAcceptanceRate?: number | null;
+    ed2AcceptanceRate?: number | null;
     eaAcceptanceRate?: number | null;
     acceptanceRate?: number | null;
+    hasEarlyDecision?: boolean | null;
+    hasEarlyDecision2?: boolean | null;
+    hasEarlyAction?: boolean | null;
+    hasRestrictiveEa?: boolean | null;
   },
 ): ModifierResult {
   const r = (round ?? 'RD').toUpperCase();
   const overallRate = normalizeRate(school?.acceptanceRate);
   const edRate = normalizeRate(school?.edAcceptanceRate);
+  const ed2Rate = normalizeRate(school?.ed2AcceptanceRate);
   const eaRate = normalizeRate(school?.eaAcceptanceRate);
 
-  // Data-driven path: school publishes its own ED/EA rate
-  if ((r === 'ED' || r === 'ED2') && edRate != null && overallRate != null) {
-    const ratio = edRate / overallRate;
-    const clamped = Math.max(1.0, Math.min(4.0, ratio));
+  if ((r === 'ED' || r === 'ED2') && school?.hasEarlyDecision === false) {
     return {
-      multiplier: clamped,
-      label:
-        r === 'ED2'
-          ? 'Early Decision 2 (school-published)'
-          : 'Early Decision (school-published)',
-      evidence: `This school admits ${(edRate * 100).toFixed(1)}% of ED applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
-      impact: 'positive',
+      multiplier: 1.0,
+      label: 'School does not offer Early Decision',
+      evidence: 'This school has no Early Decision program; treating as RD.',
+      impact: 'neutral',
     };
+  }
+  if (r === 'ED2' && school?.hasEarlyDecision2 === false) {
+    return {
+      multiplier: 1.0,
+      label: 'School does not offer Early Decision 2',
+      evidence: 'This school has no ED2 program; treating as RD.',
+      impact: 'neutral',
+    };
+  }
+  if (r === 'EA' && school?.hasEarlyAction === false) {
+    return {
+      multiplier: 1.0,
+      label: 'School does not offer Early Action',
+      evidence: 'This school has no Early Action program; treating as RD.',
+      impact: 'neutral',
+    };
+  }
+  if ((r === 'REA' || r === 'SCEA') && school?.hasRestrictiveEa === false) {
+    return {
+      multiplier: 1.0,
+      label: 'School does not offer Restrictive Early Action',
+      evidence: 'This school has no REA/SCEA program; treating as RD.',
+      impact: 'neutral',
+    };
+  }
+
+  // Data-driven path: school publishes its own ED/EA rate
+  if ((r === 'ED' || r === 'ED2') && overallRate != null) {
+    const roundRate = r === 'ED2' ? (ed2Rate ?? edRate) : edRate;
+    if (roundRate != null) {
+      if (roundRate < overallRate) {
+        return {
+          multiplier: 1.0,
+          label:
+            r === 'ED2'
+              ? 'Early Decision 2 (school data anomaly)'
+              : 'Early Decision (school data anomaly)',
+          evidence: `Published ${r} admit rate is below the overall admit rate; using neutral until the source row is reviewed.`,
+          impact: 'neutral',
+        };
+      }
+      const ratio = roundRate / overallRate;
+      const clamped = clamp(ratio, 1.0, 3.5);
+      return {
+        multiplier: clamped,
+        label:
+          r === 'ED2'
+            ? 'Early Decision 2 (school-published)'
+            : 'Early Decision (school-published)',
+        evidence: `This school admits ${(roundRate * 100).toFixed(1)}% of ${r} applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+        impact: 'positive',
+      };
+    }
   }
   if (
     (r === 'EA' || r === 'REA' || r === 'SCEA') &&
     eaRate != null &&
     overallRate != null
   ) {
+    if (eaRate < overallRate) {
+      return {
+        multiplier: 1.0,
+        label:
+          r === 'EA'
+            ? 'Early Action (school data anomaly)'
+            : 'Restrictive Early Action (school data anomaly)',
+        evidence: `Published ${r} admit rate is below the overall admit rate; using neutral until the source row is reviewed.`,
+        impact: 'neutral',
+      };
+    }
     const ratio = eaRate / overallRate;
-    const clamped = Math.max(1.0, Math.min(2.5, ratio));
+    const clamped = clamp(ratio, 1.0, 3.5);
     return {
       multiplier: clamped,
       label:
@@ -565,11 +690,9 @@ export function roundMultiplier(
 /**
  * Modifier #4: Legacy hook (parent / sibling attended same school).
  *
- * Coefficient from Arcidiacono (2020) SFFA v. Harvard expert report:
- * legacy admit rate ~33% vs ~5% baseline at Harvard → odds ratio ~8.5 → 3× simplified
- * for counselor framing. Note: post-2024 some schools have ended legacy preference
- * (Amherst, Carnegie Mellon) — defensive simplification: still 3× until we
- * track per-school legacy policy. Worst case overshoots by ~2pp at non-legacy schools.
+ * Launch behavior: self-reported legacy no longer changes served probability.
+ * The hook is only surfaced as neutral guidance until the evidence/verification
+ * flow can mark the relationship as verified for a specific school.
  */
 export function legacyHookMultiplier(
   profile: ProfileInput,
@@ -589,10 +712,10 @@ export function legacyHookMultiplier(
     return { ...NEUTRAL, label: 'Legacy status' };
   }
   return {
-    multiplier: 3.0,
-    label: 'Legacy applicant',
-    evidence: `Parent or sibling attended ${school.name}; historical odds ratio ~3-8× (Arcidiacono SFFA expert report)`,
-    impact: 'positive',
+    multiplier: 1.0,
+    label: 'Legacy status (evidence required)',
+    evidence: `Legacy preference for ${school.name} is not applied until school-specific evidence is verified.`,
+    impact: 'neutral',
   };
 }
 
@@ -618,10 +741,9 @@ export function firstGenMultiplier(profile: ProfileInput): ModifierResult {
 /**
  * Modifier #6: Recruited athlete.
  *
- * Recruited athletes at Ivy League / D1 schools see admit rates of 70-86% per
- * institutional data (e.g. Harvard CDS shows ~86% for recruited athletes vs ~5%
- * baseline → odds ratio ~120, but counselor uses conservative 4× to avoid
- * over-promising). NEW field on Profile (additive migration in this PR).
+ * Launch behavior: self-reported recruited-athlete status no longer changes
+ * served probability. A future evidence flow can re-enable this hook only after
+ * school-specific verification.
  */
 export function athleteMultiplier(
   profile: ProfileInput & { recruitedAthlete?: boolean },
@@ -630,11 +752,11 @@ export function athleteMultiplier(
     return { ...NEUTRAL, label: 'Recruited athlete' };
   }
   return {
-    multiplier: 4.0,
-    label: 'Recruited athlete',
+    multiplier: 1.0,
+    label: 'Recruited athlete (evidence required)',
     evidence:
-      'Recruited athletes at peer institutions see admit rates 4-15× the baseline (institutional CDS data)',
-    impact: 'positive',
+      'A recruited-athlete boost is not applied until a school-specific coach contact or offer is verified.',
+    impact: 'neutral',
   };
 }
 

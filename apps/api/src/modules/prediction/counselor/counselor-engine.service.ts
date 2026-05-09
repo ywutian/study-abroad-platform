@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { resolveMajorToCip } from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import { AnchorResolverService } from './anchor-resolver.service';
@@ -35,10 +36,9 @@ import {
  * is the most defensible signal you can ship without data. When labels accumulate
  * (~Feb 2027 estimate), a follow-up architecture can layer light ML on top.
  *
- * This service is invoked from `PredictionService.predictForSchool` when the
- * `prediction-counselor-mode-v1` feature flag is enabled. The legacy
- * fusion+distillation path runs in parallel (in shadow) and is captured in
- * `servedTrace.shadow` for retrospective comparison.
+ * This service is the launch served probability path. Legacy fusion/ML services
+ * may remain in the module for fallback or historical comparison, but they must
+ * not be called to serve a counselor-primary prediction.
  */
 
 export type CounselorTier = 1 | 2 | 3 | 4;
@@ -61,7 +61,7 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.6';
+export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.7-launch';
 
 export interface CounselorFactor {
   name: string;
@@ -131,6 +131,7 @@ export class CounselorEngineService {
       needBlindInternational?: boolean;
       intlAcceptanceRate?: number | null;
       oosAcceptanceRate?: number | null;
+      institutionType?: string | null;
     },
     applicationRound?: string,
   ): Promise<CounselorResult> {
@@ -356,7 +357,10 @@ export class CounselorEngineService {
 
   private async resolveAnchor(
     profile: ProfileInput,
-    school: SchoolInput & { acceptanceRate?: number | null },
+    school: SchoolInput & {
+      acceptanceRate?: number | null;
+      institutionType?: string | null;
+    },
   ): Promise<{
     anchor: number;
     tier: CounselorTier;
@@ -371,6 +375,28 @@ export class CounselorEngineService {
     insufficientData?: { reason: string };
     sourceContributions?: CounselorResult['sourceContributions'];
   }> {
+    if (this.isAuditionOrPortfolioSchool(school)) {
+      return {
+        anchor: 0,
+        tier: 4,
+        anchorSource: 'audition_or_portfolio_admission',
+        encodedDimensions: new Set(),
+        insufficientData: {
+          reason:
+            'audition_or_portfolio_admission: this school admits primarily on portfolio review or audition; academic stats alone cannot reliably predict outcome',
+        },
+        sourceContributions: [
+          {
+            source: 'institutionType',
+            value: null,
+            role: 'anchor',
+            detail:
+              'Portfolio/audition-first institution; counselor declines to provide an academic-stats probability.',
+          },
+        ],
+      };
+    }
+
     // Tier 1: CDS Section C9 admit-by-band lookup if (school, gpaBand, testBand)
     // cell exists. Most accurate signal — uses school-published numbers directly.
     const cdsBand = await this.lookupCdsBand(profile, school);
@@ -482,22 +508,31 @@ export class CounselorEngineService {
     school: SchoolInput,
   ): Promise<number | null> {
     if (!profile.targetMajor) return null;
-    // Loose fuzzy match — SchoolProgram uses CIP codes and friendly names
-    // (`programName` field; not `name`). The precise CIP mapping lives in
-    // major-selectivity-teacher; counselor does the simpler programName-contains
-    // lookup. If no hit, returns null and majorMultiplier returns neutral.
+
+    const cipCode = resolveMajorToCip(profile.targetMajor);
+    const cipProgram = cipCode
+      ? await this.prisma.schoolProgram.findFirst({
+          where: {
+            schoolId: school.id,
+            cipCode,
+          },
+          select: { acceptanceRateEstimate: true },
+        })
+      : null;
+    if (cipProgram?.acceptanceRateEstimate) {
+      const raw = cipProgram.acceptanceRateEstimate.toNumber();
+      if (raw > 0) return raw > 1 ? raw / 100 : raw;
+    }
+
+    // Fallback: fuzzy name match for unknown aliases or rows whose CIP code is
+    // missing. If no hit, majorMultiplier returns neutral.
     const program = await this.prisma.schoolProgram.findFirst({
       where: {
         schoolId: school.id,
-        OR: [
-          {
-            programName: {
-              contains: profile.targetMajor,
-              mode: 'insensitive',
-            },
-          },
-          { cipCode: profile.targetMajor },
-        ],
+        programName: {
+          contains: profile.targetMajor,
+          mode: 'insensitive',
+        },
       },
       select: { acceptanceRateEstimate: true },
     });
@@ -588,5 +623,12 @@ export class CounselorEngineService {
     if (raw == null || !Number.isFinite(raw) || raw <= 0) return null;
     const normalized = raw > 1 ? raw / 100 : raw;
     return normalized > 0 && normalized < 1 ? normalized : null;
+  }
+
+  private isAuditionOrPortfolioSchool(
+    school: SchoolInput & { institutionType?: string | null },
+  ): boolean {
+    const type = school.institutionType?.trim().toUpperCase();
+    return type === 'ART_DESIGN' || type === 'MUSIC_CONSERVATORY';
   }
 }

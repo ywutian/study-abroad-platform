@@ -1,8 +1,8 @@
 {
   "id": "023-stanford-athlete-strong-rd",
   "description": "Stanford + recruited athlete + strong RD",
-  "rationale": "Stanford anchor 0.04. Athlete ×4.0 + strong stats ×1.3. Combined 5.2× → clamped 2.5× = 0.10. Range [0.05, 0.12].",
-  "lastReviewedAt": "2026-04-26",
+  "rationale": "Stanford anchor 0.0391. Per launch policy, self-reported recruitedAthlete=true does NOT apply ×4.0 boost without verified RecruitmentEvidence (anti-fraud guard). Athletic hook neutral → strong stats ×~1.3 on 0.0391 anchor produces raw ~0.051 before anchor clip [0.012, 0.098]; final clamp lands at 0.02 absolute floor. Range [0.02, 0.08] reflects v1.7 hook-evidence gating. To reactivate athlete ×4.0, attach VERIFIED RecruitmentEvidence in profile.",
+  "lastReviewedAt": "2026-05-09",
   "profile": {
     "gpa": 3.85,
     "gpaScale": 4,
@@ -18,6 +18,6 @@
   },
   "schoolName": "Stanford University",
   "applicationRound": "RD",
-  "expectedProbabilityRange": [0.04, 0.15],
+  "expectedProbabilityRange": [0.02, 0.08],
   "tags": ["t20-private", "hook-athlete"]
 }

@@ -972,7 +972,8 @@
       "admitted": "Admitted",
       "rejected": "Rejected",
       "waitlisted": "Waitlisted",
-      "deferred": "Deferred"
+      "deferred": "Deferred",
+      "withdrawn": "Withdrawn"
     },
     "recommendation": {
       "reach": "Reach",

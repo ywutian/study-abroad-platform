@@ -20,6 +20,11 @@ export function buildSchoolAiContext({
 
   if (predictionData?.current) {
     const current = predictionData.current;
+    const numericProbability = current.probability ?? undefined;
+    const aiTier =
+      current.tier === 'reach' || current.tier === 'match' || current.tier === 'safety'
+        ? current.tier
+        : undefined;
     return {
       type: 'prediction-results',
       source: 'school_detail',
@@ -27,8 +32,8 @@ export function buildSchoolAiContext({
         {
           schoolId,
           schoolName: getSchoolName(school, locale),
-          probability: current.probability,
-          tier: current.tier as 'reach' | 'match' | 'safety' | undefined,
+          probability: numericProbability,
+          tier: aiTier,
           confidence: current.confidence as 'high' | 'medium' | 'low' | undefined,
           source: current.source,
           modelVersion: current.modelVersion,
@@ -56,7 +61,7 @@ export function buildSchoolAiContext({
         reach: current.tier === 'reach' ? 1 : 0,
         match: current.tier === 'match' ? 1 : 0,
         safety: current.tier === 'safety' ? 1 : 0,
-        avgProbability: current.probability,
+        avgProbability: numericProbability ?? 0,
       },
     };
   }

@@ -1,15 +1,18 @@
 # ADR-0008: Prediction Multi-Engine Ensemble Architecture
 
-- Status: accepted
+- Status: SUPERSEDED by counselor-primary launch architecture (2026-05-08)
 - Date: 2026-02-09
 - Decision-makers: Engineering Team
 - Tags: prediction, ai, ensemble, memory-system
 
+> Superseded by the May 2026 counselor-primary launch work. The multi-engine
+> ensemble remains historical context only; new served predictions come from the
+> deterministic counselor engine, with fusion/ML fields optional or absent.
+
 > 2026-04-03 addendum:
-> This ADR still governs the ensemble serving architecture, but the system has moved into a
-> `served v3 / workflow v4` compatibility period. The ensemble decision remains valid; the
-> operational contract is extended with `policyVersion`, `servedTrace`, `outcomeLabel`, and
-> `observation / active signal` semantics.
+> This addendum is also superseded for serving. `policyVersion`, `servedTrace`,
+> and outcome-label semantics remain, but the ensemble no longer governs served
+> probability.
 
 ## Context
 

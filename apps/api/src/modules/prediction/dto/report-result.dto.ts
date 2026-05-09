@@ -14,6 +14,7 @@ export enum AdmissionResultValue {
   REJECTED = 'REJECTED',
   WAITLISTED = 'WAITLISTED',
   DEFERRED = 'DEFERRED',
+  WITHDRAWN = 'WITHDRAWN',
 }
 
 export class ReportResultDto {
@@ -22,7 +23,7 @@ export class ReportResultDto {
     enum: AdmissionResultValue,
   })
   @IsEnum(AdmissionResultValue)
-  result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED';
+  result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN';
 
   @ApiPropertyOptional({
     description: 'Optional note captured with the outcome label',

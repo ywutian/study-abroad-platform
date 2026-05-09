@@ -972,7 +972,8 @@
       "admitted": "录取",
       "rejected": "拒绝",
       "waitlisted": "候补",
-      "deferred": "延期"
+      "deferred": "延期",
+      "withdrawn": "撤回"
     },
     "recommendation": {
       "reach": "冲刺",
