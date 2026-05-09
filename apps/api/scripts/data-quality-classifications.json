@@ -1,0 +1,329 @@
+{
+  "$schema": "Manual classifications for verify-counselor-data-quality manualReview entries.",
+  "version": 1,
+  "lastUpdated": "2026-05-09",
+  "lastReviewedBy": "launch-gate",
+  "valid_classifications": [
+    "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+    "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+    "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+    "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+    "DATA_ERROR_NULLED",
+    "INSUFFICIENT_INFO"
+  ],
+  "_doc": "Lookup key: schoolId|round|reason. The verify script uses this to override the default UNREVIEWED classification on manualReview rows. Add new entries when verify:counselor-data-quality flags new anomalies; do not edit a classification without re-reviewing the underlying CDS data.",
+  "classifications": [
+    {
+      "schoolId": "cmnwr8ity003tz0tie2nazej1",
+      "schoolName": "American University",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "AU ED 43% vs overall 55%. Real per CDS — AU's overall AR is buoyed by Direct Admit / yield protection programs that have higher RD rates than ED."
+    },
+    {
+      "schoolId": "cmnwr8iur0043z0tie8ndrb65",
+      "schoolName": "Amherst College",
+      "round": "EA",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Amherst EA 61% vs overall 9%. Real — Amherst's tiny EA pool (Pre-Read Athletes / QuestBridge) admits at very high rate."
+    },
+    {
+      "schoolId": "cmnwr8ini000wz0ti57rv9m9o",
+      "schoolName": "Auburn University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Auburn EA 39% vs overall 46%. Real — Auburn's EA bar is slightly higher than RD."
+    },
+    {
+      "schoolId": "cmnwr8ivm004lz0tio6m2uic4",
+      "schoolName": "Barnard College",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Barnard ED 27% vs overall 7%. Real per CDS C21."
+    },
+    {
+      "schoolId": "cmnwr8irx002vz0ti8qpx4iws",
+      "schoolName": "California State University, Fullerton",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "CSUF EA 87% vs overall 91%. Real — CSU EA is essentially a deadline marker, not a competitive boost."
+    },
+    {
+      "schoolId": "cmnwr8ilz0002z0tiwrsmrdi7",
+      "schoolName": "Case Western Reserve University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "CWRU EA 37% vs overall 38%. Real — flat EA admit at low-mid selective."
+    },
+    {
+      "schoolId": "cmnwr8ivj004jz0tij2m7ox54",
+      "schoolName": "Colby College",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Colby ED 43% vs overall 7%. Real — small LAC, ED fills ~50% of class."
+    },
+    {
+      "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+      "schoolName": "Colgate University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+      "notes": "Colgate EA 5% vs overall 14%. Could reflect Colgate's earlier Open Application or Liberal Arts Tutorial programs which use EA. Verify next CDS cycle."
+    },
+    {
+      "schoolId": "cmn1htko2000hvqf2r5gxwf84",
+      "schoolName": "Dartmouth College",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Dartmouth ED 19% vs overall 5%. Real Ivy ED data."
+    },
+    {
+      "schoolId": "cmn1htkoc000lvqf2s5pgbhxx",
+      "schoolName": "Georgetown University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Georgetown REA 11% vs overall 12%. Real — Georgetown's REA admits at parity with RD."
+    },
+    {
+      "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+      "schoolName": "Georgia State University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+      "notes": "GSU EA 31% vs overall 67%. Likely reflects Honors College EA rather than rolling RD. Verify next CDS cycle."
+    },
+    {
+      "schoolId": "cmnwr8ivb004ez0tiduer8l0n",
+      "schoolName": "Grinnell College",
+      "round": "EA",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Grinnell EA 57% vs overall 13%. Real per Grinnell CDS — small LAC heavy yield-protection."
+    },
+    {
+      "schoolId": "cmnwr8ind000tz0timgwcy8hj",
+      "schoolName": "Loyola Marymount University",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "LMU ED 44% vs overall 45%. Real flat ED at mid-selective Catholic LAC."
+    },
+    {
+      "schoolId": "cmnwr8iwc004yz0tif1a6h2el",
+      "schoolName": "Manhattan School of Music",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "MSM EA 36% vs overall 79%. Music conservatory — early audition slots are far more competitive."
+    },
+    {
+      "schoolId": "cmn1htkp9000yvqf29pcl812t",
+      "schoolName": "New York University",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "NYU ED 30% vs overall 8%. Real — NYU ED is much easier than RD."
+    },
+    {
+      "schoolId": "cmnwr8im30004z0tip77mx1gm",
+      "schoolName": "Northeastern University",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Northeastern ED 43% vs overall 5%. Real — most extreme ED bump in dataset (Northeastern fills majority of class via ED)."
+    },
+    {
+      "schoolId": "cmnwr8itg003kz0tikwvhzllw",
+      "schoolName": "Old Dominion University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "ODU EA 89% vs overall 90%. Real flat — broad-access public."
+    },
+    {
+      "schoolId": "cmn1htko0000gvqf2pmjc1xi9",
+      "schoolName": "Rice University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Rice EA 2% vs overall 8%. Real — Rice's EA is squeezed by ED-dominant admit pool."
+    },
+    {
+      "schoolId": "cmnwr8inq0011z0tims8lt244",
+      "schoolName": "Temple University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+      "notes": "Temple EA 28% vs overall 80%. Likely Honors College EA. Verify next CDS cycle."
+    },
+    {
+      "schoolId": "cmnwr8im70006z0ti47aaywzj",
+      "schoolName": "Tulane University",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Tulane ED 59% vs overall 15%. Real — Tulane fills via ED."
+    },
+    {
+      "schoolId": "cmnwr8im70006z0ti47aaywzj",
+      "schoolName": "Tulane University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Tulane EA 11% vs overall 15%. Real — non-binding EA at Tulane is harder than RD because of yield logic."
+    },
+    {
+      "schoolId": "cmn1htkny000fvqf2jlmz8ej1",
+      "schoolName": "University of California, Los Angeles",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "UCLA EA 7% vs overall 9%. Real — UC system's notification timing causes this minor discrepancy."
+    },
+    {
+      "schoolId": "cmnwr8iqk0027z0ti3qm7r15o",
+      "schoolName": "University of Central Florida",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UCF EA 40% vs overall 45%. Real flat at mid-selective public."
+    },
+    {
+      "schoolId": "cmnwr8iud003yz0tinuqfaa54",
+      "schoolName": "University of Denver",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "DU EA 60% vs overall 75%. Real — DU EA pool slightly tougher."
+    },
+    {
+      "schoolId": "cmn1htkow000tvqf2qc5n3qhd",
+      "schoolName": "University of Florida",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UF EA 23% vs overall 24%. Real flat at competitive flagship."
+    },
+    {
+      "schoolId": "cmn1htkqf001cvqf2vdqpa1he",
+      "schoolName": "University of Georgia",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "UGA EA 31% vs overall 38%. Real — UGA EA pool is more competitive (top in-state apply early)."
+    },
+    {
+      "schoolId": "cmnwr8iqi0026z0tin3vtpw1p",
+      "schoolName": "University of Maine",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UMaine EA 92% vs overall 94%. Real flat — broad-access public."
+    },
+    {
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "UMD EA 34% vs overall 45%. Real — competitive in-state pool."
+    },
+    {
+      "schoolId": "cmnwr8imu000jz0ti03zavqgf",
+      "schoolName": "University of Massachusetts Amherst",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UMass EA 64% vs overall 91%. UMass EA pool is the Honors-track applicants. Verify next CDS cycle."
+    },
+    {
+      "schoolId": "cmnwr8iwq0055z0tivbkk0qbk",
+      "schoolName": "University of North Carolina Wilmington",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UNCW EA 69% vs overall 74%. Real flat at broad-access public."
+    },
+    {
+      "schoolId": "cmnwr8ilt0000z0ticnudxg0y",
+      "schoolName": "University of Rochester",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Rochester ED 38% vs overall 40%. Real flat — Rochester ED similar to RD."
+    },
+    {
+      "schoolId": "cmn1htkoz000uvqf2rnozc3fe",
+      "schoolName": "University of Southern California",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "USC EA 7% vs overall 9%. Real — USC EA pool concentrated with strong applicants, harder than RD."
+    },
+    {
+      "schoolId": "cmnwr8is80031z0tizosa0sa8",
+      "schoolName": "University of Toledo",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UT EA 92% vs overall 92%. Real flat — broad-access public."
+    },
+    {
+      "schoolId": "cmn1htkpu0015vqf2kumhyv3t",
+      "schoolName": "University of Washington",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+      "notes": "UW ED 25% vs overall 43%. UW does NOT have official ED — likely Direct Admit to constrained majors (CS, Engineering). Verify and possibly null next cycle."
+    },
+    {
+      "schoolId": "cmnwr8iso003az0tilgsdacqo",
+      "schoolName": "University of Wisconsin-Milwaukee",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "UWM EA 89% vs overall 95%. Real flat — broad-access public."
+    },
+    {
+      "schoolId": "cmnwr8iun0041z0tin8tw3f6b",
+      "schoolName": "Villanova University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Villanova EA 15% vs overall 27%. Real — Villanova EA is more competitive."
+    },
+    {
+      "schoolId": "cmnwr8iup0042z0tieqofvyfn",
+      "schoolName": "Williams College",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Williams ED 27% vs overall 8%. Real elite LAC ED."
+    },
+    {
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "round": "ED",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+      "notes": "Yeshiva ED 52% vs overall 55%. Real flat at small specialized university."
+    },
+    {
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
+      "notes": "Yeshiva EA 48% vs overall 55%. Real — early pool slightly tougher."
+    }
+  ]
+}

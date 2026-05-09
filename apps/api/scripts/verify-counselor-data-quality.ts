@@ -2,12 +2,12 @@
 /**
  * Data QA gate for all sources consumed by counselor-v2.
  *
- * Writes verification-report/phase-c/counselor-data-quality.json. Rows in
- * `failures` block ship; rows in `manualReview` must be classified before the
- * Phase C PR is shipped.
+ * Writes verification-report/phase-c/counselor-data-quality.json by default, or
+ * verification-report/launch/data-quality.json with --launch. Rows in `failures`
+ * block ship; rows in `manualReview` must be classified before launch.
  */
 
-import { mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { CounselorEngineModule } from '../src/modules/prediction/counselor/counselor-engine.module';
@@ -17,6 +17,54 @@ import { resolveMajorToCip } from '@study-abroad/shared/scoring';
 
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 const REPORT_DIR = resolve(REPO_ROOT, 'verification-report', 'phase-c');
+const CLASSIFICATIONS_FILE = resolve(
+  __dirname,
+  'data-quality-classifications.json',
+);
+
+interface ClassificationEntry {
+  schoolId: string;
+  round: string;
+  reason: string;
+  classification: string;
+  notes?: string;
+}
+
+function loadClassifications(): Map<string, ClassificationEntry> {
+  const map = new Map<string, ClassificationEntry>();
+  if (!existsSync(CLASSIFICATIONS_FILE)) return map;
+  try {
+    const raw = JSON.parse(readFileSync(CLASSIFICATIONS_FILE, 'utf8')) as {
+      classifications?: ClassificationEntry[];
+    };
+    for (const entry of raw.classifications ?? []) {
+      const key = `${entry.schoolId}|${entry.round}|${entry.reason}`;
+      map.set(key, entry);
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `Failed to read classifications file ${CLASSIFICATIONS_FILE}: ${
+        (err as Error).message
+      }`,
+    );
+  }
+  return map;
+}
+
+function applyClassification(
+  row: AuditRow,
+  classifications: Map<string, ClassificationEntry>,
+): AuditRow {
+  const key = `${row.schoolId}|${row.round}|${row.reason}`;
+  const entry = classifications.get(key);
+  if (!entry) return row;
+  return {
+    ...row,
+    classification: entry.classification,
+    classificationNotes: entry.notes,
+  };
+}
 const CANONICAL_GPA_BANDS = [
   '<3.00',
   '3.00-3.24',
@@ -119,7 +167,10 @@ function percentile(values: number[], p: number): number {
 }
 
 async function main() {
-  mkdirSync(REPORT_DIR, { recursive: true });
+  const reportDir = process.argv.includes('--launch')
+    ? resolve(REPO_ROOT, 'verification-report', 'launch')
+    : REPORT_DIR;
+  mkdirSync(reportDir, { recursive: true });
   const strict = process.argv.includes('--strict');
 
   const app = await NestFactory.createApplicationContext(
@@ -138,6 +189,7 @@ async function main() {
   const schoolIds = schools.map((school) => school.id);
   const failures: AuditRow[] = [];
   const manualReview: AuditRow[] = [];
+  const classifications = loadClassifications();
 
   const tierCounts = new Map<number, number>();
   for (const school of schools) {
@@ -195,28 +247,38 @@ async function main() {
       const ratio = roundRate / overall;
       roundRatios.push(ratio);
       if (roundRate < overall) {
-        manualReview.push({
-          schoolId: school.id,
-          schoolName: school.name,
-          reason: 'round_rate_below_overall',
-          round: label,
-          overall,
-          roundRate,
-          ratio,
-          classification: 'UNREVIEWED',
-        });
+        manualReview.push(
+          applyClassification(
+            {
+              schoolId: school.id,
+              schoolName: school.name,
+              reason: 'round_rate_below_overall',
+              round: label,
+              overall,
+              roundRate,
+              ratio,
+              classification: 'UNREVIEWED',
+            },
+            classifications,
+          ),
+        );
       }
       if (ratio > 3.5) {
-        manualReview.push({
-          schoolId: school.id,
-          schoolName: school.name,
-          reason: 'round_rate_ratio_above_cap',
-          round: label,
-          overall,
-          roundRate,
-          ratio,
-          classification: 'UNREVIEWED',
-        });
+        manualReview.push(
+          applyClassification(
+            {
+              schoolId: school.id,
+              schoolName: school.name,
+              reason: 'round_rate_ratio_above_cap',
+              round: label,
+              overall,
+              roundRate,
+              ratio,
+              classification: 'UNREVIEWED',
+            },
+            classifications,
+          ),
+        );
       }
     }
   }
@@ -318,13 +380,29 @@ async function main() {
         })),
     },
   };
-  const reportPath = join(REPORT_DIR, 'counselor-data-quality.json');
+  const reportPath = join(
+    reportDir,
+    process.argv.includes('--launch')
+      ? 'data-quality.json'
+      : 'counselor-data-quality.json',
+  );
   writeFileSync(reportPath, JSON.stringify(report, null, 2));
+  if (process.argv.includes('--launch')) {
+    writeFileSync(
+      join(reportDir, 'counselor-data-quality.json'),
+      JSON.stringify(report, null, 2),
+    );
+  }
   await app.close();
 
   console.log(JSON.stringify(summary, null, 2));
   console.log(`Report: ${reportPath}`);
-  if (strict && failures.length > 0) process.exit(1);
+  const unreviewed = manualReview.filter(
+    (row) => row.classification === 'UNREVIEWED',
+  );
+  if (strict && (failures.length > 0 || unreviewed.length > 0)) {
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {
