@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle, Clock, Loader2, Check } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2, Check, CircleSlash } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useReportResult } from '@/hooks/use-prediction';
+import { useReportResult, type AdmissionResultReport } from '@/hooks/use-prediction';
 
 interface ResultFeedbackButtonsProps {
   schoolId: string;
@@ -39,6 +39,12 @@ const RESULT_OPTIONS = [
     className: 'text-rose-600 hover:bg-rose-500/10 hover:border-rose-500/30',
     activeClassName: 'bg-rose-500/10 border-rose-500/30 text-rose-600',
   },
+  {
+    value: 'WITHDRAWN' as const,
+    icon: CircleSlash,
+    className: 'text-slate-600 hover:bg-slate-500/10 hover:border-slate-500/30',
+    activeClassName: 'bg-slate-500/10 border-slate-500/30 text-slate-600',
+  },
 ];
 
 export function ResultFeedbackButtons({
@@ -50,7 +56,7 @@ export function ResultFeedbackButtons({
   const reportMutation = useReportResult();
   const [justReported, setJustReported] = useState(false);
 
-  const handleReport = (result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED') => {
+  const handleReport = (result: AdmissionResultReport) => {
     reportMutation.mutate(
       { schoolId, result },
       {

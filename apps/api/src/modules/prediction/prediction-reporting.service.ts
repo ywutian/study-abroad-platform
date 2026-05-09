@@ -29,7 +29,8 @@ type ReportedOutcomeResult =
   | 'ADMITTED'
   | 'REJECTED'
   | 'WAITLISTED'
-  | 'DEFERRED';
+  | 'DEFERRED'
+  | 'WITHDRAWN';
 
 const CALIBRATION_EXCLUDED_SOURCES = ['quick-match'] as const;
 

@@ -7,8 +7,8 @@ Counselor-primary admission probability prediction. Industry-standard rules-of-t
 ## Key Files
 
 - `prediction.controller.ts` — predict / history / dashboard / school detail / report result / calibration
-- `prediction.service.ts` — orchestrates sub-services; primary path is `counselor/CounselorEngineService` when feature flag is enabled
-- `prediction-calibration.service.ts` — Platt scaling for legacy fusion path; `prediction-policy.service.ts` — feature flag gates
+- `prediction.service.ts` — orchestrates sub-services; primary served path is `counselor/CounselorEngineService`
+- `prediction-calibration.service.ts` — calibration analytics for verified outcomes; `prediction-policy.service.ts` — policy and trace metadata
 
 ## Data Model
 
@@ -34,13 +34,15 @@ Consumer rule: any read feeding stats / training / distillation / UI trend **mus
 
 ## Served Probability
 
-- Default served probability is the v3 fusion result after local major, feeder, round, and Platt calibration adjustments.
-- When `prediction-compliant-distillation-v1` is live-eligible and enabled, `CompliantDistillationService` applies the weighted teacher blend before Platt; Scorecard remains one teacher signal inside that blend.
-- There is no post-blend Scorecard-only override. With compliant live blend off, served output stays fusion-only (`modelVersion: v3-enterprise`).
+- Default served probability is counselor-primary: an anchor from CDS bands / acceptance rate, deterministic modifiers, and the anchor clamp.
+- Tier 4 returns `probability: null`, `tier: 'unavailable'`, `predictionMethod: 'insufficient_data'`, and is not persisted as a numeric history row.
+- Legacy `engineScores`, `crossEngineConsistency`, and `servedTrace.shadow` are optional and absent from new counselor responses.
+- Fusion, ML, and distillation are deprecated for served probability. They may be used only for historical analysis or explicitly guarded fallback.
+- Accuracy and calibration promotion must use verified outcome labels only; self-reported labels are collected for the closed loop but are not verified truth.
 
 ## Gotchas
 
-- Counselor mode is the primary served path; legacy fusion runs only when the counselor flag is disabled
+- Counselor is the primary served path; legacy fusion must not be called by the counselor-primary response path
 - `servedTrace` and internal policy gates must NOT be exposed to regular users
 - Points charged before prediction; refunded on failure via `safeRefund`
 - ML platform layer (ml/, benchmark/, prediction-ml-primary, diagnostic-ingest) was removed 2026-05-07; restore via `git log --diff-filter=D` if real ML training resumes

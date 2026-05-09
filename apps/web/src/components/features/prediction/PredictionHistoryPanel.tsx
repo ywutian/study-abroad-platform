@@ -14,7 +14,7 @@ interface PredictionHistoryPanelProps {
 }
 
 interface HistoryPoint {
-  probability: number;
+  probability: number | null;
   tier?: string;
   confidence?: string;
   source?: string;
@@ -112,7 +112,9 @@ export const PredictionHistoryPanel = memo(function PredictionHistoryPanel({
     return <p className="text-xs text-muted-foreground">{t('noHistory')}</p>;
   }
 
-  const probabilities = history.map((h) => h.probability);
+  const probabilities = history
+    .map((h) => h.probability)
+    .filter((value): value is number => value != null);
 
   return (
     <div className="space-y-3">

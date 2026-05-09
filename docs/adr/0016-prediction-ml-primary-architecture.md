@@ -1,9 +1,15 @@
 # ADR-0016: Prediction v5 — ML-Primary Architecture
 
-- Status: proposed
+- Status: SUPERSEDED / DEFERRED by counselor-primary launch architecture (2026-05-08)
 - Date: 2026-04-04
 - Decision-makers: Engineering Team
 - Tags: prediction, ml, architecture, calibration
+
+> This ADR is not the current served architecture. ML-primary promotion is
+> deferred until verified outcome sample size is sufficient. The launch served
+> path is deterministic counselor-primary; LLM/ML work may return later as
+> explanation, anomaly detection, or calibrated promotion after enough verified
+> outcomes exist.
 
 ## Context
 

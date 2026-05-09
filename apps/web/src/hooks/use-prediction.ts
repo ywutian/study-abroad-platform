@@ -26,7 +26,7 @@ export const predictionKeys = {
 // ============================================
 export interface SchoolPredictionData {
   current: {
-    probability: number;
+    probability: number | null;
     probabilityLow?: number;
     probabilityHigh?: number;
     tier?: string;
@@ -44,7 +44,7 @@ export interface SchoolPredictionData {
     updatedAt: string;
   } | null;
   history: Array<{
-    probability: number;
+    probability: number | null;
     tier?: string;
     confidence?: string;
     confidenceReason?: string | null;
@@ -84,6 +84,13 @@ export interface PredictionDashboardData {
     }
   >;
 }
+
+export type AdmissionResultReport =
+  | 'ADMITTED'
+  | 'REJECTED'
+  | 'WAITLISTED'
+  | 'DEFERRED'
+  | 'WITHDRAWN';
 
 // ============================================
 // Hooks
@@ -129,10 +136,17 @@ export function useReportResult() {
   return useMutation<
     { success: boolean; message: string },
     Error,
-    { schoolId: string; result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' }
+    {
+      schoolId: string;
+      result: AdmissionResultReport;
+      round?: string;
+      isFinal?: boolean;
+      notes?: string;
+      evidenceUrl?: string;
+    }
   >({
-    mutationFn: ({ schoolId, result }) =>
-      apiClient.patch(`${API_ROUTES.PREDICTIONS}/${schoolId}/result`, { result }),
+    mutationFn: ({ schoolId, ...payload }) =>
+      apiClient.patch(`${API_ROUTES.PREDICTIONS}/${schoolId}/result`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: predictionKeys.all });
     },
