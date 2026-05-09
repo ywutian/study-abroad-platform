@@ -2521,7 +2521,12 @@ export class PredictionService {
   async reportActualResult(
     profileId: string,
     schoolId: string,
-    actualResult: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED',
+    actualResult:
+      | 'ADMITTED'
+      | 'REJECTED'
+      | 'WAITLISTED'
+      | 'DEFERRED'
+      | 'WITHDRAWN',
     options?: {
       notes?: string;
       evidenceUrl?: string;

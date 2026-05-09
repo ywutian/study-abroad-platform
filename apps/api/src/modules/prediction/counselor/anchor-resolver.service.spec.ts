@@ -14,6 +14,33 @@ describe('AnchorResolverService', () => {
     service = new AnchorResolverService(prisma as any);
   });
 
+  it('gracefully declines art/design and music conservatory schools', async () => {
+    const result = await service.resolveAnchor(
+      {
+        gpa: 3.9,
+        gpaScale: 4,
+        testScores: [{ type: 'SAT', score: 1500 }],
+        activities: [],
+        awards: [],
+      } as any,
+      {
+        id: 'risd',
+        name: 'Rhode Island School of Design',
+        institutionType: 'ART_DESIGN',
+        acceptanceRate: 0.19,
+        sat25: 1350,
+        sat75: 1500,
+      } as any,
+    );
+
+    expect(result.tier).toBe(4);
+    expect(result.anchorSource).toBe('audition_or_portfolio_admission');
+    expect(result.insufficientData?.reason).toContain(
+      'audition_or_portfolio_admission',
+    );
+    expect(prisma.schoolCdsAdmitBand.findFirst).not.toHaveBeenCalled();
+  });
+
   it('tries UC weighted GPA bands before standard 4.0 bands', async () => {
     const gpaBands: string[] = [];
     prisma.schoolCdsAdmitBand.findFirst.mockImplementation(

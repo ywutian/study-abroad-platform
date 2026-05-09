@@ -99,6 +99,9 @@ export interface SchoolInput {
   testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
   hasEarlyDecision?: boolean;
+  hasEarlyDecision2?: boolean;
+  hasEarlyAction?: boolean;
+  hasRestrictiveEa?: boolean;
   /** ED acceptance rate (0–100 percentage) */
   edAcceptanceRate?: number;
   /** ED2 admit rate from CDS C21. */

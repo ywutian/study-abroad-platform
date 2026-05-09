@@ -26,8 +26,33 @@ export class AnchorResolverService {
 
   async resolveAnchor(
     profile: ProfileInput,
-    school: SchoolInput & { acceptanceRate?: number | null },
+    school: SchoolInput & {
+      acceptanceRate?: number | null;
+      institutionType?: string | null;
+    },
   ): Promise<AnchorResolution> {
+    if (this.isAuditionOrPortfolioSchool(school)) {
+      return {
+        anchor: 0,
+        tier: 4,
+        anchorSource: 'audition_or_portfolio_admission',
+        encodedDimensions: new Set(),
+        insufficientData: {
+          reason:
+            'audition_or_portfolio_admission: this school admits primarily on portfolio review or audition; academic stats alone cannot reliably predict outcome',
+        },
+        sourceContributions: [
+          {
+            source: 'institutionType',
+            value: null,
+            role: 'anchor',
+            detail:
+              'Portfolio/audition-first institution; counselor declines to provide an academic-stats probability.',
+          },
+        ],
+      };
+    }
+
     const cdsBand = await this.lookupCdsBand(profile, school);
     if (cdsBand != null) {
       return {
@@ -186,5 +211,12 @@ export class AnchorResolverService {
     if (raw == null || !Number.isFinite(raw) || raw <= 0) return null;
     const normalized = raw > 1 ? raw / 100 : raw;
     return normalized > 0 && normalized < 1 ? normalized : null;
+  }
+
+  private isAuditionOrPortfolioSchool(
+    school: SchoolInput & { institutionType?: string | null },
+  ): boolean {
+    const type = school.institutionType?.trim().toUpperCase();
+    return type === 'ART_DESIGN' || type === 'MUSIC_CONSERVATORY';
   }
 }
