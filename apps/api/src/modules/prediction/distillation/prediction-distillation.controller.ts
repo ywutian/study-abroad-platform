@@ -205,7 +205,7 @@ export class PredictionDistillationController {
       testScores: body.profile.testScores ?? [],
       activities: body.profile.activities ?? [],
       awards: body.profile.awards ?? [],
-    } as ProfileInput;
+    };
 
     return this.predictionService.previewPredict(profileInput, body.schoolIds, {
       locale: body.locale ?? 'en',

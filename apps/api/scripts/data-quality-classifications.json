@@ -8,6 +8,8 @@
     "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
     "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
     "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
+    "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+    "POSSIBLE_REAL_ACT_BAND_REVIEW_NEXT_IMPORT",
     "DATA_ERROR_NULLED",
     "INSUFFICIENT_INFO"
   ],
@@ -324,6 +326,110 @@
       "reason": "round_rate_below_overall",
       "classification": "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
       "notes": "Yeshiva EA 48% vs overall 55%. Real — early pool slightly tougher."
+    },
+    {
+      "schoolId": "cmnwr8ivx004qz0ti7xo8qk4m",
+      "schoolName": "ArtCenter College of Design",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; school is portfolio-first and should be retyped/cleaned in the next data import."
+    },
+    {
+      "schoolId": "cmnwr8iw7004vz0ti65mqjgq5",
+      "schoolName": "Berklee College of Music",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; MUSIC_CONSERVATORY Tier 4 already graceful-declines numeric prediction."
+    },
+    {
+      "schoolId": "cmnwr8irx002vz0ti8qpx4iws",
+      "schoolName": "California State University, Fullerton",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8ish0036z0tiy3l6tt76",
+      "schoolName": "California State University, Northridge",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8iqx002dz0tigsxpge66",
+      "schoolName": "Mississippi State University",
+      "round": "SAT_ACT",
+      "reason": "act_placeholder_21_29",
+      "classification": "POSSIBLE_REAL_ACT_BAND_REVIEW_NEXT_IMPORT",
+      "notes": "ACT 21-29 is a common-looking pattern but SAT 1100-1350 is plausible for this school. Kept classified for launch and queued for source re-check rather than nulled."
+    },
+    {
+      "schoolId": "cmnwr8isl0038z0ti3vw64w98",
+      "schoolName": "Northern Illinois University",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8irt002tz0tiua8akwdq",
+      "schoolName": "San Jose State University",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8ivt004oz0tin9oyxi60",
+      "schoolName": "School of the Art Institute of Chicago",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; ART_DESIGN Tier 4 already graceful-declines numeric prediction."
+    },
+    {
+      "schoolId": "cmnwr8ioy001kz0ti85qspr1l",
+      "schoolName": "The New School",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8inn000zz0tihkfqe5yc",
+      "schoolName": "University of Arizona",
+      "round": "SAT_ACT",
+      "reason": "act_placeholder_21_29",
+      "classification": "POSSIBLE_REAL_ACT_BAND_REVIEW_NEXT_IMPORT",
+      "notes": "ACT 21-29 is a common-looking pattern but SAT 1080-1300 is plausible for this school. Kept classified for launch and queued for source re-check rather than nulled."
+    },
+    {
+      "schoolId": "cmnwr8iq2001zz0tiix4lbz86",
+      "schoolName": "University of Houston",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8iuf003zz0ti12pe3iq1",
+      "schoolName": "University of San Diego",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
+    },
+    {
+      "schoolId": "cmnwr8iu0003uz0ti43l07p17",
+      "schoolName": "Worcester Polytechnic Institute",
+      "round": "SAT_ACT",
+      "reason": "sat_act_placeholder_1080_1320",
+      "classification": "PLACEHOLDER_IGNORED_BY_COUNSELOR",
+      "notes": "SAT 1080-1320 matches the legacy placeholder pattern. Counselor launch guard treats this SAT band as missing; Scorecard/CDS cleanup remains queued."
     }
   ]
 }

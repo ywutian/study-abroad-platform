@@ -8,6 +8,25 @@ import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
 export interface ProfileInput {
   gpa?: number;
   gpaScale?: number;
+  gpaByGrade?: {
+    g9?: number;
+    g10?: number;
+    g11?: number;
+    g12?: number;
+  };
+  semesterGpas?: Array<{
+    semester: string;
+    year?: number;
+    gpa: number;
+    gpaScale?: number;
+    credits?: number;
+    order?: number;
+  }>;
+  gpaTrend?: {
+    direction: 'rising' | 'falling' | 'flat' | 'insufficient';
+    delta?: number;
+    evidence?: string;
+  };
   gpaSystem?: string;
   grade?: string;
   currentSchoolType?: string;
@@ -23,6 +42,7 @@ export interface ProfileInput {
   highSchoolStudentQuality?: number;
   highSchoolResources?: number;
   highSchoolGradeInflation?: string;
+  highSchoolImpactEnabled?: boolean;
   isInternational?: boolean;
   nationality?: string;
   educationSystem?: string;
@@ -44,13 +64,25 @@ export interface ProfileInput {
     description?: string;
     hoursPerWeek?: number;
     weeksPerYear?: number;
+    annualHours?: number;
+    yearsActive?: number;
+    tier?: number;
+    gradeLevels?: number[];
+    timing?: string;
   }>;
   awards: Array<{
     level: string;
     name?: string;
     tier?: number;
     competitionName?: string;
+    category?: string;
+    year?: number;
   }>;
+  englishProficiency?: {
+    type: string;
+    score: number;
+    normalized: number;
+  };
   assessment?: {
     mbtiType?: string;
     hollandCodes?: string[];

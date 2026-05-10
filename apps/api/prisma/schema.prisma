@@ -1152,6 +1152,7 @@ model School {
   cohortRegimeSignals               SchoolCohortRegimeSignal[]
   relationshipSignals               SchoolRelationshipSignal[]
   communityRatings                  SchoolCommunityRating[]
+  mediaAssets                       SchoolMediaAsset[]
   policyEvidence                    SchoolPolicyEvidence[]
   competitorPredictions             CompetitorPrediction[]
   staticTeacherSnapshots            StaticTeacherSnapshot[]
@@ -1273,6 +1274,62 @@ model SchoolCommunityRating {
   @@unique([schoolId, userId])
   @@index([schoolId, isHidden, updatedAt])
   @@index([userId, updatedAt])
+}
+
+enum SchoolMediaType {
+  LOGO
+  CAMPUS_COVER
+}
+
+enum SchoolMediaStatus {
+  CANDIDATE
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  FAILED
+  ARCHIVED
+}
+
+enum SchoolMediaSourceType {
+  OFFICIAL_WEBSITE
+  OFFICIAL_BRAND_PAGE
+  WIKIMEDIA_COMMONS
+  PUBLIC_API
+  LOGO_API
+  FAVICON_FALLBACK
+  MANUAL_ADMIN
+}
+
+model SchoolMediaAsset {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  type       SchoolMediaType
+  status     SchoolMediaStatus     @default(CANDIDATE)
+  sourceType SchoolMediaSourceType
+
+  storageUrl    String?
+  originalUrl   String?
+  sourcePageUrl String?
+  license       String?
+  author        String?
+  attribution   String?
+  width         Int?
+  height        Int?
+  hash          String?
+  isPrimary     Boolean @default(false)
+  failureReason String? @db.Text
+
+  reviewedBy String?
+  reviewedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId, type, status])
+  @@index([type, status, createdAt])
+  @@index([hash])
 }
 
 model SchoolProgram {
@@ -4067,6 +4124,8 @@ enum PredictionOutcomeLabelStatus {
   SELF_REPORTED
   COUNSELOR_VERIFIED
   DOCUMENT_VERIFIED
+  REQUEST_EVIDENCE
+  REJECTED
   CONFLICTED
   CENSORED
 }

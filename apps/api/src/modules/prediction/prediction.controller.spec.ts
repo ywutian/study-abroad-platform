@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { PredictionController } from './prediction.controller';
 import { PredictionService } from './prediction.service';
 import { SchoolService } from '../school/school.service';
@@ -106,7 +107,7 @@ describe('PredictionController', () => {
   describe('predict', () => {
     it('should run prediction and return results with processing time', async () => {
       const dto = { schoolIds: ['school-1', 'school-2'], forceRefresh: false };
-      const result = await controller.predict(mockUser as any, dto as any);
+      const result = await controller.predict(mockUser, dto);
 
       expect(prisma.profile.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
@@ -125,7 +126,7 @@ describe('PredictionController', () => {
       (prisma.profile.findUnique as jest.Mock).mockResolvedValue(null);
 
       const dto = { schoolIds: ['school-1'], forceRefresh: false };
-      const result = await controller.predict(mockUser as any, dto as any);
+      const result = await controller.predict(mockUser, dto);
 
       expect(result).toEqual({ results: [], processingTime: 0 });
       expect(predictionService.predict).not.toHaveBeenCalled();
@@ -146,7 +147,7 @@ describe('PredictionController', () => {
       schoolService.getUcSchoolIds.mockResolvedValue(ucIds);
 
       const dto = { schoolIds: ['uc-1', 'school-other'], forceRefresh: false };
-      const result = await controller.predict(mockUser as any, dto as any);
+      const result = await controller.predict(mockUser, dto);
 
       expect(predictionService.predict).toHaveBeenCalledWith(
         'profile-1',
@@ -161,7 +162,7 @@ describe('PredictionController', () => {
   describe('getHistory', () => {
     it('should return prediction history for the user', async () => {
       const pagination = { page: 1, pageSize: 20 };
-      const result = await controller.getHistory(mockUser as any, pagination);
+      const result = await controller.getHistory(mockUser, pagination);
 
       expect(prisma.profile.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
@@ -178,7 +179,7 @@ describe('PredictionController', () => {
       (prisma.profile.findUnique as jest.Mock).mockResolvedValue(null);
       const pagination = { page: 1, pageSize: 20 };
 
-      const result = await controller.getHistory(mockUser as any, pagination);
+      const result = await controller.getHistory(mockUser, pagination);
 
       expect(result).toEqual({
         items: [],
@@ -194,11 +195,7 @@ describe('PredictionController', () => {
   describe('reportResult', () => {
     it('should report actual result for calibration', async () => {
       const body = { result: 'ADMITTED' as const };
-      const result = await controller.reportResult(
-        mockUser as any,
-        'school-1',
-        body,
-      );
+      const result = await controller.reportResult(mockUser, 'school-1', body);
 
       expect(prisma.profile.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
@@ -224,14 +221,22 @@ describe('PredictionController', () => {
       (prisma.profile.findUnique as jest.Mock).mockResolvedValue(null);
 
       const body = { result: 'REJECTED' as const };
-      const result = await controller.reportResult(
-        mockUser as any,
-        'school-1',
-        body,
-      );
+      const result = await controller.reportResult(mockUser, 'school-1', body);
 
       expect(result).toEqual({ success: false, message: 'Profile not found' });
       expect(predictionService.reportActualResult).not.toHaveBeenCalled();
+    });
+
+    it('should propagate missing numeric prediction errors', async () => {
+      (predictionService.reportActualResult as jest.Mock).mockRejectedValue(
+        new NotFoundException('Numeric prediction not found'),
+      );
+
+      await expect(
+        controller.reportResult(mockUser, 'tier-4-school', {
+          result: 'ADMITTED',
+        }),
+      ).rejects.toThrow('Numeric prediction not found');
     });
   });
 

@@ -733,12 +733,14 @@ export const PredictionResultCard = memo(
                     {/* Prediction history trend */}
                     <PredictionHistoryPanel schoolId={result.schoolId} />
 
-                    {/* Report actual result */}
-                    <ResultFeedbackButtons
-                      schoolId={result.schoolId}
-                      actualResult={result.latestOutcomeLabel?.result ?? result.actualResult}
-                      onResultReported={onResultReported}
-                    />
+                    {/* Report actual result only for persisted numeric predictions. */}
+                    {!isUnavailable && (
+                      <ResultFeedbackButtons
+                        schoolId={result.schoolId}
+                        actualResult={result.latestOutcomeLabel?.result ?? result.actualResult}
+                        onResultReported={onResultReported}
+                      />
+                    )}
 
                     <PredictionFeedbackWidget predictionResultId={result.id} />
 

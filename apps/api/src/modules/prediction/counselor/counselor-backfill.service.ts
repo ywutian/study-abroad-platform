@@ -127,6 +127,7 @@ export class CounselorBackfillService {
             activities: { include: { activityTemplate: true } },
             awards: { include: { competition: true } },
             education: { include: { highSchool: true } },
+            semesterGpas: { orderBy: { order: 'asc' } },
           },
         },
       },
@@ -183,7 +184,7 @@ export class CounselorBackfillService {
       let profileInput: ProfileInput;
       let schoolInput: SchoolInput;
       try {
-        profileInput = this.transformer.profileToInput(row.profile as any);
+        profileInput = this.transformer.profileToInput(row.profile);
         schoolInput = this.transformer.schoolToInput(school);
       } catch (err) {
         result.errors.push({
@@ -196,7 +197,7 @@ export class CounselorBackfillService {
       let counselorResult;
       try {
         counselorResult = await this.counselor.compute(
-          profileInput as any,
+          profileInput,
           {
             ...schoolInput,
             acceptanceRate: school.acceptanceRate
@@ -208,7 +209,7 @@ export class CounselorBackfillService {
             intlAcceptanceRate: school.intlAcceptanceRate
               ? Number(school.intlAcceptanceRate)
               : undefined,
-          } as any,
+          },
           row.applicationRound ?? undefined,
         );
       } catch (err) {

@@ -15,6 +15,14 @@ describe('ProfileEducationService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    highSchool: {
+      findFirst: jest.fn(),
+    },
+    highSchoolSuggestion: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
     essay: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -71,18 +79,48 @@ describe('ProfileEducationService', () => {
         schoolName: 'Phillips Academy',
         profileId: 'profile-1',
       };
+      mockPrisma.highSchool.findFirst.mockResolvedValue({
+        id: 'hs-andover',
+      });
       mockPrisma.education.create.mockResolvedValue(created);
 
       const result = await service.createEducation('user-1', {
         schoolName: 'Phillips Academy',
         schoolType: 'HIGH_SCHOOL',
-      } as any);
+      });
 
       expect(result).toEqual(created);
       expect(mockHelpers.getProfileId).toHaveBeenCalledWith('user-1');
+      expect(mockPrisma.education.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ highSchoolId: 'hs-andover' }),
+      });
       expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
         'user-1',
       );
+    });
+
+    it('should create a high school suggestion when no reference match exists', async () => {
+      mockPrisma.highSchool.findFirst.mockResolvedValue(null);
+      mockPrisma.highSchoolSuggestion.findUnique.mockResolvedValue(null);
+      mockPrisma.highSchoolSuggestion.create.mockResolvedValue({
+        id: 'suggestion-1',
+      });
+      mockPrisma.education.create.mockResolvedValue({ id: 'edu-1' });
+
+      await service.createEducation('user-1', {
+        schoolName: 'New International High School',
+        schoolType: 'HIGH_SCHOOL',
+      });
+
+      expect(mockPrisma.education.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ highSchoolId: null }),
+      });
+      expect(mockPrisma.highSchoolSuggestion.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'New International High School',
+          submittedBy: ['user-1'],
+        }),
+      });
     });
 
     it('should handle optional fields (dates, GPA)', async () => {
@@ -93,7 +131,7 @@ describe('ProfileEducationService', () => {
         startDate: '2023-09-01',
         gpa: 3.8,
         gpaScale: 4.0,
-      } as any);
+      });
 
       expect(mockPrisma.education.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -114,7 +152,7 @@ describe('ProfileEducationService', () => {
 
       const result = await service.updateEducation('user-1', 'edu-1', {
         schoolName: 'Updated School',
-      } as any);
+      });
 
       expect(result.schoolName).toBe('Updated School');
       expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
@@ -271,7 +309,7 @@ describe('ProfileEducationService', () => {
         title: 'My Essay',
         content: 'This is my college essay content',
         prompt: 'Why us?',
-      } as any);
+      });
 
       expect(result).toEqual(created);
       expect(mockPrisma.essay.create).toHaveBeenCalledWith({

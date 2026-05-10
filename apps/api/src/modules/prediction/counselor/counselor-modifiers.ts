@@ -26,6 +26,16 @@
  */
 
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
+import { classifyMajor } from '../prediction.constants';
+import {
+  calculateActivityScore,
+  calculateAwardScore,
+  calculateHsImpact,
+  calculateSelectivityIndex,
+  computeSpikeCoherence,
+  LEVEL_POINTS,
+  TIER_POINTS,
+} from '@study-abroad/shared/scoring';
 
 export interface ModifierResult {
   /** Multiplier applied to anchor. 1.0 = no effect. */
@@ -38,6 +48,18 @@ export interface ModifierResult {
   impact: 'positive' | 'negative' | 'neutral';
 }
 
+export interface ProfileSignalCoverage {
+  usedInProbability: string[];
+  usedInExplanation: string[];
+  missingGaps: string[];
+  ignoredByPolicy: string[];
+}
+
+export interface ProfileContextModifierResult extends ModifierResult {
+  components: Record<string, ModifierResult>;
+  profileSignals: ProfileSignalCoverage;
+}
+
 const NEUTRAL: ModifierResult = {
   multiplier: 1.0,
   label: 'No adjustment',
@@ -45,8 +67,42 @@ const NEUTRAL: ModifierResult = {
   impact: 'neutral',
 };
 
+const PROFILE_CONTEXT_NEUTRAL: ProfileContextModifierResult = {
+  multiplier: 1.0,
+  label: 'Profile context',
+  evidence: 'Profile context signals were missing or neutral.',
+  impact: 'neutral',
+  components: {},
+  profileSignals: {
+    usedInProbability: [],
+    usedInExplanation: [],
+    missingGaps: [],
+    ignoredByPolicy: [
+      'essays',
+      'MBTI/Holland assessment',
+      'budget preferences',
+      'region preferences',
+      'URM status',
+      'unverified legacy/athlete hooks',
+    ],
+  },
+};
+
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function isPlaceholderSatBand(sat25?: number | null, sat75?: number | null) {
+  return sat25 === 1080 && sat75 === 1320;
+}
+
+function usableSatBand(school: SchoolInput): {
+  sat25: number;
+  sat75: number;
+} | null {
+  if (!school.sat25 || !school.sat75) return null;
+  if (isPlaceholderSatBand(school.sat25, school.sat75)) return null;
+  return { sat25: school.sat25, sat75: school.sat75 };
 }
 
 /**
@@ -206,9 +262,10 @@ export function gpaBandMultiplier(
   if (equivSat == null) {
     return { ...NEUTRAL, label: 'GPA' };
   }
-  const sat25 = school.sat25;
+  const usableSat = usableSatBand(school);
+  const sat25 = usableSat?.sat25;
   const sat50 = school.satAvg;
-  const sat75 = school.sat75;
+  const sat75 = usableSat?.sat75;
   if (!sat25 || !sat75) {
     return {
       multiplier: 1.0,
@@ -502,8 +559,9 @@ export function testBandMultiplier(
     );
   }
 
-  const sat25 = school.sat25;
-  const sat75 = school.sat75;
+  const usableSat = usableSatBand(school);
+  const sat25 = usableSat?.sat25;
+  const sat75 = usableSat?.sat75;
   if (!sat25 || !sat75) {
     return {
       multiplier: 1.0,
@@ -1034,6 +1092,391 @@ export function intlMultiplier(
     evidence:
       'International applicants face ~0.45× the domestic admit rate at need-aware elite schools (<10% admit rate); calibrated from Cornell/Northwestern/Columbia CDS data',
     impact: 'negative',
+  };
+}
+
+function makeComponent(
+  multiplier: number,
+  label: string,
+  evidence: string,
+): ModifierResult {
+  return {
+    multiplier,
+    label,
+    evidence,
+    impact:
+      multiplier > 1.01
+        ? 'positive'
+        : multiplier < 0.99
+          ? 'negative'
+          : 'neutral',
+  };
+}
+
+function gpaTrendComponent(profile: ProfileInput): ModifierResult {
+  const trend = profile.gpaTrend;
+  if (!trend || trend.direction === 'insufficient' || trend.delta == null) {
+    return makeComponent(
+      1.0,
+      'GPA trend',
+      'Grade-level GPA trend is unavailable; no probability adjustment applied.',
+    );
+  }
+  const delta = trend.delta;
+  if (delta >= 0.35) {
+    return makeComponent(
+      1.06,
+      'Rising GPA trend',
+      `${trend.evidence ?? 'GPA trend'} shows a strong upward trajectory.`,
+    );
+  }
+  if (delta >= 0.2) {
+    return makeComponent(
+      1.03,
+      'Rising GPA trend',
+      `${trend.evidence ?? 'GPA trend'} shows a modest upward trajectory.`,
+    );
+  }
+  if (delta <= -0.35) {
+    return makeComponent(
+      0.95,
+      'Falling GPA trend',
+      `${trend.evidence ?? 'GPA trend'} shows a meaningful downward trajectory.`,
+    );
+  }
+  if (delta <= -0.2) {
+    return makeComponent(
+      0.97,
+      'Falling GPA trend',
+      `${trend.evidence ?? 'GPA trend'} shows a modest downward trajectory.`,
+    );
+  }
+  return makeComponent(
+    1.0,
+    'GPA trend',
+    `${trend.evidence ?? 'GPA trend'} is broadly stable.`,
+  );
+}
+
+function activityStrengthComponent(profile: ProfileInput): ModifierResult {
+  const activities = profile.activities ?? [];
+  if (activities.length === 0) {
+    return makeComponent(
+      1.0,
+      'Activity strength',
+      'No activity records were provided; no probability adjustment applied.',
+    );
+  }
+
+  const activityDetails = activities.map((activity) => ({
+    category: activity.category ?? 'OTHER',
+    role: activity.role ?? '',
+    totalHours:
+      activity.annualHours ??
+      (activity.hoursPerWeek ?? 0) * (activity.weeksPerYear ?? 0),
+    tier: activity.tier,
+    yearsActive: activity.yearsActive,
+  }));
+  const targetMajorCategory = profile.targetMajor
+    ? classifyMajor(profile.targetMajor)
+    : undefined;
+  const activityScore = calculateActivityScore({
+    activityCount: activities.length,
+    awardCount: 0,
+    nationalAwardCount: 0,
+    internationalAwardCount: 0,
+    activityDetails,
+    targetMajorCategory,
+  });
+  const coherence = clamp(
+    computeSpikeCoherence(
+      activityDetails.map((activity) => ({
+        category: activity.category,
+        tier: activity.tier,
+      })),
+      targetMajorCategory,
+    ),
+    0.95,
+    1.1,
+  );
+  const highTierCount = activityDetails.filter(
+    (activity) => activity.tier != null && activity.tier <= 2,
+  ).length;
+  const leadershipCount = activityDetails.filter((activity) =>
+    /(president|founder|captain|lead|chair|director|主席|创始|队长|负责人)/i.test(
+      activity.role,
+    ),
+  ).length;
+  const strongSignal =
+    highTierCount > 0 ||
+    leadershipCount > 0 ||
+    activityDetails.some((activity) => activity.totalHours >= 200);
+
+  if (activityScore >= 70 && strongSignal) {
+    return makeComponent(
+      clamp(1.03 * coherence, 1.0, 1.06),
+      'Activity strength',
+      `Structured activities show depth, leadership, or high-tier involvement (score ${Math.round(activityScore)}/100).`,
+    );
+  }
+  if (activityScore >= 55 && strongSignal) {
+    return makeComponent(
+      1.03,
+      'Activity strength',
+      `Structured activities show some depth or leadership (score ${Math.round(activityScore)}/100).`,
+    );
+  }
+  return makeComponent(
+    1.0,
+    'Activity strength',
+    `Activities are recorded but do not create a high-confidence probability adjustment (score ${Math.round(activityScore)}/100).`,
+  );
+}
+
+function awardStrengthComponent(profile: ProfileInput): ModifierResult {
+  const awards = profile.awards ?? [];
+  if (awards.length === 0) {
+    return makeComponent(
+      1.0,
+      'Award strength',
+      'No award records were provided; no probability adjustment applied.',
+    );
+  }
+
+  const awardTierScores = awards.map((award) => {
+    if (award.tier != null) {
+      return TIER_POINTS[award.tier] ?? LEVEL_POINTS[award.level] ?? 3;
+    }
+    return LEVEL_POINTS[award.level] ?? 3;
+  });
+  const awardScore = calculateAwardScore({
+    activityCount: 0,
+    awardCount: awards.length,
+    nationalAwardCount: awards.filter((award) =>
+      ['NATIONAL', 'National'].includes(String(award.level)),
+    ).length,
+    internationalAwardCount: awards.filter((award) =>
+      ['INTERNATIONAL', 'International'].includes(String(award.level)),
+    ).length,
+    awardTierScores,
+  });
+  const hasTopAward = awards.some(
+    (award) =>
+      ['INTERNATIONAL', 'NATIONAL', 'International', 'National'].includes(
+        String(award.level),
+      ) ||
+      (award.tier != null && award.tier >= 4),
+  );
+  if (hasTopAward && awardScore >= 25) {
+    return makeComponent(
+      1.07,
+      'Award strength',
+      `Awards include national/international or high-tier recognition (score ${Math.round(awardScore)}/100).`,
+    );
+  }
+  if (awardScore >= 12) {
+    return makeComponent(
+      1.03,
+      'Award strength',
+      `Awards provide a modest external-validation signal (score ${Math.round(awardScore)}/100).`,
+    );
+  }
+  return makeComponent(
+    1.0,
+    'Award strength',
+    `Awards are recorded but do not create a high-confidence probability adjustment (score ${Math.round(awardScore)}/100).`,
+  );
+}
+
+function highSchoolContextComponent(
+  profile: ProfileInput,
+  school: SchoolInput,
+): ModifierResult {
+  if (profile.highSchoolImpactEnabled === false) {
+    return makeComponent(
+      1.0,
+      'High school context',
+      'High-school impact is disabled for this school record due to data quality.',
+    );
+  }
+  if (!profile.highSchoolTier && !profile.highSchoolRecognition) {
+    return makeComponent(
+      1.0,
+      'High school context',
+      'No structured high-school context was available; no probability adjustment applied.',
+    );
+  }
+  const selectivity = calculateSelectivityIndex({
+    acceptanceRate: school.acceptanceRate,
+    sat25: school.sat25,
+    sat75: school.sat75,
+    graduationRate: school.graduationRate,
+    usNewsRank: school.usNewsRank,
+  });
+  const impact = calculateHsImpact(
+    profile.highSchoolTier,
+    profile.highSchoolRecognition,
+    selectivity,
+    profile.highSchoolPlacementRecord,
+    1.0,
+  );
+  const multiplier = clamp(Math.max(1.0, impact), 1.0, 1.04);
+  return makeComponent(
+    multiplier,
+    'High school context',
+    `Structured high-school context is included conservatively (tier ${profile.highSchoolTier ?? 'unknown'}, recognition ${profile.highSchoolRecognition ?? 'unknown'}).`,
+  );
+}
+
+function englishReadinessComponent(profile: ProfileInput): ModifierResult {
+  if (!profile.isInternational) {
+    return makeComponent(
+      1.0,
+      'English readiness',
+      'Domestic applicant; English proficiency test is not used for probability.',
+    );
+  }
+  const english = profile.englishProficiency;
+  if (!english) {
+    return makeComponent(
+      1.0,
+      'English readiness',
+      'No TOEFL/IELTS/Duolingo score was provided; no probability adjustment applied.',
+    );
+  }
+  if (english.normalized >= 0.93) {
+    return makeComponent(
+      1.03,
+      'English readiness',
+      `${english.type} ${english.score} indicates strong English readiness.`,
+    );
+  }
+  if (english.normalized < 0.75) {
+    return makeComponent(
+      0.96,
+      'English readiness',
+      `${english.type} ${english.score} is below the conservative readiness threshold for international applicants.`,
+    );
+  }
+  if (english.normalized < 0.875) {
+    return makeComponent(
+      0.97,
+      'English readiness',
+      `${english.type} ${english.score} is adequate but below the typical strong-readiness range.`,
+    );
+  }
+  return makeComponent(
+    1.0,
+    'English readiness',
+    `${english.type} ${english.score} is in the neutral readiness range.`,
+  );
+}
+
+function financialAidContextComponent(
+  profile: ProfileInput,
+  school: SchoolInput,
+): ModifierResult {
+  if (!profile.isInternational || profile.needsFinancialAid !== true) {
+    return makeComponent(
+      1.0,
+      'Financial aid context',
+      'No international need-aware financial-aid signal applies.',
+    );
+  }
+  if (school.needBlindInternational) {
+    return makeComponent(
+      1.0,
+      'Financial aid context',
+      'This school is need-blind for international applicants; no aid penalty applied.',
+    );
+  }
+  const overallRate = normalizeRate(school.acceptanceRate);
+  const multiplier = overallRate != null && overallRate < 0.4 ? 0.95 : 0.98;
+  return makeComponent(
+    multiplier,
+    'Financial aid context',
+    'International applicant needs financial aid at a need-aware school; applying a small conservative context adjustment.',
+  );
+}
+
+function buildProfileSignals(
+  profile: ProfileInput,
+  components: Record<string, ModifierResult>,
+): ProfileSignalCoverage {
+  const usedInProbability = Object.entries(components)
+    .filter(([, component]) => component.multiplier !== 1.0)
+    .map(([key]) => key);
+  const usedInExplanation = Object.entries(components)
+    .filter(([, component]) => component.multiplier === 1.0)
+    .map(([key]) => key);
+  const missingGaps: string[] = [];
+  if (!profile.gpaTrend || profile.gpaTrend.direction === 'insufficient') {
+    missingGaps.push('grade-level GPA trend');
+  }
+  if (!profile.activities?.length) missingGaps.push('activities');
+  if (!profile.awards?.length) missingGaps.push('awards');
+  if (!profile.highSchoolTier && !profile.highSchoolRecognition) {
+    missingGaps.push('high school context');
+  }
+  if (profile.isInternational && !profile.englishProficiency) {
+    missingGaps.push('English proficiency');
+  }
+
+  return {
+    usedInProbability,
+    usedInExplanation,
+    missingGaps,
+    ignoredByPolicy: [
+      'essays',
+      'MBTI/Holland assessment',
+      'budget preferences',
+      'region preferences',
+      'URM status',
+      'unverified legacy/athlete hooks',
+    ],
+  };
+}
+
+export function profileContextMultiplier(
+  profile: ProfileInput,
+  school: SchoolInput,
+): ProfileContextModifierResult {
+  const components: Record<string, ModifierResult> = {
+    gpaTrend: gpaTrendComponent(profile),
+    activityStrength: activityStrengthComponent(profile),
+    awardStrength: awardStrengthComponent(profile),
+    highSchoolContext: highSchoolContextComponent(profile, school),
+    englishReadiness: englishReadinessComponent(profile),
+    financialAidContext: financialAidContextComponent(profile, school),
+  };
+  const active = Object.values(components).filter(
+    (component) => component.multiplier !== 1.0,
+  );
+  if (active.length === 0) {
+    return {
+      ...PROFILE_CONTEXT_NEUTRAL,
+      components,
+      profileSignals: buildProfileSignals(profile, components),
+    };
+  }
+  const geometricMean = Math.pow(
+    active.reduce((product, component) => product * component.multiplier, 1),
+    1 / active.length,
+  );
+  const multiplier = clamp(geometricMean, 0.95, 1.08);
+  const labels = active.map((component) => component.label).join('; ');
+  return {
+    multiplier,
+    label: 'Profile context',
+    evidence: `Structured profile signals included conservatively: ${labels}.`,
+    impact:
+      multiplier > 1.01
+        ? 'positive'
+        : multiplier < 0.99
+          ? 'negative'
+          : 'neutral',
+    components,
+    profileSignals: buildProfileSignals(profile, components),
   };
 }
 

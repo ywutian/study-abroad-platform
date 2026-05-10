@@ -156,7 +156,7 @@ describe('PredictionAiEngine', () => {
         0.25,
         0.1,
         [{ hookType: 'sat', logOddsShift: 0.5, source: 'stats' }],
-        { id: 's1', name: 'MIT' } as any,
+        { id: 's1', name: 'MIT' },
         'en',
       );
 
@@ -172,7 +172,7 @@ describe('PredictionAiEngine', () => {
         0.25,
         0.1,
         [],
-        { id: 's1', name: 'MIT' } as any,
+        { id: 's1', name: 'MIT' },
         'en',
       );
 

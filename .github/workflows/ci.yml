@@ -562,6 +562,31 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
 
+      - name: Verify prediction launch reports
+        run: |
+          pnpm --filter api verify:counselor-coverage
+          pnpm --filter api verify:counselor-data-quality
+          pnpm --filter api verify:prediction-launch
+          pnpm --filter api verify:profile-signal-coverage
+          pnpm --filter api audit:counselor-vs-cases
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studyabroad_prediction_gate?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key-for-ci-prediction-gate
+          JWT_REFRESH_SECRET: test-refresh-secret-key-for-ci-prediction-gate
+          JWT_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 7d
+
+      - name: Upload prediction launch reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: prediction-launch-reports
+          path: |
+            verification-report/launch/
+            verification-report/profile-signals/
+          retention-days: 14
+
       - name: Start API server
         run: |
           pnpm --filter api start:prod > /tmp/prediction-gate-api.log 2>&1 &

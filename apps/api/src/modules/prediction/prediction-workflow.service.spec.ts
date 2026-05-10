@@ -212,6 +212,8 @@ describe('PredictionWorkflowService', () => {
             },
             predictionOutcomeLabelRecord: {
               count: jest.fn().mockResolvedValue(0),
+              groupBy: jest.fn().mockResolvedValue([]),
+              findMany: jest.fn().mockResolvedValue([]),
             },
             $transaction: jest
               .fn()
@@ -2172,6 +2174,14 @@ describe('PredictionWorkflowService', () => {
       const result = await service.getTrainingReadiness();
 
       expect(result.totalLabeled).toBe(10);
+      expect(result.outcomeLoop).toEqual(
+        expect.objectContaining({
+          verifiedCount: 0,
+          selfReportedCount: 0,
+          calibrationPromotionAllowed: false,
+          externalAccuracyClaimAllowed: false,
+        }),
+      );
       expect(result.tier.current).toBe(0);
       expect(result.tier.next?.tier).toBe(1);
       expect(result.tier.next?.samplesNeeded).toBe(40);
@@ -2179,10 +2189,9 @@ describe('PredictionWorkflowService', () => {
     });
 
     it('reports Tier 2 when total labeled sits at 250', async () => {
-      // count is called 3 times: (1) verified labels, (2) approved cases, (3) cases with structured test scores
-      (
-        prisma.predictionOutcomeLabelRecord.count as jest.Mock
-      ).mockResolvedValue(50);
+      (prisma.predictionOutcomeLabelRecord.count as jest.Mock)
+        .mockResolvedValueOnce(50) // verified labels
+        .mockResolvedValueOnce(12); // self-reported labels
       (prisma.admissionCase.count as jest.Mock)
         .mockResolvedValueOnce(200) // approvedAdmissionCases
         .mockResolvedValueOnce(180); // casesWithStructuredTestScores
@@ -2191,6 +2200,9 @@ describe('PredictionWorkflowService', () => {
       const result = await service.getTrainingReadiness();
 
       expect(result.totalLabeled).toBe(250);
+      expect(result.outcomeLoop.calibrationPromotionAllowed).toBe(true);
+      expect(result.outcomeLoop.externalAccuracyClaimAllowed).toBe(false);
+      expect(result.breakdown.selfReportedOutcomeLabels).toBe(12);
       expect(result.tier.current).toBe(2);
       expect(result.tier.next?.tier).toBe(3);
       expect(result.tier.next?.samplesNeeded).toBe(750);

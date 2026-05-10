@@ -11,10 +11,12 @@ import {
   intlMultiplier,
   legacyHookMultiplier,
   majorMultiplier,
+  profileContextMultiplier,
   roundMultiplier,
   testBandMultiplier,
   urmMultiplier,
   type ModifierResult,
+  type ProfileSignalCoverage,
 } from './counselor-modifiers';
 
 /**
@@ -61,7 +63,8 @@ export type CounselorTier = 1 | 2 | 3 | 4;
  */
 export type EncodedDimension = 'gpa' | 'test';
 
-export const COUNSELOR_RULE_VERSION = 'counselor-cold-start-v1.7-launch';
+export const COUNSELOR_RULE_VERSION =
+  'counselor-cold-start-v1.8-profile-signals';
 
 export interface CounselorFactor {
   name: string;
@@ -89,6 +92,8 @@ export interface CounselorResult {
   ruleVersion: string;
   /** Missing inputs that were skipped neutrally instead of punished. */
   missingFields: string[];
+  /** Profile signal audit trail: consumed, explained, missing, or ignored by policy. */
+  profileSignals?: ProfileSignalCoverage;
   /** Source-level contribution trace for enterprise cold-start audits. */
   sourceContributions: Array<{
     source: string;
@@ -148,6 +153,7 @@ export class CounselorEngineService {
       : await this.resolveAnchor(profile, school);
 
     if (insufficientData) {
+      const profileContext = profileContextMultiplier(profile, school);
       // Tier 4: return a sentinel result. Caller surfaces "insufficient data" UI.
       return {
         probability: 0,
@@ -159,6 +165,7 @@ export class CounselorEngineService {
         modifierResults: {},
         ruleVersion: COUNSELOR_RULE_VERSION,
         missingFields: this.resolveMissingFields(profile, school),
+        profileSignals: profileContext.profileSignals,
         sourceContributions: [
           {
             source: 'anchor',
@@ -170,13 +177,12 @@ export class CounselorEngineService {
       };
     }
 
-    // ---- Step 2: compute all 8 modifiers --------------------------------
+    // ---- Step 2: compute all launch counselor modifiers ------------------
     // Round resolution priority: explicit param > school.applicationRound (set by
     // the caller per-school, since one user applies to multiple schools each
     // potentially in a different round) > 'RD' default. ProfileInput doesn't
     // carry applicationRound — that's a per-school attribute.
-    const resolvedRound =
-      applicationRound ?? (school as SchoolInput).applicationRound ?? 'RD';
+    const resolvedRound = applicationRound ?? school.applicationRound ?? 'RD';
 
     // Suppress modifiers whose dimension is already encoded in a Tier 1 cell —
     // see EncodedDimension docs above. Without this, a (gpa=3.75-4, sat=1500-1600)
@@ -212,6 +218,7 @@ export class CounselorEngineService {
         school,
         await this.lookupProgramAcceptanceRate(profile, school),
       ),
+      profileContext: profileContextMultiplier(profile, school),
     } as Record<string, ModifierResult>;
 
     // ---- Step 3: combine + clip -----------------------------------------
@@ -332,6 +339,7 @@ export class CounselorEngineService {
             'Final probability constrained to [anchor × 0.3, anchor × 2.5] and [0.02, 0.98].',
         },
       ],
+      profileSignals: (modifierResults.profileContext as any)?.profileSignals,
     };
   }
 
@@ -344,6 +352,17 @@ export class CounselorEngineService {
     if (!profile.testScores?.length) missing.add('profile.testScores');
     if (!profile.highSchoolLocation) missing.add('profile.highSchoolLocation');
     if (!profile.targetMajor) missing.add('profile.targetMajor');
+    if (!profile.activities?.length) missing.add('profile.activities');
+    if (!profile.awards?.length) missing.add('profile.awards');
+    if (!profile.gpaTrend || profile.gpaTrend.direction === 'insufficient') {
+      missing.add('profile.gpaTrend');
+    }
+    if (profile.isInternational && !profile.englishProficiency) {
+      missing.add('profile.englishProficiency');
+    }
+    if (!profile.highSchoolTier && !profile.highSchoolRecognition) {
+      missing.add('profile.highSchoolContext');
+    }
     if (school.acceptanceRate == null) missing.add('school.acceptanceRate');
     if (school.sat25 == null || school.sat75 == null) {
       missing.add('school.satBands');

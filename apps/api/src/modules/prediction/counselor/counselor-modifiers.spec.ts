@@ -3,6 +3,7 @@ import {
   athleteMultiplier,
   gpaBandMultiplier,
   legacyHookMultiplier,
+  profileContextMultiplier,
   roundMultiplier,
   testBandMultiplier,
 } from './counselor-modifiers';
@@ -16,18 +17,17 @@ const baseProfile = (overrides: Partial<ProfileInput> = {}): ProfileInput => ({
   ...overrides,
 });
 
-const baseSchool = (overrides: Partial<SchoolInput> = {}): SchoolInput =>
-  ({
-    id: 'school-1',
-    name: 'Test University',
-    acceptanceRate: 0.1,
-    sat25: 1400,
-    sat75: 1520,
-    act25: 30,
-    act75: 34,
-    testingPolicy: 'OPTIONAL',
-    ...overrides,
-  }) as SchoolInput;
+const baseSchool = (overrides: Partial<SchoolInput> = {}): SchoolInput => ({
+  id: 'school-1',
+  name: 'Test University',
+  acceptanceRate: 0.1,
+  sat25: 1400,
+  sat75: 1520,
+  act25: 30,
+  act75: 34,
+  testingPolicy: 'OPTIONAL',
+  ...overrides,
+});
 
 describe('counselor modifiers launch guards', () => {
   describe('gpaBandMultiplier with CDS C9 distribution', () => {
@@ -67,6 +67,21 @@ describe('counselor modifiers launch guards', () => {
 
       expect(result.label).toBe('GPA above 75th percentile');
       expect(result.multiplier).toBe(1.3);
+    });
+
+    it('does not use launch SAT placeholder bands for GPA fallback', () => {
+      const result = gpaBandMultiplier(
+        baseProfile({ gpa: 4.0 }),
+        baseSchool({
+          sat25: 1080,
+          sat75: 1320,
+          gpaDistribution: undefined,
+        }),
+      );
+
+      expect(result.multiplier).toBe(1);
+      expect(result.label).toBe('GPA');
+      expect(result.evidence).toContain('no school percentile data');
     });
   });
 
@@ -114,6 +129,22 @@ describe('counselor modifiers launch guards', () => {
 
       expect(result.multiplier).toBe(1.2);
       expect(result.evidence).toContain('ACT 34');
+    });
+
+    it('does not use launch SAT placeholder bands for submitted SAT', () => {
+      const result = testBandMultiplier(
+        baseProfile({ testScores: [{ type: 'SAT', score: 1500 }] }),
+        baseSchool({
+          sat25: 1080,
+          sat75: 1320,
+          act25: null,
+          act75: null,
+        }),
+      );
+
+      expect(result.multiplier).toBe(1);
+      expect(result.label).toBe('Test score');
+      expect(result.evidence).toContain('no school percentile data');
     });
   });
 
@@ -168,6 +199,186 @@ describe('counselor modifiers launch guards', () => {
 
       expect(result.multiplier).toBe(1);
       expect(result.label).toContain('evidence required');
+    });
+  });
+
+  describe('accuracy-first profile context multiplier', () => {
+    it('keeps missing profile signals neutral and records gaps', () => {
+      const result = profileContextMultiplier(baseProfile(), baseSchool());
+
+      expect(result.multiplier).toBe(1);
+      expect(result.profileSignals.missingGaps).toEqual(
+        expect.arrayContaining([
+          'grade-level GPA trend',
+          'activities',
+          'awards',
+          'high school context',
+        ]),
+      );
+      expect(result.profileSignals.ignoredByPolicy).toContain('URM status');
+    });
+
+    it('applies a small positive multiplier for rising GPA trend', () => {
+      const result = profileContextMultiplier(
+        baseProfile({
+          gpaTrend: {
+            direction: 'rising',
+            delta: 0.4,
+            evidence: 'G9 3.50 → G11 3.90',
+          },
+        }),
+        baseSchool(),
+      );
+
+      expect(result.components.gpaTrend.multiplier).toBe(1.06);
+      expect(result.multiplier).toBeGreaterThan(1);
+      expect(result.profileSignals.usedInProbability).toContain('gpaTrend');
+    });
+
+    it('uses strong structured activities conservatively', () => {
+      const result = profileContextMultiplier(
+        baseProfile({
+          targetMajor: 'Computer Science',
+          activities: [
+            {
+              name: 'Research',
+              category: 'RESEARCH',
+              role: 'Founder',
+              tier: 1,
+              hoursPerWeek: 8,
+              weeksPerYear: 40,
+              annualHours: 320,
+            },
+            {
+              name: 'Robotics',
+              category: 'ACADEMIC',
+              role: 'Captain',
+              tier: 2,
+              hoursPerWeek: 6,
+              weeksPerYear: 35,
+              annualHours: 210,
+            },
+            {
+              name: 'Coding Club',
+              category: 'CLUB',
+              role: 'Lead',
+              tier: 3,
+              hoursPerWeek: 3,
+              weeksPerYear: 30,
+            },
+          ],
+        }),
+        baseSchool(),
+      );
+
+      expect(result.components.activityStrength.multiplier).toBeGreaterThan(1);
+      expect(result.components.activityStrength.multiplier).toBeLessThanOrEqual(
+        1.06,
+      );
+      expect(result.profileSignals.usedInProbability).toContain(
+        'activityStrength',
+      );
+    });
+
+    it('uses national awards conservatively', () => {
+      const result = profileContextMultiplier(
+        baseProfile({
+          awards: [
+            {
+              name: 'National Olympiad',
+              level: 'NATIONAL',
+              tier: 5,
+              competitionName: 'Olympiad',
+            },
+          ],
+        }),
+        baseSchool(),
+      );
+
+      expect(result.components.awardStrength.multiplier).toBe(1.07);
+      expect(result.profileSignals.usedInProbability).toContain(
+        'awardStrength',
+      );
+    });
+
+    it('does not penalize low-tier high school context', () => {
+      const result = profileContextMultiplier(
+        baseProfile({
+          highSchoolTier: 1,
+          highSchoolRecognition: 1,
+          highSchoolPlacementRecord: 1,
+          highSchoolImpactEnabled: true,
+        }),
+        baseSchool({ acceptanceRate: 0.05 }),
+      );
+
+      expect(result.components.highSchoolContext.multiplier).toBe(1);
+    });
+
+    it('applies English readiness only to international applicants', () => {
+      const domestic = profileContextMultiplier(
+        baseProfile({
+          isInternational: false,
+          englishProficiency: {
+            type: 'TOEFL',
+            score: 80,
+            normalized: 80 / 120,
+          },
+        }),
+        baseSchool(),
+      );
+      const international = profileContextMultiplier(
+        baseProfile({
+          isInternational: true,
+          englishProficiency: {
+            type: 'TOEFL',
+            score: 80,
+            normalized: 80 / 120,
+          },
+        }),
+        baseSchool(),
+      );
+
+      expect(domestic.components.englishReadiness.multiplier).toBe(1);
+      expect(international.components.englishReadiness.multiplier).toBe(0.96);
+    });
+
+    it('clamps combined profile context to the accuracy-first range', () => {
+      const result = profileContextMultiplier(
+        baseProfile({
+          targetMajor: 'Computer Science',
+          gpaTrend: {
+            direction: 'rising',
+            delta: 0.5,
+            evidence: 'G9 3.40 → G12 3.95',
+          },
+          highSchoolTier: 5,
+          highSchoolRecognition: 5,
+          highSchoolPlacementRecord: 5,
+          highSchoolImpactEnabled: true,
+          isInternational: true,
+          needsFinancialAid: false,
+          englishProficiency: {
+            type: 'TOEFL',
+            score: 116,
+            normalized: 116 / 120,
+          },
+          activities: [
+            {
+              name: 'Research',
+              category: 'RESEARCH',
+              role: 'Founder',
+              tier: 1,
+              annualHours: 400,
+            },
+          ],
+          awards: [{ name: 'IMO', level: 'INTERNATIONAL', tier: 5 }],
+        }),
+        baseSchool({ acceptanceRate: 0.04, sat25: 1510, sat75: 1560 }),
+      );
+
+      expect(result.multiplier).toBeLessThanOrEqual(1.08);
+      expect(result.multiplier).toBeGreaterThan(1);
     });
   });
 });

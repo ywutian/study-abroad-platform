@@ -2,6 +2,8 @@ export type OutcomeLabelStatus =
   | 'SELF_REPORTED'
   | 'COUNSELOR_VERIFIED'
   | 'DOCUMENT_VERIFIED'
+  | 'REQUEST_EVIDENCE'
+  | 'REJECTED'
   | 'CONFLICTED'
   | 'CENSORED';
 
@@ -53,8 +55,10 @@ export function getOutcomeStatusPriority(status: string): number {
       return 4;
     case 'SELF_REPORTED':
       return 3;
+    case 'REQUEST_EVIDENCE':
     case 'CENSORED':
       return 2;
+    case 'REJECTED':
     case 'CONFLICTED':
     default:
       return 1;
@@ -111,6 +115,8 @@ export function resolveCanonicalPredictionOutcome(records?: OutcomeLabelRecordSh
   const canonicalRecord =
     sorted.find(
       (record) =>
+        record.status !== 'REQUEST_EVIDENCE' &&
+        record.status !== 'REJECTED' &&
         record.status !== 'CONFLICTED' &&
         CANONICAL_CANDIDATE_RESULTS.has(record.result as OutcomeLabelResult)
     ) ?? null;

@@ -81,8 +81,26 @@ type TrainingReadiness = {
   totalLabeled: number;
   breakdown: {
     verifiedOutcomeLabels: number;
+    selfReportedOutcomeLabels: number;
     approvedAdmissionCases: number;
     casesWithStructuredTestScores: number;
+  };
+  outcomeLoop: {
+    verifiedCount: number;
+    selfReportedCount: number;
+    calibrationPromotionAllowed: boolean;
+    externalAccuracyClaimAllowed: boolean;
+    statusCounts: Record<string, number>;
+    resultCounts: Record<string, number>;
+    recent: Array<{
+      id: string;
+      result: string;
+      status: string;
+      schoolId: string;
+      probability: number | null;
+      createdAt: string;
+      updatedAt: string;
+    }>;
   };
   tier: {
     current: number;
@@ -402,6 +420,10 @@ export default function AdminPredictionHealthPage() {
                         value: readinessQ.data.breakdown.verifiedOutcomeLabels,
                       },
                       {
+                        label: t('training.selfReportedLabels'),
+                        value: readinessQ.data.breakdown.selfReportedOutcomeLabels,
+                      },
+                      {
                         label: t('training.approvedCases'),
                         value: readinessQ.data.breakdown.approvedAdmissionCases,
                       },
@@ -468,6 +490,37 @@ export default function AdminPredictionHealthPage() {
               <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
                 <h4 className="text-body-sm font-medium mb-1">{t('training.recommendation')}</h4>
                 <p className="text-body-sm">{readinessQ.data.recommendedNextAction}</p>
+              </div>
+
+              <div className="rounded-md border p-4">
+                <h4 className="text-body-sm font-medium mb-3">{t('training.outcomeLoop')}</h4>
+                <div className="grid gap-2 md:grid-cols-4">
+                  <CoverageCell
+                    label={t('training.selfReportedLabels')}
+                    value={readinessQ.data.outcomeLoop.selfReportedCount}
+                  />
+                  <CoverageCell
+                    label={t('training.verifiedLabels')}
+                    value={readinessQ.data.outcomeLoop.verifiedCount}
+                  />
+                  <CoverageCell
+                    label={t('training.calibrationAllowed')}
+                    value={readinessQ.data.outcomeLoop.calibrationPromotionAllowed ? 1 : 0}
+                  />
+                  <CoverageCell
+                    label={t('training.accuracyClaimAllowed')}
+                    value={readinessQ.data.outcomeLoop.externalAccuracyClaimAllowed ? 1 : 0}
+                  />
+                </div>
+                {readinessQ.data.outcomeLoop.recent.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {readinessQ.data.outcomeLoop.recent.map((row) => (
+                      <Badge key={row.id} variant="outline">
+                        {row.result} / {row.status}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}

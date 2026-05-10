@@ -32,6 +32,7 @@ const OUTCOME_RESULTS = [
   'REJECTED',
   'WAITLISTED',
   'DEFERRED',
+  'WITHDRAWN',
 ] as const;
 
 export class PredictionObservationQueryDto extends PaginationDto {

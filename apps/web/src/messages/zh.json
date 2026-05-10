@@ -2173,6 +2173,10 @@
     "outcomeLabelSaved": "结果标签已保存",
     "outcomeLabelSavedToast": "已保存，这会帮助我们改进后续预估。",
     "outcomeLabelSavedHint": "这会作为你提交的结果标签保存，后续可能进入人工复核。",
+    "outcomeRoundLabel": "轮次",
+    "outcomeFinalLabel": "这是最终确定结果",
+    "outcomeNotesLabel": "备注",
+    "outcomeNotesPlaceholder": "给顾问复核的补充说明（可选）",
     "predictionFeedback": {
       "title": "预测质量反馈",
       "hint": "基于你目前了解的信息，告诉我们这个预估是否有参考价值。",
@@ -7360,6 +7364,7 @@
         "subtitle": "Verified outcome labels + 已批准 AdmissionCase, 对照各 tier 门槛。",
         "totalLabeled": "总标注样本",
         "verifiedLabels": "已验证 outcome labels",
+        "selfReportedLabels": "用户自报 outcome labels",
         "approvedCases": "已批准 AdmissionCase",
         "withStructuredScores": "有结构化成绩的 case",
         "currentTier": "当前 tier",
@@ -7373,7 +7378,10 @@
         "atLeast50": "≥50 样本",
         "atLeast100": "≥100 样本",
         "yearBreakdown": "按申请年份",
-        "recommendation": "建议下一步"
+        "recommendation": "建议下一步",
+        "outcomeLoop": "结果闭环",
+        "calibrationAllowed": "允许校准",
+        "accuracyClaimAllowed": "允许准确率声明"
       },
       "actions": {
         "title": "运维操作",

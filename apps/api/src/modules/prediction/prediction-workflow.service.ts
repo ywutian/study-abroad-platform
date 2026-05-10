@@ -443,7 +443,7 @@ export class PredictionWorkflowService {
 
   async listObservations(query: PredictionObservationQueryDto) {
     const where = {
-      ...(query.status ? { status: query.status as ObservationStatus } : {}),
+      ...(query.status ? { status: query.status } : {}),
       ...(query.sourceType ? { sourceType: query.sourceType } : {}),
       ...(query.schoolId ? { schoolId: query.schoolId } : {}),
       ...(query.policyVersionId
@@ -556,15 +556,12 @@ export class PredictionWorkflowService {
       throw new NotFoundException('Prediction observation not found');
     }
 
-    this.validateObservationForReview(
-      observation,
-      dto.status as ObservationStatus,
-    );
+    this.validateObservationForReview(observation, dto.status);
 
     const updated = await this.prisma.predictionSourceObservation.update({
       where: { id },
       data: {
-        status: dto.status as ObservationStatus,
+        status: dto.status,
         reviewAt: this.normalizeDate(dto.reviewAt),
         expiresAt: this.normalizeDate(dto.expiresAt),
         reviewedBy: actorId,
@@ -891,7 +888,7 @@ export class PredictionWorkflowService {
               ...metadata,
               antiDoubleCounted: true,
               antiDoubleCountAdjustments: adjustment.deductions,
-            } as Prisma.InputJsonValue,
+            },
             reviewAt: defaultReviewAt ?? observation.reviewAt ?? undefined,
             expiresAt: defaultExpiresAt ?? observation.expiresAt ?? undefined,
             owner,
@@ -942,7 +939,7 @@ export class PredictionWorkflowService {
   async listPolicyVersions(query: PredictionPolicyQueryDto) {
     const where = {
       ...(query.policyKey ? { policyKey: query.policyKey } : {}),
-      ...(query.status ? { status: query.status as PolicyStatus } : {}),
+      ...(query.status ? { status: query.status } : {}),
     };
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -972,9 +969,7 @@ export class PredictionWorkflowService {
         name: dto.name,
         description: dto.description,
         status: 'DRAFT',
-        thresholds: this.normalizeThresholds(
-          dto.thresholds ?? null,
-        ) as Prisma.InputJsonValue,
+        thresholds: this.normalizeThresholds(dto.thresholds ?? null),
         rolloutConfig: (dto.rolloutConfig ?? {}) as Prisma.InputJsonValue,
         monitoringConfig: (dto.monitoringConfig ?? {}) as Prisma.InputJsonValue,
         fairnessConfig: (dto.fairnessConfig ?? {}) as Prisma.InputJsonValue,
@@ -1541,6 +1536,10 @@ export class PredictionWorkflowService {
 
     const [
       verifiedOutcomeLabels,
+      selfReportedOutcomeLabels,
+      outcomeStatusBreakdown,
+      outcomeResultBreakdown,
+      recentOutcomeLabels,
       caseCount,
       casesWithStructuredScores,
       casesByYear,
@@ -1550,6 +1549,34 @@ export class PredictionWorkflowService {
         where: {
           status: { in: VERIFIED_OUTCOME_STATUSES as never[] },
           result: { in: ['ADMITTED', 'REJECTED'] },
+        },
+      }),
+      this.prisma.predictionOutcomeLabelRecord.count({
+        where: { status: 'SELF_REPORTED' },
+      }),
+      this.prisma.predictionOutcomeLabelRecord.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
+      this.prisma.predictionOutcomeLabelRecord.groupBy({
+        by: ['result'],
+        _count: { _all: true },
+      }),
+      this.prisma.predictionOutcomeLabelRecord.findMany({
+        orderBy: { updatedAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          result: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          predictionResult: {
+            select: {
+              schoolId: true,
+              probability: true,
+            },
+          },
         },
       }),
       this.prisma.admissionCase.count({
@@ -1584,6 +1611,12 @@ export class PredictionWorkflowService {
     ]);
 
     const totalLabeled = verifiedOutcomeLabels + caseCount;
+    const outcomeStatusCounts = Object.fromEntries(
+      outcomeStatusBreakdown.map((row) => [row.status, row._count._all]),
+    );
+    const outcomeResultCounts = Object.fromEntries(
+      outcomeResultBreakdown.map((row) => [row.result, row._count._all]),
+    );
 
     const TIER_THRESHOLDS: Array<{ tier: number; min: number; label: string }> =
       [
@@ -1635,8 +1668,29 @@ export class PredictionWorkflowService {
       totalLabeled,
       breakdown: {
         verifiedOutcomeLabels,
+        selfReportedOutcomeLabels,
         approvedAdmissionCases: caseCount,
         casesWithStructuredTestScores: casesWithStructuredScores,
+      },
+      outcomeLoop: {
+        verifiedCount: verifiedOutcomeLabels,
+        selfReportedCount: selfReportedOutcomeLabels,
+        calibrationPromotionAllowed: verifiedOutcomeLabels >= 50,
+        externalAccuracyClaimAllowed: verifiedOutcomeLabels >= 200,
+        statusCounts: outcomeStatusCounts,
+        resultCounts: outcomeResultCounts,
+        recent: recentOutcomeLabels.map((label) => ({
+          id: label.id,
+          result: label.result,
+          status: label.status,
+          schoolId: label.predictionResult.schoolId,
+          probability:
+            label.predictionResult.probability == null
+              ? null
+              : Number(label.predictionResult.probability),
+          createdAt: label.createdAt.toISOString(),
+          updatedAt: label.updatedAt.toISOString(),
+        })),
       },
       tier: {
         current: currentTier,

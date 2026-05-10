@@ -23,6 +23,175 @@ export class ProfileEducationService {
     private helpers: ProfileHelpersService,
   ) {}
 
+  private isHighSchoolType(schoolType?: string | null): boolean {
+    return (schoolType ?? '').toUpperCase().includes('HIGH_SCHOOL');
+  }
+
+  private inferSuggestionCountry(
+    schoolName: string,
+    schoolType?: string | null,
+  ): string {
+    const type = (schoolType ?? '').toUpperCase();
+    if (/[\u3400-\u9fff]/.test(schoolName) || type.includes('CN')) return 'CN';
+    if (type.includes('US')) return 'US';
+    if (type.includes('INTL')) return 'UNKNOWN';
+    return 'US';
+  }
+
+  private normalizeName(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9\u3400-\u9fff]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private highSchoolNameCandidates(raw: string): string[] {
+    const candidates = new Set<string>();
+    const trimmed = raw.trim();
+    if (!trimmed) return [];
+    candidates.add(trimmed);
+    const knownAliases: Record<string, string[]> = {
+      北京人大附中: [
+        'RDFZ',
+        'The High School Affiliated to Renmin University of China',
+      ],
+      上海中学: ['SHSID', 'Shanghai High School International Division'],
+      上海世界外国语中学: ['WFLA', 'Shanghai World Foreign Language Academy'],
+      南京外国语学校: ['NFLS', 'Nanjing Foreign Language School'],
+      成都七中: ['Chengdu No.7 High School'],
+      广州外国语学校: ['GZFLS', 'Guangzhou Foreign Language School'],
+      北京四中: ['BJ4', 'Beijing No. 4 High School'],
+      深圳外国语学校: ['SZFLS', 'Shenzhen Foreign Languages School'],
+      深圳中学: ['SZMS Intl', 'Shenzhen Middle School International System'],
+      深圳国际交流学院: ['SCIE', 'Shenzhen College of International Education'],
+      'Lowell High School': ['LOWELL', 'Lowell'],
+      'Shanghai Pinghe School': ['Pinghe', 'Shanghai Pinghe Bilingual School'],
+    };
+    for (const [alias, values] of Object.entries(knownAliases)) {
+      if (trimmed.includes(alias)) {
+        values.forEach((value) => candidates.add(value));
+      }
+    }
+
+    const parentheticalMatches = [...trimmed.matchAll(/\(([^)]+)\)/g)];
+    for (const match of parentheticalMatches) {
+      const inner = match[1]?.trim();
+      if (inner) candidates.add(inner);
+    }
+
+    const withoutParenthetical = trimmed
+      .replace(/\s*\([^)]*\)\s*/g, ' ')
+      .trim();
+    if (withoutParenthetical) candidates.add(withoutParenthetical);
+
+    for (const value of [...candidates]) {
+      if (/high school/i.test(value)) {
+        candidates.add(value.replace(/high school/gi, 'Middle School'));
+      }
+      if (/middle school/i.test(value)) {
+        candidates.add(value.replace(/middle school/gi, 'High School'));
+      }
+    }
+
+    return [...candidates].filter(Boolean);
+  }
+
+  private async findHighSchoolIdByName(
+    schoolName: string,
+  ): Promise<string | null> {
+    const candidates = this.highSchoolNameCandidates(schoolName);
+    const seen = new Set<string>();
+    for (const candidate of candidates) {
+      const normalized = this.normalizeName(candidate);
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      const canUseBroadNameContains = normalized.replace(/\s/g, '').length > 4;
+      const broadNameFilters: Prisma.HighSchoolWhereInput[] =
+        canUseBroadNameContains
+          ? [
+              {
+                name: {
+                  contains: candidate,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+            ]
+          : [];
+
+      const match = await this.prisma.highSchool.findFirst({
+        where: {
+          OR: [
+            { name: { equals: candidate, mode: Prisma.QueryMode.insensitive } },
+            {
+              abbreviation: {
+                equals: candidate,
+                mode: Prisma.QueryMode.insensitive,
+              },
+            },
+            ...broadNameFilters,
+            {
+              abbreviation: {
+                contains: candidate,
+                mode: Prisma.QueryMode.insensitive,
+              },
+            },
+          ],
+        },
+        orderBy: [{ tier: 'desc' }, { recognition: 'desc' }],
+        select: { id: true },
+      });
+      if (match?.id) return match.id;
+    }
+    return null;
+  }
+
+  private async ensureHighSchoolSuggestion(
+    userId: string,
+    schoolName: string,
+    schoolType?: string | null,
+  ): Promise<void> {
+    const country = this.inferSuggestionCountry(schoolName, schoolType);
+    const existing = await this.prisma.highSchoolSuggestion.findUnique({
+      where: { name_country: { name: schoolName, country } },
+    });
+    if (!existing) {
+      await this.prisma.highSchoolSuggestion.create({
+        data: {
+          name: schoolName,
+          country,
+          submittedBy: [userId],
+        },
+      });
+      return;
+    }
+    if (!existing.submittedBy.includes(userId)) {
+      await this.prisma.highSchoolSuggestion.update({
+        where: { id: existing.id },
+        data: { submittedBy: { set: [...existing.submittedBy, userId] } },
+      });
+    }
+  }
+
+  private async resolveHighSchoolId(
+    userId: string,
+    schoolName: string,
+    schoolType?: string | null,
+    explicitHighSchoolId?: string | null,
+  ): Promise<string | null> {
+    if (explicitHighSchoolId !== undefined) {
+      return explicitHighSchoolId || null;
+    }
+    if (!this.isHighSchoolType(schoolType)) return null;
+
+    const matchedId = await this.findHighSchoolIdByName(schoolName);
+    if (matchedId) return matchedId;
+
+    await this.ensureHighSchoolSuggestion(userId, schoolName, schoolType);
+    return null;
+  }
+
   // ============================================
   // Education CRUD
   // ============================================
@@ -39,6 +208,12 @@ export class ProfileEducationService {
     data: CreateEducationDto,
   ): Promise<Education> {
     const profileId = await this.helpers.getProfileId(userId);
+    const highSchoolId = await this.resolveHighSchoolId(
+      userId,
+      data.schoolName,
+      data.schoolType,
+      data.highSchoolId,
+    );
 
     const education = await this.prisma.education.create({
       data: {
@@ -52,7 +227,7 @@ export class ProfileEducationService {
         gpa: data.gpa ? new Prisma.Decimal(data.gpa) : null,
         gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : null,
         description: data.description,
-        highSchoolId: data.highSchoolId || null,
+        highSchoolId,
         gpaSystem: data.gpaSystem || null,
       },
     });
@@ -85,6 +260,17 @@ export class ProfileEducationService {
       userId,
       'Education',
     );
+    const autoHighSchoolId =
+      data.highSchoolId === undefined &&
+      !(_education as any).highSchoolId &&
+      (data.schoolName !== undefined || data.schoolType !== undefined)
+        ? await this.resolveHighSchoolId(
+            userId,
+            data.schoolName ?? (_education as any).schoolName,
+            data.schoolType ?? (_education as any).schoolType,
+            undefined,
+          )
+        : undefined;
 
     const updated = await this.prisma.education.update({
       where: { id: educationId },
@@ -104,7 +290,7 @@ export class ProfileEducationService {
         highSchoolId:
           data.highSchoolId !== undefined
             ? data.highSchoolId || null
-            : undefined,
+            : autoHighSchoolId || undefined,
         gpaSystem:
           data.gpaSystem !== undefined ? data.gpaSystem || null : undefined,
       },

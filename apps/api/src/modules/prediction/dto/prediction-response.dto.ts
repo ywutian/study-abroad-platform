@@ -148,6 +148,8 @@ export class PredictionOutcomeLabelDto {
       'SELF_REPORTED',
       'COUNSELOR_VERIFIED',
       'DOCUMENT_VERIFIED',
+      'REQUEST_EVIDENCE',
+      'REJECTED',
       'CONFLICTED',
       'CENSORED',
     ],
@@ -156,6 +158,8 @@ export class PredictionOutcomeLabelDto {
     | 'SELF_REPORTED'
     | 'COUNSELOR_VERIFIED'
     | 'DOCUMENT_VERIFIED'
+    | 'REQUEST_EVIDENCE'
+    | 'REJECTED'
     | 'CONFLICTED'
     | 'CENSORED';
 

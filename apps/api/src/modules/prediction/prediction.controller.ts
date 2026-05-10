@@ -51,7 +51,7 @@ export class PredictionController {
 
   @Post()
   @ApiOperation({
-    summary: 'Run admission prediction (multi-engine fusion v2)',
+    summary: 'Run admission prediction (counselor-primary)',
   })
   @ApiResponse({
     status: 200,

@@ -57,10 +57,7 @@ function signal(
     confidence: 'low',
     missingReasons: ['missing'],
     ...overrides,
-  } as Omit<
-    DistillationTeacherSignal,
-    'configuredWeight' | 'effectiveBlendWeight'
-  >;
+  };
 }
 
 function teacher(

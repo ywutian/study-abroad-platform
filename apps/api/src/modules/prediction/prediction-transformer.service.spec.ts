@@ -125,6 +125,74 @@ describe('PredictionTransformerService', () => {
     });
   });
 
+  describe('profileToInput profile signal hydration', () => {
+    it('uses semester GPAs for runtime GPA and GPA trend when present', () => {
+      const result = service.profileToInput({
+        gpa: null,
+        gpaScale: 4,
+        gpa9: null,
+        gpa10: null,
+        gpa11: null,
+        gpa12: null,
+        currentSchoolType: 'PRIVATE_US',
+        targetMajor: 'Computer Science',
+        intendedMajor: null,
+        nationality: 'US',
+        countryOfResidence: 'US',
+        citizenship: 'US',
+        educationSystem: null,
+        testScores: [],
+        activities: [],
+        awards: [],
+        education: [],
+        semesterGpas: [
+          {
+            semester: 'Fall 2024',
+            year: 2024,
+            gpa: 3.4,
+            gpaScale: 4,
+            credits: 4,
+            order: 1,
+          },
+          {
+            semester: 'Spring 2025',
+            year: 2025,
+            gpa: 3.8,
+            gpaScale: 4,
+            credits: 4,
+            order: 2,
+          },
+        ],
+      } as any);
+
+      expect(result.gpa).toBe(3.6);
+      expect(result.gpaTrend?.direction).toBe('rising');
+      expect(result.gpaTrend?.delta).toBeCloseTo(0.4, 2);
+      expect(result.gpaTrend?.evidence).toContain('Fall 2024');
+    });
+
+    it('falls back to currentSchool as highSchoolName when no linked education exists', () => {
+      const result = service.profileToInput({
+        gpa: 3.8,
+        gpaScale: 4,
+        currentSchool: 'Phillips Academy Andover',
+        currentSchoolType: 'BOARDING_US',
+        nationality: 'US',
+        countryOfResidence: 'US',
+        citizenship: 'US',
+        educationSystem: null,
+        testScores: [],
+        activities: [],
+        awards: [],
+        education: [],
+        semesterGpas: [],
+      } as any);
+
+      expect(result.highSchoolName).toBe('Phillips Academy Andover');
+      expect(result.highSchoolType).toBe('BOARDING_US');
+    });
+  });
+
   describe('evaluateDataCompleteness', () => {
     it('should return low score for empty profile', () => {
       const profile = { testScores: [], activities: [], awards: [] } as any;

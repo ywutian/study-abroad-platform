@@ -2189,6 +2189,10 @@
     "outcomeLabelSaved": "Outcome label saved",
     "outcomeLabelSavedToast": "Saved. This helps improve future estimates.",
     "outcomeLabelSavedHint": "This label is stored as your submitted outcome and may be reviewed later.",
+    "outcomeRoundLabel": "Round",
+    "outcomeFinalLabel": "This is the final resolved result",
+    "outcomeNotesLabel": "Notes",
+    "outcomeNotesPlaceholder": "Optional context for counselor review",
     "predictionFeedback": {
       "title": "Prediction quality feedback",
       "hint": "Tell us whether this estimate feels useful based on what you know today.",
@@ -7381,6 +7385,7 @@
         "subtitle": "Verified outcome labels + approved AdmissionCase rows, compared against tier thresholds.",
         "totalLabeled": "Total labeled samples",
         "verifiedLabels": "Verified outcome labels",
+        "selfReportedLabels": "Self-reported outcome labels",
         "approvedCases": "Approved AdmissionCase rows",
         "withStructuredScores": "Cases with structured test scores",
         "currentTier": "Current tier",
@@ -7394,7 +7399,10 @@
         "atLeast50": "≥50 samples",
         "atLeast100": "≥100 samples",
         "yearBreakdown": "By application year",
-        "recommendation": "Recommended next action"
+        "recommendation": "Recommended next action",
+        "outcomeLoop": "Outcome loop",
+        "calibrationAllowed": "Calibration allowed",
+        "accuracyClaimAllowed": "Accuracy claim allowed"
       },
       "actions": {
         "title": "Operational actions",

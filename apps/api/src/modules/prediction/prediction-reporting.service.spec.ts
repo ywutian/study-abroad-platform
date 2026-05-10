@@ -8,7 +8,7 @@ describe('PredictionReportingService', () => {
   let prisma: PrismaService;
   let memoryManager: MemoryManagerService;
   const createOutcomeRecord = (
-    result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED',
+    result: 'ADMITTED' | 'REJECTED' | 'WAITLISTED' | 'DEFERRED' | 'WITHDRAWN',
     status:
       | 'SELF_REPORTED'
       | 'COUNSELOR_VERIFIED'
@@ -326,6 +326,26 @@ describe('PredictionReportingService', () => {
       });
     });
 
+    it('should handle WITHDRAWN result as non-calibration data', async () => {
+      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+        id: 'pred-1',
+        probability: 0.7,
+      });
+      (
+        prisma.predictionOutcomeLabelRecord.findMany as jest.Mock
+      ).mockResolvedValue([createOutcomeRecord('WITHDRAWN', 'SELF_REPORTED')]);
+
+      await service.reportActualResult('profile-1', 'school-1', 'WITHDRAWN');
+
+      expect(prisma.predictionResult.update).toHaveBeenCalledWith({
+        where: { id: 'pred-1' },
+        data: expect.objectContaining({
+          actualResult: null,
+          outcomeLabel: 'CENSORED',
+        }),
+      });
+    });
+
     it('should preserve verified canonical truth when self-reported labels conflict', async () => {
       (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
         id: 'pred-1',
@@ -457,10 +477,12 @@ describe('PredictionReportingService', () => {
       );
     });
 
-    it('should skip memory recording when prediction not found', async () => {
+    it('should return an explicit not-found error when prediction not found', async () => {
       (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await service.reportActualResult('profile-1', 'school-1', 'ADMITTED');
+      await expect(
+        service.reportActualResult('profile-1', 'school-1', 'ADMITTED'),
+      ).rejects.toThrow('Numeric prediction not found');
 
       await new Promise((resolve) => setTimeout(resolve, 10));
 
