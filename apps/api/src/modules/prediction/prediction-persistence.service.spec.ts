@@ -236,7 +236,7 @@ describe('PredictionPersistenceService', () => {
       await service.savePrediction('profile-1', 'school-1', {
         ...mockResult,
         policyVersionId: 'policy-v1',
-      } as any);
+      });
 
       const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
         .calls[0][0];
@@ -252,7 +252,7 @@ describe('PredictionPersistenceService', () => {
       await service.savePrediction('profile-1', 'school-1', {
         ...mockResult,
         policyVersionId: 'legacy-v3-enterprise',
-      } as any);
+      });
 
       const upsertCall = (prisma.predictionResult.upsert as jest.Mock).mock
         .calls[0][0];
@@ -283,7 +283,7 @@ describe('PredictionPersistenceService', () => {
       await service.savePrediction('profile-1', 'school-1', {
         ...mockResult,
         policyVersionId: 'policy-missing',
-      } as any);
+      });
 
       expect(prisma.predictionPolicyVersion.upsert).not.toHaveBeenCalled();
       expect(prisma.predictionResult.upsert).not.toHaveBeenCalled();

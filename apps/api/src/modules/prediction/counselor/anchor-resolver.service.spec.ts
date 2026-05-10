@@ -22,7 +22,7 @@ describe('AnchorResolverService', () => {
         testScores: [{ type: 'SAT', score: 1500 }],
         activities: [],
         awards: [],
-      } as any,
+      },
       {
         id: 'risd',
         name: 'Rhode Island School of Design',
@@ -30,7 +30,7 @@ describe('AnchorResolverService', () => {
         acceptanceRate: 0.19,
         sat25: 1350,
         sat75: 1500,
-      } as any,
+      },
     );
 
     expect(result.tier).toBe(4);
@@ -60,14 +60,14 @@ describe('AnchorResolverService', () => {
         testScores: [],
         activities: [],
         awards: [],
-      } as any,
+      },
       {
         id: 'ucd',
         name: 'University of California, Davis',
         acceptanceRate: 41.8,
         sat25: 1280,
         sat75: 1450,
-      } as any,
+      },
     );
 
     expect(gpaBands[0]).toBe('4.20-4.40');

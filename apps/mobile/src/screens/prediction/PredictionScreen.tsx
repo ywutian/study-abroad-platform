@@ -3,7 +3,16 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+  TextInput,
+  Switch,
+} from 'react-native';
 import { router, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,11 +166,23 @@ export default function PredictionScreen() {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSchoolId, setReportSchoolId] = useState<string | null>(null);
   const [reportResult, setReportResult] = useState<AdmissionResult>('ADMITTED');
+  const [reportRound, setReportRound] = useState('RD');
+  const [reportIsFinal, setReportIsFinal] = useState(true);
+  const [reportNotes, setReportNotes] = useState('');
 
   const reportMutation = useMutation({
-    mutationFn: (data: { schoolId: string; result: AdmissionResult }) =>
+    mutationFn: (data: {
+      schoolId: string;
+      result: AdmissionResult;
+      round?: string;
+      isFinal?: boolean;
+      notes?: string;
+    }) =>
       apiClient.patch(predictionRoutes.result(data.schoolId), {
         result: data.result,
+        round: data.round,
+        isFinal: data.isFinal,
+        notes: data.notes,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['predictions'] });
@@ -177,6 +198,9 @@ export default function PredictionScreen() {
   const openReportModal = (schoolId: string) => {
     setReportSchoolId(schoolId);
     setReportResult('ADMITTED');
+    setReportRound('RD');
+    setReportIsFinal(true);
+    setReportNotes('');
     setReportModalVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
@@ -658,18 +682,20 @@ export default function PredictionScreen() {
                         value: t(`prediction.${prediction.confidence}`),
                       })}
                     </Text>
-                    <TouchableOpacity
-                      onPress={() => openReportModal(prediction.schoolId)}
-                      style={[
-                        styles.reportButton,
-                        { backgroundColor: withOpacity(colors.primary, 0.1) },
-                      ]}
-                    >
-                      <Ionicons name="flag-outline" size={14} color={colors.primary} />
-                      <Text style={[styles.reportButtonText, { color: colors.primary }]}>
-                        {t('prediction.reportResult')}
-                      </Text>
-                    </TouchableOpacity>
+                    {prediction.probability != null && prediction.tier !== 'unavailable' ? (
+                      <TouchableOpacity
+                        onPress={() => openReportModal(prediction.schoolId)}
+                        style={[
+                          styles.reportButton,
+                          { backgroundColor: withOpacity(colors.primary, 0.1) },
+                        ]}
+                      >
+                        <Ionicons name="flag-outline" size={14} color={colors.primary} />
+                        <Text style={[styles.reportButtonText, { color: colors.primary }]}>
+                          {t('prediction.reportResult')}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
                   </View>
                 </CardContent>
               </AnimatedCard>
@@ -746,10 +772,70 @@ export default function PredictionScreen() {
               </TouchableOpacity>
             );
           })}
+          <Text style={[styles.reportLabel, { color: colors.foreground }]}>
+            {t('prediction.round')}
+          </Text>
+          <View style={styles.roundOptions}>
+            {['RD', 'EA', 'ED', 'ED2', 'REA', 'SCEA', 'ROLLING'].map((round) => {
+              const isSelected = reportRound === round;
+              return (
+                <TouchableOpacity
+                  key={round}
+                  onPress={() => setReportRound(round)}
+                  style={[
+                    styles.roundOption,
+                    {
+                      borderColor: isSelected ? colors.primary : colors.border,
+                      backgroundColor: isSelected
+                        ? withOpacity(colors.primary, 0.1)
+                        : 'transparent',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.roundOptionText,
+                      { color: isSelected ? colors.primary : colors.foreground },
+                    ]}
+                  >
+                    {round}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <View style={styles.finalRow}>
+            <Text style={[styles.resultOptionText, { color: colors.foreground }]}>
+              {t('prediction.finalResult')}
+            </Text>
+            <Switch value={reportIsFinal} onValueChange={setReportIsFinal} />
+          </View>
+          <TextInput
+            value={reportNotes}
+            onChangeText={setReportNotes}
+            placeholder={t('prediction.notesPlaceholder')}
+            placeholderTextColor={colors.foregroundMuted}
+            multiline
+            maxLength={500}
+            style={[
+              styles.notesInput,
+              {
+                color: colors.foreground,
+                borderColor: colors.border,
+                backgroundColor: colors.card,
+              },
+            ]}
+          />
           <AnimatedButton
             onPress={() => {
               if (reportSchoolId) {
-                reportMutation.mutate({ schoolId: reportSchoolId, result: reportResult });
+                reportMutation.mutate({
+                  schoolId: reportSchoolId,
+                  result: reportResult,
+                  round: reportRound,
+                  isFinal: reportIsFinal,
+                  notes: reportNotes.trim() || undefined,
+                });
               }
             }}
             loading={reportMutation.isPending}
@@ -1049,6 +1135,35 @@ const styles = StyleSheet.create({
   resultOptionText: {
     fontSize: fontSize.base,
     fontWeight: fontWeight.medium,
+  },
+  roundOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  roundOption: {
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  roundOptionText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+  },
+  finalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  notesInput: {
+    minHeight: 72,
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: fontSize.sm,
+    textAlignVertical: 'top',
   },
   reportSubmitButton: {
     marginTop: spacing.md,

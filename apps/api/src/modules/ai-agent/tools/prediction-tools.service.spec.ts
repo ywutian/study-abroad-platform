@@ -109,7 +109,7 @@ describe('PredictionToolsService', () => {
       id: 'school-1',
       name: 'MIT',
       nameZh: '麻省理工学院',
-    } as any);
+    });
     prisma.predictionResult.findUnique.mockResolvedValue({
       probability: 0.37,
       tier: 'reach',
@@ -223,7 +223,7 @@ describe('PredictionToolsService', () => {
       id: 'school-1',
       name: 'MIT',
       nameZh: '麻省理工学院',
-    } as any);
+    });
     prisma.school.findUnique.mockResolvedValue({
       id: 'school-1',
       name: 'MIT',

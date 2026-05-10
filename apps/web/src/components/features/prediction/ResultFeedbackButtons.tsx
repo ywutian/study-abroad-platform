@@ -55,10 +55,19 @@ export function ResultFeedbackButtons({
   const t = useTranslations('prediction');
   const reportMutation = useReportResult();
   const [justReported, setJustReported] = useState(false);
+  const [round, setRound] = useState('RD');
+  const [isFinal, setIsFinal] = useState(true);
+  const [notes, setNotes] = useState('');
 
   const handleReport = (result: AdmissionResultReport) => {
     reportMutation.mutate(
-      { schoolId, result },
+      {
+        schoolId,
+        result,
+        round,
+        isFinal,
+        notes: notes.trim() || undefined,
+      },
       {
         onSuccess: () => {
           setJustReported(true);
@@ -119,6 +128,43 @@ export function ResultFeedbackButtons({
         <p className="text-overline text-muted-foreground">{t('outcomeLabelSection')}</p>
         <p className="text-xs text-muted-foreground">{t('outcomeLabelHint')}</p>
       </div>
+      <div className="grid gap-2 sm:grid-cols-[120px_1fr]">
+        <label className="text-xs text-muted-foreground">
+          {t('outcomeRoundLabel')}
+          <select
+            className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+            value={round}
+            disabled={reportMutation.isPending}
+            onChange={(event) => setRound(event.target.value)}
+          >
+            {['RD', 'EA', 'ED', 'ED2', 'REA', 'SCEA', 'ROLLING'].map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs text-muted-foreground">
+          {t('outcomeNotesLabel')}
+          <textarea
+            className="mt-1 min-h-8 w-full resize-y rounded-md border border-input bg-background px-2 py-1 text-xs"
+            maxLength={500}
+            value={notes}
+            disabled={reportMutation.isPending}
+            placeholder={t('outcomeNotesPlaceholder')}
+            onChange={(event) => setNotes(event.target.value)}
+          />
+        </label>
+      </div>
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={isFinal}
+          disabled={reportMutation.isPending}
+          onChange={(event) => setIsFinal(event.target.checked)}
+        />
+        {t('outcomeFinalLabel')}
+      </label>
       <div className="flex gap-2">
         {RESULT_OPTIONS.map((option) => {
           const Icon = option.icon;

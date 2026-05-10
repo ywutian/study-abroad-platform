@@ -17,6 +17,8 @@ import { resolveMajorToCip } from '@study-abroad/shared/scoring';
 
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 const REPORT_DIR = resolve(REPO_ROOT, 'verification-report', 'phase-c');
+const EXPECTED_US_SCHOOL_COUNT = 240;
+const MANUAL_REVIEW_FILE = 'manual-review.json';
 const CLASSIFICATIONS_FILE = resolve(
   __dirname,
   'data-quality-classifications.json',
@@ -86,6 +88,19 @@ const COMMON_MAJOR_ALIASES = [
 ];
 
 type AuditRow = Record<string, unknown>;
+
+const SAT_ACT_PLACEHOLDER_PATTERNS = [
+  {
+    reason: 'sat_act_placeholder_1080_1320',
+    matches: (school: any) =>
+      asNumber(school.sat25) === 1080 && asNumber(school.sat75) === 1320,
+  },
+  {
+    reason: 'act_placeholder_21_29',
+    matches: (school: any) =>
+      asNumber(school.act25) === 21 && asNumber(school.act75) === 29,
+  },
+];
 
 function asNumber(value: unknown): number | null {
   if (value == null) return null;
@@ -166,6 +181,56 @@ function percentile(values: number[], p: number): number {
   return sorted[Math.max(0, index)];
 }
 
+function readExistingManualReview(reportDir: string): {
+  rows: AuditRow[];
+  failures: AuditRow[];
+} {
+  const path = join(reportDir, MANUAL_REVIEW_FILE);
+  if (!existsSync(path)) return { rows: [], failures: [] };
+  try {
+    const parsed = JSON.parse(readFileSync(path, 'utf8')) as {
+      rows?: AuditRow[];
+      failures?: AuditRow[];
+    };
+    return {
+      rows: parsed.rows ?? [],
+      failures: parsed.failures ?? [],
+    };
+  } catch {
+    return { rows: [], failures: [] };
+  }
+}
+
+function writeManualReviewReport(
+  reportDir: string,
+  rows: AuditRow[],
+  failures: AuditRow[],
+) {
+  const unreviewed = rows.filter((row) => row.classification === 'UNREVIEWED');
+  const dataFixRequired = rows.filter(
+    (row) => row.classification === 'DATA_FIX_REQUIRED',
+  );
+  writeFileSync(
+    join(reportDir, MANUAL_REVIEW_FILE),
+    JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        total: rows.length,
+        reviewedCount: rows.length - unreviewed.length,
+        unreviewedCount: unreviewed.length,
+        dataFixRequiredCount: dataFixRequired.length,
+        failureCount: failures.length,
+        rows,
+        unreviewed,
+        dataFixRequired,
+        failures,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
 async function main() {
   const reportDir = process.argv.includes('--launch')
     ? resolve(REPO_ROOT, 'verification-report', 'launch')
@@ -190,6 +255,15 @@ async function main() {
   const failures: AuditRow[] = [];
   const manualReview: AuditRow[] = [];
   const classifications = loadClassifications();
+
+  if (schools.length !== EXPECTED_US_SCHOOL_COUNT) {
+    failures.push({
+      source: 'data-quality',
+      reason: 'unexpected_us_school_count',
+      expected: EXPECTED_US_SCHOOL_COUNT,
+      actual: schools.length,
+    });
+  }
 
   const tierCounts = new Map<number, number>();
   for (const school of schools) {
@@ -300,6 +374,33 @@ async function main() {
   });
   failures.push(...actInvalid);
 
+  const placeholderRows: AuditRow[] = [];
+  for (const school of schools) {
+    for (const pattern of SAT_ACT_PLACEHOLDER_PATTERNS) {
+      if (!pattern.matches(school)) continue;
+      placeholderRows.push(
+        applyClassification(
+          {
+            source: 'data-quality',
+            schoolId: school.id,
+            schoolName: school.name,
+            reason: pattern.reason,
+            round: 'SAT_ACT',
+            sat25: school.sat25,
+            sat75: school.sat75,
+            act25: school.act25,
+            act75: school.act75,
+            testingPolicy: school.testingPolicy,
+            institutionType: school.institutionType,
+            classification: 'UNREVIEWED',
+          },
+          classifications,
+        ),
+      );
+    }
+  }
+  manualReview.push(...placeholderRows);
+
   const programs = await prisma.schoolProgram.findMany({
     where: { schoolId: { in: schoolIds } },
     select: { schoolId: true, cipCode: true, programName: true },
@@ -332,7 +433,7 @@ async function main() {
   const summary = {
     generatedAt: new Date().toISOString(),
     schoolCount: schools.length,
-    expectedUsSchoolCount: 240,
+    expectedUsSchoolCount: EXPECTED_US_SCHOOL_COUNT,
     tierDistribution: Object.fromEntries([...tierCounts.entries()].sort()),
     gpaDistribution: {
       coverage: schools.filter((school) => school.gpaDistribution != null)
@@ -354,12 +455,22 @@ async function main() {
       ).length,
       invalidCount: actInvalid.length,
     },
+    satActPlaceholder: {
+      patterns: SAT_ACT_PLACEHOLDER_PATTERNS.map((pattern) => pattern.reason),
+      manualReviewCount: placeholderRows.length,
+    },
     programs: {
       rowCount: programs.length,
       aliasAudit: programMatch,
     },
     failures: failures.length,
     manualReview: manualReview.length,
+    unreviewedManualReview: manualReview.filter(
+      (row) => row.classification === 'UNREVIEWED',
+    ).length,
+    dataFixRequiredManualReview: manualReview.filter(
+      (row) => row.classification === 'DATA_FIX_REQUIRED',
+    ).length,
   };
 
   const report = {
@@ -392,6 +503,30 @@ async function main() {
       join(reportDir, 'counselor-data-quality.json'),
       JSON.stringify(report, null, 2),
     );
+    const existingManualReview = readExistingManualReview(reportDir);
+    const nonDataQualityRows = existingManualReview.rows.filter(
+      (row) => row.source !== 'data-quality',
+    );
+    const nonDataQualityFailures = existingManualReview.failures.filter(
+      (row) => row.source !== 'data-quality',
+    );
+    writeManualReviewReport(
+      reportDir,
+      [
+        ...nonDataQualityRows,
+        ...manualReview.map((row) => ({
+          source: row.source ?? 'data-quality',
+          ...row,
+        })),
+      ],
+      [
+        ...nonDataQualityFailures,
+        ...failures.map((row) => ({
+          source: row.source ?? 'data-quality',
+          ...row,
+        })),
+      ],
+    );
   }
   await app.close();
 
@@ -400,7 +535,13 @@ async function main() {
   const unreviewed = manualReview.filter(
     (row) => row.classification === 'UNREVIEWED',
   );
-  if (strict && (failures.length > 0 || unreviewed.length > 0)) {
+  const dataFixRequired = manualReview.filter(
+    (row) => row.classification === 'DATA_FIX_REQUIRED',
+  );
+  if (
+    strict &&
+    (failures.length > 0 || unreviewed.length > 0 || dataFixRequired.length > 0)
+  ) {
     process.exit(1);
   }
 }

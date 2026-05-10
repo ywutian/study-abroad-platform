@@ -44,7 +44,8 @@
       "hoursShort": "{{count}}h",
       "daysShort": "{{count}}d",
       "monthsShort": "{{count}}mo"
-    }
+    },
+    "all": "All"
   },
   "ui": {
     "dialog": {
@@ -362,14 +363,10 @@
   "cases": {
     "title": "Case Library",
     "detail": {
-      "background": "Background",
-      "scores": "Test Scores",
-      "activities": "Activities",
-      "awards": "Awards",
-      "essays": "Essay Overview",
-      "essay": "Essay",
+      "title": "Case Detail",
+      "scores": "Scores",
       "tags": "Tags",
-      "tips": "Application Tips"
+      "essay": "Essay"
     },
     "submitCase": "Submit Case",
     "filters": {
@@ -620,7 +617,12 @@
     "applyToJoin": "Apply to Join",
     "postLocked": "This post is locked",
     "deletePostTitle": "Delete Post",
-    "deletePostMessage": "Are you sure you want to delete this post? This action cannot be undone."
+    "deletePostMessage": "Are you sure you want to delete this post? This action cannot be undone.",
+    "team": "Team",
+    "members": "members",
+    "publish": "Publish",
+    "postContent": "Post content",
+    "addTag": "Add tag"
   },
   "followers": {
     "title": "Follow Management",
@@ -714,11 +716,7 @@
       "dailyChallenge": "Daily Challenge",
       "completed": "Completed!"
     },
-    "leaderboard": {
-      "title": "Leaderboard",
-      "rank": "Rank",
-      "you": "You"
-    },
+    "leaderboard": "Leaderboard",
     "badges": {
       "bronze": "Bronze",
       "silver": "Silver",
@@ -745,7 +743,21 @@
     "empty": {
       "title": "No more cases",
       "description": "Check back later for more!"
-    }
+    },
+    "noMoreCards": "No more cards",
+    "noMoreCardsDesc": "Check back later for more application cases.",
+    "loadMore": "Load more",
+    "anonymous": "Anonymous",
+    "you": "You",
+    "swipesCount": "{{count}} swipes",
+    "statsTitle": "Swipe Stats",
+    "loading": "Loading...",
+    "toNextBadge": "To next badge",
+    "totalSwipes": "Total swipes",
+    "bestStreak": "Best streak",
+    "dailyChallenge": "Daily challenge",
+    "challengeComplete": "Challenge complete",
+    "noLeaderboard": "No leaderboard data yet"
   },
   "hallOfFame": {
     "title": "Hall of Fame",
@@ -754,7 +766,11 @@
       "reviews": "Reviews",
       "ranking": "Ranking",
       "lists": "Lists",
-      "verified": "Verified"
+      "verified": "Verified",
+      "all": "All",
+      "ivy": "Ivy League",
+      "top10": "Top 10",
+      "top30": "Top 30"
     },
     "stats": {
       "totalAdmissions": "Admissions",
@@ -776,7 +792,22 @@
       "comment": "Comment",
       "tags": "Tags",
       "submit": "Submit Review",
-      "empty": "No reviews yet"
+      "empty": "No reviews yet",
+      "scores": {
+        "academic": "Academic",
+        "test": "Test",
+        "activity": "Activity",
+        "award": "Award",
+        "overall": "Overall"
+      },
+      "reviewFor": "Review for",
+      "created": "Review submitted!",
+      "mine": "My Reviews",
+      "write": "Write",
+      "emptyDesc": "Be the first to write a review!",
+      "targetUser": "User ID to Review",
+      "targetPlaceholder": "Enter user ID...",
+      "commentPlaceholder": "Share your thoughts..."
     },
     "ranking": {
       "rank": "Rank",
@@ -784,7 +815,10 @@
       "percentile": "Percentile",
       "applicants": "Applicants",
       "position": "Position",
-      "empty": "Add schools to your list to see rankings"
+      "empty": "Add schools to your list to see rankings",
+      "top": "Top",
+      "yourRank": "Your Rank",
+      "breakdown": "Score Breakdown"
     },
     "lists": {
       "create": "Create List",
@@ -793,7 +827,27 @@
       "category": "Category",
       "items": "Items",
       "votes": "votes",
-      "empty": "No lists yet"
+      "empty": "No lists yet",
+      "created": "List created!",
+      "categories": {
+        "tier": "Tier",
+        "major": "Major",
+        "location": "Location",
+        "value": "Value",
+        "other": "Other"
+      },
+      "titleRequired": "Title is required",
+      "emptyDesc": "Create the first list!",
+      "createTitle": "Create a List",
+      "submit": "Create",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Top CS Programs",
+      "descLabel": "Description",
+      "descPlaceholder": "Optional description...",
+      "categoryLabel": "Category",
+      "itemsLabel": "Items (one per line)",
+      "itemsPlaceholder": "MIT\\nStanford\\nCMU\\n...",
+      "detail": "List Detail"
     },
     "verified": {
       "all": "All",
@@ -802,7 +856,19 @@
       "ivy": "Ivy",
       "totalVerified": "Verified",
       "admittedCount": "Admitted",
-      "empty": "No verified users yet"
+      "empty": "No verified users yet",
+      "points": "pts",
+      "filters": {
+        "all": "All",
+        "admitted": "Admitted",
+        "top20": "Top 20",
+        "ivy": "Ivy"
+      },
+      "stats": {
+        "total": "Verified",
+        "admitted": "Admitted",
+        "avgGpa": "Avg GPA"
+      }
     },
     "empty": {
       "title": "No data yet",
@@ -811,7 +877,9 @@
     "card": {
       "scores": "Scores",
       "undergrad": "Undergrad"
-    }
+    },
+    "loading": "Loading...",
+    "cancel": "Cancel"
   },
   "essays": {
     "title": "My Essays",
@@ -1020,6 +1088,9 @@
     "reportResult": "Report Result",
     "reportActualResult": "Report Actual Result",
     "selectResult": "What was the actual result?",
+    "round": "Round",
+    "finalResult": "This is the final resolved result",
+    "notesPlaceholder": "Optional note for counselor review",
     "submitResult": "Submit Result",
     "resultReported": "Result reported successfully",
     "reportFailed": "Failed to report result"
@@ -1134,7 +1205,8 @@
       "hardStops": "Hard-stop risks",
       "recourse": "Recourse guidance",
       "uncertainty": "Strategy uncertainty",
-      "uncertaintyRange": "Strategy range"
+      "uncertaintyRange": "Strategy range",
+      "probability": "Admission probability"
     },
     "actionPlan": {
       "title": "Action plan",
@@ -1179,7 +1251,8 @@
       "subtitle": "See the same canonical analysis used on web and uncommon-app.",
       "loading": "Loading",
       "open": "Open application analysis"
-    }
+    },
+    "riskBoundaries": "Risk boundaries"
   },
   "settings": {
     "title": "Settings",
@@ -1362,12 +1435,46 @@
     "tierSafety": "Safety Choice",
     "acceptRate": "school-wide acceptance rate",
     "disclaimer": "These tiers help plan your school list. They are not official school ratings.",
-    "strategyDisclaimer": "These tiers help plan your school list. They are not official school ratings."
+    "strategyDisclaimer": "These tiers help plan your school list. They are not official school ratings.",
+    "heroTitle": "Smart School Selection",
+    "tabGenerate": "Generate",
+    "tabHistory": "History",
+    "tests": "Tests",
+    "activities": "Activities",
+    "preferredRegions": "Preferred Regions",
+    "preferredMajors": "Preferred Majors",
+    "completeProfileFirst": "Complete profile first",
+    "loadingStep1": "Reviewing your academic profile...",
+    "loadingStep2": "Matching with university databases...",
+    "loadingStep3": "Calculating fit scores...",
+    "loadingStep4": "Finalizing recommendations...",
+    "resultSummary": "AI Recommendation Summary",
+    "recommendedSchools": "Recommended Schools",
+    "improvementTips": "Tips",
+    "moreSchools": "more",
+    "viewFull": "View Full Results",
+    "loadingHistory": "Loading history...",
+    "goGenerate": "Generate Now"
   },
   "findCollege": {
     "title": "Find College",
     "searchPlaceholder": "Search schools...",
-    "filters": "Filters",
+    "filters": {
+      "title": "Filters",
+      "reset": "Reset",
+      "apply": "Apply",
+      "rankRange": "US News Rank",
+      "min": "Min",
+      "max": "Max",
+      "tuitionRange": "Tuition (USD)",
+      "acceptanceRate": "Acceptance Rate (%)",
+      "state": "State / Region",
+      "allStates": "All States",
+      "type": "School Type",
+      "typeAll": "All Types",
+      "typePrivate": "Private",
+      "typePublic": "Public"
+    },
     "ranking": "Ranking",
     "tuition": "Tuition",
     "acceptanceRate": "Acceptance Rate",
@@ -1392,7 +1499,26 @@
     "added": "Added to your list",
     "removed": "Removed from your list",
     "inList": "In List",
-    "loadMore": "Loading more..."
+    "loadMore": "Loading more...",
+    "tags": {
+      "rank": "Rank {{min}}-{{max}}",
+      "tuition": "Tuition {{min}}-{{max}}",
+      "acceptance": "{{min}}%-{{max}}% Acceptance"
+    },
+    "addedToList": "Added to your school list",
+    "addError": "Failed to add school to list",
+    "removedFromList": "Removed from your school list",
+    "removeError": "Failed to remove school from list",
+    "chips": {
+      "rank": "Rank",
+      "tuition": "Tuition",
+      "acceptance": "Acceptance",
+      "state": "State",
+      "type": "Type"
+    },
+    "noResultsDescription": "Try adjusting your search or filters",
+    "clearFilters": "Clear Filters",
+    "resultsCount": "{{count}} schools found"
   },
   "essayGallery": {
     "title": "Essay Gallery",
@@ -1412,7 +1538,8 @@
       "admitted": "Admitted",
       "rejected": "Rejected",
       "waitlisted": "Waitlisted",
-      "deferred": "Deferred"
+      "deferred": "Deferred",
+      "all": "All results"
     },
     "resultsCount": "{{count}} essays found",
     "wordCount": "{{count}} words",
@@ -1458,7 +1585,8 @@
         "paragraphReview": "Paragraph Review",
         "highlights": "Highlights",
         "suggestions": "Suggestions"
-      }
+      },
+      "noContent": "No content available"
     },
     "quality": {
       "excellent": "Excellent",
@@ -1469,7 +1597,9 @@
       "total": "Total",
       "admitted": "Admitted",
       "top20": "Top 20"
-    }
+    },
+    "words": "words",
+    "round": "Round"
   },
   "timeline": {
     "title": "Timeline",
@@ -1486,7 +1616,8 @@
       "upcomingDeadlines": "Upcoming Deadlines",
       "overdueTasks": "Overdue Tasks",
       "personalEvents": "Personal Events",
-      "completed": "Completed"
+      "completed": "Completed",
+      "upcoming": "Upcoming"
     },
     "status": {
       "NOT_STARTED": "Not Started",
@@ -1537,14 +1668,16 @@
       "category": "Category",
       "eventDate": "Event Date",
       "description": "Description",
-      "url": "URL"
+      "url": "URL",
+      "noGlobal": "No upcoming global events."
     },
     "empty": {
       "noSchools": "No timelines yet",
       "noSchoolsDesc": "Add your target schools to start tracking",
       "noEvents": "No events yet",
       "noEventsDesc": "Add personal events or subscribe to global ones",
-      "noTasks": "No tasks yet"
+      "noTasks": "No tasks yet",
+      "noData": "No data"
     },
     "toast": {
       "created": "Timeline created",
@@ -1554,7 +1687,25 @@
       "taskCreated": "Task created",
       "eventCreated": "Event created",
       "eventDeleted": "Event deleted"
-    }
+    },
+    "taskAdded": "Task added",
+    "deleted": "Deleted",
+    "eventAdded": "Event added",
+    "subscribed": "Added to your events",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "save": "Save",
+    "taskTitle": "Task Title",
+    "taskTitlePlaceholder": "Enter task title...",
+    "eventTitle": "Title",
+    "eventTitlePlaceholder": "Enter event title...",
+    "eventCategory": "Category",
+    "eventCategoryPlaceholder": "e.g. SAT, Competition...",
+    "eventNotes": "Notes",
+    "eventNotesPlaceholder": "Optional notes...",
+    "deleteConfirmTitle": "Confirm Deletion",
+    "deleteConfirmMessage": "Are you sure? This cannot be undone.",
+    "noTasks": "No tasks yet"
   },
   "assessment": {
     "title": "Assessment",
@@ -1599,11 +1750,13 @@
       "empty": "No assessments completed yet",
       "emptyDesc": "Take an assessment to discover your personality and interests",
       "viewResult": "View Result",
-      "completedAt": "Completed"
+      "completedAt": "Completed",
+      "loading": "Loading..."
     },
     "retake": "Retake Assessment",
     "viewHistory": "View History",
-    "backToSelection": "Back to Selection"
+    "backToSelection": "Back to Selection",
+    "loading": "Loading..."
   },
   "uncommonApp": {
     "title": "Uncommon App",
@@ -1611,7 +1764,9 @@
     "quota": {
       "title": "AI Usage",
       "used": "{{used}} / {{total}} requests",
-      "unlimited": "Unlimited"
+      "unlimited": "Unlimited",
+      "usage": "{{used}} / {{limit}} messages used",
+      "loading": "Loading usage..."
     },
     "agents": {
       "auto": "Auto",
@@ -1628,7 +1783,12 @@
       "essayReview": "Essay Review",
       "essayReviewDesc": "Get feedback on your essays",
       "timelinePlan": "Timeline Plan",
-      "timelinePlanDesc": "Create your application timeline"
+      "timelinePlanDesc": "Create your application timeline",
+      "analyzeProfilePrompt": "Analyze my profile and suggest next steps.",
+      "schoolRecPrompt": "Recommend schools that fit my profile.",
+      "essayReviewPrompt": "Review my essay and give actionable feedback.",
+      "timelinePrompt": "Help me plan my application timeline.",
+      "title": "Quick actions"
     },
     "chat": {
       "placeholder": "Ask me anything about your application...",
@@ -1639,6 +1799,12 @@
       "clearConfirm": "Clear all conversation history?",
       "error": "Something went wrong. Please try again.",
       "empty": "Start a conversation with your AI assistant"
+    },
+    "conversationCleared": "Conversation cleared",
+    "clearError": "Failed to clear conversation",
+    "welcome": {
+      "title": "How can I help with your applications today?",
+      "subtitle": "Ask about schools, essays, timelines, and strategy."
     }
   },
   "subscription": {
@@ -1697,26 +1863,36 @@
         "FAILED": "Failed",
         "REFUNDED": "Refunded"
       }
-    }
+    },
+    "subscribeSuccess": "Subscription updated successfully!",
+    "subscribeFailed": "Subscription failed",
+    "cancelSuccess": "Subscription cancelled",
+    "cancelFailed": "Cancellation failed",
+    "loading": "Loading subscription...",
+    "popular": "Popular",
+    "bestValue": "Best Value",
+    "free": "Free",
+    "month": "mo",
+    "billedYearly": "Billed {{amount}}/year",
+    "currentPlanLabel": "Current Plan",
+    "freePlan": "Free",
+    "billingHistory": "Billing History",
+    "billingHistoryDesc": "View past transactions",
+    "loadingBilling": "Loading history...",
+    "noInvoices": "No invoices",
+    "cancelSubscription": "Cancel Subscription",
+    "heroTitle": "Subscription Plans",
+    "heroSubtitle": "Choose the plan that fits your needs",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "yearlyDiscount": "Save ~17%",
+    "cancelConfirmTitle": "Cancel Subscription?",
+    "confirmCancel": "Cancel Subscription",
+    "keepPlan": "Keep Plan"
   },
   "security": {
     "title": "Security",
-    "changePassword": {
-      "title": "Change Password",
-      "current": "Current Password",
-      "new": "New Password",
-      "confirm": "Confirm New Password",
-      "requirements": "Min 8 characters, include uppercase and number",
-      "submit": "Update Password",
-      "success": "Password updated successfully",
-      "mismatch": "Passwords do not match",
-      "strength": {
-        "weak": "Weak",
-        "fair": "Fair",
-        "good": "Good",
-        "strong": "Strong"
-      }
-    },
+    "changePassword": "Change Password",
     "biometric": {
       "title": "Biometric Authentication",
       "description": "Use Face ID or fingerprint to unlock the app",
@@ -1732,16 +1908,46 @@
       "description": "You are currently signed in on this device",
       "signOutAll": "Sign Out of All Devices"
     },
-    "deleteAccount": {
-      "title": "Delete Account",
-      "warning": "This action is permanent and cannot be undone. All your data will be deleted.",
-      "button": "Delete My Account",
-      "confirmTitle": "Confirm Account Deletion",
-      "confirmMessage": "Enter your password to confirm",
-      "password": "Password",
-      "confirm": "Delete Account",
-      "cancel": "Cancel"
-    }
+    "deleteAccount": "Delete Account",
+    "passwordChanged": "Password changed successfully",
+    "passwordChangeFailed": "Failed to change password",
+    "currentPasswordRequired": "Current password is required",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordNeedsUppercase": "Password must include an uppercase letter",
+    "passwordNeedsNumber": "Password must include a number",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "biometricVerifyPrompt": "Verify your identity",
+    "biometricEnabled": "Biometric authentication enabled",
+    "biometricFailed": "Biometric verification failed",
+    "biometricDisabled": "Biometric authentication disabled",
+    "loggedOutAll": "Logged out from all other devices",
+    "logoutAllFailed": "Failed to log out all devices",
+    "logoutAllTitle": "Logout All Devices",
+    "logoutAllMessage": "Are you sure you want to log out from all other devices?",
+    "logoutAllConfirm": "Are you sure you want to logout from all other devices?",
+    "accountDeleted": "Account deleted",
+    "deleteAccountFailed": "Failed to delete account",
+    "enterPasswordToDelete": "Enter your password to delete your account",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter a new password",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Confirm your new password",
+    "passwordRequirements": "Password must be at least 8 characters with letters and numbers",
+    "updatePassword": "Update Password",
+    "biometricAuth": "Biometric Authentication",
+    "biometricDescription": "Use Face ID or Touch ID to unlock the app",
+    "enableBiometric": "Enable biometric unlock",
+    "biometricUnavailable": "Biometric authentication is unavailable on this device",
+    "activeSessions": "Active Sessions",
+    "activeSessionsDescription": "Manage devices where you are currently signed in",
+    "logoutAllDevices": "Log out all devices",
+    "deleteAccountWarning": "Deleting your account is permanent and cannot be undone.",
+    "deleteMyAccount": "Delete my account",
+    "deleteAccountConfirmMessage": "This action cannot be undone. Your account and data will be permanently removed.",
+    "enterPassword": "Enter password",
+    "passwordPlaceholder": "Password"
   },
   "more": {
     "title": "More Features",

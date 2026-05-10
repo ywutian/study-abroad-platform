@@ -46,16 +46,15 @@ describe('CounselorEngineService', () => {
       recruitedAthlete?: boolean;
       urmStatus?: string;
     } = {},
-  ): ProfileInput =>
-    ({
-      gpa: 3.9,
-      gpaScale: 4,
-      testScores: [{ type: 'SAT', score: 1500 }],
-      activities: [],
-      awards: [],
-      isInternational: false,
-      ...overrides,
-    }) as ProfileInput;
+  ): ProfileInput => ({
+    gpa: 3.9,
+    gpaScale: 4,
+    testScores: [{ type: 'SAT', score: 1500 }],
+    activities: [],
+    awards: [],
+    isInternational: false,
+    ...overrides,
+  });
 
   const school = (
     overrides: Partial<
@@ -586,7 +585,7 @@ describe('CounselorEngineService', () => {
       const result = await service.compute(
         profile({
           gpa: 3.85,
-          testScores: [{ type: 'IB', score: 42 }] as any,
+          testScores: [{ type: 'IB', score: 42 }],
           isInternational: true,
           nationality: 'CN',
         }),
@@ -619,7 +618,7 @@ describe('CounselorEngineService', () => {
       const result = await service.compute(
         profile({
           gpa: 3.9,
-          testScores: [{ type: 'GAOKAO', score: 690 }] as any,
+          testScores: [{ type: 'GAOKAO', score: 690 }],
           isInternational: true,
           nationality: 'CN',
         }),
@@ -650,7 +649,7 @@ describe('CounselorEngineService', () => {
       const result = await service.compute(
         profile({
           gpa: 3.9,
-          testScores: [{ type: 'A_LEVEL', score: 168 }] as any,
+          testScores: [{ type: 'A_LEVEL', score: 168 }],
           isInternational: true,
           nationality: 'CN',
         }),
@@ -681,7 +680,7 @@ describe('CounselorEngineService', () => {
           gpa: 4.0,
           testScores: [],
           applyingTestOptional: true,
-        } as any),
+        }),
         school({
           id: 'mit',
           name: 'Massachusetts Institute of Technology',
@@ -712,7 +711,7 @@ describe('CounselorEngineService', () => {
           testScores: [],
           applyingTestOptional: true,
           isInternational: false,
-        } as any),
+        }),
         school({
           id: 'ucd',
           name: 'University of California, Davis',

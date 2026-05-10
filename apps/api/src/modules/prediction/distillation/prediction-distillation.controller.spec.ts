@@ -103,7 +103,7 @@ describe('PredictionDistillationController.dryRunPrediction', () => {
     await controller.dryRunPrediction({
       profile: { gpa: 3.5 },
       schoolIds: ['s1'],
-    } as any);
+    });
 
     const profileArg = prediction.previewPredict.mock.calls[0][0];
     expect(profileArg.testScores).toEqual([]);
@@ -117,7 +117,7 @@ describe('PredictionDistillationController.dryRunPrediction', () => {
       schoolIds: ['s1'],
       locale: 'zh',
       applicationRound: 'ED',
-    } as any);
+    });
 
     const optionsArg = prediction.previewPredict.mock.calls[0][2];
     expect(optionsArg.locale).toBe('zh');
@@ -128,7 +128,7 @@ describe('PredictionDistillationController.dryRunPrediction', () => {
     const result = await controller.dryRunPrediction({
       profile: { gpa: 3.9 },
       schoolIds: ['cml-uc-merced'],
-    } as any);
+    });
 
     expect(result).toEqual(sampleResult);
     // Critical: the trace must reach the operator unchanged so they can

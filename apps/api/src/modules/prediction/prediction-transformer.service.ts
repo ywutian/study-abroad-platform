@@ -22,6 +22,7 @@ import {
 } from '@study-abroad/shared/utils';
 import type { ProfileWithRelations } from './prediction.types';
 import { getNormalizedFieldProvenance } from '../school/school-provenance.helpers';
+import { classifyMajor } from './prediction.constants';
 
 type ConfidenceLevel = 'low' | 'medium' | 'high';
 
@@ -57,10 +58,7 @@ export class PredictionTransformerService {
       return { value: undefined };
     }
 
-    const provenance = getNormalizedFieldProvenance(
-      school as Record<string, unknown>,
-      field,
-    );
+    const provenance = getNormalizedFieldProvenance(school, field);
     if (!provenance) {
       return { value: transform ? transform(value) : (value as unknown as R) };
     }
@@ -130,6 +128,140 @@ export class PredictionTransformerService {
     return confidence;
   }
 
+  private toFiniteNumber(value: unknown): number | undefined {
+    const number = toNumber(value);
+    return number != null && Number.isFinite(number) ? number : undefined;
+  }
+
+  private buildGpaTrend(
+    profile: ProfileWithRelations,
+  ): ProfileInput['gpaTrend'] {
+    const semesterValues = ((profile as any).semesterGpas ?? [])
+      .map((sg: any, index: number) => ({
+        label: sg.semester ?? `Semester ${index + 1}`,
+        value: this.toFiniteNumber(sg.gpa),
+        scale: this.toFiniteNumber(sg.gpaScale),
+        order: typeof sg.order === 'number' ? sg.order : index,
+        year: typeof sg.year === 'number' ? sg.year : undefined,
+      }))
+      .filter((entry: any) => entry.value != null)
+      .sort((a: any, b: any) => {
+        if (a.order !== b.order) return a.order - b.order;
+        return (a.year ?? 0) - (b.year ?? 0);
+      }) as Array<{
+      label: string;
+      value: number;
+      scale?: number;
+      order: number;
+      year?: number;
+    }>;
+
+    if (semesterValues.length >= 2) {
+      const first = semesterValues[0];
+      const last = semesterValues[semesterValues.length - 1];
+      const scale =
+        last.scale ??
+        first.scale ??
+        this.toFiniteNumber((profile as any).gpaScale) ??
+        4.0;
+      const delta = ((last.value - first.value) / scale) * 4.0;
+      const direction =
+        delta >= 0.12 ? 'rising' : delta <= -0.12 ? 'falling' : 'flat';
+      return {
+        direction,
+        delta,
+        evidence: `${first.label} ${first.value.toFixed(2)} → ${last.label} ${last.value.toFixed(2)}`,
+      };
+    }
+
+    const gradeValues = [
+      { label: 'G9', value: this.toFiniteNumber((profile as any).gpa9) },
+      { label: 'G10', value: this.toFiniteNumber((profile as any).gpa10) },
+      { label: 'G11', value: this.toFiniteNumber((profile as any).gpa11) },
+      { label: 'G12', value: this.toFiniteNumber((profile as any).gpa12) },
+    ].filter((entry) => entry.value != null) as Array<{
+      label: string;
+      value: number;
+    }>;
+
+    if (gradeValues.length < 2) {
+      return { direction: 'insufficient' };
+    }
+
+    const first = gradeValues[0];
+    const last = gradeValues[gradeValues.length - 1];
+    const scale = this.toFiniteNumber((profile as any).gpaScale) ?? 4.0;
+    const delta = ((last.value - first.value) / scale) * 4.0;
+    const direction =
+      delta >= 0.12 ? 'rising' : delta <= -0.12 ? 'falling' : 'flat';
+    return {
+      direction,
+      delta,
+      evidence: `${first.label} ${first.value.toFixed(2)} → ${last.label} ${last.value.toFixed(2)}`,
+    };
+  }
+
+  private resolveRuntimeGpa(profile: ProfileWithRelations): number | undefined {
+    const direct = this.toFiniteNumber((profile as any).gpa);
+    if (direct != null) return direct;
+
+    const semesterValues = ((profile as any).semesterGpas ?? [])
+      .map((sg: any) => ({
+        gpa: this.toFiniteNumber(sg.gpa),
+        credits: this.toFiniteNumber(sg.credits),
+      }))
+      .filter((entry: any) => entry.gpa != null) as Array<{
+      gpa: number;
+      credits?: number;
+    }>;
+    if (semesterValues.length > 0) {
+      const totalCredits = semesterValues.reduce(
+        (sum, entry) =>
+          sum + (entry.credits && entry.credits > 0 ? entry.credits : 0),
+        0,
+      );
+      const average =
+        totalCredits > 0
+          ? semesterValues.reduce(
+              (sum, entry) =>
+                sum +
+                entry.gpa *
+                  (entry.credits && entry.credits > 0 ? entry.credits : 0),
+              0,
+            ) / totalCredits
+          : semesterValues.reduce((sum, entry) => sum + entry.gpa, 0) /
+            semesterValues.length;
+      return Math.round(average * 100) / 100;
+    }
+
+    const gradeWeights: Record<string, number> = {
+      g9: 0.2,
+      g10: 0.25,
+      g11: 0.3,
+      g12: 0.25,
+    };
+    const gradeValues = [
+      { key: 'g9', value: this.toFiniteNumber((profile as any).gpa9) },
+      { key: 'g10', value: this.toFiniteNumber((profile as any).gpa10) },
+      { key: 'g11', value: this.toFiniteNumber((profile as any).gpa11) },
+      { key: 'g12', value: this.toFiniteNumber((profile as any).gpa12) },
+    ].filter((entry) => entry.value != null) as Array<{
+      key: string;
+      value: number;
+    }>;
+    if (gradeValues.length === 0) return undefined;
+
+    const totalWeight = gradeValues.reduce(
+      (sum, entry) => sum + gradeWeights[entry.key],
+      0,
+    );
+    const weighted = gradeValues.reduce(
+      (sum, entry) => sum + entry.value * gradeWeights[entry.key],
+      0,
+    );
+    return Math.round((weighted / totalWeight) * 100) / 100;
+  }
+
   /**
    * Convert a Prisma profile (with relations) to the internal ProfileInput format
    * used by prediction engines and prompt builders.
@@ -154,6 +286,8 @@ export class PredictionTransformerService {
     const hsRaw = hsEducation?.highSchool;
     // Quality gate: D-grade schools (hsImpactEnabled=false) are excluded from predictions
     const hs = hsRaw?.hsImpactEnabled === false ? undefined : hsRaw;
+    const highSchoolName =
+      hsEducation?.schoolName ?? (profile as any).currentSchool ?? undefined;
 
     const intlContext = detectInternationalStatus({
       nationality: (profile as any).nationality,
@@ -164,8 +298,23 @@ export class PredictionTransformerService {
     });
 
     return {
-      gpa: profile.gpa ? Number(profile.gpa) : undefined,
+      gpa: this.resolveRuntimeGpa(profile),
       gpaScale: profile.gpaScale ? Number(profile.gpaScale) : 4.0,
+      gpaByGrade: {
+        g9: this.toFiniteNumber((profile as any).gpa9),
+        g10: this.toFiniteNumber((profile as any).gpa10),
+        g11: this.toFiniteNumber((profile as any).gpa11),
+        g12: this.toFiniteNumber((profile as any).gpa12),
+      },
+      semesterGpas: ((profile as any).semesterGpas ?? []).map((sg: any) => ({
+        semester: sg.semester,
+        year: sg.year,
+        gpa: Number(sg.gpa),
+        gpaScale: sg.gpaScale != null ? Number(sg.gpaScale) : undefined,
+        credits: sg.credits != null ? Number(sg.credits) : undefined,
+        order: sg.order,
+      })),
+      gpaTrend: this.buildGpaTrend(profile),
       gpaSystem: hsEducation?.gpaSystem,
       grade: profile.grade ?? undefined,
       currentSchoolType: profile.currentSchoolType ?? undefined,
@@ -175,9 +324,9 @@ export class PredictionTransformerService {
       educationSystem: (profile as any).educationSystem ?? undefined,
       needsFinancialAid: (profile as any).needsFinancialAid ?? undefined,
       highSchoolId: hs?.id ?? undefined,
-      highSchoolName: hsEducation?.schoolName ?? undefined,
+      highSchoolName,
       highSchoolTier: hs?.tier ?? undefined,
-      highSchoolType: hs?.type ?? undefined,
+      highSchoolType: hs?.type ?? profile.currentSchoolType ?? undefined,
       highSchoolLocation: hs?.state || hs?.country || undefined,
       highSchoolRecognition: hs?.recognition ?? undefined,
       highSchoolAcademicRigor: hs?.academicRigor ?? undefined,
@@ -185,6 +334,7 @@ export class PredictionTransformerService {
       highSchoolStudentQuality: hs?.studentQuality ?? undefined,
       highSchoolResources: hs?.resources ?? undefined,
       highSchoolGradeInflation: hs?.gradeInflation ?? undefined,
+      highSchoolImpactEnabled: hsRaw?.hsImpactEnabled ?? undefined,
       testScores: (profile.testScores || []).map((s) => ({
         type: s.type,
         score: s.score,
@@ -197,13 +347,33 @@ export class PredictionTransformerService {
         description: a.description ?? undefined,
         hoursPerWeek: a.hoursPerWeek ?? undefined,
         weeksPerYear: a.weeksPerYear ?? undefined,
+        annualHours:
+          a.hoursPerWeek != null && a.weeksPerYear != null
+            ? a.hoursPerWeek * a.weeksPerYear
+            : undefined,
+        yearsActive:
+          a.gradeLevels?.length ??
+          (a.startDate && a.endDate
+            ? Math.max(
+                1,
+                new Date(a.endDate).getFullYear() -
+                  new Date(a.startDate).getFullYear() +
+                  1,
+              )
+            : undefined),
+        tier: a.activityTemplate?.tier ?? undefined,
+        gradeLevels: a.gradeLevels ?? undefined,
+        timing: a.timing ?? undefined,
       })),
       awards: (profile.awards || []).map((a) => ({
         level: a.level,
         name: a.name,
         tier: a.competition?.tier ?? undefined,
         competitionName: a.competition?.name ?? undefined,
+        category: a.category ?? a.competition?.category ?? undefined,
+        year: a.year ?? undefined,
       })),
+      englishProficiency: getBestEnglishProficiency(profile.testScores || []),
       assessment: assessmentData,
       isLegacy: (profile as any).legacy?.length > 0,
       legacySchools:
@@ -426,10 +596,15 @@ export class PredictionTransformerService {
       highSchoolStudentQuality: profile.highSchoolStudentQuality,
       highSchoolResources: profile.highSchoolResources,
       highSchoolGradeInflation: profile.highSchoolGradeInflation,
+      targetMajorCategory: profile.targetMajor
+        ? classifyMajor(profile.targetMajor)
+        : undefined,
       isLegacy: profile.isLegacy,
       isFirstGen: profile.isFirstGen,
       needsFinancialAid: profile.needsFinancialAid,
       essayQualityScore: profile.essayQualityScore,
+      isInternational: profile.isInternational,
+      educationSystem: profile.educationSystem,
     };
   }
 

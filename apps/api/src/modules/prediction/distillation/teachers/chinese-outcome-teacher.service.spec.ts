@@ -44,7 +44,7 @@ describe('ChineseOutcomeTeacherService', () => {
         currentSchoolType: 'INTERNATIONAL',
         highSchoolType: 'INTERNATIONAL',
         isInternational: true,
-      } as any,
+      },
       profileMetrics: {} as any,
       school: {} as any,
       ourProbPrePlatt: 0.12,

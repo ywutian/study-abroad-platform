@@ -248,14 +248,14 @@ Capability-gated runtime behavior:
 
 ## 8. Predictions (`/predictions`) — v2 Multi-Engine Ensemble
 
-| Method | Path                            | Auth     | Description                                                    |
-| ------ | ------------------------------- | -------- | -------------------------------------------------------------- |
-| POST   | `/predictions`                  | Required | Run multi-engine ensemble prediction (stats + AI + historical) |
-| GET    | `/predictions/history`          | Required | Get prediction history                                         |
-| PATCH  | `/predictions/:schoolId/result` | Required | Report actual admission result for calibration                 |
-| GET    | `/predictions/calibration`      | Required | Get aggregated calibration statistics                          |
+| Method | Path                            | Auth     | Description                                    |
+| ------ | ------------------------------- | -------- | ---------------------------------------------- |
+| POST   | `/predictions`                  | Required | Run counselor-primary admission prediction     |
+| GET    | `/predictions/history`          | Required | Get prediction history                         |
+| PATCH  | `/predictions/:schoolId/result` | Required | Report actual admission result for calibration |
+| GET    | `/predictions/calibration`      | Required | Get aggregated calibration statistics          |
 
-**POST `/predictions`** — 核心预测端点 (v2-ensemble)
+**POST `/predictions`** — 核心预测端点 (counselor-primary launch)
 
 Request body:
 
@@ -266,7 +266,7 @@ Request body:
 }
 ```
 
-Response includes: `probability`, `probabilityLow`, `probabilityHigh`, `tier` (reach/match/safety), `confidence` (low/medium/high), `factors`, `engineScores` (stats/AI/historical weights and fusion method), `suggestions`, `modelVersion`.
+Response includes: `probability` (`number | null`), `probabilityLow`, `probabilityHigh`, `tier` (`reach`/`match`/`safety`/`unavailable`), `confidence`, `factors`, `sourceSummary`, `uncertaintyReasons`, `predictionMethod` (`counselor` or `insufficient_data`), `insufficientData` for unavailable Tier 4, and `modelVersion`. New counselor-primary responses intentionally omit legacy `engineScores`, `crossEngineConsistency`, and `servedTrace.shadow`.
 
 详细技术文档: [PREDICTION_SYSTEM.md](PREDICTION_SYSTEM.md)
 

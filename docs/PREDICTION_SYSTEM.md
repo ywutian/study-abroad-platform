@@ -82,6 +82,7 @@ Launch verification produces reports in `verification-report/launch/`:
 
 - `coverage.json`: full US school x archetype counselor coverage
 - `data-quality.json`: counselor-used data source audit
+- `manual-review.json`: classified data/coverage anomalies; no `UNREVIEWED` rows may remain
 - `tier4.json`: unavailable contract smoke result
 - `outcome-inventory.json`: outcome counts by status/result
 - `contract.json`: prediction contract smoke result

@@ -155,7 +155,7 @@ describe('expanded distillation teachers', () => {
           testScores: [],
           activities: [],
           awards: [],
-        } as any,
+        },
         school: {
           id: 'school-1',
           name: 'Example University',

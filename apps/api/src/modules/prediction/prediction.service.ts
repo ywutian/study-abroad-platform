@@ -466,19 +466,17 @@ export class PredictionService {
         graduationRate: schoolInput.graduationRate,
       },
     });
-    const baseTrace =
-      builtTrace ??
-      ({
-        policyVersionId: resolvedPolicyVersionId,
-        cohortKey: 'UNKNOWN',
-        roundContext: resolvedApplicationRound,
-        priorTier: 'counselor',
-        driftSignalIds: [],
-        relationshipSignalIds: [],
-        calibrationPath: [],
-        uncertaintyReasons: [],
-        sourceSummary: [],
-      } as PredictionTracePayload);
+    const baseTrace = builtTrace ?? {
+      policyVersionId: resolvedPolicyVersionId,
+      cohortKey: 'UNKNOWN',
+      roundContext: resolvedApplicationRound,
+      priorTier: 'counselor',
+      driftSignalIds: [],
+      relationshipSignalIds: [],
+      calibrationPath: [],
+      uncertaintyReasons: [],
+      sourceSummary: [],
+    };
 
     if (counselorResult.tier === 4) {
       const reason =
@@ -535,6 +533,7 @@ export class PredictionService {
             tier: counselorResult.tier,
             modifiers: counselorResult.modifierResults,
             missingFields: counselorResult.missingFields,
+            profileSignals: counselorResult.profileSignals,
             sourceContributions: counselorResult.sourceContributions,
             ruleVersion: counselorResult.ruleVersion,
           },
@@ -542,7 +541,7 @@ export class PredictionService {
             tier: 4,
             reason,
           },
-        } as any,
+        },
       };
       return persist ? this.toPublicPredictionResult(result) : result;
     }
@@ -559,11 +558,23 @@ export class PredictionService {
       ? { ...schoolMetrics, acceptanceRate: tierContext.rate }
       : schoolMetrics;
     const tier = calculateTier(counselorResult.probability, tierSchoolMetrics);
+    const profileSignals = counselorResult.profileSignals;
     const sourceSummary = [
       {
         label: 'Counselor estimate',
         detail: `${counselorResult.anchorSource}; anchor ${(counselorResult.anchor * 100).toFixed(1)}%; Tier ${counselorResult.tier}; ${counselorResult.ruleVersion}`,
       },
+      ...(profileSignals
+        ? [
+            {
+              label: 'Profile signals used',
+              detail:
+                profileSignals.usedInProbability.length > 0
+                  ? profileSignals.usedInProbability.join(', ')
+                  : 'No additional profile context changed probability; neutral/missing signals were tracked.',
+            },
+          ]
+        : []),
     ];
     const uncertaintyReasons = [
       'Cold-start rules-of-thumb estimate; essays, recommendations, and institutional priorities are not fully modeled.',
@@ -572,6 +583,11 @@ export class PredictionService {
         (field) =>
           `Missing ${field}; this signal was skipped neutrally instead of penalized.`,
       ),
+      ...(profileSignals?.ignoredByPolicy?.length
+        ? [
+            `Policy-excluded signals not used in probability: ${profileSignals.ignoredByPolicy.join(', ')}.`,
+          ]
+        : []),
     ];
     const confidenceReason = this.generateConfidenceReason(
       'medium',
@@ -588,7 +604,7 @@ export class PredictionService {
       probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
       confidence: 'medium',
       tier,
-      factors: counselorResult.factors as any,
+      factors: counselorResult.factors,
       suggestions: this.generateSuggestions(
         tier,
         'medium',
@@ -623,10 +639,11 @@ export class PredictionService {
           tier: counselorResult.tier,
           modifiers: counselorResult.modifierResults,
           missingFields: counselorResult.missingFields,
+          profileSignals: counselorResult.profileSignals,
           sourceContributions: counselorResult.sourceContributions,
           ruleVersion: counselorResult.ruleVersion,
         },
-      } as any,
+      },
     };
 
     if (persist) {
@@ -1164,6 +1181,7 @@ export class PredictionService {
         },
         awards: { include: { competition: true } },
         education: { include: { highSchool: true } },
+        semesterGpas: { orderBy: { order: 'asc' } },
       },
     });
 
@@ -1970,7 +1988,7 @@ export class PredictionService {
             counselorResult.probability,
             tierSchoolMetrics,
           );
-          result.factors = counselorResult.factors as any;
+          result.factors = counselorResult.factors;
           result.engineScores = undefined;
           result.confidence = 'medium';
           result.confidenceReason =
@@ -1992,7 +2010,7 @@ export class PredictionService {
 
           // Annotate trace — engine label + counselor metadata + shadow fusion
           result.servedTrace = {
-            ...((result.servedTrace as object | undefined) ?? {}),
+            ...(result.servedTrace ?? {}),
             engine: 'counselor',
             counselor: {
               anchor: counselorResult.anchor,
@@ -2007,15 +2025,15 @@ export class PredictionService {
               ...(((result.servedTrace as any)?.shadow ?? {}) as object),
               fusion: shadowFusion,
             },
-          } as any;
+          };
         } else {
           result.servedTrace = {
-            ...((result.servedTrace as object | undefined) ?? {}),
+            ...(result.servedTrace ?? {}),
             counselorSkipped: {
               reason: counselorResult.insufficientData?.reason ?? 'tier_4',
               tier: counselorResult.tier,
             },
-          } as any;
+          };
         }
       } catch (err) {
         // Counselor failure should never block a prediction. Log + fall back

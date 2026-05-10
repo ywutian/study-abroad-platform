@@ -1,0 +1,2 @@
+ALTER TYPE "PredictionOutcomeLabelStatus" ADD VALUE IF NOT EXISTS 'REQUEST_EVIDENCE';
+ALTER TYPE "PredictionOutcomeLabelStatus" ADD VALUE IF NOT EXISTS 'REJECTED';

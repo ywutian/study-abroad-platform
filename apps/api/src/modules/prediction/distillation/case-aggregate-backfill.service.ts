@@ -337,7 +337,7 @@ export class CaseAggregateBackfillService {
         // as cohort-priors backfill (PR-49).
         caseIds: bucket.caseIds.slice(0, 50),
         caseIdsTruncatedAt: bucket.caseIds.length > 50 ? 50 : null,
-      } as Prisma.InputJsonValue,
+      },
     };
   }
 }

@@ -4,7 +4,9 @@ import { Prisma } from '@prisma/client';
 export type ProfileWithRelations = Prisma.ProfileGetPayload<{
   include: {
     testScores: true;
-    activities: true;
+    activities: { include: { activityTemplate: true } };
     awards: { include: { competition: true } };
+    education: { include: { highSchool: true } };
+    semesterGpas: true;
   };
 }>;

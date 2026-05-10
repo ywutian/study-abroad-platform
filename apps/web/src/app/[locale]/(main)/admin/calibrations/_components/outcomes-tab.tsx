@@ -49,11 +49,20 @@ const OUTCOME_STATUSES = [
   'SELF_REPORTED',
   'COUNSELOR_VERIFIED',
   'DOCUMENT_VERIFIED',
+  'REQUEST_EVIDENCE',
+  'REJECTED',
   'CONFLICTED',
   'CENSORED',
 ] as const;
 
-const OUTCOME_RESULTS = ['all', 'ADMITTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'] as const;
+const OUTCOME_RESULTS = [
+  'all',
+  'ADMITTED',
+  'REJECTED',
+  'WAITLISTED',
+  'DEFERRED',
+  'WITHDRAWN',
+] as const;
 
 function humanizeEnum(value: string) {
   return value
@@ -231,6 +240,15 @@ export function OutcomesTab() {
                           <div className="text-xs text-muted-foreground">
                             {item.cohortKey ?? '—'} · {item.round ?? item.applicationRound ?? '—'}
                           </div>
+                          {item.suspiciousFlags?.length ? (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {item.suspiciousFlags.map((flag) => (
+                                <Badge key={flag} variant="destructive" className="text-2xs">
+                                  {humanizeEnum(flag)}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -347,6 +365,11 @@ export function OutcomesTab() {
                     </span>
                   </div>
                 )}
+                {selectedOutcome.suspiciousFlags?.length ? (
+                  <div className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                    Review flags: {selectedOutcome.suspiciousFlags.map(humanizeEnum).join(', ')}
+                  </div>
+                ) : null}
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">

@@ -139,6 +139,8 @@ export interface PredictionWorkflowOutcome {
   };
   canonicalOutcomeLabel?: string;
   calibrationEligible: boolean;
+  suspiciousFlags?: string[];
+  reviewPriority?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export interface PaginatedResponse<T> {

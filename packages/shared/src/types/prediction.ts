@@ -28,6 +28,8 @@ export type PredictionOutcomeLabelStatus =
   | 'SELF_REPORTED'
   | 'COUNSELOR_VERIFIED'
   | 'DOCUMENT_VERIFIED'
+  | 'REQUEST_EVIDENCE'
+  | 'REJECTED'
   | 'CONFLICTED'
   | 'CENSORED';
 

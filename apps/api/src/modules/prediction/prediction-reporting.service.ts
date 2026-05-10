@@ -33,6 +33,11 @@ type ReportedOutcomeResult =
   | 'WITHDRAWN';
 
 const CALIBRATION_EXCLUDED_SOURCES = ['quick-match'] as const;
+const ELITE_OUTCOME_PROBABILITY_THRESHOLD = 0.2;
+const LOW_PROBABILITY_ADMIT_THRESHOLD = 0.1;
+const HIGH_PROBABILITY_REJECT_THRESHOLD = 0.8;
+const MANY_ELITE_ADMIT_THRESHOLD = 5;
+const IMMEDIATE_REPORT_WINDOW_MS = 60 * 60 * 1000;
 
 /**
  * Reporting and calibration data service for predictions.
@@ -80,6 +85,78 @@ export class PredictionReportingService {
     eligibleForCalibration: boolean;
   } {
     return resolveCanonicalPredictionOutcome(records);
+  }
+
+  private buildOutcomeReviewFlags(params: {
+    result: string;
+    probability: number | null;
+    outcomeCreatedAt: Date;
+    predictionCreatedAt: Date;
+    records: OutcomeLabelRecordShape[];
+    profileEliteAdmitCount: number;
+  }): string[] {
+    const flags = new Set<string>();
+    const probability = params.probability;
+
+    if (
+      params.result === 'ADMITTED' &&
+      probability != null &&
+      probability < LOW_PROBABILITY_ADMIT_THRESHOLD
+    ) {
+      flags.add('LOW_PROBABILITY_ADMIT');
+    }
+
+    if (
+      params.result === 'REJECTED' &&
+      probability != null &&
+      probability > HIGH_PROBABILITY_REJECT_THRESHOLD
+    ) {
+      flags.add('HIGH_PROBABILITY_REJECT');
+    }
+
+    const distinctResults = new Set(
+      params.records.map((record) => record.result),
+    );
+    if (distinctResults.size > 1) {
+      flags.add('CONFLICTING_OUTCOME_LABELS');
+    }
+
+    if (
+      params.result === 'ADMITTED' &&
+      probability != null &&
+      probability < ELITE_OUTCOME_PROBABILITY_THRESHOLD &&
+      params.profileEliteAdmitCount > MANY_ELITE_ADMIT_THRESHOLD
+    ) {
+      flags.add('MANY_LOW_PROBABILITY_ADMITS_BY_PROFILE');
+    }
+
+    if (
+      params.outcomeCreatedAt.getTime() -
+        params.predictionCreatedAt.getTime() >=
+        0 &&
+      params.outcomeCreatedAt.getTime() - params.predictionCreatedAt.getTime() <
+        IMMEDIATE_REPORT_WINDOW_MS
+    ) {
+      flags.add('IMMEDIATE_REPORT_AFTER_PREDICTION');
+    }
+
+    return [...flags];
+  }
+
+  private getOutcomeReviewPriority(flags: string[]): 'LOW' | 'MEDIUM' | 'HIGH' {
+    if (
+      flags.some((flag) =>
+        [
+          'LOW_PROBABILITY_ADMIT',
+          'HIGH_PROBABILITY_REJECT',
+          'CONFLICTING_OUTCOME_LABELS',
+          'MANY_LOW_PROBABILITY_ADMITS_BY_PROFILE',
+        ].includes(flag),
+      )
+    ) {
+      return 'HIGH';
+    }
+    return flags.length > 0 ? 'MEDIUM' : 'LOW';
   }
 
   private getStoredActualResult(
@@ -172,7 +249,9 @@ export class PredictionReportingService {
         this.logger.warn(
           `Prediction not found while reporting actual result for profile ${profileId}, school ${schoolId}`,
         );
-        return;
+        throw new NotFoundException(
+          'Numeric prediction not found for this school. Tier 4 unavailable predictions cannot be labeled.',
+        );
       }
 
       // Dedup: skip if a SELF_REPORTED record already exists for this prediction
@@ -364,6 +443,9 @@ export class PredictionReportingService {
         );
       }
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       this.logger.warn('Failed to report actual result', error);
     }
   }
@@ -394,6 +476,8 @@ export class PredictionReportingService {
           predictionResult: {
             select: {
               id: true,
+              probability: true,
+              createdAt: true,
               schoolId: true,
               profileId: true,
               policyVersionId: true,
@@ -424,12 +508,49 @@ export class PredictionReportingService {
         })
       : [];
     const schoolMap = new Map(schools.map((school) => [school.id, school]));
+    const profileIds = [
+      ...new Set(items.map((item) => item.predictionResult.profileId)),
+    ];
+    const profileEliteAdmitCounts = await Promise.all(
+      profileIds.map(async (profileId) => {
+        const count = await this.prisma.predictionOutcomeLabelRecord.count({
+          where: {
+            result: 'ADMITTED',
+            status: {
+              in: [
+                'SELF_REPORTED',
+                'COUNSELOR_VERIFIED',
+                'DOCUMENT_VERIFIED',
+              ] as any,
+            },
+            predictionResult: {
+              profileId,
+              probability: { lt: ELITE_OUTCOME_PROBABILITY_THRESHOLD },
+            },
+          },
+        });
+        return [profileId, count] as const;
+      }),
+    );
+    const profileEliteAdmitCountMap = new Map(profileEliteAdmitCounts);
 
     const normalizedItems = items
       .map((item) => {
         const canonical = this.resolveCanonicalOutcome(
           item.predictionResult.outcomeLabelRecords,
         );
+        const suspiciousFlags = this.buildOutcomeReviewFlags({
+          result: item.result,
+          probability:
+            item.predictionResult.probability == null
+              ? null
+              : Number(item.predictionResult.probability),
+          outcomeCreatedAt: item.createdAt,
+          predictionCreatedAt: item.predictionResult.createdAt,
+          records: item.predictionResult.outcomeLabelRecords,
+          profileEliteAdmitCount:
+            profileEliteAdmitCountMap.get(item.predictionResult.profileId) ?? 0,
+        });
         return {
           id: item.id,
           result: item.result,
@@ -454,6 +575,8 @@ export class PredictionReportingService {
           canonicalOutcomeLabel:
             item.predictionResult.outcomeLabel ?? undefined,
           calibrationEligible: canonical.eligibleForCalibration,
+          suspiciousFlags,
+          reviewPriority: this.getOutcomeReviewPriority(suspiciousFlags),
         };
       })
       .filter((item) => (query.eligibleOnly ? item.calibrationEligible : true));
