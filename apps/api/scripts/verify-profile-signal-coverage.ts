@@ -8,6 +8,7 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 import { NestFactory } from '@nestjs/core';
+import { InstitutionType } from '@prisma/client';
 import { CounselorEngineModule } from '../src/modules/prediction/counselor/counselor-engine.module';
 import { CounselorEngineService } from '../src/modules/prediction/counselor/counselor-engine.service';
 import { PredictionTransformerService } from '../src/modules/prediction/prediction-transformer.service';
@@ -34,6 +35,10 @@ const POLICY_IGNORED = [
   'URM status',
   'unverified legacy/athlete hooks',
 ];
+const AUDITION_OR_PORTFOLIO_TYPES = [
+  InstitutionType.ART_DESIGN,
+  InstitutionType.MUSIC_CONSERVATORY,
+];
 
 function hasEntry(list: string[] | undefined, key: string): boolean {
   return Boolean(list?.some((item) => item === key || item.includes(key)));
@@ -54,7 +59,10 @@ async function main() {
     where: {
       country: 'US',
       acceptanceRate: { not: null },
-      institutionType: { notIn: ['ART_DESIGN', 'MUSIC_CONSERVATORY'] as any },
+      OR: [
+        { institutionType: null },
+        { institutionType: { notIn: AUDITION_OR_PORTFOLIO_TYPES } },
+      ],
     },
     orderBy: { acceptanceRate: 'asc' },
   });

@@ -12,6 +12,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { InstitutionType } from '@prisma/client';
 import { RedisService } from '../src/common/redis/redis.service';
 import { FeatureFlagService } from '../src/common/feature-flags/feature-flag.service';
 import { CaseIncentiveService } from '../src/modules/points/incentive.service';
@@ -35,6 +36,10 @@ import { PrismaService } from '../src/prisma/prisma.service';
 
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 const REPORT_DIR = resolve(REPO_ROOT, 'verification-report', 'launch');
+const AUDITION_OR_PORTFOLIO_TYPES = [
+  InstitutionType.ART_DESIGN,
+  InstitutionType.MUSIC_CONSERVATORY,
+];
 
 async function main() {
   mkdirSync(REPORT_DIR, { recursive: true });
@@ -134,9 +139,10 @@ async function main() {
     where: {
       country: 'US',
       acceptanceRate: { not: null },
-      NOT: {
-        institutionType: { in: ['ART_DESIGN', 'MUSIC_CONSERVATORY'] as any },
-      },
+      OR: [
+        { institutionType: null },
+        { institutionType: { notIn: AUDITION_OR_PORTFOLIO_TYPES } },
+      ],
     },
     orderBy: { name: 'asc' },
   });
@@ -180,15 +186,31 @@ async function main() {
     hasServedTraceShadow: numericResult?.servedTrace?.shadow != null,
   };
 
-  const artOrMusicSchool = await prisma.school.findFirst({
+  let createdTier4FixtureId: string | null = null;
+  let artOrMusicSchool = await prisma.school.findFirst({
     where: {
       country: 'US',
-      institutionType: { in: ['ART_DESIGN', 'MUSIC_CONSERVATORY'] as any },
+      institutionType: { in: AUDITION_OR_PORTFOLIO_TYPES },
     },
     orderBy: { name: 'asc' },
   });
   if (!artOrMusicSchool) {
-    throw new Error('No art/music Tier 4 school fixture available');
+    artOrMusicSchool = await prisma.school.upsert({
+      where: { nameNorm: 'launch smoke art portfolio fixture' },
+      update: {
+        institutionType: InstitutionType.ART_DESIGN,
+        acceptanceRate: 19,
+        country: 'US',
+      },
+      create: {
+        name: 'Launch Smoke Art Portfolio Fixture',
+        nameNorm: 'launch smoke art portfolio fixture',
+        country: 'US',
+        institutionType: InstitutionType.ART_DESIGN,
+        acceptanceRate: 19,
+      },
+    });
+    createdTier4FixtureId = artOrMusicSchool.id;
   }
 
   const tier4Preview = await prediction.previewPredict(
@@ -434,6 +456,11 @@ async function main() {
     };
   } finally {
     await prisma.user.delete({ where: { id: userId } }).catch(() => undefined);
+    if (createdTier4FixtureId) {
+      await prisma.school
+        .delete({ where: { id: createdTier4FixtureId } })
+        .catch(() => undefined);
+    }
   }
 
   const contractReport = {
