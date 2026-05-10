@@ -119,6 +119,13 @@ function parseArgs() {
       .split(',')
       .map((v) => v.trim().toLowerCase()),
   );
+  const namesRaw = get('names');
+  const namePatterns = namesRaw
+    ? namesRaw
+        .split(',')
+        .map((v) => v.trim().toLowerCase())
+        .filter(Boolean)
+    : null;
   return {
     dryRun: has('dry-run'),
     all: has('all'),
@@ -130,6 +137,7 @@ function parseArgs() {
     delayMs: Number(get('delay-ms', '350')),
     fieldEd: fields.has('ed') || fields.has('both'),
     fieldEa: fields.has('ea') || fields.has('both'),
+    namePatterns,
     out:
       get('out') ??
       `apps/api/scripts/cds-data/ed-ea-tavily-results-${new Date().toISOString().slice(0, 10)}.json`,
@@ -242,6 +250,11 @@ async function main() {
   const where: Prisma.SchoolWhereInput = {
     country: { in: ['US', 'United States'] },
   };
+  if (args.namePatterns && args.namePatterns.length > 0) {
+    where.OR = args.namePatterns.map((pattern) => ({
+      name: { contains: pattern, mode: 'insensitive' as const },
+    }));
+  }
   const schools = await prisma.school.findMany({
     where,
     orderBy: [{ usNewsRank: { sort: 'asc', nulls: 'last' } }, { name: 'asc' }],
@@ -736,8 +749,8 @@ async function writeRoundTerminal(
             realDataStatus: 'NO_PUBLIC_ROUND_RATE',
             source: 'TERMINAL',
             reason,
-            searchedQueries: queries,
-            candidates: candidates.slice(0, 10),
+            searchedQueries: toJsonValue(queries),
+            candidates: toJsonValue(candidates.slice(0, 10)),
             verifiedAt: new Date().toISOString(),
             generatedBy: 'fetch-ed-ea-rates-tavily',
           },
@@ -751,7 +764,7 @@ function provenancePayload(
   extracted: ExtractedRoundRate,
   queries: SearchPlan[],
   candidates: Candidate[],
-) {
+): Prisma.JsonObject {
   return {
     realDataStatus:
       extracted.sourceFamily === 'SECONDARY_AGGREGATOR'
@@ -762,11 +775,15 @@ function provenancePayload(
     value: extracted.rate,
     confidence: extracted.confidence,
     formula: extracted.formula,
-    searchedQueries: queries,
-    candidates: candidates.slice(0, 10),
+    searchedQueries: toJsonValue(queries),
+    candidates: toJsonValue(candidates.slice(0, 10)),
     verifiedAt: new Date().toISOString(),
     generatedBy: 'fetch-ed-ea-rates-tavily',
   };
+}
+
+function toJsonValue(value: unknown): Prisma.JsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.JsonValue;
 }
 
 async function mergedMetadata(schoolId: string, patch: Prisma.JsonObject) {
