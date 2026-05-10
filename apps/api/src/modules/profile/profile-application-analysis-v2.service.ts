@@ -1572,7 +1572,7 @@ function normalizeUsage(
     | undefined,
 ): Prisma.InputJsonValue | undefined {
   if (!usage) return undefined;
-  return usage as unknown as Prisma.InputJsonValue;
+  return usage;
 }
 
 function buildReplayFailures(metrics: Record<string, number | boolean>) {

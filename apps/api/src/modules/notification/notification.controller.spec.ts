@@ -53,11 +53,7 @@ describe('NotificationController', () => {
 
   describe('getNotifications', () => {
     it('should call notificationService.getNotifications with parsed params', async () => {
-      const result = await controller.getNotifications(
-        mockUser as any,
-        '10',
-        '5',
-      );
+      const result = await controller.getNotifications(mockUser, '10', '5');
 
       expect(notificationService.getNotifications).toHaveBeenCalledWith(
         'user-1',
@@ -68,7 +64,7 @@ describe('NotificationController', () => {
     });
 
     it('should use default limit=20 and offset=0 when not provided', async () => {
-      await controller.getNotifications(mockUser as any, undefined, undefined);
+      await controller.getNotifications(mockUser, undefined, undefined);
 
       expect(notificationService.getNotifications).toHaveBeenCalledWith(
         'user-1',
@@ -80,7 +76,7 @@ describe('NotificationController', () => {
 
   describe('getUnreadCount', () => {
     it('should return the unread count for the user', async () => {
-      const result = await controller.getUnreadCount(mockUser as any);
+      const result = await controller.getUnreadCount(mockUser);
 
       expect(notificationService.getUnreadCount).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ count: 5 });
@@ -94,7 +90,7 @@ describe('NotificationController', () => {
         platform: 'android',
       };
 
-      const result = await controller.registerPushToken(mockUser as any, body);
+      const result = await controller.registerPushToken(mockUser, body);
 
       expect(notificationService.registerPushToken).toHaveBeenCalledWith(
         'user-1',
@@ -107,7 +103,7 @@ describe('NotificationController', () => {
 
   describe('markAsRead', () => {
     it('should call notificationService.markAsRead with userId and notificationId', async () => {
-      const result = await controller.markAsRead(mockUser as any, 'notif-1');
+      const result = await controller.markAsRead(mockUser, 'notif-1');
 
       expect(notificationService.markAsRead).toHaveBeenCalledWith(
         'user-1',
@@ -119,7 +115,7 @@ describe('NotificationController', () => {
 
   describe('markAllAsRead', () => {
     it('should call notificationService.markAllAsRead with userId', async () => {
-      const result = await controller.markAllAsRead(mockUser as any);
+      const result = await controller.markAllAsRead(mockUser);
 
       expect(notificationService.markAllAsRead).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ count: 3 });
@@ -128,10 +124,7 @@ describe('NotificationController', () => {
 
   describe('deleteNotification', () => {
     it('should call notificationService.deleteNotification with userId and id', async () => {
-      const result = await controller.deleteNotification(
-        mockUser as any,
-        'notif-1',
-      );
+      const result = await controller.deleteNotification(mockUser, 'notif-1');
 
       expect(notificationService.deleteNotification).toHaveBeenCalledWith(
         'user-1',
@@ -143,7 +136,7 @@ describe('NotificationController', () => {
 
   describe('clearAll', () => {
     it('should call notificationService.clearAll with userId', async () => {
-      const result = await controller.clearAll(mockUser as any);
+      const result = await controller.clearAll(mockUser);
 
       expect(notificationService.clearAll).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ success: true });

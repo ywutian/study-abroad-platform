@@ -457,7 +457,7 @@ describe('AdminService', () => {
         year: 2026,
         round: 'RD',
         applicationDeadline: '2026-01-01',
-      } as any);
+      });
 
       expect(result).toEqual({ id: 'd1' });
     });
@@ -514,10 +514,10 @@ describe('AdminService', () => {
 
       const result = await service.createGlobalEvent({
         title: 'SAT',
-        category: 'TEST' as any,
+        category: 'TEST',
         eventDate: '2026-03-01',
         year: 2026,
-      } as any);
+      });
 
       expect(result.title).toBe('SAT');
     });

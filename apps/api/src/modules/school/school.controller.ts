@@ -449,7 +449,7 @@ export class SchoolController {
     const now = new Date().toISOString();
     const updatedReqs = { ...existingReqs };
     const updatedProv = buildManualProvenance(
-      schemaFields as Record<string, unknown>,
+      schemaFields,
       existingProv,
       now,
       user.id,

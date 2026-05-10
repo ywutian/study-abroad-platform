@@ -205,7 +205,7 @@ export class ResumeService {
     userId: string,
     dto: CreateResumeDto,
   ): Promise<ResumeWithSections> {
-    const resumeType = (dto.type ?? 'COLLEGE_APPLICATION') as ResumeType;
+    const resumeType = dto.type ?? 'COLLEGE_APPLICATION';
     const defaultSections = DEFAULT_SECTIONS[resumeType];
 
     const resume = await this.prisma.resume.create({
@@ -316,7 +316,7 @@ export class ResumeService {
     return this.prisma.resumeSection.create({
       data: {
         resumeId,
-        type: dto.type as ResumeSectionType,
+        type: dto.type,
         title: dto.title ?? dto.type.replace(/_/g, ' '),
         content: (dto.content ?? {}) as any,
         order: (maxOrder._max.order ?? -1) + 1,

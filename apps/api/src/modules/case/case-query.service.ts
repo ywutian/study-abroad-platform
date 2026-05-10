@@ -305,7 +305,7 @@ export class CaseQueryService {
 
     // Map test scores → CaseTestScoreDto format
     const testScores = profile.testScores.map((ts) => ({
-      type: ts.type as string,
+      type: ts.type,
       score: ts.score,
       subscores: ts.subScores as Record<string, number> | undefined,
       testDate: ts.testDate?.toISOString(),

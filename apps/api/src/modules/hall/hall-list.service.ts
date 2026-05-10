@@ -15,6 +15,10 @@ import {
 } from '../../common/dto/pagination.dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value));
+}
+
 interface CreateUserListDto {
   title: string;
   description?: string;
@@ -39,7 +43,7 @@ export class HallListService {
         title: data.title,
         description: data.description,
         category: data.category,
-        items: data.items as object,
+        items: toInputJson(data.items),
         isPublic: data.isPublic ?? true,
       },
     });
@@ -72,7 +76,7 @@ export class HallListService {
         title: data.title,
         description: data.description,
         category: data.category,
-        items: data.items as object | undefined,
+        items: data.items === undefined ? undefined : toInputJson(data.items),
         isPublic: data.isPublic,
       },
     });

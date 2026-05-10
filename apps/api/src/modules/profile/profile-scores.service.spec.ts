@@ -105,7 +105,7 @@ describe('ProfileScoresService', () => {
       const result = await service.createTestScore('user-1', {
         type: 'SAT',
         score: 1500,
-      } as any);
+      });
 
       expect(result).toEqual(created);
       expect(mockHelpers.getProfileId).toHaveBeenCalledWith('user-1');
@@ -122,7 +122,7 @@ describe('ProfileScoresService', () => {
         type: 'TOEFL',
         score: 110,
         testDate: '2025-01-15',
-      } as any);
+      });
 
       expect(mockPrisma.testScore.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -139,7 +139,7 @@ describe('ProfileScoresService', () => {
         type: 'AP',
         score: 5,
         subject: 'Calculus BC',
-      } as any);
+      });
 
       expect(mockPrisma.testScore.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -163,7 +163,7 @@ describe('ProfileScoresService', () => {
         type: 'AP',
         score: 4,
         subScores: { subject: 'US History' },
-      } as any);
+      });
 
       expect(mockPrisma.testScore.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -189,7 +189,7 @@ describe('ProfileScoresService', () => {
         type: 'TOEFL',
         score: 110,
         subScores: { listening: 28, reading: 29 },
-      } as any);
+      });
 
       expect(result).toEqual(existing);
       expect(mockPrisma.testScore.create).not.toHaveBeenCalled();
@@ -336,7 +336,7 @@ describe('ProfileScoresService', () => {
       const result = await service.createAward('user-1', {
         name: 'USAMO',
         level: 'NATIONAL',
-      } as any);
+      });
 
       expect(result).toEqual(created);
       expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
@@ -473,7 +473,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 3.8,
         gpaScale: 4.0,
-      } as any);
+      });
 
       expect(result).toEqual(created);
       expect(mockPrisma.profile.update).toHaveBeenCalled();
@@ -504,7 +504,7 @@ describe('ProfileScoresService', () => {
 
       const result = await service.updateSemesterGpa('user-1', 'sg-1', {
         gpa: 3.9,
-      } as any);
+      });
 
       expect(result.gpa).toBe(3.9);
     });
@@ -699,7 +699,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 3.7,
         gpaScale: 4.0,
-      } as any);
+      });
 
       // Grade 9: (3.6/4*4 + 3.8/4*4) / 2 = (3.6 + 3.8) / 2 = 3.7
       // Grade 10: 3.7/4*4 = 3.7
@@ -734,7 +734,7 @@ describe('ProfileScoresService', () => {
         gpa: 4.0,
         gpaScale: 4.0,
         credits: 18,
-      } as any);
+      });
 
       // Grade 9 credit-weighted: (3.5/4*4*15 + 4.0/4*4*18) / (15+18) = (52.5 + 72) / 33 = 124.5/33 = 3.7727...
       // Rounded: 3.77
@@ -765,7 +765,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 90,
         gpaScale: 100,
-      } as any);
+      });
 
       // Grade 9: 4.5/5*4 = 3.6
       // Grade 10: 90/100*4 = 3.6
@@ -799,7 +799,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 4.0,
         gpaScale: 4.0,
-      } as any);
+      });
 
       // Simple average (not credit-weighted because one has null credits):
       // (3.5/4*4 + 4.0/4*4) / 2 = (3.5+4.0)/2 = 3.75
@@ -830,7 +830,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 3.8,
         gpaScale: 4.0,
-      } as any);
+      });
 
       // None match g\d+ pattern, so gradeGpas map is empty, no recalc happens
       const updateCalls = mockPrisma.profile.update.mock.calls;
@@ -859,7 +859,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 3.8,
         gpaScale: 4.0,
-      } as any);
+      });
 
       // Only g9fall matches, fall2024 is skipped
       // Grade 9: 3.8/4*4 = 3.8
@@ -889,7 +889,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 3.8,
         gpaScale: 4.0,
-      } as any);
+      });
 
       const updateCalls = mockPrisma.profile.update.mock.calls;
       const recalcCall = updateCalls.find(
@@ -908,7 +908,7 @@ describe('ProfileScoresService', () => {
         year: 2024,
         gpa: 3.8,
         gpaScale: 4.0,
-      } as any);
+      });
 
       // profile.update should not be called for gpa recalc
       const updateCalls = mockPrisma.profile.update.mock.calls;

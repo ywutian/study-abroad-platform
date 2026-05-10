@@ -561,8 +561,7 @@ export class ProfileApplicationAnalysisService {
             analysisVersion,
             experiments: runtimeExperiments.map((experiment) => ({
               id: experiment.id,
-              capability:
-                experiment.capability as RuntimeExperiment['capability'],
+              capability: experiment.capability,
               version: experiment.version,
               status: experiment.status as RuntimeExperiment['status'],
             })),
@@ -1439,7 +1438,7 @@ function resolveSchoolTestingPolicy(
   item: LoadedSchoolListItem,
 ): SchoolPolicyContext['testingPolicy'] {
   return resolveSchoolTestingPolicyValue({
-    testingPolicy: item.school.testingPolicy as any,
+    testingPolicy: item.school.testingPolicy,
     testOptional: item.school.testOptional,
   });
 }

@@ -115,7 +115,7 @@ describe('VerificationService', () => {
     };
 
     it('should upload a valid file successfully', async () => {
-      const result = await service.uploadProofFile('user-1', mockFile as any);
+      const result = await service.uploadProofFile('user-1', mockFile);
 
       expect(result.url).toBeDefined();
       expect(result.key).toBeDefined();

@@ -63,7 +63,7 @@ describe('VerificationController', () => {
         type: 'ADMISSION',
         documentUrl: 'https://example.com/doc.pdf',
       } as any;
-      const result = await controller.submitVerification(mockUser as any, dto);
+      const result = await controller.submitVerification(mockUser, dto);
 
       expect(service.submitVerification).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual({ id: 'ver-1', status: 'PENDING' });
@@ -72,7 +72,7 @@ describe('VerificationController', () => {
 
   describe('getMyVerifications', () => {
     it('should delegate to verificationService.getMyVerifications', async () => {
-      const result = await controller.getMyVerifications(mockUser as any);
+      const result = await controller.getMyVerifications(mockUser);
 
       expect(service.getMyVerifications).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([]);
@@ -116,7 +116,7 @@ describe('VerificationController', () => {
     it('should delegate to verificationService.reviewVerification', async () => {
       const dto = { status: 'APPROVED', comment: 'Looks good' } as any;
       const result = await controller.reviewVerification(
-        mockAdmin as any,
+        mockAdmin,
         'ver-1',
         dto,
       );

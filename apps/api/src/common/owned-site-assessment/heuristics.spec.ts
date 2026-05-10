@@ -164,7 +164,7 @@ describe('owned-site-assessment heuristics', () => {
           agentFeasibility: 'reliable',
           extractionPreference: 'browser',
           riskNotes: [],
-        } as OwnedSiteJourneyObservation,
+        },
       ],
       targets: [
         {

@@ -249,7 +249,7 @@ describe('AdminSchoolRatesService', () => {
             // No schoolId, no schoolNameNorm
             acceptanceRate: 50.0,
             source: 'manual',
-          } as any,
+          },
           { schoolId: 'missing-id-99', acceptanceRate: 25.0, source: 'manual' },
         ],
       },

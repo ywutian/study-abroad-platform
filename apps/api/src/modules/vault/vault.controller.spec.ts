@@ -90,7 +90,7 @@ describe('VaultController', () => {
         username: 'test@test.com',
         password: 'secret',
       };
-      const result = await controller.create(mockUser as any, dto as any);
+      const result = await controller.create(mockUser, dto as any);
 
       expect(vaultService.create).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual(mockVaultItem);
@@ -100,7 +100,7 @@ describe('VaultController', () => {
   describe('findAll', () => {
     it('should return all vault items for the user', async () => {
       const query = { category: 'LOGIN' };
-      const result = await controller.findAll(mockUser as any, query as any);
+      const result = await controller.findAll(mockUser, query);
 
       expect(vaultService.findAll).toHaveBeenCalledWith('user-1', query);
       expect(result).toEqual([mockVaultItem]);
@@ -109,7 +109,7 @@ describe('VaultController', () => {
 
   describe('getStats', () => {
     it('should return vault statistics', async () => {
-      const result = await controller.getStats(mockUser as any);
+      const result = await controller.getStats(mockUser);
 
       expect(vaultService.getStats).toHaveBeenCalledWith('user-1');
       expect(result).toEqual(mockStats);
@@ -137,7 +137,7 @@ describe('VaultController', () => {
     it('should export all items after password verification', async () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      const result = await controller.exportAll(mockUser as any, {
+      const result = await controller.exportAll(mockUser, {
         password: 'correct',
       });
 
@@ -160,7 +160,7 @@ describe('VaultController', () => {
 
   describe('findOne', () => {
     it('should return a single vault item with decrypted data', async () => {
-      const result = await controller.findOne(mockUser as any, 'vault-1');
+      const result = await controller.findOne(mockUser, 'vault-1');
 
       expect(vaultService.findOne).toHaveBeenCalledWith('user-1', 'vault-1');
       expect(result).toEqual(mockVaultDetail);
@@ -170,11 +170,7 @@ describe('VaultController', () => {
   describe('update', () => {
     it('should update a vault item', async () => {
       const dto = { name: 'Updated Google' };
-      const result = await controller.update(
-        mockUser as any,
-        'vault-1',
-        dto as any,
-      );
+      const result = await controller.update(mockUser, 'vault-1', dto as any);
 
       expect(vaultService.update).toHaveBeenCalledWith(
         'user-1',
@@ -187,7 +183,7 @@ describe('VaultController', () => {
 
   describe('delete', () => {
     it('should delete a vault item and return success', async () => {
-      const result = await controller.delete(mockUser as any, 'vault-1');
+      const result = await controller.delete(mockUser, 'vault-1');
 
       expect(vaultService.delete).toHaveBeenCalledWith('user-1', 'vault-1');
       expect(result).toEqual({ success: true });
@@ -196,7 +192,7 @@ describe('VaultController', () => {
 
   describe('deleteAll', () => {
     it('should delete all vault items and return count', async () => {
-      const result = await controller.deleteAll(mockUser as any);
+      const result = await controller.deleteAll(mockUser);
 
       expect(vaultService.deleteAll).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ count: 5 });
@@ -209,10 +205,7 @@ describe('VaultController', () => {
         { name: 'Site A', username: 'user', password: 'pass' },
         { name: 'Site B', username: 'user', password: 'pass' },
       ];
-      const result = await controller.importItems(
-        mockUser as any,
-        items as any,
-      );
+      const result = await controller.importItems(mockUser, items as any);
 
       expect(vaultService.importItems).toHaveBeenCalledWith('user-1', items);
       expect(result).toEqual({ imported: 3 });

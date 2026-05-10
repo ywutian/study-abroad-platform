@@ -189,10 +189,7 @@ export class AgentConfigService implements OnModuleInit {
 
       if (systemConfig) {
         const value = systemConfig.value as Prisma.JsonObject;
-        this.config.system = this.deepMerge(
-          this.config.system,
-          value as unknown as Partial<SystemConfig>,
-        );
+        this.config.system = this.deepMerge(this.config.system, value);
         this.logger.debug(`Loaded system config v${systemConfig.version}`);
       }
 
@@ -306,14 +303,10 @@ export class AgentConfigService implements OnModuleInit {
     }
 
     const value = targetConfig.value as Prisma.JsonObject;
-    return this.updateAgentConfigWithPersistence(
-      agentType,
-      value as unknown as Partial<AgentConfig>,
-      {
-        createdBy: options?.createdBy,
-        comment: `Rollback to version ${toVersion}`,
-      },
-    );
+    return this.updateAgentConfigWithPersistence(agentType, value, {
+      createdBy: options?.createdBy,
+      comment: `Rollback to version ${toVersion}`,
+    });
   }
 
   /**

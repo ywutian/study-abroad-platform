@@ -70,7 +70,7 @@ function buildSchoolWriteData(
     if (Object.keys(storedProvenance).length > 0) {
       nextMetadata.provenance = deepMergeRecords(
         toRecord(nextMetadata.provenance),
-        storedProvenance as Record<string, unknown>,
+        storedProvenance,
       );
     }
 
@@ -84,7 +84,7 @@ function buildSchoolWriteData(
     nextData.lastDataReviewAt = new Date();
   }
 
-  return nextData as Prisma.SchoolUpdateInput;
+  return nextData;
 }
 
 export async function writeSchoolCreate(

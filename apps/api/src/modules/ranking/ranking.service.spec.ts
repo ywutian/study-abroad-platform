@@ -455,7 +455,7 @@ describe('RankingService', () => {
         data: {
           userId: mockUserId,
           name: 'My Custom Ranking',
-          weights: weights as object,
+          weights: weights,
           isPublic: false,
         },
       });
@@ -487,7 +487,7 @@ describe('RankingService', () => {
         data: {
           userId: mockUserId,
           name: 'Public Ranking',
-          weights: weights as object,
+          weights: weights,
           isPublic: true,
         },
       });

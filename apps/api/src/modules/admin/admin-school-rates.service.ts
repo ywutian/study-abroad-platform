@@ -393,7 +393,7 @@ export class AdminSchoolRatesService {
       // can reconstruct from update history).
       try {
         await this.schoolWrite.update(school.id, {
-          fields: updates as Record<string, unknown>,
+          fields: updates,
           provenance: buildFieldProvenanceRecord(changedFields, {
             source: row.source,
             sourceUrl: row.sourceUrl,
@@ -419,7 +419,7 @@ export class AdminSchoolRatesService {
                 changedFields,
                 before,
                 after,
-              } as Prisma.InputJsonValue,
+              },
             },
           });
         } catch (auditErr) {

@@ -621,11 +621,7 @@ describe('EssayScraperService', () => {
         { prompt: 'Another new prompt', confidence: 0.8 },
       ];
 
-      const result = await service.detectChanges(
-        'school-1',
-        2026,
-        newEssays as any,
-      );
+      const result = await service.detectChanges('school-1', 2026, newEssays);
 
       expect(result).toHaveLength(2);
       expect(result[0].changeType).toBe('NEW');
@@ -649,11 +645,7 @@ describe('EssayScraperService', () => {
         },
       ];
 
-      const result = await service.detectChanges(
-        'school-1',
-        2026,
-        newEssays as any,
-      );
+      const result = await service.detectChanges('school-1', 2026, newEssays);
 
       expect(result[0].changeType).toBe('UNCHANGED');
       expect(result[0].previousPromptId).toBe('prior-1');
@@ -677,11 +669,7 @@ describe('EssayScraperService', () => {
         },
       ];
 
-      const result = await service.detectChanges(
-        'school-1',
-        2026,
-        newEssays as any,
-      );
+      const result = await service.detectChanges('school-1', 2026, newEssays);
 
       expect(result[0].changeType).toBe('MODIFIED');
       expect(result[0].previousPromptId).toBe('prior-1');
@@ -704,11 +692,7 @@ describe('EssayScraperService', () => {
         },
       ];
 
-      const result = await service.detectChanges(
-        'school-1',
-        2026,
-        newEssays as any,
-      );
+      const result = await service.detectChanges('school-1', 2026, newEssays);
 
       expect(result[0].changeType).toBe('NEW');
       expect(result[0].previousPromptId).toBeUndefined();
@@ -732,11 +716,7 @@ describe('EssayScraperService', () => {
         },
       ];
 
-      const result = await service.detectChanges(
-        'school-1',
-        2026,
-        newEssays as any,
-      );
+      const result = await service.detectChanges('school-1', 2026, newEssays);
 
       // First essay should be MODIFIED (similar to prior-1)
       expect(result[0].previousPromptId).toBe('prior-1');
@@ -758,7 +738,7 @@ describe('EssayScraperService', () => {
 
       const result = await service.detectChanges('school-1', 2026, [
         { prompt: 'exactly the same prompt' },
-      ] as any);
+      ]);
 
       expect(result[0].changeType).toBe('UNCHANGED');
     });
@@ -768,7 +748,7 @@ describe('EssayScraperService', () => {
 
       const result = await service.detectChanges('school-1', 2026, [
         { prompt: 'any prompt' },
-      ] as any);
+      ]);
 
       expect(result[0].changeType).toBe('NEW');
     });

@@ -500,11 +500,7 @@ export class EssayScraperService {
     }
 
     // 变化检测
-    const essaysWithChanges = await this.detectChanges(
-      school.id,
-      year,
-      essays as ScrapedEssay[],
-    );
+    const essaysWithChanges = await this.detectChanges(school.id, year, essays);
 
     let savedCount = 0;
 
@@ -513,7 +509,7 @@ export class EssayScraperService {
 
       try {
         const validation = await this.aiValidator.validateAndEnhance(
-          essay as any,
+          essay,
           schoolName,
         );
 

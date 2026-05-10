@@ -231,5 +231,5 @@ export function validateEnv(
     }
   }
 
-  return result.data as unknown as Record<string, unknown>;
+  return result.data;
 }

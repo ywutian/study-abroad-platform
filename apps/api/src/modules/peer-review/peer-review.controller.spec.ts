@@ -55,7 +55,7 @@ describe('PeerReviewController', () => {
     it('should delegate to peerReviewService.requestReview', async () => {
       const dto = { essayId: 'essay-1', message: 'Please review' } as any;
       const result = await controller.requestReview(
-        mockUser as any,
+        mockUser,
         'target-user-1',
         dto,
       );
@@ -72,11 +72,7 @@ describe('PeerReviewController', () => {
   describe('submitReview', () => {
     it('should delegate to peerReviewService.submitReview', async () => {
       const dto = { rating: 5, comment: 'Great essay' } as any;
-      const result = await controller.submitReview(
-        mockUser as any,
-        'review-1',
-        dto,
-      );
+      const result = await controller.submitReview(mockUser, 'review-1', dto);
 
       expect(service.submitReview).toHaveBeenCalledWith(
         'user-1',
@@ -89,7 +85,7 @@ describe('PeerReviewController', () => {
 
   describe('getMyReviews', () => {
     it('should delegate to peerReviewService.getMyReviews', async () => {
-      const result = await controller.getMyReviews(mockUser as any);
+      const result = await controller.getMyReviews(mockUser);
 
       expect(service.getMyReviews).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ items: [], total: 0 });

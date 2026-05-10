@@ -67,7 +67,7 @@ describe('MemoryDecayService', () => {
         MemoryDecayService,
         {
           provide: PrismaService,
-          useValue: mockPrismaService as unknown as PrismaService,
+          useValue: mockPrismaService,
         },
         { provide: MemoryScorerService, useValue: mockScorerService },
         { provide: RedisService, useValue: mockRedisService },

@@ -200,7 +200,7 @@ export class CaseBatchService {
             source: 'csv_import',
             schoolName: school?.id ?? '',
             year: item.year,
-            result: normalizedResult as any,
+            result: normalizedResult,
             round: normalizeRound(item.round || '') as any,
             major: item.major || undefined,
             gpa: item.gpa ? { range: item.gpa, scale: 4 } : undefined,

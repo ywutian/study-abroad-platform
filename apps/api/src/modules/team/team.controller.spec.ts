@@ -137,7 +137,7 @@ describe('TeamController', () => {
         visibility: 'PUBLIC' as const,
         joinPolicy: 'OPEN' as const,
       };
-      await controller.create(mockUser, dto as any);
+      await controller.create(mockUser, dto);
       expect(teamService.create).toHaveBeenCalledWith(mockUser.id, dto);
     });
   });
@@ -204,7 +204,7 @@ describe('TeamController', () => {
         languages: ['English'],
       };
 
-      await controller.createCommunityContext(mockUser, dto as any);
+      await controller.createCommunityContext(mockUser, dto);
 
       expect(recruitmentService.createCommunityContext).toHaveBeenCalledWith(
         mockUser.id,
@@ -219,7 +219,7 @@ describe('TeamController', () => {
         title: 'Updated Startup Weekend SF',
       };
 
-      await controller.updateCommunityContext('ctx-1', mockUser, dto as any);
+      await controller.updateCommunityContext('ctx-1', mockUser, dto);
 
       expect(recruitmentService.updateCommunityContext).toHaveBeenCalledWith(
         'ctx-1',
@@ -248,7 +248,7 @@ describe('TeamController', () => {
         headline: 'Need a strong presenter',
       };
 
-      await controller.createRecruitment(mockUser, dto as any);
+      await controller.createRecruitment(mockUser, dto);
 
       expect(recruitmentService.create).toHaveBeenCalledWith(mockUser.id, dto);
     });
@@ -261,7 +261,7 @@ describe('TeamController', () => {
         headline: 'Updated headline',
       };
 
-      await controller.updateRecruitment('card-1', mockUser, dto as any);
+      await controller.updateRecruitment('card-1', mockUser, dto);
 
       expect(recruitmentService.update).toHaveBeenCalledWith(
         'card-1',

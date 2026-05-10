@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { fireAndForget } from '../../common/utils/async.util';
-import { AssessmentType, MemoryType } from '@prisma/client';
+import { AssessmentType, MemoryType, Prisma } from '@prisma/client';
 import {
   AssessmentTypeEnum,
   AssessmentDto,
@@ -24,6 +24,10 @@ import {
 } from './data/mbti-questions';
 import { HOLLAND_QUESTIONS, HOLLAND_TYPE_INFO } from './data/holland-questions';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value));
+}
 
 /**
  * Service for personality and career interest assessments.
@@ -152,7 +156,7 @@ export class AssessmentService {
 
     // 查找或创建 Assessment 记录
     let assessment = await this.prisma.assessment.findFirst({
-      where: { type: dto.type as unknown as AssessmentType },
+      where: { type: dto.type },
     });
 
     if (!assessment) {
@@ -164,7 +168,7 @@ export class AssessmentService {
 
       assessment = await this.prisma.assessment.create({
         data: {
-          type: dto.type as unknown as AssessmentType,
+          type: dto.type,
           title:
             dto.type === AssessmentTypeEnum.MBTI
               ? 'Jungian Type Personality Test'
@@ -183,7 +187,7 @@ export class AssessmentService {
       data: {
         userId,
         assessmentId: assessment.id,
-        answers: dto.answers as object[],
+        answers: toInputJson(dto.answers),
         result: result as object,
         majorRecommendations: result.majors
           ? result.majors.map((m: string) => ({

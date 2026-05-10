@@ -819,22 +819,8 @@ export class SchoolService {
     }
 
     for (const school of allSchools) {
-      const facts = collectPresentSchoolFacts(
-        school as Record<string, unknown> & {
-          metadata?: unknown;
-          updatedAt?: Date | string | null;
-          scorecardId?: string | null;
-          ipedsId?: string | null;
-        },
-      );
-      const provenance = buildNormalizedSchoolProvenance(
-        school as Record<string, unknown> & {
-          metadata?: unknown;
-          updatedAt?: Date | string | null;
-          scorecardId?: string | null;
-          ipedsId?: string | null;
-        },
-      );
+      const facts = collectPresentSchoolFacts(school);
+      const provenance = buildNormalizedSchoolProvenance(school);
 
       for (const [field, entry] of Object.entries(provenance)) {
         if (!(field in facts) || !entry) continue;
@@ -886,7 +872,7 @@ export class SchoolService {
         name: school.name,
         nameZh: school.nameZh,
         usNewsRank: school.usNewsRank,
-        missingFields: missingFields as string[],
+        missingFields: missingFields,
         completeness: Math.round(
           ((KEY_FIELDS.length - missingFields.length) / KEY_FIELDS.length) *
             100,
@@ -920,9 +906,7 @@ export class SchoolService {
     const top200Slots = top200.length * 6;
 
     for (const school of top200) {
-      const fieldSources = this.buildFieldSources(
-        school as Record<string, unknown> & { metadata?: unknown },
-      );
+      const fieldSources = this.buildFieldSources(school);
 
       for (const field of PREDICTION_CRITICAL_FIELDS) {
         if (field === 'totalEnrollment' || field === 'studentCount') continue;

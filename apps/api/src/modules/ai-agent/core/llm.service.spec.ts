@@ -68,7 +68,7 @@ describe('LLMService', () => {
       chatStream: jest.fn(),
       supportsModel: jest.fn().mockReturnValue(true),
       getContextWindow: jest.fn().mockReturnValue(128000),
-    } as unknown as jest.Mocked<ILLMProvider>;
+    };
 
     mockResilienceService = {
       execute: jest.fn((_, fn) => fn()),

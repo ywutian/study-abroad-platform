@@ -266,13 +266,13 @@ export class CaseService {
         ...(essayType && { essayType }),
         // Structured enrichment fields (cast to Prisma JSON)
         ...(testScores?.length && {
-          testScores: testScores as unknown as Prisma.InputJsonValue,
+          testScores: testScores,
         }),
         ...(activitiesJson?.length && {
-          activities: activitiesJson as unknown as Prisma.InputJsonValue,
+          activities: activitiesJson,
         }),
         ...(awardsJson?.length && {
-          awards: awardsJson as unknown as Prisma.InputJsonValue,
+          awards: awardsJson,
         }),
         ...(apCount !== undefined && { apCount }),
         ...(apSubjects?.length && { apSubjects }),
@@ -401,18 +401,18 @@ export class CaseService {
         ...rest,
         ...(result && { result: result as AdmissionCase['result'] }),
         ...(visibility && {
-          visibility: visibility as AdmissionCase['visibility'],
+          visibility: visibility,
         }),
         ...(essayType && { essayType }),
         ...(schoolId && { school: { connect: { id: schoolId } } }),
         ...(testScores !== undefined && {
-          testScores: testScores as unknown as Prisma.InputJsonValue,
+          testScores: testScores,
         }),
         ...(activitiesJson !== undefined && {
-          activities: activitiesJson as unknown as Prisma.InputJsonValue,
+          activities: activitiesJson,
         }),
         ...(awardsJson !== undefined && {
-          awards: awardsJson as unknown as Prisma.InputJsonValue,
+          awards: awardsJson,
         }),
         ...(highSchoolType !== undefined && {
           highSchoolType: highSchoolType as any,

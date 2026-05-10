@@ -705,7 +705,7 @@ describe('ToolExecutorService', () => {
           targetMajor: 'CS',
           targetSchools: ['MIT'],
           budgetTier: 'high',
-        } as any,
+        },
         preferences: {
           schoolSize: 'medium',
           location: 'northeast',

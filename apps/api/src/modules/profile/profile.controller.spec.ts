@@ -160,7 +160,7 @@ describe('ProfileController', () => {
 
   describe('getMyProfile', () => {
     it('should return the current user profile', async () => {
-      const result = await controller.getMyProfile(mockUser as any);
+      const result = await controller.getMyProfile(mockUser);
 
       expect(profileService.findByUserId).toHaveBeenCalledWith('user-1');
       expect(result).toEqual(mockProfile);
@@ -170,10 +170,7 @@ describe('ProfileController', () => {
   describe('updateMyProfile', () => {
     it('should upsert the profile with provided data', async () => {
       const dto = { targetMajor: 'Engineering' };
-      const result = await controller.updateMyProfile(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.updateMyProfile(mockUser, dto);
 
       expect(profileService.upsert).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual(mockProfile);
@@ -182,7 +179,7 @@ describe('ProfileController', () => {
 
   describe('getProfile', () => {
     it('should return a profile with visibility check', async () => {
-      const result = await controller.getProfile('profile-1', mockUser as any);
+      const result = await controller.getProfile('profile-1', mockUser);
 
       expect(profileService.findByIdWithVisibilityCheck).toHaveBeenCalledWith(
         'profile-1',
@@ -199,7 +196,7 @@ describe('ProfileController', () => {
 
   describe('getAIAnalysis', () => {
     it('should return AI analysis for the user profile', async () => {
-      const result = await controller.getAIAnalysis(mockUser as any);
+      const result = await controller.getAIAnalysis(mockUser);
 
       expect(
         profileApplicationAnalysisService.getAnalysisForUser,
@@ -229,10 +226,7 @@ describe('ProfileController', () => {
   describe('completeOnboarding', () => {
     it('should upsert profile and return success', async () => {
       const dto = { realName: 'Test User' };
-      const result = await controller.completeOnboarding(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.completeOnboarding(mockUser, dto);
 
       expect(profileService.upsert).toHaveBeenCalledWith(
         'user-1',
@@ -259,7 +253,7 @@ describe('ProfileController', () => {
         ],
       };
 
-      await controller.completeOnboarding(mockUser as any, dto as any);
+      await controller.completeOnboarding(mockUser, dto as any);
 
       expect(profileService.createTestScore).toHaveBeenNthCalledWith(
         1,
@@ -310,7 +304,7 @@ describe('ProfileController', () => {
         targetSchools: [{ schoolId: 'school-1', round: 'RD' }],
       };
 
-      await controller.completeOnboarding(mockUser as any, dto as any);
+      await controller.completeOnboarding(mockUser, dto as any);
 
       expect(profileService.upsert).toHaveBeenCalledWith(
         'user-1',
@@ -346,12 +340,9 @@ describe('ProfileController', () => {
         .spyOn(schoolListService, 'addSchool')
         .mockRejectedValueOnce(new Error('School already exists in your list'));
 
-      const result = await controller.completeOnboarding(
-        mockUser as any,
-        {
-          targetSchools: [{ schoolId: 'school-1' }],
-        } as any,
-      );
+      const result = await controller.completeOnboarding(mockUser, {
+        targetSchools: [{ schoolId: 'school-1' }],
+      });
 
       expect(result.success).toBe(true);
       expect(profileService.calculateCompleteness).toHaveBeenCalledWith(
@@ -366,7 +357,7 @@ describe('ProfileController', () => {
 
   describe('getProfileGrade', () => {
     it('should return profile grade', async () => {
-      const result = await controller.getProfileGrade(mockUser as any);
+      const result = await controller.getProfileGrade(mockUser);
 
       expect(profileService.calculateProfileGrade).toHaveBeenCalledWith(
         'user-1',
@@ -381,7 +372,7 @@ describe('ProfileController', () => {
 
   describe('getMyTestScores', () => {
     it('should return test scores for the user', async () => {
-      const result = await controller.getMyTestScores(mockUser as any);
+      const result = await controller.getMyTestScores(mockUser);
 
       expect(profileService.getTestScores).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockTestScore]);
@@ -391,10 +382,7 @@ describe('ProfileController', () => {
   describe('createTestScore', () => {
     it('should create a test score', async () => {
       const dto = { type: 'SAT', score: 1500 };
-      const result = await controller.createTestScore(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.createTestScore(mockUser, dto);
 
       expect(profileService.createTestScore).toHaveBeenCalledWith(
         'user-1',
@@ -407,11 +395,7 @@ describe('ProfileController', () => {
   describe('updateTestScore', () => {
     it('should update a test score', async () => {
       const dto = { score: 1550 };
-      const result = await controller.updateTestScore(
-        mockUser as any,
-        'ts-1',
-        dto as any,
-      );
+      const result = await controller.updateTestScore(mockUser, 'ts-1', dto);
 
       expect(profileService.updateTestScore).toHaveBeenCalledWith(
         'user-1',
@@ -424,7 +408,7 @@ describe('ProfileController', () => {
 
   describe('deleteTestScore', () => {
     it('should delete a test score', async () => {
-      await controller.deleteTestScore(mockUser as any, 'ts-1');
+      await controller.deleteTestScore(mockUser, 'ts-1');
 
       expect(profileService.deleteTestScore).toHaveBeenCalledWith(
         'user-1',
@@ -439,7 +423,7 @@ describe('ProfileController', () => {
 
   describe('getMyActivities', () => {
     it('should return activities for the user', async () => {
-      const result = await controller.getMyActivities(mockUser as any);
+      const result = await controller.getMyActivities(mockUser);
 
       expect(profileService.getActivities).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockActivity]);
@@ -449,10 +433,7 @@ describe('ProfileController', () => {
   describe('createActivity', () => {
     it('should create an activity', async () => {
       const dto = { name: 'Debate Club', category: 'ACADEMIC' };
-      const result = await controller.createActivity(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.createActivity(mockUser, dto as any);
 
       expect(profileService.createActivity).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual(mockActivity);
@@ -462,11 +443,7 @@ describe('ProfileController', () => {
   describe('updateActivity', () => {
     it('should update an activity', async () => {
       const dto = { name: 'Updated Club' };
-      const result = await controller.updateActivity(
-        mockUser as any,
-        'act-1',
-        dto as any,
-      );
+      const result = await controller.updateActivity(mockUser, 'act-1', dto);
 
       expect(profileService.updateActivity).toHaveBeenCalledWith(
         'user-1',
@@ -479,7 +456,7 @@ describe('ProfileController', () => {
 
   describe('deleteActivity', () => {
     it('should delete an activity', async () => {
-      await controller.deleteActivity(mockUser as any, 'act-1');
+      await controller.deleteActivity(mockUser, 'act-1');
 
       expect(profileService.deleteActivity).toHaveBeenCalledWith(
         'user-1',
@@ -490,7 +467,7 @@ describe('ProfileController', () => {
 
   describe('reorderActivities', () => {
     it('should reorder activities and return success', async () => {
-      const result = await controller.reorderActivities(mockUser as any, {
+      const result = await controller.reorderActivities(mockUser, {
         ids: ['act-2', 'act-1'],
       });
 
@@ -508,7 +485,7 @@ describe('ProfileController', () => {
 
   describe('getMyAwards', () => {
     it('should return awards for the user', async () => {
-      const result = await controller.getMyAwards(mockUser as any);
+      const result = await controller.getMyAwards(mockUser);
 
       expect(profileService.getAwards).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockAward]);
@@ -518,7 +495,7 @@ describe('ProfileController', () => {
   describe('createAward', () => {
     it('should create an award', async () => {
       const dto = { name: 'Science Olympiad', level: 'NATIONAL' };
-      const result = await controller.createAward(mockUser as any, dto as any);
+      const result = await controller.createAward(mockUser, dto);
 
       expect(profileService.createAward).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual(mockAward);
@@ -528,11 +505,7 @@ describe('ProfileController', () => {
   describe('updateAward', () => {
     it('should update an award', async () => {
       const dto = { level: 'INTERNATIONAL' };
-      const result = await controller.updateAward(
-        mockUser as any,
-        'aw-1',
-        dto as any,
-      );
+      const result = await controller.updateAward(mockUser, 'aw-1', dto);
 
       expect(profileService.updateAward).toHaveBeenCalledWith(
         'user-1',
@@ -545,7 +518,7 @@ describe('ProfileController', () => {
 
   describe('deleteAward', () => {
     it('should delete an award', async () => {
-      await controller.deleteAward(mockUser as any, 'aw-1');
+      await controller.deleteAward(mockUser, 'aw-1');
 
       expect(profileService.deleteAward).toHaveBeenCalledWith('user-1', 'aw-1');
     });
@@ -553,7 +526,7 @@ describe('ProfileController', () => {
 
   describe('reorderAwards', () => {
     it('should reorder awards and return success', async () => {
-      const result = await controller.reorderAwards(mockUser as any, {
+      const result = await controller.reorderAwards(mockUser, {
         ids: ['aw-2', 'aw-1'],
       });
 
@@ -571,7 +544,7 @@ describe('ProfileController', () => {
 
   describe('getMyEssays', () => {
     it('should return essays for the user', async () => {
-      const result = await controller.getMyEssays(mockUser as any);
+      const result = await controller.getMyEssays(mockUser);
 
       expect(profileService.getEssays).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockEssay]);
@@ -580,7 +553,7 @@ describe('ProfileController', () => {
 
   describe('getEssay', () => {
     it('should return a single essay by id', async () => {
-      const result = await controller.getEssay(mockUser as any, 'essay-1');
+      const result = await controller.getEssay(mockUser, 'essay-1');
 
       expect(profileService.getEssayById).toHaveBeenCalledWith(
         'user-1',
@@ -593,7 +566,7 @@ describe('ProfileController', () => {
   describe('createEssay', () => {
     it('should create an essay', async () => {
       const dto = { title: 'My Story', content: 'Once upon a time...' };
-      const result = await controller.createEssay(mockUser as any, dto as any);
+      const result = await controller.createEssay(mockUser, dto);
 
       expect(profileService.createEssay).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual(mockEssay);
@@ -603,11 +576,7 @@ describe('ProfileController', () => {
   describe('updateEssay', () => {
     it('should update an essay', async () => {
       const dto = { title: 'Updated Title' };
-      const result = await controller.updateEssay(
-        mockUser as any,
-        'essay-1',
-        dto as any,
-      );
+      const result = await controller.updateEssay(mockUser, 'essay-1', dto);
 
       expect(profileService.updateEssay).toHaveBeenCalledWith(
         'user-1',
@@ -620,7 +589,7 @@ describe('ProfileController', () => {
 
   describe('deleteEssay', () => {
     it('should delete an essay', async () => {
-      await controller.deleteEssay(mockUser as any, 'essay-1');
+      await controller.deleteEssay(mockUser, 'essay-1');
 
       expect(profileService.deleteEssay).toHaveBeenCalledWith(
         'user-1',
@@ -635,7 +604,7 @@ describe('ProfileController', () => {
 
   describe('getMyEducation', () => {
     it('should return education records for the user', async () => {
-      const result = await controller.getMyEducation(mockUser as any);
+      const result = await controller.getMyEducation(mockUser);
 
       expect(profileService.getEducation).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockEducation]);
@@ -645,10 +614,7 @@ describe('ProfileController', () => {
   describe('createEducation', () => {
     it('should create an education record', async () => {
       const dto = { school: 'Test High School', degree: 'HIGH_SCHOOL' };
-      const result = await controller.createEducation(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.createEducation(mockUser, dto as any);
 
       expect(profileService.createEducation).toHaveBeenCalledWith(
         'user-1',
@@ -662,7 +628,7 @@ describe('ProfileController', () => {
     it('should update an education record', async () => {
       const dto = { school: 'Updated School' };
       const result = await controller.updateEducation(
-        mockUser as any,
+        mockUser,
         'edu-1',
         dto as any,
       );
@@ -678,7 +644,7 @@ describe('ProfileController', () => {
 
   describe('deleteEducation', () => {
     it('should delete an education record', async () => {
-      await controller.deleteEducation(mockUser as any, 'edu-1');
+      await controller.deleteEducation(mockUser, 'edu-1');
 
       expect(profileService.deleteEducation).toHaveBeenCalledWith(
         'user-1',
@@ -693,7 +659,7 @@ describe('ProfileController', () => {
 
   describe('getMyTargetSchools', () => {
     it('should return target schools via SchoolListService', async () => {
-      const result = await controller.getMyTargetSchools(mockUser as any);
+      const result = await controller.getMyTargetSchools(mockUser);
 
       expect(schoolListService.getUserSchoolList).toHaveBeenCalledWith(
         'user-1',
@@ -709,7 +675,7 @@ describe('ProfileController', () => {
       ]);
 
       const data = { schoolIds: ['school-1'], priorities: { 'school-1': 1 } };
-      const result = await controller.setTargetSchools(mockUser as any, data);
+      const result = await controller.setTargetSchools(mockUser, data);
 
       expect(schoolListService.removeItem).toHaveBeenCalledWith(
         'user-1',
@@ -726,9 +692,9 @@ describe('ProfileController', () => {
   describe('addTargetSchool', () => {
     it('should add a target school with default priority', async () => {
       const _result = await controller.addTargetSchool(
-        mockUser as any,
+        mockUser,
         'school-1',
-        {} as any,
+        {},
       );
 
       expect(schoolListService.addSchool).toHaveBeenCalledWith('user-1', {
@@ -744,7 +710,7 @@ describe('ProfileController', () => {
         { id: 'sl-1', schoolId: 'school-1' },
       ]);
 
-      await controller.removeTargetSchool(mockUser as any, 'school-1');
+      await controller.removeTargetSchool(mockUser, 'school-1');
 
       expect(schoolListService.removeItem).toHaveBeenCalledWith(
         'user-1',
@@ -755,7 +721,7 @@ describe('ProfileController', () => {
     it('should do nothing if schoolId is not found', async () => {
       (schoolListService.getUserSchoolList as jest.Mock).mockResolvedValue([]);
 
-      await controller.removeTargetSchool(mockUser as any, 'nonexistent');
+      await controller.removeTargetSchool(mockUser, 'nonexistent');
 
       expect(schoolListService.removeItem).not.toHaveBeenCalled();
     });

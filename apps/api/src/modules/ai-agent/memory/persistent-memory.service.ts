@@ -266,15 +266,27 @@ export class PersistentMemoryService {
     }
 
     if (query.timeRange?.start) {
+      const createdAtFilter =
+        where.createdAt &&
+        typeof where.createdAt === 'object' &&
+        !(where.createdAt instanceof Date)
+          ? where.createdAt
+          : {};
       where.createdAt = {
-        ...((where.createdAt as Record<string, unknown>) ?? {}),
+        ...createdAtFilter,
         gte: query.timeRange.start,
       };
     }
 
     if (query.timeRange?.end) {
+      const createdAtFilter =
+        where.createdAt &&
+        typeof where.createdAt === 'object' &&
+        !(where.createdAt instanceof Date)
+          ? where.createdAt
+          : {};
       where.createdAt = {
-        ...((where.createdAt as Record<string, unknown>) ?? {}),
+        ...createdAtFilter,
         lte: query.timeRange.end,
       };
     }
@@ -721,7 +733,7 @@ export class PersistentMemoryService {
         metadata: {
           archived: true,
           archivedAt: new Date().toISOString(),
-        } as Prisma.InputJsonValue,
+        },
       },
     });
   }
@@ -960,12 +972,8 @@ export class PersistentMemoryService {
         communicationStyle: updates.communicationStyle || 'friendly',
         responseLength: updates.responseLength || 'moderate',
         language: updates.language || 'zh-CN',
-        schoolPreferences: updates.schoolPreferences as
-          | Prisma.InputJsonValue
-          | undefined,
-        essayPreferences: updates.essayPreferences as
-          | Prisma.InputJsonValue
-          | undefined,
+        schoolPreferences: updates.schoolPreferences,
+        essayPreferences: updates.essayPreferences,
         enableMemory: updates.enableMemory ?? true,
         enableSuggestions: updates.enableSuggestions ?? true,
       },
@@ -979,14 +987,12 @@ export class PersistentMemoryService {
         ...(updates.language ? { language: updates.language } : {}),
         ...(updates.schoolPreferences
           ? {
-              schoolPreferences:
-                updates.schoolPreferences as Prisma.InputJsonValue,
+              schoolPreferences: updates.schoolPreferences,
             }
           : {}),
         ...(updates.essayPreferences
           ? {
-              essayPreferences:
-                updates.essayPreferences as Prisma.InputJsonValue,
+              essayPreferences: updates.essayPreferences,
             }
           : {}),
         ...(updates.enableMemory !== undefined

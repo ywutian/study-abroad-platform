@@ -370,8 +370,7 @@ export class ApplicationAnalysisWorkflowService {
     return (
       [...policies].sort((left, right) => {
         const statusDelta =
-          statusOrder[left.status as PolicyStatus] -
-          statusOrder[right.status as PolicyStatus];
+          statusOrder[left.status] - statusOrder[right.status];
         if (statusDelta !== 0) {
           return statusDelta;
         }
@@ -479,7 +478,7 @@ export class ApplicationAnalysisWorkflowService {
         metrics: {
           ...this.asRecord(run.metrics),
           ...this.summarizeApplicantFeedbackRecords(feedback),
-        } as Prisma.InputJsonValue,
+        },
       },
     });
   }
@@ -563,15 +562,13 @@ export class ApplicationAnalysisWorkflowService {
       >
     >();
     for (const experiment of experiments) {
-      const current = selected.get(
-        experiment.capability as ExperimentCapability,
-      );
+      const current = selected.get(experiment.capability);
       if (!current) {
-        selected.set(experiment.capability as ExperimentCapability, experiment);
+        selected.set(experiment.capability, experiment);
         continue;
       }
       if (current.status !== 'ACTIVE' && experiment.status === 'ACTIVE') {
-        selected.set(experiment.capability as ExperimentCapability, experiment);
+        selected.set(experiment.capability, experiment);
       }
     }
 
@@ -605,7 +602,7 @@ export class ApplicationAnalysisWorkflowService {
         key,
         true,
         experiment.status === 'CANARY'
-          ? ({ percentage: currentPercentage } as Prisma.InputJsonValue)
+          ? { percentage: currentPercentage }
           : null,
         `Application analysis ${capability.toLowerCase()} capability`,
       );
@@ -746,8 +743,7 @@ export class ApplicationAnalysisWorkflowService {
             | ApplicationAnalysisExperimentCapability
             | undefined,
           type: input.type,
-          severity:
-            input.severity as ApplicationAnalysisExperimentIncidentSeverity,
+          severity: input.severity,
           title: input.title,
           message: input.message,
           details: input.details as Prisma.InputJsonValue | undefined,
@@ -770,7 +766,7 @@ export class ApplicationAnalysisWorkflowService {
             monitoringConfig: {
               ...monitoringConfig,
               latestIncidentId: incident.id,
-            } as Prisma.InputJsonValue,
+            },
           },
         });
       }
@@ -803,7 +799,7 @@ export class ApplicationAnalysisWorkflowService {
 
     return {
       replay,
-      metrics: this.asRecord(replay?.metrics as Prisma.JsonValue),
+      metrics: this.asRecord(replay?.metrics),
       failures,
     };
   }
@@ -1041,7 +1037,7 @@ export class ApplicationAnalysisWorkflowService {
       (typeof experiments)[number]
     >();
     for (const experiment of experiments) {
-      const capability = experiment.capability as ExperimentCapability;
+      const capability = experiment.capability;
       const existing = selected.get(capability);
       if (!existing) {
         selected.set(capability, experiment);
@@ -1082,10 +1078,10 @@ export class ApplicationAnalysisWorkflowService {
 
   async listEvidence(query: ApplicationAnalysisEvidenceQueryDto) {
     const where = {
-      ...(query.status ? { status: query.status as EvidenceStatus } : {}),
+      ...(query.status ? { status: query.status } : {}),
       ...(query.policyDimension
         ? {
-            policyDimension: query.policyDimension as SchoolPolicyDimension,
+            policyDimension: query.policyDimension,
           }
         : {}),
       ...(query.schoolId ? { schoolId: query.schoolId } : {}),
@@ -1143,7 +1139,7 @@ export class ApplicationAnalysisWorkflowService {
     const created = await this.prisma.schoolPolicyEvidence.create({
       data: {
         schoolId: dto.schoolId,
-        policyDimension: dto.policyDimension as SchoolPolicyDimension,
+        policyDimension: dto.policyDimension,
         policyValue: dto.policyValue,
         sourceName: dto.sourceName,
         sourceUrl: dto.sourceUrl,
@@ -1199,7 +1195,7 @@ export class ApplicationAnalysisWorkflowService {
     const updated = await this.prisma.schoolPolicyEvidence.update({
       where: { id },
       data: {
-        status: dto.status as EvidenceStatus,
+        status: dto.status,
         reviewedAt,
         reviewedBy: actorId,
         expiresAt: this.normalizeDate(dto.expiresAt),
@@ -1237,7 +1233,7 @@ export class ApplicationAnalysisWorkflowService {
   async listPolicyVersions(query: ApplicationAnalysisPolicyQueryDto) {
     const where = {
       ...(query.policyKey ? { policyKey: query.policyKey } : {}),
-      ...(query.status ? { status: query.status as PolicyStatus } : {}),
+      ...(query.status ? { status: query.status } : {}),
     };
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -1270,9 +1266,7 @@ export class ApplicationAnalysisWorkflowService {
         analysisVersion: dto.analysisVersion,
         promptVersion: dto.promptVersion,
         ruleBundleVersion: dto.ruleBundleVersion,
-        thresholds: this.normalizeThresholds(
-          dto.thresholds ?? null,
-        ) as Prisma.InputJsonValue,
+        thresholds: this.normalizeThresholds(dto.thresholds ?? null),
         rolloutConfig: (dto.rolloutConfig ?? {}) as Prisma.InputJsonValue,
         monitoringConfig: (dto.monitoringConfig ?? {}) as Prisma.InputJsonValue,
         effectiveFrom: this.normalizeDate(dto.effectiveFrom),
@@ -1491,8 +1485,8 @@ export class ApplicationAnalysisWorkflowService {
           applicantFeedbackCount:
             applicantFeedbackSignals.applicantFeedbackCount,
           runsWithApplicantFeedback: applicantFeedbackSignals.distinctRunCount,
-        } as Prisma.InputJsonValue,
-        metrics: metrics as Prisma.InputJsonValue,
+        },
+        metrics: metrics,
         failures: this.dedupeStrings(failures),
         startedAt: new Date(),
         finishedAt: new Date(),
@@ -1523,7 +1517,7 @@ export class ApplicationAnalysisWorkflowService {
           latestEvaluationMetrics: metrics,
           latestEvaluationAt: new Date().toISOString(),
           latestEvaluationBy: actorId,
-        } as Prisma.InputJsonValue,
+        },
       },
     });
 
@@ -1563,9 +1557,7 @@ export class ApplicationAnalysisWorkflowService {
 
   async listEvaluations(query: ApplicationAnalysisEvaluationQueryDto) {
     const where = {
-      ...(query.mode
-        ? { mode: query.mode as ApplicationAnalysisEvaluationMode }
-        : {}),
+      ...(query.mode ? { mode: query.mode } : {}),
       ...(query.policyVersionId
         ? { policyVersionId: query.policyVersionId }
         : {}),
@@ -1602,13 +1594,10 @@ export class ApplicationAnalysisWorkflowService {
     const where = {
       ...(query.capability
         ? {
-            capability:
-              query.capability as ApplicationAnalysisExperimentCapability,
+            capability: query.capability,
           }
         : {}),
-      ...(query.status
-        ? { status: query.status as ApplicationAnalysisExperimentStatus }
-        : {}),
+      ...(query.status ? { status: query.status } : {}),
     };
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -1642,11 +1631,11 @@ export class ApplicationAnalysisWorkflowService {
     actorId: string,
     dto: CreateApplicationAnalysisExperimentVersionDto,
   ) {
-    const capability = dto.capability as ExperimentCapability;
+    const capability = dto.capability;
     const created =
       await this.prisma.applicationAnalysisExperimentVersion.create({
         data: {
-          capability: capability as ApplicationAnalysisExperimentCapability,
+          capability: capability,
           version: dto.version,
           policyVersionId: dto.policyVersionId,
           status: 'DRAFT',
@@ -1654,14 +1643,14 @@ export class ApplicationAnalysisWorkflowService {
           gateConfig: this.normalizeExperimentThresholds(
             capability,
             dto.gateConfig ?? null,
-          ) as Prisma.InputJsonValue,
+          ),
           rolloutConfig: this.normalizeExperimentRolloutConfig(
             capability,
             dto.rolloutConfig ?? null,
-          ) as Prisma.InputJsonValue,
+          ),
           monitoringConfig: this.normalizeExperimentMonitoringConfig(
             dto.monitoringConfig ?? null,
-          ) as Prisma.InputJsonValue,
+          ),
           notes: dto.notes
             ? `${dto.notes}\n\n[created-by:${actorId}]`
             : `[created-by:${actorId}]`,
@@ -1713,7 +1702,7 @@ export class ApplicationAnalysisWorkflowService {
     const { metrics, failures, counts, latestReplayId } =
       await this.buildExperimentMetrics({
         id: experiment.id,
-        capability: experiment.capability as ExperimentCapability,
+        capability: experiment.capability,
         policyVersionId: experiment.policyVersionId,
       });
     const latestReplay =
@@ -1734,7 +1723,7 @@ export class ApplicationAnalysisWorkflowService {
           scopeSummary: {
             ...replayScopeSummary,
             capability: experiment.capability,
-          } as Prisma.InputJsonValue,
+          },
           counts: {
             ...counts,
             latestReplayId,
@@ -1744,8 +1733,8 @@ export class ApplicationAnalysisWorkflowService {
             replayCommitSha: this.asString(replayScopeSummary.commitSha),
             replayReportPath: this.asString(replayScopeSummary.reportPath),
             mode,
-          } as Prisma.InputJsonValue,
-          metrics: metrics as Prisma.InputJsonValue,
+          },
+          metrics: metrics,
           failures,
           startedAt: new Date(),
           finishedAt: new Date(),
@@ -1775,7 +1764,7 @@ export class ApplicationAnalysisWorkflowService {
           latestEvaluationMetrics: metrics,
           latestEvaluationAt: new Date().toISOString(),
           latestEvaluationBy: actorId,
-        } as Prisma.InputJsonValue,
+        },
       },
     });
 
@@ -1896,22 +1885,22 @@ export class ApplicationAnalysisWorkflowService {
           canaryStartedAt: new Date(),
           rolloutConfig: {
             ...this.normalizeExperimentRolloutConfig(
-              experiment.capability as ExperimentCapability,
+              experiment.capability,
               this.asRecord(experiment.rolloutConfig),
             ),
             currentPercentage: this.normalizeExperimentRolloutConfig(
-              experiment.capability as ExperimentCapability,
+              experiment.capability,
               this.asRecord(experiment.rolloutConfig),
             ).stages[0],
             stageIndex: 0,
             lastPromotedAt: new Date().toISOString(),
             nextEligiblePromotionAt: this.buildNextPromotionAt(
               this.normalizeExperimentRolloutConfig(
-                experiment.capability as ExperimentCapability,
+                experiment.capability,
                 this.asRecord(experiment.rolloutConfig),
               ),
             ),
-          } as Prisma.InputJsonValue,
+          },
           notes: this.appendNote(
             experiment.notes,
             `[canary-start:${new Date().toISOString()} by ${actorId}]`,
@@ -1942,7 +1931,7 @@ export class ApplicationAnalysisWorkflowService {
     const where = {
       ...(query.mode
         ? {
-            mode: query.mode as ApplicationAnalysisExperimentEvaluationMode,
+            mode: query.mode,
           }
         : {}),
       ...(query.experimentVersionId
@@ -1981,12 +1970,8 @@ export class ApplicationAnalysisWorkflowService {
     query: ApplicationAnalysisExperimentSweepQueryDto,
   ) {
     const where = {
-      ...(query.mode
-        ? { mode: query.mode as ApplicationAnalysisExperimentSweepMode }
-        : {}),
-      ...(query.status
-        ? { status: query.status as ApplicationAnalysisExperimentSweepStatus }
-        : {}),
+      ...(query.mode ? { mode: query.mode } : {}),
+      ...(query.status ? { status: query.status } : {}),
     };
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -2011,13 +1996,12 @@ export class ApplicationAnalysisWorkflowService {
     const where = {
       ...(query.capability
         ? {
-            capability:
-              query.capability as ApplicationAnalysisExperimentCapability,
+            capability: query.capability,
           }
         : {}),
       ...(query.status
         ? {
-            status: query.status as ApplicationAnalysisExperimentIncidentStatus,
+            status: query.status,
           }
         : {}),
     };
@@ -2064,7 +2048,7 @@ export class ApplicationAnalysisWorkflowService {
           details: {
             ...this.asRecord(incident.details),
             acknowledgeNote: dto?.note ?? null,
-          } as Prisma.InputJsonValue,
+          },
         },
       });
 
@@ -2089,18 +2073,17 @@ export class ApplicationAnalysisWorkflowService {
       exposureRecord: { isNot: null },
       ...(query.capability
         ? {
-            capability:
-              query.capability as ApplicationAnalysisExperimentCapability,
+            capability: query.capability,
           }
         : {}),
       ...(query.category
         ? {
-            category: query.category as ApplicationAnalysisFeedbackCategory,
+            category: query.category,
           }
         : {}),
       ...(query.sentiment
         ? {
-            sentiment: query.sentiment as ApplicationAnalysisFeedbackSentiment,
+            sentiment: query.sentiment,
           }
         : {}),
     };
@@ -2138,7 +2121,7 @@ export class ApplicationAnalysisWorkflowService {
     }
 
     const rolloutConfig = this.normalizeExperimentRolloutConfig(
-      experiment.capability as ExperimentCapability,
+      experiment.capability,
       this.asRecord(experiment.rolloutConfig),
     );
     const monitoringConfig = this.normalizeExperimentMonitoringConfig(
@@ -2188,7 +2171,7 @@ export class ApplicationAnalysisWorkflowService {
           monitoringConfig: {
             ...monitoringConfig,
             ...(dto.monitoringThresholds ?? {}),
-          } as Prisma.InputJsonValue,
+          },
         },
       });
 
@@ -2250,8 +2233,7 @@ export class ApplicationAnalysisWorkflowService {
           data: {
             exposureId,
             experimentVersionId: experiment.id,
-            capability:
-              experiment.capability as ApplicationAnalysisExperimentCapability,
+            capability: experiment.capability,
             userId: input.userId,
             profileId: input.profileId,
             schoolIds,
@@ -2302,9 +2284,8 @@ export class ApplicationAnalysisWorkflowService {
 
     const normalizedCategory =
       dto.sentiment === 'NOT_HELPFUL'
-        ? ((dto.category ??
-            'LOW_ACTIONABILITY') as ApplicationAnalysisFeedbackCategory)
-        : (dto.category as ApplicationAnalysisFeedbackCategory | undefined);
+        ? (dto.category ?? 'LOW_ACTIONABILITY')
+        : dto.category;
 
     if (dto.runId) {
       const run = await this.prisma.applicationAnalysisRun.findFirst({
@@ -2332,13 +2313,12 @@ export class ApplicationAnalysisWorkflowService {
             userId,
             ...(dto.capability
               ? {
-                  capability:
-                    dto.capability as ApplicationAnalysisExperimentCapability,
+                  capability: dto.capability,
                 }
               : {}),
             schoolId: dto.schoolId,
             category: normalizedCategory,
-            sentiment: dto.sentiment as ApplicationAnalysisFeedbackSentiment,
+            sentiment: dto.sentiment,
             notes: dto.notes,
           },
         });
@@ -2372,7 +2352,7 @@ export class ApplicationAnalysisWorkflowService {
       await this.prisma.applicationAnalysisExposureRecord.findFirst({
         where: {
           exposureId: dto.exposureId,
-          capability: dto.capability as ApplicationAnalysisExperimentCapability,
+          capability: dto.capability,
           userId,
         },
         orderBy: [{ generatedAt: 'desc' }, { createdAt: 'desc' }],
@@ -2390,10 +2370,10 @@ export class ApplicationAnalysisWorkflowService {
           exposureRecordId: exposure.id,
           exposureId: dto.exposureId,
           userId,
-          capability: dto.capability as ApplicationAnalysisExperimentCapability,
+          capability: dto.capability,
           schoolId: dto.schoolId,
           category: normalizedCategory,
-          sentiment: dto.sentiment as ApplicationAnalysisFeedbackSentiment,
+          sentiment: dto.sentiment,
           notes: dto.notes,
         },
       },
@@ -2657,7 +2637,7 @@ export class ApplicationAnalysisWorkflowService {
       this.asRecord(experiment.monitoringConfig),
     );
     const rolloutConfig = this.normalizeExperimentRolloutConfig(
-      experiment.capability as ExperimentCapability,
+      experiment.capability,
       this.asRecord(experiment.rolloutConfig),
     );
 
@@ -2667,13 +2647,13 @@ export class ApplicationAnalysisWorkflowService {
         monitoringConfig: {
           ...monitoringConfig,
           ...monitoringPatch,
-        } as Prisma.InputJsonValue,
+        },
         ...(rolloutPatch
           ? {
               rolloutConfig: {
                 ...rolloutConfig,
                 ...rolloutPatch,
-              } as Prisma.InputJsonValue,
+              },
             }
           : {}),
       },
@@ -2690,7 +2670,7 @@ export class ApplicationAnalysisWorkflowService {
       skipped: Array<{ id: string; reason: string }>;
     },
   ) {
-    const capability = experiment.capability as ExperimentCapability;
+    const capability = experiment.capability;
     const rolloutConfig = this.normalizeExperimentRolloutConfig(
       capability,
       this.asRecord(experiment.rolloutConfig),
@@ -2791,7 +2771,7 @@ export class ApplicationAnalysisWorkflowService {
 
     const run = await this.prisma.applicationAnalysisExperimentSweepRun.create({
       data: {
-        mode: mode as ApplicationAnalysisExperimentSweepMode,
+        mode: mode,
         status: 'RUNNING',
         actorId,
         lockKey,
@@ -2860,7 +2840,7 @@ export class ApplicationAnalysisWorkflowService {
     try {
       for (const experiment of experiments) {
         summary.checked += 1;
-        const capability = experiment.capability as ExperimentCapability;
+        const capability = experiment.capability;
         const rolloutConfig = this.normalizeExperimentRolloutConfig(
           capability,
           this.asRecord(experiment.rolloutConfig),
@@ -3048,7 +3028,7 @@ export class ApplicationAnalysisWorkflowService {
         where: { id: run.id },
         data: {
           status: 'COMPLETED',
-          summary: summary as Prisma.InputJsonValue,
+          summary: summary,
           failures: [],
           finishedAt: new Date(),
         },
@@ -3101,7 +3081,7 @@ export class ApplicationAnalysisWorkflowService {
       );
     }
 
-    const capability = experiment.capability as ExperimentCapability;
+    const capability = experiment.capability;
     const thresholds = this.normalizeExperimentThresholds(
       capability,
       this.asRecord(experiment.gateConfig),
@@ -3127,9 +3107,7 @@ export class ApplicationAnalysisWorkflowService {
         },
       });
 
-    const metrics = this.asRecord(
-      latestEvaluation?.metrics as Prisma.JsonValue,
-    );
+    const metrics = this.asRecord(latestEvaluation?.metrics);
     const failures: string[] = [];
 
     if (!latestEvaluation) {

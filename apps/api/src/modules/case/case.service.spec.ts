@@ -628,7 +628,7 @@ describe('CaseService', () => {
         ],
       };
 
-      const result = await service.batchImport(dto as any, 'admin-id');
+      const result = await service.batchImport(dto, 'admin-id');
 
       expect(result.imported).toBe(2);
       expect(result.skipped).toBe(0);
@@ -647,7 +647,7 @@ describe('CaseService', () => {
         ],
       };
 
-      const result = await service.batchImport(dto as any, 'admin-id');
+      const result = await service.batchImport(dto, 'admin-id');
 
       expect(result.imported).toBe(0);
       expect(result.skipped).toBe(1);
@@ -666,7 +666,7 @@ describe('CaseService', () => {
         ],
       };
 
-      const result = await service.batchImport(dto as any, 'admin-id');
+      const result = await service.batchImport(dto, 'admin-id');
 
       expect(result.imported).toBe(0);
       expect(result.skipped).toBe(2);
@@ -681,7 +681,7 @@ describe('CaseService', () => {
         ],
       };
 
-      const result = await service.batchImport(dto as any, 'admin-id');
+      const result = await service.batchImport(dto, 'admin-id');
 
       expect(result.imported).toBe(1);
       expect(result.errors).toEqual(
@@ -703,7 +703,7 @@ describe('CaseService', () => {
         items: [{ school: 'MIT', year: 2025, result: 'ADMITTED', major: 'CS' }],
       };
 
-      const result = await service.batchImport(dto as any, 'admin-id');
+      const result = await service.batchImport(dto, 'admin-id');
 
       expect(result.imported).toBe(0);
       expect(result.errors).toEqual(
@@ -721,7 +721,7 @@ describe('CaseService', () => {
         autoVerify: false,
       };
 
-      await service.batchImport(dto as any, 'admin-id');
+      await service.batchImport(dto, 'admin-id');
 
       expect(prismaService.admissionCase.create).toHaveBeenCalledWith(
         expect.objectContaining({

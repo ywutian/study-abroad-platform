@@ -108,7 +108,7 @@ export class ProfileController {
       user.locale,
       {
         debug: false,
-        role: user.role as Role,
+        role: user.role,
       },
     );
   }
@@ -536,7 +536,7 @@ export class ProfileController {
       try {
         const item = await this.schoolListService.addSchool(user.id, {
           schoolId,
-          tier: tier as any,
+          tier: tier,
         });
         results.push(item);
       } catch {
@@ -558,7 +558,7 @@ export class ProfileController {
       priority === 1 ? 'REACH' : priority === 3 ? 'SAFETY' : 'TARGET';
     return this.schoolListService.addSchool(user.id, {
       schoolId,
-      tier: tier as any,
+      tier: tier,
     });
   }
 
