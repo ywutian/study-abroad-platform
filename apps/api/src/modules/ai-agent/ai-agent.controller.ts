@@ -33,10 +33,11 @@ import { TokenTrackerService } from './core/token-tracker.service';
 import { RateLimiterService } from './core/rate-limiter.service';
 import { LLMService } from './core/llm.service';
 import { AgentThrottleGuard, SkipAgentThrottle } from './guards';
-import { CurrentUser } from '../../common/decorators';
+import { CurrentLocale, CurrentUser } from '../../common/decorators';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ChatDto, DirectAgentDto } from './dto';
+import type { SupportedLocale } from '@study-abroad/shared';
 
 @ApiTags('ai-agent')
 @ApiBearerAuth()
@@ -60,6 +61,7 @@ export class AiAgentController {
   @ApiOperation({ summary: 'Chat with AI Agent' })
   async chat(
     @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
     @Body() data: ChatDto,
     @Res() res: Response,
   ) {
@@ -82,7 +84,7 @@ export class AiAgentController {
           user.id,
           data.message,
           data.conversationId,
-          data.locale,
+          locale,
           data.context,
           data.agentHint,
         )) {
@@ -114,7 +116,7 @@ export class AiAgentController {
       user.id,
       data.message,
       data.conversationId,
-      data.locale,
+      locale,
       data.context,
       data.agentHint,
     );
@@ -128,6 +130,7 @@ export class AiAgentController {
   @ApiOperation({ summary: 'Directly call a specific Agent' })
   async callAgent(
     @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
     @Body() data: DirectAgentDto,
   ) {
     this.logger.log(
@@ -144,7 +147,7 @@ export class AiAgentController {
       data.agent,
       data.message,
       data.conversationId,
-      data.locale,
+      locale,
       data.context,
       data.agentHint,
     );

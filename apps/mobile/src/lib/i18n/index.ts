@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 import { storage } from '../storage/secure-store';
+import { setApiLocale } from '../api/client';
 
 import zh from './locales/zh.json';
 import en from './locales/en.json';
@@ -27,6 +28,7 @@ async function getInitialLanguage(): Promise<string> {
 
 export async function initI18n(): Promise<typeof i18n> {
   const lng = await getInitialLanguage();
+  setApiLocale(lng);
 
   await i18n.use(initReactI18next).init({
     compatibilityJSON: 'v3',
@@ -45,6 +47,7 @@ export async function initI18n(): Promise<typeof i18n> {
 }
 
 export async function changeLanguage(language: 'zh' | 'en'): Promise<void> {
+  setApiLocale(language);
   await storage.set(LANGUAGE_KEY, language);
   await i18n.changeLanguage(language);
 }

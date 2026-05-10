@@ -12,6 +12,10 @@ import {
   type ScoreBreakdown,
 } from '../../common/utils/scoring';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
+import {
+  buildRankingAnalysisSystemPrompt,
+  buildRankingAnalysisUserPrompt,
+} from './hall-ranking.prompts';
 
 export interface PercentileBands {
   p25: number;
@@ -522,6 +526,17 @@ export class HallRankingService {
     }
 
     const rankingData = await this.getProfileRanking(userId, schoolId);
+    if (rankingData.rank == null || rankingData.percentile == null) {
+      return {
+        analysis: isZh
+          ? '请先完善你的档案信息。'
+          : 'Please complete your profile first.',
+        strengths: [],
+        improvements: [],
+        competitivePosition: 'unknown',
+      };
+    }
+
     const metrics = extractProfileMetrics(profile);
     const schoolMetrics = extractSchoolMetrics(school);
     const breakdown = calculateScoreBreakdown(metrics, schoolMetrics);
@@ -529,78 +544,34 @@ export class HallRankingService {
     const schoolName = isZh ? school.nameZh || school.name : school.name;
     const unknown = isZh ? '未知' : 'Unknown';
     const notFilled = isZh ? '未填写' : 'Not provided';
-
-    const prompt = isZh
-      ? `你是一位资深美本申请顾问。请根据以下数据，用中文分析该学生在 ${schoolName} 的竞争力。
-
-## 学生数据
-- GPA: ${metrics.gpa || notFilled}${metrics.gpaScale ? `/${metrics.gpaScale}` : ''}
-- SAT: ${metrics.satScore || notFilled}
-- ACT: ${metrics.actScore || notFilled}
-- TOEFL: ${metrics.toeflScore || notFilled}
-- 活动数量: ${metrics.activityCount}
-- 奖项数量: ${metrics.awardCount}（国家级${metrics.nationalAwardCount}，国际级${metrics.internationalAwardCount}）
-
-## 评分结果
-- 学术分: ${breakdown.academic.toFixed(1)}/100
-- 活动分: ${breakdown.activity.toFixed(1)}/100
-- 奖项分: ${breakdown.award.toFixed(1)}/100
-- 综合分: ${breakdown.overall.toFixed(1)}/100
-
-## 排名
-- 排名: ${rankingData.rank}/${rankingData.total}
-- 百分位: 前${rankingData.percentile}%
-
-## 学校信息
-- US News 排名: #${school.usNewsRank || unknown}
-- 录取率: ${school.acceptanceRate ? Number(school.acceptanceRate) + '%' : unknown}
-
-请输出 JSON 格式：
-{
-  "analysis": "综合分析（2-3句话）",
-  "strengths": ["优势1", "优势2"],
-  "improvements": ["改进建议1", "改进建议2"],
-  "competitivePosition": "strong|moderate|challenging"
-}
-
-只输出 JSON，不要其他内容。`
-      : `You are a senior US college admissions consultant. Based on the following data, analyze this student's competitiveness at ${schoolName}.
-
-## Student Data
-- GPA: ${metrics.gpa || notFilled}${metrics.gpaScale ? `/${metrics.gpaScale}` : ''}
-- SAT: ${metrics.satScore || notFilled}
-- ACT: ${metrics.actScore || notFilled}
-- TOEFL: ${metrics.toeflScore || notFilled}
-- Activities: ${metrics.activityCount}
-- Awards: ${metrics.awardCount} (National: ${metrics.nationalAwardCount}, International: ${metrics.internationalAwardCount})
-
-## Score Breakdown
-- Academic: ${breakdown.academic.toFixed(1)}/100
-- Activities: ${breakdown.activity.toFixed(1)}/100
-- Awards: ${breakdown.award.toFixed(1)}/100
-- Overall: ${breakdown.overall.toFixed(1)}/100
-
-## Ranking
-- Rank: ${rankingData.rank}/${rankingData.total}
-- Percentile: Top ${rankingData.percentile}%
-
-## School Info
-- US News Rank: #${school.usNewsRank || unknown}
-- Acceptance Rate: ${school.acceptanceRate ? Number(school.acceptanceRate) + '%' : unknown}
-
-Output in JSON format:
-{
-  "analysis": "Comprehensive analysis (2-3 sentences)",
-  "strengths": ["Strength 1", "Strength 2"],
-  "improvements": ["Improvement suggestion 1", "Improvement suggestion 2"],
-  "competitivePosition": "strong|moderate|challenging"
-}
-
-Output only JSON, nothing else.`;
+    const systemPrompt = buildRankingAnalysisSystemPrompt(locale);
+    const userPrompt = buildRankingAnalysisUserPrompt(locale, {
+      schoolName,
+      gpa: `${metrics.gpa || notFilled}${metrics.gpaScale ? `/${metrics.gpaScale}` : ''}`,
+      satScore: String(metrics.satScore || notFilled),
+      actScore: String(metrics.actScore || notFilled),
+      toeflScore: String(metrics.toeflScore || notFilled),
+      activityCount: metrics.activityCount,
+      awardCount: metrics.awardCount,
+      nationalAwardCount: metrics.nationalAwardCount,
+      internationalAwardCount: metrics.internationalAwardCount,
+      academicScore: breakdown.academic.toFixed(1),
+      activityScore: breakdown.activity.toFixed(1),
+      awardScore: breakdown.award.toFixed(1),
+      overallScore: breakdown.overall.toFixed(1),
+      rank: rankingData.rank,
+      total: rankingData.total,
+      percentile: rankingData.percentile,
+      usNewsRank: String(school.usNewsRank || unknown),
+      acceptanceRate: school.acceptanceRate
+        ? `${Number(school.acceptanceRate)}%`
+        : unknown,
+    });
 
     try {
       const response = await this.llmService.chatSimpleGuarded([
-        { role: 'user', content: prompt },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
       ]);
 
       const parsed = extractJsonFromLlm<{

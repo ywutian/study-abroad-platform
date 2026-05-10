@@ -12,6 +12,17 @@ import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import {
   buildReviewSystemPrompt,
   buildBrainstormSystemPrompt,
+  buildRewriteParagraphSystemPrompt,
+  buildRewriteParagraphUserPrompt,
+  buildContinueWritingSystemPrompt,
+  buildContinueWritingUserPrompt,
+  buildOpeningSystemPrompt,
+  buildOpeningUserPrompt,
+  buildActivityOptimizePrompt,
+  buildParagraphAnalysisSystemPrompt,
+  buildParagraphAnalysisUserPrompt,
+  buildPolishEssaySystemPrompt,
+  buildPolishEssayUserPrompt,
 } from './essay-ai.prompts';
 import { MemoryType } from '@prisma/client';
 import {
@@ -189,7 +200,7 @@ export class EssayAiService {
             ? `${Number(school.acceptanceRate)}%`
             : null;
         const testingPolicy = resolveSchoolTestingPolicyValue({
-          testingPolicy: school.testingPolicy as any,
+          testingPolicy: school.testingPolicy,
           testOptional: school.testOptional,
         });
         const testingPolicyLabel = this.formatTestingPolicyLabel(
@@ -546,13 +557,11 @@ export class EssayAiService {
       const tokenUsed = this.estimateTokens(content + result.polished);
 
       // No EssayAIResult persistence (essayId is required FK) — results recorded in memory
-      this.savePolishToMemory(
-        userId,
-        { essayId: '', style } as EssayPolishRequestDto,
-        result,
-      ).catch((err) => {
-        this.logger.warn('Failed to save polish to memory', err);
-      });
+      this.savePolishToMemory(userId, { essayId: '', style }, result).catch(
+        (err) => {
+          this.logger.warn('Failed to save polish to memory', err);
+        },
+      );
 
       return {
         id: '',
@@ -622,11 +631,7 @@ export class EssayAiService {
         tokenUsed,
       };
 
-      await this.saveReviewToMemory(
-        userId,
-        { essayId: '' } as EssayReviewRequestDto,
-        parsed,
-      );
+      await this.saveReviewToMemory(userId, { essayId: '' }, parsed);
 
       return response;
     } catch (error) {
@@ -682,7 +687,7 @@ export class EssayAiService {
 
       this.saveBrainstormToMemory(
         userId,
-        { prompt, background } as EssayBrainstormRequestDto,
+        { prompt, background },
         response,
       ).catch((err) => {
         this.logger.warn('Failed to save brainstorm to memory', err);
@@ -714,45 +719,14 @@ export class EssayAiService {
     versions: Array<{ text: string; style: string }>;
   }> {
     const isZh = locale === 'zh';
-
-    const systemPrompt = isZh
-      ? `你是文书写作专家。根据用户提供的段落,生成3个不同风格的改写版本。
-
-${instruction ? `用户特殊要求: ${instruction}` : ''}
-
-返回JSON格式:
-{
-  "versions": [
-    { "text": "改写版本1", "style": "风格描述(如:更具感染力)" },
-    { "text": "改写版本2", "style": "风格描述" },
-    { "text": "改写版本3", "style": "风格描述" }
-  ]
-}
-style字段必须用中文。`
-      : `You are an essay writing expert. Based on the provided paragraph, generate 3 rewritten versions in different styles.
-
-${instruction ? `Special instruction: ${instruction}` : ''}
-
-Return JSON format:
-{
-  "versions": [
-    { "text": "Rewritten version 1", "style": "Style description (e.g., More compelling)" },
-    { "text": "Rewritten version 2", "style": "Style description" },
-    { "text": "Rewritten version 3", "style": "Style description" }
-  ]
-}
-style field must be in English.`;
+    const systemPrompt = buildRewriteParagraphSystemPrompt(locale, instruction);
+    const userPrompt = buildRewriteParagraphUserPrompt(locale, paragraph);
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: isZh
-              ? `请改写以下段落:\n\n${paragraph}`
-              : `Please rewrite the following paragraph:\n\n${paragraph}`,
-          },
+          { role: 'user', content: userPrompt },
         ],
         { temperature: 0.8, maxTokens: 2000 },
       );
@@ -780,54 +754,18 @@ style field must be in English.`;
     direction?: string,
     locale = 'zh',
   ): Promise<{ continuation: string; suggestions: string[] }> {
-    const isZh = locale === 'zh';
-
-    const systemPrompt = isZh
-      ? `你是留学文书写作助手。根据已有内容,帮助用户继续写作。
-
-${prompt ? `文书题目: ${prompt}` : ''}
-${direction ? `用户希望的方向: ${direction}` : ''}
-
-要求:
-1. 保持与前文一致的语气和风格
-2. 自然衔接,不要重复前文内容
-3. 生成100-200词的续写内容
-4. 提供2-3个后续发展方向建议
-
-返回JSON格式:
-{
-  "continuation": "续写内容",
-  "suggestions": ["方向建议1（中文）", "方向建议2（中文）", "方向建议3（中文）"]
-}
-suggestions字段必须用中文。`
-      : `You are a college essay writing assistant. Based on existing content, help the user continue writing.
-
-${prompt ? `Essay prompt: ${prompt}` : ''}
-${direction ? `Desired direction: ${direction}` : ''}
-
-Requirements:
-1. Maintain consistent tone and style with the existing text
-2. Connect naturally without repeating previous content
-3. Generate 100-200 words of continuation
-4. Provide 2-3 suggestions for future direction
-
-Return JSON format:
-{
-  "continuation": "Continuation text",
-  "suggestions": ["Direction 1 (English)", "Direction 2 (English)", "Direction 3 (English)"]
-}
-suggestions field must be in English.`;
+    const systemPrompt = buildContinueWritingSystemPrompt(
+      locale,
+      prompt,
+      direction,
+    );
+    const userPrompt = buildContinueWritingUserPrompt(locale, content);
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: isZh
-              ? `请基于以下内容续写:\n\n${content}`
-              : `Please continue writing based on the following:\n\n${content}`,
-          },
+          { role: 'user', content: userPrompt },
         ],
         { temperature: 0.7, maxTokens: 1500 },
       );
@@ -859,52 +797,8 @@ suggestions field must be in English.`;
     openings: Array<{ text: string; style: string }>;
   }> {
     const isZh = locale === 'zh';
-
-    const systemPrompt = isZh
-      ? `你是留学文书专家。根据题目和背景,生成3个不同风格的文书开头。
-
-好的开头应该:
-1. 立即抓住读者注意力
-2. 不要用"我"开头
-3. 可以用场景、对话、问题、或有力的陈述开始
-4. 50-100词
-
-返回JSON格式:
-{
-  "openings": [
-    { "text": "开头1", "style": "风格描述（中文，如:场景描写）" },
-    { "text": "开头2", "style": "风格" },
-    { "text": "开头3", "style": "风格" }
-  ]
-}
-style字段必须用中文。`
-      : `You are a college essay expert. Based on the prompt and background, generate 3 essay openings in different styles.
-
-A good opening should:
-1. Immediately grab the reader's attention
-2. Avoid starting with "I"
-3. Use a scene, dialogue, question, or powerful statement
-4. Be 50-100 words
-
-Return JSON format:
-{
-  "openings": [
-    { "text": "Opening 1", "style": "Style description (English, e.g., Scene setting)" },
-    { "text": "Opening 2", "style": "Style" },
-    { "text": "Opening 3", "style": "Style" }
-  ]
-}
-style field must be in English.`;
-
-    const userPrompt = isZh
-      ? `题目: ${prompt}
-${background ? `背景信息: ${background}` : ''}
-
-请生成3个吸引人的开头:`
-      : `Prompt: ${prompt}
-${background ? `Background: ${background}` : ''}
-
-Please generate 3 compelling openings:`;
+    const systemPrompt = buildOpeningSystemPrompt(locale);
+    const userPrompt = buildOpeningUserPrompt(locale, prompt, background);
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
@@ -939,39 +833,12 @@ Please generate 3 compelling openings:`;
     role: string,
     locale = 'zh',
   ): Promise<{ optimized: string; charCount: number }> {
-    const isZh = locale === 'zh';
-
-    const prompt = isZh
-      ? `你是一位经验丰富的美国大学申请顾问。请优化以下活动描述，使其在 150 个字符以内且最大化影响力。
-
-活动名称：${activityName}
-职位/角色：${role}
-当前描述：${description}
-
-规则：
-- 必须 150 个英文字符或更少（仔细计数）
-- 以强有力的动词开头
-- 尽可能包含可量化的成果
-- 删除填充词
-- 保留最重要的成就/影响
-- 语言：英文（这是用于美国大学申请的）
-
-只返回优化后的描述，不要返回其他任何内容。`
-      : `You are an expert college application counselor. Optimize this activity description to fit within 150 characters while maximizing impact.
-
-Activity: ${activityName}
-Role: ${role}
-Current description: ${description}
-
-Rules:
-- MUST be 150 characters or fewer (count carefully)
-- Start with a strong action verb
-- Include quantifiable impact where possible
-- Remove filler words
-- Keep the most important achievement/impact
-- Language: English
-
-Return ONLY the optimized description, nothing else.`;
+    const prompt = buildActivityOptimizePrompt(
+      locale,
+      description,
+      activityName,
+      role,
+    );
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
@@ -1006,77 +873,11 @@ Return ONLY the optimized description, nothing else.`;
       return this.getDefaultParagraphAnalysis(locale);
     }
 
-    const isZh = locale === 'zh';
-
-    const systemPrompt = isZh
-      ? `你是顶尖大学招生官，请逐段分析以下文书。
-
-${prompt ? `题目: ${prompt}` : ''}
-${schoolName ? `目标学校: ${schoolName}` : ''}
-
-## 评分标准
-- 🟢 excellent (8-10): 段落出色，展现独特性和深度
-- 🟡 good (5-7): 段落合格但可以更好
-- 🔴 needs_work (1-4): 需要重点修改
-
-## 输出格式 (严格JSON)
-{
-  "paragraphs": [
-    {
-      "paragraphIndex": 0,
-      "paragraphText": "段落原文前30字...",
-      "score": 8,
-      "status": "excellent",
-      "comment": "评价（中文）",
-      "highlights": ["亮点词句1"],
-      "suggestions": ["建议（中文）"]
-    }
-  ],
-  "overallScore": 75,
-  "structure": {
-    "hasStrongOpening": true,
-    "hasClarity": true,
-    "hasGoodConclusion": false,
-    "feedback": "结构反馈（中文）"
-  },
-  "summary": "整体评价（中文，100字内）"
-}
-
-所有文本字段必须用中文。`
-      : `You are a top university admissions officer. Analyze the following essay paragraph by paragraph.
-
-${prompt ? `Prompt: ${prompt}` : ''}
-${schoolName ? `Target school: ${schoolName}` : ''}
-
-## Scoring Criteria
-- 🟢 excellent (8-10): Outstanding paragraph, shows uniqueness and depth
-- 🟡 good (5-7): Adequate but could be better
-- 🔴 needs_work (1-4): Needs significant revision
-
-## Output Format (strict JSON)
-{
-  "paragraphs": [
-    {
-      "paragraphIndex": 0,
-      "paragraphText": "First 30 chars of paragraph...",
-      "score": 8,
-      "status": "excellent",
-      "comment": "Comment (English)",
-      "highlights": ["Highlight phrase 1"],
-      "suggestions": ["Suggestion (English)"]
-    }
-  ],
-  "overallScore": 75,
-  "structure": {
-    "hasStrongOpening": true,
-    "hasClarity": true,
-    "hasGoodConclusion": false,
-    "feedback": "Structure feedback (English)"
-  },
-  "summary": "Overall evaluation (English, under 100 words)"
-}
-
-All text fields must be in English.`;
+    const systemPrompt = buildParagraphAnalysisSystemPrompt(
+      locale,
+      prompt,
+      schoolName,
+    );
 
     const userPrompt = paragraphs
       .map((p, i) => `【段落 ${i + 1}】\n${p}`)
@@ -1088,9 +889,7 @@ All text fields must be in English.`;
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: isZh
-              ? `请逐段分析以下文书:\n\n${userPrompt}`
-              : `Analyze the following essay paragraph by paragraph:\n\n${userPrompt}`,
+            content: buildParagraphAnalysisUserPrompt(locale, userPrompt),
           },
         ],
         { temperature: 0.4, maxTokens: 3000 },
@@ -1117,65 +916,14 @@ All text fields must be in English.`;
     polished: string;
     changes: Array<{ original: string; revised: string; reason: string }>;
   }> {
-    const isZh = locale === 'zh';
-
-    const styleGuideZh = {
-      formal: '使用更正式、学术化的语言，适合严肃主题',
-      vivid: '使用更生动、有画面感的语言，多用具体细节和感官描写',
-      concise: '精简冗余表达，每个词都要有意义',
-    };
-    const styleGuideEn = {
-      formal: 'Use more formal, academic language suitable for serious topics',
-      vivid:
-        'Use more vivid, imagery-rich language with specific details and sensory descriptions',
-      concise: 'Eliminate redundancy; every word should count',
-    };
-
-    const systemPrompt = isZh
-      ? `你是专业的留学文书编辑,擅长英文文书润色。
-任务:在保持原文核心内容和作者声音(voice)的前提下,提升语言表达质量。
-
-润色风格: ${styleGuideZh[style || 'formal']}
-
-要求:
-1. 保持原文的故事和观点不变
-2. 改善语法、用词、句式多样性
-3. 增强表达力和可读性
-4. 不要过度修改,保持作者个人特色
-
-返回JSON格式:
-{
-  "polished": "润色后的完整文书",
-  "changes": [
-    { "original": "原句", "revised": "修改后", "reason": "修改原因（中文）" }
-  ]
-}
-只返回主要修改(5-10处),不需要列出所有小改动。所有reason字段必须用中文。`
-      : `You are a professional college essay editor specializing in polishing English essays.
-Task: Improve the language quality while preserving the original content and the author's voice.
-
-Polish style: ${styleGuideEn[style || 'formal']}
-
-Requirements:
-1. Keep the original story and viewpoints unchanged
-2. Improve grammar, word choice, and sentence variety
-3. Enhance expressiveness and readability
-4. Don't over-edit; preserve the author's personal style
-
-Return JSON format:
-{
-  "polished": "The fully polished essay",
-  "changes": [
-    { "original": "Original sentence", "revised": "Revised version", "reason": "Reason for change (English)" }
-  ]
-}
-Only list major changes (5-10), not every small edit. All reason fields must be in English.`;
+    const systemPrompt = buildPolishEssaySystemPrompt(locale, style);
+    const userPrompt = buildPolishEssayUserPrompt(locale, content);
 
     try {
       const result = await this.llmService.chatSimpleGuarded(
         [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `请润色以下文书:\n\n${content}` },
+          { role: 'user', content: userPrompt },
         ],
         { temperature: 0.4, maxTokens: 3000 },
       );

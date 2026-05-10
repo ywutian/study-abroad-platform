@@ -47,6 +47,7 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { SanitizeInterceptor } from './common/interceptors/sanitize.interceptor';
+import { LocaleInterceptor } from './common/interceptors/locale.interceptor';
 import { SentryInterceptor } from './common/sentry/sentry.interceptor';
 import { StorageModule } from './common/storage/storage.module';
 import { AuthorizationModule } from './common/services/authorization.module';
@@ -140,6 +141,10 @@ import { FeatureFlagGuard } from './common/feature-flags';
     {
       provide: APP_GUARD,
       useClass: FeatureFlagGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LocaleInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
