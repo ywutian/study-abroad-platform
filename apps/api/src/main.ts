@@ -90,6 +90,7 @@ async function bootstrap() {
       'X-Requested-With',
       'Accept',
       'X-Correlation-Id',
+      'X-Locale',
     ],
     exposedHeaders: [
       'X-Correlation-Id',

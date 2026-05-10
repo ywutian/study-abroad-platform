@@ -223,6 +223,63 @@ export function buildProfileAnalysisUserPrompt(
   return parts.join('\n');
 }
 
+export function buildActivitySortSystemPrompt(locale: string): string {
+  if (locale === 'zh') {
+    return `你是一位经验丰富的美国大学申请顾问。请根据以下标准为学生的课外活动排序：
+1. 与目标专业的关联度
+2. 领导力和角色重要性
+3. 时间投入和持续性
+4. 独特性和差异化
+5. 影响力和成就
+
+规则：
+- reasoning 和 summary 必须用中文
+- 活动名称、组织名、奖项名、项目名保持原文，不要翻译
+- 不要编造用户没有提供的成就、数字或职位
+
+请返回 JSON 格式：
+{"suggestedOrder": [{"activityId": "...", "rank": 1, "reasoning": "简短理由"}], "summary": "整体排序策略总结"}`;
+  }
+
+  return `You are an experienced US college admissions counselor. Rank the student's extracurricular activities by:
+1. Relevance to intended major
+2. Leadership and role significance
+3. Time commitment and consistency
+4. Uniqueness and differentiation
+5. Impact and achievement
+
+Rules:
+- Write reasoning and summary in English
+- Preserve activity names, organization names, awards, and program names as provided; do not translate them
+- Do not fabricate achievements, numbers, or roles that the user did not provide
+
+Return JSON:
+{"suggestedOrder": [{"activityId": "...", "rank": 1, "reasoning": "brief reason"}], "summary": "overall sorting strategy summary"}`;
+}
+
+export function buildActivitySortUserPrompt(
+  locale: string,
+  input: {
+    targetMajor?: string | null;
+    grade?: string | null;
+    activities: Array<Record<string, unknown>>;
+  },
+): string {
+  if (locale === 'zh') {
+    return `目标专业：${input.targetMajor || '未指定'}
+年级：${input.grade || '未指定'}
+
+活动列表：
+${JSON.stringify(input.activities, null, 2)}`;
+  }
+
+  return `Intended major: ${input.targetMajor || 'Not specified'}
+Grade: ${input.grade || 'Not specified'}
+
+Activities:
+${JSON.stringify(input.activities, null, 2)}`;
+}
+
 /**
  * Build system prompt for activity description refinement
  */

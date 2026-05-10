@@ -164,7 +164,7 @@ describe('OrchestratorService', () => {
     memoryManager.getOrCreateConversation.mockResolvedValue({
       id: convId,
     } as any);
-    memory.getOrCreateConversation.mockResolvedValue(mockConversation as any);
+    memory.getOrCreateConversation.mockResolvedValue(mockConversation);
 
     return mockConversation;
   };
@@ -333,6 +333,23 @@ describe('OrchestratorService', () => {
           role: 'assistant',
           content: '你好！有什么可以帮你的？',
         }),
+      );
+    });
+
+    it('should keep the resolved locale even when user input uses another language', async () => {
+      fastRouter.getSimpleResponse.mockReturnValue('好的，我用中文回复。');
+
+      const result = await service.handleMessage(
+        'user_1',
+        'Please answer in English',
+        undefined,
+        'zh',
+      );
+
+      expect(result.message).toBe('好的，我用中文回复。');
+      expect(memoryManager.updateConversationMetadata).toHaveBeenCalledWith(
+        'conv_1',
+        expect.objectContaining({ locale: 'zh' }),
       );
     });
 

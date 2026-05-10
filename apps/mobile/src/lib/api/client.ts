@@ -4,6 +4,7 @@ import {
   saveTokens,
   clearAuthData,
 } from '../storage/secure-store';
+import { normalizeLocale, toBcp47 } from '@study-abroad/shared';
 import { addBreadcrumb } from '@/lib/sentry';
 import type { ApiError } from '@/types';
 
@@ -12,6 +13,24 @@ const API_VERSION = '/api/v1';
 
 /** HTTP status codes that are safe to retry on */
 const RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
+
+let currentApiLocale = normalizeLocale(undefined);
+
+export function setApiLocale(locale: string): void {
+  currentApiLocale = normalizeLocale(locale);
+}
+
+export function getApiLocale() {
+  return currentApiLocale;
+}
+
+function getLocaleHeaders(): Record<string, string> {
+  const locale = getApiLocale();
+  return {
+    'X-Locale': locale,
+    'Accept-Language': toBcp47(locale),
+  };
+}
 
 interface RequestConfig extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -89,7 +108,11 @@ class ApiClient {
     try {
       const response = await fetch(`${this.baseUrl}${API_VERSION}/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Client-Type': 'mobile' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-Type': 'mobile',
+          ...getLocaleHeaders(),
+        },
         body: JSON.stringify({ refreshToken }),
       });
 
@@ -151,6 +174,7 @@ class ApiClient {
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
         'X-Client-Type': 'mobile',
+        ...getLocaleHeaders(),
         ...init.headers,
       };
 
@@ -277,6 +301,7 @@ class ApiClient {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
       'X-Client-Type': 'mobile',
+      ...getLocaleHeaders(),
     };
 
     if (token) {

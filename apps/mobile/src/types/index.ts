@@ -75,6 +75,7 @@ export interface LoginDto {
 export interface RegisterDto {
   email: string;
   password: string;
+  locale?: string;
 }
 
 // ============== Profile ==============

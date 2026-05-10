@@ -1,12 +1,14 @@
 import {
   IsEmail,
   IsString,
+  IsIn,
   MinLength,
   MaxLength,
   Matches,
   IsOptional,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SUPPORTED_LOCALES } from '@study-abroad/shared';
 
 export class RegisterDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -29,6 +31,7 @@ export class RegisterDto {
   })
   @IsOptional()
   @IsString()
+  @IsIn(SUPPORTED_LOCALES)
   @MaxLength(10)
   locale?: string;
 
@@ -90,6 +93,7 @@ export class RegisterWithInviteDto {
   })
   @IsOptional()
   @IsString()
+  @IsIn(SUPPORTED_LOCALES)
   @MaxLength(10)
   locale?: string;
 }

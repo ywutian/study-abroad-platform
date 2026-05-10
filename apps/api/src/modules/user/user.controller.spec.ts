@@ -61,6 +61,10 @@ describe('UserController', () => {
           provide: UserService,
           useValue: {
             findByIdOrThrow: jest.fn().mockResolvedValue(mockFullUser),
+            update: jest.fn().mockResolvedValue({
+              ...mockFullUser,
+              locale: 'en',
+            }),
             softDelete: jest.fn().mockResolvedValue(undefined),
             exportUserData: jest.fn().mockResolvedValue({ user: mockFullUser }),
             getOrCreateReferralCode: jest.fn().mockResolvedValue('REF123'),
@@ -117,7 +121,7 @@ describe('UserController', () => {
 
   describe('getDashboard', () => {
     it('should return dashboard summary for the user', async () => {
-      const result = await controller.getDashboard(mockUser as any);
+      const result = await controller.getDashboard(mockUser);
 
       expect(dashboardService.getDashboardSummary).toHaveBeenCalledWith(
         'user-1',
@@ -129,7 +133,7 @@ describe('UserController', () => {
 
   describe('getCurrentUser', () => {
     it('should return user info without passwordHash', async () => {
-      const result = await controller.getCurrentUser(mockUser as any);
+      const result = await controller.getCurrentUser(mockUser);
 
       expect(userService.findByIdOrThrow).toHaveBeenCalledWith('user-1');
       expect(result).not.toHaveProperty('passwordHash');
@@ -137,9 +141,23 @@ describe('UserController', () => {
     });
   });
 
+  describe('updateCurrentUser', () => {
+    it('should update only the current user locale and return safe user data', async () => {
+      const result = await controller.updateCurrentUser(mockUser, {
+        locale: 'en',
+      });
+
+      expect(userService.update).toHaveBeenCalledWith('user-1', {
+        locale: 'en',
+      });
+      expect(result).not.toHaveProperty('passwordHash');
+      expect(result).toHaveProperty('locale', 'en');
+    });
+  });
+
   describe('deleteAccount', () => {
     it('should soft delete the user and return success message', async () => {
-      const result = await controller.deleteAccount(mockUser as any);
+      const result = await controller.deleteAccount(mockUser);
 
       expect(userService.softDelete).toHaveBeenCalledWith('user-1');
       expect(result.success).toBe(true);
@@ -153,10 +171,7 @@ describe('UserController', () => {
         setHeader: jest.fn(),
       };
 
-      const result = await controller.exportData(
-        mockUser as any,
-        mockResponse as any,
-      );
+      const result = await controller.exportData(mockUser, mockResponse as any);
 
       expect(userService.exportUserData).toHaveBeenCalledWith('user-1');
       expect(mockResponse.setHeader).toHaveBeenCalledWith(
@@ -173,7 +188,7 @@ describe('UserController', () => {
 
   describe('getMyPoints', () => {
     it('should return the current user points', async () => {
-      const result = await controller.getMyPoints(mockUser as any);
+      const result = await controller.getMyPoints(mockUser);
 
       expect(caseIncentiveService.getUserPoints).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ points: 100 });
@@ -182,10 +197,7 @@ describe('UserController', () => {
 
   describe('getPointHistory', () => {
     it('should return enriched point history with default limit', async () => {
-      const result = await controller.getPointHistory(
-        mockUser as any,
-        undefined,
-      );
+      const result = await controller.getPointHistory(mockUser, undefined);
 
       expect(caseIncentiveService.getPointHistory).toHaveBeenCalledWith(
         'user-1',
@@ -199,7 +211,7 @@ describe('UserController', () => {
     });
 
     it('should use provided limit', async () => {
-      await controller.getPointHistory(mockUser as any, '5');
+      await controller.getPointHistory(mockUser, '5');
 
       expect(caseIncentiveService.getPointHistory).toHaveBeenCalledWith(
         'user-1',
@@ -222,7 +234,7 @@ describe('UserController', () => {
 
   describe('getReferral', () => {
     it('should return referral code, link, and stats', async () => {
-      const result = await controller.getReferral(mockUser as any);
+      const result = await controller.getReferral(mockUser);
 
       expect(userService.getOrCreateReferralCode).toHaveBeenCalledWith(
         'user-1',
@@ -237,7 +249,7 @@ describe('UserController', () => {
 
   describe('getReferralList', () => {
     it('should return list of referred users', async () => {
-      const result = await controller.getReferralList(mockUser as any);
+      const result = await controller.getReferralList(mockUser);
 
       expect(userService.getReferralList).toHaveBeenCalledWith('user-1');
       expect(result.referrals).toHaveLength(1);
@@ -247,7 +259,7 @@ describe('UserController', () => {
 
   describe('getPointSummary', () => {
     it('should return point summary statistics', async () => {
-      const result = await controller.getPointSummary(mockUser as any);
+      const result = await controller.getPointSummary(mockUser);
 
       expect(caseIncentiveService.getUserPoints).toHaveBeenCalledWith('user-1');
       expect(caseIncentiveService.getPointHistory).toHaveBeenCalledWith(

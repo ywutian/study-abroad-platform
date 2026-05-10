@@ -121,21 +121,6 @@ export class OrchestratorService {
     }
   }
 
-  // ==================== 语言检测 ====================
-
-  /**
-   * Detect message language to override locale when user writes in a different language.
-   * Returns null if ambiguous (mixed content).
-   */
-  private detectLanguage(text: string): 'zh' | 'en' | null {
-    const cleaned = text.replace(/[^a-zA-Z\u4e00-\u9fff]/g, '');
-    const enChars = (cleaned.match(/[a-zA-Z]/g) || []).length;
-    const zhChars = (cleaned.match(/[\u4e00-\u9fff]/g) || []).length;
-    if (enChars > zhChars * 2) return 'en';
-    if (zhChars > enChars * 2) return 'zh';
-    return null;
-  }
-
   private sanitizeAgentContext(
     context?: AgentChatContext,
   ): AgentChatContext | undefined {
@@ -343,10 +328,6 @@ export class OrchestratorService {
     context?: AgentChatContext,
     agentHint?: AgentType,
   ): Promise<AgentResponse> {
-    // Auto-detect language: if user writes in English but locale is 'zh', override
-    const detectedLang = this.detectLanguage(message);
-    if (detectedLang) locale = detectedLang;
-
     const lockKey = conversationId || userId;
     if (!(await this.acquireConversationLock(lockKey))) {
       return {
@@ -904,9 +885,6 @@ export class OrchestratorService {
     context?: AgentChatContext,
     agentHint?: AgentType,
   ): AsyncGenerator<StreamEvent> {
-    const detectedLang = this.detectLanguage(message);
-    if (detectedLang) locale = detectedLang;
-
     const lockKey = conversationId || userId;
     if (!(await this.acquireConversationLock(lockKey))) {
       yield {

@@ -24,6 +24,8 @@ import { ProfileHelpersService } from './profile-helpers.service';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import {
+  buildActivitySortSystemPrompt,
+  buildActivitySortUserPrompt,
   buildActivityRefineSystemPrompt,
   buildActivityRefineUserPrompt,
   buildGenerateCommonAppSystemPrompt,
@@ -129,7 +131,7 @@ export class ProfileScoresService {
     }
 
     return JSON.stringify(
-      Object.keys(subScores as Record<string, unknown>)
+      Object.keys(subScores)
         .sort()
         .reduce<Record<string, unknown>>((acc, key) => {
           acc[key] = (subScores as Record<string, unknown>)[key];
@@ -477,35 +479,12 @@ export class ProfileScoresService {
       isOngoing: a.isOngoing,
     }));
 
-    const systemPrompt = isZh
-      ? `你是一位经验丰富的美国大学申请顾问。请根据以下标准为学生的课外活动排序：
-1. 与目标专业的关联度
-2. 领导力和角色重要性
-3. 时间投入和持续性
-4. 独特性和差异化
-5. 影响力和成就
-
-请返回JSON格式：{"suggestedOrder": [{"activityId": "...", "rank": 1, "reasoning": "简短理由"}], "summary": "整体排序策略总结"}`
-      : `You are an experienced US college admissions counselor. Rank the student's extracurricular activities by:
-1. Relevance to intended major
-2. Leadership and role significance
-3. Time commitment and consistency
-4. Uniqueness and differentiation
-5. Impact and achievement
-
-Return JSON: {"suggestedOrder": [{"activityId": "...", "rank": 1, "reasoning": "brief reason"}], "summary": "overall sorting strategy summary"}`;
-
-    const userPrompt = isZh
-      ? `目标专业：${profile?.targetMajor || '未指定'}
-年级：${profile?.grade || '未指定'}
-
-活动列表：
-${JSON.stringify(activitiesJson, null, 2)}`
-      : `Intended major: ${profile?.targetMajor || 'Not specified'}
-Grade: ${profile?.grade || 'Not specified'}
-
-Activities:
-${JSON.stringify(activitiesJson, null, 2)}`;
+    const systemPrompt = buildActivitySortSystemPrompt(locale);
+    const userPrompt = buildActivitySortUserPrompt(locale, {
+      targetMajor: profile?.targetMajor,
+      grade: profile?.grade,
+      activities: activitiesJson,
+    });
 
     const messages: ChatSimpleMessage[] = [
       { role: 'system', content: systemPrompt },

@@ -19,6 +19,7 @@ import {
   type UserRegisteredPayload,
 } from '../../common/events/notification.events';
 import { User, Prisma } from '@prisma/client';
+import { normalizeLocale } from '@study-abroad/shared';
 import { randomBytes } from 'crypto';
 
 export interface AuthTokens {
@@ -101,7 +102,7 @@ export class AuthService {
       emailVerified: skipVerification,
       emailVerifyToken,
       emailVerifyTokenExp,
-      locale: data.locale || 'zh',
+      locale: normalizeLocale(data.locale),
     };
 
     if (referredById) {
@@ -115,7 +116,7 @@ export class AuthService {
       userId: user.id,
       email: data.email,
       referredById,
-    } as UserRegisteredPayload & { referredById?: string });
+    });
 
     // 发送验证邮件 (异步，不阻塞注册流程)
     this.emailService
@@ -194,7 +195,7 @@ export class AuthService {
           emailVerified: true, // Invite-based registration = trusted email
           emailVerifyToken,
           emailVerifyTokenExp,
-          locale: data.locale || 'zh',
+          locale: normalizeLocale(data.locale),
         },
       });
 
@@ -209,7 +210,7 @@ export class AuthService {
     this.eventEmitter.emit(USER_REGISTERED, {
       userId: user.id,
       email: data.email,
-    } as UserRegisteredPayload);
+    });
 
     const tokens = await this.generateTokens(user);
 

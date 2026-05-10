@@ -7,25 +7,17 @@
  * 添加新语言时只需修改本文件的映射表，无需改动任何组件。
  */
 
-import { type Locale } from './config';
+import {
+  normalizeLocale as normalizeSharedLocale,
+  toBcp47 as sharedToBcp47,
+} from '@study-abroad/shared';
 
 // ============================================
 // BCP-47 locale 映射
 // ============================================
 
-/**
- * 应用 locale → BCP-47 完整 locale 标签的映射
- *
- * 用于需要 BCP-47 格式的场景（如第三方库、PDF 生成等）。
- * 注意：大多数场景应优先使用 useFormatter() 而非此函数。
- */
-const BCP47_MAP: Record<Locale, string> = {
-  zh: 'zh-CN',
-  en: 'en-US',
-};
-
 export function toBcp47(locale: string): string {
-  return BCP47_MAP[locale as Locale] ?? locale;
+  return sharedToBcp47(locale);
 }
 
 // ============================================
@@ -48,7 +40,7 @@ export function getLocalizedName(
   originalName: string | undefined | null,
   locale: string
 ): string {
-  if (locale === 'zh') {
+  if (normalizeSharedLocale(locale) === 'zh') {
     return localizedName || originalName || '';
   }
   return originalName || localizedName || '';
@@ -66,7 +58,7 @@ export function getSecondaryName(
   originalName: string | undefined | null,
   locale: string
 ): string | undefined {
-  if (locale !== 'zh') return undefined;
+  if (normalizeSharedLocale(locale) !== 'zh') return undefined;
   const primary = localizedName || originalName || '';
   if (!originalName || originalName === primary) return undefined;
   return originalName;

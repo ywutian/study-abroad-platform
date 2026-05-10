@@ -254,3 +254,386 @@ export function buildBrainstormSystemPrompt(
   const lines = base.split('\n');
   return [lines[0], '', ...contextLines, '', ...lines.slice(1)].join('\n');
 }
+
+// ── Editing prompts ─────────────────────────────────────────
+
+export function buildRewriteParagraphSystemPrompt(
+  locale: string,
+  instruction?: string,
+): string {
+  if (locale === 'zh') {
+    return `你是留学申请文书写作专家。根据用户提供的段落，生成 3 个不同风格的改写版本。
+
+${instruction ? `用户特殊要求：${instruction}` : ''}
+
+规则：
+1. 不翻译学生原文，除非用户明确要求翻译
+2. 改写版本应保持原段落的写作语言和申请语境
+3. 保留学校名、考试名、GPA/SAT/ACT/TOEFL/IELTS/AP/IB/ED/EA/RD/REA/UC/Common App 等专有名词原文
+4. style 字段用中文说明风格
+
+返回 JSON 格式：
+{
+  "versions": [
+    { "text": "改写版本1", "style": "风格描述（如：更具感染力）" },
+    { "text": "改写版本2", "style": "风格描述" },
+    { "text": "改写版本3", "style": "风格描述" }
+  ]
+}`;
+  }
+
+  return `You are a college application essay writing expert. Generate 3 rewritten versions of the user's paragraph in different styles.
+
+${instruction ? `Special instruction: ${instruction}` : ''}
+
+Rules:
+1. Do not translate the student's original text unless the user explicitly asks for translation
+2. Keep each rewrite in the paragraph's original writing language and application context
+3. Preserve official school names and terms such as GPA/SAT/ACT/TOEFL/IELTS/AP/IB/ED/EA/RD/REA/UC/Common App
+4. Write the style field in English
+
+Return JSON format:
+{
+  "versions": [
+    { "text": "Rewritten version 1", "style": "Style description, e.g. more compelling" },
+    { "text": "Rewritten version 2", "style": "Style description" },
+    { "text": "Rewritten version 3", "style": "Style description" }
+  ]
+}`;
+}
+
+export function buildRewriteParagraphUserPrompt(
+  locale: string,
+  paragraph: string,
+): string {
+  return locale === 'zh'
+    ? `请改写以下段落：\n\n${paragraph}`
+    : `Please rewrite the following paragraph:\n\n${paragraph}`;
+}
+
+export function buildContinueWritingSystemPrompt(
+  locale: string,
+  prompt?: string,
+  direction?: string,
+): string {
+  if (locale === 'zh') {
+    return `你是留学申请文书写作助手。根据已有内容，帮助用户继续写作。
+
+${prompt ? `文书题目（保持原文，不要翻译）：${prompt}` : ''}
+${direction ? `用户希望的方向：${direction}` : ''}
+
+要求：
+1. 保持与前文一致的语气、写作语言和申请语境
+2. 不翻译已有内容或学校官方题目
+3. 自然衔接，不要重复前文内容
+4. 生成 100-200 词的续写内容
+5. 提供 2-3 个后续发展方向建议，suggestions 字段必须用中文
+6. 保留 GPA/SAT/ACT/TOEFL/IELTS/AP/IB/ED/EA/RD/REA/UC/Common App 等专有名词原文
+
+返回 JSON 格式：
+{
+  "continuation": "续写内容",
+  "suggestions": ["方向建议1（中文）", "方向建议2（中文）", "方向建议3（中文）"]
+}`;
+  }
+
+  return `You are a college application essay writing assistant. Continue the user's draft based on the existing content.
+
+${prompt ? `Essay prompt (preserve the original wording; do not translate it): ${prompt}` : ''}
+${direction ? `Desired direction: ${direction}` : ''}
+
+Requirements:
+1. Maintain the same tone, writing language, and application context as the existing text
+2. Do not translate existing content or official school prompts
+3. Connect naturally without repeating previous content
+4. Generate 100-200 words of continuation
+5. Provide 2-3 suggestions for future direction, with suggestions in English
+6. Preserve terms such as GPA/SAT/ACT/TOEFL/IELTS/AP/IB/ED/EA/RD/REA/UC/Common App
+
+Return JSON format:
+{
+  "continuation": "Continuation text",
+  "suggestions": ["Direction 1", "Direction 2", "Direction 3"]
+}`;
+}
+
+export function buildContinueWritingUserPrompt(
+  locale: string,
+  content: string,
+): string {
+  return locale === 'zh'
+    ? `请基于以下内容续写：\n\n${content}`
+    : `Please continue writing based on the following:\n\n${content}`;
+}
+
+export function buildOpeningSystemPrompt(locale: string): string {
+  if (locale === 'zh') {
+    return `你是留学申请文书专家。根据题目和背景，生成 3 个不同风格的文书开头。
+
+好的开头应该：
+1. 立即抓住读者注意力
+2. 不要机械地用 "I" 开头
+3. 可以用场景、对话、问题或有力的陈述开始
+4. 50-100 词
+
+规则：
+- 不翻译学校官方题目或学生背景原文
+- 开头正文应匹配申请文书的写作语言，通常为英文
+- style 字段必须用中文
+
+返回 JSON 格式：
+{
+  "openings": [
+    { "text": "开头1", "style": "风格描述（中文，如：场景描写）" },
+    { "text": "开头2", "style": "风格" },
+    { "text": "开头3", "style": "风格" }
+  ]
+}`;
+  }
+
+  return `You are a college application essay expert. Based on the prompt and background, generate 3 essay openings in different styles.
+
+A strong opening should:
+1. Immediately grab the reader's attention
+2. Avoid mechanically starting with "I"
+3. Use a scene, dialogue, question, or powerful statement
+4. Be 50-100 words
+
+Rules:
+- Do not translate official school prompts or student background details
+- The opening text should match the essay's writing language, usually English
+- Write the style field in English
+
+Return JSON format:
+{
+  "openings": [
+    { "text": "Opening 1", "style": "Style description, e.g. scene setting" },
+    { "text": "Opening 2", "style": "Style" },
+    { "text": "Opening 3", "style": "Style" }
+  ]
+}`;
+}
+
+export function buildOpeningUserPrompt(
+  locale: string,
+  prompt: string,
+  background?: string,
+): string {
+  return locale === 'zh'
+    ? `题目（保持原文）：${prompt}
+${background ? `背景信息（保持原文）：${background}` : ''}
+
+请生成 3 个吸引人的开头：`
+    : `Prompt (preserve original wording): ${prompt}
+${background ? `Background (preserve original wording): ${background}` : ''}
+
+Please generate 3 compelling openings:`;
+}
+
+export function buildActivityOptimizePrompt(
+  locale: string,
+  description: string,
+  activityName: string,
+  role: string,
+): string {
+  if (locale === 'zh') {
+    return `你是一位经验丰富的美国大学申请顾问。请优化以下活动描述，使其在 150 个英文字符以内且最大化影响力。
+
+活动名称：${activityName}
+职位/角色：${role}
+当前描述：${description}
+
+规则：
+- 必须 150 个英文字符或更少（仔细计数）
+- 以强有力的动词开头
+- 尽可能包含可量化的成果
+- 删除填充词
+- 保留最重要的成就/影响
+- 输出语言：英文（Common App 要求）
+- 不翻译专有名词、组织名、项目名、奖项名
+
+只返回优化后的描述，不要返回其他任何内容。`;
+  }
+
+  return `You are an expert college application counselor. Optimize this activity description to fit within 150 English characters while maximizing impact.
+
+Activity: ${activityName}
+Role: ${role}
+Current description: ${description}
+
+Rules:
+- MUST be 150 English characters or fewer (count carefully)
+- Start with a strong action verb
+- Include quantifiable impact where possible
+- Remove filler words
+- Keep the most important achievement/impact
+- Output language: English (Common App requirement)
+- Do not translate proper nouns, organization names, program names, or awards
+
+Return ONLY the optimized description, nothing else.`;
+}
+
+export function buildParagraphAnalysisSystemPrompt(
+  locale: string,
+  prompt?: string,
+  schoolName?: string,
+): string {
+  if (locale === 'zh') {
+    return `你是顶尖大学招生官，请逐段分析以下文书。
+
+${prompt ? `题目（保持原文，不要翻译）：${prompt}` : ''}
+${schoolName ? `目标学校（官方名称保持原文）：${schoolName}` : ''}
+
+## 评分标准
+- excellent (8-10)：段落出色，展现独特性和深度
+- good (5-7)：段落合格但可以更好
+- needs_work (1-4)：需要重点修改
+
+## 本地化规则
+- comment、suggestions、structure.feedback、summary 必须用中文
+- paragraphText 和 highlights 必须引用原文，不要翻译学生文书
+- 保留学校名、考试名、申请系统名和代码类内容原文
+
+## 输出格式（严格 JSON）
+{
+  "paragraphs": [
+    {
+      "paragraphIndex": 0,
+      "paragraphText": "段落原文前30字...",
+      "score": 8,
+      "status": "excellent",
+      "comment": "评价（中文）",
+      "highlights": ["原文亮点词句"],
+      "suggestions": ["建议（中文）"]
+    }
+  ],
+  "overallScore": 75,
+  "structure": {
+    "hasStrongOpening": true,
+    "hasClarity": true,
+    "hasGoodConclusion": false,
+    "feedback": "结构反馈（中文）"
+  },
+  "summary": "整体评价（中文，100字内）"
+}`;
+  }
+
+  return `You are a top university admissions officer. Analyze the following essay paragraph by paragraph.
+
+${prompt ? `Prompt (preserve original wording; do not translate): ${prompt}` : ''}
+${schoolName ? `Target school (preserve official name): ${schoolName}` : ''}
+
+## Scoring Criteria
+- excellent (8-10): Outstanding paragraph that shows uniqueness and depth
+- good (5-7): Adequate but could be stronger
+- needs_work (1-4): Needs significant revision
+
+## Localization Rules
+- Write comment, suggestions, structure.feedback, and summary in English
+- Quote paragraphText and highlights from the original essay; do not translate the student's writing
+- Preserve school names, exam names, application system names, and code-like content
+
+## Output Format (strict JSON)
+{
+  "paragraphs": [
+    {
+      "paragraphIndex": 0,
+      "paragraphText": "First 30 characters of the original paragraph...",
+      "score": 8,
+      "status": "excellent",
+      "comment": "Comment in English",
+      "highlights": ["Original highlight phrase"],
+      "suggestions": ["Suggestion in English"]
+    }
+  ],
+  "overallScore": 75,
+  "structure": {
+    "hasStrongOpening": true,
+    "hasClarity": true,
+    "hasGoodConclusion": false,
+    "feedback": "Structure feedback in English"
+  },
+  "summary": "Overall evaluation in English, under 100 words"
+}`;
+}
+
+export function buildParagraphAnalysisUserPrompt(
+  locale: string,
+  userPrompt: string,
+): string {
+  return locale === 'zh'
+    ? `请逐段分析以下文书：\n\n${userPrompt}`
+    : `Analyze the following essay paragraph by paragraph:\n\n${userPrompt}`;
+}
+
+export function buildPolishEssaySystemPrompt(
+  locale: string,
+  style?: 'formal' | 'vivid' | 'concise',
+): string {
+  const styleGuideZh = {
+    formal: '使用更正式、学术化的语言，适合严肃主题',
+    vivid: '使用更生动、有画面感的语言，多用具体细节和感官描写',
+    concise: '精简冗余表达，每个词都要有意义',
+  };
+  const styleGuideEn = {
+    formal: 'Use more formal, academic language suitable for serious topics',
+    vivid:
+      'Use more vivid, imagery-rich language with specific details and sensory descriptions',
+    concise: 'Eliminate redundancy; every word should count',
+  };
+
+  if (locale === 'zh') {
+    return `你是专业的留学文书编辑，擅长英文申请文书润色。
+任务：在保持原文核心内容和作者声音（voice）的前提下，提升语言表达质量。
+
+润色风格：${styleGuideZh[style || 'formal']}
+
+要求：
+1. 不翻译文书原文；polished 字段保持原文写作语言，通常为英文
+2. 保持原文的故事和观点不变
+3. 改善语法、用词、句式多样性
+4. 增强表达力和可读性
+5. 不要过度修改，保持作者个人特色
+6. changes.reason 字段必须用中文
+
+返回 JSON 格式：
+{
+  "polished": "润色后的完整文书",
+  "changes": [
+    { "original": "原句", "revised": "修改后", "reason": "修改原因（中文）" }
+  ]
+}
+只返回主要修改（5-10 处），不需要列出所有小改动。`;
+  }
+
+  return `You are a professional college essay editor specializing in polishing English application essays.
+Task: Improve language quality while preserving the original content and the author's voice.
+
+Polish style: ${styleGuideEn[style || 'formal']}
+
+Requirements:
+1. Do not translate the essay; keep polished in the original writing language, usually English
+2. Keep the original story and viewpoints unchanged
+3. Improve grammar, word choice, and sentence variety
+4. Enhance expressiveness and readability
+5. Do not over-edit; preserve the author's personal style
+6. Write changes.reason in English
+
+Return JSON format:
+{
+  "polished": "The fully polished essay",
+  "changes": [
+    { "original": "Original sentence", "revised": "Revised version", "reason": "Reason for change in English" }
+  ]
+}
+Only list major changes (5-10), not every small edit.`;
+}
+
+export function buildPolishEssayUserPrompt(
+  locale: string,
+  content: string,
+): string {
+  return locale === 'zh'
+    ? `请润色以下文书：\n\n${content}`
+    : `Please polish the following essay:\n\n${content}`;
+}

@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Res, Query } from '@nestjs/common';
+import { Body, Controller, Get, Delete, Put, Res, Query } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -13,6 +13,7 @@ import { CaseIncentiveService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { UpdateUserLocaleDto } from './dto/update-user-locale.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -36,6 +37,19 @@ export class UserController {
   async getCurrentUser(@CurrentUser() user: CurrentUserPayload) {
     const fullUser = await this.userService.findByIdOrThrow(user.id);
     const { passwordHash: _passwordHash, ...result } = fullUser;
+    return result;
+  }
+
+  @Put('me')
+  @ApiOperation({ summary: 'Update current user language preference' })
+  async updateCurrentUser(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdateUserLocaleDto,
+  ) {
+    const updatedUser = await this.userService.update(user.id, {
+      locale: dto.locale,
+    });
+    const { passwordHash: _passwordHash, ...result } = updatedUser;
     return result;
   }
 

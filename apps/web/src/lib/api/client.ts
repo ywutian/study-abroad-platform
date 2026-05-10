@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { normalizeLocale, toBcp47, type SupportedLocale } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores/auth';
 import { env } from '@/lib/env';
 import { ApiError } from './api-error';
@@ -27,11 +28,11 @@ const API_I18N = {
   },
 } as const;
 
-function getApiLocale(): 'zh' | 'en' {
-  if (typeof window === 'undefined') return 'en';
-  const path = window.location.pathname;
-  if (path.startsWith('/zh')) return 'zh';
-  return 'en';
+function getApiLocale(): SupportedLocale {
+  if (typeof window === 'undefined') return 'zh';
+  const pathLocale = window.location.pathname.split('/')[1];
+  const userLocale = useAuthStore.getState().user?.locale;
+  return normalizeLocale([pathLocale, userLocale, window.navigator.language]);
 }
 
 // API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
@@ -126,9 +127,12 @@ class ApiClient {
     const makeRequest = async (isRetry = false): Promise<T> => {
       const token = this.getAccessToken();
       const isFormData = init.body instanceof FormData;
+      const locale = getApiLocale();
       const headers: HeadersInit = {
         // Skip Content-Type for FormData — browser sets multipart boundary automatically
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+        'X-Locale': locale,
+        'Accept-Language': toBcp47(locale),
         ...init.headers,
       };
 
@@ -170,7 +174,6 @@ class ApiClient {
           const errorCode = error.error?.code as string | undefined;
           const errorDetails = error.error?.details as Record<string, unknown> | undefined;
 
-          const locale = getApiLocale();
           const i18n = API_I18N[locale];
 
           // 特定状态码由 API client 直接弹 toast（全局处理器会跳过这些状态码）

@@ -8,7 +8,7 @@ import {
   getRefreshToken,
 } from '@/lib/storage/secure-store';
 import { authRoutes, userRoutes } from '@study-abroad/shared';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, getApiLocale } from '@/lib/api/client';
 import type { User, AuthResponse, LoginDto, RegisterDto } from '@/types';
 
 interface AuthState {
@@ -53,7 +53,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   register: async (dto: RegisterDto) => {
-    await apiClient.post(authRoutes.register(), dto, { skipAuth: true });
+    await apiClient.post(
+      authRoutes.register(),
+      { ...dto, locale: dto.locale ?? getApiLocale() },
+      { skipAuth: true }
+    );
     // Registration doesn't return tokens — the user needs to verify email then login.
     // The UI should show a success message and redirect to login.
   },

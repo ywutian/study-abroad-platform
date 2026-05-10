@@ -88,7 +88,8 @@ describe('AiAgentController', () => {
         results: [{ schoolName: 'MIT', probability: 0.4 }],
       };
       await controller.chat(
-        mockUser as any,
+        mockUser,
+        'zh',
         {
           message: 'hi',
           stream: false,
@@ -102,7 +103,7 @@ describe('AiAgentController', () => {
         'user-1',
         'hi',
         undefined,
-        undefined,
+        'zh',
         context,
         AgentType.SCHOOL,
       );
@@ -123,7 +124,8 @@ describe('AiAgentController', () => {
       };
 
       await controller.chat(
-        mockUser as any,
+        mockUser,
+        'zh',
         {
           message: 'hi',
           stream: true,
@@ -143,7 +145,7 @@ describe('AiAgentController', () => {
         'user-1',
         'hi',
         'conv-1',
-        'en',
+        'zh',
         context,
         AgentType.SCHOOL,
       );
@@ -158,7 +160,7 @@ describe('AiAgentController', () => {
         source: 'prediction_result_card',
         results: [{ schoolName: 'Harvard', probability: 0.2 }],
       };
-      const result = await controller.callAgent(mockUser as any, {
+      const result = await controller.callAgent(mockUser, 'en', {
         agent: 'essay' as any,
         message: 'help with essay',
         conversationId: 'conv-2',
@@ -172,7 +174,7 @@ describe('AiAgentController', () => {
         'essay',
         'help with essay',
         'conv-2',
-        'zh',
+        'en',
         context,
         AgentType.ESSAY,
       );
@@ -182,7 +184,7 @@ describe('AiAgentController', () => {
 
   describe('GET /conversations', () => {
     it('should return conversations for the user', async () => {
-      const result = await controller.getConversations(mockUser as any, 5);
+      const result = await controller.getConversations(mockUser, 5);
 
       expect(orchestrator.getConversations).toHaveBeenCalledWith('user-1', 5);
       expect(result).toEqual({ conversations: [] });
@@ -191,7 +193,7 @@ describe('AiAgentController', () => {
 
   describe('GET /history', () => {
     it('should return message history for the user', async () => {
-      const result = await controller.getHistory(mockUser as any, 'conv-1');
+      const result = await controller.getHistory(mockUser, 'conv-1');
 
       expect(orchestrator.getHistory).toHaveBeenCalledWith('user-1', 'conv-1');
       expect(result).toEqual({ messages: [] });
@@ -200,7 +202,7 @@ describe('AiAgentController', () => {
 
   describe('DELETE /conversation', () => {
     it('should clear conversation and return success', async () => {
-      const result = controller.clearConversation(mockUser as any, 'conv-1');
+      const result = controller.clearConversation(mockUser, 'conv-1');
 
       expect(orchestrator.clearConversation).toHaveBeenCalledWith(
         'user-1',
@@ -212,7 +214,7 @@ describe('AiAgentController', () => {
 
   describe('POST /refresh-context', () => {
     it('should refresh context and return success', async () => {
-      const result = await controller.refreshContext(mockUser as any);
+      const result = await controller.refreshContext(mockUser);
 
       expect(orchestrator.refreshContext).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ success: true });
@@ -221,7 +223,7 @@ describe('AiAgentController', () => {
 
   describe('GET /usage', () => {
     it('should return token usage stats', async () => {
-      const result = await controller.getUsage(mockUser as any);
+      const result = await controller.getUsage(mockUser);
 
       expect(tokenTracker.getUsageStats).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ totalTokens: 1000 });
@@ -230,7 +232,7 @@ describe('AiAgentController', () => {
 
   describe('GET /rate-limit', () => {
     it('should return rate limit status for user and conversation', async () => {
-      const result = controller.getRateLimit(mockUser as any);
+      const result = controller.getRateLimit(mockUser);
 
       expect(rateLimiter.getStatus).toHaveBeenCalledWith('user-1', 'user');
       expect(rateLimiter.getStatus).toHaveBeenCalledWith(
@@ -246,7 +248,7 @@ describe('AiAgentController', () => {
 
   describe('GET /quota', () => {
     it('should return quota check result', async () => {
-      const result = await controller.checkQuota(mockUser as any);
+      const result = await controller.checkQuota(mockUser);
 
       expect(tokenTracker.checkQuota).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ allowed: true, remaining: 500 });

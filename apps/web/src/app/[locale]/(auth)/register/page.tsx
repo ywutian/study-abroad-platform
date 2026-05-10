@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type BaseSyntheticEvent } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -81,6 +81,7 @@ function writeRegisterDebug(value: Record<string, unknown>) {
 export default function RegisterPage() {
   const t = useTranslations();
   const ta = useTranslations('auth.register');
+  const locale = useLocale();
   const registerSchema = createRegisterSchema(t);
   const searchParams = useSearchParams();
   const refCode = (searchParams.get('ref') || '').toUpperCase();
@@ -208,6 +209,7 @@ export default function RegisterPage() {
         {
           email: registerValues.email,
           password: registerValues.password,
+          locale,
           ...(registerValues.referralCode ? { referralCode: registerValues.referralCode } : {}),
         },
         { skipAuth: true }

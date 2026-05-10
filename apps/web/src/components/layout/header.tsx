@@ -1,6 +1,6 @@
 'use client';
 
-import { chatRoutes } from '@study-abroad/shared';
+import { chatRoutes, userRoutes } from '@study-abroad/shared';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart3,
@@ -289,12 +289,22 @@ function HeaderActions() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as Locale;
-  const { user, logout } = useAuthStore();
+  const { user, logout, setUser } = useAuthStore();
 
   const switchLocale = (newLocale: Locale) => {
+    if (newLocale === locale) return;
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname;
     const businessPath = currentPath.replace(/^\/(?:en|zh)(?=\/|$)/, '') || '/';
     const search = typeof window !== 'undefined' ? window.location.search : '';
+
+    if (user) {
+      setUser({ ...user, locale: newLocale });
+      void apiClient
+        .put<typeof user>(userRoutes.me(), { locale: newLocale }, { suppressErrorToast: true })
+        .then((updatedUser) => setUser(updatedUser))
+        .catch(() => setUser(user));
+    }
+
     router.replace(`${businessPath}${search}`, { locale: newLocale });
   };
 

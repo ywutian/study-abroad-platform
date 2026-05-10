@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Role } from '@study-abroad/shared';
+import { normalizeLocale, toBcp47, type Role } from '@study-abroad/shared';
 
 interface User {
   id: string;
@@ -25,6 +25,17 @@ interface AuthState {
 
 // API 请求通过 Next.js rewrites 代理（同源），避免跨域 cookie 问题
 const API_BASE_URL = '';
+
+function getLocaleHeaders(userLocale?: string): Record<string, string> {
+  const pathLocale =
+    typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : undefined;
+  const browserLocale = typeof window !== 'undefined' ? window.navigator.language : undefined;
+  const locale = normalizeLocale([pathLocale, userLocale, browserLocale]);
+  return {
+    'X-Locale': locale,
+    'Accept-Language': toBcp47(locale),
+  };
+}
 
 /**
  * 安全认证 Store
@@ -71,6 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (success) {
         const userResponse = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
           headers: {
+            ...getLocaleHeaders(),
             Authorization: `Bearer ${get().accessToken}`,
           },
           credentials: 'include',
@@ -100,6 +112,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getLocaleHeaders(get().user?.locale),
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         credentials: 'include', // 发送 httpOnly cookie
@@ -142,7 +155,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getLocaleHeaders(get().user?.locale) },
         body: JSON.stringify({}), // 空 body，refreshToken 通过 cookie 发送
         credentials: 'include', // 关键：发送 httpOnly cookie
       });
