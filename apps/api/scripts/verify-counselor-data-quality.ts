@@ -26,22 +26,76 @@ const CLASSIFICATIONS_FILE = resolve(
 
 interface ClassificationEntry {
   schoolId: string;
+  schoolName?: string;
   round: string;
   reason: string;
   classification: string;
   notes?: string;
 }
 
-function loadClassifications(): Map<string, ClassificationEntry> {
-  const map = new Map<string, ClassificationEntry>();
-  if (!existsSync(CLASSIFICATIONS_FILE)) return map;
+interface ClassificationLookup {
+  byId: Map<string, ClassificationEntry>;
+  byName: Map<string, ClassificationEntry>;
+}
+
+function classificationIdKey(
+  schoolId: unknown,
+  round: unknown,
+  reason: unknown,
+): string | null {
+  if (
+    typeof schoolId !== 'string' ||
+    typeof round !== 'string' ||
+    typeof reason !== 'string'
+  ) {
+    return null;
+  }
+  return `${schoolId}|${round}|${reason}`;
+}
+
+function classificationNameKey(
+  schoolName: unknown,
+  round: unknown,
+  reason: unknown,
+): string | null {
+  if (
+    typeof schoolName !== 'string' ||
+    typeof round !== 'string' ||
+    typeof reason !== 'string'
+  ) {
+    return null;
+  }
+  return `${schoolName.trim().toLowerCase()}|${round}|${reason}`;
+}
+
+function loadClassifications(): ClassificationLookup {
+  const lookup: ClassificationLookup = {
+    byId: new Map<string, ClassificationEntry>(),
+    byName: new Map<string, ClassificationEntry>(),
+  };
+  if (!existsSync(CLASSIFICATIONS_FILE)) return lookup;
   try {
     const raw = JSON.parse(readFileSync(CLASSIFICATIONS_FILE, 'utf8')) as {
       classifications?: ClassificationEntry[];
     };
     for (const entry of raw.classifications ?? []) {
-      const key = `${entry.schoolId}|${entry.round}|${entry.reason}`;
-      map.set(key, entry);
+      const idKey = classificationIdKey(
+        entry.schoolId,
+        entry.round,
+        entry.reason,
+      );
+      if (idKey) {
+        lookup.byId.set(idKey, entry);
+      }
+
+      const nameKey = classificationNameKey(
+        entry.schoolName,
+        entry.round,
+        entry.reason,
+      );
+      if (nameKey) {
+        lookup.byName.set(nameKey, entry);
+      }
     }
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -51,15 +105,18 @@ function loadClassifications(): Map<string, ClassificationEntry> {
       }`,
     );
   }
-  return map;
+  return lookup;
 }
 
 function applyClassification(
   row: AuditRow,
-  classifications: Map<string, ClassificationEntry>,
+  classifications: ClassificationLookup,
 ): AuditRow {
-  const key = `${row.schoolId}|${row.round}|${row.reason}`;
-  const entry = classifications.get(key);
+  const idKey = classificationIdKey(row.schoolId, row.round, row.reason);
+  const nameKey = classificationNameKey(row.schoolName, row.round, row.reason);
+  const entry =
+    (idKey ? classifications.byId.get(idKey) : undefined) ??
+    (nameKey ? classifications.byName.get(nameKey) : undefined);
   if (!entry) return row;
   return {
     ...row,

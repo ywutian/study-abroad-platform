@@ -13,7 +13,7 @@
     "DATA_ERROR_NULLED",
     "INSUFFICIENT_INFO"
   ],
-  "_doc": "Lookup key: schoolId|round|reason. The verify script uses this to override the default UNREVIEWED classification on manualReview rows. Add new entries when verify:counselor-data-quality flags new anomalies; do not edit a classification without re-reviewing the underlying CDS data.",
+  "_doc": "Lookup key: schoolId|round|reason, with schoolName|round|reason as a fallback for deterministic seed data whose generated IDs change. The verify script uses this to override the default UNREVIEWED classification on manualReview rows. Add new entries when verify:counselor-data-quality flags new anomalies; do not edit a classification without re-reviewing the underlying CDS data.",
   "classifications": [
     {
       "schoolId": "cmnwr8ity003tz0tie2nazej1",
