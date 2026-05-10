@@ -101,7 +101,7 @@ export default function CaseDetailScreen() {
     <>
       <Stack.Screen
         options={{
-          title: caseData.school?.name || t('cases.detail'),
+          title: caseData.school?.name || t('cases.detail.title'),
         }}
       />
       <ScrollView
