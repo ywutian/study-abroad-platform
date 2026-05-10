@@ -27,7 +27,9 @@ import {
   CreateAwardDto,
   UpdateAwardDto,
   CreateEssayDto,
+  CreateEssayRevisionDto,
   UpdateEssayDto,
+  UpdateEssaySuggestionDto,
   CreateEducationDto,
   UpdateEducationDto,
   OnboardingDto,
@@ -461,6 +463,71 @@ export class ProfileController {
   ) {
     await this.profileService.deleteEssay(user.id, id);
     return { message: 'Essay deleted' };
+  }
+
+  @Get('me/essays/:id/revisions')
+  @ApiOperation({ summary: 'Get essay revision snapshots' })
+  async getEssayRevisions(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.profileService.getEssayRevisions(user.id, id);
+  }
+
+  @Post('me/essays/:id/revisions')
+  @ApiOperation({ summary: 'Create essay revision snapshot' })
+  async createEssayRevision(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() data: CreateEssayRevisionDto,
+  ) {
+    return this.profileService.createEssayRevision(user.id, id, data);
+  }
+
+  @Post('me/essays/:id/revisions/:revisionId/restore')
+  @ApiOperation({ summary: 'Restore essay from a revision snapshot' })
+  async restoreEssayRevision(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('revisionId') revisionId: string,
+  ) {
+    return this.profileService.restoreEssayRevision(user.id, id, revisionId);
+  }
+
+  @Get('me/essays/:id/suggestions')
+  @ApiOperation({ summary: 'Get essay AI suggestions' })
+  async getEssaySuggestions(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Query('status') status?: string,
+  ) {
+    return this.profileService.getEssaySuggestions(user.id, id, status);
+  }
+
+  @Patch('me/essays/:id/suggestions/:suggestionId')
+  @ApiOperation({ summary: 'Update essay AI suggestion status' })
+  async updateEssaySuggestion(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('suggestionId') suggestionId: string,
+    @Body() data: UpdateEssaySuggestionDto,
+  ) {
+    return this.profileService.updateEssaySuggestion(
+      user.id,
+      id,
+      suggestionId,
+      data,
+    );
+  }
+
+  @Post('me/essays/:id/suggestions/:suggestionId/apply')
+  @ApiOperation({ summary: 'Apply an essay AI suggestion' })
+  async applyEssaySuggestion(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('suggestionId') suggestionId: string,
+  ) {
+    return this.profileService.applyEssaySuggestion(user.id, id, suggestionId);
   }
 
   // ============================================

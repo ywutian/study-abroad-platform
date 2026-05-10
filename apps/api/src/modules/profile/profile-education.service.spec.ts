@@ -3,7 +3,11 @@ import { ProfileEducationService } from './profile-education.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { ProfileHelpersService } from './profile-helpers.service';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('ProfileEducationService', () => {
   let service: ProfileEducationService;
@@ -28,6 +32,16 @@ describe('ProfileEducationService', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    },
+    essayRevision: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    essaySuggestion: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
     },
     profile: {
       findUnique: jest.fn(),
@@ -66,6 +80,10 @@ describe('ProfileEducationService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    mockPrisma.$transaction.mockImplementation((cb) => cb(mockPrisma));
   });
 
   // ============================================
@@ -378,6 +396,119 @@ describe('ProfileEducationService', () => {
       await expect(
         service.getEssayById('user-1', 'nonexistent'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('createEssayRevision', () => {
+    it('should snapshot the current essay', async () => {
+      const essay = {
+        id: 'essay-1',
+        title: 'Draft',
+        prompt: 'Prompt',
+        content: 'Original essay text',
+        wordCount: 3,
+        profile: { userId: 'user-1' },
+      };
+      mockPrisma.essay.findUnique.mockResolvedValue(essay);
+      mockHelpers.verifyProfileOwnership.mockReturnValue(essay);
+      mockPrisma.essayRevision.create.mockResolvedValue({
+        id: 'rev-1',
+        essayId: 'essay-1',
+      });
+
+      const result = await service.createEssayRevision('user-1', 'essay-1', {
+        reason: 'Manual save',
+        source: 'manual',
+      });
+
+      expect(result.id).toBe('rev-1');
+      expect(mockPrisma.essayRevision.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          essayId: 'essay-1',
+          content: 'Original essay text',
+          reason: 'Manual save',
+        }),
+      });
+    });
+  });
+
+  describe('applyEssaySuggestion', () => {
+    it('should create a revision, update essay content, and mark suggestion applied', async () => {
+      const essay = {
+        id: 'essay-1',
+        title: 'Draft',
+        prompt: 'Prompt',
+        content: 'This sentence is weak.',
+        wordCount: 4,
+        profile: { userId: 'user-1' },
+      };
+      const suggestion = {
+        id: 'suggestion-1',
+        essayId: 'essay-1',
+        essay,
+        originalText: 'This sentence is weak.',
+        replacementText: 'This sentence shows a clearer personal insight.',
+        insertMode: 'replace',
+        status: 'PENDING',
+      };
+      mockPrisma.essaySuggestion.findUnique.mockResolvedValue(suggestion);
+      mockHelpers.verifyProfileOwnership.mockReturnValue(essay);
+      mockPrisma.essayRevision.create.mockResolvedValue({ id: 'rev-1' });
+      mockPrisma.essay.update.mockResolvedValue({
+        ...essay,
+        content: 'This sentence shows a clearer personal insight.',
+        wordCount: 7,
+      });
+      mockPrisma.essaySuggestion.update.mockResolvedValue({
+        ...suggestion,
+        status: 'APPLIED',
+      });
+
+      const result = await service.applyEssaySuggestion(
+        'user-1',
+        'essay-1',
+        'suggestion-1',
+      );
+
+      expect(result.essay.content).toBe(
+        'This sentence shows a clearer personal insight.',
+      );
+      expect(mockPrisma.essayRevision.create).toHaveBeenCalled();
+      expect(mockPrisma.essay.update).toHaveBeenCalledWith({
+        where: { id: 'essay-1' },
+        data: expect.objectContaining({
+          content: 'This sentence shows a clearer personal insight.',
+        }),
+      });
+      expect(mockPrisma.essaySuggestion.update).toHaveBeenCalledWith({
+        where: { id: 'suggestion-1' },
+        data: { status: 'APPLIED' },
+      });
+      expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
+        'user-1',
+      );
+    });
+
+    it('should reject stale suggestions when original text is gone', async () => {
+      const essay = {
+        id: 'essay-1',
+        content: 'The draft has changed.',
+        profile: { userId: 'user-1' },
+      };
+      mockPrisma.essaySuggestion.findUnique.mockResolvedValue({
+        id: 'suggestion-1',
+        essayId: 'essay-1',
+        essay,
+        originalText: 'Old sentence',
+        replacementText: 'New sentence',
+        insertMode: 'replace',
+        status: 'PENDING',
+      });
+      mockHelpers.verifyProfileOwnership.mockReturnValue(essay);
+
+      await expect(
+        service.applyEssaySuggestion('user-1', 'essay-1', 'suggestion-1'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

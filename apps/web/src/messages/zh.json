@@ -1525,10 +1525,17 @@
     },
     "nextSteps": {
       "title": "下一步",
+      "applicationHub": "申请总控台",
       "prediction": "录取预测",
       "essays": "我的文书",
       "assessment": "测评",
       "resume": "简历制作"
+    },
+    "applicationStrategy": {
+      "title": "申请策略总览",
+      "description": "进入申请总控台后再生成学校级策略；Profile 页面只展示缓存结果，不会自动调用 AI 分析。",
+      "manualBadge": "手动生成",
+      "open": "打开总控台"
     },
     "steps": {
       "basic": "基本信息",
@@ -3853,7 +3860,51 @@
   },
   "uncommonApp": {
     "title": "智能申请",
-    "description": "管理你的选校清单和个人档案，获取 AI 智能推荐",
+    "description": "把选校、预测、文书、材料和 AI 策略收进同一个申请总控台。",
+    "dashboard": {
+      "title": "申请总控台",
+      "profile": "档案准备度",
+      "schoolBalance": "冲/匹/保",
+      "essayPrompts": "文书题目",
+      "recommendations": "推荐学校",
+      "strategyTitle": "学校级申请策略",
+      "strategyEmpty": "先查看清单、补齐档案，再手动生成学校级策略。",
+      "stats": {
+        "schools": "目标学校",
+        "essays": "文书题目",
+        "tasks": "闭环任务",
+        "strategy": "策略状态"
+      }
+    },
+    "tasks": {
+      "title": "申请闭环任务",
+      "profile": {
+        "title": "补齐核心档案",
+        "description": "当前完成度 {score}%，优先补齐 GPA、成绩、活动和奖项。"
+      },
+      "schools": {
+        "title": "建立平衡选校清单",
+        "description": "当前 {count} 所，建议覆盖冲刺、匹配和保底。"
+      },
+      "essays": {
+        "title": "进入文书工作流",
+        "description": "当前关联 {count} 个学校文书题目。"
+      },
+      "recommendations": {
+        "title": "生成结构化选校推荐",
+        "description": "用推荐系统生成可加入清单的候选学校。"
+      },
+      "strategy": {
+        "title": "生成申请策略分析",
+        "description": "手动触发学校级分析，避免页面访问自动消耗 AI。"
+      }
+    },
+    "strategyStatus": {
+      "fresh": "最新",
+      "cached": "缓存",
+      "degraded": "降级",
+      "manual": "待生成"
+    },
     "mySchoolList": "我的选校清单",
     "addSchool": "添加学校",
     "emptyList": "清单为空",
@@ -3871,10 +3922,13 @@
     "getRecommendations": "获取推荐",
     "aiRecommendationsLoaded": "AI 推荐已加载",
     "aiRecommendationsError": "获取推荐失败",
+    "recommendationsBlocked": "当前档案或积分暂不满足生成推荐条件",
     "clickToGetRecommendations": "点击获取 AI 个性化推荐",
     "schoolAgent": "选校 Agent",
     "profileAgent": "档案 Agent",
+    "recommendationSystem": "结构化推荐",
     "poweredByAI": "由 AI Agent 驱动",
+    "poweredByRecommendations": "由结构化推荐系统生成",
     "loadingStep1": "正在分析你的档案...",
     "loadingStep2": "正在搜索学校数据库...",
     "loadingStep3": "正在生成推荐...",
@@ -4486,7 +4540,73 @@
     },
     "review": {
       "noSuggestions": "太棒了！",
-      "excellentWork": "您的文书质量很高，暂无修改建议"
+      "excellentWork": "您的文书质量很高，暂无修改建议",
+      "strengths": "亮点",
+      "weaknesses": "不足"
+    },
+    "workbench": {
+      "prompt": "申请题目",
+      "tabs": {
+        "queue": "文书",
+        "editor": "编辑",
+        "ai": "AI",
+        "suggestions": "建议",
+        "review": "评分",
+        "versions": "版本"
+      },
+      "queue": {
+        "title": "文书队列",
+        "count": "{count} 篇",
+        "search": "搜索文书",
+        "noPrompt": "暂无题目"
+      },
+      "save": {
+        "dirty": "有未保存修改",
+        "saving": "保存中",
+        "saved": "已保存",
+        "error": "保存失败"
+      },
+      "actions": {
+        "snapshot": "保存版本",
+        "suggest": "生成建议"
+      },
+      "ai": {
+        "title": "AI 修改闭环",
+        "description": "逐条确认建议，不直接覆盖原文",
+        "saveBeforeAi": "请等当前草稿保存后再运行 AI 或应用建议。"
+      },
+      "suggestions": {
+        "emptyTitle": "暂无待处理建议",
+        "emptyDesc": "生成 AI 建议后，可以逐条接受或拒绝。",
+        "apply": "接受",
+        "reject": "拒绝",
+        "kind": {
+          "rewrite": "改写",
+          "shorten": "精简",
+          "clarity": "清晰度",
+          "opening": "开头",
+          "continuation": "续写"
+        }
+      },
+      "review": {
+        "emptyTitle": "还没有评分",
+        "emptyDesc": "运行 AI 评分后，这里会显示亮点、不足和下一步。",
+        "overall": "综合评分"
+      },
+      "versions": {
+        "emptyTitle": "暂无版本记录",
+        "emptyDesc": "保存版本或应用 AI 建议前，系统会保留快照。",
+        "restore": "恢复",
+        "manualReason": "手动保存版本"
+      },
+      "toast": {
+        "reviewReady": "AI 评分完成",
+        "suggestionsReady": "已生成 {count} 条建议",
+        "snapshotSaved": "版本已保存",
+        "revisionRestored": "版本已恢复",
+        "suggestionApplied": "建议已应用",
+        "suggestionRejected": "建议已拒绝"
+      }
     },
     "aiAssistant": {
       "title": "AI 文书助手",

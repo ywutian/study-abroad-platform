@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileRoutes } from '@study-abroad/shared';
@@ -115,8 +115,25 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
   // Queries & Mutations
   const { data: essays, isLoading } = useQuery({
     queryKey: ['essays'],
-    queryFn: () => apiClient.get<Essay[]>(`${profileRoutes.me()}/essays`),
+    queryFn: () => apiClient.get<Essay[]>(profileRoutes.essays()),
   });
+
+  useEffect(() => {
+    if (!essays?.length) {
+      if (selectedEssay) setSelectedEssay(null);
+      return;
+    }
+
+    if (!selectedEssay) {
+      setSelectedEssay(essays[0]);
+      return;
+    }
+
+    const refreshed = essays.find((essay) => essay.id === selectedEssay.id);
+    if (refreshed && refreshed.updatedAt !== selectedEssay.updatedAt) {
+      setSelectedEssay(refreshed);
+    }
+  }, [essays, selectedEssay]);
 
   const createMutation = useMutation({
     mutationFn: (data: {
@@ -124,9 +141,10 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
       prompt?: string;
       content: string;
       essayPromptId?: string;
-    }) => apiClient.post<Essay>(`${profileRoutes.me()}/essays`, data),
-    onSuccess: () => {
+    }) => apiClient.post<Essay>(profileRoutes.essays(), data),
+    onSuccess: (createdEssay) => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
+      setSelectedEssay(createdEssay);
       setIsFormOpen(false);
       essayForm.reset();
       setEssayPromptId(null);
@@ -141,19 +159,22 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
     }: {
       id: string;
       data: { title: string; prompt?: string; content: string; essayPromptId?: string };
-    }) => apiClient.put<Essay>(`${profileRoutes.me()}/essays/${id}`, data),
-    onSuccess: () => {
+      silent?: boolean;
+    }) => apiClient.put<Essay>(profileRoutes.essay(id), data),
+    onSuccess: (updatedEssay, variables) => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
-      setIsFormOpen(false);
-      setSelectedEssay(null);
-      essayForm.reset();
-      setEssayPromptId(null);
-      toast.success(t('essays.toast.updated'));
+      setSelectedEssay(updatedEssay);
+      if (!variables.silent) {
+        setIsFormOpen(false);
+        essayForm.reset();
+        setEssayPromptId(null);
+        toast.success(t('essays.toast.updated'));
+      }
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/essays/${id}`),
+    mutationFn: (id: string) => apiClient.delete(profileRoutes.essay(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
       setIsDeleteOpen(false);
@@ -232,6 +253,17 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
       createMutation.mutate(data);
     }
   });
+
+  const saveEssay = useCallback(
+    (
+      id: string,
+      data: { title: string; prompt?: string; content: string; essayPromptId?: string },
+      silent = true
+    ) => {
+      updateMutation.mutate({ id, data, silent });
+    },
+    [updateMutation]
+  );
 
   const handleReview = (essay: Essay) => {
     if (!essay.content) {
@@ -347,6 +379,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
     handleEdit,
     handleDelete,
     handleSubmit,
+    saveEssay,
     isSaving: createMutation.isPending || updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
     confirmDelete: () => essayToDelete && deleteMutation.mutate(essayToDelete),

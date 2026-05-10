@@ -35,9 +35,16 @@ describe('EssayAiService', () => {
       create: jest.fn(),
       findMany: jest.fn(),
     },
+    essayRevision: {
+      create: jest.fn(),
+    },
+    essaySuggestion: {
+      create: jest.fn(),
+    },
     school: {
       findFirst: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   const mockLLMService = {
@@ -69,6 +76,10 @@ describe('EssayAiService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    mockPrisma.$transaction.mockImplementation((cb) => cb(mockPrisma));
   });
 
   describe('reviewEssay', () => {
@@ -203,6 +214,78 @@ describe('EssayAiService', () => {
         BadRequestException,
       );
       expect(safeRefund).toHaveBeenCalled();
+    });
+  });
+
+  describe('suggestEdits', () => {
+    const userId = 'user-1';
+
+    it('should persist AI suggestions against a revision snapshot', async () => {
+      mockPrisma.essay.findUnique.mockResolvedValue({
+        id: 'essay-1',
+        profileId: 'profile-1',
+        title: 'Draft',
+        prompt: 'Prompt',
+        content: 'This sentence is weak.',
+        wordCount: 4,
+        profile: { userId },
+      });
+      mockLLMService.chatSimpleGuarded.mockResolvedValue('{}');
+      (extractJsonFromLlm as jest.Mock).mockReturnValue({
+        polished: 'This sentence shows clearer personal insight.',
+        changes: [
+          {
+            original: 'This sentence is weak.',
+            revised: 'This sentence shows clearer personal insight.',
+            reason: 'More specific',
+          },
+        ],
+      });
+      mockPrisma.essayRevision.create.mockResolvedValue({ id: 'rev-1' });
+      mockPrisma.essayAIResult.create.mockResolvedValue({ id: 'ai-1' });
+      mockPrisma.essaySuggestion.create.mockResolvedValue({
+        id: 'suggestion-1',
+        kind: 'shorten',
+        originalText: 'This sentence is weak.',
+        replacementText: 'This sentence shows clearer personal insight.',
+        reason: 'More specific',
+        impact: 'More concise and easier to keep within word limit',
+        status: 'PENDING',
+        insertMode: 'replace',
+      });
+
+      const result = await service.suggestEdits(
+        userId,
+        { essayId: 'essay-1', style: 'concise' },
+        'en',
+      );
+
+      expect(mockIncentiveService.charge).toHaveBeenCalledWith(
+        userId,
+        'AI_ESSAY_POLISH',
+      );
+      expect(result.revisionId).toBe('rev-1');
+      expect(result.suggestions).toHaveLength(1);
+      expect(mockPrisma.essaySuggestion.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          essayId: 'essay-1',
+          originalText: 'This sentence is weak.',
+          replacementText: 'This sentence shows clearer personal insight.',
+          createdFromRevisionId: 'rev-1',
+        }),
+      });
+    });
+
+    it('should reject essays owned by another user before charging points', async () => {
+      mockPrisma.essay.findUnique.mockResolvedValue({
+        id: 'essay-1',
+        profile: { userId: 'other-user' },
+      });
+
+      await expect(
+        service.suggestEdits(userId, { essayId: 'essay-1' }, 'en'),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockIncentiveService.charge).not.toHaveBeenCalled();
     });
   });
 

@@ -75,6 +75,16 @@ export const profileRoutes = {
   activity: (id: string) => `${API_ROUTES.PROFILES}/me/activities/${id}`,
   awards: () => `${API_ROUTES.PROFILES}/me/awards`,
   award: (id: string) => `${API_ROUTES.PROFILES}/me/awards/${id}`,
+  essays: () => `${API_ROUTES.PROFILES}/me/essays`,
+  essay: (id: string) => `${API_ROUTES.PROFILES}/me/essays/${id}`,
+  essayRevisions: (id: string) => `${API_ROUTES.PROFILES}/me/essays/${id}/revisions`,
+  essayRevisionRestore: (id: string, revisionId: string) =>
+    `${API_ROUTES.PROFILES}/me/essays/${id}/revisions/${revisionId}/restore`,
+  essaySuggestions: (id: string) => `${API_ROUTES.PROFILES}/me/essays/${id}/suggestions`,
+  essaySuggestion: (id: string, suggestionId: string) =>
+    `${API_ROUTES.PROFILES}/me/essays/${id}/suggestions/${suggestionId}`,
+  essaySuggestionApply: (id: string, suggestionId: string) =>
+    `${API_ROUTES.PROFILES}/me/essays/${id}/suggestions/${suggestionId}/apply`,
   recommendationLetters: () => `${API_ROUTES.PROFILES}/me/recommendation-letters`,
   recommendationLetter: (id: string) => `${API_ROUTES.PROFILES}/me/recommendation-letters/${id}`,
 };
@@ -174,6 +184,7 @@ export const authRoutes = {
 export const essayAiRoutes = {
   review: () => `${API_ROUTES.ESSAY_AI}/review`,
   polish: () => `${API_ROUTES.ESSAY_AI}/polish`,
+  suggestEdits: () => `${API_ROUTES.ESSAY_AI}/suggest-edits`,
   brainstorm: () => `${API_ROUTES.ESSAY_AI}/brainstorm`,
   continueWriting: () => `${API_ROUTES.ESSAY_AI}/continue-writing`,
   generateOpening: () => `${API_ROUTES.ESSAY_AI}/generate-opening`,
@@ -191,11 +202,17 @@ export const resumeRoutes = {
   sections: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/sections`,
   section: (resumeId: string, sectionId: string) =>
     `${API_ROUTES.RESUMES}/${resumeId}/sections/${sectionId}`,
+  reorderSections: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/sections/reorder`,
   importProfile: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/import-profile`,
   snapshots: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/snapshots`,
+  snapshotRestore: (resumeId: string, snapshotId: string) =>
+    `${API_ROUTES.RESUMES}/${resumeId}/snapshots/${snapshotId}/restore`,
+  aiReviewLatest: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/reviews/latest`,
+  aiReviewHistory: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/reviews`,
   aiReview: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/review`,
   aiOptimize: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/optimize-bullets`,
-  aiSuggest: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/suggest`,
+  aiSuggestContent: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/suggest-content`,
+  aiSuggest: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/suggest-content`,
 };
 
 export const schoolRoutes = {
