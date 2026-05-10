@@ -1800,14 +1800,7 @@ export class TeamRecruitmentService {
             ? member.user.profile?.grade
             : undefined;
         const resume = memberProfile?.selectedResume;
-        const displayProfile = memberProfile as
-          | (typeof memberProfile & {
-              showAcademics?: boolean;
-              showExperiences?: boolean;
-              showPersonality?: boolean;
-              consentConfirmedAt?: Date | string | null;
-            })
-          | undefined;
+        const displayProfile = memberProfile;
         const highlightOptions = { requireConsent: !fullAccess };
         const highlights = buildMemberHighlights(
           member.user,

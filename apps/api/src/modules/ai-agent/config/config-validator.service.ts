@@ -141,7 +141,7 @@ export class ConfigValidatorService implements OnModuleInit {
     for (const enumType of enumTypes) {
       if (!configTypes.includes(enumType)) {
         errors.push({
-          agentType: enumType as AgentType,
+          agentType: enumType,
           field: 'config',
           message: `AgentType "${enumType}" is defined in enum but has no configuration`,
         });

@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SchoolService } from '../school/school.service';
-import { CustomRanking, School } from '@prisma/client';
+import { CustomRanking, Prisma, School } from '@prisma/client';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { scoreAndRankSchools, type RankingWeights } from './ranking-score.util';
 
 export type { RankingWeights } from './ranking-score.util';
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value));
+}
 
 export interface RankedSchool extends School {
   score: number;
@@ -45,7 +49,7 @@ export class RankingService {
       data: {
         userId,
         name,
-        weights: weights as object,
+        weights: toInputJson(weights),
         isPublic,
       },
     });

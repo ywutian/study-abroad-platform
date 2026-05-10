@@ -67,7 +67,7 @@ describe('ProfileMemoryService', () => {
     it('should include regionPref in memory content', async () => {
       await service.recordProfileUpdateToMemory('user-1', {
         regionPref: ['northeast', 'west'],
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith(
         'user-1',
@@ -87,7 +87,7 @@ describe('ProfileMemoryService', () => {
       await service.recordTestScoreToMemory('user-1', {
         type: 'SAT',
         score: 1500,
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith('user-1', {
         type: MemoryType.FACT,
@@ -106,7 +106,7 @@ describe('ProfileMemoryService', () => {
         type: 'TOEFL',
         score: 110,
         testDate: '2025-03-15',
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith(
         'user-1',
@@ -128,7 +128,7 @@ describe('ProfileMemoryService', () => {
         category: 'ACADEMIC',
         role: 'Captain',
         organization: 'School Team',
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith('user-1', {
         type: MemoryType.FACT,
@@ -154,7 +154,7 @@ describe('ProfileMemoryService', () => {
         name: 'USAMO',
         level: 'NATIONAL',
         year: 2025,
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith('user-1', {
         type: MemoryType.FACT,
@@ -186,7 +186,7 @@ describe('ProfileMemoryService', () => {
         schoolName: 'Phillips Academy',
         schoolType: 'HIGH_SCHOOL',
         highSchoolId: 'hs-1',
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith('user-1', {
         type: MemoryType.FACT,
@@ -208,7 +208,7 @@ describe('ProfileMemoryService', () => {
         degree: 'BS',
         major: 'Computer Science',
         gpa: 3.9,
-      } as any);
+      });
 
       expect(mockMemoryManager.remember).toHaveBeenCalledWith('user-1', {
         type: MemoryType.FACT,

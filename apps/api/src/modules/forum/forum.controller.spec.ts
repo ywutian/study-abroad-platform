@@ -153,7 +153,7 @@ describe('ForumController', () => {
     it('should call forumService.getPosts with userId and query', async () => {
       const query = { page: 1, pageSize: 10, categoryId: 'cat-1' } as any;
 
-      const result = await controller.getPosts(mockUser as any, query);
+      const result = await controller.getPosts(mockUser, query);
 
       expect(forumService.getPosts).toHaveBeenCalledWith('user-1', query);
       expect(result).toEqual(mockPostListResponse);
@@ -170,7 +170,7 @@ describe('ForumController', () => {
 
   describe('getPostById', () => {
     it('should call forumService.getPostById with id and userId', async () => {
-      const result = await controller.getPostById('post-1', mockUser as any);
+      const result = await controller.getPostById('post-1', mockUser);
 
       expect(forumService.getPostById).toHaveBeenCalledWith('post-1', 'user-1');
       expect(result).toEqual(mockPostDetail);
@@ -191,7 +191,7 @@ describe('ForumController', () => {
         categoryId: 'cat-1',
       } as any;
 
-      const result = await controller.createPost(mockUser as any, dto);
+      const result = await controller.createPost(mockUser, dto);
 
       expect(forumService.createPost).toHaveBeenCalledWith('user-1', dto, 'zh');
       expect(result).toEqual(mockPost);
@@ -202,11 +202,7 @@ describe('ForumController', () => {
     it('should call forumService.updatePost with id, userId and dto', async () => {
       const dto = { title: 'Updated Title' } as any;
 
-      const result = await controller.updatePost(
-        'post-1',
-        mockUser as any,
-        dto,
-      );
+      const result = await controller.updatePost('post-1', mockUser, dto);
 
       expect(forumService.updatePost).toHaveBeenCalledWith(
         'post-1',
@@ -219,7 +215,7 @@ describe('ForumController', () => {
 
   describe('deletePost', () => {
     it('should call forumService.deletePost and return success', async () => {
-      const result = await controller.deletePost('post-1', mockUser as any);
+      const result = await controller.deletePost('post-1', mockUser);
 
       expect(forumService.deletePost).toHaveBeenCalledWith('post-1', 'user-1');
       expect(result).toEqual({ success: true });
@@ -228,7 +224,7 @@ describe('ForumController', () => {
 
   describe('likePost', () => {
     it('should call forumService.likePost with id and userId', async () => {
-      const result = await controller.likePost('post-1', mockUser as any);
+      const result = await controller.likePost('post-1', mockUser);
 
       expect(forumService.likePost).toHaveBeenCalledWith('post-1', 'user-1');
       expect(result).toEqual({ liked: true });
@@ -243,11 +239,7 @@ describe('ForumController', () => {
     it('should call forumService.createComment with postId, userId and dto', async () => {
       const dto = { content: 'Nice post' } as any;
 
-      const result = await controller.createComment(
-        'post-1',
-        mockUser as any,
-        dto,
-      );
+      const result = await controller.createComment('post-1', mockUser, dto);
 
       expect(forumService.createComment).toHaveBeenCalledWith(
         'post-1',
@@ -260,10 +252,7 @@ describe('ForumController', () => {
 
   describe('deleteComment', () => {
     it('should call forumService.deleteComment and return success', async () => {
-      const result = await controller.deleteComment(
-        'comment-1',
-        mockUser as any,
-      );
+      const result = await controller.deleteComment('comment-1', mockUser);
 
       expect(forumService.deleteComment).toHaveBeenCalledWith(
         'comment-1',
@@ -281,11 +270,7 @@ describe('ForumController', () => {
     it('should call forumService.applyToTeam with postId, userId and dto', async () => {
       const dto = { message: 'I want to join' } as any;
 
-      const result = await controller.applyToTeam(
-        'post-1',
-        mockUser as any,
-        dto,
-      );
+      const result = await controller.applyToTeam('post-1', mockUser, dto);
 
       expect(forumService.applyToTeam).toHaveBeenCalledWith(
         'post-1',
@@ -300,11 +285,7 @@ describe('ForumController', () => {
     it('should call forumService.reviewApplication and return success', async () => {
       const dto = { status: 'APPROVED' } as any;
 
-      const result = await controller.reviewApplication(
-        'app-1',
-        mockUser as any,
-        dto,
-      );
+      const result = await controller.reviewApplication('app-1', mockUser, dto);
 
       expect(forumService.reviewApplication).toHaveBeenCalledWith(
         'app-1',
@@ -317,10 +298,7 @@ describe('ForumController', () => {
 
   describe('cancelApplication', () => {
     it('should call forumService.cancelApplication and return success', async () => {
-      const result = await controller.cancelApplication(
-        'app-1',
-        mockUser as any,
-      );
+      const result = await controller.cancelApplication('app-1', mockUser);
 
       expect(forumService.cancelApplication).toHaveBeenCalledWith(
         'app-1',
@@ -332,7 +310,7 @@ describe('ForumController', () => {
 
   describe('leaveTeam', () => {
     it('should call forumService.leaveTeam and return success', async () => {
-      const result = await controller.leaveTeam('post-1', mockUser as any);
+      const result = await controller.leaveTeam('post-1', mockUser);
 
       expect(forumService.leaveTeam).toHaveBeenCalledWith('post-1', 'user-1');
       expect(result).toEqual({ success: true });
@@ -341,7 +319,7 @@ describe('ForumController', () => {
 
   describe('getMyTeams', () => {
     it('should call forumService.getMyTeams with userId', async () => {
-      const result = await controller.getMyTeams(mockUser as any);
+      const result = await controller.getMyTeams(mockUser);
 
       expect(forumService.getMyTeams).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockPost]);
@@ -356,11 +334,7 @@ describe('ForumController', () => {
     it('should call forumService.reportPost and return success', async () => {
       const dto = { reason: 'SPAM', detail: 'This is spam' } as any;
 
-      const result = await controller.reportPost(
-        'post-1',
-        mockUser as any,
-        dto,
-      );
+      const result = await controller.reportPost('post-1', mockUser, dto);
 
       expect(forumService.reportPost).toHaveBeenCalledWith(
         'user-1',
@@ -376,11 +350,7 @@ describe('ForumController', () => {
     it('should call forumService.reportComment and return success', async () => {
       const dto = { reason: 'OFFENSIVE', detail: 'Rude comment' } as any;
 
-      const result = await controller.reportComment(
-        'comment-1',
-        mockUser as any,
-        dto,
-      );
+      const result = await controller.reportComment('comment-1', mockUser, dto);
 
       expect(forumService.reportComment).toHaveBeenCalledWith(
         'user-1',

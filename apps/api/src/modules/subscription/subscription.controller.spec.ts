@@ -81,7 +81,7 @@ describe('SubscriptionController', () => {
 
   describe('getCurrentSubscription', () => {
     it('should return the current user subscription', async () => {
-      const result = await controller.getCurrentSubscription(mockUser as any);
+      const result = await controller.getCurrentSubscription(mockUser);
 
       expect(subscriptionService.getUserSubscription).toHaveBeenCalledWith(
         'user-1',
@@ -93,7 +93,7 @@ describe('SubscriptionController', () => {
   describe('subscribe', () => {
     it('should create a subscription with the given plan and period', async () => {
       const dto = { plan: 'pro' as any, period: 'monthly' as const };
-      const result = await controller.subscribe(mockUser as any, dto);
+      const result = await controller.subscribe(mockUser, dto);
 
       expect(subscriptionService.createSubscription).toHaveBeenCalledWith(
         'user-1',
@@ -108,7 +108,7 @@ describe('SubscriptionController', () => {
         period: 'yearly' as const,
         paymentMethod: 'alipay',
       };
-      await controller.subscribe(mockUser as any, dto);
+      await controller.subscribe(mockUser, dto);
 
       expect(subscriptionService.createSubscription).toHaveBeenCalledWith(
         'user-1',
@@ -119,7 +119,7 @@ describe('SubscriptionController', () => {
 
   describe('cancelSubscription', () => {
     it('should cancel the current user subscription', async () => {
-      const result = await controller.cancelSubscription(mockUser as any);
+      const result = await controller.cancelSubscription(mockUser);
 
       expect(subscriptionService.cancelSubscription).toHaveBeenCalledWith(
         'user-1',
@@ -130,7 +130,7 @@ describe('SubscriptionController', () => {
 
   describe('getBillingHistory', () => {
     it('should return billing history for current user', async () => {
-      const result = await controller.getBillingHistory(mockUser as any);
+      const result = await controller.getBillingHistory(mockUser);
 
       expect(subscriptionService.getBillingHistory).toHaveBeenCalledWith(
         'user-1',

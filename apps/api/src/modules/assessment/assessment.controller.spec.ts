@@ -114,7 +114,7 @@ describe('AssessmentController', () => {
         ],
       };
 
-      const result = await controller.submitAssessment(mockUser as any, dto);
+      const result = await controller.submitAssessment(mockUser, dto);
 
       expect(assessmentService.submitAssessment).toHaveBeenCalledWith(
         'user-1',
@@ -126,7 +126,7 @@ describe('AssessmentController', () => {
 
   describe('getHistory', () => {
     it('should return assessment history for current user', async () => {
-      const result = await controller.getHistory(mockUser as any);
+      const result = await controller.getHistory(mockUser);
 
       expect(assessmentService.getHistory).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockResult]);
@@ -135,7 +135,7 @@ describe('AssessmentController', () => {
 
   describe('getResult', () => {
     it('should return a single assessment result by id', async () => {
-      const result = await controller.getResult(mockUser as any, 'result-1');
+      const result = await controller.getResult(mockUser, 'result-1');
 
       expect(assessmentService.getResult).toHaveBeenCalledWith(
         'user-1',

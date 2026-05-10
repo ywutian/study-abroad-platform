@@ -95,7 +95,7 @@ describe('HallController', () => {
     const expected = [{ schoolId: 's-1', rank: 5 }];
     (hallService.getBatchRanking as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getBatchRanking(mockUser as any, data);
+    const result = await controller.getBatchRanking(mockUser, data);
 
     expect(hallService.getBatchRanking).toHaveBeenCalledWith(
       'user-1',
@@ -114,7 +114,7 @@ describe('HallController', () => {
     const expected = { id: 'rev-1' };
     (hallService.createReview as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.createReview(mockUser as any, data);
+    const result = await controller.createReview(mockUser, data);
 
     expect(hallService.createReview).toHaveBeenCalledWith('user-1', data);
     expect(result).toEqual(expected);
@@ -125,11 +125,7 @@ describe('HallController', () => {
     const expected = { id: 'rev-1', overallScore: 9 };
     (hallService.updateReview as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.updateReview(
-      mockUser as any,
-      'rev-1',
-      data,
-    );
+    const result = await controller.updateReview(mockUser, 'rev-1', data);
 
     expect(hallService.updateReview).toHaveBeenCalledWith(
       'rev-1',
@@ -143,7 +139,7 @@ describe('HallController', () => {
     const expected = { deleted: true };
     (hallService.deleteReview as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.deleteReview(mockUser as any, 'rev-1');
+    const result = await controller.deleteReview(mockUser, 'rev-1');
 
     expect(hallService.deleteReview).toHaveBeenCalledWith('rev-1', 'user-1');
     expect(result).toEqual(expected);
@@ -153,7 +149,7 @@ describe('HallController', () => {
     const expected = [{ id: 'rev-1' }];
     (hallService.getMyReviews as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getMyReviews(mockUser as any);
+    const result = await controller.getMyReviews(mockUser);
 
     expect(hallService.getMyReviews).toHaveBeenCalledWith('user-1');
     expect(result).toEqual(expected);
@@ -194,7 +190,7 @@ describe('HallController', () => {
     const expected = { success: true };
     (hallService.reactToReview as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.reactToReview(mockUser as any, 'rev-1', {
+    const result = await controller.reactToReview(mockUser, 'rev-1', {
       type: 'helpful',
     });
 
@@ -211,7 +207,7 @@ describe('HallController', () => {
     (hallService.removeReaction as jest.Mock).mockResolvedValue(expected);
 
     const result = await controller.removeReaction(
-      mockUser as any,
+      mockUser,
       'rev-1',
       'helpful',
     );
@@ -234,7 +230,7 @@ describe('HallController', () => {
       expected,
     );
 
-    const result = await controller.getTargetSchoolRanking(mockUser as any);
+    const result = await controller.getTargetSchoolRanking(mockUser);
 
     expect(hallService.getTargetSchoolRanking).toHaveBeenCalledWith('user-1');
     expect(result).toEqual(expected);
@@ -244,10 +240,7 @@ describe('HallController', () => {
     const expected = { rank: 5, total: 100 };
     (hallService.getProfileRanking as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getProfileRanking(
-      mockUser as any,
-      'school-1',
-    );
+    const result = await controller.getProfileRanking(mockUser, 'school-1');
 
     expect(hallService.getProfileRanking).toHaveBeenCalledWith(
       'user-1',
@@ -260,7 +253,7 @@ describe('HallController', () => {
     const expected = { analysis: 'You are competitive' };
     (hallService.getRankingAnalysis as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getRankingAnalysis(mockUser as any, {
+    const result = await controller.getRankingAnalysis(mockUser, {
       schoolId: 'school-1',
     });
 
@@ -294,7 +287,7 @@ describe('HallController', () => {
     const expected = [{ id: 'list-1' }];
     (hallService.getMyLists as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getMyLists(mockUser as any);
+    const result = await controller.getMyLists(mockUser);
 
     expect(hallService.getMyLists).toHaveBeenCalledWith('user-1');
     expect(result).toEqual(expected);
@@ -315,7 +308,7 @@ describe('HallController', () => {
     const expected = { id: 'list-1' };
     (hallService.createList as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.createList(mockUser as any, data);
+    const result = await controller.createList(mockUser, data);
 
     expect(hallService.createList).toHaveBeenCalledWith('user-1', data);
     expect(result).toEqual(expected);
@@ -326,7 +319,7 @@ describe('HallController', () => {
     const expected = { id: 'list-1', name: 'Updated List' };
     (hallService.updateList as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.updateList(mockUser as any, 'list-1', data);
+    const result = await controller.updateList(mockUser, 'list-1', data);
 
     expect(hallService.updateList).toHaveBeenCalledWith(
       'list-1',
@@ -339,7 +332,7 @@ describe('HallController', () => {
   it('DELETE /lists/:id should call deleteList and return { success: true }', async () => {
     (hallService.deleteList as jest.Mock).mockResolvedValue(undefined);
 
-    const result = await controller.deleteList(mockUser as any, 'list-1');
+    const result = await controller.deleteList(mockUser, 'list-1');
 
     expect(hallService.deleteList).toHaveBeenCalledWith('list-1', 'user-1');
     expect(result).toEqual({ success: true });
@@ -350,7 +343,7 @@ describe('HallController', () => {
     const expected = { success: true };
     (hallService.voteList as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.voteList(mockUser as any, 'list-1', data);
+    const result = await controller.voteList(mockUser, 'list-1', data);
 
     expect(hallService.voteList).toHaveBeenCalledWith('list-1', 'user-1', 1);
     expect(result).toEqual(expected);
@@ -359,7 +352,7 @@ describe('HallController', () => {
   it('DELETE /lists/:id/vote should call removeVote and return { success: true }', async () => {
     (hallService.removeVote as jest.Mock).mockResolvedValue(undefined);
 
-    const result = await controller.removeVote(mockUser as any, 'list-1');
+    const result = await controller.removeVote(mockUser, 'list-1');
 
     expect(hallService.removeVote).toHaveBeenCalledWith('list-1', 'user-1');
     expect(result).toEqual({ success: true });
@@ -399,7 +392,7 @@ describe('HallController', () => {
     const expected = { cases: [], remaining: 0 };
     (swipeService.getNextCases as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getNextCases(mockUser as any, query);
+    const result = await controller.getNextCases(mockUser, query);
 
     expect(swipeService.getNextCases).toHaveBeenCalledWith('user-1', 10);
     expect(result).toEqual(expected);
@@ -410,7 +403,7 @@ describe('HallController', () => {
     const expected = { correct: true, actualResult: 'ADMIT' };
     (swipeService.submitSwipe as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.submitSwipe(mockUser as any, dto);
+    const result = await controller.submitSwipe(mockUser, dto);
 
     expect(swipeService.submitSwipe).toHaveBeenCalledWith('user-1', dto);
     expect(result).toEqual(expected);
@@ -420,7 +413,7 @@ describe('HallController', () => {
     const expected = { total: 50, correct: 40, accuracy: 0.8 };
     (swipeService.getStats as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getSwipeStats(mockUser as any);
+    const result = await controller.getSwipeStats(mockUser);
 
     expect(swipeService.getStats).toHaveBeenCalledWith('user-1');
     expect(result).toEqual(expected);
@@ -431,7 +424,7 @@ describe('HallController', () => {
     const expected = { entries: [], userRank: 5 };
     (swipeService.getLeaderboard as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getLeaderboard(mockUser as any, query);
+    const result = await controller.getLeaderboard(mockUser, query);
 
     expect(swipeService.getLeaderboard).toHaveBeenCalledWith('user-1', 10);
     expect(result).toEqual(expected);

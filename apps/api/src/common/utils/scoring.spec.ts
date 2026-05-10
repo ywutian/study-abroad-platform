@@ -785,7 +785,7 @@ describe('calculateProbability', () => {
     expect(low).toBeGreaterThan(0); // dynamic floor = AR * 2% > 0
     expect(low).toBeLessThan(0.05); // floor is below the old 0.05 hard floor
     expect(high).toBeLessThanOrEqual(0.97);
-    expect(high).toBeGreaterThan(0.90); // highly-likely safety school
+    expect(high).toBeGreaterThan(0.9); // highly-likely safety school
   });
 });
 
@@ -799,7 +799,7 @@ describe('calculateTier', () => {
     const school: SchoolMetrics = { acceptanceRate: 5 };
     expect(calculateTier(0.3, school)).toBe('match');
     expect(calculateTier(0.09, school)).toBe('reach'); // just below 10% boundary
-    expect(calculateTier(0.10, school)).toBe('match'); // exactly at boundary = match
+    expect(calculateTier(0.1, school)).toBe('match'); // exactly at boundary = match
   });
 
   it('should classify selective schools correctly', () => {

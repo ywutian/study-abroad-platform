@@ -50,7 +50,7 @@ export class SchoolCommunityRatingService {
   ): Record<string, SchoolCommunityRatingSummary> {
     return Object.fromEntries(
       schoolIds.map((schoolId) => [schoolId, this.createEmptySummary()]),
-    ) as Record<string, SchoolCommunityRatingSummary>;
+    );
   }
 
   async getSummariesForSchools(
@@ -76,7 +76,7 @@ export class SchoolCommunityRatingService {
           foodRating: true,
         },
       });
-      grouped = groupedResult as Array<{ schoolId: string } & RatingAggregate>;
+      grouped = groupedResult;
     } catch (error) {
       if (this.isMissingRatingTableError(error)) {
         this.logger.warn(

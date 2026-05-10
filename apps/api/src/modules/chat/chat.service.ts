@@ -875,7 +875,7 @@ export class ChatService {
         },
       });
       if (message) {
-        context = message.conversation.messages as unknown as object;
+        context = message.conversation.messages;
       }
     }
 

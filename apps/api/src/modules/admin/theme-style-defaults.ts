@@ -134,8 +134,8 @@ export function generateDefaultThemeStyleItems(
   const heroVariants = [...HERO_VISUAL_IDS];
 
   const heroPriority: HeroVisualId[] = [
-    'dense-cockpit' as HeroVisualId,
-    'centered-mark' as HeroVisualId,
+    'dense-cockpit',
+    'centered-mark',
     ...heroVariants.filter(
       (h: HeroVisualId) => h !== 'dense-cockpit' && h !== 'centered-mark',
     ),

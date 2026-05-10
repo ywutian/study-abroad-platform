@@ -198,11 +198,7 @@ describe('AuthController', () => {
         cookies: { refreshToken: 'old_token' },
       };
 
-      await controller.refreshToken(
-        mockReq as any,
-        {} as any,
-        mockResponse as any,
-      );
+      await controller.refreshToken(mockReq as any, {}, mockResponse as any);
 
       expect(mockResponse.cookie).toHaveBeenCalledWith(
         'refreshToken',
@@ -224,7 +220,7 @@ describe('AuthController', () => {
 
       const result = await controller.refreshToken(
         mockReq as any,
-        {} as any,
+        {},
         mockResponse as any,
       );
 

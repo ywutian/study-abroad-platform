@@ -524,7 +524,7 @@ export class AdminSchoolDataCoverageService {
       },
       orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
       take: options?.limit,
-    }) as Promise<SchoolForCoverage[]>;
+    });
   }
 
   private buildFieldStatus(

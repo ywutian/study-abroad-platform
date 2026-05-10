@@ -430,7 +430,7 @@ describe('PromptGuardService', () => {
 
     it('should handle null/undefined gracefully', async () => {
       // TypeScript 会阻止 null/undefined，但测试运行时行为
-      const result = await service.analyze('' as string);
+      const result = await service.analyze('');
       expect(result).toBeDefined();
     });
 

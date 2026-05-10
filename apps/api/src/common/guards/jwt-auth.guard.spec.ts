@@ -51,7 +51,7 @@ describe('JwtAuthGuard', () => {
       switchToRpc: jest.fn(),
       switchToWs: jest.fn(),
       getType: jest.fn(),
-    } as unknown as ExecutionContext;
+    };
   };
 
   beforeEach(async () => {

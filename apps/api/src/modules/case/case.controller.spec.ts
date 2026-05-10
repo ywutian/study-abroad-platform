@@ -66,7 +66,7 @@ describe('CaseController', () => {
         search: 'MIT',
       } as any;
 
-      const result = await controller.findAll(mockUser as any, query);
+      const result = await controller.findAll(mockUser, query);
 
       expect(caseService.findAll).toHaveBeenCalledWith(
         { page: 1, pageSize: 10 },
@@ -98,7 +98,7 @@ describe('CaseController', () => {
 
   describe('getMyCases', () => {
     it('should call caseService.getMyCases with userId', async () => {
-      const result = await controller.getMyCases(mockUser as any);
+      const result = await controller.getMyCases(mockUser);
 
       expect(caseService.getMyCases).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockCase]);
@@ -107,7 +107,7 @@ describe('CaseController', () => {
 
   describe('findById', () => {
     it('should call caseService.findById with id, userId and role', async () => {
-      const result = await controller.findById(mockUser as any, 'case-1');
+      const result = await controller.findById(mockUser, 'case-1');
 
       expect(caseService.findById).toHaveBeenCalledWith(
         'case-1',
@@ -138,7 +138,7 @@ describe('CaseController', () => {
         result: 'ACCEPTED',
       } as any;
 
-      const result = await controller.create(mockUser as any, dto);
+      const result = await controller.create(mockUser, dto);
 
       expect(caseService.create).toHaveBeenCalledWith(
         'user-1',
@@ -154,7 +154,7 @@ describe('CaseController', () => {
     it('should call caseService.update with id, userId and dto', async () => {
       const dto = { result: 'REJECTED' } as any;
 
-      const result = await controller.update(mockUser as any, 'case-1', dto);
+      const result = await controller.update(mockUser, 'case-1', dto);
 
       expect(caseService.update).toHaveBeenCalledWith('case-1', 'user-1', dto);
       expect(result).toEqual(mockCase);
@@ -163,7 +163,7 @@ describe('CaseController', () => {
 
   describe('delete', () => {
     it('should call caseService.delete with id and userId and return success message', async () => {
-      const result = await controller.delete(mockUser as any, 'case-1');
+      const result = await controller.delete(mockUser, 'case-1');
 
       expect(caseService.delete).toHaveBeenCalledWith('case-1', 'user-1');
       expect(result).toEqual({ message: 'Case deleted successfully' });

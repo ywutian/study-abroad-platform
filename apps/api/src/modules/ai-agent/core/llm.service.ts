@@ -256,7 +256,7 @@ export class LLMService {
       .filter((m) => m.role !== 'system')
       .map((m) => ({
         id: `cs_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-        role: m.role as Message['role'],
+        role: m.role,
         content: m.content,
         timestamp: new Date(),
       }));

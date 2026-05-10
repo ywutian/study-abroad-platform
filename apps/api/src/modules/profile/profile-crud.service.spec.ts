@@ -139,7 +139,7 @@ describe('ProfileCrudService', () => {
       const result = await service.findByIdWithVisibilityCheck(
         'profile-1',
         'owner-1',
-        'USER' as any,
+        'USER',
       );
 
       expect(result).toEqual(baseProfile);
@@ -152,7 +152,7 @@ describe('ProfileCrudService', () => {
       const result = await service.findByIdWithVisibilityCheck(
         'profile-1',
         'admin-1',
-        'ADMIN' as any,
+        'ADMIN',
       );
 
       expect(result).toEqual(privateProfile);
@@ -191,7 +191,7 @@ describe('ProfileCrudService', () => {
       const result = await service.findByIdWithVisibilityCheck(
         'profile-1',
         'other-user',
-        'USER' as any,
+        'USER',
       );
 
       expect(result!.realName).toBeNull();
@@ -251,7 +251,7 @@ describe('ProfileCrudService', () => {
 
       const result = await service.update('user-1', {
         targetMajor: 'CS',
-      } as any);
+      });
 
       expect(result).toEqual(updated);
     });
@@ -268,7 +268,7 @@ describe('ProfileCrudService', () => {
 
       const result = await service.upsert('user-1', {
         targetMajor: 'CS',
-      } as any);
+      });
 
       expect(result).toEqual(upserted);
       expect(mockCacheInvalidation.onProfileChange).toHaveBeenCalledWith(
@@ -305,7 +305,7 @@ describe('ProfileCrudService', () => {
 
       const result = await service.upsert('user-1', {
         targetMajor: 'CS',
-      } as any);
+      });
 
       expect(result).toEqual(updated);
       expect(mockPrisma.profile.update).toHaveBeenCalledWith({
@@ -399,7 +399,7 @@ describe('ProfileCrudService', () => {
         'rec-1',
         {
           recommenderName: 'Updated Teacher',
-        } as any,
+        },
       );
 
       expect(result.recommenderName).toBe('Updated Teacher');

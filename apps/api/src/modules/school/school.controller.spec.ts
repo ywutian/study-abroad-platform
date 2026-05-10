@@ -293,7 +293,7 @@ describe('SchoolController', () => {
         mockRecommendation,
       );
 
-      const result = await controller.getAIRecommendations(mockUser as any);
+      const result = await controller.getAIRecommendations(mockUser);
 
       expect(schoolListService.getAIRecommendations).toHaveBeenCalledWith(
         'user-1',
@@ -309,7 +309,7 @@ describe('SchoolController', () => {
     it('should call schoolService.create with the dto', async () => {
       const dto = { name: 'MIT', country: 'US' } as any;
 
-      const result = await controller.create(dto, mockUser as any);
+      const result = await controller.create(dto, mockUser);
 
       expect(schoolService.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -332,7 +332,7 @@ describe('SchoolController', () => {
     it('should call schoolService.update with id and dto', async () => {
       const dto = { name: 'MIT Updated' } as any;
 
-      const result = await controller.update('school-1', dto, mockUser as any);
+      const result = await controller.update('school-1', dto, mockUser);
 
       expect(schoolService.update).toHaveBeenCalledWith(
         'school-1',

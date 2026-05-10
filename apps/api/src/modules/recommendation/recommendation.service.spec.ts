@@ -166,7 +166,7 @@ describe('RecommendationService', () => {
     it('should charge points before generating recommendation', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
 
-      await service.generateRecommendation('user-1', dto as any);
+      await service.generateRecommendation('user-1', dto);
 
       expect(caseIncentive.charge).toHaveBeenCalledWith(
         'user-1',
@@ -177,7 +177,7 @@ describe('RecommendationService', () => {
     it('should generate AI recommendation with profile data', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
 
-      const result = await service.generateRecommendation('user-1', dto as any);
+      const result = await service.generateRecommendation('user-1', dto);
 
       expect(result).toBeDefined();
       expect(result.recommendations).toBeDefined();
@@ -214,7 +214,7 @@ describe('RecommendationService', () => {
     it('should return structured recommendation with analysis', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
 
-      const result = await service.generateRecommendation('user-1', dto as any);
+      const result = await service.generateRecommendation('user-1', dto);
 
       expect(result.analysis).toBeDefined();
       expect(result.analysis.strengths).toBeDefined();
@@ -225,7 +225,7 @@ describe('RecommendationService', () => {
     it('should save recommendation to database', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
 
-      await service.generateRecommendation('user-1', dto as any);
+      await service.generateRecommendation('user-1', dto);
 
       expect(prisma.schoolRecommendation.create).toHaveBeenCalled();
     });
@@ -233,7 +233,7 @@ describe('RecommendationService', () => {
     it('should match school IDs from database', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
 
-      await service.generateRecommendation('user-1', dto as any);
+      await service.generateRecommendation('user-1', dto);
 
       // matchSchoolIds calls prisma.school.findMany
       expect(prisma.school.findMany).toHaveBeenCalled();

@@ -822,7 +822,7 @@ function resolveSchoolTestingPolicy(
   item: LoadedSchoolListItem,
 ): SchoolTestingPolicy {
   return resolveSchoolTestingPolicyValue({
-    testingPolicy: item.school.testingPolicy as any,
+    testingPolicy: item.school.testingPolicy,
     testOptional: item.school.testOptional,
   });
 }

@@ -17,7 +17,9 @@ export class RankingController {
   @Public()
   @ApiOperation({ summary: 'Calculate custom ranking' })
   async calculateRanking(@Body() weights: CalculateRankingDto) {
-    return this.rankingService.calculateRanking(sanitizeRankingWeights(weights));
+    return this.rankingService.calculateRanking(
+      sanitizeRankingWeights(weights),
+    );
   }
 
   @Post()

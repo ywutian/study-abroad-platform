@@ -213,7 +213,7 @@ describe('AdminController', () => {
     });
 
     it('should default page=1 and pageSize=20', async () => {
-      await controller.getReports({} as any);
+      await controller.getReports({});
 
       expect(adminService.getReports).toHaveBeenCalledWith(
         undefined,
@@ -229,11 +229,7 @@ describe('AdminController', () => {
   describe('updateReport', () => {
     it('should call updateReportStatus with admin id, report id, status and resolution', async () => {
       const dto = { status: 'RESOLVED' as any, resolution: 'Spam removed' };
-      const result = await controller.updateReport(
-        mockAdmin as any,
-        'report-1',
-        dto,
-      );
+      const result = await controller.updateReport(mockAdmin, 'report-1', dto);
 
       expect(adminService.updateReportStatus).toHaveBeenCalledWith(
         'admin-1',
@@ -247,10 +243,7 @@ describe('AdminController', () => {
 
   describe('deleteReport', () => {
     it('should delete report and return confirmation message', async () => {
-      const result = await controller.deleteReport(
-        mockAdmin as any,
-        'report-1',
-      );
+      const result = await controller.deleteReport(mockAdmin, 'report-1');
 
       expect(adminService.deleteReport).toHaveBeenCalledWith(
         'admin-1',
@@ -276,7 +269,7 @@ describe('AdminController', () => {
     });
 
     it('should default page=1 and pageSize=20', async () => {
-      await controller.getUsers({} as any);
+      await controller.getUsers({});
 
       expect(adminService.getUsers).toHaveBeenCalledWith(
         undefined,
@@ -290,11 +283,7 @@ describe('AdminController', () => {
   describe('banUser', () => {
     it('should call banUser with admin id, user id, reason, duration and permanent', async () => {
       const dto = { reason: 'Spamming', durationHours: 24, permanent: false };
-      const result = await controller.banUser(
-        mockAdmin as any,
-        'user-1',
-        dto as any,
-      );
+      const result = await controller.banUser(mockAdmin, 'user-1', dto);
 
       expect(adminService.banUser).toHaveBeenCalledWith(
         'admin-1',
@@ -310,7 +299,7 @@ describe('AdminController', () => {
 
   describe('unbanUser', () => {
     it('should call unbanUser with admin id and user id', async () => {
-      const result = await controller.unbanUser(mockAdmin as any, 'user-1');
+      const result = await controller.unbanUser(mockAdmin, 'user-1');
 
       expect(adminService.unbanUser).toHaveBeenCalledWith('admin-1', 'user-1');
       expect(result).toEqual({ id: 'user-1', banned: false });
@@ -319,7 +308,7 @@ describe('AdminController', () => {
 
   describe('deleteUser', () => {
     it('should delete user and return confirmation message', async () => {
-      const result = await controller.deleteUser(mockAdmin as any, 'user-1');
+      const result = await controller.deleteUser(mockAdmin, 'user-1');
 
       expect(adminService.deleteUser).toHaveBeenCalledWith('admin-1', 'user-1');
       expect(result).toEqual({ message: 'User deleted' });

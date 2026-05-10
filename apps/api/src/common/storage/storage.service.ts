@@ -80,8 +80,7 @@ export class StorageService implements OnModuleInit {
   private readonly baseUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.storageType = (this.configService.get('STORAGE_TYPE') ||
-      'local') as StorageProvider;
+    this.storageType = this.configService.get('STORAGE_TYPE') || 'local';
     this.localBasePath =
       this.configService.get('STORAGE_LOCAL_PATH') || './uploads';
     this.baseUrl = this.configService.get('APP_URL') || 'http://localhost:4101';

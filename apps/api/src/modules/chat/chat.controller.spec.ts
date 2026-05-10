@@ -80,7 +80,7 @@ describe('ChatController', () => {
 
   describe('getConversations', () => {
     it('should return conversations for current user', async () => {
-      const result = await controller.getConversations(mockUser as any);
+      const result = await controller.getConversations(mockUser);
 
       expect(chatService.getConversations).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([{ id: 'conv-1' }]);
@@ -89,7 +89,7 @@ describe('ChatController', () => {
 
   describe('startConversation', () => {
     it('should get or create a conversation with the target user', async () => {
-      const result = await controller.startConversation(mockUser as any, {
+      const result = await controller.startConversation(mockUser, {
         userId: 'user-2',
       });
 
@@ -104,7 +104,7 @@ describe('ChatController', () => {
   describe('getMessages', () => {
     it('should return paginated messages for a conversation', async () => {
       const result = await controller.getMessages(
-        mockUser as any,
+        mockUser,
         'conv-1',
         25,
         'cursor-abc',
@@ -120,12 +120,7 @@ describe('ChatController', () => {
     });
 
     it('should default limit to 50 when not provided', async () => {
-      await controller.getMessages(
-        mockUser as any,
-        'conv-1',
-        undefined,
-        undefined,
-      );
+      await controller.getMessages(mockUser, 'conv-1', undefined, undefined);
 
       expect(chatService.getMessages).toHaveBeenCalledWith(
         'conv-1',
@@ -138,7 +133,7 @@ describe('ChatController', () => {
 
   describe('markAsRead', () => {
     it('should mark conversation as read and return success', async () => {
-      const result = await controller.markAsRead(mockUser as any, 'conv-1');
+      const result = await controller.markAsRead(mockUser, 'conv-1');
 
       expect(chatService.markAsRead).toHaveBeenCalledWith('conv-1', 'user-1');
       expect(result).toEqual({ success: true });
@@ -147,7 +142,7 @@ describe('ChatController', () => {
 
   describe('togglePin', () => {
     it('should toggle pin status for a conversation', async () => {
-      const result = await controller.togglePin(mockUser as any, 'conv-1');
+      const result = await controller.togglePin(mockUser, 'conv-1');
 
       expect(chatService.togglePin).toHaveBeenCalledWith('conv-1', 'user-1');
       expect(result).toEqual({ id: 'conv-1', pinned: true });
@@ -158,7 +153,7 @@ describe('ChatController', () => {
 
   describe('deleteMessage', () => {
     it('should delete message, broadcast event, and return success', async () => {
-      const result = await controller.deleteMessage(mockUser as any, 'msg-1');
+      const result = await controller.deleteMessage(mockUser, 'msg-1');
 
       expect(chatService.deleteMessage).toHaveBeenCalledWith('msg-1', 'user-1');
       expect(chatGateway.broadcastToConversation).toHaveBeenCalledWith(
@@ -172,7 +167,7 @@ describe('ChatController', () => {
 
   describe('recallMessage', () => {
     it('should recall message, broadcast event, and return success', async () => {
-      const result = await controller.recallMessage(mockUser as any, 'msg-1');
+      const result = await controller.recallMessage(mockUser, 'msg-1');
 
       expect(chatService.recallMessage).toHaveBeenCalledWith('msg-1', 'user-1');
       expect(chatGateway.broadcastToConversation).toHaveBeenCalledWith(
@@ -186,7 +181,7 @@ describe('ChatController', () => {
 
   describe('getUnreadCount', () => {
     it('should return total unread count for current user', async () => {
-      const result = await controller.getUnreadCount(mockUser as any);
+      const result = await controller.getUnreadCount(mockUser);
 
       expect(chatService.getTotalUnreadCount).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ count: 3 });
@@ -201,11 +196,7 @@ describe('ChatController', () => {
         originalname: 'photo.png',
       } as Express.Multer.File;
 
-      const result = await controller.uploadFile(
-        mockUser as any,
-        'conv-1',
-        mockFile,
-      );
+      const result = await controller.uploadFile(mockUser, 'conv-1', mockFile);
 
       expect(chatService.sendMediaMessage).toHaveBeenCalledWith(
         'conv-1',
@@ -229,7 +220,7 @@ describe('ChatController', () => {
 
   describe('followUser', () => {
     it('should follow user and return success', async () => {
-      const result = await controller.followUser(mockUser as any, 'user-2');
+      const result = await controller.followUser(mockUser, 'user-2');
 
       expect(chatService.followUser).toHaveBeenCalledWith('user-1', 'user-2');
       expect(result).toEqual({ success: true });
@@ -238,7 +229,7 @@ describe('ChatController', () => {
 
   describe('unfollowUser', () => {
     it('should unfollow user and return success', async () => {
-      const result = await controller.unfollowUser(mockUser as any, 'user-2');
+      const result = await controller.unfollowUser(mockUser, 'user-2');
 
       expect(chatService.unfollowUser).toHaveBeenCalledWith('user-1', 'user-2');
       expect(result).toEqual({ success: true });
@@ -247,7 +238,7 @@ describe('ChatController', () => {
 
   describe('getFollowers', () => {
     it('should return followers for current user', async () => {
-      const result = await controller.getFollowers(mockUser as any);
+      const result = await controller.getFollowers(mockUser);
 
       expect(chatService.getFollowers).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([{ id: 'user-2' }]);
@@ -256,7 +247,7 @@ describe('ChatController', () => {
 
   describe('getFollowing', () => {
     it('should return following list for current user', async () => {
-      const result = await controller.getFollowing(mockUser as any);
+      const result = await controller.getFollowing(mockUser);
 
       expect(chatService.getFollowing).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([{ id: 'user-3' }]);
@@ -265,14 +256,14 @@ describe('ChatController', () => {
 
   describe('getRecommendations', () => {
     it('should return recommended users with parsed limit', async () => {
-      const result = await controller.getRecommendations(mockUser as any, '5');
+      const result = await controller.getRecommendations(mockUser, '5');
 
       expect(chatService.getRecommendedUsers).toHaveBeenCalledWith('user-1', 5);
       expect(result).toEqual([{ id: 'user-4' }]);
     });
 
     it('should default limit to 10 when not provided', async () => {
-      await controller.getRecommendations(mockUser as any, undefined);
+      await controller.getRecommendations(mockUser, undefined);
 
       expect(chatService.getRecommendedUsers).toHaveBeenCalledWith(
         'user-1',
@@ -285,7 +276,7 @@ describe('ChatController', () => {
 
   describe('getBlocked', () => {
     it('should return blocked users for current user', async () => {
-      const result = await controller.getBlocked(mockUser as any);
+      const result = await controller.getBlocked(mockUser);
 
       expect(chatService.getBlocked).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([]);
@@ -294,7 +285,7 @@ describe('ChatController', () => {
 
   describe('blockUser', () => {
     it('should block user and return success', async () => {
-      const result = await controller.blockUser(mockUser as any, 'user-2');
+      const result = await controller.blockUser(mockUser, 'user-2');
 
       expect(chatService.blockUser).toHaveBeenCalledWith('user-1', 'user-2');
       expect(result).toEqual({ success: true });
@@ -303,7 +294,7 @@ describe('ChatController', () => {
 
   describe('unblockUser', () => {
     it('should unblock user and return success', async () => {
-      const result = await controller.unblockUser(mockUser as any, 'user-2');
+      const result = await controller.unblockUser(mockUser, 'user-2');
 
       expect(chatService.unblockUser).toHaveBeenCalledWith('user-1', 'user-2');
       expect(result).toEqual({ success: true });
@@ -320,7 +311,7 @@ describe('ChatController', () => {
         reason: 'SPAM' as any,
         detail: 'Unwanted content',
       };
-      const result = await controller.report(mockUser as any, dto);
+      const result = await controller.report(mockUser, dto);
 
       expect(chatService.report).toHaveBeenCalledWith(
         'user-1',

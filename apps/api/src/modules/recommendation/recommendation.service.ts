@@ -477,7 +477,7 @@ export class RecommendationService {
       return {
         id: r.id,
         recommendations: r.recommendations as unknown as RecommendedSchoolDto[],
-        analysis: analysis as unknown as RecommendationAnalysisDto,
+        analysis: analysis,
         summerPrograms: summerPrograms || [],
         summary: r.summary || '',
         tokenUsed: r.tokenUsed,

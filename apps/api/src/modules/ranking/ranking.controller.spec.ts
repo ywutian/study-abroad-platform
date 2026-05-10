@@ -74,7 +74,7 @@ describe('RankingController', () => {
     const expected = { id: 'rank-1', name: 'My Ranking' };
     (rankingService.saveRanking as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.saveRanking(mockUser as any, data);
+    const result = await controller.saveRanking(mockUser, data);
 
     const { name: _name, isPublic: _isPublic, ...weights } = data;
     expect(rankingService.saveRanking).toHaveBeenCalledWith(
@@ -114,7 +114,7 @@ describe('RankingController', () => {
     const expected = [{ id: 'rank-1' }];
     (rankingService.getUserRankings as jest.Mock).mockResolvedValue(expected);
 
-    const result = await controller.getMyRankings(mockUser as any);
+    const result = await controller.getMyRankings(mockUser);
 
     expect(rankingService.getUserRankings).toHaveBeenCalledWith('user-1');
     expect(result).toEqual(expected);
@@ -143,7 +143,7 @@ describe('RankingController', () => {
   it('DELETE /:id should call deleteRanking and return success message', async () => {
     (rankingService.deleteRanking as jest.Mock).mockResolvedValue(undefined);
 
-    const result = await controller.deleteRanking(mockUser as any, 'rank-1');
+    const result = await controller.deleteRanking(mockUser, 'rank-1');
 
     expect(rankingService.deleteRanking).toHaveBeenCalledWith(
       'rank-1',

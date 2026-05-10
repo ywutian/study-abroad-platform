@@ -106,7 +106,7 @@ export class RedisStorage implements IStorage, OnModuleDestroy {
     try {
       return JSON.parse(value) as T;
     } catch {
-      return value as unknown as T;
+      return value;
     }
   }
 

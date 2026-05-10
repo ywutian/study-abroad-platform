@@ -79,10 +79,7 @@ describe('TimelineController', () => {
   describe('POST /timelines', () => {
     it('should create a timeline', async () => {
       const dto = { name: 'Fall 2025' };
-      const result = await controller.createTimeline(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.createTimeline(mockUser, dto as any);
 
       expect(timelineService.createTimeline).toHaveBeenCalledWith(
         'user-1',
@@ -96,10 +93,7 @@ describe('TimelineController', () => {
   describe('POST /timelines/generate', () => {
     it('should generate timelines', async () => {
       const dto = { schoolIds: ['s1', 's2'] };
-      const result = await controller.generateTimelines(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.generateTimelines(mockUser, dto);
 
       expect(timelineService.generateTimelines).toHaveBeenCalledWith(
         'user-1',
@@ -112,7 +106,7 @@ describe('TimelineController', () => {
 
   describe('GET /timelines', () => {
     it('should return all timelines for the user', async () => {
-      const result = await controller.getTimelines(mockUser as any);
+      const result = await controller.getTimelines(mockUser);
 
       expect(timelineService.getTimelines).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockTimeline]);
@@ -121,7 +115,7 @@ describe('TimelineController', () => {
 
   describe('GET /timelines/overview', () => {
     it('should return overview stats', async () => {
-      const result = await controller.getOverview(mockUser as any);
+      const result = await controller.getOverview(mockUser);
 
       expect(timelineService.getOverview).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ total: 1, upcoming: 3 });
@@ -142,10 +136,7 @@ describe('TimelineController', () => {
   describe('POST /timelines/personal-events', () => {
     it('should create a personal event', async () => {
       const dto = { title: 'TOEFL Deadline' };
-      const result = await controller.createPersonalEvent(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.createPersonalEvent(mockUser, dto as any);
 
       expect(timelineService.createPersonalEvent).toHaveBeenCalledWith(
         'user-1',
@@ -158,10 +149,7 @@ describe('TimelineController', () => {
   describe('POST /timelines/personal-events/subscribe', () => {
     it('should subscribe to a global event', async () => {
       const dto = { globalEventId: 'ge-1' };
-      const result = await controller.subscribeGlobalEvent(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.subscribeGlobalEvent(mockUser, dto);
 
       expect(timelineService.subscribeGlobalEvent).toHaveBeenCalledWith(
         'user-1',
@@ -173,7 +161,7 @@ describe('TimelineController', () => {
 
   describe('GET /timelines/personal-events', () => {
     it('should return all personal events', async () => {
-      const result = await controller.getPersonalEvents(mockUser as any);
+      const result = await controller.getPersonalEvents(mockUser);
 
       expect(timelineService.getPersonalEvents).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockEvent]);
@@ -182,10 +170,7 @@ describe('TimelineController', () => {
 
   describe('GET /timelines/personal-events/:id', () => {
     it('should return a personal event by id', async () => {
-      const result = await controller.getPersonalEventById(
-        mockUser as any,
-        'evt-1',
-      );
+      const result = await controller.getPersonalEventById(mockUser, 'evt-1');
 
       expect(timelineService.getPersonalEventById).toHaveBeenCalledWith(
         'user-1',
@@ -199,9 +184,9 @@ describe('TimelineController', () => {
     it('should update a personal event', async () => {
       const dto = { title: 'Updated' };
       const result = await controller.updatePersonalEvent(
-        mockUser as any,
+        mockUser,
         'evt-1',
-        dto as any,
+        dto,
       );
 
       expect(timelineService.updatePersonalEvent).toHaveBeenCalledWith(
@@ -215,7 +200,7 @@ describe('TimelineController', () => {
 
   describe('DELETE /timelines/personal-events/:id', () => {
     it('should delete a personal event', async () => {
-      await controller.deletePersonalEvent(mockUser as any, 'evt-1');
+      await controller.deletePersonalEvent(mockUser, 'evt-1');
 
       expect(timelineService.deletePersonalEvent).toHaveBeenCalledWith(
         'user-1',
@@ -229,10 +214,7 @@ describe('TimelineController', () => {
   describe('POST /timelines/personal-tasks', () => {
     it('should create a personal task', async () => {
       const dto = { title: 'Submit TOEFL' };
-      const result = await controller.createPersonalTask(
-        mockUser as any,
-        dto as any,
-      );
+      const result = await controller.createPersonalTask(mockUser, dto as any);
 
       expect(timelineService.createPersonalTask).toHaveBeenCalledWith(
         'user-1',
@@ -245,7 +227,7 @@ describe('TimelineController', () => {
   describe('POST /timelines/personal-tasks/:taskId/toggle', () => {
     it('should toggle personal task completion', async () => {
       const result = await controller.togglePersonalTaskComplete(
-        mockUser as any,
+        mockUser,
         'task-1',
       );
 
@@ -259,7 +241,7 @@ describe('TimelineController', () => {
 
   describe('DELETE /timelines/personal-tasks/:taskId', () => {
     it('should delete a personal task', async () => {
-      await controller.deletePersonalTask(mockUser as any, 'task-1');
+      await controller.deletePersonalTask(mockUser, 'task-1');
 
       expect(timelineService.deletePersonalTask).toHaveBeenCalledWith(
         'user-1',
@@ -272,7 +254,7 @@ describe('TimelineController', () => {
 
   describe('GET /timelines/:id', () => {
     it('should return a timeline by id', async () => {
-      const result = await controller.getTimelineById(mockUser as any, 'tl-1');
+      const result = await controller.getTimelineById(mockUser, 'tl-1');
 
       expect(timelineService.getTimelineById).toHaveBeenCalledWith(
         'user-1',
@@ -286,7 +268,7 @@ describe('TimelineController', () => {
     it('should update a timeline', async () => {
       const dto = { name: 'Updated' };
       const result = await controller.updateTimeline(
-        mockUser as any,
+        mockUser,
         'tl-1',
         dto as any,
       );
@@ -302,7 +284,7 @@ describe('TimelineController', () => {
 
   describe('DELETE /timelines/:id', () => {
     it('should delete a timeline', async () => {
-      await controller.deleteTimeline(mockUser as any, 'tl-1');
+      await controller.deleteTimeline(mockUser, 'tl-1');
 
       expect(timelineService.deleteTimeline).toHaveBeenCalledWith(
         'user-1',
@@ -316,7 +298,7 @@ describe('TimelineController', () => {
   describe('POST /timelines/tasks', () => {
     it('should create a task', async () => {
       const dto = { title: 'Submit TOEFL', timelineId: 'tl-1' };
-      const result = await controller.createTask(mockUser as any, dto as any);
+      const result = await controller.createTask(mockUser, dto);
 
       expect(timelineService.createTask).toHaveBeenCalledWith('user-1', dto);
       expect(result).toEqual(mockTask);
@@ -326,11 +308,7 @@ describe('TimelineController', () => {
   describe('PUT /timelines/tasks/:taskId', () => {
     it('should update a task', async () => {
       const dto = { title: 'Updated' };
-      const result = await controller.updateTask(
-        mockUser as any,
-        'task-1',
-        dto as any,
-      );
+      const result = await controller.updateTask(mockUser, 'task-1', dto);
 
       expect(timelineService.updateTask).toHaveBeenCalledWith(
         'user-1',
@@ -343,10 +321,7 @@ describe('TimelineController', () => {
 
   describe('POST /timelines/tasks/:taskId/toggle', () => {
     it('should toggle task completion', async () => {
-      const result = await controller.toggleTaskComplete(
-        mockUser as any,
-        'task-1',
-      );
+      const result = await controller.toggleTaskComplete(mockUser, 'task-1');
 
       expect(timelineService.toggleTaskComplete).toHaveBeenCalledWith(
         'user-1',
@@ -358,7 +333,7 @@ describe('TimelineController', () => {
 
   describe('DELETE /timelines/tasks/:taskId', () => {
     it('should delete a task', async () => {
-      await controller.deleteTask(mockUser as any, 'task-1');
+      await controller.deleteTask(mockUser, 'task-1');
 
       expect(timelineService.deleteTask).toHaveBeenCalledWith(
         'user-1',

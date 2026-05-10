@@ -84,7 +84,7 @@ export class CsvParserService {
         continue;
       }
 
-      const result = normalizeResult(resultStr) as CaseResult | null;
+      const result = normalizeResult(resultStr);
       if (!result) {
         errors.push({
           row: rowNum,
