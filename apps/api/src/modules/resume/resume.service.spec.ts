@@ -175,6 +175,38 @@ describe('ResumeService', () => {
 
       expect(result.type).toBe('INTERNSHIP');
     });
+
+    it('should persist target context on create', async () => {
+      const targetContext = {
+        targetRole: 'Data Analyst Intern',
+        company: 'Fintech',
+        jobDescription: 'SQL and dashboarding role',
+      };
+      const mockCreated = {
+        id: 'r3',
+        userId: 'user-1',
+        title: 'Targeted Resume',
+        type: 'INTERNSHIP',
+        targetContext,
+        sections: [],
+      };
+      mockPrisma.resume.create.mockResolvedValue(mockCreated);
+
+      const result = await service.create('user-1', {
+        title: 'Targeted Resume',
+        type: 'INTERNSHIP',
+        targetContext,
+      });
+
+      expect(result.targetContext).toEqual(targetContext);
+      expect(mockPrisma.resume.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            targetContext,
+          }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {
@@ -189,9 +221,17 @@ describe('ResumeService', () => {
 
       const result = await service.update('user-1', 'r1', {
         title: 'Updated Title',
+        targetContext: { targetSchool: 'MIT', targetMajor: 'CS' },
       });
 
       expect(result.title).toBe('Updated Title');
+      expect(mockPrisma.resume.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            targetContext: { targetSchool: 'MIT', targetMajor: 'CS' },
+          }),
+        }),
+      );
     });
   });
 
@@ -371,6 +411,7 @@ describe('ResumeService', () => {
         userId: 'user-1',
         templateId: 'jake-classic',
         type: 'COLLEGE_APPLICATION',
+        targetContext: { targetSchool: 'Stanford', keywords: ['robotics'] },
         sections: [
           {
             id: 's1',
@@ -405,14 +446,27 @@ describe('ResumeService', () => {
         createdAt: new Date(),
       });
 
-      const result = await service.aiReview('user-1', 'r1', 'MIT', 'CS');
+      const result = await service.aiReview('user-1', 'r1', 'MIT', 'CS', {
+        applicationRound: 'RD',
+      });
 
       expect(result.overallScore).toBe(72);
       expect(mockResumeAiService.reviewResume).toHaveBeenCalledWith(
         expect.objectContaining({
           resumeType: 'COLLEGE_APPLICATION',
+          targetContext: expect.objectContaining({
+            targetSchool: 'MIT',
+            targetMajor: 'CS',
+            applicationRound: 'RD',
+            keywords: ['robotics'],
+          }),
         }),
-        { targetSchool: 'MIT', targetMajor: 'CS' },
+        expect.objectContaining({
+          targetSchool: 'MIT',
+          targetMajor: 'CS',
+          applicationRound: 'RD',
+          keywords: ['robotics'],
+        }),
       );
     });
   });

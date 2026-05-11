@@ -38,6 +38,7 @@ export interface Resume {
   templateId: string;
   language: string;
   settings: ResumeSettings;
+  targetContext?: ResumeTargetContext;
   sections: ResumeSection[];
   version: number;
   lastImportedAt?: string;
@@ -52,6 +53,7 @@ export interface ResumeSummary {
   type: ResumeType;
   templateId: string;
   language: string;
+  targetContext?: ResumeTargetContext;
   version: number;
   updatedAt: string;
   createdAt: string;
@@ -126,6 +128,20 @@ export interface ResumeSettings {
   fontSize?: ResumeFontSizeSettings;
   spacing?: ResumeSpacingSettings;
   decorations?: ResumeDecorationSettings;
+}
+
+export interface ResumeTargetContext {
+  targetSchool?: string;
+  targetMajor?: string;
+  applicationRound?: string;
+  programName?: string;
+  researchArea?: string;
+  advisorName?: string;
+  labName?: string;
+  targetRole?: string;
+  company?: string;
+  jobDescription?: string;
+  keywords?: string[];
 }
 
 // Resume Section Content Types

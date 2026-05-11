@@ -24,19 +24,21 @@ export class ResumeAiService {
       }>;
       templateId: string;
       resumeType: string;
+      targetContext?: Record<string, unknown>;
     },
-    context: { targetSchool?: string; targetMajor?: string },
+    context: Record<string, unknown> = {},
     locale = 'zh',
   ): Promise<ResumeReviewResult> {
     const systemPrompt = buildResumeReviewSystemPrompt(
       locale,
       resumeData.resumeType,
-      !!context.targetSchool,
+      Boolean(context.targetSchool),
     );
 
     const sectionsText = this.serializeResumeSections(resumeData.sections);
+    const targetContextText = this.serializeTargetContext(context);
 
-    const userPrompt = `${context.targetSchool ? `Target: ${context.targetSchool}` : ''}${context.targetMajor ? ` / ${context.targetMajor}` : ''}
+    const userPrompt = `${targetContextText ? `Target Context:\n${targetContextText}\n\n` : ''}
 Resume Type: ${resumeData.resumeType}
 
 ${sectionsText}`;
@@ -261,6 +263,11 @@ ${sectionsText}`;
       targetSchool?: string;
       targetMajor?: string;
       resumeType?: string;
+      targetContext?: Record<string, unknown>;
+      targetRole?: string;
+      company?: string;
+      jobDescription?: string;
+      keywords?: string[];
     },
     locale = 'zh',
   ): Promise<{
@@ -272,7 +279,10 @@ ${sectionsText}`;
       context.resumeType,
     );
 
+    const targetContextText = this.serializeTargetContext(context);
+
     const userPrompt = `Section: ${context.sectionType}${context.role ? ` | Role: ${context.role}` : ''}${context.organization ? ` | Org: ${context.organization}` : ''}
+${targetContextText ? `Target Context:\n${targetContextText}\n` : ''}
 
 Bullets to optimize:
 ${bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}`;
@@ -311,6 +321,7 @@ ${bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}`;
       existingContent: any;
       resumeType: string;
       targetMajor?: string;
+      targetContext?: Record<string, unknown>;
       grade?: string;
       profileActivities?: any[];
       profileAwards?: any[];
@@ -326,10 +337,14 @@ ${bullets.map((b, i) => `${i + 1}. ${b}`).join('\n')}`;
     exampleBullets?: string[];
   }> {
     const systemPrompt = buildSectionSuggestSystemPrompt(locale, sectionType);
+    const targetContextText = this.serializeTargetContext(
+      context.targetContext ?? {},
+    );
 
     const userPrompt = `Section: ${sectionType}
 Resume Type: ${context.resumeType}
 ${context.targetMajor ? `Target Major: ${context.targetMajor}` : ''}
+${targetContextText ? `Target Context:\n${targetContextText}` : ''}
 ${context.grade ? `Grade: ${context.grade}` : ''}
 Existing Content: ${JSON.stringify(context.existingContent)}
 ${
@@ -386,5 +401,25 @@ ${
       this.logger.error('Content suggestion failed', error);
       throw new BadRequestException('Failed to suggest content');
     }
+  }
+
+  private serializeTargetContext(context: Record<string, unknown>): string {
+    const entries = Object.entries(context)
+      .filter(([, value]) => {
+        if (value === undefined || value === null) return false;
+        if (typeof value === 'string') return value.trim().length > 0;
+        if (Array.isArray(value)) return value.length > 0;
+        return true;
+      })
+      .map(([key, value]) => {
+        if (Array.isArray(value)) {
+          return `- ${key}: ${value.join(', ')}`;
+        }
+        const text = String(value);
+        const clipped = text.length > 3000 ? `${text.slice(0, 3000)}...` : text;
+        return `- ${key}: ${clipped}`;
+      });
+
+    return entries.join('\n');
   }
 }

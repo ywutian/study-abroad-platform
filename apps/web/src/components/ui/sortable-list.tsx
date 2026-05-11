@@ -48,7 +48,7 @@ interface SortableListProps<T extends SortableItem> {
   renderOverlay?: (item: T) => ReactNode;
 }
 
-interface DragHandleProps {
+export interface DragHandleProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   attributes: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,20 +67,11 @@ interface SortableItemWrapperProps {
   disabled?: boolean;
 }
 
-function SortableItemWrapper({
-  id,
-  children,
-  className,
-  disabled,
-}: SortableItemWrapperProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id, disabled });
+function SortableItemWrapper({ id, children, className, disabled }: SortableItemWrapperProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -184,14 +175,10 @@ export function SortableList<T extends SortableItem>({
     setActiveId(null);
   }, []);
 
-  const activeItem = activeId
-    ? items.find((item) => keyExtractor(item) === activeId)
-    : null;
+  const activeItem = activeId ? items.find((item) => keyExtractor(item) === activeId) : null;
 
   const strategy =
-    direction === 'horizontal'
-      ? horizontalListSortingStrategy
-      : verticalListSortingStrategy;
+    direction === 'horizontal' ? horizontalListSortingStrategy : verticalListSortingStrategy;
 
   return (
     <DndContext
@@ -201,17 +188,8 @@ export function SortableList<T extends SortableItem>({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <SortableContext
-        items={items.map(keyExtractor)}
-        strategy={strategy}
-        disabled={disabled}
-      >
-        <div
-          className={cn(
-            direction === 'horizontal' ? 'flex gap-2' : 'space-y-2',
-            className
-          )}
-        >
+      <SortableContext items={items.map(keyExtractor)} strategy={strategy} disabled={disabled}>
+        <div className={cn(direction === 'horizontal' ? 'flex gap-2' : 'space-y-2', className)}>
           {items.map((item, index) => (
             <SortableItemWrapper
               key={keyExtractor(item)}
@@ -231,15 +209,11 @@ export function SortableList<T extends SortableItem>({
             <div className="shadow-xl rounded-lg opacity-90">
               {renderOverlay
                 ? renderOverlay(activeItem)
-                : renderItem(
-                    activeItem,
-                    items.indexOf(activeItem),
-                    {
-                      attributes: {},
-                      listeners: undefined,
-                      isDragging: true,
-                    }
-                  )}
+                : renderItem(activeItem, items.indexOf(activeItem), {
+                    attributes: {},
+                    listeners: undefined,
+                    isDragging: true,
+                  })}
             </div>
           ) : null}
         </DragOverlay>
@@ -320,6 +294,3 @@ export function NumberedSortableList<T extends SortableItem>({
     />
   );
 }
-
-
-
