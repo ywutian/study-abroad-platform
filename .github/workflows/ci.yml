@@ -1009,7 +1009,8 @@ jobs:
         id: canary-smoke
         run: |
           REGION="${{ secrets.GCP_REGION }}"
-          CANARY_URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.traffic[tag=canary].url)' 2>/dev/null || echo "")
+          SERVICE_JSON=$(gcloud run services describe study-abroad-api --region=$REGION --format=json 2>/dev/null || echo '{}')
+          CANARY_URL=$(printf '%s' "$SERVICE_JSON" | python3 -c "import json,sys; data=json.load(sys.stdin); print(next((item.get('url','') for item in data.get('status',{}).get('traffic',[]) if item.get('tag')=='canary'), ''))")
           if [ -z "$CANARY_URL" ]; then
             echo "::warning::Could not get canary URL, falling back to main URL"
             CANARY_URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.url)')
