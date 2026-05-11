@@ -1,6 +1,7 @@
 // essay-ai DTOs
 export * from './essay-polish.dto';
 export * from './essay-review.dto';
+export * from './essay-suggest-edits.dto';
 export * from './essay-brainstorm.dto';
 export * from './analyze-gallery-essay.dto';
 export * from './rewrite-paragraph.dto';

@@ -1013,13 +1013,59 @@ model Essay {
   linkedPrompt  EssayPrompt? @relation(fields: [essayPromptId], references: [id], onDelete: SetNull)
 
   // AI results
-  aiResults EssayAIResult[]
+  aiResults   EssayAIResult[]
+  revisions   EssayRevision[]
+  suggestions EssaySuggestion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([profileId])
   @@index([essayPromptId])
+}
+
+model EssayRevision {
+  id      String @id @default(cuid())
+  essayId String
+  essay   Essay  @relation(fields: [essayId], references: [id], onDelete: Cascade)
+
+  title     String
+  prompt    String? @db.Text
+  content   String  @db.Text
+  wordCount Int
+  reason    String?
+  source    String  @default("manual") // manual | autosave | ai_apply | restore
+
+  suggestions EssaySuggestion[] @relation("SuggestionSourceRevision")
+
+  createdAt DateTime @default(now())
+
+  @@index([essayId])
+  @@index([createdAt])
+}
+
+model EssaySuggestion {
+  id      String @id @default(cuid())
+  essayId String
+  essay   Essay  @relation(fields: [essayId], references: [id], onDelete: Cascade)
+
+  kind            String  @default("rewrite") // rewrite | shorten | clarity | opening | continuation
+  originalText    String? @db.Text
+  replacementText String  @db.Text
+  reason          String  @db.Text
+  impact          String? @db.Text
+  status          String  @default("PENDING") // PENDING | APPLIED | REJECTED
+  insertMode      String  @default("replace") // replace | append | prepend
+
+  createdFromRevisionId String?
+  createdFromRevision   EssayRevision? @relation("SuggestionSourceRevision", fields: [createdFromRevisionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([essayId])
+  @@index([status])
+  @@index([createdFromRevisionId])
 }
 
 // ============================================

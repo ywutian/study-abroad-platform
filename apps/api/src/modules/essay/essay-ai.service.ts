@@ -31,6 +31,8 @@ import {
   PolishStyle,
   EssayReviewRequestDto,
   EssayReviewResponseDto,
+  EssaySuggestEditsRequestDto,
+  EssaySuggestEditsResponseDto,
   EssayBrainstormRequestDto,
   EssayBrainstormResponseDto,
 } from './dto';
@@ -276,6 +278,130 @@ export class EssayAiService {
       );
       this.logger.error('Essay review failed', error);
       throw new BadRequestException('Failed to review essay');
+    }
+  }
+
+  async suggestEdits(
+    userId: string,
+    dto: EssaySuggestEditsRequestDto,
+    locale = 'zh',
+  ): Promise<EssaySuggestEditsResponseDto> {
+    const essay = await this.prisma.essay.findUnique({
+      where: { id: dto.essayId },
+      include: { profile: { select: { userId: true } } },
+    });
+
+    if (!essay) {
+      throw new NotFoundException('Essay not found');
+    }
+
+    if (essay.profile.userId !== userId) {
+      throw new BadRequestException(
+        'You do not have permission to access this essay',
+      );
+    }
+
+    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_POLISH);
+
+    try {
+      const result = await this.polishEssayLlm(
+        essay.content,
+        dto.style ?? 'concise',
+        locale,
+      );
+      const tokenUsed = this.estimateTokens(essay.content + result.polished);
+
+      const changes = (Array.isArray(result.changes) ? result.changes : [])
+        .filter(
+          (change) =>
+            typeof change.original === 'string' &&
+            typeof change.revised === 'string' &&
+            change.original.trim() &&
+            change.revised.trim() &&
+            change.original.trim() !== change.revised.trim(),
+        )
+        .slice(0, 12);
+
+      const persisted = await this.prisma.$transaction(async (tx) => {
+        const revision = await tx.essayRevision.create({
+          data: {
+            essayId: essay.id,
+            title: essay.title,
+            prompt: essay.prompt,
+            content: essay.content,
+            wordCount:
+              essay.wordCount ??
+              essay.content.split(/\s+/).filter(Boolean).length,
+            reason: dto.focus || 'Before AI edit suggestions',
+            source: 'ai_suggest',
+          },
+        });
+
+        await tx.essayAIResult.create({
+          data: {
+            essayId: essay.id,
+            type: 'suggest_edits',
+            input: essay.content,
+            output: result.polished,
+            changes: changes as any,
+            tokenUsed,
+          },
+        });
+
+        const suggestions = await Promise.all(
+          changes.map((change) =>
+            tx.essaySuggestion.create({
+              data: {
+                essayId: essay.id,
+                kind: dto.style === 'concise' ? 'shorten' : 'rewrite',
+                originalText: change.original,
+                replacementText: change.revised,
+                reason:
+                  change.reason ||
+                  (locale === 'zh' ? '优化表达' : 'Improve expression'),
+                impact:
+                  dto.focus ||
+                  (dto.style === 'concise'
+                    ? locale === 'zh'
+                      ? '更精简，便于控制字数'
+                      : 'More concise and easier to keep within word limit'
+                    : locale === 'zh'
+                      ? '提升表达清晰度'
+                      : 'Improves clarity'),
+                status: 'PENDING',
+                insertMode: 'replace',
+                createdFromRevisionId: revision.id,
+              },
+            }),
+          ),
+        );
+
+        return { revision, suggestions };
+      });
+
+      return {
+        revisionId: persisted.revision.id,
+        suggestions: persisted.suggestions.map((suggestion) => ({
+          id: suggestion.id,
+          kind: suggestion.kind,
+          originalText: suggestion.originalText,
+          replacementText: suggestion.replacementText,
+          reason: suggestion.reason,
+          impact: suggestion.impact,
+          status: suggestion.status,
+          insertMode: suggestion.insertMode,
+        })),
+        tokenUsed,
+      };
+    } catch (error) {
+      await safeRefund(
+        this.caseIncentiveService,
+        userId,
+        PointAction.AI_ESSAY_POLISH,
+        this.logger,
+      );
+      this.logger.error('Essay edit suggestions failed', error);
+      throw new BadRequestException('Failed to suggest essay edits');
     }
   }
 

@@ -5,6 +5,8 @@ import {
   Activity,
   Award,
   Essay,
+  EssayRevision,
+  EssaySuggestion,
   Education,
   Prisma,
   Role,
@@ -18,7 +20,9 @@ import {
   CreateAwardDto,
   UpdateAwardDto,
   CreateEssayDto,
+  CreateEssayRevisionDto,
   UpdateEssayDto,
+  UpdateEssaySuggestionDto,
   CreateEducationDto,
   UpdateEducationDto,
   CreateRecommendationLetterDto,
@@ -339,6 +343,71 @@ export class ProfileService {
 
   async getEssayById(userId: string, essayId: string): Promise<Essay> {
     return this.educationService.getEssayById(userId, essayId);
+  }
+
+  async createEssayRevision(
+    userId: string,
+    essayId: string,
+    data: CreateEssayRevisionDto,
+  ): Promise<EssayRevision> {
+    return this.educationService.createEssayRevision(userId, essayId, data);
+  }
+
+  async getEssayRevisions(
+    userId: string,
+    essayId: string,
+  ): Promise<EssayRevision[]> {
+    return this.educationService.getEssayRevisions(userId, essayId);
+  }
+
+  async restoreEssayRevision(
+    userId: string,
+    essayId: string,
+    revisionId: string,
+  ): Promise<Essay> {
+    return this.educationService.restoreEssayRevision(
+      userId,
+      essayId,
+      revisionId,
+    );
+  }
+
+  async getEssaySuggestions(
+    userId: string,
+    essayId: string,
+    status?: string,
+  ): Promise<EssaySuggestion[]> {
+    return this.educationService.getEssaySuggestions(userId, essayId, status);
+  }
+
+  async updateEssaySuggestion(
+    userId: string,
+    essayId: string,
+    suggestionId: string,
+    data: UpdateEssaySuggestionDto,
+  ): Promise<EssaySuggestion> {
+    return this.educationService.updateEssaySuggestion(
+      userId,
+      essayId,
+      suggestionId,
+      data,
+    );
+  }
+
+  async applyEssaySuggestion(
+    userId: string,
+    essayId: string,
+    suggestionId: string,
+  ): Promise<{
+    essay: Essay;
+    suggestion: EssaySuggestion;
+    revision: EssayRevision;
+  }> {
+    return this.educationService.applyEssaySuggestion(
+      userId,
+      essayId,
+      suggestionId,
+    );
   }
 
   // ============================================

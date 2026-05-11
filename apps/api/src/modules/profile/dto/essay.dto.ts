@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateEssayDto {
@@ -61,4 +61,31 @@ export class UpdateEssayDto {
   @IsString()
   @MaxLength(200)
   essayPromptId?: string;
+}
+
+export class CreateEssayRevisionDto {
+  @ApiPropertyOptional({ description: 'Snapshot reason' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  reason?: string;
+
+  @ApiPropertyOptional({
+    description: 'Snapshot source',
+    enum: ['manual', 'autosave', 'ai_apply', 'restore'],
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['manual', 'autosave', 'ai_apply', 'restore'])
+  source?: string;
+}
+
+export class UpdateEssaySuggestionDto {
+  @ApiProperty({
+    description: 'Suggestion status',
+    enum: ['PENDING', 'APPLIED', 'REJECTED'],
+  })
+  @IsString()
+  @IsIn(['PENDING', 'APPLIED', 'REJECTED'])
+  status: string;
 }

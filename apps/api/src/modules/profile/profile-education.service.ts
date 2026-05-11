@@ -1,12 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
-import { Education, Essay, Prisma } from '@prisma/client';
+import {
+  Education,
+  Essay,
+  EssayRevision,
+  EssaySuggestion,
+  Prisma,
+} from '@prisma/client';
 import {
   CreateEducationDto,
   UpdateEducationDto,
   CreateEssayDto,
+  CreateEssayRevisionDto,
   UpdateEssayDto,
+  UpdateEssaySuggestionDto,
 } from './dto';
 import { ProfileHelpersService } from './profile-helpers.service';
 
@@ -45,6 +53,25 @@ export class ProfileEducationService {
       .replace(/[^a-z0-9\u3400-\u9fff]+/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+  }
+
+  private countWords(content?: string | null): number {
+    return (content ?? '').split(/\s+/).filter(Boolean).length;
+  }
+
+  private revisionPayload(
+    essay: Pick<Essay, 'id' | 'title' | 'prompt' | 'content' | 'wordCount'>,
+    data?: CreateEssayRevisionDto,
+  ) {
+    return {
+      essayId: essay.id,
+      title: essay.title,
+      prompt: essay.prompt,
+      content: essay.content,
+      wordCount: essay.wordCount ?? this.countWords(essay.content),
+      reason: data?.reason,
+      source: data?.source ?? 'manual',
+    };
   }
 
   private highSchoolNameCandidates(raw: string): string[] {
@@ -465,7 +492,7 @@ export class ProfileEducationService {
    */
   async createEssay(userId: string, data: CreateEssayDto): Promise<Essay> {
     const profileId = await this.helpers.getProfileId(userId);
-    const wordCount = data.content.split(/\s+/).filter(Boolean).length;
+    const wordCount = this.countWords(data.content);
 
     const essay = await this.prisma.essay.create({
       data: {
@@ -509,9 +536,8 @@ export class ProfileEducationService {
       'Essay',
     );
 
-    const wordCount = data.content
-      ? data.content.split(/\s+/).filter(Boolean).length
-      : undefined;
+    const wordCount =
+      data.content !== undefined ? this.countWords(data.content) : undefined;
 
     const result = await this.prisma.essay.update({
       where: { id: essayId },
@@ -559,7 +585,24 @@ export class ProfileEducationService {
   async getEssays(userId: string): Promise<Essay[]> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
-      include: { essays: { orderBy: { updatedAt: 'desc' } } },
+      include: {
+        essays: {
+          include: {
+            linkedPrompt: {
+              select: {
+                id: true,
+                type: true,
+                prompt: true,
+                promptZh: true,
+                wordLimit: true,
+                isRequired: true,
+                school: { select: { id: true, name: true, nameZh: true } },
+              },
+            },
+          },
+          orderBy: { updatedAt: 'desc' },
+        },
+      },
     });
 
     return profile?.essays || [];
@@ -578,12 +621,238 @@ export class ProfileEducationService {
     const essay = this.helpers.verifyProfileOwnership(
       await this.prisma.essay.findUnique({
         where: { id: essayId },
-        include: { profile: { select: { userId: true } } },
+        include: {
+          profile: { select: { userId: true } },
+          linkedPrompt: {
+            select: {
+              id: true,
+              type: true,
+              prompt: true,
+              promptZh: true,
+              wordLimit: true,
+              isRequired: true,
+              school: { select: { id: true, name: true, nameZh: true } },
+            },
+          },
+        },
       }),
       userId,
       'Essay',
     );
 
     return essay;
+  }
+
+  async createEssayRevision(
+    userId: string,
+    essayId: string,
+    data: CreateEssayRevisionDto = {},
+  ): Promise<EssayRevision> {
+    const essay = this.helpers.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay',
+    );
+
+    return this.prisma.essayRevision.create({
+      data: this.revisionPayload(essay, data),
+    });
+  }
+
+  async getEssayRevisions(
+    userId: string,
+    essayId: string,
+  ): Promise<EssayRevision[]> {
+    this.helpers.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay',
+    );
+
+    return this.prisma.essayRevision.findMany({
+      where: { essayId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
+
+  async restoreEssayRevision(
+    userId: string,
+    essayId: string,
+    revisionId: string,
+  ): Promise<Essay> {
+    const revision = await this.prisma.essayRevision.findUnique({
+      where: { id: revisionId },
+      include: {
+        essay: { include: { profile: { select: { userId: true } } } },
+      },
+    });
+
+    const essay = this.helpers.verifyProfileOwnership(
+      revision?.essay ?? null,
+      userId,
+      'Essay',
+    );
+
+    if (essay.id !== essayId) {
+      throw new BadRequestException('Revision does not belong to this essay');
+    }
+
+    const restored = await this.prisma.$transaction(async (tx) => {
+      await tx.essayRevision.create({
+        data: this.revisionPayload(essay, {
+          reason: 'Before restoring revision',
+          source: 'restore',
+        }),
+      });
+
+      return tx.essay.update({
+        where: { id: essayId },
+        data: {
+          title: revision!.title,
+          prompt: revision!.prompt,
+          content: revision!.content,
+          wordCount: revision!.wordCount,
+        },
+      });
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+    return restored;
+  }
+
+  async getEssaySuggestions(
+    userId: string,
+    essayId: string,
+    status?: string,
+  ): Promise<EssaySuggestion[]> {
+    this.helpers.verifyProfileOwnership(
+      await this.prisma.essay.findUnique({
+        where: { id: essayId },
+        include: { profile: { select: { userId: true } } },
+      }),
+      userId,
+      'Essay',
+    );
+
+    return this.prisma.essaySuggestion.findMany({
+      where: { essayId, ...(status ? { status } : {}) },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
+
+  async updateEssaySuggestion(
+    userId: string,
+    essayId: string,
+    suggestionId: string,
+    data: UpdateEssaySuggestionDto,
+  ): Promise<EssaySuggestion> {
+    const suggestion = await this.prisma.essaySuggestion.findUnique({
+      where: { id: suggestionId },
+      include: {
+        essay: { include: { profile: { select: { userId: true } } } },
+      },
+    });
+
+    const essay = this.helpers.verifyProfileOwnership(
+      suggestion?.essay ?? null,
+      userId,
+      'Essay',
+    );
+
+    if (essay.id !== essayId) {
+      throw new BadRequestException('Suggestion does not belong to this essay');
+    }
+
+    return this.prisma.essaySuggestion.update({
+      where: { id: suggestionId },
+      data: { status: data.status },
+    });
+  }
+
+  async applyEssaySuggestion(
+    userId: string,
+    essayId: string,
+    suggestionId: string,
+  ): Promise<{
+    essay: Essay;
+    suggestion: EssaySuggestion;
+    revision: EssayRevision;
+  }> {
+    const suggestion = await this.prisma.essaySuggestion.findUnique({
+      where: { id: suggestionId },
+      include: {
+        essay: { include: { profile: { select: { userId: true } } } },
+      },
+    });
+
+    const essay = this.helpers.verifyProfileOwnership(
+      suggestion?.essay ?? null,
+      userId,
+      'Essay',
+    );
+
+    if (essay.id !== essayId) {
+      throw new BadRequestException('Suggestion does not belong to this essay');
+    }
+
+    if (suggestion!.status !== 'PENDING') {
+      throw new BadRequestException('Suggestion has already been handled');
+    }
+
+    const original = suggestion!.originalText ?? '';
+    const replacement = suggestion!.replacementText;
+    let nextContent = essay.content;
+
+    if (suggestion!.insertMode === 'append' || !original.trim()) {
+      nextContent = `${essay.content}${essay.content.trim() ? '\n\n' : ''}${replacement}`;
+    } else if (suggestion!.insertMode === 'prepend') {
+      nextContent = `${replacement}${essay.content.trim() ? '\n\n' : ''}${essay.content}`;
+    } else {
+      if (!essay.content.includes(original)) {
+        throw new BadRequestException(
+          'Original text no longer exists in the current draft',
+        );
+      }
+      nextContent = essay.content.replace(original, replacement);
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const revision = await tx.essayRevision.create({
+        data: this.revisionPayload(essay, {
+          reason: 'Before applying AI suggestion',
+          source: 'ai_apply',
+        }),
+      });
+
+      const updatedEssay = await tx.essay.update({
+        where: { id: essayId },
+        data: {
+          content: nextContent,
+          wordCount: this.countWords(nextContent),
+        },
+      });
+
+      const updatedSuggestion = await tx.essaySuggestion.update({
+        where: { id: suggestionId },
+        data: { status: 'APPLIED' },
+      });
+
+      return {
+        essay: updatedEssay,
+        suggestion: updatedSuggestion,
+        revision,
+      };
+    });
+
+    await this.cacheInvalidation.onProfileChange(userId);
+    return result;
   }
 }

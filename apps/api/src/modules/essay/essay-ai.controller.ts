@@ -22,6 +22,8 @@ import {
   EssayReviewResponseDto,
   EssayBrainstormRequestDto,
   EssayBrainstormResponseDto,
+  EssaySuggestEditsRequestDto,
+  EssaySuggestEditsResponseDto,
   AnalyzeGalleryEssayDto,
   RewriteParagraphDto,
   ContinueWritingDto,
@@ -64,6 +66,18 @@ export class EssayAiController {
     @Body() dto: EssayReviewRequestDto,
   ): Promise<EssayReviewResponseDto> {
     return this.essayAiService.reviewEssay(user.id, dto, user.locale);
+  }
+
+  @Post('suggest-edits')
+  @ApiOperation({
+    summary: 'AI essay edit suggestions - costs polish points',
+  })
+  @ApiResponse({ status: 200, type: EssaySuggestEditsResponseDto })
+  async suggestEdits(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: EssaySuggestEditsRequestDto,
+  ): Promise<EssaySuggestEditsResponseDto> {
+    return this.essayAiService.suggestEdits(user.id, dto, user.locale);
   }
 
   @Post('brainstorm')

@@ -8,6 +8,7 @@ import type {
   RewriteResult,
   ContinueResult,
   OpeningResult,
+  EssaySuggestEditsResult,
 } from '@/types/essay';
 
 export const essayAiKeys = {
@@ -34,6 +35,21 @@ export function useEssayPolish(onSuccess?: (data: PolishResult) => void) {
       style?: 'formal' | 'vivid' | 'concise';
     }) =>
       apiClient.post<PolishResult>(essayAiRoutes.polish(), data, {
+        timeout: AI_TIMEOUTS.AI_REQUEST,
+        directApi: true,
+      }),
+    onSuccess,
+  });
+}
+
+export function useEssaySuggestEdits(onSuccess?: (data: EssaySuggestEditsResult) => void) {
+  return useMutation({
+    mutationFn: (data: {
+      essayId: string;
+      style?: 'formal' | 'vivid' | 'concise';
+      focus?: string;
+    }) =>
+      apiClient.post<EssaySuggestEditsResult>(essayAiRoutes.suggestEdits(), data, {
         timeout: AI_TIMEOUTS.AI_REQUEST,
         directApi: true,
       }),

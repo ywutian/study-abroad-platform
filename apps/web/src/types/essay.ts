@@ -6,6 +6,19 @@ export interface Essay {
   wordCount?: number;
   schoolId?: string;
   essayPromptId?: string;
+  linkedPrompt?: {
+    id: string;
+    type: string;
+    prompt: string;
+    promptZh?: string;
+    wordLimit?: number;
+    isRequired?: boolean;
+    school?: {
+      id: string;
+      name: string;
+      nameZh?: string;
+    };
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,4 +60,39 @@ export interface ContinueResult {
 
 export interface OpeningResult {
   openings: Array<{ text: string; style: string }>;
+}
+
+export type EssaySuggestionStatus = 'PENDING' | 'APPLIED' | 'REJECTED';
+
+export interface EssaySuggestion {
+  id: string;
+  essayId: string;
+  kind: string;
+  originalText?: string | null;
+  replacementText: string;
+  reason: string;
+  impact?: string | null;
+  status: EssaySuggestionStatus;
+  insertMode: 'replace' | 'append' | 'prepend' | string;
+  createdFromRevisionId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EssayRevision {
+  id: string;
+  essayId: string;
+  title: string;
+  prompt?: string | null;
+  content: string;
+  wordCount: number;
+  reason?: string | null;
+  source: string;
+  createdAt: string;
+}
+
+export interface EssaySuggestEditsResult {
+  suggestions: EssaySuggestion[];
+  revisionId: string;
+  tokenUsed: number;
 }
