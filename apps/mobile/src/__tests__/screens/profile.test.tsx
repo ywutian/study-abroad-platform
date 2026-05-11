@@ -101,100 +101,8 @@ describe('ProfileScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the application analysis summary card on profile', async () => {
+  it('renders the application analysis summary card without auto-fetching AI analysis', async () => {
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes('/profiles/me/ai-analysis')) {
-        return Promise.resolve({
-          status: 'fresh',
-          meta: {
-            traceId: 'trace-profile-1',
-            analysisVersion: 'application-analysis-v2',
-            state: 'ready',
-            dataQuality: 'high',
-            targetSchoolCount: 3,
-            focusSchoolCount: 2,
-            schoolsWithPredictions: 2,
-            generatedAt: '2026-04-10T12:00:00.000Z',
-          },
-          profileSummary: {
-            applicantType: 'international',
-            intendedMajors: ['Computer Science'],
-            testStrategy: 'submit',
-            contextFlags: ['needAid'],
-            constraints: ['International aid need remains a hard structural constraint.'],
-          },
-          portfolioSummary: {
-            balance: 'balanced',
-            verdict: 'The current list is ambitious but still defensible.',
-            keyReasons: ['Academic baseline is strong enough for the current list.'],
-            riskBoundaries: ['International aid need narrows the margin.'],
-          },
-          schools: [
-            {
-              schoolId: 'school-1',
-              schoolName: 'Example University',
-              tier: 'REACH',
-              round: 'ED',
-              prediction: {
-                probability: 0.29,
-                confidence: 'medium',
-                updatedAt: '2026-04-10T12:00:00.000Z',
-              },
-              policyCard: {
-                testingPolicy: 'OPTIONAL',
-                intlAidPolicy: 'NEED_AWARE',
-                roundContext: 'ED',
-                policySourceQuality: 'REVIEWED',
-                evidenceIds: ['evidence-1'],
-                sources: [],
-                unknowns: [],
-              },
-              assessment: {
-                summary: 'This remains a high-variance reach school.',
-                whyThisIsHard: ['Acceptance margin remains narrow.'],
-                compensatingStrengths: ['Academic baseline travels well.'],
-                topGaps: ['Leadership signal still needs sharper differentiation.'],
-                nextActions: ['Clarify one flagship activity outcome.'],
-                historicalSignals: ['Historical sample is thin.'],
-                hardStopRisks: ['International aid need reduces flexibility.'],
-              },
-              evidenceIds: ['evidence-1'],
-              unknowns: [],
-            },
-            {
-              schoolId: 'school-2',
-              schoolName: 'Second University',
-              tier: 'TARGET',
-              policyCard: {
-                testingPolicy: 'BLIND',
-                intlAidPolicy: 'UNKNOWN',
-                roundContext: 'RD',
-                policySourceQuality: 'DERIVED',
-                evidenceIds: ['evidence-2'],
-                sources: [],
-                unknowns: [],
-              },
-              assessment: {
-                summary: 'This school is more rangeable with the current file.',
-                whyThisIsHard: ['Still competitive for the chosen major.'],
-                compensatingStrengths: ['Course rigor is aligned.'],
-                topGaps: ['Extracurricular spike is still limited.'],
-                nextActions: ['Improve activity narrative.'],
-                historicalSignals: ['Comparable admits usually had stronger narrative cohesion.'],
-                hardStopRisks: [],
-              },
-              evidenceIds: ['evidence-2'],
-              unknowns: [],
-            },
-          ],
-          actionPlan: {
-            now: ['Lock one clear flagship activity story.'],
-            next90Days: ['Build measurable leadership output.'],
-            beforeSubmission: ['Align essays to the school list.'],
-          },
-          unknowns: [],
-        });
-      }
       if (url.includes('/verification/status')) {
         return Promise.resolve({ emailVerified: true, identityVerified: false });
       }
@@ -217,73 +125,15 @@ describe('ProfileScreen', () => {
     const { findByText } = renderWithProviders(<ProfileScreen />);
 
     expect(await findByText('applicationAnalysis.summaryCard.title')).toBeTruthy();
-    expect(await findByText('The current list is ambitious but still defensible.')).toBeTruthy();
-    expect(await findByText('trace-pr')).toBeTruthy();
+    expect(await findByText('applicationAnalysis.empty.description')).toBeTruthy();
+    expect(apiClient.get).not.toHaveBeenCalledWith(
+      expect.stringContaining('/profiles/me/ai-analysis'),
+      expect.anything()
+    );
   });
 
   it('navigates to /profile/analysis from the summary card', async () => {
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {
-      if (url.includes('/profiles/me/ai-analysis')) {
-        return Promise.resolve({
-          status: 'fresh',
-          meta: {
-            traceId: 'trace-profile-2',
-            analysisVersion: 'application-analysis-v2',
-            state: 'ready',
-            dataQuality: 'high',
-            targetSchoolCount: 1,
-            focusSchoolCount: 1,
-            schoolsWithPredictions: 1,
-            generatedAt: '2026-04-10T12:00:00.000Z',
-          },
-          profileSummary: {
-            applicantType: 'domestic',
-            intendedMajors: ['Economics'],
-            testStrategy: 'testOptional',
-            contextFlags: ['testOptional'],
-            constraints: [],
-          },
-          portfolioSummary: {
-            balance: 'balanced',
-            verdict: 'Summary verdict',
-            keyReasons: ['One school already has usable policy evidence.'],
-            riskBoundaries: [],
-          },
-          schools: [
-            {
-              schoolId: 'school-1',
-              schoolName: 'Example University',
-              tier: 'TARGET',
-              policyCard: {
-                testingPolicy: 'OPTIONAL',
-                intlAidPolicy: 'UNKNOWN',
-                roundContext: 'RD',
-                policySourceQuality: 'REVIEWED',
-                evidenceIds: ['evidence-1'],
-                sources: [],
-                unknowns: [],
-              },
-              assessment: {
-                summary: 'Summary',
-                whyThisIsHard: ['Still selective.'],
-                compensatingStrengths: ['Transcript is stable.'],
-                topGaps: ['Narrative needs more precision.'],
-                nextActions: ['Sharpen school-specific messaging.'],
-                historicalSignals: ['Comparable cases converted with stronger positioning.'],
-                hardStopRisks: [],
-              },
-              evidenceIds: ['evidence-1'],
-              unknowns: [],
-            },
-          ],
-          actionPlan: {
-            now: ['Sharpen one school-specific positioning angle.'],
-            next90Days: [],
-            beforeSubmission: [],
-          },
-          unknowns: [],
-        });
-      }
       if (url.includes('/verification/status')) {
         return Promise.resolve({ emailVerified: true, identityVerified: false });
       }

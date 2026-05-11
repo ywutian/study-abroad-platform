@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } 
 import { router, type Href } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   Button,
@@ -19,9 +19,13 @@ import {
 } from '@/components/ui';
 import { ListItem, ListGroup } from '@/components/ui/ListItem';
 import { CircularProgress } from '@/components/ui/Progress';
-import { profileRoutes, API_ROUTES, verificationRoutes } from '@study-abroad/shared';
+import {
+  profileRoutes,
+  API_ROUTES,
+  verificationRoutes,
+  type AIAnalysisResult,
+} from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { aiService } from '@/lib/api/services/ai';
 import { useAuthStore } from '@/stores';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile } from '@/types';
@@ -30,6 +34,7 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const colors = useColors();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const {
     data: profile,
@@ -58,11 +63,7 @@ export default function ProfileScreen() {
     enabled: isAuthenticated,
   });
 
-  const { data: analysis, isLoading: analysisLoading } = useQuery({
-    queryKey: ['profile-ai-analysis'],
-    queryFn: () => aiService.profileAnalysis(),
-    enabled: isAuthenticated,
-  });
+  const analysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
 
   // Calculate profile completion (memoized to avoid recalculation on every render)
   const calculateCompletion = useMemo(() => {
@@ -368,16 +369,12 @@ export default function ProfileScreen() {
               >
                 {analysis
                   ? t(`applicationAnalysis.freshness.${analysis.status ?? 'fresh'}`)
-                  : t('applicationAnalysis.summaryCard.loading')}
+                  : t('applicationAnalysis.summaryCard.open')}
               </Badge>
             </View>
           </CardHeader>
           <CardContent>
-            {analysisLoading && !analysis ? (
-              <Text style={[styles.analysisBody, { color: colors.foregroundMuted }]}>
-                {t('applicationAnalysis.loading.description')}
-              </Text>
-            ) : analysis ? (
+            {analysis ? (
               <>
                 <View style={styles.analysisBadgeRow}>
                   <Badge variant="outline">

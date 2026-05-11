@@ -40,6 +40,7 @@ interface ProfileAIAnalysisProps {
   isFetching?: boolean;
   onRefresh?: () => void;
   compact?: boolean;
+  autoFetch?: boolean;
 }
 
 export function ProfileAIAnalysis({
@@ -49,9 +50,10 @@ export function ProfileAIAnalysis({
   isFetching: externalFetching,
   onRefresh,
   compact = false,
+  autoFetch = true,
 }: ProfileAIAnalysisProps) {
   const t = useTranslations('applicationAnalysis');
-  const shouldFetch = analysis === undefined;
+  const shouldFetch = analysis === undefined && autoFetch;
   const query = useQuery({
     queryKey: ['profile-ai-analysis'],
     queryFn: () =>

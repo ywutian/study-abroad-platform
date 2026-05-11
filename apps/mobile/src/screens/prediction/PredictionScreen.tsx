@@ -38,6 +38,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useColors, withOpacity, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import {
   API_ROUTES,
+  type AIAnalysisResult,
   detectInternationalStatus,
   formatPercentValue,
   predictionRoutes,
@@ -45,7 +46,6 @@ import {
   resolveContextualBaseline,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
-import { aiService } from '@/lib/api/services/ai';
 import { useAuthStore } from '@/stores';
 
 interface PredictionResultItem {
@@ -230,11 +230,7 @@ export default function PredictionScreen() {
     enabled: isAuthenticated,
   });
 
-  const { data: applicationAnalysis } = useQuery({
-    queryKey: ['profile-ai-analysis'],
-    queryFn: () => aiService.profileAnalysis(),
-    enabled: isAuthenticated,
-  });
+  const applicationAnalysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
 
   const intlContext = detectInternationalStatus(profile ?? {});
   const predictions = mapDashboardToPredictions(dashboardData, intlContext.isInternational);

@@ -38,7 +38,7 @@ export function StepAIRecommendations({
           </CardTitle>
           <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
             <Brain className="h-3 w-3 mr-1" />
-            {t('schoolAgent')}
+            {t('recommendationSystem')}
           </Badge>
         </div>
         <CardDescription className="flex items-center gap-1">
@@ -179,7 +179,7 @@ function RecommendationResults({
       <div className="flex items-center justify-between pt-2 border-t">
         <span className="text-xs text-muted-foreground flex items-center gap-1">
           <Brain className="h-3 w-3" />
-          {t('poweredByAI')}
+          {t('poweredByRecommendations')}
         </span>
         <Button
           variant="ghost"

@@ -271,7 +271,7 @@ describe('PredictionScreen', () => {
     expect(getByText('prediction.subtitle')).toBeTruthy();
   });
 
-  it('shows the application-analysis CTA card and opens /profile/analysis', async () => {
+  it('shows the application-analysis CTA card without auto-fetching analysis and opens /profile/analysis', async () => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
       user: { id: '1', email: 'test@example.com', role: 'USER' },
       isAuthenticated: true,
@@ -284,87 +284,24 @@ describe('PredictionScreen', () => {
       if (url.includes('/profiles/me/completeness')) {
         return Promise.resolve({ score: 75 });
       }
-      if (url.includes('/profiles/me/ai-analysis')) {
-        return Promise.resolve({
-          status: 'fresh',
-          meta: {
-            traceId: 'trace-prediction-1',
-            analysisVersion: 'application-analysis-v2',
-            state: 'ready',
-            dataQuality: 'high',
-            targetSchoolCount: 2,
-            focusSchoolCount: 1,
-            schoolsWithPredictions: 1,
-            generatedAt: '2026-04-10T12:00:00.000Z',
-          },
-          profileSummary: {
-            applicantType: 'international',
-            intendedMajors: ['Computer Science'],
-            testStrategy: 'submit',
-            contextFlags: ['needAid'],
-            constraints: ['International aid need remains the hardest structural constraint.'],
-          },
-          portfolioSummary: {
-            balance: 'balanced',
-            verdict: 'The current list is ambitious but still defensible.',
-            keyReasons: ['One focus school already has usable prediction coverage.'],
-            riskBoundaries: ['International aid need narrows the margin.'],
-          },
-          schools: [
-            {
-              schoolId: 'school-1',
-              schoolName: 'Example University',
-              tier: 'REACH',
-              round: 'ED',
-              prediction: {
-                probability: 0.28,
-                confidence: 'medium',
-                updatedAt: '2026-04-10T12:00:00.000Z',
-              },
-              policyCard: {
-                testingPolicy: 'OPTIONAL',
-                intlAidPolicy: 'NEED_AWARE',
-                roundContext: 'ED',
-                policySourceQuality: 'REVIEWED',
-                evidenceIds: ['evidence-1'],
-                sources: [],
-                unknowns: [],
-              },
-              assessment: {
-                summary: 'This remains a high-variance reach school.',
-                whyThisIsHard: ['This remains a reach school even with a strong transcript.'],
-                compensatingStrengths: ['Academic baseline clears the first screen.'],
-                topGaps: ['Leadership signal still needs sharper differentiation.'],
-                nextActions: ['Turn one flagship activity into a measurable story.'],
-                historicalSignals: ['Historical sample is thin, so the case signal is limited.'],
-                hardStopRisks: ['International aid need narrows the margin.'],
-              },
-              evidenceIds: ['evidence-1'],
-              unknowns: [],
-            },
-          ],
-          actionPlan: {
-            now: ['Tighten the flagship activity narrative.'],
-            next90Days: ['Build one measurable leadership deliverable.'],
-            beforeSubmission: ['Align essays to school-specific constraints.'],
-          },
-          unknowns: [],
-        });
-      }
       if (url.includes('/profiles/me')) {
         return Promise.resolve({});
       }
       return Promise.resolve({});
     });
 
-    const { getByText } = renderWithProviders(<PredictionScreen />);
+    const { getAllByText, getByText } = renderWithProviders(<PredictionScreen />);
 
     await waitFor(() => {
       expect(getByText('applicationAnalysis.title')).toBeTruthy();
-      expect(getByText('The current list is ambitious but still defensible.')).toBeTruthy();
+      expect(getByText('prediction.analysisCard.description')).toBeTruthy();
     });
+    expect(apiClient.get).not.toHaveBeenCalledWith(
+      expect.stringContaining('/profiles/me/ai-analysis'),
+      expect.anything()
+    );
 
-    fireEvent.press(getByText('prediction.analysisCard.open'));
+    fireEvent.press(getAllByText('prediction.analysisCard.open')[0]);
 
     expect(router.push).toHaveBeenCalledWith('/profile/analysis');
   });

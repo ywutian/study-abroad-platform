@@ -2,10 +2,9 @@ import type React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { profileRoutes, schoolListRoutes } from '@study-abroad/shared';
+import { profileRoutes, recommendationRoutes, schoolListRoutes } from '@study-abroad/shared';
 import UncommonAppPage from './page';
 import { apiClient } from '@/lib/api';
-import { callAIAgent } from './_components/utils';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
@@ -37,7 +36,9 @@ vi.mock('./_components/step-school-lists', () => ({
 }));
 
 vi.mock('./_components/step-ai-recommendations', () => ({
-  StepAIRecommendations: () => <div>ai-recommendations</div>,
+  StepAIRecommendations: ({ onGetRecommendations }: { onGetRecommendations: () => void }) => (
+    <button onClick={onGetRecommendations}>generate-recommendations</button>
+  ),
 }));
 
 vi.mock('./_components/step-results', () => ({
@@ -49,17 +50,9 @@ vi.mock('./_components/step-results', () => ({
 vi.mock('@/lib/api', () => ({
   apiClient: {
     get: vi.fn(),
+    post: vi.fn(),
     delete: vi.fn(),
   },
-}));
-
-vi.mock('./_components/utils', () => ({
-  callAIAgent: vi.fn(),
-  parseSchoolRecommendations: vi.fn(() => ({
-    reach: [],
-    target: [],
-    safety: [],
-  })),
 }));
 
 vi.mock('sonner', () => ({
@@ -76,7 +69,7 @@ describe('UncommonAppPage', () => {
       if (path === schoolListRoutes.list()) {
         return Promise.resolve([]);
       }
-      if (path === '/profiles/me') {
+      if (path === profileRoutes.me()) {
         return Promise.resolve({
           id: 'profile-1',
           testScores: [],
@@ -104,8 +97,35 @@ describe('UncommonAppPage', () => {
           },
         });
       }
+      if (path === recommendationRoutes.preflight()) {
+        return Promise.resolve({
+          canGenerate: true,
+          points: 100,
+          profileComplete: true,
+          missingFields: [],
+        });
+      }
+      if (path === recommendationRoutes.history()) {
+        return Promise.resolve([]);
+      }
 
       throw new Error(`Unexpected GET path: ${path}`);
+    });
+    vi.mocked(apiClient.post).mockResolvedValue({
+      id: 'rec-1',
+      summary: 'structured recommendations',
+      recommendations: [
+        {
+          schoolName: 'Example College',
+          tier: 'match',
+          estimatedProbability: 0.42,
+          fitScore: 84,
+          reasons: ['Balanced fit'],
+        },
+      ],
+      analysis: { strengths: [], weaknesses: [], improvementTips: [] },
+      tokenUsed: 10,
+      createdAt: '2026-05-10T00:00:00.000Z',
     });
     vi.mocked(apiClient.delete).mockResolvedValue({});
   });
@@ -128,8 +148,13 @@ describe('UncommonAppPage', () => {
     return { queryClient, invalidateSpy };
   }
 
-  it('uses the canonical profile analysis endpoint instead of the profile agent flow', async () => {
+  it('uses the canonical profile analysis endpoint only after explicit strategy generation', async () => {
     renderPage();
+
+    await waitFor(() => {
+      expect(apiClient.get).toHaveBeenCalledWith(schoolListRoutes.list());
+    });
+    expect(apiClient.get).not.toHaveBeenCalledWith(profileRoutes.aiAnalysis(), expect.anything());
 
     fireEvent.click(screen.getByText('grade-profile'));
 
@@ -137,15 +162,31 @@ describe('UncommonAppPage', () => {
       expect(apiClient.get).toHaveBeenCalledWith(
         profileRoutes.aiAnalysis(),
         expect.objectContaining({
-          timeout: 45000,
+          timeout: expect.any(Number),
           directApi: true,
         })
       );
     });
-    expect(callAIAgent).not.toHaveBeenCalled();
 
     await waitFor(() => {
       expect(screen.getByText('canonical-analysis')).toBeInTheDocument();
+    });
+  });
+
+  it('uses the structured recommendation endpoint instead of the chat agent parser', async () => {
+    renderPage();
+
+    fireEvent.click(screen.getByText('generate-recommendations'));
+
+    await waitFor(() => {
+      expect(apiClient.post).toHaveBeenCalledWith(
+        recommendationRoutes.generate(),
+        expect.objectContaining({ schoolCount: 8 }),
+        expect.objectContaining({
+          timeout: expect.any(Number),
+          directApi: true,
+        })
+      );
     });
   });
 
