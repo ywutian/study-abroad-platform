@@ -10,8 +10,8 @@
     "clean": "rimraf dist"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.40",
-    "@types/node": "^20.19.39",
+    "@types/chrome": "^0.1.42",
+    "@types/node": "^20.19.40",
     "css-loader": "^6.10.0",
     "mini-css-extract-plugin": "^2.10.2",
     "rimraf": "^5.0.5",
