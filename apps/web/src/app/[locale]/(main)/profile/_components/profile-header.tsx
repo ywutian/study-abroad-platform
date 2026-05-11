@@ -87,7 +87,6 @@ export function ProfileHeader({
       icon: Sparkles,
     },
   ];
-  const completedSignals = readinessSignals.filter((item) => item.complete).length;
   const recommendedFixes = readinessSignals.filter((item) => !item.complete).slice(0, 3);
   const primaryActions = [
     {
@@ -127,9 +126,6 @@ export function ProfileHeader({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">{t('profile.readiness.title')}</Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {completedSignals}/{readinessSignals.length} {t('profile.readiness.signals')}
-                  </span>
                 </div>
                 <div className="mt-4 flex items-end justify-between gap-4">
                   <div>
@@ -244,8 +240,8 @@ export function ProfileHeader({
         </Card>
       </div>
 
-      {/* Application strategy entry point */}
-      {completeness >= 30 && (
+      {/* Application strategy entry point — only when profile has enough substance to act on */}
+      {completeness >= 60 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -256,8 +252,8 @@ export function ProfileHeader({
         </motion.div>
       )}
 
-      {/* Secondary workflow shortcuts */}
-      {completeness >= 30 && (
+      {/* Secondary workflow shortcuts — gated to avoid overwhelming first-time users */}
+      {completeness >= 60 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -292,8 +288,8 @@ export function ProfileHeader({
         </motion.div>
       )}
 
-      {/* Points & Verification cards */}
-      {profile && (
+      {/* Points & Verification — secondary signals, also gated to keep first-fold focused on profile editing */}
+      {profile && completeness >= 60 && (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -322,7 +318,7 @@ export function ProfileHeader({
           <Card className="overflow-hidden border-primary/30 bg-primary/5">
             <CardContent className="p-5">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg">
                   <Zap className="h-6 w-6" />
                 </div>
                 <div className="flex-1">

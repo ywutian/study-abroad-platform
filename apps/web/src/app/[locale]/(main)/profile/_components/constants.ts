@@ -73,17 +73,18 @@ export const COMMON_COUNTRIES = [
   { value: 'OTHER', labelKey: 'profile.demographics.countries.OTHER' },
 ];
 
-/** Static active-icon class map per tab — avoids dynamic Tailwind class interpolation. */
+/** Static active-icon class map per tab — avoids dynamic Tailwind class interpolation.
+ *  Uses semantic `-foreground` tokens so colors stay correct in dark mode. */
 export const TAB_ICON_ACTIVE_CLASSES: Record<string, string> = {
-  basic: 'bg-primary text-white shadow-md',
-  demographics: 'bg-teal-500 dark:bg-teal-600 text-white shadow-md',
-  scores: 'bg-primary text-white shadow-md',
-  gpa: 'bg-success text-white shadow-md',
-  activities: 'bg-warning text-white shadow-md',
-  awards: 'bg-amber-500 dark:bg-amber-600 text-white shadow-md',
-  targets: 'bg-destructive text-white shadow-md',
-  recLetters: 'bg-violet-500 dark:bg-violet-600 text-white shadow-md',
-  privacy: 'bg-muted-foreground text-white shadow-md',
+  basic: 'bg-primary text-primary-foreground shadow-md',
+  demographics: 'bg-teal-500 text-white dark:bg-teal-600 dark:text-white shadow-md',
+  scores: 'bg-primary text-primary-foreground shadow-md',
+  gpa: 'bg-success text-success-foreground shadow-md',
+  activities: 'bg-warning text-warning-foreground shadow-md',
+  awards: 'bg-amber-500 text-white dark:bg-amber-600 dark:text-white shadow-md',
+  targets: 'bg-destructive text-destructive-foreground shadow-md',
+  recLetters: 'bg-violet-500 text-white dark:bg-violet-600 dark:text-white shadow-md',
+  privacy: 'bg-muted-foreground text-background shadow-md',
 };
 
 export const TAB_CONFIG: TabConfig[] = [

@@ -185,8 +185,8 @@ describe('DashboardService', () => {
       expect(result.profile.completeness).toBe(0);
       expect(result.pendingTasks.profileGaps).toEqual([
         'basicInfo',
-        'testScores',
         'gpa',
+        'testScores',
         'activities',
         'awards',
         'targetSchools',
@@ -214,8 +214,8 @@ describe('DashboardService', () => {
 
       const result = await service.getDashboardSummary(userId);
 
-      // basicInfo = 20 (targetMajor present), testScores = 25 => 45
-      expect(result.profile.completeness).toBe(45);
+      // basicInfo (20) + testScores (15) = 35
+      expect(result.profile.completeness).toBe(35);
       expect(result.pendingTasks.profileGaps).toEqual(
         expect.arrayContaining([
           'gpa',
@@ -225,6 +225,29 @@ describe('DashboardService', () => {
         ]),
       );
       expect(result.pendingTasks.profileGaps).not.toContain('basicInfo');
+      expect(result.pendingTasks.profileGaps).not.toContain('testScores');
+    });
+
+    it('should redistribute testScores weight to gpa when applyingTestOptional is true', async () => {
+      setupDefaultMocks();
+      // Test-optional applicant with GPA but no test scores
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({
+        targetMajor: 'CS',
+        grade: '12',
+        gpa: 3.9,
+        applyingTestOptional: true,
+        testScores: [],
+        activities: [{ id: 'a1' }],
+        awards: [{ id: 'aw-1' }],
+        essays: [],
+      });
+      (prisma.schoolListItem.count as jest.Mock).mockResolvedValue(5);
+
+      const result = await service.getDashboardSummary(userId);
+
+      // basicInfo (20) + gpa (35, redistributed) + activities (20) + awards (10) + targetSchools (10) = 95
+      // testScores is not counted (weight=0) and not in gaps
+      expect(result.profile.completeness).toBe(95);
       expect(result.pendingTasks.profileGaps).not.toContain('testScores');
     });
 
@@ -255,8 +278,9 @@ describe('DashboardService', () => {
 
       const result = await service.getDashboardSummary(userId);
 
-      // basicInfo: grade present => 20, testScores: [] => gap, gpa: 3.5 => 15, activities: [] => gap, awards: present => 10, targetSchools: 2 => 10
-      expect(result.profile.completeness).toBe(55);
+      // basicInfo (20) + gpa (25) + awards (10) + targetSchools (10) = 65
+      // testScores and activities missing → gaps
+      expect(result.profile.completeness).toBe(65);
       expect(result.pendingTasks.profileGaps).toEqual([
         'testScores',
         'activities',

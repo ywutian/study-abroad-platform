@@ -1364,6 +1364,7 @@
   "profile": {
     "title": "我的档案",
     "description": "创建和管理您的申请档案",
+    "tabErrorsAria": "{count} 项待修正",
     "completeness": "档案完整度",
     "completenessHint": "完善档案可以获得更准确的预测",
     "completenessComplete": "档案已完善",
@@ -1461,7 +1462,18 @@
       "avgAid": "平均助学金",
       "netPrice": "净费用",
       "needMet": "需求满足率",
-      "bindingConflict": "你已有一个{round}申请到{school}，只允许一所绑定轮次学校。",
+      "bindingConflict": "你已用 {round} 轮次申请「{school}」。绑定/限制类轮次只能选一所。",
+      "roundGlossaryTitle": "申请轮次说明",
+      "roundLegend": {
+        "ED": "Early Decision（提前决定）— 绑定。若被录取必须入读，只能申请一所 ED。",
+        "ED2": "Early Decision II — 较晚的绑定轮次，规则与 ED 相同。",
+        "EA": "Early Action（提前行动）— 非绑定。提前申请、晚些决定，多数可同时申请其他 EA。",
+        "REA": "Restrictive Early Action — 非绑定，但限制不能再申请其他私立学校的提前轮次。",
+        "SCEA": "Single-Choice Early Action — 非绑定，但只能提前申请这一所学校。",
+        "RD": "Regular Decision（常规决定）— 标准非绑定轮次。",
+        "ROLLING": "滚动录取 — 学校按申请顺序滚动审理。"
+      },
+      "roundShowLegend": "ED / EA / REA 分别是什么？",
       "roundsNoDeadlineData": "该校暂未收录轮次信息，已显示常见轮次。建议前往学校官网确认。",
       "essayRequirements": "文书要求",
       "noEssayPrompts": "暂无该校文书题目",
@@ -1656,7 +1668,13 @@
       "edit": "编辑",
       "delete": "删除",
       "addEducation": "添加教育经历",
-      "writeEssay": "撰写文书"
+      "writeEssay": "撰写文书",
+      "editScore": "编辑成绩",
+      "deleteScore": "删除成绩",
+      "editActivity": "编辑活动",
+      "deleteActivity": "删除活动",
+      "editAward": "编辑奖项",
+      "deleteAward": "删除奖项"
     },
     "aiSort": "AI 排序",
     "aiSorting": "排序中...",

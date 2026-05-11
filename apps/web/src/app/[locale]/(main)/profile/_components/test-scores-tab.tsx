@@ -60,12 +60,13 @@ export function TestScoresTab({
                       <p className="text-2xl font-bold">{score.score}</p>
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => onEditScore(score)}
+                      aria-label={t('profile.actions.editScore')}
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -74,6 +75,7 @@ export function TestScoresTab({
                       size="icon"
                       className="h-8 w-8 text-destructive"
                       onClick={() => onDeleteScore(score.id)}
+                      aria-label={t('profile.actions.deleteScore')}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

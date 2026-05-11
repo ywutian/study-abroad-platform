@@ -82,12 +82,13 @@ export function AwardsTab({ awards, onAddAward, onEditAward, onDeleteAward }: Aw
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => onEditAward(award)}
+                      aria-label={t('profile.actions.editAward')}
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -96,6 +97,7 @@ export function AwardsTab({ awards, onAddAward, onEditAward, onDeleteAward }: Aw
                       size="icon"
                       className="h-8 w-8 text-destructive"
                       onClick={() => onDeleteAward(award.id)}
+                      aria-label={t('profile.actions.deleteAward')}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

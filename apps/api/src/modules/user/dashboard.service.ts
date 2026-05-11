@@ -345,8 +345,8 @@ export class DashboardService {
         completeness: 0,
         profileGaps: [
           'basicInfo',
-          'testScores',
           'gpa',
+          'testScores',
           'activities',
           'awards',
           'targetSchools',
@@ -356,13 +356,18 @@ export class DashboardService {
 
     let score = 0;
     const gaps: string[] = [];
+
+    // Industry priority: GPA + rigor first, tests second.
+    // When applyingTestOptional is true, the testScores weight is redistributed to GPA
+    // so test-optional applicants are not penalized for missing standardized scores.
+    const isTestOptional = profile.applyingTestOptional === true;
     const weights = {
-      basicInfo: 20, // 基本信息
-      testScores: 25, // 标化成绩
-      gpa: 15, // GPA
-      activities: 20, // 活动
-      awards: 10, // 奖项
-      targetSchools: 10, // 目标学校
+      basicInfo: 20,
+      gpa: isTestOptional ? 35 : 25, // GPA is the #1 academic signal
+      testScores: isTestOptional ? 0 : 15,
+      activities: 20,
+      awards: 10,
+      targetSchools: 10,
     };
 
     // 基本信息
@@ -372,18 +377,20 @@ export class DashboardService {
       gaps.push('basicInfo');
     }
 
-    // 标化成绩
-    if (profile.testScores?.length > 0) {
-      score += weights.testScores;
-    } else {
-      gaps.push('testScores');
-    }
-
     // GPA
     if (profile.gpa) {
       score += weights.gpa;
     } else {
       gaps.push('gpa');
+    }
+
+    // 标化成绩 — skipped when test-optional (weight is 0)
+    if (!isTestOptional) {
+      if (profile.testScores?.length > 0) {
+        score += weights.testScores;
+      } else {
+        gaps.push('testScores');
+      }
     }
 
     // 活动

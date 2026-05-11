@@ -1,69 +1,83 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageContainer } from '@/components/layout';
 
 /**
- * Profile 路由骨架屏
- * 模拟真实页面布局：进度条 + Tab 导航 + 表单区域
+ * Profile route skeleton — mirrors the actual layout (header + readiness cards + 2-column body)
+ * to avoid layout shift on hydration.
  */
 export default function ProfileLoading() {
   return (
-    <div className="container mx-auto max-w-5xl px-4 animate-in fade-in duration-300">
-      {/* 页面标题 + 操作按钮 */}
-      <div className="mb-6 flex items-center justify-between">
+    <PageContainer maxWidth="5xl">
+      {/* PageHeader: title + actions */}
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div className="space-y-2">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-5 w-64" />
         </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-9 w-24 rounded-md" />
-          <Skeleton className="h-9 w-24 rounded-md" />
+        <div className="hidden gap-2 sm:flex">
+          <Skeleton className="h-9 w-32 rounded-md" />
+          <Skeleton className="h-9 w-32 rounded-md" />
         </div>
       </div>
 
-      {/* 进度条 */}
-      <div className="mb-6 rounded-xl border bg-card p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-4 w-12" />
-        </div>
-        <Skeleton className="h-2 w-full rounded-full" />
-      </div>
-
-      {/* Tab 导航 */}
-      <div className="mb-6 flex gap-1 overflow-x-auto pb-1">
-        {Array.from({ length: 7 }).map((_, i) => (
-          <Skeleton key={i} className="h-9 w-20 rounded-md shrink-0" />
-        ))}
-      </div>
-
-      {/* 表单内容区域 */}
-      <div className="rounded-xl border bg-card p-6 space-y-6">
-        {/* 表单标题 */}
-        <div className="space-y-1">
+      {/* Readiness + Recommended fixes cards */}
+      <div className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div className="rounded-xl border bg-card p-5 space-y-4">
           <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-4 w-56" />
+          <div className="flex items-end justify-between">
+            <Skeleton className="h-10 w-20" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </div>
+          <Skeleton className="h-2 w-full rounded-full" />
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
+          </div>
         </div>
-
-        {/* 表单字段 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-10 w-full rounded-md" />
-            </div>
-          ))}
-        </div>
-
-        {/* 更多表单字段 */}
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-24 w-full rounded-md" />
-        </div>
-
-        {/* 保存按钮 */}
-        <div className="flex justify-end">
-          <Skeleton className="h-10 w-28 rounded-md" />
+        <div className="rounded-xl border bg-card p-5 space-y-4">
+          <Skeleton className="h-4 w-32" />
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-md" />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* 2-column body: tab nav + tab content */}
+      <div className="flex flex-col gap-6 lg:flex-row">
+        {/* Left: vertical tab nav (desktop) or select (mobile) */}
+        <div className="lg:w-64 shrink-0">
+          <div className="space-y-1">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
+
+        {/* Right: tab content card */}
+        <div className="flex-1 min-w-0">
+          <div className="rounded-xl border bg-card p-6 space-y-6">
+            <div className="space-y-1.5">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-56" />
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-11 w-full rounded-md" />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-11 w-full rounded-md" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageContainer>
   );
 }
