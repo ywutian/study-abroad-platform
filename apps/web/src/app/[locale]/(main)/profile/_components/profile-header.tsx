@@ -2,12 +2,16 @@
 
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
+import type { AIAnalysisResult } from '@study-abroad/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
+  ArrowRight,
   Award,
+  Brain,
   CheckCircle2,
   Sparkles,
   Zap,
@@ -20,15 +24,9 @@ import {
   ListChecks,
   School,
 } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { Link } from '@/lib/i18n/navigation';
-import { VerificationStatusCard, PointsOverview, AIErrorBoundary } from '@/components/features';
+import { VerificationStatusCard, PointsOverview } from '@/components/features';
 import type { ProfileData } from './types';
-
-const ProfileAIAnalysis = dynamic(
-  () => import('@/components/features').then((m) => ({ default: m.ProfileAIAnalysis })),
-  { ssr: false }
-);
 
 interface ProfileHeaderProps {
   completeness: number;
@@ -44,6 +42,9 @@ export function ProfileHeader({
   onSetActiveTab,
 }: ProfileHeaderProps) {
   const t = useTranslations();
+  const queryClient = useQueryClient();
+  const cachedAnalysis =
+    queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']) ?? null;
   const readinessSignals = [
     {
       id: 'gpa',
@@ -96,6 +97,12 @@ export function ProfileHeader({
       label: recommendedFixes[0]
         ? t('profile.readiness.fixSignal', { signal: recommendedFixes[0].label })
         : t('profile.readiness.reviewTargets'),
+    },
+    {
+      type: 'link' as const,
+      value: '/uncommon-app',
+      icon: Brain,
+      label: t('profile.nextSteps.applicationHub'),
     },
     {
       type: 'link' as const,
@@ -206,7 +213,7 @@ export function ProfileHeader({
 
             <div>
               <h3 className="text-sm font-semibold">{t('profile.readiness.primaryActions')}</h3>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
                 {primaryActions.map((item) => {
                   const Icon = item.icon;
                   const content = (
@@ -237,7 +244,7 @@ export function ProfileHeader({
         </Card>
       </div>
 
-      {/* AI Analysis */}
+      {/* Application strategy entry point */}
       {completeness >= 30 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -245,9 +252,7 @@ export function ProfileHeader({
           transition={{ delay: 0.25 }}
           className="mt-6"
         >
-          <AIErrorBoundary feature="profile-analysis">
-            <ProfileAIAnalysis compact />
-          </AIErrorBoundary>
+          <ApplicationStrategyEntryCard analysis={cachedAnalysis} />
         </motion.div>
       )}
 
@@ -351,5 +356,58 @@ export function ProfileHeader({
         </motion.div>
       )}
     </div>
+  );
+}
+
+function ApplicationStrategyEntryCard({ analysis }: { analysis: AIAnalysisResult | null }) {
+  const t = useTranslations();
+  const nextActions = analysis?.nextActions?.length
+    ? analysis.nextActions
+    : (analysis?.actionPlan?.now ?? []);
+
+  return (
+    <Card className="border-primary/20">
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] bg-primary/10 text-primary">
+              <Brain className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-semibold">
+                  {t('profile.applicationStrategy.title')}
+                </h3>
+                <Badge variant={analysis ? 'secondary' : 'outline'}>
+                  {analysis
+                    ? t(`applicationAnalysis.freshness.${analysis.status ?? 'fresh'}`)
+                    : t('profile.applicationStrategy.manualBadge')}
+                </Badge>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {analysis?.overallVerdict ??
+                  analysis?.portfolioSummary?.verdict ??
+                  t('profile.applicationStrategy.description')}
+              </p>
+              {nextActions.length ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {nextActions.slice(0, 2).map((action, index) => (
+                    <Badge key={`${action}-${index}`} variant="outline" className="max-w-full">
+                      <span className="truncate">{action}</span>
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <Button asChild className="shrink-0">
+            <Link href="/uncommon-app">
+              {t('profile.applicationStrategy.open')}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

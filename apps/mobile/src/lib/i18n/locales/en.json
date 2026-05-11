@@ -1761,6 +1761,28 @@
   "uncommonApp": {
     "title": "Uncommon App",
     "subtitle": "AI-powered application assistant",
+    "dashboard": {
+      "eyebrow": "Application command center",
+      "title": "Today's application loop",
+      "description": "Keep profile readiness, school list, predictions, essays, and school-aware strategy in one workspace.",
+      "manual": "Manual",
+      "profile": "Profile",
+      "schools": "Schools",
+      "essays": "Essays",
+      "recommendations": "Recs",
+      "generateAnalysis": "Generate strategy",
+      "analyzing": "Analyzing...",
+      "generateRecommendations": "Generate recs",
+      "recommendationBlocked": "Your profile or points are not ready; open Recommendations to fix it.",
+      "analysisGenerated": "Application strategy generated",
+      "analysisFailed": "Failed to generate application strategy. Please try again.",
+      "tasks": {
+        "profile": "Complete GPA, scores, activities, and awards",
+        "schools": "Build reach, match, and safety coverage",
+        "essays": "Move school prompts into essay workflow",
+        "strategy": "Open school-aware strategy analysis"
+      }
+    },
     "quota": {
       "title": "AI Usage",
       "used": "{{used}} / {{total}} requests",

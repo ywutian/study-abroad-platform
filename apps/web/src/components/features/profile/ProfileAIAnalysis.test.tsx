@@ -2,9 +2,20 @@ import type React from 'react';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AIAnalysisResult } from '@study-abroad/shared';
 import { ProfileAIAnalysis } from './ProfileAIAnalysis';
+import { apiClient } from '@/lib/api';
+
+vi.mock('@/lib/api', () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+  STALE_TIME: {
+    MODERATE: 5 * 60 * 1000,
+  },
+}));
 
 const messages = {
   applicationAnalysis: {
@@ -290,6 +301,10 @@ const baseAnalysis: AIAnalysisResult = {
 };
 
 describe('ProfileAIAnalysis', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders the new v2 analysis contract', () => {
     renderAnalysis(baseAnalysis);
 
@@ -325,5 +340,20 @@ describe('ProfileAIAnalysis', () => {
       screen.getByText('School-level analysis is temporarily unavailable.')
     ).toBeInTheDocument();
     expect(screen.getByText('testingPolicy')).toBeInTheDocument();
+  });
+
+  it('does not fetch analysis when autoFetch is disabled', () => {
+    const queryClient = new QueryClient();
+
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <QueryClientProvider client={queryClient}>
+          <ProfileAIAnalysis autoFetch={false} />
+        </QueryClientProvider>
+      </NextIntlClientProvider>
+    );
+
+    expect(screen.getByText('Empty')).toBeInTheDocument();
+    expect(apiClient.get).not.toHaveBeenCalled();
   });
 });

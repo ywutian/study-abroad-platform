@@ -1761,6 +1761,28 @@
   "uncommonApp": {
     "title": "Uncommon App",
     "subtitle": "AI 智能申请助手",
+    "dashboard": {
+      "eyebrow": "申请总控台",
+      "title": "今天的申请闭环",
+      "description": "把档案、选校、预测、文书和学校级策略放在一个工作台里。",
+      "manual": "手动生成",
+      "profile": "档案",
+      "schools": "学校",
+      "essays": "文书题",
+      "recommendations": "推荐",
+      "generateAnalysis": "生成策略",
+      "analyzing": "分析中...",
+      "generateRecommendations": "生成推荐",
+      "recommendationBlocked": "档案或积分暂不满足推荐条件，请先进入推荐页处理。",
+      "analysisGenerated": "申请策略已生成",
+      "analysisFailed": "申请策略生成失败，请重试",
+      "tasks": {
+        "profile": "补齐 GPA、成绩、活动和奖项",
+        "schools": "建立冲刺、匹配、保底学校组合",
+        "essays": "进入文书工作流处理学校题目",
+        "strategy": "打开学校级策略分析"
+      }
+    },
     "quota": {
       "title": "AI 用量",
       "used": "{{used}} / {{total}} 次请求",

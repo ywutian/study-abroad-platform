@@ -14,13 +14,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { Stack, router, type Href } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Markdown from 'react-native-markdown-display';
 
 import { AnimatedCard, Badge, Loading, ProgressBar } from '@/components/ui';
 import { CardContent } from '@/components/ui/Card';
-import { API_ROUTES } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  profileRoutes,
+  recommendationRoutes,
+  schoolListRoutes,
+  type AIAnalysisResult,
+  type RecommendationPreflight,
+  type RecommendationResult,
+} from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
@@ -63,6 +71,28 @@ interface QuickAction {
   prompt: string;
 }
 
+interface SchoolListItem {
+  id: string;
+  tier: 'REACH' | 'TARGET' | 'SAFETY';
+  essayPromptCount?: number;
+}
+
+interface ProfileSummary {
+  gpa?: number | null;
+  testScores?: unknown[];
+  activities?: unknown[];
+  awards?: unknown[];
+}
+
+interface PredictionDashboard {
+  totalSchools?: number;
+  predictions?: Array<{
+    schoolId: string;
+    tier: 'reach' | 'match' | 'safety' | 'unavailable';
+    probability: number | null;
+  }>;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -99,6 +129,55 @@ export default function UncommonAppScreen() {
     enabled: isAuthenticated,
   });
 
+  const { data: profile } = useQuery<ProfileSummary>({
+    queryKey: ['profile', 'me'],
+    queryFn: () => apiClient.get(profileRoutes.me()),
+    enabled: isAuthenticated,
+  });
+
+  const { data: schoolList } = useQuery<SchoolListItem[]>({
+    queryKey: ['school-lists'],
+    queryFn: () => apiClient.get(schoolListRoutes.list()),
+    enabled: isAuthenticated,
+  });
+
+  const { data: predictionDashboard } = useQuery<PredictionDashboard>({
+    queryKey: ['predictions', 'dashboard'],
+    queryFn: () => apiClient.get(`${API_ROUTES.PREDICTIONS}/dashboard`),
+    enabled: isAuthenticated,
+  });
+
+  const { data: recommendationPreflight } = useQuery<RecommendationPreflight>({
+    queryKey: ['recommendation', 'preflight'],
+    queryFn: () => apiClient.get(recommendationRoutes.preflight()),
+    enabled: isAuthenticated,
+  });
+
+  const { data: recommendationHistory } = useQuery<RecommendationResult[]>({
+    queryKey: ['recommendation', 'history'],
+    queryFn: () => apiClient.get(recommendationRoutes.history()),
+    enabled: isAuthenticated,
+  });
+
+  const [generatedAnalysis, setGeneratedAnalysis] = useState<AIAnalysisResult | null>(null);
+  const cachedAnalysis = queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']);
+  const applicationAnalysis = generatedAnalysis ?? cachedAnalysis ?? null;
+
+  const profileScore = useMemo(() => {
+    if (!profile) return 0;
+    return (
+      (profile.gpa ? 20 : 0) +
+      ((profile.testScores?.length ?? 0) > 0 ? 30 : 0) +
+      ((profile.activities?.length ?? 0) > 0 ? 25 : 0) +
+      ((profile.awards?.length ?? 0) > 0 ? 25 : 0)
+    );
+  }, [profile]);
+
+  const schoolCount = schoolList?.length ?? predictionDashboard?.totalSchools ?? 0;
+  const essayPromptCount =
+    schoolList?.reduce((sum, item) => sum + (item.essayPromptCount ?? 0), 0) ?? 0;
+  const recommendationCount = recommendationHistory?.[0]?.recommendations?.length ?? 0;
+
   // ---- Clear conversation mutation -----------------------------------------
   const clearMutation = useMutation({
     mutationFn: () => apiClient.delete(`${API_ROUTES.AI_AGENT}/conversation`),
@@ -112,6 +191,40 @@ export default function UncommonAppScreen() {
     },
     onError: () => {
       toast.error(t('uncommonApp.clearError'));
+    },
+  });
+
+  const analysisMutation = useMutation({
+    mutationFn: () =>
+      apiClient.get<AIAnalysisResult>(profileRoutes.aiAnalysis(), { timeout: 60000 }),
+    onSuccess: (data) => {
+      setGeneratedAnalysis(data);
+      queryClient.setQueryData(['profile-ai-analysis'], data);
+      toast.success(t('uncommonApp.dashboard.analysisGenerated'));
+    },
+    onError: () => {
+      toast.error(t('uncommonApp.dashboard.analysisFailed'));
+    },
+  });
+
+  const recommendationMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post<RecommendationResult>(
+        recommendationRoutes.generate(),
+        {
+          schoolCount: 8,
+          additionalPreferences:
+            'Build a balanced application portfolio with reach, match, and safety options.',
+        },
+        { timeout: 60000 }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recommendation', 'history'] });
+      queryClient.invalidateQueries({ queryKey: ['recommendation', 'preflight'] });
+      toast.success(t('recommendation.generateSuccess'));
+    },
+    onError: () => {
+      toast.error(t('recommendation.generateFailed'));
     },
   });
 
@@ -158,8 +271,8 @@ export default function UncommonAppScreen() {
         agent: 'timeline',
         icon: 'time',
         color: colors.warning,
-        titleKey: 'uncommonApp.quickActions.timeline',
-        descKey: 'uncommonApp.quickActions.timelineDesc',
+        titleKey: 'uncommonApp.quickActions.timelinePlan',
+        descKey: 'uncommonApp.quickActions.timelinePlanDesc',
         prompt: t('uncommonApp.quickActions.timelinePrompt'),
       },
     ],
@@ -393,6 +506,154 @@ export default function UncommonAppScreen() {
   // Render helpers
   // =========================================================================
 
+  const handleGenerateRecommendation = () => {
+    if (recommendationPreflight && !recommendationPreflight.canGenerate) {
+      toast.warning(t('uncommonApp.dashboard.recommendationBlocked'));
+      router.push('/recommendation' as Href);
+      return;
+    }
+    recommendationMutation.mutate();
+  };
+
+  const renderApplicationDashboard = () => (
+    <Animated.View entering={FadeInDown.duration(400)}>
+      <View
+        style={[styles.dashboardCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+      >
+        <View style={styles.dashboardHeader}>
+          <View>
+            <Text style={[styles.dashboardEyebrow, { color: colors.foregroundMuted }]}>
+              {t('uncommonApp.dashboard.eyebrow')}
+            </Text>
+            <Text style={[styles.dashboardTitle, { color: colors.foreground }]}>
+              {t('uncommonApp.dashboard.title')}
+            </Text>
+          </View>
+          <Badge variant={applicationAnalysis ? 'success' : 'secondary'}>
+            {applicationAnalysis
+              ? t(`applicationAnalysis.freshness.${applicationAnalysis.status ?? 'fresh'}`)
+              : t('uncommonApp.dashboard.manual')}
+          </Badge>
+        </View>
+
+        <Text style={[styles.dashboardSummary, { color: colors.foregroundMuted }]}>
+          {applicationAnalysis?.overallVerdict ??
+            applicationAnalysis?.portfolioSummary?.verdict ??
+            t('uncommonApp.dashboard.description')}
+        </Text>
+
+        <View style={styles.metricGrid}>
+          <MetricTile
+            icon="person-outline"
+            label={t('uncommonApp.dashboard.profile')}
+            value={`${profileScore}%`}
+            color={colors.primary}
+          />
+          <MetricTile
+            icon="school-outline"
+            label={t('uncommonApp.dashboard.schools')}
+            value={String(schoolCount)}
+            color={colors.info}
+          />
+          <MetricTile
+            icon="document-text-outline"
+            label={t('uncommonApp.dashboard.essays')}
+            value={String(essayPromptCount)}
+            color={colors.success}
+          />
+          <MetricTile
+            icon="sparkles-outline"
+            label={t('uncommonApp.dashboard.recommendations')}
+            value={String(recommendationCount)}
+            color={colors.warning}
+          />
+        </View>
+
+        <View style={styles.dashboardActions}>
+          <TouchableOpacity
+            onPress={() => analysisMutation.mutate()}
+            disabled={analysisMutation.isPending || !isAuthenticated}
+            style={[styles.dashboardButton, { backgroundColor: colors.primary }]}
+            activeOpacity={0.8}
+          >
+            {analysisMutation.isPending ? (
+              <Loading size="small" />
+            ) : (
+              <Ionicons name="analytics-outline" size={16} color={colors.primaryForeground} />
+            )}
+            <Text style={[styles.dashboardButtonText, { color: colors.primaryForeground }]}>
+              {analysisMutation.isPending
+                ? t('uncommonApp.dashboard.analyzing')
+                : t('uncommonApp.dashboard.generateAnalysis')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleGenerateRecommendation}
+            disabled={recommendationMutation.isPending || !isAuthenticated}
+            style={[
+              styles.dashboardButton,
+              styles.dashboardButtonSecondary,
+              { borderColor: colors.border, backgroundColor: colors.background },
+            ]}
+            activeOpacity={0.8}
+          >
+            {recommendationMutation.isPending ? (
+              <Loading size="small" />
+            ) : (
+              <Ionicons name="sparkles-outline" size={16} color={colors.primary} />
+            )}
+            <Text style={[styles.dashboardButtonText, { color: colors.primary }]}>
+              {recommendationMutation.isPending
+                ? t('recommendation.loadingStep4')
+                : t('uncommonApp.dashboard.generateRecommendations')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.taskList}>
+          {[
+            {
+              done: profileScore >= 80,
+              text: t('uncommonApp.dashboard.tasks.profile'),
+              href: '/profile/basic',
+            },
+            {
+              done: schoolCount >= 6,
+              text: t('uncommonApp.dashboard.tasks.schools'),
+              href: '/find-college',
+            },
+            {
+              done: essayPromptCount > 0,
+              text: t('uncommonApp.dashboard.tasks.essays'),
+              href: '/essays',
+            },
+            {
+              done: Boolean(applicationAnalysis),
+              text: t('uncommonApp.dashboard.tasks.strategy'),
+              href: '/profile/analysis',
+            },
+          ].map((task) => (
+            <TouchableOpacity
+              key={task.href}
+              onPress={() => router.push(task.href as Href)}
+              style={styles.taskRow}
+              activeOpacity={0.75}
+            >
+              <Ionicons
+                name={task.done ? 'checkmark-circle' : 'ellipse-outline'}
+                size={18}
+                color={task.done ? colors.success : colors.warning}
+              />
+              <Text style={[styles.taskText, { color: colors.foreground }]}>{task.text}</Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.foregroundMuted} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    </Animated.View>
+  );
+
   const renderQuotaHeader = () => (
     <Animated.View entering={FadeInDown.delay(100).duration(400)}>
       <View
@@ -530,6 +791,7 @@ export default function UncommonAppScreen() {
       contentContainerStyle={styles.welcomeContent}
       showsVerticalScrollIndicator={false}
     >
+      {renderApplicationDashboard()}
       {renderQuotaHeader()}
       {renderAgentSelector()}
       {renderQuickActions()}
@@ -735,6 +997,32 @@ export default function UncommonAppScreen() {
   );
 }
 
+function MetricTile({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+  color: string;
+}) {
+  const colors = useColors();
+
+  return (
+    <View style={[styles.metricTile, { backgroundColor: colors.backgroundSecondary }]}>
+      <View style={[styles.metricIcon, { backgroundColor: color + '18' }]}>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
+      <Text style={[styles.metricValue, { color: colors.foreground }]}>{value}</Text>
+      <Text style={[styles.metricLabel, { color: colors.foregroundMuted }]} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 // ===========================================================================
 // Styles
 // ===========================================================================
@@ -742,6 +1030,101 @@ export default function UncommonAppScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  // ---- Application dashboard ---------------------------------------------
+  dashboardCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+  },
+  dashboardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  dashboardEyebrow: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
+  },
+  dashboardTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+  },
+  dashboardSummary: {
+    fontSize: fontSize.sm,
+    lineHeight: 20,
+    marginTop: spacing.md,
+  },
+  metricGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  metricTile: {
+    width: '48%',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+  },
+  metricIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  metricValue: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+  },
+  metricLabel: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+  },
+  dashboardActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  dashboardButton: {
+    flex: 1,
+    minWidth: 150,
+    minHeight: 44,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+  },
+  dashboardButtonSecondary: {
+    borderWidth: 1,
+  },
+  dashboardButtonText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+  },
+  taskList: {
+    marginTop: spacing.lg,
+    gap: spacing.xs,
+  },
+  taskRow: {
+    minHeight: 42,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  taskText: {
+    flex: 1,
+    fontSize: fontSize.sm,
+    lineHeight: 18,
   },
 
   // ---- Quota header --------------------------------------------------------
