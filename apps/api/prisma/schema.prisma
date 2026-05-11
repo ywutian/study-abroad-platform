@@ -3954,6 +3954,7 @@ model Resume {
   templateId                String                         @default("jake-classic")
   language                  String                         @default("en")
   settings                  Json                           @default("{}")
+  targetContext             Json                           @default("{}")
   sections                  ResumeSection[]
   snapshots                 ResumeSnapshot[]
   aiReviews                 ResumeAIReview[]

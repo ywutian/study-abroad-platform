@@ -10,8 +10,10 @@ import {
   Max,
   Matches,
   ValidateNested,
+  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ResumeTargetContextDto } from './create-resume.dto';
 
 // ─── Nested DTOs for Resume Settings validation ───
 
@@ -158,4 +160,13 @@ export class UpdateResumeDto {
   @ValidateNested()
   @Type(() => ResumeSettingsDto)
   settings?: ResumeSettingsDto;
+
+  @ApiPropertyOptional({
+    description: 'Target school, major, role, JD, or research context',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ResumeTargetContextDto)
+  targetContext?: ResumeTargetContextDto;
 }

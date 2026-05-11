@@ -182,6 +182,7 @@ export class ResumeService {
         type: true,
         templateId: true,
         language: true,
+        targetContext: true,
         version: true,
         updatedAt: true,
         createdAt: true,
@@ -215,6 +216,7 @@ export class ResumeService {
         type: resumeType,
         templateId: dto.templateId ?? 'jake-classic',
         language: dto.language ?? 'en',
+        targetContext: (dto.targetContext ?? {}) as any,
         sections: {
           create: defaultSections.map((s, i) => ({
             type: s.type,
@@ -254,6 +256,7 @@ export class ResumeService {
         templateId: dto.templateId,
         language: dto.language,
         settings: dto.settings as any,
+        targetContext: dto.targetContext as any,
       },
     });
   }
@@ -278,6 +281,7 @@ export class ResumeService {
         templateId: original.templateId,
         language: original.language,
         settings: original.settings as any,
+        targetContext: original.targetContext as any,
         sections: {
           create: original.sections.map((s) => ({
             type: s.type,
@@ -722,6 +726,7 @@ export class ResumeService {
           templateId: resume.templateId,
           language: resume.language,
           settings: resume.settings,
+          targetContext: resume.targetContext,
           sections: resume.sections.map((s) => ({
             type: s.type,
             title: s.title,
@@ -784,6 +789,7 @@ export class ResumeService {
           templateId: data.templateId,
           language: data.language,
           settings: data.settings,
+          targetContext: data.targetContext ?? {},
           version: { increment: 1 },
         },
       });
@@ -856,8 +862,15 @@ export class ResumeService {
     resumeId: string,
     targetSchool?: string,
     targetMajor?: string,
+    targetContext?: Record<string, unknown>,
   ) {
     const resume = await this.findById(userId, resumeId);
+    const effectiveTargetContext = {
+      ...((resume.targetContext as Record<string, unknown> | null) ?? {}),
+      ...(targetContext ?? {}),
+      ...(targetSchool ? { targetSchool } : {}),
+      ...(targetMajor ? { targetMajor } : {}),
+    };
 
     const resumeData = {
       sections: resume.sections
@@ -870,18 +883,19 @@ export class ResumeService {
         })),
       templateId: resume.templateId,
       resumeType: resume.type,
+      targetContext: effectiveTargetContext,
     };
 
-    const result = await this.resumeAiService.reviewResume(resumeData, {
-      targetSchool,
-      targetMajor,
-    });
+    const result = await this.resumeAiService.reviewResume(
+      resumeData,
+      effectiveTargetContext,
+    );
 
     const record = await this.prisma.resumeAIReview.create({
       data: {
         resumeId,
         type: 'full_review',
-        input: { targetSchool, targetMajor } as any,
+        input: effectiveTargetContext as any,
         output: result as any,
         overallScore: result.overallScore,
       },
@@ -903,6 +917,7 @@ export class ResumeService {
     itemId?: string,
     targetSchool?: string,
     targetMajor?: string,
+    targetContext?: Record<string, unknown>,
   ) {
     const resume = await this.findById(userId, resumeId);
     const section = resume.sections.find((s) => s.id === sectionId);
@@ -915,8 +930,10 @@ export class ResumeService {
     let bullets: string[] = [];
     const context: any = {
       sectionType: section.type,
-      targetSchool,
-      targetMajor,
+      ...((resume.targetContext as Record<string, unknown> | null) ?? {}),
+      ...(targetContext ?? {}),
+      ...(targetSchool ? { targetSchool } : {}),
+      ...(targetMajor ? { targetMajor } : {}),
       resumeType: resume.type,
     };
 
@@ -946,7 +963,7 @@ export class ResumeService {
       data: {
         resumeId,
         type: 'bullet_optimize',
-        input: { sectionId, itemId, bullets } as any,
+        input: { sectionId, itemId, bullets, targetContext: context } as any,
         output: result as any,
       },
     });
@@ -959,19 +976,26 @@ export class ResumeService {
     resumeId: string,
     sectionType: string,
     targetMajor?: string,
+    targetContext?: Record<string, unknown>,
   ) {
     const resume = await this.findById(userId, resumeId);
     const section = resume.sections.find((s) => s.type === sectionType);
 
     const profile = await this.profileService.findByUserId(userId);
     const profileData = profile as any;
+    const effectiveTargetContext = {
+      ...((resume.targetContext as Record<string, unknown> | null) ?? {}),
+      ...(targetContext ?? {}),
+      ...(targetMajor ? { targetMajor } : {}),
+    };
 
     const result = await this.resumeAiService.suggestSectionContent(
       sectionType,
       {
         existingContent: section?.content ?? {},
         resumeType: resume.type,
-        targetMajor,
+        targetMajor: effectiveTargetContext.targetMajor,
+        targetContext: effectiveTargetContext,
         grade: profileData?.grade,
         profileActivities: profileData?.activities,
         profileAwards: profileData?.awards,
@@ -982,7 +1006,7 @@ export class ResumeService {
       data: {
         resumeId,
         type: 'content_suggest',
-        input: { sectionType, targetMajor } as any,
+        input: { sectionType, targetContext: effectiveTargetContext } as any,
         output: result as any,
       },
     });

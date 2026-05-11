@@ -4763,6 +4763,125 @@
       "searchTemplates": "搜索模板…",
       "relevantCoursework": "相关课程："
     },
+    "workbench": {
+      "summary": {
+        "missingName": "未填写姓名",
+        "untitledSkillCategory": "未命名技能类别",
+        "untitledItem": "未命名条目",
+        "untitledResume": "未命名简历",
+        "saving": "保存中...",
+        "saved": "已保存"
+      },
+      "typeContextTitles": {
+        "COLLEGE_APPLICATION": "申请目标",
+        "INTERNSHIP": "岗位目标",
+        "GRADUATE_CV": "学术目标"
+      },
+      "toasts": {
+        "saveResumeFailed": "保存简历设置失败",
+        "saveSectionFailed": "保存板块失败",
+        "sectionAdded": "板块已添加",
+        "sectionDeleted": "板块已删除",
+        "reorderFailed": "排序保存失败",
+        "profileImported": "档案数据已导入",
+        "duplicated": "简历已复制",
+        "snapshotSaved": "版本已保存",
+        "snapshotRestored": "版本已恢复",
+        "aiReviewComplete": "AI 评审完成",
+        "aiReviewFailed": "AI 评审失败，请重试",
+        "optimizeFailed": "要点优化失败，请重试",
+        "suggestFailed": "内容建议生成失败，请重试",
+        "exportLoading": "正在生成 PDF...",
+        "exportedPdf": "PDF 已导出",
+        "exportFailed": "导出失败，请重试",
+        "aiSuggestionApplied": "AI 建议已应用",
+        "exampleBulletsAdded": "示例要点已添加，请按真实经历改写"
+      },
+      "error": {
+        "loadFailed": "简历加载失败",
+        "backToList": "返回简历列表"
+      },
+      "tabs": {
+        "edit": "编辑",
+        "preview": "预览",
+        "style": "外观"
+      },
+      "actions": {
+        "addSection": "添加板块",
+        "export": "导出",
+        "changeTemplate": "更换模板",
+        "back": "返回",
+        "more": "更多",
+        "importProfile": "导入档案",
+        "aiReview": "AI 评审",
+        "saveVersion": "保存版本",
+        "duplicate": "复制简历",
+        "markDraft": "改回草稿",
+        "markActive": "设为使用中",
+        "versionHistory": "版本历史",
+        "noSnapshots": "暂无历史版本",
+        "saveTarget": "保存目标",
+        "runReview": "运行评审",
+        "openReview": "查看并应用建议",
+        "optimizeBullets": "优化要点",
+        "contentSuggestions": "内容建议",
+        "cancel": "取消",
+        "applyRewriteOnly": "只应用改写",
+        "applyRewriteAndSuggestions": "应用改写并添加建议",
+        "close": "关闭",
+        "addExampleBullets": "添加示例要点",
+        "confirm": "确认",
+        "delete": "删除",
+        "import": "导入",
+        "restore": "恢复"
+      },
+      "sidebar": {
+        "completion": "完成度",
+        "hint": "按板块补齐内容，再用 AI 检查缺口和表达。"
+      },
+      "target": {
+        "hint": "AI 评审、要点优化和内容建议都会使用这里的上下文。",
+        "targetSchool": "目标学校",
+        "targetMajor": "目标专业",
+        "applicationRound": "申请轮次",
+        "applicationRoundPlaceholder": "EA / ED / RD",
+        "targetRole": "目标岗位",
+        "companyIndustry": "公司 / 行业",
+        "jobRequirements": "JD / 岗位要求",
+        "jobDescriptionPlaceholder": "粘贴岗位描述，AI 会用于关键词和匹配度建议",
+        "programSchool": "项目 / 学校",
+        "researchArea": "研究方向",
+        "advisor": "导师",
+        "lab": "实验室"
+      },
+      "section": {
+        "hidden": "隐藏",
+        "aiHint": "AI 建议不会自动写入，确认后才会应用。"
+      },
+      "ai": {
+        "title": "AI 评审闭环",
+        "description": "评审会给出分数、缺口、逐条改写建议；你确认后再写入简历。",
+        "overallScore": "综合分",
+        "contentGaps": "内容缺口",
+        "reviewedAt": "评审时间",
+        "noReview": "还没有评审记录。",
+        "fillBySection": "按板块补内容"
+      },
+      "dialogs": {
+        "addSection": "添加板块",
+        "bulletOptimizeTitle": "AI 要点优化",
+        "newBullets": "可新增要点",
+        "contentSuggestionTitle": "内容建议",
+        "writingTips": "写作提示",
+        "exampleBullets": "示例要点",
+        "confirmDeleteTitle": "删除「{title}」？",
+        "confirmDeleteDescription": "这个板块会从当前简历中移除，操作不可撤销。",
+        "confirmImportTitle": "从档案重新导入？",
+        "confirmImportDescription": "匹配到的板块内容会被档案数据覆盖。建议先保存一个版本。",
+        "confirmRestoreTitle": "恢复到 v{version}？",
+        "confirmRestoreDescription": "当前标题、模板、外观和所有板块会替换为该历史版本。"
+      }
+    },
     "customize": {
       "title": "自定义",
       "reset": "恢复默认",

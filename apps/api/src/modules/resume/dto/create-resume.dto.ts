@@ -5,7 +5,27 @@ import {
   IsEnum,
   IsBoolean,
   MaxLength,
+  IsObject,
+  IsArray,
 } from 'class-validator';
+
+export class ResumeTargetContextDto {
+  @IsOptional() @IsString() @MaxLength(500) targetSchool?: string;
+  @IsOptional() @IsString() @MaxLength(500) targetMajor?: string;
+  @IsOptional() @IsString() @MaxLength(100) applicationRound?: string;
+  @IsOptional() @IsString() @MaxLength(500) programName?: string;
+  @IsOptional() @IsString() @MaxLength(500) researchArea?: string;
+  @IsOptional() @IsString() @MaxLength(500) advisorName?: string;
+  @IsOptional() @IsString() @MaxLength(500) labName?: string;
+  @IsOptional() @IsString() @MaxLength(500) targetRole?: string;
+  @IsOptional() @IsString() @MaxLength(500) company?: string;
+  @IsOptional() @IsString() @MaxLength(6000) jobDescription?: string;
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(100, { each: true })
+  keywords?: string[];
+}
 
 export class CreateResumeDto {
   @ApiProperty({
@@ -39,4 +59,11 @@ export class CreateResumeDto {
   @IsOptional()
   @IsBoolean()
   importFromProfile?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Target school, major, role, JD, or research context',
+  })
+  @IsOptional()
+  @IsObject()
+  targetContext?: ResumeTargetContextDto;
 }

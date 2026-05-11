@@ -1,0 +1,1 @@
+ALTER TABLE "Resume" ADD COLUMN IF NOT EXISTS "targetContext" JSONB NOT NULL DEFAULT '{}'::jsonb;

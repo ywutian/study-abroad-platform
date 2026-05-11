@@ -197,6 +197,7 @@ export class ResumeController {
       id,
       dto.targetSchool,
       dto.targetMajor,
+      dto.targetContext as Record<string, unknown> | undefined,
     );
   }
 
@@ -215,6 +216,7 @@ export class ResumeController {
       dto.itemId,
       dto.targetSchool,
       dto.targetMajor,
+      dto.targetContext as Record<string, unknown> | undefined,
     );
   }
 
@@ -231,6 +233,7 @@ export class ResumeController {
       id,
       dto.sectionType,
       dto.targetMajor,
+      dto.targetContext as Record<string, unknown> | undefined,
     );
   }
 }

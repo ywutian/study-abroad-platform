@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsOptional,
+  MaxLength,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
+import { ResumeTargetContextDto } from './create-resume.dto';
 
 export class AiBulletOptimizeDto {
   @ApiProperty({ description: 'Section ID to optimize bullets for' })
@@ -24,6 +32,15 @@ export class AiBulletOptimizeDto {
   @MaxLength(500)
   @IsString()
   targetMajor?: string;
+
+  @ApiPropertyOptional({
+    description: 'Target school, role, JD, or research context',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ResumeTargetContextDto)
+  targetContext?: ResumeTargetContextDto;
 }
 
 export class AiResumeReviewDto {
@@ -38,6 +55,15 @@ export class AiResumeReviewDto {
   @MaxLength(500)
   @IsString()
   targetMajor?: string;
+
+  @ApiPropertyOptional({
+    description: 'Target school, role, JD, or research context',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ResumeTargetContextDto)
+  targetContext?: ResumeTargetContextDto;
 }
 
 export class AiSuggestContentDto {
@@ -51,6 +77,15 @@ export class AiSuggestContentDto {
   @MaxLength(500)
   @IsString()
   targetMajor?: string;
+
+  @ApiPropertyOptional({
+    description: 'Target school, role, JD, or research context',
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ResumeTargetContextDto)
+  targetContext?: ResumeTargetContextDto;
 }
 
 export class CreateSnapshotDto {

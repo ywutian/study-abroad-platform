@@ -4784,6 +4784,125 @@
       "searchTemplates": "Search templates...",
       "relevantCoursework": "Relevant Coursework:"
     },
+    "workbench": {
+      "summary": {
+        "missingName": "Name missing",
+        "untitledSkillCategory": "Untitled skill category",
+        "untitledItem": "Untitled item",
+        "untitledResume": "Untitled resume",
+        "saving": "Saving...",
+        "saved": "Saved"
+      },
+      "typeContextTitles": {
+        "COLLEGE_APPLICATION": "Application Target",
+        "INTERNSHIP": "Role Target",
+        "GRADUATE_CV": "Academic Target"
+      },
+      "toasts": {
+        "saveResumeFailed": "Failed to save resume settings",
+        "saveSectionFailed": "Failed to save section",
+        "sectionAdded": "Section added",
+        "sectionDeleted": "Section deleted",
+        "reorderFailed": "Failed to save order",
+        "profileImported": "Profile data imported",
+        "duplicated": "Resume duplicated",
+        "snapshotSaved": "Version saved",
+        "snapshotRestored": "Version restored",
+        "aiReviewComplete": "AI review complete",
+        "aiReviewFailed": "AI review failed, please try again",
+        "optimizeFailed": "Bullet optimization failed, please try again",
+        "suggestFailed": "Content suggestions failed, please try again",
+        "exportLoading": "Generating PDF...",
+        "exportedPdf": "PDF exported",
+        "exportFailed": "Export failed, please try again",
+        "aiSuggestionApplied": "AI suggestions applied",
+        "exampleBulletsAdded": "Example bullets added. Rewrite them with your real experience."
+      },
+      "error": {
+        "loadFailed": "Failed to load resume",
+        "backToList": "Back to resumes"
+      },
+      "tabs": {
+        "edit": "Edit",
+        "preview": "Preview",
+        "style": "Style"
+      },
+      "actions": {
+        "addSection": "Add section",
+        "export": "Export",
+        "changeTemplate": "Change template",
+        "back": "Back",
+        "more": "More",
+        "importProfile": "Import profile",
+        "aiReview": "AI Review",
+        "saveVersion": "Save version",
+        "duplicate": "Duplicate resume",
+        "markDraft": "Move back to draft",
+        "markActive": "Set active",
+        "versionHistory": "Version history",
+        "noSnapshots": "No saved versions",
+        "saveTarget": "Save target",
+        "runReview": "Run review",
+        "openReview": "Review and apply suggestions",
+        "optimizeBullets": "Optimize bullets",
+        "contentSuggestions": "Content suggestions",
+        "cancel": "Cancel",
+        "applyRewriteOnly": "Apply rewrites only",
+        "applyRewriteAndSuggestions": "Apply rewrites and add suggestions",
+        "close": "Close",
+        "addExampleBullets": "Add example bullets",
+        "confirm": "Confirm",
+        "delete": "Delete",
+        "import": "Import",
+        "restore": "Restore"
+      },
+      "sidebar": {
+        "completion": "Completion",
+        "hint": "Complete each section, then use AI to check gaps and expression."
+      },
+      "target": {
+        "hint": "AI review, bullet optimization, and content suggestions all use this context.",
+        "targetSchool": "Target school",
+        "targetMajor": "Target major",
+        "applicationRound": "Application round",
+        "applicationRoundPlaceholder": "EA / ED / RD",
+        "targetRole": "Target role",
+        "companyIndustry": "Company / industry",
+        "jobRequirements": "JD / role requirements",
+        "jobDescriptionPlaceholder": "Paste the job description so AI can use keywords and fit signals",
+        "programSchool": "Program / school",
+        "researchArea": "Research area",
+        "advisor": "Advisor",
+        "lab": "Lab"
+      },
+      "section": {
+        "hidden": "Hidden",
+        "aiHint": "AI suggestions are not written automatically. You choose what to apply."
+      },
+      "ai": {
+        "title": "AI review loop",
+        "description": "Review returns a score, gaps, and line-level rewrite ideas. You decide what enters the resume.",
+        "overallScore": "Overall score",
+        "contentGaps": "Content gaps",
+        "reviewedAt": "Reviewed",
+        "noReview": "No review yet.",
+        "fillBySection": "Add content by section"
+      },
+      "dialogs": {
+        "addSection": "Add section",
+        "bulletOptimizeTitle": "AI bullet optimization",
+        "newBullets": "Suggested new bullets",
+        "contentSuggestionTitle": "Content suggestions",
+        "writingTips": "Writing tips",
+        "exampleBullets": "Example bullets",
+        "confirmDeleteTitle": "Delete \"{title}\"?",
+        "confirmDeleteDescription": "This section will be removed from the current resume. This cannot be undone.",
+        "confirmImportTitle": "Re-import from profile?",
+        "confirmImportDescription": "Matched sections will be overwritten by profile data. Save a version first if needed.",
+        "confirmRestoreTitle": "Restore to v{version}?",
+        "confirmRestoreDescription": "The current title, template, styling, and all sections will be replaced by that version."
+      }
+    },
     "customize": {
       "title": "Customize",
       "reset": "Reset to Defaults",
