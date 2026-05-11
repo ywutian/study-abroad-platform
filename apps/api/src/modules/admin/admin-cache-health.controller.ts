@@ -42,6 +42,7 @@ export class AdminCacheHealthController {
     return {
       connection: {
         connected: this.redis.connected,
+        runtime: this.redis.getRuntimeState(),
         ...health,
       },
       ...snapshot,

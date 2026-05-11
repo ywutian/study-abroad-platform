@@ -51,6 +51,12 @@ export interface SeedSchoolData {
   studentCount?: number;
   graduationRate?: number;
   avgSalary?: number;
+  institutionType?:
+    | 'RESEARCH_UNIVERSITY'
+    | 'LIBERAL_ARTS'
+    | 'ART_DESIGN'
+    | 'MUSIC_CONSERVATORY'
+    | 'SPECIALTY';
   website?: string;
   isPrivate?: boolean;
   description?: string;
@@ -212,6 +218,8 @@ export async function upsertSchoolFromSeed(
   if (data.graduationRate !== undefined)
     fields.graduationRate = data.graduationRate;
   if (data.avgSalary !== undefined) fields.avgSalary = data.avgSalary;
+  if (data.institutionType !== undefined)
+    fields.institutionType = data.institutionType;
   if (data.website !== undefined) fields.website = data.website;
   if (data.isPrivate !== undefined) fields.isPrivate = data.isPrivate;
   if (data.description !== undefined) fields.description = data.description;

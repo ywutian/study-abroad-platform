@@ -4,6 +4,11 @@ import {
   Optional,
   ConflictException,
 } from '@nestjs/common';
+import {
+  SchoolMediaSourceType,
+  SchoolMediaStatus,
+  SchoolMediaType,
+} from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
@@ -59,7 +64,11 @@ import {
   type DistillationEvaluationInput,
 } from './distillation/types';
 import { ROUND_MULTIPLIERS } from '@study-abroad/shared/scoring';
-import type { SchoolPredictionDataQuality } from '@study-abroad/shared';
+import type {
+  SchoolPredictionDataQuality,
+  SchoolPublicMedia,
+  SchoolPublicMediaAsset,
+} from '@study-abroad/shared';
 import { buildNormalizedSchoolProvenance } from '../school/school-provenance.helpers';
 
 // ============================================
@@ -85,6 +94,66 @@ const TERMINAL_REAL_DATA_STATUSES = new Set([
   'MANUAL_REVIEW',
   'PERMANENT_HEURISTIC',
 ]);
+
+const PREDICTION_PUBLIC_MEDIA_SOURCE_TYPES: SchoolMediaSourceType[] = [
+  SchoolMediaSourceType.OFFICIAL_WEBSITE,
+  SchoolMediaSourceType.OFFICIAL_BRAND_PAGE,
+  SchoolMediaSourceType.WIKIMEDIA_COMMONS,
+  SchoolMediaSourceType.LOGO_API,
+  SchoolMediaSourceType.FAVICON_FALLBACK,
+  SchoolMediaSourceType.MANUAL_ADMIN,
+];
+
+const PREDICTION_PUBLIC_MEDIA_INCLUDE = {
+  mediaAssets: {
+    where: {
+      status: SchoolMediaStatus.APPROVED,
+      isPrimary: true,
+      sourceType: { in: PREDICTION_PUBLIC_MEDIA_SOURCE_TYPES },
+    },
+    select: {
+      type: true,
+      sourceType: true,
+      storageUrl: true,
+      originalUrl: true,
+      sourcePageUrl: true,
+      license: true,
+      attribution: true,
+      width: true,
+      height: true,
+    },
+  },
+} as const;
+
+function toPredictionPublicMediaAsset(
+  asset: any,
+): SchoolPublicMediaAsset | null {
+  if (!asset) return null;
+  const url = asset.storageUrl ?? asset.originalUrl;
+  if (!url) return null;
+  return {
+    url,
+    sourceType: asset.sourceType as SchoolPublicMediaAsset['sourceType'],
+    originalUrl: asset.originalUrl,
+    sourcePageUrl: asset.sourcePageUrl,
+    license: asset.license,
+    attribution: asset.attribution,
+    width: asset.width,
+    height: asset.height,
+  };
+}
+
+function mapPredictionSchoolMedia(assets?: any[] | null): SchoolPublicMedia {
+  const list = assets ?? [];
+  return {
+    campusCover: toPredictionPublicMediaAsset(
+      list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER),
+    ),
+    logo: toPredictionPublicMediaAsset(
+      list.find((asset) => asset.type === SchoolMediaType.LOGO),
+    ),
+  };
+}
 
 /** 置信区间宽度 (根据 confidence level) — kept locally for Platt recalibration */
 const CONFIDENCE_INTERVAL_WIDTH = {
@@ -304,6 +373,8 @@ export class PredictionService {
   private buildPredictionSchoolMeta(school: any) {
     return {
       usNewsRank: school.usNewsRank ?? undefined,
+      rankings: school.rankings ?? undefined,
+      media: mapPredictionSchoolMedia(school.mediaAssets),
       acceptanceRate: clampPercentRate(school.acceptanceRate),
       intlAcceptanceRate: clampPercentRate(school.intlAcceptanceRate),
       oosAcceptanceRate: clampPercentRate(school.oosAcceptanceRate),
@@ -956,6 +1027,7 @@ export class PredictionService {
 
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
+      include: PREDICTION_PUBLIC_MEDIA_INCLUDE,
     });
     if (schools.length === 0) {
       return { results: [], dataCompleteness: 0 };
@@ -1195,6 +1267,7 @@ export class PredictionService {
 
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
+      include: PREDICTION_PUBLIC_MEDIA_INCLUDE,
     });
 
     // Load user's application round per school (ED, EA, RD, etc.)

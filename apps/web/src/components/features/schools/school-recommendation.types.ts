@@ -1,3 +1,5 @@
+import type { SchoolRanking } from '@/lib/utils/ranking';
+
 export interface SchoolInfo {
   id: string;
   name: string;
@@ -5,7 +7,7 @@ export interface SchoolInfo {
   usNewsRank?: number;
   acceptanceRate?: number;
   website?: string;
-  rankings?: { source: string; list: string; rank: number; year: number }[];
+  rankings?: SchoolRanking[];
   sourceUrls?: {
     collegeScorecardUrl?: string;
     ipedsUrl?: string;

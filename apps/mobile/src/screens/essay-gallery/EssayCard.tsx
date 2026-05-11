@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
-import { AnimatedCard, Badge } from '@/components/ui';
+import { AnimatedCard, Badge, RankingBadge } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { GalleryEssay } from './types';
 import { RESULT_COLORS, resultBadgeVariant } from './types';
@@ -65,11 +65,10 @@ export const EssayCard = React.memo(function EssayCard({ item, index, onPress }:
                 <Text style={[S.schoolName, { color: c.foreground }]} numberOfLines={1}>
                   {item.school?.name || t('essayGallery.unknownSchool')}
                 </Text>
-                {item.school?.usNewsRank && (
-                  <View style={[S.rankBadge, { backgroundColor: c.info + '20' }]}>
-                    <Text style={[S.rankText, { color: c.info }]}>#{item.school.usNewsRank}</Text>
-                  </View>
-                )}
+                <RankingBadge
+                  rankings={item.school?.rankings}
+                  usNewsRank={item.school?.usNewsRank}
+                />
               </View>
               {item.isVerified && (
                 <View style={S.verifiedBadge}>

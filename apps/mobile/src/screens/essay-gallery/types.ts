@@ -2,6 +2,7 @@
  * Shared types, constants, and helpers for the Essay Gallery feature.
  */
 import { useColors } from '@/utils/theme';
+import type { SchoolRanking } from '@study-abroad/shared/ranking';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -12,6 +13,7 @@ export interface GallerySchool {
   name: string;
   nameZh?: string;
   usNewsRank?: number;
+  rankings?: SchoolRanking[];
 }
 
 export interface GalleryEssay {

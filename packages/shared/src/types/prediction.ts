@@ -1,3 +1,5 @@
+import type { SchoolRanking } from '../ranking';
+
 // Prediction
 
 /**
@@ -139,6 +141,7 @@ export interface PredictionResult {
   policyContext?: SchoolPolicyContext;
   schoolMeta?: {
     usNewsRank?: number;
+    rankings?: SchoolRanking[];
     /** 0–100 percentage (e.g. 4.0 means 4%) */
     acceptanceRate?: number;
     /** 0–100 percentage — international-specific acceptance rate */

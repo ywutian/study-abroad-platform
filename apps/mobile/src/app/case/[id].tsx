@@ -132,7 +132,7 @@ export default function CaseDetailScreen() {
           >
             <SchoolAvatar
               name={caseData.school?.name}
-              logoUrl={caseData.school?.logoUrl}
+              logoUrl={caseData.school?.media?.logo?.url ?? caseData.school?.logoUrl}
               website={caseData.school?.website}
               size="lg"
             />

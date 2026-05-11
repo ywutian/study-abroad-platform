@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { School, Search, X, CheckCircle, Loader2, Target } from 'lucide-react';
@@ -88,11 +89,20 @@ export function SchoolSelectorCard({
                         >
                           <div>
                             <p className="font-medium">{getSchoolName(school, locale)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {school.usNewsRank && `US News #${school.usNewsRank}`}
+                            <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                              <RankingBadge
+                                rankings={school.rankings}
+                                usNewsRank={school.usNewsRank}
+                                variant="plain"
+                              />
                               {school.acceptanceRate &&
-                                ` · ${t('prediction.acceptanceRateLabel', { rate: formatAcceptanceRate(school.acceptanceRate).replace('%', '') })}`}
-                            </p>
+                                t('prediction.acceptanceRateLabel', {
+                                  rate: formatAcceptanceRate(school.acceptanceRate).replace(
+                                    '%',
+                                    ''
+                                  ),
+                                })}
+                            </div>
                           </div>
                           {isSelected && <CheckCircle className="h-4 w-4 text-primary" />}
                         </button>
@@ -123,9 +133,11 @@ export function SchoolSelectorCard({
                   className="flex items-center gap-1 py-1.5 px-3"
                 >
                   {getSchoolName(school, locale)}
-                  {school.usNewsRank && (
-                    <span className="text-xs opacity-70">US News #{school.usNewsRank}</span>
-                  )}
+                  <RankingBadge
+                    rankings={school.rankings}
+                    usNewsRank={school.usNewsRank}
+                    variant="plain"
+                  />
                   <button
                     onClick={() => onRemove(school.id)}
                     className="-mr-2 ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-destructive/10 hover:text-destructive md:h-8 md:w-8"

@@ -10,6 +10,7 @@ import { RedisService } from '../../common/redis/redis.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { SchoolLogoService } from './school-logo.service';
+import { SchoolMediaService } from './school-media.service';
 import { SchoolListService } from '../school-list/school-list.service';
 import { UrbanInstituteDataService } from './urban-institute-data.service';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
@@ -24,6 +25,7 @@ describe('SchoolController', () => {
   let _llmService: LLMService;
   let _profileService: ProfileService;
   let schoolListService: SchoolListService;
+  let redisService: RedisService;
 
   const mockUser = {
     id: 'user-1',
@@ -60,6 +62,18 @@ describe('SchoolController', () => {
           useValue: {
             findAll: jest.fn().mockResolvedValue(mockSchoolListResult),
             findById: jest.fn().mockResolvedValue(mockSchool),
+            getAvailableRankingLists: jest.fn().mockResolvedValue([
+              {
+                source: 'US_NEWS',
+                list: 'US_NEWS_CORE',
+                labelKey: 'core',
+                year: 2025,
+                count: 2,
+                verifiedCount: 2,
+                fallbackCount: 0,
+                isDefault: true,
+              },
+            ]),
             create: jest.fn().mockResolvedValue(mockSchool),
             update: jest.fn().mockResolvedValue(mockSchool),
             invalidateSchoolCache: jest.fn().mockResolvedValue(undefined),
@@ -168,6 +182,35 @@ describe('SchoolController', () => {
           },
         },
         {
+          provide: SchoolMediaService,
+          useValue: {
+            listAssets: jest.fn().mockResolvedValue({
+              items: [],
+              total: 0,
+              page: 1,
+              pageSize: 20,
+            }),
+            getCoverage: jest.fn().mockResolvedValue({
+              totalSchools: 0,
+              approvedCampusCovers: 0,
+              pendingCampusCovers: 0,
+              failedCampusCovers: 0,
+              missingCampusCovers: 0,
+            }),
+            discoverMedia: jest.fn().mockResolvedValue({
+              processed: 0,
+              created: 0,
+              skipped: 0,
+              failed: 0,
+              results: [],
+            }),
+            approveAsset: jest.fn().mockResolvedValue({}),
+            rejectAsset: jest.fn().mockResolvedValue({}),
+            setPrimary: jest.fn().mockResolvedValue({}),
+            retryAsset: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
           provide: SchoolListService,
           useValue: {
             getRecommendedSchools: jest.fn().mockResolvedValue([]),
@@ -248,6 +291,7 @@ describe('SchoolController', () => {
     _llmService = module.get<LLMService>(LLMService);
     _profileService = module.get<ProfileService>(ProfileService);
     schoolListService = module.get<SchoolListService>(SchoolListService);
+    redisService = module.get<RedisService>(RedisService);
   });
 
   afterEach(() => {
@@ -261,15 +305,31 @@ describe('SchoolController', () => {
         pageSize: 10,
         country: 'US',
         search: 'MIT',
+        rankingSource: 'US_NEWS',
+        rankingList: 'MUSIC',
       } as any;
 
       const result = await controller.findAll(query);
 
       expect(schoolService.findAll).toHaveBeenCalledWith(
         { page: 1, pageSize: 10 },
-        expect.objectContaining({ country: 'US', search: 'MIT' }),
+        expect.objectContaining({
+          country: 'US',
+          search: 'MIT',
+          rankingSource: 'US_NEWS',
+          rankingList: 'MUSIC',
+        }),
       );
       expect(result).toEqual(mockSchoolListResult);
+    });
+  });
+
+  describe('getAvailableRankingLists', () => {
+    it('should call schoolService.getAvailableRankingLists', async () => {
+      const result = await controller.getAvailableRankingLists();
+
+      expect(schoolService.getAvailableRankingLists).toHaveBeenCalled();
+      expect(result[0]).toMatchObject({ list: 'US_NEWS_CORE' });
     });
   });
 
@@ -301,6 +361,22 @@ describe('SchoolController', () => {
       expect(result).toHaveProperty('reach');
       expect(result).toHaveProperty('target');
       expect(result).toHaveProperty('safety');
+      expect(result).toHaveProperty('status', 'fresh');
+    });
+
+    it('should return fresh recommendations when Redis cache read/write fails', async () => {
+      (redisService.getJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (redisService.setJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+
+      const result = await controller.getAIRecommendations(mockUser);
+
+      expect(schoolListService.getAIRecommendations).toHaveBeenCalledWith(
+        'user-1',
+      );
       expect(result).toHaveProperty('status', 'fresh');
     });
   });

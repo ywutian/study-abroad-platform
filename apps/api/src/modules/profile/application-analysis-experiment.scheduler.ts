@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
 
@@ -10,10 +11,12 @@ export class ApplicationAnalysisExperimentScheduler {
 
   constructor(
     private readonly workflowService: ApplicationAnalysisWorkflowService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Cron('17 * * * *')
   async runHourlyRolloutMonitor() {
+    if (!this.automationEnabled()) return;
     try {
       const summary = await this.workflowService.runHourlyExperimentMonitor();
       this.logger.log(
@@ -30,6 +33,7 @@ export class ApplicationAnalysisExperimentScheduler {
 
   @Cron('15 4 * * *')
   async runNightlyShadowRefresh() {
+    if (!this.automationEnabled()) return;
     try {
       const summary = await this.workflowService.runNightlyShadowRefresh();
       this.logger.log(
@@ -42,5 +46,14 @@ export class ApplicationAnalysisExperimentScheduler {
         )}`,
       );
     }
+  }
+
+  private automationEnabled(): boolean {
+    return (
+      this.configService.get<string>('SCHEDULERS_ENABLED') !== 'false' &&
+      this.configService.get<string>(
+        'APPLICATION_ANALYSIS_AUTOMATION_ENABLED',
+      ) !== 'false'
+    );
   }
 }

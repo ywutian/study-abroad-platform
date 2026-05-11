@@ -9,8 +9,9 @@ import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
+import { RankingBadge } from '@/components/ui';
 
-import { SwipeCaseDto, CARD_HEIGHT, getTierColor, getTierBgColor } from './types';
+import { SwipeCaseDto, CARD_HEIGHT, getTierBgColor } from './types';
 
 interface CaseCardProps {
   caseData: SwipeCaseDto;
@@ -31,7 +32,6 @@ export default function CaseCard({
   const c = useColors();
   const isZh = i18n.language === 'zh';
 
-  const tierColor = getTierColor(caseData.usNewsRank);
   const tierBg = getTierBgColor(caseData.usNewsRank);
   const schoolLabel = isZh && caseData.schoolNameZh ? caseData.schoolNameZh : caseData.schoolName;
 
@@ -53,11 +53,7 @@ export default function CaseCard({
               />
             )}
           </View>
-          {caseData.usNewsRank && (
-            <View style={[styles.rankBadge, { backgroundColor: tierColor + '20' }]}>
-              <Text style={[styles.rankText, { color: tierColor }]}>#{caseData.usNewsRank}</Text>
-            </View>
-          )}
+          <RankingBadge usNewsRank={caseData.usNewsRank} />
         </View>
 
         {/* Meta row */}

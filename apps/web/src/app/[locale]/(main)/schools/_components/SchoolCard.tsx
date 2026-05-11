@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import {
   Award,
@@ -33,6 +34,7 @@ import {
 } from '@/components/features/schools/school-display-utils';
 import { Link } from '@/lib/i18n/navigation';
 import { cn, formatAcceptanceRate, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import { type SchoolRankingList } from '@/components/features/schools/school-filters';
 import { type School } from './schools-types';
 
 export type SchoolCardViewMode = 'list' | 'grid';
@@ -48,6 +50,8 @@ interface SchoolCardProps {
   onToggleSelection: (school: School, checked: boolean) => void;
   onAddToList: (schoolId: string, round: string) => void;
   isAddingToList: boolean;
+  preferredRankingList?: SchoolRankingList;
+  priorityMedia?: boolean;
 }
 
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
@@ -82,6 +86,47 @@ function HeroGradient({ hue, initial, size }: { hue: number; initial: string; si
   );
 }
 
+function SchoolHeroMedia({
+  coverUrl,
+  schoolName,
+  hue,
+  initial,
+  size,
+  priority,
+}: {
+  coverUrl?: string | null;
+  schoolName: string;
+  hue: number;
+  initial: string;
+  size: 'lg' | 'sm';
+  priority?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (!coverUrl || failed) {
+    return <HeroGradient hue={hue} initial={initial} size={size} />;
+  }
+
+  return (
+    <div
+      className={cn(
+        'relative flex shrink-0 items-center justify-center overflow-hidden bg-muted',
+        size === 'lg' ? 'h-[180px] w-full sm:w-[280px]' : 'h-16 w-full'
+      )}
+    >
+      <img
+        src={coverUrl}
+        alt={schoolName}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        onError={() => setFailed(true)}
+        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/5" />
+    </div>
+  );
+}
+
 export function SchoolCard({
   school,
   viewMode,
@@ -92,6 +137,8 @@ export function SchoolCard({
   onToggleSelection,
   onAddToList,
   isAddingToList,
+  preferredRankingList,
+  priorityMedia,
 }: SchoolCardProps) {
   const t = useTranslations('schools');
   const tc = useTranslations('common');
@@ -102,6 +149,8 @@ export function SchoolCard({
   const subName = getSchoolSubName(school, locale);
   const initial = schoolName.charAt(0).toUpperCase();
   const hue = schoolHue(school);
+  const campusCoverUrl = school.media?.campusCover?.url ?? null;
+  const logoUrl = school.media?.logo?.url ?? school.logoUrl;
 
   const acceptanceSource = getSchoolFieldSource(school, 'acceptanceRate');
   const enrollmentSource = getSchoolFieldSource(school, 'totalEnrollment', 'studentCount');
@@ -331,7 +380,14 @@ export function SchoolCard({
         {selectionCheckbox}
 
         <div className="relative">
-          <HeroGradient hue={hue} initial={initial} size="sm" />
+          <SchoolHeroMedia
+            coverUrl={campusCoverUrl}
+            schoolName={schoolName}
+            hue={hue}
+            initial={initial}
+            size="sm"
+            priority={priorityMedia}
+          />
           {fitScorePill && <div className="absolute right-2 top-2 z-10">{fitScorePill}</div>}
         </div>
 
@@ -341,7 +397,7 @@ export function SchoolCard({
           aria-label={schoolName}
         >
           <SchoolLogo
-            logoUrl={school.logoUrl}
+            logoUrl={logoUrl}
             website={school.website}
             name={schoolName}
             size="md"
@@ -374,6 +430,7 @@ export function SchoolCard({
                 rankings={school.rankings}
                 usNewsRank={school.usNewsRank}
                 variant="amber"
+                preferredRankingList={preferredRankingList}
               />
               {school.hasEarlyDecision && (
                 <Badge variant="outline" className="text-2xs">
@@ -410,7 +467,14 @@ export function SchoolCard({
       {selectionCheckbox}
 
       <div className="relative">
-        <HeroGradient hue={hue} initial={initial} size="lg" />
+        <SchoolHeroMedia
+          coverUrl={campusCoverUrl}
+          schoolName={schoolName}
+          hue={hue}
+          initial={initial}
+          size="lg"
+          priority={priorityMedia}
+        />
         <Link
           href={detailHref}
           className="absolute bottom-4 left-4 z-10"
@@ -418,7 +482,7 @@ export function SchoolCard({
           onClick={(e) => e.stopPropagation()}
         >
           <SchoolLogo
-            logoUrl={school.logoUrl}
+            logoUrl={logoUrl}
             website={school.website}
             name={schoolName}
             size="md"
@@ -443,6 +507,7 @@ export function SchoolCard({
               rankings={school.rankings}
               usNewsRank={school.usNewsRank}
               variant="amber"
+              preferredRankingList={preferredRankingList}
             />
           </div>
           {subName && (

@@ -1,5 +1,6 @@
 import type React from 'react';
 import type { AIAnalysisResult } from '@study-abroad/shared';
+import type { SchoolRanking } from '@/lib/utils/ranking';
 
 export enum AgentType {
   ORCHESTRATOR = 'orchestrator',
@@ -47,6 +48,7 @@ export interface SchoolListItem {
     name: string;
     nameZh?: string;
     usNewsRank?: number;
+    rankings?: SchoolRanking[];
     acceptanceRate?: number;
   };
   isAIRecommended: boolean;

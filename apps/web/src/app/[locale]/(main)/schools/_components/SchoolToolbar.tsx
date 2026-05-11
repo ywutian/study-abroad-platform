@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
-import { LayoutGrid, List, SlidersHorizontal, X } from 'lucide-react';
+import { LayoutGrid, List, SlidersHorizontal, Trophy, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,9 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
+  SCHOOL_DEFAULT_RANKING_LIST,
   type SchoolFilters,
+  type SchoolRankingList,
   type SchoolSortBy,
 } from '@/components/features/schools/school-filters';
 
@@ -27,12 +29,26 @@ export interface ActiveFilterChip {
   onRemove: () => void;
 }
 
+interface RankingListOption {
+  source: 'US_NEWS';
+  list: SchoolRankingList;
+  labelKey: string;
+  year: number | null;
+  count: number;
+  verifiedCount?: number;
+  fallbackCount?: number;
+  isDefault: boolean;
+}
+
 interface SchoolToolbarProps {
   total: number;
   page: number;
   pageSize: number;
   sortBy: SchoolSortBy;
   onSortByChange: (value: SchoolSortBy) => void;
+  rankingList: SchoolRankingList;
+  rankingListOptions?: RankingListOption[];
+  onRankingListChange: (value: SchoolRankingList) => void;
   viewMode: SchoolViewMode;
   onViewModeChange: (mode: SchoolViewMode) => void;
   density: SchoolDensity;
@@ -47,6 +63,65 @@ interface SchoolToolbarProps {
   onAdvancedFiltersChange: (filters: SchoolFilters) => void;
   onResetAll: () => void;
 }
+
+const FALLBACK_RANKING_LIST_OPTIONS: RankingListOption[] = [
+  {
+    source: 'US_NEWS',
+    list: 'US_NEWS_CORE',
+    labelKey: 'core',
+    year: null,
+    count: 0,
+    isDefault: true,
+  },
+  {
+    source: 'US_NEWS',
+    list: 'NATIONAL_UNIVERSITY',
+    labelKey: 'nationalUniversity',
+    year: null,
+    count: 0,
+    isDefault: false,
+  },
+  {
+    source: 'US_NEWS',
+    list: 'LIBERAL_ARTS',
+    labelKey: 'liberalArts',
+    year: null,
+    count: 0,
+    isDefault: false,
+  },
+  {
+    source: 'US_NEWS',
+    list: 'REGIONAL_UNIVERSITY',
+    labelKey: 'regionalUniversity',
+    year: null,
+    count: 0,
+    isDefault: false,
+  },
+  {
+    source: 'US_NEWS',
+    list: 'ART_DESIGN',
+    labelKey: 'artDesign',
+    year: null,
+    count: 0,
+    isDefault: false,
+  },
+  {
+    source: 'US_NEWS',
+    list: 'MUSIC',
+    labelKey: 'music',
+    year: null,
+    count: 0,
+    isDefault: false,
+  },
+  {
+    source: 'US_NEWS',
+    list: 'ENGINEERING_NO_PHD',
+    labelKey: 'engineering',
+    year: null,
+    count: 0,
+    isDefault: false,
+  },
+];
 
 function formatRangeLabel(
   min: number | undefined,
@@ -65,6 +140,9 @@ export function SchoolToolbar({
   pageSize,
   sortBy,
   onSortByChange,
+  rankingList,
+  rankingListOptions,
+  onRankingListChange,
   viewMode,
   onViewModeChange,
   density,
@@ -81,10 +159,27 @@ export function SchoolToolbar({
 }: SchoolToolbarProps) {
   const t = useTranslations('schools');
   const tt = useTranslations('schools.toolbar');
+  const tc = useTranslations('common');
   const format = useFormatter();
 
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
+
+  const availableRankingOptions = useMemo(() => {
+    const options =
+      rankingListOptions && rankingListOptions.length > 0
+        ? rankingListOptions
+        : FALLBACK_RANKING_LIST_OPTIONS;
+
+    if (options.some((option) => option.list === rankingList)) {
+      return options;
+    }
+
+    const fallback =
+      FALLBACK_RANKING_LIST_OPTIONS.find((option) => option.list === rankingList) ??
+      FALLBACK_RANKING_LIST_OPTIONS[0];
+    return [...options, fallback];
+  }, [rankingList, rankingListOptions]);
 
   const chips: ActiveFilterChip[] = useMemo(() => {
     const out: ActiveFilterChip[] = [];
@@ -101,6 +196,16 @@ export function SchoolToolbar({
         key: 'country',
         label: `${tt('chip.country')}: ${countryLabel}`,
         onRemove: onClearCountry,
+      });
+    }
+    if (rankingList !== SCHOOL_DEFAULT_RANKING_LIST) {
+      const option = availableRankingOptions.find((item) => item.list === rankingList);
+      out.push({
+        key: 'rankingList',
+        label: option
+          ? `US News ${tc(`rankingList.${option.labelKey}` as Parameters<typeof tc>[0])}`
+          : `US News ${rankingList}`,
+        onRemove: () => onRankingListChange(SCHOOL_DEFAULT_RANKING_LIST),
       });
     }
     if (advancedFilters.state) {
@@ -244,9 +349,13 @@ export function SchoolToolbar({
     country,
     countryLabel,
     onClearCountry,
+    rankingList,
+    availableRankingOptions,
+    onRankingListChange,
     advancedFilters,
     onAdvancedFiltersChange,
     tt,
+    tc,
     format,
   ]);
 
@@ -276,6 +385,33 @@ export function SchoolToolbar({
               <SelectItem value="acceptance">{t('sort.acceptance')}</SelectItem>
               <SelectItem value="salary">{t('sort.salary')}</SelectItem>
               <SelectItem value="weighted">{t('weightSort')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={rankingList}
+            onValueChange={(v) => onRankingListChange(v as SchoolRankingList)}
+          >
+            <SelectTrigger className="h-9 w-[190px]" aria-label={tt('rankingListLabel')}>
+              <Trophy className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableRankingOptions.map((option) => (
+                <SelectItem key={option.list} value={option.list}>
+                  US News {tc(`rankingList.${option.labelKey}` as Parameters<typeof tc>[0])}
+                  {option.count > 0 && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      ({format.number(option.count, 'standard')})
+                    </span>
+                  )}
+                  {option.fallbackCount ? (
+                    <span className="ml-1 text-xs text-amber-600">
+                      {tt('rankingFallbackCount', { count: option.fallbackCount })}
+                    </span>
+                  ) : null}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { SchoolPublicMedia } from '@study-abroad/shared';
 
 export class PredictionFactor {
   @ApiProperty({ description: 'Factor name', example: 'GPA' })
@@ -328,6 +329,14 @@ export class PredictionResultDto {
   @ApiPropertyOptional({ description: 'School metadata' })
   schoolMeta?: {
     usNewsRank?: number;
+    rankings?: Array<{
+      source: string;
+      list: string;
+      rank: number;
+      year: number;
+      sourceUrl?: string | null;
+    }>;
+    media?: SchoolPublicMedia;
     acceptanceRate?: number;
     intlAcceptanceRate?: number;
     oosAcceptanceRate?: number;

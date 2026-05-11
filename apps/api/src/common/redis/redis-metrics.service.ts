@@ -41,6 +41,7 @@ export type RedisOpKind =
  */
 export type RedisErrorKind =
   | 'quota_exceeded' // Upstash "max requests limit"
+  | 'circuit_open' // local circuit breaker is intentionally skipping Redis
   | 'timeout' // command timeout (RedisService default 5s)
   | 'connection' // ECONNRESET, ENOTFOUND, ECONNREFUSED, "connection is closed"
   | 'auth' // WRONGPASS, NOAUTH
@@ -132,6 +133,9 @@ export function categorizeError(err: unknown): {
 } {
   const message = err instanceof Error ? err.message : String(err);
   const lower = message.toLowerCase();
+  if (lower.includes('redis circuit open')) {
+    return { kind: 'circuit_open', message };
+  }
   if (lower.includes('max requests limit')) {
     return { kind: 'quota_exceeded', message };
   }

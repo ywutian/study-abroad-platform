@@ -26,6 +26,20 @@ export enum SchoolSortBy {
   WEIGHTED = 'weighted',
 }
 
+export enum SchoolRankingSource {
+  US_NEWS = 'US_NEWS',
+}
+
+export enum SchoolRankingList {
+  US_NEWS_CORE = 'US_NEWS_CORE',
+  NATIONAL_UNIVERSITY = 'NATIONAL_UNIVERSITY',
+  LIBERAL_ARTS = 'LIBERAL_ARTS',
+  REGIONAL_UNIVERSITY = 'REGIONAL_UNIVERSITY',
+  ART_DESIGN = 'ART_DESIGN',
+  MUSIC = 'MUSIC',
+  ENGINEERING_NO_PHD = 'ENGINEERING_NO_PHD',
+}
+
 export class SchoolQueryDto extends PaginationDto {
   @ApiPropertyOptional({ description: 'Country code' })
   @IsOptional()
@@ -125,6 +139,24 @@ export class SchoolQueryDto extends PaginationDto {
   @IsOptional()
   @IsEnum(SchoolSortBy)
   sortBy?: SchoolSortBy;
+
+  @ApiPropertyOptional({
+    description: 'Ranking source',
+    enum: SchoolRankingSource,
+    default: SchoolRankingSource.US_NEWS,
+  })
+  @IsOptional()
+  @IsEnum(SchoolRankingSource)
+  rankingSource?: SchoolRankingSource;
+
+  @ApiPropertyOptional({
+    description: 'Ranking list context',
+    enum: SchoolRankingList,
+    default: SchoolRankingList.US_NEWS_CORE,
+  })
+  @IsOptional()
+  @IsEnum(SchoolRankingList)
+  rankingList?: SchoolRankingList;
 
   @ApiPropertyOptional({ description: 'Weighted sort rank weight' })
   @IsOptional()

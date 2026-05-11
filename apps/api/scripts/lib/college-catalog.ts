@@ -14,6 +14,10 @@ import {
 } from '../seed-uc-schools';
 import { US_SCHOOLS_141_200 } from '../seed-us-schools-141-200';
 import { deepMergeRecords } from '../../src/modules/school/school-provenance.helpers';
+import {
+  getInstitutionTypeForRankingList,
+  resolveFallbackRankingList,
+} from '../../src/modules/school/school-ranking-catalog';
 import { SeedSchoolData, normalizeSchoolName } from './seed-helpers';
 
 const UC_TEST_BLIND_NAMES = new Set(
@@ -96,6 +100,17 @@ const INTL_ACCEPTANCE_RATE_MAP = new Map(
   ]),
 );
 
+function inferInstitutionType(school: SeedSchoolData) {
+  return getInstitutionTypeForRankingList(
+    resolveFallbackRankingList(school),
+  ) as
+    | 'RESEARCH_UNIVERSITY'
+    | 'LIBERAL_ARTS'
+    | 'ART_DESIGN'
+    | 'MUSIC_CONSERVATORY'
+    | 'SPECIALTY';
+}
+
 function applyCuratedCollegeEnrichment(school: SeedSchoolData): SeedSchoolData {
   const nameNorm = normalizeSchoolName(school.name);
   const rankingIntlRate = INTL_ACCEPTANCE_RATE_MAP.get(nameNorm);
@@ -116,6 +131,10 @@ function applyCuratedCollegeEnrichment(school: SeedSchoolData): SeedSchoolData {
           : school.testOptional === false
             ? 'REQUIRED'
             : 'UNKNOWN')),
+    institutionType: pickFirst(
+      school.institutionType,
+      inferInstitutionType(school),
+    ),
     aliases: mergeAliases(school.aliases, CURATED_ALIAS_MAP.get(nameNorm)),
     needBlindInternational:
       school.needBlindInternational === true ||
@@ -154,6 +173,10 @@ export function mergeSeedSchoolData(
     studentCount: pickFirst(current.studentCount, incoming.studentCount),
     graduationRate: pickFirst(current.graduationRate, incoming.graduationRate),
     avgSalary: pickFirst(current.avgSalary, incoming.avgSalary),
+    institutionType: pickFirst(
+      current.institutionType,
+      incoming.institutionType,
+    ),
     website: pickFirst(current.website, incoming.website),
     isPrivate: pickFirst(current.isPrivate, incoming.isPrivate),
     description: pickLongerText(current.description, incoming.description),

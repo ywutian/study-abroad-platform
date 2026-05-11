@@ -3,6 +3,7 @@ export { Button } from './Button';
 export { Input } from './Input';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card';
 export { Badge } from './Badge';
+export { RankingBadge } from './RankingBadge';
 export { Avatar, AvatarGroup } from './Avatar';
 export { Loading, Skeleton, LoadingOverlay } from './Loading';
 export { EmptyState, ErrorState } from './EmptyState';

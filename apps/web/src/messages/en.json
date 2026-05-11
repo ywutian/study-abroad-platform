@@ -84,15 +84,23 @@
       "help": "help,support"
     },
     "rankingList": {
-      "nationalUniversity": "National",
+      "core": "Undergraduate Core",
+      "nationalUniversity": "National Universities",
       "liberalArts": "Liberal Arts",
+      "regionalUniversity": "Regional",
       "artDesign": "Art & Design",
+      "music": "Music",
+      "performingArts": "Performing Arts",
       "engineering": "Engineering",
       "cs": "CS",
       "business": "Business"
     },
-    "rankingTooltip": "{source} {year} Ranking",
-    "rankingTooltipOverall": "US News National University Overall Ranking",
+    "rankingTooltip": "{source} {year} verified ranking",
+    "rankingTooltipOverall": "US News undergraduate core view combines National Universities and Liberal Arts Colleges. It is a product default, not a single official overall list.",
+    "rankingTooltipFallback": "{source} {year} legacy fallback ranking. Verify against the selected official list before relying on it.",
+    "rankingFallbackShort": "Legacy",
+    "rankingAria": "{source} {list} rank {rank}",
+    "rankingAriaFallback": "{source} legacy fallback rank {rank}",
     "aria": {
       "moreOptions": "More options",
       "goBack": "Go back",
@@ -299,7 +307,7 @@
       "awardsTitle": "Awards",
       "activityLabel": "Activity {index}",
       "awardLabel": "Award {index}",
-      "rankLabel": "US News #{rank}",
+      "rankLabel": "US News legacy #{rank}",
       "noSchoolsFound": "No schools found",
       "schoolEmpty": "Search for at least one school to predict your admission chances.",
       "steps": {
@@ -1982,7 +1990,7 @@
     "schoolsCount": "Schools",
     "weights": "Weight Settings",
     "weightsDesc": "Adjust the weight of each indicator",
-    "usNewsRank": "US News Rank",
+    "usNewsRank": "US News list rank",
     "acceptanceRate": "Acceptance Rate",
     "acceptanceRateHint": "Lower means more competitive",
     "tuition": "Tuition",
@@ -3383,7 +3391,7 @@
       "campus": "Campus Life"
     },
     "fields": {
-      "usNewsRank": "US News Ranking",
+      "usNewsRank": "US News list ranking",
       "qsRank": "QS Ranking",
       "acceptanceRate": "Acceptance Rate",
       "intlAcceptanceRate": "Intl. Acceptance Rate",
@@ -3419,15 +3427,19 @@
     "rankingList": {
       "nationalUniversity": "National",
       "liberalArts": "Liberal Arts",
+      "regionalUniversity": "Regional",
       "artDesign": "Art & Design",
+      "music": "Music",
+      "performingArts": "Performing Arts",
       "engineering": "Engineering",
       "cs": "CS",
       "business": "Business"
     },
     "dataSourceInfo": "Data sourced from IPEDS / College Scorecard. Verify on each school's official website.",
     "transferRate": "Transfer Rate",
-    "rankingTooltip": "{source} {year} Ranking",
-    "rankingTooltipOverall": "US News National University Overall Ranking",
+    "rankingTooltip": "{source} {year} verified ranking",
+    "rankingTooltipOverall": "US News undergraduate core view combines National Universities and Liberal Arts Colleges. It is a product default, not a single official overall list.",
+    "rankingTooltipFallback": "{source} {year} legacy fallback ranking. Verify against the selected official list before relying on it.",
     "visitWebsite": "Visit {school} official website",
     "removeSelected": "Remove {school}"
   },
@@ -3491,6 +3503,8 @@
       "densityComfortable": "Comfortable",
       "densityCompact": "Compact",
       "sortLabel": "Sort by",
+      "rankingListLabel": "Ranking list",
+      "rankingFallbackCount": "{count} fallback",
       "resetAll": "Reset all",
       "removeFilter": "Remove filter",
       "rangeReadout": "Showing {from}–{to} of {total}",
@@ -5385,7 +5399,7 @@
       "selectPIQ": "Select PIQ (1-4)",
       "promptLabel": "Prompt {number}: {label}",
       "piqLabel": "PIQ {number}: {label}",
-      "usNewsRanking": "US News Ranking",
+      "usNewsRanking": "US News list ranking",
       "admitted": "Admitted",
       "rejected": "Rejected",
       "deferred": "Deferred",
@@ -5556,7 +5570,7 @@
       "cases": "Cases"
     },
     "academicStats": "Academic Stats",
-    "usNewsRank": "US News Rank",
+    "usNewsRank": "US News list rank",
     "qsRank": "QS Rank",
     "satAvg": "SAT Average",
     "actAvg": "ACT Average",
@@ -6888,7 +6902,7 @@
       "country": "Country/Region",
       "state": "State",
       "region": "Region Preference",
-      "usNewsRanking": "US News Ranking",
+      "usNewsRanking": "US News list ranking",
       "acceptanceRange": "Acceptance Rate Range",
       "annualTuition": "Annual Tuition (10k USD)",
       "postGradSalary": "Post-Grad Salary (10k USD)",
@@ -7496,7 +7510,7 @@
         "application": "Application"
       },
       "editDialog": {
-        "usNewsRank": "US News Rank",
+        "usNewsRank": "US News list rank",
         "qsRank": "QS Rank",
         "testingPolicy": "Testing Policy",
         "testOptional": "Test Optional",
@@ -9640,6 +9654,48 @@
       "noIssues": "All schools have complete data",
       "refreshing": "Refreshing...",
       "refresh": "Refresh"
+    },
+    "media": {
+      "toast": {
+        "discoveryQueued": "Media discovery queued",
+        "approved": "Media approved",
+        "rejected": "Media rejected",
+        "retryCompleted": "Media retry completed",
+        "primaryUpdated": "Primary media updated"
+      },
+      "coverage": {
+        "approvedCovers": "Approved covers",
+        "approvedCoversDesc": "Primary campus images visible to users",
+        "pendingReview": "Pending review",
+        "pendingReviewDesc": "Mostly Wikimedia candidates",
+        "candidates": "Candidates",
+        "candidatesDesc": "Storage/config review needed",
+        "missingCovers": "Missing covers",
+        "missingCoversDesc": "Still using gradient fallback"
+      },
+      "review": {
+        "title": "Campus media review",
+        "description": "Sources are auditable: official pages, approved brand pages, Wikimedia, or manual admin."
+      },
+      "actions": {
+        "discover": "Discover 100",
+        "setPrimary": "Primary"
+      },
+      "table": {
+        "preview": "Preview",
+        "school": "School",
+        "status": "Status",
+        "source": "Source",
+        "audit": "Audit",
+        "actions": "Actions",
+        "license": "License: {license}"
+      },
+      "badges": {
+        "primary": "Primary"
+      },
+      "links": {
+        "sourcePage": "source page"
+      }
     },
     "health": {
       "title": "System Health",

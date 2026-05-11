@@ -18,6 +18,18 @@ export interface SchoolFilters {
 }
 
 export type SchoolSortBy = 'rank' | 'name' | 'acceptance' | 'salary' | 'weighted';
+export type SchoolRankingSource = 'US_NEWS';
+export type SchoolRankingList =
+  | 'US_NEWS_CORE'
+  | 'NATIONAL_UNIVERSITY'
+  | 'LIBERAL_ARTS'
+  | 'REGIONAL_UNIVERSITY'
+  | 'ART_DESIGN'
+  | 'MUSIC'
+  | 'ENGINEERING_NO_PHD';
+
+export const SCHOOL_DEFAULT_RANKING_SOURCE: SchoolRankingSource = 'US_NEWS';
+export const SCHOOL_DEFAULT_RANKING_LIST: SchoolRankingList = 'US_NEWS_CORE';
 
 export interface SchoolWeightParams {
   ranking: number;
@@ -119,6 +131,8 @@ export function buildSchoolQueryParams(input: {
   page?: number;
   pageSize?: number;
   sortBy?: SchoolSortBy;
+  rankingSource?: SchoolRankingSource;
+  rankingList?: SchoolRankingList;
   weights?: SchoolWeightParams;
 }): Record<string, string> {
   const params: Record<string, string> = {
@@ -188,6 +202,8 @@ export function buildSchoolQueryParams(input: {
   if (input.sortBy) {
     params.sortBy = input.sortBy;
   }
+  params.rankingSource = input.rankingSource ?? SCHOOL_DEFAULT_RANKING_SOURCE;
+  params.rankingList = input.rankingList ?? SCHOOL_DEFAULT_RANKING_LIST;
   if (input.weights) {
     params.weightRank = String(input.weights.ranking);
     params.weightAcceptance = String(input.weights.acceptanceRate);

@@ -32,6 +32,11 @@ npm-debug.log*
 # Test
 **/coverage
 **/.nyc_output
+e2e-report
+verification-report
+tmp
+apps/api/scripts/cds-data/*.json
+apps/api/scripts/cds-data/*.jsonl
 
 # Docker
 Dockerfile*
@@ -43,7 +48,6 @@ docker-compose*
 
 # Misc
 .turbo
-
 
 
 

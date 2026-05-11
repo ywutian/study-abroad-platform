@@ -1,3 +1,5 @@
+import type { SchoolRanking } from '@/lib/utils/ranking';
+
 // Prediction feature types — aligned with backend PredictionResultDto / PredictionResponseDto.
 //
 // Shared types are the source of truth for prediction responses. This file only
@@ -23,5 +25,5 @@ export interface SchoolSearchItem {
   usNewsRank?: number;
   /** 0–100 percentage (e.g. 4.0 means 4%) */
   acceptanceRate?: number | null;
-  rankings?: { source: string; list: string; rank: number; year: number }[];
+  rankings?: SchoolRanking[];
 }

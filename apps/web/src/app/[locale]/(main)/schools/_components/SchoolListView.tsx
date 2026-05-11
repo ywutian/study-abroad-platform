@@ -1,6 +1,9 @@
 'use client';
 
-import { type SchoolSortBy } from '@/components/features/schools/school-filters';
+import {
+  type SchoolRankingList,
+  type SchoolSortBy,
+} from '@/components/features/schools/school-filters';
 import { SchoolCard } from './SchoolCard';
 import { type School } from './schools-types';
 
@@ -15,6 +18,7 @@ interface SchoolListViewProps {
   sortBy: SchoolSortBy;
   onSortByChange: (s: SchoolSortBy) => void;
   density: 'comfortable' | 'compact';
+  preferredRankingList?: SchoolRankingList;
 }
 
 export function SchoolListView({
@@ -26,10 +30,11 @@ export function SchoolListView({
   onAddToList,
   isAddingToList,
   density,
+  preferredRankingList,
 }: SchoolListViewProps) {
   return (
     <div className="flex flex-col gap-5">
-      {schools.map((school) => (
+      {schools.map((school, index) => (
         <SchoolCard
           key={school.id}
           school={school}
@@ -41,6 +46,8 @@ export function SchoolListView({
           onToggleSelection={onToggleSelection}
           onAddToList={onAddToList}
           isAddingToList={isAddingToList}
+          preferredRankingList={preferredRankingList}
+          priorityMedia={index < 3}
         />
       ))}
     </div>

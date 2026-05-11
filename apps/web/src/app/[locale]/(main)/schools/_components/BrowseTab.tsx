@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -11,7 +12,10 @@ import {
 import {
   buildSchoolQueryParams,
   countActiveSchoolFilters,
+  SCHOOL_DEFAULT_RANKING_LIST,
+  SCHOOL_DEFAULT_RANKING_SOURCE,
   SCHOOL_BROWSE_DEFAULT_PAGE_SIZE,
+  type SchoolRankingList,
   type SchoolSortBy,
   type SchoolWeightParams,
   type SchoolFilters,
@@ -49,6 +53,17 @@ interface AvailableCountry {
   count: number;
 }
 
+interface RankingListOption {
+  source: 'US_NEWS';
+  list: SchoolRankingList;
+  labelKey: string;
+  year: number | null;
+  count: number;
+  verifiedCount: number;
+  fallbackCount: number;
+  isDefault: boolean;
+}
+
 const WEIGHT_PRESETS: Record<string, SchoolWeightParams> = {
   balanced: { ranking: 30, acceptanceRate: 25, tuition: 25, salary: 20 },
   prestige: { ranking: 55, acceptanceRate: 25, tuition: 10, salary: 10 },
@@ -58,23 +73,121 @@ const WEIGHT_PRESETS: Record<string, SchoolWeightParams> = {
 
 const defaultAdvancedFilters: SchoolFilters = {};
 
+const RANKING_LIST_VALUES = new Set<SchoolRankingList>([
+  'US_NEWS_CORE',
+  'NATIONAL_UNIVERSITY',
+  'LIBERAL_ARTS',
+  'REGIONAL_UNIVERSITY',
+  'ART_DESIGN',
+  'MUSIC',
+  'ENGINEERING_NO_PHD',
+]);
+
+const SORT_BY_VALUES = new Set<SchoolSortBy>(['rank', 'name', 'acceptance', 'salary', 'weighted']);
+
+function numberParam(params: URLSearchParams, key: string): number | undefined {
+  const raw = params.get(key);
+  if (!raw) return undefined;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function boolParam(params: URLSearchParams, key: string): boolean | undefined {
+  return params.get(key) === 'true' ? true : undefined;
+}
+
+function getInitialBrowseState() {
+  if (typeof window === 'undefined') {
+    return {
+      search: '',
+      country: 'ALL',
+      sortBy: 'rank' as SchoolSortBy,
+      rankingList: SCHOOL_DEFAULT_RANKING_LIST,
+      page: 1,
+      pageSize: SCHOOL_BROWSE_DEFAULT_PAGE_SIZE,
+      filters: defaultAdvancedFilters,
+      weights: WEIGHT_PRESETS.balanced,
+    };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const rawSortBy = params.get('sortBy') as SchoolSortBy | null;
+  const rawRankingList = params.get('rankingList') as SchoolRankingList | null;
+  const rawSchoolType = params.get('schoolType');
+  const filters: SchoolFilters = {
+    state: params.get('state') || undefined,
+    region: params.get('region') || undefined,
+    rankMin: numberParam(params, 'rankMin'),
+    rankMax: numberParam(params, 'rankMax'),
+    acceptanceMin: numberParam(params, 'acceptanceMin'),
+    acceptanceMax: numberParam(params, 'acceptanceMax'),
+    tuitionMin:
+      numberParam(params, 'tuitionMin') != null
+        ? Number(numberParam(params, 'tuitionMin')) / 10000
+        : undefined,
+    tuitionMax:
+      numberParam(params, 'tuitionMax') != null
+        ? Number(numberParam(params, 'tuitionMax')) / 10000
+        : undefined,
+    sizeMin: numberParam(params, 'sizeMin'),
+    sizeMax: numberParam(params, 'sizeMax'),
+    salaryMin:
+      numberParam(params, 'salaryMin') != null
+        ? Number(numberParam(params, 'salaryMin')) / 10000
+        : undefined,
+    salaryMax:
+      numberParam(params, 'salaryMax') != null
+        ? Number(numberParam(params, 'salaryMax')) / 10000
+        : undefined,
+    schoolType:
+      rawSchoolType === 'public' || rawSchoolType === 'private' ? rawSchoolType : undefined,
+    testOptional: boolParam(params, 'testOptional'),
+    needBlind: boolParam(params, 'needBlind'),
+    hasEarlyDecision: boolParam(params, 'hasEarlyDecision'),
+  };
+
+  return {
+    search: params.get('search') ?? '',
+    country: params.get('country') ?? 'ALL',
+    sortBy: rawSortBy && SORT_BY_VALUES.has(rawSortBy) ? rawSortBy : ('rank' as SchoolSortBy),
+    rankingList:
+      rawRankingList && RANKING_LIST_VALUES.has(rawRankingList)
+        ? rawRankingList
+        : SCHOOL_DEFAULT_RANKING_LIST,
+    page: Math.max(1, numberParam(params, 'page') ?? 1),
+    pageSize: Math.max(1, numberParam(params, 'pageSize') ?? SCHOOL_BROWSE_DEFAULT_PAGE_SIZE),
+    filters,
+    weights: {
+      ranking: numberParam(params, 'weightRank') ?? WEIGHT_PRESETS.balanced.ranking,
+      acceptanceRate:
+        numberParam(params, 'weightAcceptance') ?? WEIGHT_PRESETS.balanced.acceptanceRate,
+      tuition: numberParam(params, 'weightTuition') ?? WEIGHT_PRESETS.balanced.tuition,
+      salary: numberParam(params, 'weightSalary') ?? WEIGHT_PRESETS.balanced.salary,
+    },
+  };
+}
+
 export function BrowseTab() {
   const t = useTranslations('schools');
   const queryClient = useQueryClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { accessToken } = useAuthStore();
+  const initialState = useMemo(() => getInitialBrowseState(), []);
+  const didMountFiltersRef = useRef(false);
 
   // Filter state
-  const [search, setSearch] = useState('');
-  const [country, setCountry] = useState('ALL');
-  const [sortBy, setSortBy] = useState<SchoolSortBy>('rank');
-  const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(defaultAdvancedFilters);
+  const [search, setSearch] = useState(initialState.search);
+  const [country, setCountry] = useState(initialState.country);
+  const [sortBy, setSortBy] = useState<SchoolSortBy>(initialState.sortBy);
+  const [rankingList, setRankingList] = useState<SchoolRankingList>(initialState.rankingList);
+  const [advancedFilters, setAdvancedFilters] = useState<SchoolFilters>(initialState.filters);
   const [activePreset, setActivePreset] = useState<string>('balanced');
-  const [fitWeights, setFitWeights] = useState<SchoolWeightParams>(WEIGHT_PRESETS.balanced);
+  const [fitWeights, setFitWeights] = useState<SchoolWeightParams>(initialState.weights);
 
   // Pagination state
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState<number>(SCHOOL_BROWSE_DEFAULT_PAGE_SIZE);
+  const [page, setPage] = useState(initialState.page);
+  const [pageSize, setPageSize] = useState<number>(initialState.pageSize);
 
   // View / density state (localStorage-persisted)
   const [viewMode, setViewMode] = useState<SchoolViewMode>('card');
@@ -124,6 +237,15 @@ export function BrowseTab() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: rankingListOptions } = useQuery<RankingListOption[]>({
+    queryKey: ['schools', 'ranking-lists', SCHOOL_DEFAULT_RANKING_SOURCE],
+    queryFn: () =>
+      apiClient.get<RankingListOption[]>(schoolRoutes.rankingLists(), {
+        suppressErrorToast: true,
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const countriesT = useTranslations('schools.countries');
   const countryLabel = useMemo(() => {
     if (country === 'ALL') return '';
@@ -142,8 +264,44 @@ export function BrowseTab() {
 
   // Reset to page 1 whenever any filter / sort / weight / pageSize changes
   useEffect(() => {
+    if (!didMountFiltersRef.current) {
+      didMountFiltersRef.current = true;
+      return;
+    }
     setPage(1);
-  }, [search, country, advancedFilters, sortBy, fitWeights, pageSize]);
+  }, [search, country, advancedFilters, sortBy, rankingList, fitWeights, pageSize]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const nextParams = buildSchoolQueryParams({
+      search,
+      country,
+      filters: advancedFilters,
+      page,
+      pageSize,
+      sortBy,
+      rankingSource: SCHOOL_DEFAULT_RANKING_SOURCE,
+      rankingList,
+      weights: fitWeights,
+    });
+    const next = new URLSearchParams(nextParams);
+    const nextQuery = next.toString();
+    if (nextQuery === searchParams.toString()) return;
+    const nextUrl = nextQuery
+      ? `${window.location.pathname}?${nextQuery}`
+      : window.location.pathname;
+    window.history.replaceState(null, '', nextUrl);
+  }, [
+    search,
+    country,
+    advancedFilters,
+    sortBy,
+    rankingList,
+    fitWeights,
+    page,
+    pageSize,
+    searchParams,
+  ]);
 
   // Derived filter counts
   const activeAdvancedFilterCount = useMemo(
@@ -151,9 +309,14 @@ export function BrowseTab() {
     [advancedFilters, country]
   );
 
-  const activeFilterCount = activeAdvancedFilterCount;
+  const activeRankingListFilterCount = rankingList === SCHOOL_DEFAULT_RANKING_LIST ? 0 : 1;
+  const activeFilterCount = activeAdvancedFilterCount + activeRankingListFilterCount;
 
-  const hasFilters = !!search || country !== 'ALL' || activeAdvancedFilterCount > 0;
+  const hasFilters =
+    !!search ||
+    country !== 'ALL' ||
+    activeAdvancedFilterCount > 0 ||
+    activeRankingListFilterCount > 0;
 
   // Fetch schools
   const {
@@ -162,7 +325,17 @@ export function BrowseTab() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['schools', search, country, advancedFilters, sortBy, fitWeights, page, pageSize],
+    queryKey: [
+      'schools',
+      search,
+      country,
+      advancedFilters,
+      sortBy,
+      rankingList,
+      fitWeights,
+      page,
+      pageSize,
+    ],
     queryFn: () =>
       apiClient.get<{ items: School[]; total: number }>(schoolRoutes.list(), {
         params: buildSchoolQueryParams({
@@ -172,6 +345,8 @@ export function BrowseTab() {
           page,
           pageSize,
           sortBy,
+          rankingSource: SCHOOL_DEFAULT_RANKING_SOURCE,
+          rankingList,
           weights: fitWeights,
         }),
         suppressErrorToast: true,
@@ -272,7 +447,13 @@ export function BrowseTab() {
     if (checked) {
       setSelectedSchools((prev) => [
         ...prev,
-        { id: school.id, name: school.name, nameZh: school.nameZh, usNewsRank: school.usNewsRank },
+        {
+          id: school.id,
+          name: school.name,
+          nameZh: school.nameZh,
+          usNewsRank: school.usNewsRank,
+          rankings: school.rankings,
+        },
       ]);
     } else {
       setSelectedSchools((prev) => prev.filter((s) => s.id !== school.id));
@@ -305,6 +486,7 @@ export function BrowseTab() {
   const resetAllFilters = useCallback(() => {
     setSearch('');
     setCountry('ALL');
+    setRankingList(SCHOOL_DEFAULT_RANKING_LIST);
     setAdvancedFilters(defaultAdvancedFilters);
   }, []);
 
@@ -345,6 +527,9 @@ export function BrowseTab() {
           pageSize={pageSize}
           sortBy={sortBy}
           onSortByChange={setSortBy}
+          rankingList={rankingList}
+          rankingListOptions={rankingListOptions}
+          onRankingListChange={setRankingList}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
           density={density}
@@ -373,6 +558,7 @@ export function BrowseTab() {
               sortBy={sortBy}
               onSortByChange={setSortBy}
               density={density}
+              preferredRankingList={rankingList}
             />
             <SchoolPagination
               page={page}
@@ -404,6 +590,7 @@ export function BrowseTab() {
             onPageChange={handlePageChange}
             onPageSizeChange={setPageSize}
             density={density}
+            preferredRankingList={rankingList}
           />
         )}
 

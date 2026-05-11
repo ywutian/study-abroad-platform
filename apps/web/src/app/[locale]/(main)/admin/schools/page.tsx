@@ -28,6 +28,7 @@ import { DataQualityTab } from './_components/data-quality-tab';
 import { DataSyncTab } from './_components/data-sync-tab';
 import { EditSchoolDialog } from './_components/edit-school-dialog';
 import { SchoolCommunityRatingsDialog } from './_components/school-community-ratings-dialog';
+import { MediaAssetsTab } from './_components/media-assets-tab';
 
 interface School {
   id: string;
@@ -109,7 +110,7 @@ interface DataQualityReport {
   }>;
 }
 
-const VALID_TABS = ['schools', 'quality', 'sync'] as const;
+const VALID_TABS = ['schools', 'media', 'quality', 'sync'] as const;
 type SchoolsTab = (typeof VALID_TABS)[number];
 
 export default function AdminSchoolsPage() {
@@ -251,6 +252,10 @@ export default function AdminSchoolsPage() {
               <BarChart3 className="h-4 w-4" />
               {t('dataQuality.title')}
             </TabsTrigger>
+            <TabsTrigger value="media" className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Media
+            </TabsTrigger>
             <TabsTrigger value="sync" className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
               {t('sidebar.dataSync')}
@@ -365,6 +370,10 @@ export default function AdminSchoolsPage() {
               isLoading={isQualityLoading}
               onRefresh={() => refetchQuality()}
             />
+          </TabsContent>
+
+          <TabsContent value="media" className="space-y-6">
+            <MediaAssetsTab />
           </TabsContent>
 
           {/* Data Sync Tab */}

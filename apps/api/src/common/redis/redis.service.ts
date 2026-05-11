@@ -6,15 +6,67 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { RedisMetricsCollector, RedisOpKind } from './redis-metrics.service';
+import {
+  categorizeError,
+  RedisErrorKind,
+  RedisMetricsCollector,
+  RedisOpKind,
+} from './redis-metrics.service';
 
 type RedisClient = Redis;
+
+interface RedisEndpointSpec {
+  label: string;
+  url?: string;
+  host?: string;
+  port?: number;
+  password?: string;
+}
+
+export interface RedisRuntimeState {
+  configured: boolean;
+  connected: boolean;
+  activeEndpoint: string | null;
+  circuitOpen: boolean;
+  circuitOpenUntil: string | null;
+  circuitReason: RedisErrorKind | null;
+  circuitMessage: string | null;
+  endpointCount: number;
+  availableEndpointCount: number;
+  lastErrorAt: string | null;
+  lastErrorKind: RedisErrorKind | null;
+  lastErrorMessage: string | null;
+}
+
+interface EndpointCircuit {
+  openUntil: number;
+  reason: RedisErrorKind;
+  message: string;
+}
+
+export interface HealthResult {
+  status: 'ok' | 'error';
+  latencyMs?: number;
+  message?: string;
+}
+
+const DEFAULT_COMMAND_TIMEOUT_MS = 1000;
+const DEFAULT_CIRCUIT_COOLDOWN_MS = 60 * 60 * 1000;
+const DEFAULT_HEALTH_PING_INTERVAL_MS = 60 * 1000;
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RedisService.name);
   private client: RedisClient | null = null;
   private isConnected = false;
+  private endpointSpecs: RedisEndpointSpec[] = [];
+  private activeEndpointIndex = -1;
+  private readonly endpointCircuits = new Map<string, EndpointCircuit>();
+  private lastErrorAt: number | null = null;
+  private lastErrorKind: RedisErrorKind | null = null;
+  private lastErrorMessage: string | null = null;
+  private lastHealthCheckAt = 0;
+  private lastHealthResult: HealthResult | null = null;
 
   constructor(
     private configService: ConfigService,
@@ -22,6 +74,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
+    this.endpointSpecs = this.loadEndpointSpecs();
+    this.endpointCircuits.clear();
     await this.connect();
   }
 
@@ -29,84 +83,353 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.disconnect();
   }
 
-  private async connect() {
-    const redisUrl = this.configService.get<string>('REDIS_URL');
-    const redisHost =
-      this.configService.get<string>('REDIS_HOST') || 'localhost';
-    const redisPort = this.configService.get<number>('REDIS_PORT') || 6379;
+  private loadEndpointSpecs(): RedisEndpointSpec[] {
+    const redisUrls = this.parseUrlList(
+      this.configService.get<string>('REDIS_CACHE_URLS') ??
+        this.configService.get<string>('REDIS_STATE_URLS') ??
+        this.configService.get<string>('REDIS_URLS') ??
+        this.configService.get<string>('REDIS_URL'),
+    );
+
+    if (redisUrls.length > 0) {
+      return redisUrls.map((url, index) => ({
+        label: `url:${index + 1}`,
+        url,
+      }));
+    }
+
+    const redisHost = this.configService.get<string>('REDIS_HOST');
+    const redisPort = this.configService.get<number>('REDIS_PORT');
     const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
-    const commandTimeoutMs =
-      this.configService.get<number>('REDIS_COMMAND_TIMEOUT_MS') ?? 5000;
+    if (!redisHost) {
+      return [];
+    }
 
-    try {
-      if (redisUrl) {
-        this.client = new Redis(redisUrl, { commandTimeout: commandTimeoutMs });
-      } else {
-        this.client = new Redis({
-          host: redisHost,
-          port: redisPort,
-          password: redisPassword || undefined,
-          commandTimeout: commandTimeoutMs,
-          retryStrategy: (times: number) => {
-            if (times > 3) {
-              this.logger.warn('Redis connection failed after 3 retries');
-              return null;
-            }
-            return Math.min(times * 200, 2000);
-          },
-        });
-      }
+    return [
+      {
+        label: `${redisHost}:${redisPort ?? 6379}`,
+        host: redisHost,
+        port: redisPort ?? 6379,
+        password: redisPassword || undefined,
+      },
+    ];
+  }
 
-      this.client.on('connect', () => {
-        this.isConnected = true;
-        this.logger.log('Redis connected');
-      });
+  private parseUrlList(raw?: string | null): string[] {
+    if (!raw) return [];
+    const trimmed = raw.trim();
+    if (!trimmed) return [];
 
-      this.client.on('error', (err: Error) => {
-        this.isConnected = false;
-        this.logger.warn(`Redis error: ${err.message}`);
-      });
-
-      this.client.on('close', () => {
-        this.isConnected = false;
-        this.logger.log('Redis disconnected');
-      });
-
-      // 测试连接
-      await this.client.ping();
-      this.isConnected = true;
-    } catch (error) {
-      const isProduction =
-        this.configService.get<string>('NODE_ENV') === 'production';
-      if (isProduction) {
-        this.logger.error(
-          'Redis connection failed in production — cache and rate limiting degraded',
-          error instanceof Error ? error.message : error,
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((value) => String(value).trim())
+            .filter((value) => value.length > 0);
+        }
+      } catch {
+        this.logger.warn(
+          'REDIS URL list is not valid JSON; falling back to CSV parsing',
         );
-      } else {
-        this.logger.warn('Redis not available, running without cache');
       }
+    }
+
+    return trimmed
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+  }
+
+  private async connect(startIndex = 0) {
+    await this.disconnect(false);
+
+    if (this.endpointSpecs.length === 0) {
+      this.isConnected = false;
+      this.client = null;
+      this.logger.warn(
+        'Redis not configured, running without Redis-backed cache',
+      );
+      return;
+    }
+
+    const commandTimeoutMs = this.getCommandTimeoutMs();
+    const attempts = this.endpointSpecs.length;
+
+    for (let offset = 0; offset < attempts; offset++) {
+      const index = (startIndex + offset) % this.endpointSpecs.length;
+      const spec = this.endpointSpecs[index];
+      if (this.isEndpointCircuitOpen(spec)) {
+        continue;
+      }
+
+      try {
+        const client = this.createClient(spec, commandTimeoutMs);
+        this.attachEventHandlers(client, spec);
+        this.client = client;
+        this.activeEndpointIndex = index;
+
+        await client.connect();
+        const start = Date.now();
+        await client.ping();
+        this.metrics.record({
+          op: 'admin',
+          key: `PING:${spec.label}`,
+          latencyMs: Date.now() - start,
+        });
+
+        this.isConnected = true;
+        this.logger.log(`Redis connected (${spec.label})`);
+        return;
+      } catch (error) {
+        this.rememberError(error);
+        this.metrics.record({
+          op: 'admin',
+          key: `CONNECT:${spec.label}`,
+          latencyMs: commandTimeoutMs,
+          error,
+        });
+        await this.destroyClientQuietly();
+        const { kind, message } = categorizeError(error);
+        this.logger.warn(`Redis connect failed (${spec.label}): ${message}`);
+        if (this.shouldOpenCircuit(kind)) {
+          await this.openCircuit(kind, message, spec);
+        }
+      }
+    }
+
+    this.client = null;
+    this.activeEndpointIndex = -1;
+    this.isConnected = false;
+  }
+
+  private createClient(
+    spec: RedisEndpointSpec,
+    commandTimeoutMs: number,
+  ): RedisClient {
+    const options = {
+      lazyConnect: true,
+      commandTimeout: commandTimeoutMs,
+      connectTimeout: commandTimeoutMs,
+      enableOfflineQueue: this.getBooleanConfig(
+        'REDIS_ENABLE_OFFLINE_QUEUE',
+        false,
+      ),
+      maxRetriesPerRequest: this.getNumberConfig(
+        'REDIS_MAX_RETRIES_PER_REQUEST',
+        1,
+      ),
+      retryStrategy: (times: number) => {
+        if (times > 1 || this.isEndpointCircuitOpen(spec)) {
+          this.logger.warn(`Redis retry stopped (${spec.label})`);
+          return null;
+        }
+        return Math.min(times * 200, 1000);
+      },
+      reconnectOnError: (error: Error) => {
+        const { kind, message } = categorizeError(error);
+        if (this.shouldOpenCircuit(kind)) {
+          void this.openCircuit(kind, message, spec);
+          return false;
+        }
+        return false;
+      },
+    } as const;
+
+    if (spec.url) {
+      return new Redis(spec.url, options);
+    }
+
+    return new Redis({
+      ...options,
+      host: spec.host,
+      port: spec.port,
+      password: spec.password,
+    });
+  }
+
+  private attachEventHandlers(client: RedisClient, spec: RedisEndpointSpec) {
+    client.on('connect', () => {
+      if (!this.isEndpointCircuitOpen(spec)) {
+        this.isConnected = true;
+      }
+    });
+
+    client.on('error', (err: Error) => {
+      const { kind, message } = categorizeError(err);
+      this.rememberError(err);
+      this.logger.warn(`Redis error (${spec.label}): ${message}`);
+      if (this.shouldOpenCircuit(kind)) {
+        void this.openCircuit(kind, message, spec);
+      } else {
+        this.isConnected = false;
+      }
+    });
+
+    client.on('close', () => {
+      this.isConnected = false;
+      this.logger.log(`Redis disconnected (${spec.label})`);
+    });
+  }
+
+  private async disconnect(useQuit = true) {
+    if (!this.client) {
+      this.isConnected = false;
+      return;
+    }
+
+    const client = this.client;
+    this.client = null;
+    this.isConnected = false;
+    try {
+      if (useQuit) {
+        await client.quit();
+      } else {
+        client.disconnect();
+      }
+    } catch {
+      client.disconnect();
+    }
+  }
+
+  private async destroyClientQuietly() {
+    if (!this.client) return;
+    try {
+      this.client.disconnect();
+    } catch {
+      // Best-effort cleanup.
+    } finally {
       this.client = null;
       this.isConnected = false;
     }
   }
 
-  private async disconnect() {
-    if (this.client) {
-      await this.client.quit();
-      this.client = null;
-      this.isConnected = false;
+  private getCommandTimeoutMs(): number {
+    return this.getNumberConfig(
+      'REDIS_COMMAND_TIMEOUT_MS',
+      DEFAULT_COMMAND_TIMEOUT_MS,
+    );
+  }
+
+  private getCircuitCooldownMs(): number {
+    return this.getNumberConfig(
+      'REDIS_CIRCUIT_BREAKER_COOLDOWN_MS',
+      DEFAULT_CIRCUIT_COOLDOWN_MS,
+    );
+  }
+
+  private getHealthPingIntervalMs(): number {
+    return this.getNumberConfig(
+      'REDIS_HEALTH_PING_INTERVAL_MS',
+      DEFAULT_HEALTH_PING_INTERVAL_MS,
+    );
+  }
+
+  private getNumberConfig(key: string, fallback: number): number {
+    const value = this.configService.get<number | string>(key);
+    const parsed =
+      typeof value === 'number' ? value : value ? Number(value) : fallback;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  private getBooleanConfig(key: string, fallback: boolean): boolean {
+    const value = this.configService.get<boolean | string>(key);
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true';
     }
+    return fallback;
+  }
+
+  private shouldOpenCircuit(kind: RedisErrorKind): boolean {
+    return (
+      kind === 'quota_exceeded' ||
+      kind === 'auth' ||
+      kind === 'timeout' ||
+      kind === 'connection'
+    );
+  }
+
+  private async openCircuit(
+    kind: RedisErrorKind,
+    message: string,
+    spec = this.endpointSpecs[this.activeEndpointIndex],
+  ) {
+    const openUntil = Date.now() + this.getCircuitCooldownMs();
+    const circuitMessage = message.slice(0, 500);
+    if (spec) {
+      this.endpointCircuits.set(spec.label, {
+        openUntil,
+        reason: kind,
+        message: circuitMessage,
+      });
+    }
+    this.isConnected = false;
+    await this.disconnect(false);
+    this.logger.error(
+      `Redis circuit opened for ${spec?.label ?? 'unknown endpoint'} for ${Math.ceil(
+        this.getCircuitCooldownMs() / 1000,
+      )}s due to ${kind}: ${circuitMessage}`,
+    );
+  }
+
+  private isEndpointCircuitOpen(spec?: RedisEndpointSpec): boolean {
+    if (!spec) return false;
+    const circuit = this.endpointCircuits.get(spec.label);
+    if (!circuit) return false;
+    if (circuit.openUntil <= Date.now()) {
+      this.endpointCircuits.delete(spec.label);
+      return false;
+    }
+    return true;
+  }
+
+  private availableEndpointCount(): number {
+    return this.endpointSpecs.filter(
+      (spec) => !this.isEndpointCircuitOpen(spec),
+    ).length;
+  }
+
+  private allEndpointsCircuitOpen(): boolean {
+    return this.endpointSpecs.length > 0 && this.availableEndpointCount() === 0;
+  }
+
+  private activeCircuit(): EndpointCircuit | null {
+    const active = this.endpointSpecs[this.activeEndpointIndex];
+    if (!active) return null;
+    if (!this.isEndpointCircuitOpen(active)) return null;
+    return this.endpointCircuits.get(active.label) ?? null;
+  }
+
+  private rememberError(error: unknown) {
+    const { kind, message } = categorizeError(error);
+    this.lastErrorAt = Date.now();
+    this.lastErrorKind = kind;
+    this.lastErrorMessage = message.slice(0, 500);
+  }
+
+  private async handleOperationError(
+    op: RedisOpKind,
+    key: string,
+    error: unknown,
+  ) {
+    const { kind, message } = categorizeError(error);
+    this.rememberError(error);
+    if (this.shouldOpenCircuit(kind)) {
+      await this.openCircuit(kind, message);
+      const nextIndex =
+        this.endpointSpecs.length > 1 && this.activeEndpointIndex >= 0
+          ? (this.activeEndpointIndex + 1) % this.endpointSpecs.length
+          : 0;
+      await this.connect(nextIndex);
+    }
+    this.logger.warn(`Redis ${op} degraded for ${key}: ${message}`);
   }
 
   /**
-   * Time + record one Redis operation. The driver call is delegated to
-   * `fn`; we capture latency, success/failure, and (for reads) hit/miss.
-   *
-   * `hit` is computed by `hitFromResult` if provided. Errors are
-   * re-thrown so callers retain their existing semantics — metrics
-   * collection is purely passive.
+   * Time + record one Redis operation. Driver errors are re-thrown to the
+   * caller; public methods decide the safe fallback for their operation.
    */
   private async record<T>(
     op: RedisOpKind,
@@ -132,14 +455,55 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  private async safeRecord<T>(
+    op: RedisOpKind,
+    key: string,
+    fallback: T,
+    fn: () => Promise<T>,
+    hitFromResult?: (value: T) => boolean,
+  ): Promise<T> {
+    if (!this.client || !this.connected) {
+      if (this.allEndpointsCircuitOpen()) {
+        this.metrics.record({
+          op,
+          key,
+          latencyMs: 0,
+          error: new Error('Redis circuit open'),
+        });
+      }
+      return fallback;
+    }
+
+    try {
+      return await this.record(op, key, fn, hitFromResult);
+    } catch (error) {
+      await this.handleOperationError(op, key, error);
+      return fallback;
+    }
+  }
+
   // 健康检查
-  async healthCheck(): Promise<{
-    status: 'ok' | 'error';
-    latencyMs?: number;
-    message?: string;
-  }> {
+  async healthCheck(): Promise<HealthResult> {
+    if (this.allEndpointsCircuitOpen()) {
+      const firstCircuit = Array.from(this.endpointCircuits.values()).find(
+        (circuit) => circuit.openUntil > Date.now(),
+      );
+      return {
+        status: 'error',
+        message: `Redis circuit open: ${firstCircuit?.reason ?? 'unknown'}`,
+      };
+    }
+
     if (!this.client || !this.isConnected) {
       return { status: 'error', message: 'Redis not connected' };
+    }
+
+    const now = Date.now();
+    if (
+      this.lastHealthResult &&
+      now - this.lastHealthCheckAt < this.getHealthPingIntervalMs()
+    ) {
+      return this.lastHealthResult;
     }
 
     try {
@@ -147,31 +511,32 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       await this.client.ping();
       const latencyMs = Date.now() - start;
       this.metrics.record({ op: 'admin', key: 'PING', latencyMs });
-      return { status: 'ok', latencyMs };
+      this.lastHealthCheckAt = now;
+      this.lastHealthResult = { status: 'ok', latencyMs };
+      return this.lastHealthResult;
     } catch (error) {
-      const latencyMs = Date.now() - 0; // not tracked precisely; healthCheck is best-effort
-      this.metrics.record({ op: 'admin', key: 'PING', latencyMs, error });
-      return {
-        status: 'error',
-        message: error instanceof Error ? error.message : 'Ping failed',
-      };
+      const message = error instanceof Error ? error.message : 'Ping failed';
+      this.metrics.record({ op: 'admin', key: 'PING', latencyMs: 0, error });
+      await this.handleOperationError('admin', 'PING', error);
+      this.lastHealthCheckAt = now;
+      this.lastHealthResult = { status: 'error', message };
+      return this.lastHealthResult;
     }
   }
 
   // 基本操作
   async get(key: string): Promise<string | null> {
-    if (!this.client) return null;
-    return this.record(
+    return this.safeRecord(
       'read',
       key,
+      null,
       () => this.client!.get(key),
       (v) => v !== null && v !== undefined,
     );
   }
 
   async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
-    if (!this.client) return;
-    await this.record('write', key, async () => {
+    await this.safeRecord('write', key, undefined, async () => {
       if (ttlSeconds !== undefined && ttlSeconds > 0) {
         await this.client!.set(key, value, 'EX', Math.floor(ttlSeconds));
       } else {
@@ -181,13 +546,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   async del(key: string): Promise<void> {
-    if (!this.client) return;
-    await this.record('delete', key, () => this.client!.del(key));
+    await this.safeRecord('delete', key, undefined, async () => {
+      await this.client!.del(key);
+    });
   }
 
   async delByPrefix(prefix: string): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('delete', `${prefix}*`, async () => {
+    return this.safeRecord('delete', `${prefix}*`, 0, async () => {
       let deleted = 0;
       let cursor = '0';
       do {
@@ -209,10 +574,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   async exists(key: string): Promise<boolean> {
-    if (!this.client) return false;
-    return this.record(
+    return this.safeRecord(
       'read',
       key,
+      false,
       async () => (await this.client!.exists(key)) === 1,
       (v) => v,
     );
@@ -235,94 +600,147 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   // 获取连接状态
   get connected(): boolean {
-    return this.isConnected;
+    const active = this.endpointSpecs[this.activeEndpointIndex];
+    return (
+      !!this.client &&
+      this.isConnected &&
+      (!active || !this.isEndpointCircuitOpen(active))
+    );
+  }
+
+  getRuntimeState(): RedisRuntimeState {
+    const circuit = this.activeCircuit();
+    const circuitOpen = this.allEndpointsCircuitOpen() || !!circuit;
+    const firstCircuit =
+      circuit ??
+      Array.from(this.endpointCircuits.values()).find(
+        (entry) => entry.openUntil > Date.now(),
+      ) ??
+      null;
+    const endpoint = this.endpointSpecs[this.activeEndpointIndex];
+    return {
+      configured: this.endpointSpecs.length > 0,
+      connected: this.connected,
+      activeEndpoint: endpoint?.label ?? null,
+      circuitOpen,
+      circuitOpenUntil: circuitOpen
+        ? new Date(firstCircuit?.openUntil ?? Date.now()).toISOString()
+        : null,
+      circuitReason: circuitOpen ? (firstCircuit?.reason ?? null) : null,
+      circuitMessage: circuitOpen ? (firstCircuit?.message ?? null) : null,
+      endpointCount: this.endpointSpecs.length,
+      availableEndpointCount: this.availableEndpointCount(),
+      lastErrorAt: this.lastErrorAt
+        ? new Date(this.lastErrorAt).toISOString()
+        : null,
+      lastErrorKind: this.lastErrorKind,
+      lastErrorMessage: this.lastErrorMessage,
+    };
   }
 
   // 获取原始客户端（高级用途）
   getClient(): RedisClient | null {
+    if (!this.connected) return null;
     return this.client;
   }
 
   // List 操作（用于通知等）
   async lpush(key: string, value: string): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('write', key, () => this.client!.lpush(key, value));
+    return this.safeRecord('write', key, 0, () =>
+      this.client!.lpush(key, value),
+    );
   }
 
   async lrange(key: string, start: number, stop: number): Promise<string[]> {
-    if (!this.client) return [];
-    return this.record(
+    return this.safeRecord(
       'read',
       key,
+      [],
       () => this.client!.lrange(key, start, stop),
       (arr) => arr.length > 0,
     );
   }
 
   async ltrim(key: string, start: number, stop: number): Promise<void> {
-    if (!this.client) return;
-    await this.record('write', key, () => this.client!.ltrim(key, start, stop));
+    await this.safeRecord('write', key, undefined, async () => {
+      await this.client!.ltrim(key, start, stop);
+    });
   }
 
   async lset(key: string, index: number, value: string): Promise<void> {
-    if (!this.client) return;
-    await this.record('write', key, () => this.client!.lset(key, index, value));
+    await this.safeRecord('write', key, undefined, async () => {
+      await this.client!.lset(key, index, value);
+    });
   }
 
   async lrem(key: string, count: number, value: string): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('delete', key, () =>
+    return this.safeRecord('delete', key, 0, () =>
       this.client!.lrem(key, count, value),
     );
   }
 
   async incr(key: string): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('atomic', key, () => this.client!.incr(key));
+    return this.safeRecord('atomic', key, 0, () => this.client!.incr(key));
   }
 
   async decr(key: string): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('atomic', key, () => this.client!.decr(key));
+    return this.safeRecord('atomic', key, 0, () => this.client!.decr(key));
   }
 
   async expire(key: string, seconds: number): Promise<void> {
-    if (!this.client) return;
-    await this.record('write', key, () => this.client!.expire(key, seconds));
+    await this.safeRecord('write', key, undefined, async () => {
+      await this.client!.expire(key, seconds);
+    });
   }
 
   // Set 操作（用于 tag-based 缓存管理）
   async sadd(key: string, ...members: string[]): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('write', key, () => this.client!.sadd(key, ...members));
+    return this.safeRecord('write', key, 0, () =>
+      this.client!.sadd(key, ...members),
+    );
   }
 
   async smembers(key: string): Promise<string[]> {
-    if (!this.client) return [];
-    return this.record(
+    return this.safeRecord(
       'read',
       key,
+      [],
       () => this.client!.smembers(key),
       (arr) => arr.length > 0,
     );
   }
 
   async srem(key: string, ...members: string[]): Promise<number> {
-    if (!this.client) return 0;
-    return this.record('delete', key, () => this.client!.srem(key, ...members));
+    return this.safeRecord('delete', key, 0, () =>
+      this.client!.srem(key, ...members),
+    );
   }
 
   /**
    * SET if Not eXists — returns true if the key was set, false if it already existed.
-   * Used for distributed idempotency locks.
+   * The default behavior is fail-open to preserve existing non-critical locks.
    */
   async setNX(
     key: string,
     value: string,
     ttlSeconds: number,
   ): Promise<boolean> {
-    if (!this.client) return true; // no Redis = allow through (degrade gracefully)
-    return this.record('atomic', key, async () => {
+    return this.safeRecord('atomic', key, true, async () => {
+      const result = await this.client!.set(key, value, 'EX', ttlSeconds, 'NX');
+      return result === 'OK';
+    });
+  }
+
+  /**
+   * Strict SET NX for automation locks. Redis failure returns false instead of
+   * pretending a distributed lock was acquired.
+   */
+  async setNXStrict(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    return this.safeRecord('atomic', key, false, async () => {
       const result = await this.client!.set(key, value, 'EX', ttlSeconds, 'NX');
       return result === 'OK';
     });

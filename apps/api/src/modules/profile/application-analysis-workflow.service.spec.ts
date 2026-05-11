@@ -253,6 +253,7 @@ describe('ApplicationAnalysisWorkflowService', () => {
           useValue: {
             connected: true,
             setNX: jest.fn().mockResolvedValue(true),
+            setNXStrict: jest.fn().mockResolvedValue(true),
             del: jest.fn().mockResolvedValue(1),
             delByPrefix: jest.fn().mockResolvedValue(0),
           },

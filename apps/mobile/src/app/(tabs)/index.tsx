@@ -10,6 +10,7 @@ import Animated, { FadeInDown, FadeInRight, SlideInUp } from 'react-native-reani
 
 import {
   Badge,
+  RankingBadge,
   EmptyState,
   AnimatedButton,
   AnimatedCard,
@@ -540,12 +541,12 @@ export default function HomeScreen() {
                 <AnimatedCard
                   onPress={() => router.push(`/school/${school.id}`)}
                   style={styles.schoolCard}
-                  accessibilityLabel={`${school.name}${school.usNewsRank ? `, #${school.usNewsRank} US News` : ''}`}
+                  accessibilityLabel={`${school.name}${school.usNewsRank ? `, US News legacy #${school.usNewsRank}` : ''}`}
                 >
                   <CardContent>
                     <SchoolAvatar
                       name={school.name}
-                      logoUrl={school.logoUrl}
+                      logoUrl={school.media?.logo?.url ?? school.logoUrl}
                       website={school.website}
                       size="lg"
                       style={styles.schoolLogo}
@@ -556,9 +557,7 @@ export default function HomeScreen() {
                     >
                       {school.name}
                     </Text>
-                    {school.usNewsRank && (
-                      <Badge variant="secondary">#{school.usNewsRank} US News</Badge>
-                    )}
+                    <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
                   </CardContent>
                 </AnimatedCard>
               </StaggeredItem>

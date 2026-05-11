@@ -10,6 +10,7 @@ import { SchoolWriteService } from './school-write.service';
 describe('SchoolService', () => {
   let service: SchoolService;
   let prismaService: PrismaService;
+  let redisService: RedisService;
 
   const mockSchool = {
     id: 'school-123',
@@ -109,6 +110,9 @@ describe('SchoolService', () => {
               count: jest.fn(),
               groupBy: jest.fn(),
             },
+            schoolRanking: {
+              groupBy: jest.fn(),
+            },
           },
         },
         {
@@ -135,6 +139,7 @@ describe('SchoolService', () => {
 
     service = module.get<SchoolService>(SchoolService);
     prismaService = module.get<PrismaService>(PrismaService);
+    redisService = module.get<RedisService>(RedisService);
   });
 
   afterEach(() => {
@@ -180,6 +185,24 @@ describe('SchoolService', () => {
       expect(result.items[0].testOptional).toBe(true);
     });
 
+    it('should continue from Postgres when Redis list cache is exhausted', async () => {
+      (redisService.getJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (redisService.setJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue(
+        mockSchools,
+      );
+      (prismaService.school.count as jest.Mock).mockResolvedValue(3);
+
+      const result = await service.findAll({ page: 1, pageSize: 20 });
+
+      expect(result.items).toHaveLength(3);
+      expect(prismaService.school.findMany).toHaveBeenCalled();
+    });
+
     it('should filter by country', async () => {
       (prismaService.school.findMany as jest.Mock).mockResolvedValue([
         mockSchool,
@@ -221,7 +244,10 @@ describe('SchoolService', () => {
       ]);
       (prismaService.school.count as jest.Mock).mockResolvedValue(100);
 
-      const result = await service.findAll({ page: 3, pageSize: 10 });
+      const result = await service.findAll(
+        { page: 3, pageSize: 10 },
+        { sortBy: 'name' },
+      );
 
       expect(prismaService.school.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -230,6 +256,173 @@ describe('SchoolService', () => {
         }),
       );
       expect(result.totalPages).toBe(10);
+    });
+
+    it('should sort catalog rank by comparable ranking lists before pagination', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'risd',
+          name: 'Rhode Island School of Design',
+          usNewsRank: 1,
+          rankings: [],
+        },
+        {
+          ...mockSchool,
+          id: 'princeton',
+          name: 'Princeton University',
+          usNewsRank: 1,
+          rankings: [],
+        },
+        {
+          ...mockSchool,
+          id: 'mit',
+          name: 'Massachusetts Institute of Technology',
+          usNewsRank: 2,
+          rankings: [],
+        },
+      ]);
+      (prismaService.school.count as jest.Mock).mockResolvedValue(3);
+
+      const result = await service.findAll({ page: 1, pageSize: 3 });
+
+      expect(result.items.map((school) => school.name)).toEqual([
+        'Princeton University',
+        'Massachusetts Institute of Technology',
+        'Rhode Island School of Design',
+      ]);
+      expect(prismaService.school.findMany).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          skip: expect.any(Number),
+          take: expect.any(Number),
+        }),
+      );
+    });
+
+    it('should filter and sort within a selected Music ranking list', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'princeton',
+          name: 'Princeton University',
+          usNewsRank: 1,
+          rankings: [
+            {
+              source: 'US_NEWS',
+              list: 'NATIONAL_UNIVERSITY',
+              rank: 1,
+              year: 2025,
+            },
+          ],
+        },
+        {
+          ...mockSchool,
+          id: 'juilliard',
+          name: 'The Juilliard School',
+          usNewsRank: 1,
+          rankings: [{ source: 'US_NEWS', list: 'MUSIC', rank: 1, year: 2025 }],
+        },
+      ]);
+
+      const result = await service.findAll(
+        { page: 1, pageSize: 10 },
+        { rankingList: 'MUSIC' },
+      );
+
+      expect(result.total).toBe(1);
+      expect(result.items.map((school) => school.name)).toEqual([
+        'The Juilliard School',
+      ]);
+    });
+
+    it('should apply rank range against the selected ranking list', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'juilliard',
+          name: 'The Juilliard School',
+          usNewsRank: 1,
+          rankings: [{ source: 'US_NEWS', list: 'MUSIC', rank: 1, year: 2025 }],
+        },
+        {
+          ...mockSchool,
+          id: 'berklee',
+          name: 'Berklee College of Music',
+          usNewsRank: 12,
+          rankings: [
+            { source: 'US_NEWS', list: 'MUSIC', rank: 12, year: 2025 },
+          ],
+        },
+      ]);
+
+      const result = await service.findAll(
+        { page: 1, pageSize: 10 },
+        { rankingList: 'MUSIC', rankMax: 5 },
+      );
+
+      expect(result.items.map((school) => school.name)).toEqual([
+        'The Juilliard School',
+      ]);
+    });
+
+    it('should use the selected ranking list for weighted sorting', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'juilliard',
+          name: 'The Juilliard School',
+          usNewsRank: 1,
+          acceptanceRate: 9,
+          tuition: 55000,
+          avgSalary: 80000,
+          rankings: [{ source: 'US_NEWS', list: 'MUSIC', rank: 1, year: 2025 }],
+        },
+        {
+          ...mockSchool,
+          id: 'berklee',
+          name: 'Berklee College of Music',
+          usNewsRank: 2,
+          acceptanceRate: 9,
+          tuition: 55000,
+          avgSalary: 80000,
+          rankings: [{ source: 'US_NEWS', list: 'MUSIC', rank: 2, year: 2025 }],
+        },
+        {
+          ...mockSchool,
+          id: 'princeton',
+          name: 'Princeton University',
+          usNewsRank: 1,
+          acceptanceRate: 9,
+          tuition: 55000,
+          avgSalary: 80000,
+          rankings: [
+            {
+              source: 'US_NEWS',
+              list: 'NATIONAL_UNIVERSITY',
+              rank: 1,
+              year: 2025,
+            },
+          ],
+        },
+      ]);
+
+      const result = await service.findAll(
+        { page: 1, pageSize: 10 },
+        {
+          sortBy: 'weighted',
+          rankingList: 'MUSIC',
+          weightRank: 100,
+          weightAcceptance: 0,
+          weightTuition: 0,
+          weightSalary: 0,
+        },
+      );
+
+      expect(result.total).toBe(2);
+      expect(result.items.map((school) => school.name)).toEqual([
+        'The Juilliard School',
+        'Berklee College of Music',
+      ]);
     });
 
     it('should map legacy testOptional filter to testingPolicy-compatible where clauses', async () => {
@@ -365,6 +558,88 @@ describe('SchoolService', () => {
           take: expect.any(Number),
         }),
       );
+    });
+  });
+
+  describe('getAvailableCountries', () => {
+    it('should continue from Postgres when Redis country cache is exhausted', async () => {
+      (redisService.getJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (redisService.setJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (prismaService.school.groupBy as jest.Mock).mockResolvedValue([
+        { country: 'US', _count: { _all: 2 } },
+        { country: 'UK', _count: { _all: 1 } },
+      ]);
+
+      await expect(service.getAvailableCountries()).resolves.toEqual([
+        { code: 'US', count: 2 },
+        { code: 'UK', count: 1 },
+      ]);
+    });
+  });
+
+  describe('getAvailableRankingLists', () => {
+    it('should return core and non-empty US News ranking lists', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          name: 'Princeton University',
+          institutionType: 'RESEARCH_UNIVERSITY',
+          usNewsRank: 1,
+          rankings: [
+            {
+              source: 'US_NEWS',
+              list: 'NATIONAL_UNIVERSITY',
+              rank: 1,
+              year: 2025,
+            },
+          ],
+        },
+        {
+          name: 'Williams College',
+          institutionType: 'LIBERAL_ARTS',
+          usNewsRank: 1,
+          rankings: [
+            { source: 'US_NEWS', list: 'LIBERAL_ARTS', rank: 1, year: 2025 },
+          ],
+        },
+        {
+          name: 'The Juilliard School',
+          institutionType: 'MUSIC_CONSERVATORY',
+          usNewsRank: 1,
+          rankings: [{ source: 'US_NEWS', list: 'MUSIC', rank: 1, year: 2025 }],
+        },
+        {
+          name: 'Berklee College of Music',
+          institutionType: 'MUSIC_CONSERVATORY',
+          usNewsRank: 2,
+          rankings: [],
+        },
+      ]);
+
+      const result = await service.getAvailableRankingLists();
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            list: 'US_NEWS_CORE',
+            count: 2,
+            verifiedCount: 2,
+            fallbackCount: 0,
+            isDefault: true,
+          }),
+          expect.objectContaining({
+            list: 'MUSIC',
+            count: 2,
+            verifiedCount: 1,
+            fallbackCount: 1,
+            isDefault: false,
+          }),
+        ]),
+      );
+      expect(result.some((item) => item.list === 'ART_DESIGN')).toBe(false);
     });
   });
 

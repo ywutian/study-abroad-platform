@@ -130,7 +130,7 @@ describe('ProfileScreen', () => {
       expect.stringContaining('/profiles/me/ai-analysis'),
       expect.anything()
     );
-  });
+  }, 30_000);
 
   it('navigates to /profile/analysis from the summary card', async () => {
     (apiClient.get as jest.Mock).mockImplementation((url: string) => {

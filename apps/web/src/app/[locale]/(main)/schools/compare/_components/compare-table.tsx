@@ -2,6 +2,7 @@
 
 import type { useFormatter, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { cn, getSchoolName } from '@/lib/utils';
 import type { CompareField, SchoolDetailForCompare } from './types';
 import { CATEGORY_FIELDS } from './compare-fields';
@@ -91,11 +92,11 @@ export function CompareTable({ schools, fields, locale, format, t }: CompareTabl
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="truncate max-w-[180px]">{getSchoolName(school, locale)}</span>
-                    {school.usNewsRank && (
-                      <span className="text-xs font-normal text-muted-foreground">
-                        #{school.usNewsRank} US News
-                      </span>
-                    )}
+                    <RankingBadge
+                      rankings={school.rankings}
+                      usNewsRank={school.usNewsRank}
+                      variant="plain"
+                    />
                   </div>
                 </th>
               ))}

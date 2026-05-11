@@ -1,4 +1,8 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, SchoolMediaType } from '@prisma/client';
+import type {
+  SchoolPublicMedia,
+  SchoolPublicMediaAsset,
+} from '@study-abroad/shared';
 import { toLegacyTestOptionalFlag } from '@study-abroad/shared/utils';
 import { SCHOOL_BASIC_SELECT } from '../../common/constants/prisma-selects';
 import { clampPercentRate } from '../../common/utils/percent.util';
@@ -22,11 +26,49 @@ export type SchoolListSchoolResult = Prisma.SchoolGetPayload<{
   select: typeof SCHOOL_LIST_SCHOOL_SELECT;
 }>;
 
+type SchoolListMediaAsset = SchoolListSchoolResult['mediaAssets'][number];
+
+function toPublicMediaAsset(
+  asset: SchoolListMediaAsset | undefined,
+): SchoolPublicMediaAsset | null {
+  if (!asset) return null;
+  const url = asset.storageUrl ?? asset.originalUrl;
+  if (!url) return null;
+  return {
+    url,
+    sourceType: asset.sourceType as SchoolPublicMediaAsset['sourceType'],
+    originalUrl: asset.originalUrl,
+    sourcePageUrl: asset.sourcePageUrl,
+    license: asset.license,
+    attribution: asset.attribution,
+    width: asset.width,
+    height: asset.height,
+  };
+}
+
+function mapSchoolMedia(
+  assets?: SchoolListMediaAsset[] | null,
+): SchoolPublicMedia {
+  const list = assets ?? [];
+  return {
+    campusCover: toPublicMediaAsset(
+      list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER),
+    ),
+    logo: toPublicMediaAsset(
+      list.find((asset) => asset.type === SchoolMediaType.LOGO),
+    ),
+  };
+}
+
 /**
  * Maps a Prisma School result to the school-list API response shape.
  * Single source of truth — eliminates 4 duplicate mapping blocks.
  */
-export function mapSchoolForList(school: SchoolListSchoolResult) {
+export function mapSchoolForList(
+  school:
+    | SchoolListSchoolResult
+    | (Record<string, any> & { mediaAssets?: SchoolListMediaAsset[] }),
+) {
   return {
     id: school.id,
     name: school.name,
@@ -53,6 +95,7 @@ export function mapSchoolForList(school: SchoolListSchoolResult) {
     averageAidPackage: school.averageAidPackage || undefined,
     averageNetPrice: school.averageNetPrice || undefined,
     logoUrl: school.logoUrl || undefined,
+    media: mapSchoolMedia(school.mediaAssets),
     website: school.website || undefined,
     scorecardId: school.scorecardId || undefined,
     ipedsId: school.ipedsId || undefined,

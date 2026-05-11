@@ -36,7 +36,7 @@ estimatedProbability 要求：你的录取概率估计应基于学生的 GPA、�
       "recommendedMajors": [{"name": "最推荐的专业（英文）", "reason": "推荐理由（中文）"}, {"name": "备选专业（英文）", "reason": "推荐理由（中文）"}],
       "reasons": ["推荐理由1（中文）", "推荐理由2（中文）"],
       "concerns": ["需要注意的点（中文）"],
-      "dataPoints": ["US News 综合排名 #12", "录取率 5.2%", "CS 专业排名 #3"]
+      "dataPoints": ["US News 已验证榜单 #12", "录取率 5.2%", "CS 专业排名 #3"]
     }
   ],
   "analysis": {
@@ -58,7 +58,7 @@ estimatedProbability 要求：你的录取概率估计应基于学生的 GPA、�
 
 重要：每所推荐学校的 dataPoints 必须引用具体数据佐证推荐理由（排名、录取率、特色项目等），不得使用模糊表述。
 
-重要：dataPoints 只能引用可公开验证的数据（如 US News 排名、录取率、SAT 中位数）。不得编造不确定的数据。
+重要：dataPoints 只能引用可公开验证的数据（如 US News 已验证榜单排名、录取率、SAT 中位数）。legacy/fallback 排名必须明确标注，不得说成官方已验证数据。
 
 所有文本字段必须用中文。
 
@@ -93,7 +93,7 @@ Return strict JSON:
       "recommendedMajors": [{"name": "Best-fit major (English)", "reason": "Why this major fits (English)"}, {"name": "Alternative major (English)", "reason": "Why this alternative (English)"}],
       "reasons": ["Reason 1 (English)", "Reason 2 (English)"],
       "concerns": ["Concern (English)"],
-      "dataPoints": ["US News #12", "5.2% acceptance rate", "CS ranked #3"]
+      "dataPoints": ["US News verified list #12", "5.2% acceptance rate", "CS ranked #3"]
     }
   ],
   "analysis": {

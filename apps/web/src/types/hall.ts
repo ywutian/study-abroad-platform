@@ -3,6 +3,7 @@
 
 import type { SwipeCaseData } from '@/components/features/hall/SwipeCard';
 import type { SwipeBadge } from '@/components/features/hall/BadgeDisplay';
+import type { SchoolRanking } from '@/lib/utils/ranking';
 
 type BadgeType = SwipeBadge;
 
@@ -43,7 +44,7 @@ export interface School {
   state?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
-  rankings?: { source: string; list: string; rank: number; year: number }[];
+  rankings?: SchoolRanking[];
 }
 
 // ============================================

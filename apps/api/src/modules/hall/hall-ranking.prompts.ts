@@ -82,7 +82,7 @@ export function buildRankingAnalysisUserPrompt(
 
 ## 学校信息
 - 学校: ${input.schoolName}
-- US News 排名: #${input.usNewsRank}
+- US News legacy 回退排名: #${input.usNewsRank}
 - 录取率: ${input.acceptanceRate}`;
   }
 
@@ -106,6 +106,6 @@ export function buildRankingAnalysisUserPrompt(
 
 ## School Info
 - School: ${input.schoolName}
-- US News Rank: #${input.usNewsRank}
+- US News legacy fallback rank: #${input.usNewsRank}
 - Acceptance Rate: ${input.acceptanceRate}`;
 }

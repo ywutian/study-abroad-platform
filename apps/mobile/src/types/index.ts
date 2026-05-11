@@ -19,6 +19,8 @@ export {
 
 // Import for local use in interfaces (re-export alone doesn't create local binding)
 import type { ConversationParticipant } from '@study-abroad/shared/types';
+import type { SchoolRanking } from '@study-abroad/shared/ranking';
+import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 
 // Re-export shared types
 export type {
@@ -153,6 +155,8 @@ export interface School {
   type?: string;
   acceptanceRate?: number;
   usNewsRank?: number;
+  rankings?: SchoolRanking[];
+  media?: SchoolPublicMedia;
   qsRank?: number;
   tuition?: number;
   avgSalary?: number;

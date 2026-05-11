@@ -6,6 +6,7 @@ import { GraduationCap, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { type SchoolRankingList } from '@/components/features/schools/school-filters';
 import { SchoolCard } from './SchoolCard';
 import { type School } from './schools-types';
 import { SchoolPagination } from './SchoolPagination';
@@ -30,6 +31,7 @@ interface SchoolGridProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   density?: 'comfortable' | 'compact';
+  preferredRankingList?: SchoolRankingList;
 }
 
 export function SchoolGrid({
@@ -51,6 +53,7 @@ export function SchoolGrid({
   totalPages,
   onPageChange,
   onPageSizeChange,
+  preferredRankingList,
 }: SchoolGridProps) {
   const t = useTranslations('schools');
   const tc = useTranslations('common');
@@ -104,6 +107,8 @@ export function SchoolGrid({
                 onToggleSelection={onToggleSelection}
                 onAddToList={onAddToList}
                 isAddingToList={isAddingToList}
+                preferredRankingList={preferredRankingList}
+                priorityMedia={index < 3}
               />
             </motion.div>
           ))}

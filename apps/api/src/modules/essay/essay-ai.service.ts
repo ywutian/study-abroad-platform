@@ -210,8 +210,8 @@ export class EssayAiService {
           locale,
         );
         schoolContext = isZh
-          ? `\n该校 US News 排名 #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${testingPolicyLabel ? `（${testingPolicyLabel}）` : ''}`
-          : `\nSchool ranked #${school.usNewsRank ?? 'N/A'} (US News), ${rate ?? 'N/A'} acceptance rate${testingPolicyLabel ? ` (${testingPolicyLabel})` : ''}`;
+          ? `\n该校 US News legacy 回退排名 #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${testingPolicyLabel ? `（${testingPolicyLabel}）` : ''}`
+          : `\nSchool legacy fallback rank #${school.usNewsRank ?? 'N/A'} (US News), ${rate ?? 'N/A'} acceptance rate${testingPolicyLabel ? ` (${testingPolicyLabel})` : ''}`;
       }
     }
 
@@ -580,8 +580,8 @@ export class EssayAiService {
           locale,
         );
         brainstormSchoolCtx = isZh
-          ? `（US News #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${testingPolicyLabel ? `，${testingPolicyLabel}` : ''}）`
-          : ` (US News #${school.usNewsRank ?? 'N/A'}, ${rate ?? 'N/A'} acceptance rate${testingPolicyLabel ? `, ${testingPolicyLabel}` : ''})`;
+          ? `（US News legacy #${school.usNewsRank ?? '未知'}，录取率 ${rate ?? '未知'}${testingPolicyLabel ? `，${testingPolicyLabel}` : ''}）`
+          : ` (US News legacy #${school.usNewsRank ?? 'N/A'}, ${rate ?? 'N/A'} acceptance rate${testingPolicyLabel ? `, ${testingPolicyLabel}` : ''})`;
       }
     }
 

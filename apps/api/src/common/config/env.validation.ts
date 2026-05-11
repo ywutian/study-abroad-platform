@@ -32,10 +32,31 @@ const envSchema = z.object({
 
   // --- Redis (Optional — graceful degradation) ---
   REDIS_URL: z.string().url().optional(),
+  REDIS_URLS: z.string().optional(),
+  REDIS_CACHE_URLS: z.string().optional(),
+  REDIS_STATE_URLS: z.string().optional(),
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.coerce.number().int().default(6379),
   REDIS_PASSWORD: z.string().optional(),
-  REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
+  REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().default(1000),
+  REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(3600000),
+  REDIS_HEALTH_PING_INTERVAL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60000),
+  REDIS_MAX_RETRIES_PER_REQUEST: z.coerce.number().int().min(0).default(1),
+  REDIS_ENABLE_OFFLINE_QUEUE: z.enum(['true', 'false']).default('false'),
+
+  // --- Scheduler governance ---
+  SCHEDULERS_ENABLED: z.enum(['true', 'false']).default('true'),
+  APPLICATION_ANALYSIS_AUTOMATION_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true'),
 
   // --- CORS ---
   CORS_ORIGINS: z.string().optional(),
@@ -224,7 +245,12 @@ export function validateEnv(
         'SENTRY_DSN is not set — error tracking disabled in production',
       );
     }
-    if (!result.data.REDIS_URL) {
+    if (
+      !result.data.REDIS_URL &&
+      !result.data.REDIS_URLS &&
+      !result.data.REDIS_CACHE_URLS &&
+      !result.data.REDIS_STATE_URLS
+    ) {
       logger.warn(
         'REDIS_URL is not set — caching and rate limiting will use in-memory fallback',
       );

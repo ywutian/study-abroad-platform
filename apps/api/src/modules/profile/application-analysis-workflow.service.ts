@@ -627,7 +627,7 @@ export class ApplicationAnalysisWorkflowService {
     const key = this.getSweepLockKey(mode);
     if (this.redis.connected) {
       try {
-        const acquired = await this.redis.setNX(
+        const acquired = await this.redis.setNXStrict(
           key,
           `${process.pid}:${Date.now()}`,
           ttlSeconds,

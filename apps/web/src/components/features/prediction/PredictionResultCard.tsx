@@ -7,12 +7,12 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import {
   Shield,
   ChevronDown,
   ChevronUp,
   Bot,
-  Trophy,
   Award,
   RefreshCw,
   CheckCircle2,
@@ -280,12 +280,11 @@ export const PredictionResultCard = memo(
               </div>
               {/* School metadata + meta line */}
               <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                {result.schoolMeta?.usNewsRank && (
-                  <Badge variant="secondary" className="text-xs py-0 gap-1">
-                    <Trophy className="h-3 w-3" />
-                    {t('rank', { rank: result.schoolMeta.usNewsRank })}
-                  </Badge>
-                )}
+                <RankingBadge
+                  rankings={result.schoolMeta?.rankings}
+                  usNewsRank={result.schoolMeta?.usNewsRank}
+                  variant="plain"
+                />
                 {result.schoolMeta?.acceptanceRate != null && (
                   <Badge variant="secondary" className="text-xs py-0">
                     {t('schoolAcceptanceRateLabel', {
@@ -664,10 +663,13 @@ export const PredictionResultCard = memo(
                             )}
                             {result.schoolMeta.usNewsRank != null && (
                               <div className="text-center p-2 rounded-lg bg-muted/30">
-                                <p className="text-xs text-muted-foreground">US News</p>
-                                <p className="font-semibold text-sm">
-                                  #{result.schoolMeta.usNewsRank}
-                                </p>
+                                <p className="text-xs text-muted-foreground">Ranking</p>
+                                <div className="mt-1 flex justify-center">
+                                  <RankingBadge
+                                    rankings={result.schoolMeta.rankings}
+                                    usNewsRank={result.schoolMeta.usNewsRank}
+                                  />
+                                </div>
                               </div>
                             )}
                             {result.schoolMeta.satAvg != null && (
