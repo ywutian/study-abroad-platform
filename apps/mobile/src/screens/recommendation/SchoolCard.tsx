@@ -3,9 +3,17 @@ import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-import { AnimatedCard, CardContent, Badge, Progress, AnimatedCounter } from '@/components/ui';
+import {
+  AnimatedCard,
+  CardContent,
+  Badge,
+  RankingBadge,
+  Progress,
+  AnimatedCounter,
+} from '@/components/ui';
 import { spacing, fontSize, fontWeight } from '@/utils/theme';
 import { formatAcceptanceRate } from '@/utils/format';
+import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 
 import { isSafeUrl } from '@study-abroad/shared/utils';
 
@@ -41,6 +49,13 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
     >
       <CardContent>
         <View style={styles.schoolCardHeader}>
+          <SchoolAvatar
+            name={school.schoolName}
+            logoUrl={school.schoolMeta?.media?.logo?.url ?? school.schoolMeta?.logoUrl}
+            website={school.schoolMeta?.website}
+            size="sm"
+            style={styles.schoolLogo}
+          />
           <View style={styles.schoolCardInfo}>
             <View style={styles.schoolNameRow}>
               <Text
@@ -65,11 +80,10 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
             </View>
             <View style={styles.schoolMetaRow}>
               <Badge variant={getTierBadgeVariant(school.tier)}>{getTierLabel(school.tier)}</Badge>
-              {school.schoolMeta?.usNewsRank && (
-                <Text style={[styles.rankText, { color: colors.foregroundMuted }]}>
-                  #{school.schoolMeta.usNewsRank} US News
-                </Text>
-              )}
+              <RankingBadge
+                rankings={school.schoolMeta?.rankings}
+                usNewsRank={school.schoolMeta?.usNewsRank}
+              />
             </View>
           </View>
           <View style={styles.fitScoreContainer}>
@@ -175,6 +189,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.md,
     gap: spacing.sm,
+  },
+  schoolLogo: {
+    marginRight: spacing.sm,
   },
   schoolNameRow: {
     flexDirection: 'row',

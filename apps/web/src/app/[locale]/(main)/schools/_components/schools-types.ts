@@ -1,4 +1,8 @@
-import type { SchoolCommunityRatingSummary, SchoolFieldSources } from '@study-abroad/shared';
+import type {
+  SchoolCommunityRatingSummary,
+  SchoolFieldSources,
+  SchoolPublicMedia,
+} from '@study-abroad/shared';
 import { type SchoolRanking } from '@/lib/utils/ranking';
 
 export interface School {
@@ -31,6 +35,7 @@ export interface School {
   hasEarlyDecision?: boolean;
   acceptsCommonApp?: boolean;
   rankings?: SchoolRanking[];
+  media?: SchoolPublicMedia;
   fieldSources?: SchoolFieldSources;
   communityRatingSummary?: SchoolCommunityRatingSummary;
   fitScore?: number;

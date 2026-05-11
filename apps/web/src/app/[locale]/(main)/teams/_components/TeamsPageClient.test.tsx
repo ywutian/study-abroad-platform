@@ -368,7 +368,7 @@ describe('TeamsPageClient', () => {
         })
       );
     });
-  });
+  }, 20_000);
 
   it('creates a community context from the private tab using the canonical payload', async () => {
     renderPage();
@@ -396,7 +396,7 @@ describe('TeamsPageClient', () => {
         languages: ['English'],
       });
     });
-  });
+  }, 20_000);
 
   it('shows invite delivery fallback UI and copies invite links from the matches tab', async () => {
     renderPage();

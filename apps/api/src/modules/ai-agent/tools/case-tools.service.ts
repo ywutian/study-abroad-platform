@@ -223,7 +223,7 @@ Provide an objective and professional analysis.`;
       const none = isZh ? '无' : 'None';
       const caseInfo = isZh
         ? `
-学校：${schoolName} (排名 #${admissionCase.school.usNewsRank || 'N/A'})
+学校：${schoolName} (US News legacy #${admissionCase.school.usNewsRank || 'N/A'})
 申请年份：${admissionCase.year}
 申请轮次：${admissionCase.round || unknown}
 专业：${admissionCase.major || unknown}
@@ -235,7 +235,7 @@ ACT范围：${admissionCase.actRange || unknown}
 结果：${admissionCase.result}
 录取率：${clampPercentRate(admissionCase.school.acceptanceRate) != null ? clampPercentRate(admissionCase.school.acceptanceRate) + '%' : unknown}`
         : `
-School: ${schoolName} (Rank #${admissionCase.school.usNewsRank || 'N/A'})
+School: ${schoolName} (US News legacy #${admissionCase.school.usNewsRank || 'N/A'})
 Application year: ${admissionCase.year}
 Round: ${admissionCase.round || unknown}
 Major: ${admissionCase.major || unknown}

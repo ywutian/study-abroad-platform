@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
 import { SchoolLogo } from '@/components/features';
-import { MapPin, Star, Target, Globe, ExternalLink } from 'lucide-react';
+import { MapPin, Target, Globe, ExternalLink } from 'lucide-react';
 
 import type { SchoolDetail, PredictionData } from './types';
 
@@ -27,23 +29,40 @@ export function SchoolHeroHeader({
   const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
   const showTestingPolicy = school.testingPolicy != null && school.testingPolicy !== 'UNKNOWN';
+  const [coverFailed, setCoverFailed] = useState(false);
+  const campusCover = school.media?.campusCover;
+  const campusCoverUrl = campusCover?.url && !coverFailed ? campusCover.url : null;
+  const logoUrl = school.media?.logo?.url ?? school.logoUrl;
+  const schoolName = getSchoolName(school, locale);
+  const schoolSubName = getSchoolSubName(school, locale);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative mb-8 overflow-hidden rounded-lg bg-primary/5 p-6 sm:p-8"
+      className="relative mb-8 overflow-hidden rounded-lg bg-primary/5"
     >
-      {/* Decorative elements */}
-      <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br bg-primary/10 blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+      {campusCoverUrl && (
+        <div className="relative h-48 w-full overflow-hidden bg-muted sm:h-56 lg:h-64">
+          <img
+            src={campusCoverUrl}
+            alt={schoolName}
+            loading="eager"
+            decoding="async"
+            onError={() => setCoverFailed(true)}
+            title={campusCover?.sourceType}
+            className="h-full w-full object-cover"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+        </div>
+      )}
 
-      <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+      <div className="relative z-10 flex flex-col gap-6 p-6 md:flex-row md:items-start md:justify-between sm:p-8">
         <div className="flex items-start gap-4">
           <SchoolLogo
-            logoUrl={school.logoUrl}
+            logoUrl={logoUrl}
             website={school.website}
-            name={getSchoolName(school, locale)}
+            name={schoolName}
             size="lg"
             variant="hero"
             rounded="lg"
@@ -51,16 +70,12 @@ export function SchoolHeroHeader({
 
           <div>
             <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h1 className="text-title">{getSchoolName(school, locale)}</h1>
-              {school.usNewsRank && school.usNewsRank <= 20 && (
-                <Badge variant="default" className="gap-1">
-                  <Star className="h-3 w-3" />
-                  Top {school.usNewsRank}
-                </Badge>
-              )}
-              {school.usNewsRank && school.usNewsRank > 20 && (
-                <Badge variant="info">#{school.usNewsRank} US News</Badge>
-              )}
+              <h1 className="text-title">{schoolName}</h1>
+              <RankingBadge
+                rankings={school.rankings}
+                usNewsRank={school.usNewsRank}
+                variant="amber"
+              />
               {isLoggedIn && predictionData?.current && (
                 <>
                   <Badge variant="secondary" className="gap-1">
@@ -109,11 +124,7 @@ export function SchoolHeroHeader({
                 </Badge>
               )}
             </div>
-            {getSchoolSubName(school, locale) && (
-              <p className="text-lg text-muted-foreground mb-2">
-                {getSchoolSubName(school, locale)}
-              </p>
-            )}
+            {schoolSubName && <p className="text-lg text-muted-foreground mb-2">{schoolSubName}</p>}
             <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4 text-rose-500 dark:text-rose-400" />

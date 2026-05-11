@@ -84,15 +84,23 @@
       "help": "帮助,支持"
     },
     "rankingList": {
-      "nationalUniversity": "综合",
+      "core": "本科主榜",
+      "nationalUniversity": "全美大学",
       "liberalArts": "文理",
+      "regionalUniversity": "区域",
       "artDesign": "艺术设计",
+      "music": "音乐",
+      "performingArts": "表演艺术",
       "engineering": "工程",
       "cs": "计算机",
       "business": "商科"
     },
-    "rankingTooltip": "{source} {year} 排名",
-    "rankingTooltipOverall": "US News 全美大学综合排名",
+    "rankingTooltip": "{source} {year} 已验证排名",
+    "rankingTooltipOverall": "US News 本科主榜是产品默认视图，组合展示 National Universities 与 Liberal Arts Colleges，并非 US News 官方单一总榜。",
+    "rankingTooltipFallback": "{source} {year} legacy 回退排名。正式使用前请按所选官方榜单核验。",
+    "rankingFallbackShort": "Legacy",
+    "rankingAria": "{source} {list} 第 {rank} 名",
+    "rankingAriaFallback": "{source} legacy 回退排名第 {rank} 名",
     "aria": {
       "moreOptions": "更多操作",
       "goBack": "返回",
@@ -299,7 +307,7 @@
       "awardsTitle": "奖项",
       "activityLabel": "活动 {index}",
       "awardLabel": "奖项 {index}",
-      "rankLabel": "US News 第 {rank} 名",
+      "rankLabel": "US News legacy 第 {rank} 名",
       "noSchoolsFound": "没有找到学校",
       "schoolEmpty": "搜索并添加至少一所学校，用来预测录取概率。",
       "steps": {
@@ -1948,7 +1956,7 @@
     "schoolsCount": "学校数",
     "weights": "权重设置",
     "weightsDesc": "调整各项指标的权重",
-    "usNewsRank": "US News 排名",
+    "usNewsRank": "US News 榜单排名",
     "acceptanceRate": "录取率",
     "acceptanceRateHint": "越低表示竞争越激烈",
     "tuition": "学费",
@@ -3349,7 +3357,7 @@
       "campus": "校园生活"
     },
     "fields": {
-      "usNewsRank": "US News 排名",
+      "usNewsRank": "US News 榜单排名",
       "qsRank": "QS 排名",
       "acceptanceRate": "录取率",
       "intlAcceptanceRate": "国际生录取率",
@@ -3385,15 +3393,19 @@
     "rankingList": {
       "nationalUniversity": "综合",
       "liberalArts": "文理",
+      "regionalUniversity": "区域",
       "artDesign": "艺术设计",
+      "music": "音乐",
+      "performingArts": "表演艺术",
       "engineering": "工程",
       "cs": "计算机",
       "business": "商科"
     },
     "dataSourceInfo": "数据来源：IPEDS / College Scorecard，请以各校官网信息为准。",
     "transferRate": "Transfer 录取率",
-    "rankingTooltip": "{source} {year} 排名",
-    "rankingTooltipOverall": "US News 全美大学综合排名",
+    "rankingTooltip": "{source} {year} 已验证排名",
+    "rankingTooltipOverall": "US News 本科主榜是产品默认视图，组合展示 National Universities 与 Liberal Arts Colleges，并非 US News 官方单一总榜。",
+    "rankingTooltipFallback": "{source} {year} legacy 回退排名。正式使用前请按所选官方榜单核验。",
     "visitWebsite": "访问{school}官方网站",
     "removeSelected": "移除{school}"
   },
@@ -3457,6 +3469,8 @@
       "densityComfortable": "宽松",
       "densityCompact": "紧凑",
       "sortLabel": "排序方式",
+      "rankingListLabel": "排名榜单",
+      "rankingFallbackCount": "{count} 回退",
       "resetAll": "全部清除",
       "removeFilter": "移除筛选",
       "rangeReadout": "第 {from}–{to} 条，共 {total} 条",
@@ -5346,7 +5360,7 @@
       "selectPIQ": "选择 PIQ (1-4)",
       "promptLabel": "题目 {number}: {label}",
       "piqLabel": "PIQ {number}: {label}",
-      "usNewsRanking": "US News 排名",
+      "usNewsRanking": "US News 榜单排名",
       "admitted": "录取",
       "rejected": "拒绝",
       "deferred": "延期",
@@ -5517,7 +5531,7 @@
       "cases": "案例"
     },
     "academicStats": "学术统计",
-    "usNewsRank": "US News 排名",
+    "usNewsRank": "US News 榜单排名",
     "qsRank": "QS 排名",
     "satAvg": "SAT 平均分",
     "actAvg": "ACT 平均分",
@@ -6849,7 +6863,7 @@
       "country": "国家/地区",
       "state": "州",
       "region": "区域偏好",
-      "usNewsRanking": "US News 排名",
+      "usNewsRanking": "US News 榜单排名",
       "acceptanceRange": "录取率范围",
       "annualTuition": "年学费 (万美元)",
       "postGradSalary": "毕业后年薪 (万美元)",
@@ -7457,7 +7471,7 @@
         "application": "申请方式"
       },
       "editDialog": {
-        "usNewsRank": "US News 排名",
+        "usNewsRank": "US News 榜单排名",
         "qsRank": "QS 排名",
         "testingPolicy": "标化政策",
         "testOptional": "可选提交标化",
@@ -9601,6 +9615,48 @@
       "noIssues": "所有学校数据均已完整",
       "refreshing": "刷新中...",
       "refresh": "刷新"
+    },
+    "media": {
+      "toast": {
+        "discoveryQueued": "媒体发现任务已加入队列",
+        "approved": "媒体已通过审核",
+        "rejected": "媒体已拒绝",
+        "retryCompleted": "媒体重试已完成",
+        "primaryUpdated": "主媒体已更新"
+      },
+      "coverage": {
+        "approvedCovers": "已通过封面",
+        "approvedCoversDesc": "用户侧可见的主校园图",
+        "pendingReview": "待审核",
+        "pendingReviewDesc": "主要为 Wikimedia 候选图",
+        "candidates": "候选图",
+        "candidatesDesc": "需要存储或配置审核",
+        "missingCovers": "缺失封面",
+        "missingCoversDesc": "仍在使用渐变回退图"
+      },
+      "review": {
+        "title": "校园媒体审核",
+        "description": "来源可审计：官网页面、官方品牌页、Wikimedia 或管理员手动上传。"
+      },
+      "actions": {
+        "discover": "发现 100 所",
+        "setPrimary": "设为主图"
+      },
+      "table": {
+        "preview": "预览",
+        "school": "学校",
+        "status": "状态",
+        "source": "来源",
+        "audit": "审计",
+        "actions": "操作",
+        "license": "许可：{license}"
+      },
+      "badges": {
+        "primary": "主图"
+      },
+      "links": {
+        "sourcePage": "来源页面"
+      }
     },
     "health": {
       "title": "系统健康",

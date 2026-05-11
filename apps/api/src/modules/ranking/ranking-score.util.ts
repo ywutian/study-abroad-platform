@@ -1,5 +1,10 @@
 import { Prisma } from '@prisma/client';
 import { nicheGradeToScore } from '@study-abroad/shared/scoring';
+import {
+  getCatalogRankSortValue,
+  type CatalogRanking,
+  type RankingListSelection,
+} from '../school/school-ranking-catalog';
 
 export interface RankingWeights {
   usNewsRank: number;
@@ -15,7 +20,10 @@ export interface RankingWeights {
 }
 
 export interface RankingScoreInput {
+  name?: string | null;
   usNewsRank?: number | null;
+  institutionType?: string | null;
+  rankings?: CatalogRanking[] | null;
   acceptanceRate?: number | Prisma.Decimal | null;
   tuition?: number | null;
   avgSalary?: number | null;
@@ -23,6 +31,10 @@ export interface RankingScoreInput {
   nicheSafetyGrade?: string | null;
   nicheLifeGrade?: string | null;
   nicheFoodGrade?: string | null;
+}
+
+export interface RankingScoreOptions {
+  rankingList?: RankingListSelection;
 }
 
 export interface RankingStats {
@@ -97,13 +109,16 @@ export function normalizeRankingWeights(
 
 export function calculateRankingStats<T extends RankingScoreInput>(
   schools: T[],
+  options: RankingScoreOptions = {},
 ): RankingStats {
   const numericValues = (extract: (s: T) => number | null) =>
     schools.map(extract).filter((v): v is number => v != null);
 
   return {
     usNewsRank: safeMinMax(
-      numericValues((school) => toFiniteNumber(school.usNewsRank)),
+      numericValues((school) =>
+        toFiniteNumber(getComparableRank(school, options.rankingList)),
+      ),
     ),
     acceptanceRate: safeMinMax(
       numericValues((school) => toFiniteNumber(school.acceptanceRate)),
@@ -137,9 +152,10 @@ export function calculateSchoolScore<T extends RankingScoreInput>(
   school: T,
   weights: RankingWeights,
   stats: RankingStats,
+  options: RankingScoreOptions = {},
 ): number {
   let score = 0;
-  const rank = toFiniteNumber(school.usNewsRank);
+  const rank = getComparableRank(school, options.rankingList);
   const acceptanceRate = toFiniteNumber(school.acceptanceRate);
   const tuition = toFiniteNumber(school.tuition);
   const avgSalary = toFiniteNumber(school.avgSalary);
@@ -192,15 +208,34 @@ export function calculateSchoolScore<T extends RankingScoreInput>(
   return score;
 }
 
+function getComparableRank<T extends RankingScoreInput>(
+  school: T,
+  rankingList?: RankingListSelection,
+): number | null {
+  if (school.name) {
+    return getCatalogRankSortValue(
+      {
+        name: school.name,
+        usNewsRank: school.usNewsRank,
+        institutionType: school.institutionType,
+        rankings: school.rankings,
+      },
+      rankingList,
+    );
+  }
+  return toFiniteNumber(school.usNewsRank);
+}
+
 export function scoreAndRankSchools<T extends RankingScoreInput>(
   schools: T[],
   weights: Partial<RankingWeights>,
+  options: RankingScoreOptions = {},
 ): Array<T & { score: number; rank: number }> {
   const normalizedWeights = normalizeRankingWeights(weights);
-  const stats = calculateRankingStats(schools);
+  const stats = calculateRankingStats(schools, options);
   const scoredSchools = schools.map((school) => ({
     ...school,
-    score: calculateSchoolScore(school, normalizedWeights, stats),
+    score: calculateSchoolScore(school, normalizedWeights, stats, options),
     rank: 0,
   }));
   const maxScore =

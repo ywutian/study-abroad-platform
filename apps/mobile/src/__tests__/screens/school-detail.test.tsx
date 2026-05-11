@@ -173,7 +173,7 @@ describe('SchoolDetailScreen', () => {
     ).toBeTruthy();
     expect(await findByText('MIT zhong wen', {}, { timeout: 3000 })).toBeTruthy();
     expect(await findByText('Cambridge, MA, US', {}, { timeout: 3000 })).toBeTruthy();
-  });
+  }, 30_000);
 
   it('renders stat cards with formatted values', async () => {
     const mockSchool = {

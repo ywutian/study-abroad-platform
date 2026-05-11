@@ -1,0 +1,41 @@
+# Keep Cloud Build source uploads small and deterministic.
+.git
+.gitignore
+.gcloudignore
+
+# Dependencies and package-manager caches
+node_modules
+**/node_modules
+.pnpm-store
+
+# Build outputs and local caches
+.turbo
+**/.turbo
+**/dist
+**/.next
+**/out
+**/coverage
+**/.nyc_output
+tmp
+e2e-report
+verification-report
+
+# Frontend/native build artifacts are huge and not needed for the API image.
+apps/web/.next
+apps/web/out
+apps/mobile/android/.gradle
+apps/mobile/android/app/build
+apps/mobile/android/build
+apps/mobile/ios/Pods
+apps/mobile/ios/build
+
+# Local secrets and logs
+.env
+.env.*
+**/.env
+**/.env.*
+*.log
+
+# Large generated research/data ledgers not required to build the API image.
+apps/api/scripts/cds-data/*.json
+apps/api/scripts/cds-data/*.jsonl

@@ -24,12 +24,14 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
+import type { SchoolRanking } from '@/lib/utils/ranking';
 
 export interface SelectedSchool {
   id: string;
   name: string;
   nameZh?: string;
   usNewsRank?: number;
+  rankings?: SchoolRanking[];
 }
 
 const ROUND_VALUES = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
@@ -208,11 +210,12 @@ export function FloatingAddButton({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {/* 排名 */}
-                      <div
-                        className="shrink-0 w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-xs font-bold text-primary"
-                        title={school.usNewsRank ? 'US News' : undefined}
-                      >
-                        {school.usNewsRank ? `#${school.usNewsRank}` : '-'}
+                      <div className="shrink-0 max-w-[150px]">
+                        <RankingBadge
+                          rankings={school.rankings}
+                          usNewsRank={school.usNewsRank}
+                          variant="plain"
+                        />
                       </div>
                       {/* 名称 */}
                       <div className="min-w-0">

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { SchoolPublicMedia } from '@study-abroad/shared';
 import {
   IsString,
   IsNotEmpty,
@@ -88,6 +89,7 @@ export class SchoolListItemResponseDto {
     hasEarlyDecision?: boolean;
     acceptsCommonApp?: boolean;
     logoUrl?: string;
+    media?: SchoolPublicMedia;
   };
 
   @ApiProperty({ enum: SchoolTier })

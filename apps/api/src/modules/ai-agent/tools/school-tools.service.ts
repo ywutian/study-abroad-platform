@@ -11,6 +11,10 @@ import {
 } from '@study-abroad/shared/utils';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { clampPercentRate } from '../../../common/utils/percent.util';
+import {
+  getCatalogRanking,
+  type CatalogRanking,
+} from '../../school/school-ranking-catalog';
 import { SchoolLookupHelper } from './helpers/school-lookup.helper';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
 
@@ -44,6 +48,7 @@ export class SchoolToolsService implements IToolHandlerProvider {
     rankRange?: string;
     maxTuition?: number;
     state?: string;
+    rankingList?: string;
   }) {
     const schools = await this.schoolLookup.searchSchools(args);
 
@@ -67,7 +72,9 @@ export class SchoolToolsService implements IToolHandlerProvider {
         name: s.name,
         nameZh: s.nameZh,
         state: s.state,
-        rank: s.usNewsRank,
+        rank: s.displayRanking?.rank ?? null,
+        ranking: s.displayRanking ?? null,
+        rankLabel: this.formatRankingLabel(s.displayRanking, 'en'),
         acceptanceRate:
           clampPercentRate(s.acceptanceRate) != null
             ? `${clampPercentRate(s.acceptanceRate)}%`
@@ -91,6 +98,17 @@ export class SchoolToolsService implements IToolHandlerProvider {
     // Fetch full school data
     const fullSchool = await this.prisma.school.findUnique({
       where: { id: school.id },
+      include: {
+        rankings: {
+          select: {
+            source: true,
+            list: true,
+            rank: true,
+            year: true,
+            sourceUrl: true,
+          },
+        },
+      },
     });
 
     if (!fullSchool) {
@@ -102,13 +120,24 @@ export class SchoolToolsService implements IToolHandlerProvider {
       testingPolicy: (fullSchool as any).testingPolicy,
       testOptional: (fullSchool as any).testOptional,
     });
+    const ranking = getCatalogRanking(
+      {
+        name: fullSchool.name,
+        institutionType: (fullSchool as any).institutionType,
+        usNewsRank: fullSchool.usNewsRank,
+        rankings: fullSchool.rankings,
+      },
+      'US_NEWS_CORE',
+    );
 
     return {
       id: fullSchool.id,
       name: fullSchool.name,
       nameZh: fullSchool.nameZh,
       state: fullSchool.state,
-      rank: fullSchool.usNewsRank,
+      rank: ranking?.rank ?? null,
+      ranking,
+      rankLabel: this.formatRankingLabel(ranking, locale),
       acceptanceRate:
         clampPercentRate(fullSchool.acceptanceRate) != null
           ? `${clampPercentRate(fullSchool.acceptanceRate)}%`
@@ -166,34 +195,73 @@ export class SchoolToolsService implements IToolHandlerProvider {
 
     const schools = await this.prisma.school.findMany({
       where: { id: { in: schoolIds } },
+      include: {
+        rankings: {
+          select: {
+            source: true,
+            list: true,
+            rank: true,
+            year: true,
+            sourceUrl: true,
+          },
+        },
+      },
     });
 
     return {
-      comparison: schools.map((s) => ({
-        testingPolicy: resolveSchoolTestingPolicyValue({
+      comparison: schools.map((s) => {
+        const testingPolicy = resolveSchoolTestingPolicyValue({
           testingPolicy: (s as any).testingPolicy,
           testOptional: (s as any).testOptional,
-        }),
-        name: s.name,
-        rank: s.usNewsRank,
-        acceptanceRate:
-          clampPercentRate(s.acceptanceRate) != null
-            ? `${clampPercentRate(s.acceptanceRate)}%`
-            : 'N/A',
-        tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',
-        avgSalary: s.avgSalary ? `$${s.avgSalary.toLocaleString()}` : 'N/A',
-        state: s.state,
-        testOptional:
-          toLegacyTestOptionalFlag({
-            testingPolicy: (s as any).testingPolicy,
-            testOptional: (s as any).testOptional,
-          }) ?? null,
-        retentionRate:
-          (s as any).retentionRate != null
-            ? `${(s as any).retentionRate}%`
-            : 'N/A',
-      })),
+        });
+        const ranking = getCatalogRanking(
+          {
+            name: s.name,
+            institutionType: (s as any).institutionType,
+            usNewsRank: s.usNewsRank,
+            rankings: s.rankings,
+          },
+          'US_NEWS_CORE',
+        );
+        return {
+          testingPolicy,
+          name: s.name,
+          rank: ranking?.rank ?? null,
+          ranking,
+          rankLabel: this.formatRankingLabel(ranking, locale),
+          acceptanceRate:
+            clampPercentRate(s.acceptanceRate) != null
+              ? `${clampPercentRate(s.acceptanceRate)}%`
+              : 'N/A',
+          tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',
+          avgSalary: s.avgSalary ? `$${s.avgSalary.toLocaleString()}` : 'N/A',
+          state: s.state,
+          testOptional:
+            toLegacyTestOptionalFlag({
+              testingPolicy,
+              testOptional: (s as any).testOptional,
+            }) ?? null,
+          retentionRate:
+            (s as any).retentionRate != null
+              ? `${(s as any).retentionRate}%`
+              : 'N/A',
+        };
+      }),
     };
+  }
+
+  private formatRankingLabel(
+    ranking: CatalogRanking | null | undefined,
+    locale: string,
+  ): string | null {
+    if (!ranking) return null;
+    const fallback =
+      ranking.confidence === 'fallback'
+        ? locale === 'zh'
+          ? '（回退数据）'
+          : ' (fallback)'
+        : '';
+    return `US News ${ranking.list} #${ranking.rank}${fallback}`;
   }
 
   /** Annotate each deadline with status relative to current date. */

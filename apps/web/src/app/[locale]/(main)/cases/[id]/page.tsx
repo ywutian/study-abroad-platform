@@ -10,6 +10,7 @@ import { caseRoutes } from '@study-abroad/shared';
 import { PageContainer } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Button } from '@/components/ui/button';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -26,7 +27,6 @@ import {
   Share2,
   Flag,
   FileText,
-  Trophy,
 } from 'lucide-react';
 import { ArticleJsonLd } from '@/components/seo';
 import { Link } from '@/lib/i18n/navigation';
@@ -124,12 +124,13 @@ export default function CaseDetailPage() {
           <div className="p-6 lg:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                {caseData.school?.usNewsRank && (
-                  <Badge className="mb-2.5 bg-amber-500 text-white border-0 text-sm px-3 py-1 gap-1">
-                    <Trophy className="h-4 w-4" />
-                    US News #{caseData.school.usNewsRank}
-                  </Badge>
-                )}
+                <div className="mb-2.5">
+                  <RankingBadge
+                    rankings={caseData.school?.rankings}
+                    usNewsRank={caseData.school?.usNewsRank}
+                    variant="amber"
+                  />
+                </div>
                 <h1 className="text-title-lg">{getSchoolName(caseData.school, locale)}</h1>
                 <p className="text-muted-foreground mt-1.5">
                   {caseData.year} · {caseData.round || 'RD'} ·{' '}
@@ -185,7 +186,11 @@ export default function CaseDetailPage() {
                   <InfoItem
                     icon={GraduationCap}
                     label={t('cases.detail.schoolRanking')}
-                    value={caseData.school?.usNewsRank ? `#${caseData.school.usNewsRank}` : '-'}
+                    value={
+                      caseData.school?.usNewsRank
+                        ? `US News legacy #${caseData.school.usNewsRank}`
+                        : '-'
+                    }
                   />
                   {caseData.nationality && (
                     <InfoItem

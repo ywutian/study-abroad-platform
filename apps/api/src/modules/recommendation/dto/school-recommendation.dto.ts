@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { SchoolPublicMedia } from '@study-abroad/shared';
 import {
   IsOptional,
   IsArray,
@@ -101,7 +102,7 @@ export class RecommendedSchoolDto {
   @ApiPropertyOptional({
     type: [String],
     description:
-      'Data points supporting the recommendation (e.g., "US News #12", "5.2% acceptance rate")',
+      'Data points supporting the recommendation (e.g., "US News verified list #12", "5.2% acceptance rate")',
   })
   dataPoints?: string[];
 
@@ -119,6 +120,7 @@ export class RecommendedSchoolDto {
     hasEarlyDecision?: boolean;
     retentionRate?: number;
     logoUrl?: string;
+    media?: SchoolPublicMedia;
     website?: string;
     sourceUrls?: {
       collegeScorecardUrl?: string;

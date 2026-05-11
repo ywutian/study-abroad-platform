@@ -1,4 +1,9 @@
-import { Prisma, DataReviewStatus } from '@prisma/client';
+import {
+  Prisma,
+  DataReviewStatus,
+  SchoolMediaSourceType,
+  SchoolMediaStatus,
+} from '@prisma/client';
 
 /**
  * Shared WHERE clause for approved case queries — use everywhere cases are exposed to non-admin users.
@@ -24,6 +29,36 @@ export const SCHOOL_RANKING_SELECT = {
   sourceUrl: true,
 } as const satisfies Prisma.SchoolRankingSelect;
 
+export const SCHOOL_PUBLIC_MEDIA_SOURCE_TYPES: SchoolMediaSourceType[] = [
+  SchoolMediaSourceType.OFFICIAL_WEBSITE,
+  SchoolMediaSourceType.OFFICIAL_BRAND_PAGE,
+  SchoolMediaSourceType.WIKIMEDIA_COMMONS,
+  SchoolMediaSourceType.LOGO_API,
+  SchoolMediaSourceType.FAVICON_FALLBACK,
+  SchoolMediaSourceType.MANUAL_ADMIN,
+];
+
+export const SCHOOL_PUBLIC_MEDIA_SELECT = {
+  type: true,
+  sourceType: true,
+  storageUrl: true,
+  originalUrl: true,
+  sourcePageUrl: true,
+  license: true,
+  attribution: true,
+  width: true,
+  height: true,
+} as const satisfies Prisma.SchoolMediaAssetSelect;
+
+export const SCHOOL_PUBLIC_MEDIA_RELATION_SELECT = {
+  where: {
+    status: SchoolMediaStatus.APPROVED,
+    isPrimary: true,
+    sourceType: { in: SCHOOL_PUBLIC_MEDIA_SOURCE_TYPES },
+  },
+  select: SCHOOL_PUBLIC_MEDIA_SELECT,
+} as const;
+
 export const SCHOOL_BASIC_SELECT = {
   id: true,
   name: true,
@@ -41,6 +76,7 @@ export const SCHOOL_BASIC_SELECT = {
   ipedsId: true,
   transferAcceptanceRate: true,
   rankings: { select: SCHOOL_RANKING_SELECT },
+  mediaAssets: SCHOOL_PUBLIC_MEDIA_RELATION_SELECT,
 } as const satisfies Prisma.SchoolSelect;
 
 /**

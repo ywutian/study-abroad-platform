@@ -46,12 +46,27 @@ describe('school-filters', () => {
       tuitionMin: '50000',
       salaryMin: '80000',
       sortBy: 'weighted',
+      rankingSource: 'US_NEWS',
+      rankingList: 'US_NEWS_CORE',
       weightRank: '30',
       weightAcceptance: '20',
       weightTuition: '25',
       weightSalary: '25',
     });
     expect(params).not.toHaveProperty('isPrivate');
+  });
+
+  it('serializes a selected US News ranking list', () => {
+    const params = buildSchoolQueryParams({
+      rankingList: 'MUSIC',
+      sortBy: 'rank',
+    });
+
+    expect(params).toMatchObject({
+      rankingSource: 'US_NEWS',
+      rankingList: 'MUSIC',
+      sortBy: 'rank',
+    });
   });
 
   it('drops US-only location filters when country is not US', () => {

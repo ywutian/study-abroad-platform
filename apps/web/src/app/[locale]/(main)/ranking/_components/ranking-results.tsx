@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingState } from '@/components/ui/loading-state';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { cn, getSchoolName, getSchoolSubName, formatAcceptanceRate } from '@/lib/utils';
+import type { SchoolRanking } from '@/lib/utils/ranking';
 import { BarChart3, Play, Medal, ExternalLink, ChevronRight } from 'lucide-react';
 import { useRouter } from '@/lib/i18n/navigation';
 
@@ -14,6 +16,7 @@ interface RankedSchool {
   name: string;
   nameZh: string;
   usNewsRank: number;
+  rankings?: SchoolRanking[];
   acceptanceRate: number;
   tuition: number;
   avgSalary: number;
@@ -100,8 +103,8 @@ export function RankingResults({ ranking, isLoading, onCalculate }: RankingResul
                       </div>
                       <div className="hidden sm:flex items-center gap-3">
                         <div className="text-center px-3">
-                          <p className="text-xs text-muted-foreground">US News</p>
-                          <p className="font-semibold">#{school.usNewsRank || '-'}</p>
+                          <p className="text-xs text-muted-foreground">Ranking</p>
+                          <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
                         </div>
                         <div className="text-center px-3 hidden md:block">
                           <p className="text-xs text-muted-foreground">

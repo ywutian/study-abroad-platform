@@ -330,8 +330,8 @@ export class HallRankingService {
           type: EntityType.SCHOOL,
           name: getSchoolDisplayName(school, locale),
           description: isZh
-            ? `US News 排名 #${school.usNewsRank || '未知'}`
-            : `US News Rank #${school.usNewsRank || 'N/A'}`,
+            ? `US News legacy 回退排名 #${school.usNewsRank || '未知'}`
+            : `US News legacy fallback rank #${school.usNewsRank || 'N/A'}`,
           attributes: {
             interestLevel: 'high',
             addedAt: new Date().toISOString(),

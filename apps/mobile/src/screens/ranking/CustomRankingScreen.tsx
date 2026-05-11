@@ -27,6 +27,7 @@ import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, type Colors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
+import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 import { apiClient } from '@/lib/api/client';
 
 interface RankingWeights {
@@ -41,6 +42,7 @@ interface RankedSchool {
   name: string;
   nameZh?: string;
   logoUrl?: string;
+  media?: SchoolPublicMedia;
   website?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
@@ -275,7 +277,7 @@ export default function CustomRankingScreen() {
                           <View style={styles.schoolInfo}>
                             <SchoolAvatar
                               name={school.name}
-                              logoUrl={school.logoUrl}
+                              logoUrl={school.media?.logo?.url ?? school.logoUrl}
                               website={school.website}
                               size="sm"
                             />

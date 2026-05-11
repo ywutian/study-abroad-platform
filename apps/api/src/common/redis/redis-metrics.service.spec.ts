@@ -11,6 +11,12 @@ describe('categorizeError', () => {
     expect(categorizeError(err).kind).toBe('quota_exceeded');
   });
 
+  it('detects local circuit breaker skips', () => {
+    expect(categorizeError(new Error('Redis circuit open')).kind).toBe(
+      'circuit_open',
+    );
+  });
+
   it('detects timeout', () => {
     expect(categorizeError(new Error('Command timed out')).kind).toBe(
       'timeout',

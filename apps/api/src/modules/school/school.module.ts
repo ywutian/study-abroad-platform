@@ -6,6 +6,7 @@ import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
 import { SchoolDataMerger } from './school-data-merger';
 import { SchoolLogoService } from './school-logo.service';
+import { SchoolMediaService } from './school-media.service';
 import { SchoolScraperScheduler } from './school-scraper.scheduler';
 import { DataSyncScheduler } from './data-sync.scheduler';
 import { SchoolProvenanceScheduler } from './school-provenance.scheduler';
@@ -32,6 +33,7 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolScraperService,
     SchoolDataMerger,
     SchoolLogoService,
+    SchoolMediaService,
     SchoolWriteService,
     SchoolScraperScheduler,
     DataSyncScheduler,
@@ -51,6 +53,7 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolScraperService,
     SchoolDataMerger,
     SchoolWriteService,
+    SchoolMediaService,
     SchoolProvenanceScheduler,
     HighSchoolService,
     IpedsDataService,

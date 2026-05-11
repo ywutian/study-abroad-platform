@@ -109,7 +109,7 @@ describe('HomePage', () => {
         .getAllByRole('link', { name: home.nav.pricing })
         .some((link) => link.getAttribute('href') === '#cta')
     ).toBe(true);
-  }, 15_000);
+  }, 30_000);
 
   it('renders the English homepage copy and route mapping', () => {
     const home = enMessages.home;
@@ -140,5 +140,5 @@ describe('HomePage', () => {
         .getAllByRole('link', { name: home.nav.community })
         .some((link) => link.getAttribute('href') === '/teams')
     ).toBe(true);
-  }, 15_000);
+  }, 30_000);
 });

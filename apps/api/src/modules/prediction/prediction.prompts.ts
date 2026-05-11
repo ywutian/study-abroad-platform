@@ -535,7 +535,7 @@ ${formatHighSchoolContext(profile, true)}
 ${formatAssessmentContext(profile.assessment, true)}${profile.isInternational ? `\n- 申请者身份: 国际生${profile.nationality ? `（${profile.nationality}）` : ''}${profile.educationSystem ? `，${profile.educationSystem}体系` : ''}${profile.needsFinancialAid ? '，需要助学金' : ''}` : ''}${profile.isLegacy && profile.legacySchools?.length ? `\n- 校友遗产 (Legacy): ${profile.legacySchools.join(', ')}` : ''}${profile.isFirstGen ? `\n- 第一代大学生: 是` : ''}${profile.essayQualityScore != null ? `\n- 文书质量: ${profile.essayQualityScore}/10（AI 评审）` : ''}
 
 ## 目标学校: ${schoolName}
-- US News 排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
+- US News legacy 回退排名: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
 - 录取率: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- 国际生录取率: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- 国际生比例: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind政策: 对国际生Need-Blind' : ''}
 - 毕业率: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - 平均 SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
@@ -618,7 +618,7 @@ ${formatHighSchoolContext(profile, false)}
 ${formatAssessmentContext(profile.assessment, false)}${profile.isInternational ? `\n- Applicant Status: International student${profile.nationality ? ` (${profile.nationality})` : ''}${profile.educationSystem ? `, ${profile.educationSystem} curriculum` : ''}${profile.needsFinancialAid ? ', needs financial aid' : ''}` : ''}${profile.isLegacy && profile.legacySchools?.length ? `\n- Legacy Status: ${profile.legacySchools.join(', ')}` : ''}${profile.isFirstGen ? `\n- First-Generation College Student: Yes` : ''}${profile.essayQualityScore != null ? `\n- Essay Quality: ${profile.essayQualityScore}/10 (from AI review)` : ''}
 
 ## Target School: ${schoolName}
-- US News Rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
+- US News legacy fallback rank: ${school.usNewsRank ? `#${school.usNewsRank}` : unknown}
 - Acceptance Rate: ${school.acceptanceRate ? `${school.acceptanceRate}%` : unknown}${school.intlAcceptanceRate ? `\n- International Acceptance Rate: ${school.intlAcceptanceRate}%` : ''}${school.intlStudentPct ? `\n- International Student %: ${school.intlStudentPct}%` : ''}${school.needBlindInternational ? '\n- Need-Blind for International Students: Yes' : ''}
 - Graduation Rate: ${school.graduationRate ? `${school.graduationRate}%` : unknown}
 - Average SAT: ${school.satAvg || unknown}${school.sat25 && school.sat75 ? ` (25th-75th: ${school.sat25}-${school.sat75})` : ''}
@@ -705,7 +705,13 @@ export function buildBatchPredictionPrompt(
   const schoolsList = schools
     .map((s) => {
       const name = isZh ? s.nameZh || s.name : s.name || s.nameZh;
-      const rank = s.usNewsRank ? `#${s.usNewsRank}` : isZh ? '未知' : 'N/A';
+      const rank = s.usNewsRank
+        ? isZh
+          ? `US News legacy #${s.usNewsRank}`
+          : `US News legacy #${s.usNewsRank}`
+        : isZh
+          ? '未知'
+          : 'N/A';
       const rate =
         s.acceptanceRate != null
           ? `${s.acceptanceRate}%`

@@ -1,4 +1,6 @@
 import { useColors } from '@/utils/theme';
+import type { SchoolRanking } from '@study-abroad/shared/ranking';
+import type { SchoolPublicMedia } from '@study-abroad/shared/types';
 
 // ============================================================
 // Types
@@ -15,6 +17,7 @@ export interface RecommendedSchool {
   schoolMeta?: {
     nameZh?: string;
     usNewsRank?: number;
+    rankings?: SchoolRanking[];
     acceptanceRate?: number;
     city?: string;
     state?: string;
@@ -24,6 +27,7 @@ export interface RecommendedSchool {
     hasEarlyDecision?: boolean;
     retentionRate?: number;
     logoUrl?: string;
+    media?: SchoolPublicMedia;
     website?: string;
   };
 }

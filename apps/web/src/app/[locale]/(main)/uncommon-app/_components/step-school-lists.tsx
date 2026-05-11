@@ -5,6 +5,7 @@ import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -78,9 +79,11 @@ export function StepSchoolLists({
                           className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 group"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-muted-foreground shrink-0">
-                              {item.school.usNewsRank ? `US News #${item.school.usNewsRank}` : '-'}
-                            </span>
+                            <RankingBadge
+                              rankings={item.school.rankings}
+                              usNewsRank={item.school.usNewsRank}
+                              variant="plain"
+                            />
                             <span className="text-sm">{getSchoolName(item.school, locale)}</span>
                             {item.isAIRecommended && (
                               <Badge variant="secondary" className="text-xs">

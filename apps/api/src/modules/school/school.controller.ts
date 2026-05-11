@@ -18,10 +18,16 @@ import { SchoolDataService } from './school-data.service';
 import { SchoolScraperService } from './school-scraper.service';
 import { SchoolDataMerger } from './school-data-merger';
 import { SchoolLogoService } from './school-logo.service';
+import { SchoolMediaService } from './school-media.service';
 import { SchoolQueryDto } from './dto/school-query.dto';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
 import { FillLogosDto } from './dto/fill-logos.dto';
+import {
+  SchoolMediaActionDto,
+  SchoolMediaDiscoverDto,
+  SchoolMediaListQueryDto,
+} from './dto/school-media.dto';
 import { UpdateSchoolCommunityRatingDto } from './dto/update-school-community-rating.dto';
 import { AdminSchoolCommunityRatingActionDto } from './dto/admin-school-community-rating-action.dto';
 import {
@@ -87,6 +93,7 @@ export class SchoolController {
     private readonly prisma: PrismaService,
     private readonly auditLogService: AuditLogService,
     private readonly schoolLogoService: SchoolLogoService,
+    private readonly schoolMediaService: SchoolMediaService,
     private readonly schoolListService: SchoolListService,
     private readonly urbanInstituteService: UrbanInstituteDataService,
     private readonly bigFutureService: BigFutureScrapeService,
@@ -116,6 +123,19 @@ export class SchoolController {
   })
   async getAvailableCountries() {
     return this.schoolService.getAvailableCountries();
+  }
+
+  @Get('ranking-lists')
+  @Public()
+  @Header(
+    'Cache-Control',
+    'public, max-age=300, s-maxage=600, stale-while-revalidate=300',
+  )
+  @ApiOperation({
+    summary: 'Get available school ranking lists',
+  })
+  async getAvailableRankingLists() {
+    return this.schoolService.getAvailableRankingLists();
   }
 
   @Get()
@@ -149,6 +169,8 @@ export class SchoolController {
       needBlind,
       hasEarlyDecision,
       sortBy,
+      rankingSource,
+      rankingList,
       weightRank,
       weightAcceptance,
       weightTuition,
@@ -178,6 +200,8 @@ export class SchoolController {
         needBlind,
         hasEarlyDecision,
         sortBy,
+        rankingSource,
+        rankingList,
         weightRank,
         weightAcceptance,
         weightTuition,
@@ -287,6 +311,90 @@ export class SchoolController {
     return this.schoolCommunityRatingService.restoreRating(ratingId, user.id);
   }
 
+  @Get('admin/media-assets')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'List school media assets for admin review' })
+  async listSchoolMediaAssets(@Query() query: SchoolMediaListQueryDto) {
+    return this.schoolMediaService.listAssets(query);
+  }
+
+  @Get('admin/media-coverage')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get school media coverage summary' })
+  async getSchoolMediaCoverage() {
+    return this.schoolMediaService.getCoverage();
+  }
+
+  @Post('admin/media/discover')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Discover school campus media from auditable sources',
+  })
+  async discoverSchoolMedia(
+    @Body() body: SchoolMediaDiscoverDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolMediaService.discoverMedia(body, user.id);
+  }
+
+  @Put('admin/media-assets/:assetId/approve')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Approve a school media asset and make it primary' })
+  async approveSchoolMediaAsset(
+    @Param('assetId') assetId: string,
+    @Body() body: SchoolMediaActionDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolMediaService.approveAsset(assetId, user.id, body.reason);
+  }
+
+  @Put('admin/media-assets/:assetId/reject')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Reject a school media asset' })
+  async rejectSchoolMediaAsset(
+    @Param('assetId') assetId: string,
+    @Body() body: SchoolMediaActionDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolMediaService.rejectAsset(assetId, user.id, body.reason);
+  }
+
+  @Put('admin/media-assets/:assetId/set-primary')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Set an approved school media asset as primary' })
+  async setPrimarySchoolMediaAsset(
+    @Param('assetId') assetId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolMediaService.setPrimary(assetId, user.id);
+  }
+
+  @Post('admin/media-assets/:assetId/retry')
+  @ApiBearerAuth()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Retry fetching a failed/candidate school media asset',
+  })
+  async retrySchoolMediaAsset(
+    @Param('assetId') assetId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.schoolMediaService.retryAsset(assetId, user.id);
+  }
+
   /**
    * P1: AI 个性化选校推荐
    * Delegates to SchoolListService which uses the stats-based scoring pipeline.
@@ -301,9 +409,13 @@ export class SchoolController {
 
     // Check Redis cache
     const cacheKey = `ai:recommend:${user.id}`;
-    const cached = await this.redis.getJSON<any>(cacheKey);
-    if (cached) {
-      return { ...cached, status: 'cached' as const };
+    try {
+      const cached = await this.redis.getJSON<any>(cacheKey);
+      if (cached) {
+        return { ...cached, status: 'cached' as const };
+      }
+    } catch {
+      // Redis is only a cache for recommendations.
     }
 
     try {
@@ -316,7 +428,11 @@ export class SchoolController {
         summary: '',
       };
 
-      await this.redis.setJSON(cacheKey, mapped, 7200);
+      try {
+        await this.redis.setJSON(cacheKey, mapped, 7200);
+      } catch {
+        // Redis is only a cache for recommendations.
+      }
       return { ...mapped, status: 'fresh' as const };
     } catch (error) {
       this.logger.error(

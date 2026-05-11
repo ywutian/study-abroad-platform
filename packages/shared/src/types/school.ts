@@ -1,4 +1,40 @@
+import type { SchoolRanking } from '../ranking';
+
 // School & Ranking
+
+export type SchoolMediaType = 'LOGO' | 'CAMPUS_COVER';
+
+export type SchoolMediaStatus =
+  | 'CANDIDATE'
+  | 'PENDING_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'FAILED'
+  | 'ARCHIVED';
+
+export type SchoolMediaSourceType =
+  | 'OFFICIAL_WEBSITE'
+  | 'OFFICIAL_BRAND_PAGE'
+  | 'WIKIMEDIA_COMMONS'
+  | 'LOGO_API'
+  | 'FAVICON_FALLBACK'
+  | 'MANUAL_ADMIN';
+
+export interface SchoolPublicMediaAsset {
+  url: string;
+  sourceType: SchoolMediaSourceType;
+  originalUrl?: string | null;
+  sourcePageUrl?: string | null;
+  license?: string | null;
+  attribution?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface SchoolPublicMedia {
+  campusCover: SchoolPublicMediaAsset | null;
+  logo: SchoolPublicMediaAsset | null;
+}
 
 export interface School {
   id: string;
@@ -11,6 +47,8 @@ export interface School {
   acceptanceRate?: number;
   tuition?: number;
   avgSalary?: number;
+  rankings?: SchoolRanking[];
+  media?: SchoolPublicMedia;
   testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
   testOptional?: boolean;
 }

@@ -35,6 +35,12 @@
       "require": "./dist/scoring/index.js",
       "default": "./dist/scoring/index.js"
     },
+    "./ranking": {
+      "types": "./src/ranking/index.ts",
+      "import": "./src/ranking/index.ts",
+      "require": "./dist/ranking/index.js",
+      "default": "./dist/ranking/index.js"
+    },
     "./schemas": {
       "types": "./src/schemas/index.ts",
       "import": "./src/schemas/index.ts",

@@ -6,6 +6,7 @@ import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { cn, formatAcceptanceRate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Progress } from '@/components/ui/progress';
 import {
   GraduationCap,
@@ -227,11 +228,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                   {getLocalizedName(data.schoolNameZh, data.schoolName, locale)}
                 </h3>
                 <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                  {data.usNewsRank && (
-                    <Badge variant="outline" className="shrink-0 text-2xs px-1.5 py-0">
-                      #{data.usNewsRank} US News
-                    </Badge>
-                  )}
+                  <RankingBadge usNewsRank={data.usNewsRank} variant="plain" />
                   {data.isPrivateSchool != null && (
                     <Badge variant="secondary" className="shrink-0 text-2xs px-1.5 py-0">
                       {data.isPrivateSchool ? t('privateSchool') : t('publicSchool')}

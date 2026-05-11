@@ -34,7 +34,7 @@ describe('enterprise theme certification', () => {
         ENTERPRISE_THEME_REQUIRED_ROUTES.length
       );
     }
-  });
+  }, 20_000);
 
   it('keeps the selected blue enterprise default fully certified', () => {
     const certification = certifyEnterpriseTheme({

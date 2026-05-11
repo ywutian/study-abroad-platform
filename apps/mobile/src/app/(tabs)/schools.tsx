@@ -1,5 +1,5 @@
 import React, { useState, memo, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, RefreshControl, Image } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import {
   CardContent,
   SearchBar,
   Badge,
+  RankingBadge,
   Loading,
   EmptyState,
   Skeleton,
@@ -31,7 +32,22 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
     <TouchableOpacity onPress={() => router.push(`/school/${item.id}`)} style={styles.cardWrapper}>
       <Card>
         <CardContent style={styles.cardContent}>
-          <SchoolAvatar name={item.name} logoUrl={item.logoUrl} website={item.website} size="lg" />
+          <View style={styles.mediaStack}>
+            {item.media?.campusCover?.url ? (
+              <Image
+                source={{ uri: item.media.campusCover.url }}
+                style={styles.coverThumb}
+                resizeMode="cover"
+              />
+            ) : null}
+            <SchoolAvatar
+              name={item.name}
+              logoUrl={item.media?.logo?.url ?? item.logoUrl}
+              website={item.website}
+              size="lg"
+              style={item.media?.campusCover?.url ? styles.logoOverlay : undefined}
+            />
+          </View>
           <View style={styles.schoolInfo}>
             <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
               {item.name}
@@ -40,7 +56,7 @@ const SchoolListItem = memo(function SchoolListItem({ item, colors }: SchoolList
               {item.city}, {item.state}
             </Text>
             <View style={styles.badges}>
-              {item.usNewsRank && <Badge variant="secondary">#{item.usNewsRank}</Badge>}
+              <RankingBadge rankings={item.rankings} usNewsRank={item.usNewsRank} />
               {item.acceptanceRate != null && (
                 <Badge variant="outline">{formatAcceptanceRate(Number(item.acceptanceRate))}</Badge>
               )}
@@ -276,6 +292,22 @@ const styles = StyleSheet.create({
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  mediaStack: {
+    width: 92,
+    height: 64,
+    justifyContent: 'center',
+  },
+  coverThumb: {
+    width: 92,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: '#e5e7eb',
+  },
+  logoOverlay: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
   },
   schoolInfo: {
     flex: 1,

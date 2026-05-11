@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ScrollView,
   TextInput,
+  Image,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +21,7 @@ import {
   AnimatedCard,
   CardContent,
   Badge,
+  RankingBadge,
   EmptyState,
   Loading,
   SearchBar,
@@ -159,7 +161,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
     >
       {/* Rank Range */}
       <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.rankRange', 'US News Rank')}
+        {t('findCollege.filters.rankRange', 'US News list rank')}
       </Text>
       <View style={styles.rangeRow}>
         <View style={styles.rangeInputWrapper}>
@@ -623,12 +625,22 @@ export default function FindCollegePage() {
           <AnimatedCard onPress={() => router.push(`/school/${item.id}`)} hapticFeedback>
             <CardContent style={styles.cardContent}>
               <View style={styles.cardTopRow}>
-                <SchoolAvatar
-                  name={item.name}
-                  logoUrl={item.logoUrl}
-                  website={item.website}
-                  size="lg"
-                />
+                <View style={styles.mediaStack}>
+                  {item.media?.campusCover?.url ? (
+                    <Image
+                      source={{ uri: item.media.campusCover.url }}
+                      style={styles.coverThumb}
+                      resizeMode="cover"
+                    />
+                  ) : null}
+                  <SchoolAvatar
+                    name={item.name}
+                    logoUrl={item.media?.logo?.url ?? item.logoUrl}
+                    website={item.website}
+                    size="lg"
+                    style={item.media?.campusCover?.url ? styles.logoOverlay : undefined}
+                  />
+                </View>
                 <View style={styles.schoolInfo}>
                   <Text style={[styles.schoolName, { color: colors.foreground }]} numberOfLines={2}>
                     {item.name}
@@ -671,7 +683,7 @@ export default function FindCollegePage() {
 
               {/* Stats Row */}
               <View style={styles.statsRow}>
-                {item.usNewsRank != null && <Badge variant="default">#{item.usNewsRank}</Badge>}
+                <RankingBadge rankings={item.rankings} usNewsRank={item.usNewsRank} />
                 {item.acceptanceRate != null && (
                   <Badge variant="outline">{formatAcceptanceRate(item.acceptanceRate)}</Badge>
                 )}
@@ -1015,6 +1027,22 @@ const styles = StyleSheet.create({
   cardTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  mediaStack: {
+    width: 92,
+    height: 64,
+    justifyContent: 'center',
+  },
+  coverThumb: {
+    width: 92,
+    height: 64,
+    borderRadius: borderRadius.md,
+    backgroundColor: '#e5e7eb',
+  },
+  logoOverlay: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
   },
   schoolInfo: {
     flex: 1,

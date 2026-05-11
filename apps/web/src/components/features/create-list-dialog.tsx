@@ -37,6 +37,7 @@ import { apiClient } from '@/lib/api';
 import { hallRoutes } from '@study-abroad/shared';
 import { Save, Loader2, Plus, X, GraduationCap } from 'lucide-react';
 import { RankingBadge } from '@/components/ui/ranking-badge';
+import type { SchoolRanking } from '@/lib/utils/ranking';
 import { getSchoolName } from '@/lib/utils';
 import { createListSchema, type ListFormValues } from '@/lib/validations/profile';
 import { SchoolSelector } from './school-selector';
@@ -56,7 +57,7 @@ interface School {
   state?: string;
   usNewsRank?: number;
   acceptanceRate?: number;
-  rankings?: { source: string; list: string; rank: number; year: number }[];
+  rankings?: SchoolRanking[];
 }
 
 interface CreateListDialogProps {

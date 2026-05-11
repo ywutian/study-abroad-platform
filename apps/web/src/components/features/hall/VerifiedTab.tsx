@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import {
   Select,
   SelectContent,
@@ -308,11 +309,7 @@ export function VerifiedTab() {
                         <span className="flex items-center gap-1">
                           <Building2 className="h-3 w-3" />
                           {getLocalizedName(user.schoolNameZh, user.schoolName, locale)}
-                          {user.schoolRank && (
-                            <Badge variant="outline" className="ml-1 text-xs">
-                              US News #{user.schoolRank}
-                            </Badge>
-                          )}
+                          <RankingBadge usNewsRank={user.schoolRank} variant="plain" />
                         </span>
                         <span>
                           {user.year} {user.round}

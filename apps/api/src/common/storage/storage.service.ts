@@ -21,6 +21,8 @@ export interface StorageFile {
   originalname: string;
 }
 
+type SchoolMediaKind = 'LOGO' | 'CAMPUS_COVER';
+
 /**
  * 存储后端类型
  *
@@ -145,6 +147,33 @@ export class StorageService implements OnModuleInit {
       path.extname(file.originalname) || this.extFromMime(file.mimetype);
     const fileHash = crypto.randomBytes(16).toString('hex');
     const key = `forum/${userId}/${fileHash}${fileExt}`;
+
+    switch (this.storageType) {
+      case 'local':
+        return this.uploadLocal(key, file.buffer);
+      case 's3':
+        return this.uploadS3(key, file.buffer, file.mimetype);
+      case 'oss':
+        return this.uploadOSS(key, file.buffer);
+      case 'cos':
+        return this.uploadCOS(key, file.buffer);
+      default:
+        return this.uploadLocal(key, file.buffer);
+    }
+  }
+
+  /**
+   * Upload an approved/candidate school media asset.
+   */
+  async uploadSchoolMedia(
+    schoolId: string,
+    type: SchoolMediaKind,
+    file: StorageFile & { hash?: string },
+  ): Promise<UploadResult> {
+    const fileExt =
+      path.extname(file.originalname) || this.extFromMime(file.mimetype);
+    const fileHash = file.hash || crypto.randomBytes(16).toString('hex');
+    const key = `schools/${schoolId}/${type.toLowerCase()}/${fileHash}${fileExt}`;
 
     switch (this.storageType) {
       case 'local':

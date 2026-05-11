@@ -14,6 +14,7 @@ import {
   isSupplementalFieldSource,
 } from '@/components/features/schools/school-display-utils';
 import { TrustBadge } from '@/components/features/schools/TrustBadge';
+import { RankingBadge } from '@/components/ui/ranking-badge';
 import { SchoolCommunityRatingCard } from './school-community-rating-card';
 import type { SchoolDetail } from './types';
 import { getSourceUrl } from './source-utils';
@@ -474,17 +475,11 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">{t('school.supplementalRanking')}</Badge>
                 </div>
-                {school.usNewsRank != null && (
-                  <StatRow
-                    label={t('school.usNewsRank')}
-                    value={`#${school.usNewsRank}`}
-                    source={getSchoolFieldSource(school, 'usNewsRank')}
-                    sourceUrl={
-                      getSchoolFieldSource(school, 'usNewsRank')
-                        ? getSourceUrl(getSchoolFieldSource(school, 'usNewsRank')!.source, school)
-                        : null
-                    }
-                  />
+                {(school.rankings?.length || school.usNewsRank != null) && (
+                  <div className="flex items-center justify-between gap-3 py-2">
+                    <span className="text-sm text-muted-foreground">{t('school.usNewsRank')}</span>
+                    <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
+                  </div>
                 )}
                 {school.qsRank != null && (
                   <StatRow

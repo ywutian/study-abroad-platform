@@ -479,7 +479,7 @@ ${targetTier ? `Target school tier: ${targetTier}` : ''}`;
 
               return isZh
                 ? `
-目标学校：${displayName} (排名 #${school.usNewsRank})
+目标学校：${displayName} (US News legacy #${school.usNewsRank})
 
 录取学生情况（${admittedCases.length}个案例）：
 - GPA范围分布：${gpaRanges.join(', ') || insufficient}
@@ -499,7 +499,7 @@ ${percLines || insufficient}
 
 请分析差距并给出建议。`
                 : `
-Target school: ${displayName} (Rank #${school.usNewsRank})
+Target school: ${displayName} (US News legacy #${school.usNewsRank})
 
 Admitted student data (${admittedCases.length} cases):
 - GPA range distribution: ${gpaRanges.join(', ') || insufficient}

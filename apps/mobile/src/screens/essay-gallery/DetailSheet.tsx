@@ -17,7 +17,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Badge, Segment } from '@/components/ui';
+import { Badge, RankingBadge, Segment } from '@/components/ui';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
@@ -131,13 +131,10 @@ export function DetailSheet({ essayId, onClose }: DetailSheetProps) {
               </View>
 
               <View style={S.detailBadgeRow}>
-                {essayDetail.school?.usNewsRank && (
-                  <View style={[S.rankBadge, { backgroundColor: c.info + '20' }]}>
-                    <Text style={[S.rankText, { color: c.info }]}>
-                      #{essayDetail.school.usNewsRank}
-                    </Text>
-                  </View>
-                )}
+                <RankingBadge
+                  rankings={essayDetail.school?.rankings}
+                  usNewsRank={essayDetail.school?.usNewsRank}
+                />
                 <Badge variant={resultBadgeVariant(essayDetail.result)}>
                   {resultLabel(essayDetail.result)}
                 </Badge>

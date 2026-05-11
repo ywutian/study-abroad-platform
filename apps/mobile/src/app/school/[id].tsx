@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
   Badge,
+  RankingBadge,
   Button,
   Loading,
   ErrorState,
@@ -175,11 +176,9 @@ export default function SchoolDetailScreen() {
             </CardHeader>
             <CardContent>
               <View style={styles.rankingsRow}>
-                {school.usNewsRank && (
+                {(school.rankings?.length || school.usNewsRank) && (
                   <View style={styles.rankItem}>
-                    <Text style={[styles.rankValue, { color: colors.primary }]}>
-                      #{school.usNewsRank}
-                    </Text>
+                    <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
                     <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
                       {t('schools.detail.usnewsRank')}
                     </Text>
@@ -353,12 +352,19 @@ export default function SchoolDetailScreen() {
           entering={FadeInDown.duration(400).springify()}
           style={[styles.header, { backgroundColor: colors.card }]}
         >
+          {school.media?.campusCover?.url ? (
+            <Image
+              source={{ uri: school.media.campusCover.url }}
+              style={styles.coverImage}
+              resizeMode="cover"
+            />
+          ) : null}
           <SchoolAvatar
             name={school.name}
-            logoUrl={school.logoUrl}
+            logoUrl={school.media?.logo?.url ?? school.logoUrl}
             website={school.website}
             size="xl"
-            style={styles.logo}
+            style={[styles.logo, school.media?.campusCover?.url ? styles.logoOnCover : null]}
           />
           <Text style={[styles.name, { color: colors.foreground }]}>{school.name}</Text>
           {school.nameZh && (
@@ -414,11 +420,22 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
+    overflow: 'hidden',
     padding: spacing.xl,
     paddingTop: spacing['2xl'],
   },
+  coverImage: {
+    width: '100%',
+    height: 180,
+    marginTop: -spacing['2xl'],
+    marginBottom: spacing.md,
+    backgroundColor: '#e5e7eb',
+  },
   logo: {
     marginBottom: spacing.lg,
+  },
+  logoOnCover: {
+    marginTop: -44,
   },
   name: {
     fontSize: fontSize.xl,

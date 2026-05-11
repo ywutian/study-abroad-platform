@@ -9,6 +9,12 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../../../common/utils/school-name.util';
 import { getSchoolDisplayName } from '../../../../common/utils/locale.util';
+import {
+  compareSchoolsByCatalogRank,
+  getCatalogRanking,
+  getCoreRankingForRange,
+  normalizeRankingListSelection,
+} from '../../../school/school-ranking-catalog';
 
 type SchoolSelect = {
   id: string;
@@ -97,8 +103,10 @@ export class SchoolLookupHelper {
     rankRange?: string;
     maxTuition?: number;
     state?: string;
+    rankingList?: string;
   }) {
     const where: any = {};
+    const rankingList = normalizeRankingListSelection(args.rankingList);
 
     if (args.query) {
       const searchTerm = args.query.trim();
@@ -118,10 +126,7 @@ export class SchoolLookupHelper {
       ];
     }
 
-    if (args.rankRange) {
-      const [min, max] = args.rankRange.split('-').map(Number);
-      where.usNewsRank = { gte: min, lte: max };
-    }
+    const rankRange = this.parseRankRange(args.rankRange);
 
     if (args.maxTuition) {
       where.tuition = { lte: args.maxTuition };
@@ -131,21 +136,52 @@ export class SchoolLookupHelper {
       where.state = args.state;
     }
 
-    return this.prisma.school.findMany({
+    const schools = await this.prisma.school.findMany({
       where,
-      take: 20,
       orderBy: { usNewsRank: 'asc' },
       select: {
         id: true,
         name: true,
         nameZh: true,
         state: true,
+        institutionType: true,
         usNewsRank: true,
         acceptanceRate: true,
         tuition: true,
         aliases: true,
+        rankings: {
+          select: {
+            source: true,
+            list: true,
+            rank: true,
+            year: true,
+            sourceUrl: true,
+          },
+        },
       },
     });
+
+    const filtered = rankRange
+      ? schools.filter((school) => {
+          const ranking =
+            rankingList === 'US_NEWS_CORE'
+              ? getCoreRankingForRange(school)
+              : getCatalogRanking(school, rankingList);
+          return (
+            ranking &&
+            ranking.rank >= rankRange.min &&
+            ranking.rank <= rankRange.max
+          );
+        })
+      : schools;
+
+    return filtered
+      .sort((a, b) => compareSchoolsByCatalogRank(a, b, rankingList))
+      .slice(0, 20)
+      .map((school) => ({
+        ...school,
+        displayRanking: getCatalogRanking(school, rankingList),
+      }));
   }
 
   /**
@@ -167,7 +203,7 @@ export class SchoolLookupHelper {
       const scoreA = this.getRelevanceScore(a, lowerSearch, searchTerm);
       const scoreB = this.getRelevanceScore(b, lowerSearch, searchTerm);
       if (scoreB !== scoreA) return scoreB - scoreA;
-      return (a.usNewsRank ?? 9999) - (b.usNewsRank ?? 9999);
+      return compareSchoolsByCatalogRank(a, b);
     });
   }
 
@@ -201,11 +237,21 @@ export class SchoolLookupHelper {
       }
     }
 
-    if (school.usNewsRank) {
-      if (school.usNewsRank <= 20) score += 10;
-      else if (school.usNewsRank <= 50) score += 5;
+    const ranking = getCatalogRanking(school);
+    if (ranking) {
+      if (ranking.rank <= 20) score += 10;
+      else if (ranking.rank <= 50) score += 5;
     }
 
     return score;
+  }
+
+  private parseRankRange(
+    rankRange?: string,
+  ): { min: number; max: number } | null {
+    if (!rankRange) return null;
+    const [min, max] = rankRange.split('-').map(Number);
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return null;
+    return { min: Math.max(1, min), max: Math.max(min, max) };
   }
 }

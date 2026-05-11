@@ -2,7 +2,9 @@ import type {
   ProvenanceRecord,
   SchoolCommunityRatingSummary,
   SchoolFieldSources,
+  SchoolPublicMedia,
 } from '@study-abroad/shared';
+import type { SchoolRanking } from '@/lib/utils/ranking';
 
 export interface SchoolDetail {
   id: string;
@@ -14,6 +16,8 @@ export interface SchoolDetail {
   website?: string;
   usNewsRank?: number;
   qsRank?: number;
+  rankings?: SchoolRanking[];
+  media?: SchoolPublicMedia;
   acceptanceRate?: number;
   tuition?: number;
   avgSalary?: number;
