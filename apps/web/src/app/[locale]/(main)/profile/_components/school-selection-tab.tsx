@@ -31,6 +31,7 @@ import {
   Calendar,
   Sparkles,
   MoreHorizontal,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -40,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/navigation';
 import { apiClient } from '@/lib/api';
@@ -74,6 +76,7 @@ const ESSAY_TYPE_STYLES: Record<string, string> = {
 
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'SCEA', 'RD', 'ROLLING'] as const;
 const COMMON_ROUNDS = ['ED', 'EA', 'RD', 'ROLLING'] as const;
+const ROUND_LEGEND_KEYS = ['ED', 'ED2', 'EA', 'REA', 'SCEA', 'RD', 'ROLLING'] as const;
 
 const BINDING_ROUNDS = ['ED', 'ED2', 'REA', 'SCEA'];
 const EARLY_DECISION_GROUP = ['ED', 'ED2'];
@@ -212,6 +215,7 @@ export function SchoolSelectionTab({
   const router = useRouter();
   const [roundFilter, setRoundFilter] = useState<string>('ALL');
   const [expandedSchoolId, setExpandedSchoolId] = useState<string | null>(null);
+  const [roundLegendOpen, setRoundLegendOpen] = useState(false);
 
   const roundCounts = useMemo(() => {
     const counts: Record<string, number> = { ALL: targetSchools.length };
@@ -315,6 +319,25 @@ export function SchoolSelectionTab({
               ))}
             </SelectContent>
           </Select>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 shrink-0 text-muted-foreground sm:h-9 sm:w-9"
+                  onClick={() => setRoundLegendOpen(true)}
+                  aria-label={t('profile.schoolSelection.roundShowLegend')}
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">{t('profile.schoolSelection.roundShowLegend')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button onClick={onOpenSchoolSelector} className="gap-2">
             <Plus className="h-4 w-4" />
             {t('profile.actions.addSchool')}
@@ -669,6 +692,27 @@ export function SchoolSelectionTab({
             </Tooltip>
           </p>
         </TooltipProvider>
+
+        {/* Round legend — explains ED / ED2 / EA / REA / SCEA / RD / ROLLING */}
+        <Dialog open={roundLegendOpen} onOpenChange={setRoundLegendOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{t('profile.schoolSelection.roundGlossaryTitle')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              {ROUND_LEGEND_KEYS.map((round) => (
+                <div key={round} className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-0.5 shrink-0 text-xs font-mono">
+                    {round}
+                  </Badge>
+                  <p className="text-sm text-muted-foreground">
+                    {t(`profile.schoolSelection.roundLegend.${round}`)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

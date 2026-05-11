@@ -1380,6 +1380,7 @@
   "profile": {
     "title": "My Profile",
     "description": "Create and manage your application profile",
+    "tabErrorsAria": "{count, plural, one {# unresolved field} other {# unresolved fields}}",
     "basicInfo": "Basic Info",
     "basicInfoDesc": "Fill in your basic information",
     "testScores": "Test Scores",
@@ -1463,6 +1464,17 @@
       "netPrice": "Net Price",
       "needMet": "Need Met",
       "bindingConflict": "You already have a {round} application to {school}. Only one binding-round school allowed.",
+      "roundGlossaryTitle": "Application rounds",
+      "roundLegend": {
+        "ED": "Early Decision — binding. If admitted you must enroll. Only one ED allowed.",
+        "ED2": "Early Decision II — later binding round. Same rules as ED.",
+        "EA": "Early Action — non-binding. Apply early, decide later. Often stackable with EA elsewhere.",
+        "REA": "Restrictive Early Action — non-binding but blocks other early apps to private schools.",
+        "SCEA": "Single-Choice Early Action — non-binding, but you can only apply early to this school.",
+        "RD": "Regular Decision — standard non-binding round.",
+        "ROLLING": "Rolling Admission — schools review as applications arrive."
+      },
+      "roundShowLegend": "What do ED / EA / REA mean?",
       "roundsNoDeadlineData": "No deadline data for this school — showing common rounds. Check the school's website for exact deadlines.",
       "essayRequirements": "Essay Requirements",
       "noEssayPrompts": "No essay prompts available for this school",
@@ -1739,7 +1751,13 @@
       "addAward": "Add Award",
       "addSchool": "Add School",
       "addEducation": "Add Education",
-      "writeEssay": "Write Essay"
+      "writeEssay": "Write Essay",
+      "editScore": "Edit score",
+      "deleteScore": "Delete score",
+      "editActivity": "Edit activity",
+      "deleteActivity": "Delete activity",
+      "editAward": "Edit award",
+      "deleteAward": "Delete award"
     },
     "aiSort": "AI Sort",
     "aiSorting": "Sorting...",

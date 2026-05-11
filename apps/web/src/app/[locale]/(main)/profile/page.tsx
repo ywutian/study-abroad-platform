@@ -84,6 +84,38 @@ const PROFILE_DEFAULT_VALUES: ProfileFormValues = {
   gpa12: '',
 };
 
+/** Tabs that are backed by the global react-hook-form (i.e., the page-level Save/Cancel applies). */
+const FORM_BACKED_TABS = new Set(['basic', 'demographics', 'gpa', 'privacy']);
+
+/** Map server profile shape to react-hook-form values. Used by both initial load and Cancel/reset. */
+function mapProfileToFormValues(profile: ProfileData | undefined): ProfileFormValues {
+  if (!profile) return PROFILE_DEFAULT_VALUES;
+  return {
+    grade: (profile.grade as ProfileFormValues['grade']) || '',
+    currentSchool: profile.currentSchool || '',
+    gpa: profile.gpa?.toString() || '',
+    gpaScale: profile.gpaScale?.toString() || '4.0',
+    targetMajor: profile.targetMajor || '',
+    budgetTier: (profile.budgetTier as ProfileFormValues['budgetTier']) || '',
+    visibility: (profile.visibility as ProfileFormValues['visibility']) || 'PRIVATE',
+    nationality: profile.nationality || '',
+    countryOfResidence: profile.countryOfResidence || '',
+    citizenship: profile.citizenship || '',
+    educationSystem: (profile.educationSystem as ProfileFormValues['educationSystem']) || '',
+    needsFinancialAid: profile.needsFinancialAid ?? false,
+    firstGeneration: profile.firstGeneration ?? false,
+    recruitedAthlete: profile.recruitedAthlete ?? false,
+    applyingTestOptional: profile.applyingTestOptional ?? false,
+    legacy: profile.legacy || [],
+    intendedMajor: profile.intendedMajor || '',
+    secondMajor: profile.secondMajor || '',
+    gpa9: profile.gpa9?.toString() || '',
+    gpa10: profile.gpa10?.toString() || '',
+    gpa11: profile.gpa11?.toString() || '',
+    gpa12: profile.gpa12?.toString() || '',
+  };
+}
+
 export default function ProfilePage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState('basic');
@@ -183,30 +215,7 @@ export default function ProfilePage() {
   // Sync server data into form
   useEffect(() => {
     if (profile) {
-      form.reset({
-        grade: (profile.grade as ProfileFormValues['grade']) || '',
-        currentSchool: profile.currentSchool || '',
-        gpa: profile.gpa?.toString() || '',
-        gpaScale: profile.gpaScale?.toString() || '4.0',
-        targetMajor: profile.targetMajor || '',
-        budgetTier: (profile.budgetTier as ProfileFormValues['budgetTier']) || '',
-        visibility: (profile.visibility as ProfileFormValues['visibility']) || 'PRIVATE',
-        nationality: profile.nationality || '',
-        countryOfResidence: profile.countryOfResidence || '',
-        citizenship: profile.citizenship || '',
-        educationSystem: (profile.educationSystem as ProfileFormValues['educationSystem']) || '',
-        needsFinancialAid: profile.needsFinancialAid ?? false,
-        firstGeneration: profile.firstGeneration ?? false,
-        recruitedAthlete: profile.recruitedAthlete ?? false,
-        applyingTestOptional: (profile as any).applyingTestOptional ?? false,
-        legacy: profile.legacy || [],
-        intendedMajor: profile.intendedMajor || '',
-        secondMajor: profile.secondMajor || '',
-        gpa9: profile.gpa9?.toString() || '',
-        gpa10: profile.gpa10?.toString() || '',
-        gpa11: profile.gpa11?.toString() || '',
-        gpa12: profile.gpa12?.toString() || '',
-      });
+      form.reset(mapProfileToFormValues(profile));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
@@ -281,25 +290,27 @@ export default function ProfilePage() {
         icon={User}
         color="blue"
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => m.setResumeExportOpen(true)}
-            >
-              <FileText className="h-4 w-4" />
-              {t('profile.exportResume')}
-            </Button>
-            <DataExportDialog
-              trigger={
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  {t('profile.exportData')}
-                </Button>
-              }
-            />
-          </div>
+          completeness >= 30 ? (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => m.setResumeExportOpen(true)}
+              >
+                <FileText className="h-4 w-4" />
+                {t('profile.exportResume')}
+              </Button>
+              <DataExportDialog
+                trigger={
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    {t('profile.exportData')}
+                  </Button>
+                }
+              />
+            </div>
+          ) : undefined
         }
       />
 
@@ -318,6 +329,10 @@ export default function ProfilePage() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
+                id={`profile-tab-panel-${activeTab}`}
+                role="tabpanel"
+                aria-labelledby={`profile-tab-${activeTab}`}
+                tabIndex={0}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -399,19 +414,26 @@ export default function ProfilePage() {
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" className="px-6" onClick={() => form.reset()}>
-                {t('common.cancel')}
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={m.updateMutation.isPending}
-                className="gap-2 px-6"
-              >
-                <Save className="h-4 w-4" />
-                {m.updateMutation.isPending ? t('common.loading') : t('common.save')}
-              </Button>
-            </div>
+            {FORM_BACKED_TABS.has(activeTab) && (
+              <div className="mt-6 flex justify-end gap-3 pb-[max(env(safe-area-inset-bottom),1rem)] lg:pb-0">
+                <Button
+                  variant="outline"
+                  className="px-6"
+                  onClick={() => form.reset(mapProfileToFormValues(profile))}
+                  disabled={!form.formState.isDirty || m.updateMutation.isPending}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={!form.formState.isDirty || m.updateMutation.isPending}
+                  className="gap-2 px-6"
+                >
+                  <Save className="h-4 w-4" />
+                  {m.updateMutation.isPending ? t('common.loading') : t('common.save')}
+                </Button>
+              </div>
+            )}
           </Form>
         </div>
       </div>

@@ -218,7 +218,10 @@ export function ActivitiesTab({
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
                     <div className="flex flex-col items-center gap-1">
-                      <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <GripVertical
+                        className="h-4 w-4 text-muted-foreground cursor-grab sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                        aria-hidden="true"
+                      />
                       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-warning/10 text-warning">
                         <BookOpen className="h-5 w-5" />
                       </div>
@@ -275,12 +278,13 @@ export function ActivitiesTab({
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => onEditActivity(activity)}
+                      aria-label={t('profile.actions.editActivity')}
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -289,6 +293,7 @@ export function ActivitiesTab({
                       size="icon"
                       className="h-8 w-8 text-destructive"
                       onClick={() => onDeleteActivity(activity.id)}
+                      aria-label={t('profile.actions.deleteActivity')}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
