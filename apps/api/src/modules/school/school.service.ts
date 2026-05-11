@@ -1465,7 +1465,7 @@ export class SchoolService {
       ...CATALOG_RANKING_LISTS.map((list) => {
         const data = getStats(list);
         return {
-          source: US_NEWS_RANKING_SOURCE as typeof US_NEWS_RANKING_SOURCE,
+          source: US_NEWS_RANKING_SOURCE,
           list,
           labelKey: RANKING_LIST_LABEL_KEYS[list],
           year: data?.year ?? null,

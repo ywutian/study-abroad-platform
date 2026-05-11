@@ -16,7 +16,7 @@ export interface SchoolCatalogRankingInput {
   rankings?: CatalogRanking[] | null;
 }
 
-export const US_NEWS_RANKING_SOURCE = 'US_NEWS';
+export const US_NEWS_RANKING_SOURCE = 'US_NEWS' as const;
 export const US_NEWS_CORE_RANKING_LIST = 'US_NEWS_CORE';
 
 export const CATALOG_RANKING_LISTS = [
