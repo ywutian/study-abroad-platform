@@ -227,6 +227,144 @@ describe('SchoolMediaService', () => {
     expect(result.approved).toBe(1);
   });
 
+  it('skips Wikimedia files that browsers cannot render directly', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:Example campus guide.pdf',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/example-campus.pdf',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Example_campus_guide.pdf',
+                    mime: 'application/pdf',
+                    width: 1200,
+                    height: 800,
+                    extmetadata: {
+                      LicenseShortName: { value: 'Public domain' },
+                      Artist: { value: 'Archive' },
+                    },
+                  },
+                ],
+              },
+              '2': {
+                title: 'File:Example campus.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/example-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Example_campus.jpg',
+                    mime: 'image/jpeg',
+                    width: 1200,
+                    height: 800,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/example-campus.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
+  it('skips Wikimedia results that do not match the school name', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        id: 'school-1',
+        name: 'Wellesley College',
+        website: 'https://www.wellesley.edu',
+        mediaAssets: [],
+      },
+    ]);
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:Campus view, Babson College.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/babson-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Campus_view,_Babson_College.jpg',
+                    mime: 'image/jpeg',
+                    width: 1200,
+                    height: 800,
+                    extmetadata: {
+                      LicenseShortName: { value: 'Public domain' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+              '2': {
+                title: 'File:Wellesley College campus.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/wellesley-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Wellesley_College_campus.jpg',
+                    mime: 'image/jpeg',
+                    width: 1200,
+                    height: 800,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Wellesley Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/wellesley-campus.jpg',
+          sourcePageUrl:
+            'https://commons.wikimedia.org/wiki/File:Wellesley_College_campus.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
   it('promotes an existing pending Wikimedia candidate when production storage is local', async () => {
     const { service, prisma, storage } = makeService({ nodeEnv: 'production' });
     prisma.schoolMediaAsset.findFirst.mockResolvedValueOnce({

@@ -33,6 +33,23 @@ const FETCH_TIMEOUT_MS = 12_000;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const USER_AGENT =
   'Mozilla/5.0 (compatible; LumniEduSchoolMediaBot/1.0; +https://lumniedu.com)';
+const BROWSER_SAFE_IMAGE_MIMES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+]);
+const SCHOOL_NAME_STOPWORDS = new Set([
+  'and',
+  'at',
+  'college',
+  'institute',
+  'of',
+  'school',
+  'the',
+  'technology',
+  'university',
+]);
 
 const OFFICIAL_CDN_HOST_PARTS = [
   'cloudfront.net',
@@ -182,6 +199,53 @@ function extFromMime(mimetype: string): string {
     default:
       return '.jpg';
   }
+}
+
+function normalizeMime(mimetype: string | null | undefined): string | null {
+  return mimetype?.split(';')[0]?.trim().toLowerCase() || null;
+}
+
+function isBrowserSafeImageMime(mimetype: string | null | undefined): boolean {
+  const normalized = normalizeMime(mimetype);
+  return !!normalized && BROWSER_SAFE_IMAGE_MIMES.has(normalized);
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function getSchoolMatchTerms(name: string): string[] {
+  const words = name
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const distinctive = words.filter(
+    (word) => word.length >= 3 && !SCHOOL_NAME_STOPWORDS.has(word),
+  );
+  const acronym = words
+    .filter((word) => !['and', 'at', 'of', 'the'].includes(word))
+    .map((word) => word[0])
+    .join('');
+
+  return [
+    ...new Set([...distinctive, ...(acronym.length >= 3 ? [acronym] : [])]),
+  ];
+}
+
+function matchesSchoolName(
+  schoolName: string,
+  title: string | undefined,
+  sourcePageUrl: string,
+): boolean {
+  const terms = getSchoolMatchTerms(schoolName);
+  if (!terms.length) return true;
+  const haystack = `${title ?? ''} ${safeDecode(sourcePageUrl)}`.toLowerCase();
+  return terms.some((term) => haystack.includes(term));
 }
 
 @Injectable()
@@ -659,6 +723,7 @@ export class SchoolMediaService {
         pages?: Record<
           string,
           {
+            title?: string;
             imageinfo?: Array<{
               url?: string;
               descriptionurl?: string;
@@ -675,6 +740,10 @@ export class SchoolMediaService {
     for (const page of Object.values(data.query?.pages ?? {})) {
       const info = page.imageinfo?.[0];
       if (!info?.url || !info.descriptionurl) continue;
+      if (!isBrowserSafeImageMime(info.mime)) continue;
+      if (!matchesSchoolName(school.name, page.title, info.descriptionurl)) {
+        continue;
+      }
       const meta = info.extmetadata ?? {};
       const license =
         meta.LicenseShortName?.value ??
