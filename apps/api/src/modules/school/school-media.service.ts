@@ -778,12 +778,43 @@ export class SchoolMediaService {
             originalUrl: candidate.originalUrl,
           },
         });
-    if (existing) return existing;
-
     const canPublish = this.canPersistPublicMedia();
     const canUseExternalOriginal = this.canApproveExternalOriginalUrl(
       candidate.sourceType,
     );
+    if (existing) {
+      if (
+        !canPublish &&
+        canUseExternalOriginal &&
+        (existing.status === SchoolMediaStatus.CANDIDATE ||
+          existing.status === SchoolMediaStatus.PENDING_REVIEW)
+      ) {
+        await this.setPrimaryTransaction(
+          schoolId,
+          SchoolMediaType.CAMPUS_COVER,
+          existing.id,
+          {
+            status: SchoolMediaStatus.APPROVED,
+            sourceType: candidate.sourceType,
+            storageUrl: existing.storageUrl,
+            originalUrl: candidate.originalUrl,
+            sourcePageUrl: candidate.sourcePageUrl,
+            license: candidate.license,
+            author: candidate.author,
+            attribution: candidate.attribution,
+            width: candidate.width,
+            height: candidate.height,
+            hash: candidate.hash,
+            reviewedAt: new Date(),
+            failureReason: null,
+          },
+        );
+        await this.schoolWriteService.invalidateSchoolCaches(schoolId);
+        return this.requireAsset(existing.id);
+      }
+      return existing;
+    }
+
     const shouldUpload = canPublish && candidate.buffer && candidate.mimetype;
     const uploaded = shouldUpload
       ? await this.storage.uploadSchoolMedia(
