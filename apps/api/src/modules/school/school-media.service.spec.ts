@@ -170,6 +170,63 @@ describe('SchoolMediaService', () => {
     expect(result.failed).toBe(1);
   });
 
+  it('auto-approves auditable Wikimedia media before official media when production storage is local', async () => {
+    const { service, prisma, storage } = makeService({ nodeEnv: 'production' });
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/example-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Example.jpg',
+                    mime: 'image/jpeg',
+                    width: 1200,
+                    height: 800,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'official,wikimedia',
+      dryRun: false,
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('commons.wikimedia.org/w/api.php'),
+      expect.any(Object),
+    );
+    expect(storage.uploadSchoolMedia).not.toHaveBeenCalled();
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: SchoolMediaStatus.APPROVED,
+          sourceType: SchoolMediaSourceType.WIKIMEDIA_COMMONS,
+          isPrimary: true,
+          originalUrl: 'https://upload.wikimedia.org/example-campus.jpg',
+          sourcePageUrl: 'https://commons.wikimedia.org/wiki/File:Example.jpg',
+          storageUrl: undefined,
+          failureReason: null,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
   it('approves Wikimedia media by using the audited original URL when production storage is local', async () => {
     const { service, prisma, storage } = makeService({ nodeEnv: 'production' });
     prisma.schoolMediaAsset.findUnique.mockResolvedValue({

@@ -506,45 +506,47 @@ export class SchoolMediaService {
   ) {
     const failures: string[] = [];
 
-    if (sources.includes('official') && school.website) {
-      const official = await this.discoverOfficialCover(school).catch(
-        (error) => {
-          failures.push(String(error instanceof Error ? error.message : error));
-          return null;
-        },
-      );
-      if (official) {
-        return dryRun
-          ? {
-              schoolId: school.id,
-              schoolName: school.name,
-              status: 'DRY_RUN',
-              candidate: official,
-            }
-          : this.persistCandidate(school.id, official);
-      }
-    }
-
-    if (sources.includes('wikimedia')) {
-      const wikimedia = await this.discoverWikimediaCover(school).catch(
-        (error) => {
-          failures.push(String(error instanceof Error ? error.message : error));
-          return null;
-        },
-      );
-      if (wikimedia) {
-        return dryRun
-          ? {
-              schoolId: school.id,
-              schoolName: school.name,
-              status: 'DRY_RUN',
-              candidate: wikimedia,
-            }
-          : this.persistCandidate(
-              school.id,
-              wikimedia,
-              SchoolMediaStatus.PENDING_REVIEW,
+    for (const source of this.getDiscoverySourceOrder(sources)) {
+      if (source === 'official' && school.website) {
+        const official = await this.discoverOfficialCover(school).catch(
+          (error) => {
+            failures.push(
+              String(error instanceof Error ? error.message : error),
             );
+            return null;
+          },
+        );
+        if (official) {
+          return dryRun
+            ? {
+                schoolId: school.id,
+                schoolName: school.name,
+                status: 'DRY_RUN',
+                candidate: official,
+              }
+            : this.persistCandidate(school.id, official);
+        }
+      }
+
+      if (source === 'wikimedia') {
+        const wikimedia = await this.discoverWikimediaCover(school).catch(
+          (error) => {
+            failures.push(
+              String(error instanceof Error ? error.message : error),
+            );
+            return null;
+          },
+        );
+        if (wikimedia) {
+          return dryRun
+            ? {
+                schoolId: school.id,
+                schoolName: school.name,
+                status: 'DRY_RUN',
+                candidate: wikimedia,
+              }
+            : this.persistCandidate(school.id, wikimedia);
+        }
       }
     }
 
@@ -562,6 +564,19 @@ export class SchoolMediaService {
       school.website,
       failures.join('; ') || 'No media found',
     );
+  }
+
+  private getDiscoverySourceOrder(
+    sources: Array<'official' | 'wikimedia'>,
+  ): Array<'official' | 'wikimedia'> {
+    const ordered = [...new Set(sources)];
+    if (!this.canPersistPublicMedia() && ordered.includes('wikimedia')) {
+      return [
+        'wikimedia',
+        ...ordered.filter((source) => source !== 'wikimedia'),
+      ];
+    }
+    return ordered;
   }
 
   private async discoverOfficialCover(school: {
@@ -766,6 +781,9 @@ export class SchoolMediaService {
     if (existing) return existing;
 
     const canPublish = this.canPersistPublicMedia();
+    const canUseExternalOriginal = this.canApproveExternalOriginalUrl(
+      candidate.sourceType,
+    );
     const shouldUpload = canPublish && candidate.buffer && candidate.mimetype;
     const uploaded = shouldUpload
       ? await this.storage.uploadSchoolMedia(
@@ -784,9 +802,11 @@ export class SchoolMediaService {
       (candidate.sourceType === SchoolMediaSourceType.OFFICIAL_WEBSITE &&
       uploaded
         ? SchoolMediaStatus.APPROVED
-        : canPublish
-          ? SchoolMediaStatus.PENDING_REVIEW
-          : SchoolMediaStatus.CANDIDATE);
+        : !canPublish && canUseExternalOriginal
+          ? SchoolMediaStatus.APPROVED
+          : canPublish
+            ? SchoolMediaStatus.PENDING_REVIEW
+            : SchoolMediaStatus.CANDIDATE);
 
     const data: Prisma.SchoolMediaAssetCreateInput = {
       school: { connect: { id: schoolId } },
