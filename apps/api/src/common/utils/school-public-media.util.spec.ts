@@ -14,6 +14,17 @@ describe('school public media utils', () => {
     );
   });
 
+  it('resizes an existing Wikimedia thumbnail URL without nesting width prefixes', () => {
+    expect(
+      toWikimediaThumbnailUrl(
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Campus_Club_Princeton_b.JPG/500px-Campus_Club_Princeton_b.JPG',
+        250,
+      ),
+    ).toBe(
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Campus_Club_Princeton_b.JPG/250px-Campus_Club_Princeton_b.JPG',
+    );
+  });
+
   it('keeps the original audited URL while serving the thumbnail URL', () => {
     const asset = toPublicSchoolMediaAsset({
       sourceType: 'WIKIMEDIA_COMMONS',

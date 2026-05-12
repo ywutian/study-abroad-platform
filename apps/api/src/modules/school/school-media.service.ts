@@ -562,11 +562,12 @@ export class SchoolMediaService {
     const limit = Math.min(Math.max(1, dto.limit ?? 100), 500);
     const sources = parseSchoolMediaSources(dto.source);
     const dryRun = dto.dryRun === true;
+    const canDiscoverWithoutWebsite = sources.includes('wikimedia');
 
     const schools = await this.prisma.school.findMany({
       where: {
         ...(dto.schoolId ? { id: dto.schoolId } : {}),
-        website: { not: null },
+        ...(canDiscoverWithoutWebsite ? {} : { website: { not: null } }),
       },
       select: {
         id: true,
