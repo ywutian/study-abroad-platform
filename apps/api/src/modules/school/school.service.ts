@@ -61,6 +61,14 @@ const CACHE_TTL = {
   SCHOOL_METRICS: 86400, // 24 hours for metrics (rarely change)
 };
 
+const LOCAL_CACHE_TTL_SECONDS = 60;
+const LOCAL_CACHE_MAX_ENTRIES = 200;
+
+interface LocalCacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
 /** UC campuses (9) for one-click prediction */
 const UC_SCHOOL_NAMES = [
   'University of California, Berkeley',
@@ -275,6 +283,8 @@ const REGION_TO_STATES: Record<string, string[]> = {
 
 @Injectable()
 export class SchoolService {
+  private readonly localCache = new Map<string, LocalCacheEntry<unknown>>();
+
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
@@ -300,6 +310,16 @@ export class SchoolService {
     // Cache non-search queries (search queries are too variable for caching)
     if (!isSearch) {
       const cacheKey = this.buildListCacheKey(pagination, filters);
+      const localCached = this.getLocalCache<
+        PaginatedResponseDto<
+          School & {
+            fieldSources: SchoolFieldSources;
+            communityRatingSummary: SchoolCommunityRatingSummary;
+          }
+        >
+      >(cacheKey);
+      if (localCached) return localCached;
+
       try {
         const cached = await this.redis.getJSON<
           PaginatedResponseDto<
@@ -309,7 +329,10 @@ export class SchoolService {
             }
           >
         >(cacheKey);
-        if (cached) return cached;
+        if (cached) {
+          this.setLocalCache(cacheKey, cached);
+          return cached;
+        }
       } catch {
         // Redis is an optional cache; DB remains the source of truth.
       }
@@ -500,6 +523,7 @@ export class SchoolService {
     // Cache non-search results
     if (!isSearch) {
       const cacheKey = this.buildListCacheKey(pagination, filters);
+      this.setLocalCache(cacheKey, result);
       try {
         await this.redis.setJSON(cacheKey, result, CACHE_TTL.SCHOOL_LIST);
       } catch {
@@ -706,14 +730,27 @@ export class SchoolService {
   async findById(id: string) {
     // Try cache first
     const cacheKey = `school:detail:${id}`;
-    const cached = await this.redis.getJSON<
+    const localCached = this.getLocalCache<
       School & {
         fieldSources: SchoolFieldSources;
         communityRatingSummary: SchoolCommunityRatingSummary;
       }
     >(cacheKey);
-    if (cached) {
-      return cached;
+    if (localCached) return localCached;
+
+    try {
+      const cached = await this.redis.getJSON<
+        School & {
+          fieldSources: SchoolFieldSources;
+          communityRatingSummary: SchoolCommunityRatingSummary;
+        }
+      >(cacheKey);
+      if (cached) {
+        this.setLocalCache(cacheKey, cached);
+        return cached;
+      }
+    } catch {
+      // Redis is optional; school detail should keep serving from Postgres.
     }
 
     const school = await this.prisma.school.findUnique({
@@ -792,7 +829,12 @@ export class SchoolService {
     const enriched = this.enrichSchool(school, communityRatingSummary);
 
     // Cache the result
-    await this.redis.setJSON(cacheKey, enriched, CACHE_TTL.SCHOOL_DETAIL);
+    this.setLocalCache(cacheKey, enriched);
+    try {
+      await this.redis.setJSON(cacheKey, enriched, CACHE_TTL.SCHOOL_DETAIL);
+    } catch {
+      // Cache write failures must not break school detail pages.
+    }
 
     return enriched;
   }
@@ -801,7 +843,44 @@ export class SchoolService {
    * Invalidate school cache when data is updated
    */
   async invalidateSchoolCache(id: string) {
+    this.localCache.delete(`school:detail:${id}`);
+    this.deleteLocalCacheByPrefix('school:list:');
+    this.localCache.delete('schools:available-countries');
+    this.localCache.delete('schools:ranking-lists:us-news');
     await this.schoolWriteService.invalidateSchoolCaches(id);
+  }
+
+  private getLocalCache<T>(key: string): T | null {
+    const entry = this.localCache.get(key) as LocalCacheEntry<T> | undefined;
+    if (!entry) return null;
+    if (entry.expiresAt <= Date.now()) {
+      this.localCache.delete(key);
+      return null;
+    }
+    return entry.value;
+  }
+
+  private setLocalCache<T>(
+    key: string,
+    value: T,
+    ttlSeconds = LOCAL_CACHE_TTL_SECONDS,
+  ): void {
+    if (this.localCache.size >= LOCAL_CACHE_MAX_ENTRIES) {
+      const oldestKey = this.localCache.keys().next().value;
+      if (oldestKey) this.localCache.delete(oldestKey);
+    }
+    this.localCache.set(key, {
+      value,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
+  }
+
+  private deleteLocalCacheByPrefix(prefix: string): void {
+    for (const key of this.localCache.keys()) {
+      if (key.startsWith(prefix)) {
+        this.localCache.delete(key);
+      }
+    }
   }
 
   private buildListCacheKey(
@@ -1324,12 +1403,19 @@ export class SchoolService {
     Array<{ code: string; count: number }>
   > {
     const cacheKey = 'schools:available-countries';
+    const localCached =
+      this.getLocalCache<Array<{ code: string; count: number }>>(cacheKey);
+    if (localCached?.length) return localCached;
+
     try {
       const cached =
         await this.redis.getJSON<Array<{ code: string; count: number }>>(
           cacheKey,
         );
-      if (cached?.length) return cached;
+      if (cached?.length) {
+        this.setLocalCache(cacheKey, cached);
+        return cached;
+      }
     } catch {
       // Redis is optional; this endpoint must keep serving from Postgres.
     }
@@ -1346,6 +1432,7 @@ export class SchoolService {
     }));
 
     // Cache for 5 minutes — school additions happen infrequently
+    this.setLocalCache(cacheKey, result);
     try {
       await this.redis.setJSON(cacheKey, result, 300);
     } catch {
@@ -1367,6 +1454,20 @@ export class SchoolService {
     }>
   > {
     const cacheKey = 'schools:ranking-lists:us-news';
+    const localCached = this.getLocalCache<
+      Array<{
+        source: typeof US_NEWS_RANKING_SOURCE;
+        list: RankingListSelection;
+        labelKey: string;
+        year: number | null;
+        count: number;
+        verifiedCount: number;
+        fallbackCount: number;
+        isDefault: boolean;
+      }>
+    >(cacheKey);
+    if (localCached?.length) return localCached;
+
     try {
       const cached = await this.redis.getJSON<
         Array<{
@@ -1380,7 +1481,10 @@ export class SchoolService {
           isDefault: boolean;
         }>
       >(cacheKey);
-      if (cached?.length) return cached;
+      if (cached?.length) {
+        this.setLocalCache(cacheKey, cached);
+        return cached;
+      }
     } catch {
       // Redis is optional for ranking metadata.
     }
@@ -1478,6 +1582,7 @@ export class SchoolService {
     ];
 
     try {
+      this.setLocalCache(cacheKey, result);
       await this.redis.setJSON(cacheKey, result, 300);
     } catch {
       // Cache write failures must not break ranking selector metadata.

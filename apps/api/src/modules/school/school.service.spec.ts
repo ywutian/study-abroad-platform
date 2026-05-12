@@ -203,6 +203,21 @@ describe('SchoolService', () => {
       expect(prismaService.school.findMany).toHaveBeenCalled();
     });
 
+    it('should reuse local list cache before hitting Redis again', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue(
+        mockSchools,
+      );
+      (prismaService.school.count as jest.Mock).mockResolvedValue(3);
+
+      const first = await service.findAll({ page: 1, pageSize: 20 });
+      const second = await service.findAll({ page: 1, pageSize: 20 });
+
+      expect(first.items).toHaveLength(3);
+      expect(second.items).toHaveLength(3);
+      expect(redisService.getJSON).toHaveBeenCalledTimes(1);
+      expect(prismaService.school.findMany).toHaveBeenCalledTimes(1);
+    });
+
     it('should filter by country', async () => {
       (prismaService.school.findMany as jest.Mock).mockResolvedValue([
         mockSchool,
@@ -579,6 +594,19 @@ describe('SchoolService', () => {
         { code: 'UK', count: 1 },
       ]);
     });
+
+    it('should reuse local countries cache before hitting Redis again', async () => {
+      (prismaService.school.groupBy as jest.Mock).mockResolvedValue([
+        { country: 'US', _count: { _all: 2 } },
+        { country: 'UK', _count: { _all: 1 } },
+      ]);
+
+      await expect(service.getAvailableCountries()).resolves.toHaveLength(2);
+      await expect(service.getAvailableCountries()).resolves.toHaveLength(2);
+
+      expect(redisService.getJSON).toHaveBeenCalledTimes(1);
+      expect(prismaService.school.groupBy).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('getAvailableRankingLists', () => {
@@ -640,6 +668,30 @@ describe('SchoolService', () => {
         ]),
       );
       expect(result.some((item) => item.list === 'ART_DESIGN')).toBe(false);
+    });
+
+    it('should reuse local ranking-list cache before hitting Redis again', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          name: 'Princeton University',
+          institutionType: 'RESEARCH_UNIVERSITY',
+          usNewsRank: 1,
+          rankings: [
+            {
+              source: 'US_NEWS',
+              list: 'NATIONAL_UNIVERSITY',
+              rank: 1,
+              year: 2025,
+            },
+          ],
+        },
+      ]);
+
+      await expect(service.getAvailableRankingLists()).resolves.toHaveLength(2);
+      await expect(service.getAvailableRankingLists()).resolves.toHaveLength(2);
+
+      expect(redisService.getJSON).toHaveBeenCalledTimes(1);
+      expect(prismaService.school.findMany).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -704,6 +756,42 @@ describe('SchoolService', () => {
         isVerified: false,
         predictionEligible: true,
       });
+    });
+
+    it('should continue from Postgres when Redis detail cache is exhausted', async () => {
+      (redisService.getJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (redisService.setJSON as jest.Mock).mockRejectedValueOnce(
+        new Error('ERR max requests limit exceeded'),
+      );
+      (prismaService.school.findUnique as jest.Mock).mockResolvedValue({
+        ...mockSchool,
+        metrics: [],
+        admissionCases: [],
+      });
+
+      await expect(service.findById('school-123')).resolves.toMatchObject({
+        id: 'school-123',
+      });
+    });
+
+    it('should reuse local detail cache before hitting Redis again', async () => {
+      (prismaService.school.findUnique as jest.Mock).mockResolvedValue({
+        ...mockSchool,
+        metrics: [],
+        admissionCases: [],
+      });
+
+      await expect(service.findById('school-123')).resolves.toMatchObject({
+        id: 'school-123',
+      });
+      await expect(service.findById('school-123')).resolves.toMatchObject({
+        id: 'school-123',
+      });
+
+      expect(redisService.getJSON).toHaveBeenCalledTimes(1);
+      expect(prismaService.school.findUnique).toHaveBeenCalledTimes(1);
     });
 
     it('should throw NotFoundException when school not found', async () => {
