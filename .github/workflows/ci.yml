@@ -1009,22 +1009,30 @@ jobs:
         id: canary-smoke
         run: |
           REGION="${{ secrets.GCP_REGION }}"
-          CANARY_URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.traffic[tag=canary].url)' 2>/dev/null || echo "")
+          CANARY_URL=""
+          for i in 1 2 3 4 5; do
+            SERVICE_JSON=$(gcloud run services describe study-abroad-api --region="$REGION" --format=json 2>/dev/null || echo '{}')
+            CANARY_URL=$(printf '%s' "$SERVICE_JSON" | node scripts/ci/cloud-run-canary-url.mjs --tag canary 2>/dev/null || true)
+            if [ -n "$CANARY_URL" ]; then
+              break
+            fi
+            echo "⏳ Canary URL not ready (attempt $i)"
+            sleep 5
+          done
           if [ -z "$CANARY_URL" ]; then
-            echo "::warning::Could not get canary URL, falling back to main URL"
-            CANARY_URL=$(gcloud run services describe study-abroad-api --region=$REGION --format='value(status.url)')
+            echo "::error::Could not get canary URL for Cloud Run tag 'canary'"
+            exit 1
           fi
           echo "canary_url=$CANARY_URL" >> $GITHUB_OUTPUT
           sleep 5
           for i in 1 2 3; do
             RESPONSE=$(curl -s "$CANARY_URL/health" --max-time 15 || echo '{}')
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$CANARY_URL/health" --max-time 15 || echo "000")
-            HEALTH=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
-            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" ]; then
-              echo "✅ Canary health check passed (attempt $i)"
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$CANARY_URL/health" --max-time 15 || true)
+            STATUS="${STATUS:-000}"
+            if printf '%s' "$RESPONSE" | node scripts/ci/validate-deploy-health.mjs --http-status "$STATUS" --label "Canary"; then
               exit 0
             fi
-            echo "⏳ Canary check attempt $i: HTTP $STATUS, health=$HEALTH"
+            echo "⏳ Canary check attempt $i did not meet deploy-critical health"
             sleep 5
           done
           echo "::error::Canary health check failed"
@@ -1052,14 +1060,13 @@ jobs:
           # Health check with retries (validate response body, not just HTTP 200)
           for i in 1 2 3 4 5; do
             RESPONSE=$(curl -s "$URL/health" --max-time 15 || echo '{}')
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || echo "000")
-            HEALTH=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin).get('data',{}).get('status','unknown'))" 2>/dev/null || echo "unknown")
-            if [ "$STATUS" = "200" ] && [ "$HEALTH" = "ok" ]; then
-              echo "✅ Health check passed (attempt $i, status=$HEALTH)"
-              echo "::notice title=API deployed::Cloud Run URL: $URL (health=$HEALTH)"
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "$URL/health" --max-time 15 || true)
+            STATUS="${STATUS:-000}"
+            if printf '%s' "$RESPONSE" | node scripts/ci/validate-deploy-health.mjs --http-status "$STATUS" --label "Post-promote"; then
+              echo "::notice title=API deployed::Cloud Run URL: $URL"
               exit 0
             fi
-            echo "⏳ Health check attempt $i: HTTP $STATUS, health=$HEALTH"
+            echo "⏳ Health check attempt $i did not meet deploy-critical health"
             sleep 5
           done
           echo "::error::Health check failed after 5 attempts"

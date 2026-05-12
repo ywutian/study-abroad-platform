@@ -13,8 +13,9 @@ as a pass condition, so each weekly deploy quietly shipped on top of the
 broken state. Both gaps are now closed:
 
 1. This monitoring setup surfaces degraded-for-10-min within email latency.
-2. `.github/workflows/ci.yml` canary + smoke tests now reject `degraded`
-   as a pass condition (see PR introducing this runbook).
+2. `.github/workflows/ci.yml` canary + smoke tests validate deploy-critical
+   checks (HTTP 200 + database ok) against the canary URL only. Redis-only
+   degradation warns but does not block deploy because the app has fallbacks.
 
 ## Infra facts
 
@@ -65,6 +66,8 @@ gcloud monitoring uptime create study-abroad-api-health \
 
 The `--matcher-content='"status":"ok"'` is the critical part: a 200 response
 body that says `"status":"degraded"` will NOT match and the check will fail.
+This is intentional for uptime monitoring even though CI deploy smoke tests
+allow Redis-only degradation.
 
 ### 3. Alert policy
 
@@ -152,6 +155,61 @@ gcloud run services update study-abroad-api \
 Expected email arrival: 10–15 min after `/health` first reports degraded
 (5 min for uptime to notice + 10 min sustained-failure threshold, minus
 overlap).
+
+## Redis recovery loop
+
+Redis is best-effort for deploy gating, but it is still part of the runtime
+health contract. Use this sequence when `/health` reports
+`checks.redis.status=degraded`.
+
+```bash
+# 1. Confirm the current public symptom.
+curl -s https://study-abroad-api-1032896108391.us-central1.run.app/health \
+  | python3 -m json.tool
+
+# 2. Confirm the Secret Manager value currently used for new revisions.
+gcloud secrets versions access latest \
+  --secret=redis-url \
+  --project=study-abroad-prod-2025
+
+# 3. Confirm Memorystore exists, is READY, and matches the secret host.
+gcloud redis instances list \
+  --region=us-central1 \
+  --project=study-abroad-prod-2025
+
+# 4. Confirm Cloud Run has the VPC connector required for Memorystore.
+gcloud run services describe study-abroad-api \
+  --region=us-central1 \
+  --project=study-abroad-prod-2025 \
+  --format='value(spec.template.metadata.annotations."run.googleapis.com/vpc-access-connector")'
+
+# 5. Check recent Redis errors from the API.
+gcloud run services logs read study-abroad-api \
+  --region=us-central1 \
+  --project=study-abroad-prod-2025 \
+  --limit=300 \
+  | grep -iE 'redis|memorystore|ECONN|ENOTFOUND|ETIMEDOUT|NOAUTH|WRONGPASS|circuit'
+```
+
+After changing `redis-url` or Memorystore config, force a new Cloud Run
+revision. Existing instances do not reread Secret Manager env vars.
+
+```bash
+gcloud run services update study-abroad-api \
+  --region=us-central1 \
+  --project=study-abroad-prod-2025 \
+  --update-labels=redis-secret-refresh=$(date +%s)
+```
+
+Expected verification after the new revision starts:
+
+- `/health.data.uptime` resets to a small value for the new pod.
+- `/health.data.checks.database.status` is `ok`.
+- `/health.data.checks.redis.status` returns to `ok`, or stays visible as
+  `degraded` while the reconnect loop keeps retrying.
+- `/admin/cache-health` as an admin shows
+  `connection.runtime.lastReconnectAttemptAt`,
+  `connection.runtime.nextReconnectAt`, and any `lastErrorKind/message`.
 
 ## Operations
 
