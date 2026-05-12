@@ -29,6 +29,8 @@ import {
 
 const MIN_COVER_WIDTH = 600;
 const MIN_COVER_HEIGHT = 300;
+const WIKIMEDIA_SEARCH_LIMIT = 20;
+const WIKIMEDIA_CATEGORY_LIMIT = 20;
 const FETCH_TIMEOUT_MS = 12_000;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const USER_AGENT =
@@ -50,6 +52,51 @@ const SCHOOL_NAME_STOPWORDS = new Set([
   'technology',
   'university',
 ]);
+const SCHOOL_ALIAS_OVERRIDES: Record<string, string[]> = {
+  'california institute of technology': ['caltech'],
+  'massachusetts institute of technology': ['mit'],
+  'university of pennsylvania': ['upenn', 'penn'],
+  'university of california, berkeley': ['uc berkeley', 'cal'],
+  'university of california, los angeles': ['ucla'],
+  'university of california, riverside': ['uc riverside'],
+  'university of california, santa cruz': ['uc santa cruz'],
+  'university of california, merced': ['uc merced'],
+};
+const WIKIMEDIA_POSITIVE_TITLE_TERMS = [
+  'aerial',
+  'building',
+  'buildings',
+  'campus',
+  'chapel',
+  'college hall',
+  'commons',
+  'hall',
+  'library',
+  'quad',
+  'walk',
+  'west campus',
+];
+const WIKIMEDIA_REJECT_TITLE_TERMS = [
+  'annual catalogue',
+  'bus',
+  'catalogue',
+  'certificate',
+  'diagram',
+  'emblem',
+  'flag',
+  'flower',
+  'hood',
+  'logo',
+  'map',
+  'marker',
+  'mascot',
+  'plaque',
+  'regalia',
+  'seal',
+  'sign',
+  'truck',
+  'turtle',
+];
 
 const OFFICIAL_CDN_HOST_PARTS = [
   'cloudfront.net',
@@ -85,6 +132,22 @@ interface ImageProbe {
   height: number;
   mimetype: string;
 }
+
+interface WikimediaImageInfo {
+  url?: string;
+  descriptionurl?: string;
+  mime?: string;
+  width?: number;
+  height?: number;
+  extmetadata?: Record<string, { value?: string }>;
+}
+
+interface WikimediaPage {
+  title?: string;
+  imageinfo?: WikimediaImageInfo[];
+}
+
+type WikimediaCandidate = ImageCandidate & { score: number };
 
 function normalizeMetaUrl(
   raw: string | undefined,
@@ -218,6 +281,27 @@ function safeDecode(value: string): string {
   }
 }
 
+function normalizeSearchText(value: string | undefined): string {
+  if (!value) return '';
+  return safeDecode(value)
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getSchoolAliases(name: string, aliases?: string[] | null): string[] {
+  const normalizedName = normalizeSearchText(name);
+  return [
+    ...new Set(
+      [...(aliases ?? []), ...(SCHOOL_ALIAS_OVERRIDES[normalizedName] ?? [])]
+        .map((alias) => normalizeSearchText(alias))
+        .filter((alias) => alias.length >= 2 && alias !== normalizedName),
+    ),
+  ];
+}
+
 function getSchoolMatchTerms(name: string): string[] {
   const words = name
     .toLowerCase()
@@ -237,15 +321,95 @@ function getSchoolMatchTerms(name: string): string[] {
   ];
 }
 
+function hasInstitutionTypeConflict(
+  schoolName: string,
+  haystack: string,
+  aliases: string[],
+): boolean {
+  const normalizedName = normalizeSearchText(schoolName);
+  if (
+    haystack.includes(normalizedName) ||
+    aliases.some((alias) => haystack.includes(alias))
+  ) {
+    return false;
+  }
+  const firstTerm = getSchoolMatchTerms(schoolName)[0];
+  if (!firstTerm) return false;
+  if (
+    normalizedName.includes(' college') &&
+    haystack.includes(`${firstTerm} university`) &&
+    !haystack.includes(`${firstTerm} college`)
+  ) {
+    return true;
+  }
+  if (
+    normalizedName.includes(' university') &&
+    haystack.includes(`${firstTerm} college`) &&
+    !haystack.includes(`${firstTerm} university`)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function matchesSchoolName(
   schoolName: string,
+  aliases: string[] | null | undefined,
   title: string | undefined,
   sourcePageUrl: string,
 ): boolean {
   const terms = getSchoolMatchTerms(schoolName);
   if (!terms.length) return true;
-  const haystack = `${title ?? ''} ${safeDecode(sourcePageUrl)}`.toLowerCase();
-  return terms.some((term) => haystack.includes(term));
+  const normalizedAliases = getSchoolAliases(schoolName, aliases);
+  const haystack = normalizeSearchText(`${title ?? ''} ${sourcePageUrl}`);
+  if (hasInstitutionTypeConflict(schoolName, haystack, normalizedAliases)) {
+    return false;
+  }
+  const normalizedName = normalizeSearchText(schoolName);
+  return (
+    haystack.includes(normalizedName) ||
+    normalizedAliases.some((alias) => haystack.includes(alias)) ||
+    terms.some((term) => haystack.includes(term))
+  );
+}
+
+function scoreWikimediaCandidate(
+  schoolName: string,
+  aliases: string[] | null | undefined,
+  page: WikimediaPage,
+  info: WikimediaImageInfo,
+): number | null {
+  const haystack = normalizeSearchText(
+    `${page.title ?? ''} ${info.descriptionurl ?? ''}`,
+  );
+  if (
+    WIKIMEDIA_REJECT_TITLE_TERMS.some((term) => haystack.includes(term)) ||
+    haystack.includes('people reacting')
+  ) {
+    return null;
+  }
+
+  const normalizedName = normalizeSearchText(schoolName);
+  const normalizedAliases = getSchoolAliases(schoolName, aliases);
+  const width = info.width ?? 0;
+  const height = info.height ?? 0;
+  const ratio = height > 0 ? width / height : 0;
+  let score = 0;
+
+  if (haystack.includes(normalizedName)) score += 80;
+  if (normalizedAliases.some((alias) => haystack.includes(alias))) score += 70;
+  for (const term of getSchoolMatchTerms(schoolName)) {
+    if (haystack.includes(term)) score += 12;
+  }
+  for (const term of WIKIMEDIA_POSITIVE_TITLE_TERMS) {
+    if (haystack.includes(term)) score += 10;
+  }
+  if (ratio >= 1.15 && ratio <= 2.4) score += 18;
+  else if (ratio >= 0.95 && ratio < 1.15) score -= 20;
+  else if (ratio < 0.95) score -= 12;
+  if (width >= 1200 && height >= 700) score += 8;
+
+  return score >= 20 ? score : null;
 }
 
 @Injectable()
@@ -358,6 +522,7 @@ export class SchoolMediaService {
       select: {
         id: true,
         name: true,
+        aliases: true,
         website: true,
         mediaAssets: {
           where: {
@@ -391,7 +556,12 @@ export class SchoolMediaService {
       }
       result.processed += 1;
       const item = await this.discoverForSchool(
-        { id: school.id, name: school.name, website: school.website },
+        {
+          id: school.id,
+          name: school.name,
+          aliases: school.aliases,
+          website: school.website,
+        },
         sources,
         dryRun,
       );
@@ -564,7 +734,12 @@ export class SchoolMediaService {
   }
 
   private async discoverForSchool(
-    school: { id: string; name: string; website: string | null },
+    school: {
+      id: string;
+      name: string;
+      aliases?: string[] | null;
+      website: string | null;
+    },
     sources: Array<'official' | 'wikimedia'>,
     dryRun: boolean,
   ) {
@@ -710,40 +885,96 @@ export class SchoolMediaService {
 
   private async discoverWikimediaCover(school: {
     name: string;
+    aliases?: string[] | null;
   }): Promise<ImageCandidate | null> {
-    const search = encodeURIComponent(`${school.name} campus`);
+    for (const query of this.getWikimediaSearchQueries(school)) {
+      const pages = await this.fetchWikimediaPages(
+        'generator=search',
+        `gsrnamespace=6&gsrlimit=${WIKIMEDIA_SEARCH_LIMIT}&gsrsearch=${encodeURIComponent(query)}`,
+      );
+      const best = this.pickBestWikimediaCandidate(school, pages);
+      if (best) return best;
+    }
+
+    for (const category of this.getWikimediaCategories(school)) {
+      const pages = await this.fetchWikimediaPages(
+        'generator=categorymembers',
+        `gcmtitle=${encodeURIComponent(category)}&gcmtype=file&gcmlimit=${WIKIMEDIA_CATEGORY_LIMIT}`,
+      );
+      const best = this.pickBestWikimediaCandidate(school, pages);
+      if (best) return best;
+    }
+
+    return null;
+  }
+
+  private getWikimediaSearchQueries(school: {
+    name: string;
+    aliases?: string[] | null;
+  }): string[] {
+    const aliases = getSchoolAliases(school.name, school.aliases);
+    return [
+      `${school.name} campus`,
+      ...aliases.map((alias) => `${alias} campus`),
+      `${school.name} building`,
+      school.name,
+    ].filter((query, index, all) => all.indexOf(query) === index);
+  }
+
+  private getWikimediaCategories(school: {
+    name: string;
+    aliases?: string[] | null;
+  }): string[] {
+    return [
+      `Category:${school.name}`,
+      ...getSchoolAliases(school.name, school.aliases).map(
+        (alias) => `Category:${alias}`,
+      ),
+    ].filter((category, index, all) => all.indexOf(category) === index);
+  }
+
+  private async fetchWikimediaPages(
+    generator: string,
+    query: string,
+  ): Promise<WikimediaPage[]> {
     const url =
-      `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search` +
-      `&gsrnamespace=6&gsrlimit=5&gsrsearch=${search}` +
-      `&prop=imageinfo&iiprop=url|mime|size|metadata|extmetadata`;
+      `https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&${generator}` +
+      `&${query}&prop=imageinfo&iiprop=url|mime|size|metadata|extmetadata`;
     const res = await this.fetchWithTimeout(url);
     if (!res.ok) throw new Error(`Wikimedia returned HTTP ${res.status}`);
     const data = (await res.json()) as {
-      query?: {
-        pages?: Record<
-          string,
-          {
-            title?: string;
-            imageinfo?: Array<{
-              url?: string;
-              descriptionurl?: string;
-              mime?: string;
-              width?: number;
-              height?: number;
-              extmetadata?: Record<string, { value?: string }>;
-            }>;
-          }
-        >;
-      };
+      query?: { pages?: Record<string, WikimediaPage> };
     };
+    return Object.values(data.query?.pages ?? {});
+  }
 
-    for (const page of Object.values(data.query?.pages ?? {})) {
+  private pickBestWikimediaCandidate(
+    school: { name: string; aliases?: string[] | null },
+    pages: WikimediaPage[],
+  ): ImageCandidate | null {
+    const candidates: WikimediaCandidate[] = [];
+
+    for (const page of pages) {
       const info = page.imageinfo?.[0];
       if (!info?.url || !info.descriptionurl) continue;
       if (!isBrowserSafeImageMime(info.mime)) continue;
-      if (!matchesSchoolName(school.name, page.title, info.descriptionurl)) {
+      if (
+        !matchesSchoolName(
+          school.name,
+          school.aliases,
+          page.title,
+          info.descriptionurl,
+        )
+      ) {
         continue;
       }
+      const score = scoreWikimediaCandidate(
+        school.name,
+        school.aliases,
+        page,
+        info,
+      );
+      if (score == null) continue;
       const meta = info.extmetadata ?? {};
       const license =
         meta.LicenseShortName?.value ??
@@ -760,7 +991,7 @@ export class SchoolMediaService {
         continue;
       }
       if (isLogoLike(info.width!, info.height!)) continue;
-      return {
+      candidates.push({
         originalUrl: info.url,
         sourcePageUrl: info.descriptionurl,
         sourceType: SchoolMediaSourceType.WIKIMEDIA_COMMONS,
@@ -769,9 +1000,15 @@ export class SchoolMediaService {
         attribution,
         width: info.width,
         height: info.height,
-      };
+        score,
+      });
     }
-    return null;
+
+    candidates.sort((a, b) => b.score - a.score);
+    const best = candidates[0];
+    if (!best) return null;
+    const { score: _score, ...candidate } = best;
+    return candidate;
   }
 
   private async downloadAndValidateCover(

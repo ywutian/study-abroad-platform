@@ -291,6 +291,135 @@ describe('SchoolMediaService', () => {
     expect(result.approved).toBe(1);
   });
 
+  it('prefers campus/building Wikimedia images over non-cover matches', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        id: 'school-1',
+        name: 'Duke University',
+        aliases: [],
+        website: 'https://duke.edu',
+        mediaAssets: [],
+      },
+    ]);
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:2008-07-24 Duke University sanitation truck.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/duke-truck.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:2008-07-24_Duke_University_sanitation_truck.jpg',
+                    mime: 'image/jpeg',
+                    width: 3888,
+                    height: 2592,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+              '2': {
+                title: 'File:Duke University Chapel side in July 2025.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/duke-chapel.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Duke_University_Chapel_side_in_July_2025.jpg',
+                    mime: 'image/jpeg',
+                    width: 4080,
+                    height: 3072,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/duke-chapel.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
+  it('matches common school aliases such as Caltech', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        id: 'school-1',
+        name: 'California Institute of Technology',
+        aliases: [],
+        website: 'https://caltech.edu',
+        mediaAssets: [],
+      },
+    ]);
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:Caltech Campus.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/caltech-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Caltech_Campus.jpg',
+                    mime: 'image/jpeg',
+                    width: 4032,
+                    height: 3024,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/caltech-campus.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
   it('skips Wikimedia results that do not match the school name', async () => {
     const { service, prisma } = makeService({ nodeEnv: 'production' });
     prisma.school.findMany.mockResolvedValueOnce([

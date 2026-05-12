@@ -11,6 +11,7 @@ import type {
 import { toLegacyTestOptionalFlag } from '@study-abroad/shared/utils';
 import { SCHOOL_BASIC_SELECT } from '../../common/constants/prisma-selects';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { toPublicSchoolMediaAsset } from '../../common/utils/school-public-media.util';
 
 const RECOMMENDATION_PUBLIC_MEDIA_SOURCE_TYPES: SchoolMediaSourceType[] = [
   SchoolMediaSourceType.OFFICIAL_WEBSITE,
@@ -64,19 +65,7 @@ type RecommendationMediaAsset =
 function toPublicMediaAsset(
   asset?: RecommendationMediaAsset,
 ): SchoolPublicMediaAsset | null {
-  if (!asset) return null;
-  const url = asset.storageUrl ?? asset.originalUrl;
-  if (!url) return null;
-  return {
-    url,
-    sourceType: asset.sourceType as SchoolPublicMediaAsset['sourceType'],
-    originalUrl: asset.originalUrl,
-    sourcePageUrl: asset.sourcePageUrl,
-    license: asset.license,
-    attribution: asset.attribution,
-    width: asset.width,
-    height: asset.height,
-  };
+  return toPublicSchoolMediaAsset(asset);
 }
 
 function mapSchoolMedia(
