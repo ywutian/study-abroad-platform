@@ -227,6 +227,85 @@ describe('SchoolMediaService', () => {
     expect(result.approved).toBe(1);
   });
 
+  it('promotes an existing pending Wikimedia candidate when production storage is local', async () => {
+    const { service, prisma, storage } = makeService({ nodeEnv: 'production' });
+    prisma.schoolMediaAsset.findFirst.mockResolvedValueOnce({
+      id: 'asset-existing-wiki',
+      schoolId: 'school-1',
+      type: SchoolMediaType.CAMPUS_COVER,
+      status: SchoolMediaStatus.PENDING_REVIEW,
+      sourceType: SchoolMediaSourceType.WIKIMEDIA_COMMONS,
+      storageUrl: null,
+      originalUrl: 'https://upload.wikimedia.org/example-campus.jpg',
+      sourcePageUrl: 'https://commons.wikimedia.org/wiki/File:Old.jpg',
+      width: 1200,
+      height: 800,
+      hash: null,
+    });
+    prisma.schoolMediaAsset.findUnique.mockResolvedValue({
+      id: 'asset-existing-wiki',
+      schoolId: 'school-1',
+      type: SchoolMediaType.CAMPUS_COVER,
+      status: SchoolMediaStatus.APPROVED,
+      sourceType: SchoolMediaSourceType.WIKIMEDIA_COMMONS,
+      storageUrl: null,
+      originalUrl: 'https://upload.wikimedia.org/example-campus.jpg',
+      sourcePageUrl: 'https://commons.wikimedia.org/wiki/File:Example.jpg',
+      width: 1200,
+      height: 800,
+      hash: null,
+      isPrimary: true,
+    });
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/example-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Example.jpg',
+                    mime: 'image/jpeg',
+                    width: 1200,
+                    height: 800,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(storage.uploadSchoolMedia).not.toHaveBeenCalled();
+    expect(prisma.schoolMediaAsset.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'asset-existing-wiki' },
+        data: expect.objectContaining({
+          status: SchoolMediaStatus.APPROVED,
+          storageUrl: null,
+          originalUrl: 'https://upload.wikimedia.org/example-campus.jpg',
+          sourcePageUrl: 'https://commons.wikimedia.org/wiki/File:Example.jpg',
+          isPrimary: true,
+          failureReason: null,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
   it('approves Wikimedia media by using the audited original URL when production storage is local', async () => {
     const { service, prisma, storage } = makeService({ nodeEnv: 'production' });
     prisma.schoolMediaAsset.findUnique.mockResolvedValue({
