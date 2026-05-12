@@ -37,10 +37,11 @@ export function toWikimediaThumbnailUrl(
 
   const thumbIndex = segments.findIndex((segment) => segment === 'thumb');
   if (thumbIndex >= 0) {
-    const originalFileSegment = segments[thumbIndex + 4];
-    if (!originalFileSegment) return null;
-    const prefix = segments.slice(0, thumbIndex + 5).join('/');
-    return `https://${WIKIMEDIA_UPLOAD_HOST}/${prefix}/${thumbWidth}px-${originalFileSegment}`;
+    const thumbnailSegment = segments[segments.length - 1];
+    const fileMatch = thumbnailSegment.match(/^\d+px-(.+)$/);
+    if (!fileMatch) return null;
+    const prefix = segments.slice(0, -1).join('/');
+    return `https://${WIKIMEDIA_UPLOAD_HOST}/${prefix}/${thumbWidth}px-${fileMatch[1]}`;
   }
 
   const shardA = segments[commonsIndex + 1];
