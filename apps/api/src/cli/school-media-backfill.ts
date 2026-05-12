@@ -1,23 +1,13 @@
 import 'reflect-metadata';
-import { existsSync } from 'fs';
-import { resolve } from 'path';
 import { ConfigService } from '@nestjs/config';
-import { config as loadEnv } from 'dotenv';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { RedisMetricsCollector } from '../src/common/redis/redis-metrics.service';
-import { RedisService } from '../src/common/redis/redis.service';
-import { StorageService } from '../src/common/storage/storage.service';
-import { AuditLogService } from '../src/common/services/audit-log.service';
-import { SchoolWriteService } from '../src/modules/school/school-write.service';
-import { SchoolMediaService } from '../src/modules/school/school-media.service';
-import { stringifySchoolMediaResult } from '../src/modules/school/school-media-output.util';
-
-for (const envPath of [
-  resolve(process.cwd(), '.env'),
-  resolve(process.cwd(), 'apps/api/.env'),
-]) {
-  if (existsSync(envPath)) loadEnv({ path: envPath, override: false });
-}
+import { PrismaService } from '../prisma/prisma.service';
+import { RedisMetricsCollector } from '../common/redis/redis-metrics.service';
+import { RedisService } from '../common/redis/redis.service';
+import { StorageService } from '../common/storage/storage.service';
+import { AuditLogService } from '../common/services/audit-log.service';
+import { SchoolWriteService } from '../modules/school/school-write.service';
+import { SchoolMediaService } from '../modules/school/school-media.service';
+import { stringifySchoolMediaResult } from '../modules/school/school-media-output.util';
 
 function getArg(name: string): string | undefined {
   const prefix = `--${name}=`;
@@ -32,7 +22,16 @@ function getBooleanArg(name: string, defaultValue: boolean): boolean {
   if (value == null) {
     return process.argv.includes(`--${name}`) ? true : defaultValue;
   }
-  return value === 'true' || value === '1' || value === 'yes';
+  return ['true', '1', 'yes'].includes(value.toLowerCase());
+}
+
+function getNumberArg(name: string, defaultValue: number): number {
+  const parsed = Number(getArg(name) ?? defaultValue);
+  return Number.isFinite(parsed) ? parsed : defaultValue;
+}
+
+function normalizeSource(source: string): string {
+  return source === 'all' ? 'official,wikimedia' : source;
 }
 
 async function main() {
@@ -55,9 +54,8 @@ async function main() {
     await prisma.onModuleInit();
     await storage.onModuleInit();
 
-    const limit = Number(getArg('limit') ?? '243');
-    const sourceArg = getArg('source') ?? 'official,wikimedia';
-    const source = sourceArg === 'all' ? 'official,wikimedia' : sourceArg;
+    const limit = Math.min(Math.max(1, getNumberArg('limit', 25)), 500);
+    const source = normalizeSource(getArg('source') ?? 'all');
     const schoolId = getArg('schoolId');
     const dryRun = getBooleanArg('dry-run', true);
 
@@ -71,6 +69,7 @@ async function main() {
     console.log(stringifySchoolMediaResult(result));
   } finally {
     await prisma.onModuleDestroy();
+    await redis.onModuleDestroy();
   }
 }
 
