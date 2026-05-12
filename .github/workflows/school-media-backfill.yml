@@ -1,0 +1,164 @@
+name: School Media Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Maximum schools to process in this run (1-500)'
+        required: true
+        default: '25'
+        type: string
+      source:
+        description: 'Discovery sources'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - official
+          - wikimedia
+      dry_run:
+        description: 'Preview only; do not write media candidates'
+        required: true
+        default: true
+        type: boolean
+      school_id:
+        description: 'Optional single school id'
+        required: false
+        default: ''
+        type: string
+      image_tag:
+        description: 'API image tag to run'
+        required: true
+        default: latest
+        type: string
+      timeout_seconds:
+        description: 'Cloud Run Job task timeout'
+        required: true
+        default: '1800'
+        type: string
+      storage_type:
+        description: 'Storage backend available to the job. local creates review candidates; cloud choices require provider secrets on the job.'
+        required: true
+        default: local
+        type: choice
+        options:
+          - local
+          - s3
+          - oss
+          - cos
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: school-media-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    name: Run School Media Backfill
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: github-actions-deploy@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Validate inputs
+        env:
+          LIMIT: ${{ inputs.limit }}
+          TIMEOUT_SECONDS: ${{ inputs.timeout_seconds }}
+        run: |
+          if ! [[ "$LIMIT" =~ ^[0-9]+$ ]]; then
+            echo "::error::limit must be an integer"
+            exit 1
+          fi
+          if (( LIMIT < 1 || LIMIT > 500 )); then
+            echo "::error::limit must be between 1 and 500"
+            exit 1
+          fi
+          if ! [[ "$TIMEOUT_SECONDS" =~ ^[0-9]+$ ]]; then
+            echo "::error::timeout_seconds must be an integer"
+            exit 1
+          fi
+          if (( TIMEOUT_SECONDS < 300 || TIMEOUT_SECONDS > 3600 )); then
+            echo "::error::timeout_seconds must be between 300 and 3600"
+            exit 1
+          fi
+
+      - name: Create or update media backfill job
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          LIMIT: ${{ inputs.limit }}
+          SOURCE: ${{ inputs.source }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          SCHOOL_ID: ${{ inputs.school_id }}
+          TIMEOUT_SECONDS: ${{ inputs.timeout_seconds }}
+          STORAGE_TYPE: ${{ inputs.storage_type }}
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/study-abroad/api:${IMAGE_TAG}"
+          JOB_NAME="study-abroad-school-media-backfill"
+
+          ARGS=(
+            "dist/cli/school-media-backfill.js"
+            "--limit=${LIMIT}"
+            "--source=${SOURCE}"
+            "--dry-run=${DRY_RUN}"
+          )
+          if [ -n "$SCHOOL_ID" ]; then
+            ARGS+=("--schoolId=${SCHOOL_ID}")
+          fi
+          ARGS_CSV=$(IFS=,; echo "${ARGS[*]}")
+
+          JOB_ARGS=(
+            --image="$IMAGE"
+            --region="$REGION"
+            --vpc-connector="projects/${PROJECT}/locations/${REGION}/connectors/study-abroad-connector"
+            --vpc-egress=private-ranges-only
+            --task-timeout="$TIMEOUT_SECONDS"
+            --max-retries=0
+            --command=node
+            --args="$ARGS_CSV"
+            --set-env-vars="NODE_ENV=production,STORAGE_TYPE=${STORAGE_TYPE}"
+            --set-secrets="DATABASE_URL=database-url-proxy:latest,REDIS_URL=redis-url:latest"
+            --quiet
+          )
+
+          if gcloud run jobs describe "$JOB_NAME" --region="$REGION" --quiet >/dev/null 2>&1; then
+            gcloud run jobs update "$JOB_NAME" "${JOB_ARGS[@]}"
+          else
+            gcloud run jobs create "$JOB_NAME" "${JOB_ARGS[@]}"
+          fi
+
+          {
+            echo "### School media backfill"
+            echo
+            echo "- Image: \`$IMAGE\`"
+            echo "- Args: \`$ARGS_CSV\`"
+            echo "- Storage type: \`$STORAGE_TYPE\`"
+            echo "- Dry run: \`$DRY_RUN\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Execute media backfill job
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+        run: |
+          gcloud run jobs execute study-abroad-school-media-backfill \
+            --region="$REGION" \
+            --wait \
+            --quiet

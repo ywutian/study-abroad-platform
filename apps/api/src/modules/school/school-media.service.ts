@@ -365,7 +365,11 @@ export class SchoolMediaService {
     let hash = asset.hash;
 
     if (!storageUrl && asset.originalUrl) {
-      if (!this.canPersistPublicMedia()) {
+      const canPersistPublicMedia = this.canPersistPublicMedia();
+      const canApproveExternalOriginal = this.canApproveExternalOriginalUrl(
+        asset.sourceType,
+      );
+      if (!canPersistPublicMedia && !canApproveExternalOriginal) {
         throw new BadRequestException(
           'Public media storage is not configured for production',
         );
@@ -375,17 +379,19 @@ export class SchoolMediaService {
         asset.sourcePageUrl ?? asset.originalUrl,
         asset.schoolId,
       );
-      const uploaded = await this.storage.uploadSchoolMedia(
-        asset.schoolId,
-        asset.type,
-        {
-          buffer: downloaded.buffer!,
-          mimetype: downloaded.mimetype!,
-          originalname: `${asset.id}${extFromMime(downloaded.mimetype!)}`,
-          hash: downloaded.hash!,
-        },
-      );
-      storageUrl = uploaded.url;
+      if (canPersistPublicMedia) {
+        const uploaded = await this.storage.uploadSchoolMedia(
+          asset.schoolId,
+          asset.type,
+          {
+            buffer: downloaded.buffer!,
+            mimetype: downloaded.mimetype!,
+            originalname: `${asset.id}${extFromMime(downloaded.mimetype!)}`,
+            hash: downloaded.hash!,
+          },
+        );
+        storageUrl = uploaded.url;
+      }
       width = downloaded.width ?? null;
       height = downloaded.height ?? null;
       hash = downloaded.hash ?? null;
@@ -447,10 +453,15 @@ export class SchoolMediaService {
       asset.sourcePageUrl ?? asset.originalUrl,
       asset.schoolId,
     );
-    const status = this.canPersistPublicMedia()
-      ? SchoolMediaStatus.APPROVED
-      : SchoolMediaStatus.CANDIDATE;
-    const uploaded = this.canPersistPublicMedia()
+    const canPersistPublicMedia = this.canPersistPublicMedia();
+    const canApproveExternalOriginal = this.canApproveExternalOriginalUrl(
+      asset.sourceType,
+    );
+    const status =
+      canPersistPublicMedia || canApproveExternalOriginal
+        ? SchoolMediaStatus.APPROVED
+        : SchoolMediaStatus.CANDIDATE;
+    const uploaded = canPersistPublicMedia
       ? await this.storage.uploadSchoolMedia(asset.schoolId, asset.type, {
           buffer: candidate.buffer!,
           mimetype: candidate.mimetype!,
@@ -868,6 +879,12 @@ export class SchoolMediaService {
       this.storage.getStorageType() !== 'local' ||
       this.config.get<string>('NODE_ENV') !== 'production'
     );
+  }
+
+  private canApproveExternalOriginalUrl(
+    sourceType: SchoolMediaSourceType,
+  ): boolean {
+    return sourceType === SchoolMediaSourceType.WIKIMEDIA_COMMONS;
   }
 
   private async fetchWithTimeout(url: string): Promise<Response> {

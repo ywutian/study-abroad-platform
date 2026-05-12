@@ -42,7 +42,7 @@ function response(
 }
 
 describe('SchoolMediaService', () => {
-  const makeService = () => {
+  const makeService = (options: { nodeEnv?: string } = {}) => {
     const prisma = {
       school: {
         count: jest.fn().mockResolvedValue(1),
@@ -80,7 +80,11 @@ describe('SchoolMediaService', () => {
       }),
     } as any;
     const service = new SchoolMediaService(
-      { get: jest.fn().mockReturnValue('test') } as any,
+      {
+        get: jest.fn((key: string) =>
+          key === 'NODE_ENV' ? (options.nodeEnv ?? 'test') : 'test',
+        ),
+      } as any,
       prisma,
       storage,
       { invalidateSchoolCaches: jest.fn() } as any,
@@ -164,5 +168,67 @@ describe('SchoolMediaService', () => {
       }),
     );
     expect(result.failed).toBe(1);
+  });
+
+  it('approves Wikimedia media by using the audited original URL when production storage is local', async () => {
+    const { service, prisma, storage } = makeService({ nodeEnv: 'production' });
+    prisma.schoolMediaAsset.findUnique.mockResolvedValue({
+      id: 'asset-wiki',
+      schoolId: 'school-1',
+      type: SchoolMediaType.CAMPUS_COVER,
+      status: SchoolMediaStatus.PENDING_REVIEW,
+      sourceType: SchoolMediaSourceType.WIKIMEDIA_COMMONS,
+      storageUrl: null,
+      originalUrl: 'https://upload.wikimedia.org/example-campus.png',
+      sourcePageUrl: 'https://commons.wikimedia.org/wiki/File:Example.png',
+      width: 1200,
+      height: 800,
+      hash: null,
+    });
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        body: pngHeader(1200, 800),
+        headers: { get: jest.fn().mockReturnValue('image/png') } as any,
+      }),
+    );
+
+    await service.approveAsset('asset-wiki', 'admin-1');
+
+    expect(storage.uploadSchoolMedia).not.toHaveBeenCalled();
+    expect(prisma.schoolMediaAsset.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'asset-wiki' },
+        data: expect.objectContaining({
+          status: SchoolMediaStatus.APPROVED,
+          storageUrl: null,
+          isPrimary: true,
+          width: 1200,
+          height: 800,
+        }),
+      }),
+    );
+  });
+
+  it('still blocks official website media approval in production when public storage is not configured', async () => {
+    const { service, storage, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.schoolMediaAsset.findUnique.mockResolvedValue({
+      id: 'asset-official',
+      schoolId: 'school-1',
+      type: SchoolMediaType.CAMPUS_COVER,
+      status: SchoolMediaStatus.CANDIDATE,
+      sourceType: SchoolMediaSourceType.OFFICIAL_WEBSITE,
+      storageUrl: null,
+      originalUrl: 'https://www.example.edu/campus.png',
+      sourcePageUrl: 'https://www.example.edu/',
+      width: 1200,
+      height: 800,
+      hash: null,
+    });
+
+    await expect(
+      service.approveAsset('asset-official', 'admin-1'),
+    ).rejects.toThrow('Public media storage is not configured for production');
+
+    expect(storage.uploadSchoolMedia).not.toHaveBeenCalled();
   });
 });
