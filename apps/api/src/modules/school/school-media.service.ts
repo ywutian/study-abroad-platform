@@ -27,8 +27,8 @@ import {
   type SchoolMediaListQueryDto,
 } from './dto/school-media.dto';
 
-const MIN_COVER_WIDTH = 600;
-const MIN_COVER_HEIGHT = 300;
+const MIN_COVER_WIDTH = 500;
+const MIN_COVER_HEIGHT = 250;
 const WIKIMEDIA_SEARCH_LIMIT = 20;
 const WIKIMEDIA_CATEGORY_LIMIT = 20;
 const FETCH_TIMEOUT_MS = 12_000;
@@ -53,17 +53,61 @@ const SCHOOL_NAME_STOPWORDS = new Set([
   'university',
 ]);
 const SCHOOL_ALIAS_OVERRIDES: Record<string, string[]> = {
+  'augustana university': [
+    'augustana university south dakota',
+    'augustana university sioux falls',
+  ],
+  baruch: ['baruch college', 'bernard m baruch college'],
   'california institute of technology': ['caltech'],
+  macalester: ['macalester college'],
   'massachusetts institute of technology': ['mit'],
+  pitzer: ['pitzer college'],
+  reed: ['reed college'],
+  umn: [
+    'university of minnesota twin cities',
+    'university of minnesota',
+    'u of m',
+  ],
   'university of pennsylvania': ['upenn', 'penn'],
   'university of california, berkeley': ['uc berkeley', 'cal'],
   'university of california, los angeles': ['ucla'],
   'university of california, riverside': ['uc riverside'],
   'university of california, santa cruz': ['uc santa cruz'],
   'university of california, merced': ['uc merced'],
+  whitman: ['whitman college'],
+  'wheaton college massachusetts': [
+    'wheaton college norton massachusetts',
+    'wheaton college ma',
+  ],
+};
+const WIKIMEDIA_SEARCH_QUERY_OVERRIDES: Record<string, string[]> = {
+  'augustana university': [
+    'Augustana University South Dakota campus',
+    'Augustana University Old Main East Hall',
+  ],
+  baruch: ['Baruch College Newman Vertical Campus'],
+  macalester: ['Macalester College campus', 'Macalester College Old Main'],
+  'pacific lutheran university': [
+    'Pacific Lutheran University campus',
+    'Pacific Lutheran University Harstad Hall',
+  ],
+  pitzer: ['Pitzer College campus', 'Pitzer College Phase II'],
+  reed: ['Reed College campus'],
+  umn: [
+    'University of Minnesota Twin Cities campus',
+    'University of Minnesota Northrop Mall',
+  ],
+  'wheaton college massachusetts': [
+    'Wheaton College Massachusetts campus',
+    'Wheaton College Norton Massachusetts campus',
+  ],
+  whitman: ['Whitman College campus'],
 };
 const WIKIMEDIA_POSITIVE_TITLE_TERMS = [
+  'academic',
+  'administration',
   'aerial',
+  'armory',
   'building',
   'buildings',
   'campus',
@@ -72,7 +116,12 @@ const WIKIMEDIA_POSITIVE_TITLE_TERMS = [
   'commons',
   'hall',
   'library',
+  'main',
+  'mall',
+  'newman vertical campus',
+  'old main',
   'quad',
+  'upper campus',
   'walk',
   'west campus',
 ];
@@ -913,10 +962,13 @@ export class SchoolMediaService {
     aliases?: string[] | null;
   }): string[] {
     const aliases = getSchoolAliases(school.name, school.aliases);
+    const normalizedName = normalizeSearchText(school.name);
     return [
+      ...(WIKIMEDIA_SEARCH_QUERY_OVERRIDES[normalizedName] ?? []),
       `${school.name} campus`,
       ...aliases.map((alias) => `${alias} campus`),
       `${school.name} building`,
+      ...aliases.map((alias) => `${alias} building`),
       school.name,
     ].filter((query, index, all) => all.indexOf(query) === index);
   }

@@ -420,6 +420,118 @@ describe('SchoolMediaService', () => {
     expect(result.approved).toBe(1);
   });
 
+  it('matches short stored school names through Wikimedia alias overrides', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        id: 'school-1',
+        name: 'Baruch',
+        aliases: [],
+        website: 'https://baruch.cuny.edu',
+        mediaAssets: [],
+      },
+    ]);
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:Baruch College Newman Vertical Campus.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/baruch-campus.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Baruch_College_Newman_Vertical_Campus.jpg',
+                    mime: 'image/jpeg',
+                    width: 1601,
+                    height: 2304,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/baruch-campus.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
+  it('accepts slightly shorter but usable Wikimedia campus covers', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        id: 'school-1',
+        name: 'Pitzer',
+        aliases: [],
+        website: 'https://www.pitzer.edu',
+        mediaAssets: [],
+      },
+    ]);
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:Pitzer-college-phase-II-2.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/pitzer-phase-ii.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:Pitzer-college-phase-II-2.jpg',
+                    mime: 'image/jpeg',
+                    width: 560,
+                    height: 274,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/pitzer-phase-ii.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
   it('skips Wikimedia results that do not match the school name', async () => {
     const { service, prisma } = makeService({ nodeEnv: 'production' });
     prisma.school.findMany.mockResolvedValueOnce([
