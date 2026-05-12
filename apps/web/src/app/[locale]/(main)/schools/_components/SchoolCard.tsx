@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import {
   Award,
@@ -65,6 +66,34 @@ function schoolHue(school: { id: string; country?: string }) {
   return h % 360;
 }
 
+function toWikimediaThumbnailSize(url: string, width: 250 | 500): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+
+  if (parsed.hostname !== 'upload.wikimedia.org') return url;
+  const segments = parsed.pathname.split('/').filter(Boolean);
+  const thumbIndex = segments.findIndex((segment) => segment === 'thumb');
+  if (thumbIndex < 0) return url;
+  const thumbnailSegment = segments[segments.length - 1];
+  const fileMatch = thumbnailSegment.match(/^\d+px-(.+)$/);
+  if (!fileMatch) return url;
+  segments[segments.length - 1] = `${width}px-${fileMatch[1]}`;
+  parsed.pathname = `/${segments.join('/')}`;
+  return parsed.toString();
+}
+
+function canUseOptimizedCover(url: string): boolean {
+  try {
+    return new URL(url).hostname === 'upload.wikimedia.org';
+  } catch {
+    return false;
+  }
+}
+
 function HeroGradient({ hue, initial, size }: { hue: number; initial: string; size: 'lg' | 'sm' }) {
   return (
     <div
@@ -107,6 +136,10 @@ function SchoolHeroMedia({
     return <HeroGradient hue={hue} initial={initial} size={size} />;
   }
 
+  const displayUrl = toWikimediaThumbnailSize(coverUrl, size === 'sm' ? 250 : 500);
+  const imageClassName =
+    'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]';
+
   return (
     <div
       className={cn(
@@ -114,14 +147,33 @@ function SchoolHeroMedia({
         size === 'lg' ? 'h-[180px] w-full sm:w-[280px]' : 'h-16 w-full'
       )}
     >
-      <img
-        src={coverUrl}
-        alt={schoolName}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
-        onError={() => setFailed(true)}
-        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-      />
+      {canUseOptimizedCover(displayUrl) ? (
+        <Image
+          src={displayUrl}
+          alt={schoolName}
+          fill
+          sizes={
+            size === 'lg'
+              ? '(min-width: 640px) 280px, 100vw'
+              : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
+          }
+          quality={70}
+          priority={priority}
+          loading={priority ? undefined : 'lazy'}
+          onError={() => setFailed(true)}
+          className={imageClassName}
+        />
+      ) : (
+        <img
+          src={displayUrl}
+          alt={schoolName}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : 'low'}
+          onError={() => setFailed(true)}
+          className={imageClassName}
+        />
+      )}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/5" />
     </div>
   );
