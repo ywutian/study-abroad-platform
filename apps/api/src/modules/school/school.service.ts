@@ -30,6 +30,7 @@ import {
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { toPublicSchoolMediaAsset } from '../../common/utils/school-public-media.util';
 import { createHash } from 'crypto';
 import { SchoolCommunityRatingService } from './school-community-rating.service';
 import {
@@ -168,19 +169,7 @@ type PublicSchoolMediaAssetRow = {
 function toPublicMediaAsset(
   asset: PublicSchoolMediaAssetRow | undefined,
 ): SchoolPublicMediaAsset | null {
-  if (!asset) return null;
-  const url = asset.storageUrl ?? asset.originalUrl;
-  if (!url) return null;
-  return {
-    url,
-    sourceType: asset.sourceType as SchoolPublicMediaAsset['sourceType'],
-    originalUrl: asset.originalUrl,
-    sourcePageUrl: asset.sourcePageUrl,
-    license: asset.license,
-    attribution: asset.attribution,
-    width: asset.width,
-    height: asset.height,
-  };
+  return toPublicSchoolMediaAsset(asset);
 }
 
 function buildPublicSchoolMedia(

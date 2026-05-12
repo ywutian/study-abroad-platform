@@ -6,6 +6,7 @@ import type {
 import { toLegacyTestOptionalFlag } from '@study-abroad/shared/utils';
 import { SCHOOL_BASIC_SELECT } from '../../common/constants/prisma-selects';
 import { clampPercentRate } from '../../common/utils/percent.util';
+import { toPublicSchoolMediaAsset } from '../../common/utils/school-public-media.util';
 
 /**
  * School fields for school-list API responses (getUserSchoolList / addSchool / updateItem).
@@ -31,19 +32,7 @@ type SchoolListMediaAsset = SchoolListSchoolResult['mediaAssets'][number];
 function toPublicMediaAsset(
   asset: SchoolListMediaAsset | undefined,
 ): SchoolPublicMediaAsset | null {
-  if (!asset) return null;
-  const url = asset.storageUrl ?? asset.originalUrl;
-  if (!url) return null;
-  return {
-    url,
-    sourceType: asset.sourceType as SchoolPublicMediaAsset['sourceType'],
-    originalUrl: asset.originalUrl,
-    sourcePageUrl: asset.sourcePageUrl,
-    license: asset.license,
-    attribution: asset.attribution,
-    width: asset.width,
-    height: asset.height,
-  };
+  return toPublicSchoolMediaAsset(asset);
 }
 
 function mapSchoolMedia(

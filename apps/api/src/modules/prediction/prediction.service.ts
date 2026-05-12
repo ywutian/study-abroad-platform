@@ -13,6 +13,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import { fireAndForget } from '../../common/utils/async.util';
+import {
+  toPublicSchoolMediaAsset,
+  type PublicSchoolMediaAssetInput,
+} from '../../common/utils/school-public-media.util';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { PREDICTION_LOCK_TTL } from './prediction-error';
@@ -126,31 +130,23 @@ const PREDICTION_PUBLIC_MEDIA_INCLUDE = {
 } as const;
 
 function toPredictionPublicMediaAsset(
-  asset: any,
+  asset: PublicSchoolMediaAssetInput | null | undefined,
 ): SchoolPublicMediaAsset | null {
-  if (!asset) return null;
-  const url = asset.storageUrl ?? asset.originalUrl;
-  if (!url) return null;
-  return {
-    url,
-    sourceType: asset.sourceType as SchoolPublicMediaAsset['sourceType'],
-    originalUrl: asset.originalUrl,
-    sourcePageUrl: asset.sourcePageUrl,
-    license: asset.license,
-    attribution: asset.attribution,
-    width: asset.width,
-    height: asset.height,
-  };
+  return toPublicSchoolMediaAsset(asset);
 }
 
 function mapPredictionSchoolMedia(assets?: any[] | null): SchoolPublicMedia {
   const list = assets ?? [];
   return {
     campusCover: toPredictionPublicMediaAsset(
-      list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER),
+      list.find((asset) => asset.type === SchoolMediaType.CAMPUS_COVER) as
+        | PublicSchoolMediaAssetInput
+        | undefined,
     ),
     logo: toPredictionPublicMediaAsset(
-      list.find((asset) => asset.type === SchoolMediaType.LOGO),
+      list.find((asset) => asset.type === SchoolMediaType.LOGO) as
+        | PublicSchoolMediaAssetInput
+        | undefined,
     ),
   };
 }
