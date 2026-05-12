@@ -20,6 +20,9 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/study_abroad"
 # Redis [Zod 验证] — 可选，不配置则退化为内存缓存
 # ============================================
 REDIS_URL=redis://localhost:6379
+REDIS_RECONNECT_INTERVAL_MS=30000
+REDIS_TRANSIENT_CIRCUIT_COOLDOWN_MS=30000
+REDIS_CIRCUIT_BREAKER_COOLDOWN_MS=3600000
 
 # ============================================
 # JWT 认证 [Zod 验证] — 用 openssl rand -base64 32 生成
@@ -169,6 +172,9 @@ DATABASE_URL="postgresql://studyabroad_user:密码@postgres:5432/studyabroad?con
 # ============================================
 REDIS_PASSWORD=你的Redis密码_至少16位
 REDIS_URL=redis://:密码@redis:6379
+REDIS_RECONNECT_INTERVAL_MS=30000
+REDIS_TRANSIENT_CIRCUIT_COOLDOWN_MS=30000
+REDIS_CIRCUIT_BREAKER_COOLDOWN_MS=3600000
 
 # ============================================
 # JWT 认证 [Zod 验证]

@@ -260,10 +260,7 @@ export class HealthController {
   }
 
   private calculateOverallStatus(checks: HealthStatus['checks']): CheckStatus {
-    // Redis is an optional cache/rate-limit backend with in-process fallbacks.
-    // Keep it visible in checks, but do not block deploy health when the core
-    // API + database path is usable.
-    const statuses = [checks.database.status];
+    const statuses = Object.values(checks).map((c) => c.status);
 
     if (statuses.includes('error')) return 'error';
     if (statuses.includes('degraded')) return 'degraded';

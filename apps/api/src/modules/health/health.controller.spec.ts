@@ -49,7 +49,7 @@ describe('HealthController', () => {
       expect(result.checks.redis?.status).toBe('ok');
     });
 
-    it('should stay deploy-healthy when optional Redis is degraded', async () => {
+    it('should report degraded when optional Redis is degraded', async () => {
       redisService.healthCheck.mockResolvedValue({
         status: 'error',
         message: 'ERR max requests limit exceeded',
@@ -57,7 +57,7 @@ describe('HealthController', () => {
 
       const result = await controller.check(mockResponse as Response);
 
-      expect(result.status).toBe('ok');
+      expect(result.status).toBe('degraded');
       expect(result.checks.database.status).toBe('ok');
       expect(result.checks.redis?.status).toBe('degraded');
       expect(result.checks.redis?.message).toBe(
@@ -89,6 +89,18 @@ describe('HealthController', () => {
     it('should return ok when database is ready', async () => {
       const result = await controller.readiness(mockResponse as Response);
       expect(result.status).toBe('ok');
+    });
+
+    it('should not fail readiness when optional Redis is degraded', async () => {
+      redisService.healthCheck.mockResolvedValue({
+        status: 'error',
+        message: 'Redis not connected',
+      });
+
+      const result = await controller.readiness(mockResponse as Response);
+
+      expect(result.status).toBe('ok');
+      expect(redisService.healthCheck).not.toHaveBeenCalled();
     });
 
     it('should return error when database is not ready', async () => {

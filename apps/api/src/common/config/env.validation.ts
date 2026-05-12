@@ -44,6 +44,16 @@ const envSchema = z.object({
     .int()
     .positive()
     .default(3600000),
+  REDIS_TRANSIENT_CIRCUIT_COOLDOWN_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30000),
+  REDIS_RECONNECT_INTERVAL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30000),
   REDIS_HEALTH_PING_INTERVAL_MS: z.coerce
     .number()
     .int()

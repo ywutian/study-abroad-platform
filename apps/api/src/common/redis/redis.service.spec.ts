@@ -31,16 +31,28 @@ function attachClient(
 
 describe('RedisService resilience', () => {
   let metrics: RedisMetricsCollector;
+  let activeServices: RedisService[];
+
+  function createService(overrides: Record<string, unknown> = {}) {
+    const service = new RedisService(createConfig(overrides), metrics);
+    activeServices.push(service);
+    return service;
+  }
 
   beforeEach(() => {
     metrics = new RedisMetricsCollector();
+    activeServices = [];
+  });
+
+  afterEach(async () => {
+    await Promise.all(
+      activeServices.map((service) => service.onModuleDestroy()),
+    );
+    jest.useRealTimers();
   });
 
   it('treats quota exhaustion as a cache miss and opens the circuit', async () => {
-    const service = new RedisService(
-      createConfig({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 }),
-      metrics,
-    );
+    const service = createService({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 });
     attachClient(service, {
       get: jest
         .fn()
@@ -66,10 +78,7 @@ describe('RedisService resilience', () => {
   });
 
   it('attempts failover to the next configured Redis URL after a quota error', async () => {
-    const service = new RedisService(
-      createConfig({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 }),
-      metrics,
-    );
+    const service = createService({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 });
     attachClient(
       service,
       {
@@ -91,10 +100,7 @@ describe('RedisService resilience', () => {
   });
 
   it('fails open for non-critical setNX and fails closed for strict automation locks', async () => {
-    const service = new RedisService(
-      createConfig({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 }),
-      metrics,
-    );
+    const service = createService({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 });
 
     attachClient(service, {
       set: jest.fn().mockRejectedValue(new Error('ECONNRESET')),
@@ -116,10 +122,7 @@ describe('RedisService resilience', () => {
   });
 
   it('reports health from the local circuit without spending another Redis command', async () => {
-    const service = new RedisService(
-      createConfig({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 }),
-      metrics,
-    );
+    const service = createService({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 });
     const ping = jest.fn();
     attachClient(service, {
       get: jest
@@ -134,5 +137,84 @@ describe('RedisService resilience', () => {
       message: 'Redis circuit open: quota_exceeded',
     });
     expect(ping).not.toHaveBeenCalled();
+  });
+
+  it('reconnects in the background after Redis becomes disconnected', async () => {
+    jest.useFakeTimers();
+    const service = createService({ REDIS_RECONNECT_INTERVAL_MS: 25 });
+    (service as any).endpointSpecs = [
+      { label: 'url:1', url: 'redis://endpoint-1' },
+    ];
+    const connect = jest.fn().mockImplementation(async () => {
+      (service as any).activeEndpointIndex = 0;
+      (service as any).client = { disconnect: jest.fn(), quit: jest.fn() };
+      (service as any).isConnected = true;
+      (service as any).reconnectAttempts = 0;
+    });
+    (service as any).connect = connect;
+
+    (service as any).scheduleReconnectIfNeeded();
+
+    expect(service.getRuntimeState().nextReconnectAt).not.toBeNull();
+    await jest.advanceTimersByTimeAsync(25);
+
+    expect(connect).toHaveBeenCalledWith(0);
+    expect(service.getRuntimeState()).toMatchObject({
+      connected: true,
+    });
+    expect(service.getRuntimeState().lastReconnectAttemptAt).not.toBeNull();
+  });
+
+  it('does not schedule another reconnect while one is already in flight', () => {
+    jest.useFakeTimers();
+    const service = createService({ REDIS_RECONNECT_INTERVAL_MS: 25 });
+    (service as any).endpointSpecs = [
+      { label: 'url:1', url: 'redis://endpoint-1' },
+    ];
+    (service as any).reconnectInFlight = true;
+
+    (service as any).scheduleReconnectIfNeeded();
+
+    expect(service.getRuntimeState().nextReconnectAt).toBeNull();
+  });
+
+  it('clears pending reconnect timers on destroy', async () => {
+    jest.useFakeTimers();
+    const service = createService({ REDIS_RECONNECT_INTERVAL_MS: 25 });
+    (service as any).endpointSpecs = [
+      { label: 'url:1', url: 'redis://endpoint-1' },
+    ];
+    const connect = jest.fn();
+    (service as any).connect = connect;
+
+    (service as any).scheduleReconnectIfNeeded();
+    await service.onModuleDestroy();
+    await jest.advanceTimersByTimeAsync(25);
+
+    expect(connect).not.toHaveBeenCalled();
+    expect(service.getRuntimeState().nextReconnectAt).toBeNull();
+  });
+
+  it('uses short circuit cooldowns for transient connection errors', async () => {
+    const service = createService({
+      REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000,
+      REDIS_TRANSIENT_CIRCUIT_COOLDOWN_MS: 1000,
+    });
+    attachClient(service, {
+      set: jest.fn().mockRejectedValue(new Error('ECONNRESET')),
+    });
+
+    await expect(service.setNXStrict('lock:transient', '1', 60)).resolves.toBe(
+      false,
+    );
+
+    const runtime = service.getRuntimeState();
+    expect(runtime).toMatchObject({
+      circuitOpen: true,
+      circuitReason: 'connection',
+    });
+    expect(Date.parse(runtime.circuitOpenUntil!) - Date.now()).toBeLessThan(
+      2000,
+    );
   });
 });

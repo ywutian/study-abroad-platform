@@ -36,6 +36,10 @@ export interface RedisRuntimeState {
   lastErrorAt: string | null;
   lastErrorKind: RedisErrorKind | null;
   lastErrorMessage: string | null;
+  lastConnectedAt: string | null;
+  lastReconnectAttemptAt: string | null;
+  nextReconnectAt: string | null;
+  reconnectAttempts: number;
 }
 
 interface EndpointCircuit {
@@ -52,7 +56,10 @@ export interface HealthResult {
 
 const DEFAULT_COMMAND_TIMEOUT_MS = 1000;
 const DEFAULT_CIRCUIT_COOLDOWN_MS = 60 * 60 * 1000;
+const DEFAULT_TRANSIENT_CIRCUIT_COOLDOWN_MS = 30 * 1000;
 const DEFAULT_HEALTH_PING_INTERVAL_MS = 60 * 1000;
+const DEFAULT_RECONNECT_INTERVAL_MS = 30 * 1000;
+const DEFAULT_DRIVER_RETRY_MAX_DELAY_MS = 5 * 1000;
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
@@ -67,6 +74,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   private lastErrorMessage: string | null = null;
   private lastHealthCheckAt = 0;
   private lastHealthResult: HealthResult | null = null;
+  private lastConnectedAt: number | null = null;
+  private lastReconnectAttemptAt: number | null = null;
+  private nextReconnectAt: number | null = null;
+  private reconnectAttempts = 0;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectInFlight = false;
+  private isShuttingDown = false;
 
   constructor(
     private configService: ConfigService,
@@ -77,9 +91,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.endpointSpecs = this.loadEndpointSpecs();
     this.endpointCircuits.clear();
     await this.connect();
+    this.scheduleReconnectIfNeeded();
   }
 
   async onModuleDestroy() {
+    this.isShuttingDown = true;
+    this.clearReconnectTimer();
     await this.disconnect();
   }
 
@@ -143,6 +160,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async connect(startIndex = 0) {
+    this.clearReconnectTimer();
     await this.disconnect(false);
 
     if (this.endpointSpecs.length === 0) {
@@ -180,6 +198,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         });
 
         this.isConnected = true;
+        this.lastConnectedAt = Date.now();
+        this.reconnectAttempts = 0;
+        this.lastHealthCheckAt = 0;
+        this.lastHealthResult = null;
         this.logger.log(`Redis connected (${spec.label})`);
         return;
       } catch (error) {
@@ -190,7 +212,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
           latencyMs: commandTimeoutMs,
           error,
         });
-        await this.destroyClientQuietly();
+        this.destroyClientQuietly();
         const { kind, message } = categorizeError(error);
         this.logger.warn(`Redis connect failed (${spec.label}): ${message}`);
         if (this.shouldOpenCircuit(kind)) {
@@ -221,11 +243,17 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         1,
       ),
       retryStrategy: (times: number) => {
-        if (times > 1 || this.isEndpointCircuitOpen(spec)) {
+        if (this.isEndpointCircuitOpen(spec)) {
           this.logger.warn(`Redis retry stopped (${spec.label})`);
           return null;
         }
-        return Math.min(times * 200, 1000);
+        if (times > 5) {
+          this.logger.warn(
+            `Redis driver retry budget exhausted (${spec.label}); background reconnect loop will continue`,
+          );
+          return null;
+        }
+        return Math.min(times * 500, DEFAULT_DRIVER_RETRY_MAX_DELAY_MS);
       },
       reconnectOnError: (error: Error) => {
         const { kind, message } = categorizeError(error);
@@ -253,6 +281,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     client.on('connect', () => {
       if (!this.isEndpointCircuitOpen(spec)) {
         this.isConnected = true;
+        this.lastConnectedAt = Date.now();
+        this.reconnectAttempts = 0;
       }
     });
 
@@ -264,12 +294,14 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         void this.openCircuit(kind, message, spec);
       } else {
         this.isConnected = false;
+        this.scheduleReconnectIfNeeded();
       }
     });
 
     client.on('close', () => {
       this.isConnected = false;
       this.logger.log(`Redis disconnected (${spec.label})`);
+      this.scheduleReconnectIfNeeded();
     });
   }
 
@@ -293,7 +325,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async destroyClientQuietly() {
+  private destroyClientQuietly() {
     if (!this.client) return;
     try {
       this.client.disconnect();
@@ -319,10 +351,24 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
+  private getTransientCircuitCooldownMs(): number {
+    return this.getNumberConfig(
+      'REDIS_TRANSIENT_CIRCUIT_COOLDOWN_MS',
+      DEFAULT_TRANSIENT_CIRCUIT_COOLDOWN_MS,
+    );
+  }
+
   private getHealthPingIntervalMs(): number {
     return this.getNumberConfig(
       'REDIS_HEALTH_PING_INTERVAL_MS',
       DEFAULT_HEALTH_PING_INTERVAL_MS,
+    );
+  }
+
+  private getReconnectIntervalMs(): number {
+    return this.getNumberConfig(
+      'REDIS_RECONNECT_INTERVAL_MS',
+      DEFAULT_RECONNECT_INTERVAL_MS,
     );
   }
 
@@ -351,12 +397,19 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
+  private getCircuitCooldownForKind(kind: RedisErrorKind): number {
+    return kind === 'timeout' || kind === 'connection'
+      ? this.getTransientCircuitCooldownMs()
+      : this.getCircuitCooldownMs();
+  }
+
   private async openCircuit(
     kind: RedisErrorKind,
     message: string,
     spec = this.endpointSpecs[this.activeEndpointIndex],
   ) {
-    const openUntil = Date.now() + this.getCircuitCooldownMs();
+    const cooldownMs = this.getCircuitCooldownForKind(kind);
+    const openUntil = Date.now() + cooldownMs;
     const circuitMessage = message.slice(0, 500);
     if (spec) {
       this.endpointCircuits.set(spec.label, {
@@ -369,9 +422,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     await this.disconnect(false);
     this.logger.error(
       `Redis circuit opened for ${spec?.label ?? 'unknown endpoint'} for ${Math.ceil(
-        this.getCircuitCooldownMs() / 1000,
+        cooldownMs / 1000,
       )}s due to ${kind}: ${circuitMessage}`,
     );
+    this.scheduleReconnectIfNeeded();
   }
 
   private isEndpointCircuitOpen(spec?: RedisEndpointSpec): boolean {
@@ -393,6 +447,15 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   private allEndpointsCircuitOpen(): boolean {
     return this.endpointSpecs.length > 0 && this.availableEndpointCount() === 0;
+  }
+
+  private nextCircuitRetryAt(): number | null {
+    const openUntilValues = Array.from(this.endpointCircuits.values())
+      .map((circuit) => circuit.openUntil)
+      .filter((openUntil) => openUntil > Date.now());
+
+    if (openUntilValues.length === 0) return null;
+    return Math.min(...openUntilValues);
   }
 
   private activeCircuit(): EndpointCircuit | null {
@@ -423,8 +486,73 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
           ? (this.activeEndpointIndex + 1) % this.endpointSpecs.length
           : 0;
       await this.connect(nextIndex);
+      this.scheduleReconnectIfNeeded();
     }
     this.logger.warn(`Redis ${op} degraded for ${key}: ${message}`);
+  }
+
+  private clearReconnectTimer() {
+    if (!this.reconnectTimer) return;
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = null;
+    this.nextReconnectAt = null;
+  }
+
+  private scheduleReconnectIfNeeded() {
+    if (
+      this.isShuttingDown ||
+      this.reconnectTimer ||
+      this.reconnectInFlight ||
+      this.endpointSpecs.length === 0 ||
+      this.connected
+    ) {
+      return;
+    }
+
+    const now = Date.now();
+    const circuitRetryAt = this.allEndpointsCircuitOpen()
+      ? this.nextCircuitRetryAt()
+      : null;
+    const delayMs = circuitRetryAt
+      ? Math.max(0, circuitRetryAt - now)
+      : this.getReconnectIntervalMs();
+
+    this.nextReconnectAt = now + delayMs;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.nextReconnectAt = null;
+      void this.runReconnect();
+    }, delayMs);
+    this.reconnectTimer.unref?.();
+  }
+
+  private async runReconnect() {
+    if (
+      this.isShuttingDown ||
+      this.reconnectInFlight ||
+      this.endpointSpecs.length === 0 ||
+      this.connected
+    ) {
+      return;
+    }
+
+    if (this.allEndpointsCircuitOpen()) {
+      this.scheduleReconnectIfNeeded();
+      return;
+    }
+
+    this.reconnectInFlight = true;
+    this.reconnectAttempts += 1;
+    this.lastReconnectAttemptAt = Date.now();
+
+    try {
+      const startIndex =
+        this.activeEndpointIndex >= 0 ? this.activeEndpointIndex : 0;
+      await this.connect(startIndex);
+    } finally {
+      this.reconnectInFlight = false;
+      this.scheduleReconnectIfNeeded();
+    }
   }
 
   /**
@@ -635,10 +763,22 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         : null,
       lastErrorKind: this.lastErrorKind,
       lastErrorMessage: this.lastErrorMessage,
+      lastConnectedAt: this.lastConnectedAt
+        ? new Date(this.lastConnectedAt).toISOString()
+        : null,
+      lastReconnectAttemptAt: this.lastReconnectAttemptAt
+        ? new Date(this.lastReconnectAttemptAt).toISOString()
+        : null,
+      nextReconnectAt: this.nextReconnectAt
+        ? new Date(this.nextReconnectAt).toISOString()
+        : null,
+      reconnectAttempts: this.reconnectAttempts,
     };
   }
 
   // 获取原始客户端（高级用途）
+  // Prefer RedisService wrapper methods. Raw client callers must explicitly
+  // handle fallback or strict-fail behavior when Redis is unavailable.
   getClient(): RedisClient | null {
     if (!this.connected) return null;
     return this.client;
