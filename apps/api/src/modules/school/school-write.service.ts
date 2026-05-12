@@ -11,6 +11,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
 import { deepMergeRecords, toRecord } from './school-provenance.helpers';
 
+const LIST_CACHE_INVALIDATION_MIN_INTERVAL_MS = 60_000;
+
 type SchoolWriterClient =
   | Pick<PrismaService, 'school'>
   | Prisma.TransactionClient;
@@ -122,6 +124,7 @@ export async function writeSchoolUpdate(
 @Injectable()
 export class SchoolWriteService {
   private readonly logger = new Logger(SchoolWriteService.name);
+  private lastListCacheInvalidatedAt = 0;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -144,11 +147,21 @@ export class SchoolWriteService {
 
   async invalidateSchoolCaches(schoolId?: string): Promise<void> {
     try {
+      const now = Date.now();
+      const shouldInvalidateListCache =
+        now - this.lastListCacheInvalidatedAt >=
+        LIST_CACHE_INVALIDATION_MIN_INTERVAL_MS;
+      if (shouldInvalidateListCache) {
+        this.lastListCacheInvalidatedAt = now;
+      }
+
       await Promise.all([
         schoolId
           ? this.redis.del(`school:detail:${schoolId}`)
           : Promise.resolve(0),
-        this.redis.delByPrefix('school:list:'),
+        shouldInvalidateListCache
+          ? this.redis.delByPrefix('school:list:')
+          : Promise.resolve(0),
         this.redis.del('school:data-quality'),
       ]);
     } catch (error) {
