@@ -162,7 +162,7 @@ export function AdvancedSchoolFilter({
   };
 
   const content = (
-    <div className={cn('space-y-4', variant === 'sheet' && 'mt-6')}>
+    <div className={cn('space-y-4', variant === 'sheet' && 'pb-2')}>
       {country === 'US' && (
         <FilterSection
           title={t('sections.location')}
@@ -536,8 +536,8 @@ export function AdvancedSchoolFilter({
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
+      <SheetContent className="h-dvh max-h-dvh w-full gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <SheetHeader className="shrink-0 border-b border-border/60 px-6 py-5 pr-16">
           <SheetTitle className="flex items-center gap-2">
             <SlidersHorizontal className="h-5 w-5" />
             {t('title')}
@@ -545,9 +545,14 @@ export function AdvancedSchoolFilter({
           <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
 
-        {content}
+        <div
+          data-lenis-prevent=""
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5 touch-pan-y [-webkit-overflow-scrolling:touch]"
+        >
+          {content}
+        </div>
 
-        <SheetFooter className="mt-6 flex gap-2">
+        <SheetFooter className="mt-0 shrink-0 border-t border-border/60 bg-background/95 px-6 py-4 supports-[backdrop-filter]:bg-background/80 sm:flex-row">
           <Button variant="outline" onClick={onReset} className="flex-1 gap-2">
             <RotateCcw className="h-4 w-4" />
             {t('reset')}
