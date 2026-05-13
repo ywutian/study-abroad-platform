@@ -5,6 +5,7 @@ import { SchoolDataService } from '../school/school-data.service';
 import { UrbanInstituteDataService } from '../school/urban-institute-data.service';
 import { BigFutureScrapeService } from '../school/scrapers/bigfuture.scraper';
 import { AppilyScrapeService } from '../school/scrapers/appily.scraper';
+import { CampusLifeIngestionService } from '../school/campus-life-ingestion.service';
 
 const DATA_SYNC_ACTION = 'DATA_SYNC';
 
@@ -56,7 +57,44 @@ const JOB_DEFINITIONS: Record<
       'Scrape net price, post-grad salary, loan data, campus life from Appily',
     nextScheduledRun: 'Quarterly (Jan/Apr/Jul/Oct 1st at 06:00)',
   },
+  CAMPUS_LIFE: {
+    name: 'Campus Life Ingestion',
+    description:
+      'Fill Appily campus-life fields and Niche safety/life/food grades with provenance',
+    nextScheduledRun: 'Manual or quarterly after Appily refresh',
+  },
 };
+
+type TriggerParams = Record<string, number | string | boolean>;
+
+function parseLimitParam(
+  params: TriggerParams,
+  defaultValue: number,
+  maxValue: number,
+): number {
+  const raw = params.limit;
+  const parsed =
+    typeof raw === 'number'
+      ? raw
+      : typeof raw === 'string'
+        ? parseInt(raw, 10)
+        : defaultValue;
+  return Number.isNaN(parsed) ? defaultValue : Math.min(parsed, maxValue);
+}
+
+function parseBooleanParam(
+  value: number | string | boolean | undefined,
+  defaultValue: boolean,
+): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'y'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'n'].includes(normalized)) return false;
+  }
+  return defaultValue;
+}
 
 @Injectable()
 export class AdminDataSyncService {
@@ -69,6 +107,7 @@ export class AdminDataSyncService {
     private readonly urbanInstituteService: UrbanInstituteDataService,
     private readonly bigFutureService: BigFutureScrapeService,
     private readonly appilyService: AppilyScrapeService,
+    private readonly campusLifeIngestionService: CampusLifeIngestionService,
   ) {}
 
   /**
@@ -126,7 +165,7 @@ export class AdminDataSyncService {
    */
   async triggerDataSync(
     jobId: string,
-    params: Record<string, number | string> | undefined,
+    params: TriggerParams | undefined,
     userId: string,
   ): Promise<{ synced?: number; errors?: number; message?: string }> {
     const def = JOB_DEFINITIONS[jobId];
@@ -134,19 +173,13 @@ export class AdminDataSyncService {
       throw new BadRequestException(`Unknown data-sync job: ${jobId}`);
     }
 
-    const runParams = params ?? {};
+    const runParams: TriggerParams = params ?? {};
     this.eventEmitter.emit('admin.job.started', { jobId });
     try {
       if (jobId === 'COLLEGE_SCORECARD') {
-        const limit =
-          typeof runParams.limit === 'number'
-            ? runParams.limit
-            : typeof runParams.limit === 'string'
-              ? parseInt(runParams.limit, 10)
-              : 500;
-        const result = await this.schoolDataService.syncSchoolsFromScorecard(
-          Number.isNaN(limit) ? 500 : Math.min(limit, 5000),
-        );
+        const limit = parseLimitParam(runParams, 500, 5000);
+        const result =
+          await this.schoolDataService.syncSchoolsFromScorecard(limit);
         await this.logSync(
           userId,
           jobId,
@@ -164,15 +197,10 @@ export class AdminDataSyncService {
       }
 
       if (jobId === 'URBAN_INSTITUTE') {
-        const limit =
-          typeof runParams.limit === 'number'
-            ? runParams.limit
-            : typeof runParams.limit === 'string'
-              ? parseInt(runParams.limit, 10)
-              : 500;
+        const limit = parseLimitParam(runParams, 500, 2000);
         const result = await this.urbanInstituteService.syncAll(
           undefined,
-          Number.isNaN(limit) ? 500 : Math.min(limit, 2000),
+          limit,
           userId,
         );
         await this.logSync(
@@ -191,16 +219,8 @@ export class AdminDataSyncService {
       }
 
       if (jobId === 'BIGFUTURE') {
-        const limit =
-          typeof runParams.limit === 'number'
-            ? runParams.limit
-            : typeof runParams.limit === 'string'
-              ? parseInt(runParams.limit, 10)
-              : 200;
-        const result = await this.bigFutureService.scrapeSchools(
-          Number.isNaN(limit) ? 200 : Math.min(limit, 500),
-          userId,
-        );
+        const limit = parseLimitParam(runParams, 200, 500);
+        const result = await this.bigFutureService.scrapeSchools(limit, userId);
         await this.logSync(userId, jobId, result.updated, result.failed);
         const response = {
           synced: result.updated,
@@ -212,16 +232,8 @@ export class AdminDataSyncService {
       }
 
       if (jobId === 'APPILY') {
-        const limit =
-          typeof runParams.limit === 'number'
-            ? runParams.limit
-            : typeof runParams.limit === 'string'
-              ? parseInt(runParams.limit, 10)
-              : 200;
-        const result = await this.appilyService.scrapeSchools(
-          Number.isNaN(limit) ? 200 : Math.min(limit, 500),
-          userId,
-        );
+        const limit = parseLimitParam(runParams, 200, 500);
+        const result = await this.appilyService.scrapeSchools(limit, userId);
         await this.logSync(userId, jobId, result.updated, result.failed);
         const appilyResponse = {
           synced: result.updated,
@@ -233,6 +245,32 @@ export class AdminDataSyncService {
           ...appilyResponse,
         });
         return appilyResponse;
+      }
+
+      if (jobId === 'CAMPUS_LIFE') {
+        const limit = parseLimitParam(runParams, 200, 500);
+        const dryRun = parseBooleanParam(runParams.dryRun, true);
+        const onlyMissing = parseBooleanParam(runParams.onlyMissing, true);
+        const result = await this.campusLifeIngestionService.ingest(
+          { limit, dryRun, onlyMissing },
+          userId,
+        );
+        const synced = result.appily.updated + result.tavily.updatedFields;
+        const errors = result.appily.failed + result.tavily.failed;
+        await this.logSync(
+          userId,
+          jobId,
+          synced,
+          errors,
+          `dryRun=${dryRun}; terminalMarked=${result.tavily.terminalMarked}`,
+        );
+        const response = {
+          synced,
+          errors,
+          message: `Campus life ${dryRun ? 'dry-run' : 'sync'} scanned ${result.tavily.scanned}; updated ${synced}; terminal marked ${result.tavily.terminalMarked}; ${errors} failed`,
+        };
+        this.eventEmitter.emit('admin.job.completed', { jobId, ...response });
+        return response;
       }
 
       if (jobId === 'IPEDS_CHECK' || jobId === 'RANKINGS_REMINDER') {

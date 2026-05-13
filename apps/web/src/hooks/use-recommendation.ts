@@ -37,6 +37,7 @@ export interface GenerateRecommendationDto {
   budget?: string;
   schoolCount?: number;
   additionalPreferences?: string;
+  campusPreferences?: Array<'safety' | 'life' | 'food'>;
 }
 
 // ============================================

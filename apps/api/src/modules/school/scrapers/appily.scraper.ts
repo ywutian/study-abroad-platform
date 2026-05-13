@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import * as cheerio from 'cheerio';
 import { BaseSchoolScraper } from './base-school-scraper';
 import { getAppilySlug } from './slug-mapper';
@@ -27,7 +28,7 @@ import { SchoolWriteService } from '../school-write.service';
  * - Student orgs count (社团数量)
  */
 
-class AppilyParser extends BaseSchoolScraper {
+export class AppilyParser extends BaseSchoolScraper {
   readonly source = DataSource.APPILY;
   readonly baseUrl = 'https://www.appily.com';
   readonly requestDelay = 2000;
@@ -258,14 +259,32 @@ export class AppilyScrapeService {
   async scrapeSchools(
     limit = 100,
     userId?: string,
+    options: {
+      dryRun?: boolean;
+      onlyMissingCampusLife?: boolean;
+    } = {},
   ): Promise<{
     scraped: number;
     updated: number;
     failed: number;
     skipped: number;
+    dryRun: boolean;
   }> {
+    const where: Prisma.SchoolWhereInput = {
+      country: 'US',
+      ...(options.onlyMissingCampusLife
+        ? {
+            OR: [
+              { roomAndBoard: null },
+              { studentOrgsCount: null },
+              { countriesRepresented: null },
+            ],
+          }
+        : {}),
+    };
+
     const schools = await this.prisma.school.findMany({
-      where: { country: 'US' },
+      where,
       select: { id: true, name: true, website: true, metadata: true },
       take: Math.min(limit, 500),
       orderBy: { usNewsRank: { sort: 'asc', nulls: 'last' } },
@@ -277,13 +296,24 @@ export class AppilyScrapeService {
     this.scraper.onSchoolScraped = async (result) => {
       // Merge school fields
       if (Object.keys(result.data).length > 0) {
+        if (options.dryRun) {
+          updated++;
+          return;
+        }
+
         const mergeResult = await this.merger.merge(
           result.schoolId,
           result.data,
           DataSource.APPILY,
+          {
+            sourceUrl: result.url,
+            extractionMethod: 'APPILY_HTML',
+          },
         );
         if (mergeResult.updatedFields.length > 0) updated++;
       }
+
+      if (options.dryRun) return;
 
       // Write metrics
       for (const metric of result.metrics) {
@@ -343,6 +373,8 @@ export class AppilyScrapeService {
         resourceId: '',
         metadata: {
           action: 'APPILY_SCRAPE',
+          dryRun: Boolean(options.dryRun),
+          onlyMissingCampusLife: Boolean(options.onlyMissingCampusLife),
           ...batchResult,
           updated,
         },
@@ -354,6 +386,7 @@ export class AppilyScrapeService {
       updated,
       failed: batchResult.failed,
       skipped: batchResult.skipped,
+      dryRun: Boolean(options.dryRun),
     };
   }
 }

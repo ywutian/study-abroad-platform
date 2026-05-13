@@ -175,6 +175,12 @@ export class SchoolController {
       weightAcceptance,
       weightTuition,
       weightSalary,
+      weightCampusSafety,
+      weightCampusLife,
+      weightCampusFood,
+      minSafetyGrade,
+      minLifeGrade,
+      minFoodGrade,
     } = query;
 
     return this.schoolService.findAll(
@@ -206,6 +212,12 @@ export class SchoolController {
         weightAcceptance,
         weightTuition,
         weightSalary,
+        weightCampusSafety,
+        weightCampusLife,
+        weightCampusFood,
+        minSafetyGrade,
+        minLifeGrade,
+        minFoodGrade,
       },
     );
   }

@@ -6,6 +6,7 @@ import { SchoolDataService } from '../school/school-data.service';
 import { UrbanInstituteDataService } from '../school/urban-institute-data.service';
 import { BigFutureScrapeService } from '../school/scrapers/bigfuture.scraper';
 import { AppilyScrapeService } from '../school/scrapers/appily.scraper';
+import { CampusLifeIngestionService } from '../school/campus-life-ingestion.service';
 import { BadRequestException } from '@nestjs/common';
 
 describe('AdminDataSyncService', () => {
@@ -42,7 +43,24 @@ describe('AdminDataSyncService', () => {
   const mockAppilyService = {
     scrapeSchools: jest
       .fn()
-      .mockResolvedValue({ scraped: 10, updated: 7, failed: 3 }),
+      .mockResolvedValue({ scraped: 10, updated: 7, failed: 3, dryRun: false }),
+  };
+
+  const mockCampusLifeIngestionService = {
+    ingest: jest.fn().mockResolvedValue({
+      dryRun: true,
+      onlyMissing: true,
+      limit: 25,
+      appily: { scraped: 5, updated: 2, failed: 0, skipped: 1, dryRun: true },
+      tavily: {
+        scanned: 5,
+        updatedFields: 3,
+        terminalMarked: 7,
+        skipped: 0,
+        failed: 1,
+        errors: ['Example failure'],
+      },
+    }),
   };
 
   beforeEach(async () => {
@@ -58,6 +76,10 @@ describe('AdminDataSyncService', () => {
         },
         { provide: BigFutureScrapeService, useValue: mockBigFutureService },
         { provide: AppilyScrapeService, useValue: mockAppilyService },
+        {
+          provide: CampusLifeIngestionService,
+          useValue: mockCampusLifeIngestionService,
+        },
       ],
     }).compile();
 
@@ -128,6 +150,22 @@ describe('AdminDataSyncService', () => {
       );
 
       expect(result.message).toContain('Reminder');
+    });
+
+    it('should trigger CAMPUS_LIFE sync with dry-run params', async () => {
+      const result = await service.triggerDataSync(
+        'CAMPUS_LIFE',
+        { limit: 25, dryRun: true, onlyMissing: true },
+        'admin-1',
+      );
+
+      expect(result.synced).toBe(5);
+      expect(result.errors).toBe(1);
+      expect(result.message).toContain('terminal marked 7');
+      expect(mockCampusLifeIngestionService.ingest).toHaveBeenCalledWith(
+        { limit: 25, dryRun: true, onlyMissing: true },
+        'admin-1',
+      );
     });
   });
 });

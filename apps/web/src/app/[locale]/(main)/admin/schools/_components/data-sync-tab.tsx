@@ -54,7 +54,7 @@ export function DataSyncTab() {
   });
 
   const triggerMutation = useMutation({
-    mutationFn: (payload: { job: string; params?: Record<string, number | string> }) =>
+    mutationFn: (payload: { job: string; params?: Record<string, number | string | boolean> }) =>
       apiClient.post<{ synced?: number; errors?: number; message?: string }>(
         adminRoutes.dataSyncTrigger(),
         payload
@@ -69,10 +69,16 @@ export function DataSyncTab() {
     },
   });
 
-  const JOBS_WITH_LIMIT = ['COLLEGE_SCORECARD', 'URBAN_INSTITUTE', 'BIGFUTURE', 'APPILY'];
+  const JOBS_WITH_LIMIT = [
+    'COLLEGE_SCORECARD',
+    'URBAN_INSTITUTE',
+    'BIGFUTURE',
+    'APPILY',
+    'CAMPUS_LIFE',
+  ];
 
   const getJobIcon = (jobId: string) => {
-    if (['BIGFUTURE', 'APPILY'].includes(jobId)) return Globe;
+    if (['BIGFUTURE', 'APPILY', 'CAMPUS_LIFE'].includes(jobId)) return Globe;
     if (['IPEDS_CHECK', 'RANKINGS_REMINDER'].includes(jobId)) return Bell;
     return Database;
   };
@@ -81,7 +87,10 @@ export function DataSyncTab() {
 
   const handleRunNow = (jobId: string) => {
     const params = JOBS_WITH_LIMIT.includes(jobId)
-      ? { limit: parseInt(triggerLimit, 10) || 500 }
+      ? {
+          limit: parseInt(triggerLimit, 10) || 500,
+          ...(jobId === 'CAMPUS_LIFE' ? { dryRun: false, onlyMissing: true } : {}),
+        }
       : undefined;
     triggerMutation.mutate({ job: jobId, params });
     setConfirmJobId(null);

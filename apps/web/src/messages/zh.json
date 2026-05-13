@@ -3505,7 +3505,10 @@
         "schoolType": "类型",
         "testOptional": "标化可选",
         "needBlind": "需求盲审",
-        "hasEarlyDecision": "提前决定"
+        "hasEarlyDecision": "提前决定",
+        "safety": "安全",
+        "life": "校园生活",
+        "food": "餐饮"
       }
     },
     "list": {
@@ -6042,6 +6045,10 @@
     "generating": "生成中...",
     "generatingDesc": "AI 正在分析你的背景并匹配学校",
     "formTitle": "推荐设置",
+    "campusPreferences": "校园偏好",
+    "campusSafety": "安全优先",
+    "campusLife": "校园氛围优先",
+    "campusFood": "餐饮便利优先",
     "additionalPreferences": "额外偏好",
     "additionalPreferencesPlaceholder": "任何特殊要求...",
     "completeProfileFirst": "请先完善个人档案",
@@ -6872,6 +6879,7 @@
       "location": "地理位置",
       "ranking": "排名范围",
       "acceptance": "录取率",
+      "campus": "校园体验",
       "tuition": "学费范围",
       "salary": "毕业薪资 / ROI",
       "type": "学校类型",
@@ -6886,7 +6894,10 @@
       "annualTuition": "年学费 (万美元)",
       "postGradSalary": "毕业后年薪 (万美元)",
       "publicPrivate": "公立/私立",
-      "schoolSize": "学校规模 (学生人数)"
+      "schoolSize": "学校规模 (学生人数)",
+      "minSafetyGrade": "安全最低评级",
+      "minLifeGrade": "校园生活最低评级",
+      "minFoodGrade": "餐饮最低评级"
     },
     "placeholders": {
       "selectCountry": "选择国家",
@@ -6946,6 +6957,12 @@
       "top50": "Top 50",
       "range30To50": "30-50",
       "range50To100": "50-100"
+    },
+    "campusGradePresets": {
+      "all": "不限",
+      "aMinus": "A- 以上",
+      "bPlus": "B+ 以上",
+      "b": "B 以上"
     },
     "specialConditions": {
       "testOptional": "标化可选",
@@ -7748,6 +7765,7 @@
       "refresh": "刷新",
       "dryRunHeuristic": "Dry-run 启发式填充",
       "fieldCoverage": "字段覆盖",
+      "campusLifeCoverage": "校园生活覆盖",
       "schoolsNeedingWork": "需要复核的学校",
       "none": "无",
       "unknown": "未知",
@@ -7757,7 +7775,8 @@
         "missing": "缺关键字段",
         "heuristic": "启发式字段",
         "official": "官方字段",
-        "terminal": "终态字段"
+        "terminal": "终态字段",
+        "missingFields": "缺失字段"
       },
       "table": {
         "field": "字段",

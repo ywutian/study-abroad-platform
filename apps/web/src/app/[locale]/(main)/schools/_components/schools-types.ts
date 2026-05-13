@@ -25,6 +25,9 @@ export interface School {
   percentNeedMet?: number;
   averageNetPrice?: number;
   averageAidPackage?: number;
+  roomAndBoard?: number;
+  studentOrgsCount?: number;
+  countriesRepresented?: number;
   isPrivate?: boolean;
   nicheSafetyGrade?: string;
   nicheLifeGrade?: string;

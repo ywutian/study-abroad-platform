@@ -403,6 +403,7 @@ export class RecommendationService {
               regions: dto.preferredRegions,
               majors: dto.preferredMajors,
               budget: dto.budget,
+              campusPreferences: dto.campusPreferences,
               additional: dto.additionalPreferences,
             },
             recommendations: recommendations as any,

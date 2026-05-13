@@ -1,3 +1,5 @@
+import { NICHE_GRADE_QUERY_VALUES, type NicheGradeQueryValue } from '@study-abroad/shared/scoring';
+
 export interface SchoolFilters {
   state?: string;
   rankMin?: number;
@@ -15,6 +17,9 @@ export interface SchoolFilters {
   hasEarlyDecision?: boolean;
   schoolType?: 'public' | 'private';
   region?: string;
+  minSafetyGrade?: NicheGradeQueryValue;
+  minLifeGrade?: NicheGradeQueryValue;
+  minFoodGrade?: NicheGradeQueryValue;
 }
 
 export type SchoolSortBy = 'rank' | 'name' | 'acceptance' | 'salary' | 'weighted';
@@ -36,6 +41,9 @@ export interface SchoolWeightParams {
   acceptanceRate: number;
   tuition: number;
   salary: number;
+  campusSafety?: number;
+  campusLife?: number;
+  campusFood?: number;
 }
 
 export type TuitionPresetValue = 'ALL' | '20-30' | '30-40' | '40-50' | '50+' | 'CUSTOM';
@@ -64,6 +72,12 @@ function normalizeBound(value: number | undefined, defaultValue: number): number
   return value == null || value === defaultValue ? undefined : value;
 }
 
+function normalizeCampusGrade(value?: string): NicheGradeQueryValue | undefined {
+  return NICHE_GRADE_QUERY_VALUES.includes(value as NicheGradeQueryValue)
+    ? (value as NicheGradeQueryValue)
+    : undefined;
+}
+
 export function sanitizeSchoolFilters(
   filters: SchoolFilters,
   country?: string | null
@@ -77,6 +91,9 @@ export function sanitizeSchoolFilters(
     testOptional: filters.testOptional || undefined,
     needBlind: filters.needBlind || undefined,
     hasEarlyDecision: filters.hasEarlyDecision || undefined,
+    minSafetyGrade: normalizeCampusGrade(filters.minSafetyGrade),
+    minLifeGrade: normalizeCampusGrade(filters.minLifeGrade),
+    minFoodGrade: normalizeCampusGrade(filters.minFoodGrade),
   };
 
   sanitized.rankMin = normalizeBound(filters.rankMin, SCHOOL_FILTER_DEFAULTS.rankMin);
@@ -120,6 +137,9 @@ export function countActiveSchoolFilters(filters: SchoolFilters, country?: strin
   if (sanitized.testOptional) count++;
   if (sanitized.needBlind) count++;
   if (sanitized.hasEarlyDecision) count++;
+  if (sanitized.minSafetyGrade) count++;
+  if (sanitized.minLifeGrade) count++;
+  if (sanitized.minFoodGrade) count++;
 
   return count;
 }
@@ -199,6 +219,15 @@ export function buildSchoolQueryParams(input: {
   if (filters.hasEarlyDecision) {
     params.hasEarlyDecision = 'true';
   }
+  if (filters.minSafetyGrade) {
+    params.minSafetyGrade = filters.minSafetyGrade;
+  }
+  if (filters.minLifeGrade) {
+    params.minLifeGrade = filters.minLifeGrade;
+  }
+  if (filters.minFoodGrade) {
+    params.minFoodGrade = filters.minFoodGrade;
+  }
   if (input.sortBy) {
     params.sortBy = input.sortBy;
   }
@@ -209,6 +238,9 @@ export function buildSchoolQueryParams(input: {
     params.weightAcceptance = String(input.weights.acceptanceRate);
     params.weightTuition = String(input.weights.tuition);
     params.weightSalary = String(input.weights.salary);
+    params.weightCampusSafety = String(input.weights.campusSafety ?? 0);
+    params.weightCampusLife = String(input.weights.campusLife ?? 0);
+    params.weightCampusFood = String(input.weights.campusFood ?? 0);
   }
 
   return params;

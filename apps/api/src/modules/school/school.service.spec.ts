@@ -574,6 +574,70 @@ describe('SchoolService', () => {
         }),
       );
     });
+
+    it('should filter by URL-safe campus grade thresholds', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'food-a-minus',
+          name: 'Dining Strong University',
+          nicheFoodGrade: 'A-',
+        },
+        {
+          ...mockSchool,
+          id: 'food-b',
+          name: 'Dining Baseline College',
+          nicheFoodGrade: 'B',
+        },
+      ]);
+
+      const result = await service.findAll(
+        { page: 1, pageSize: 20 },
+        { minFoodGrade: 'A_MINUS' },
+      );
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].id).toBe('food-a-minus');
+    });
+
+    it('should use campus-life weights in weighted sorting', async () => {
+      (prismaService.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          ...mockSchool,
+          id: 'rank-strong',
+          name: 'Rank Strong University',
+          usNewsRank: 1,
+          acceptanceRate: 10,
+          tuition: 50000,
+          avgSalary: 80000,
+          nicheFoodGrade: 'C',
+        },
+        {
+          ...mockSchool,
+          id: 'food-strong',
+          name: 'Food Strong College',
+          usNewsRank: 50,
+          acceptanceRate: 40,
+          tuition: 50000,
+          avgSalary: 80000,
+          nicheFoodGrade: 'A+',
+        },
+      ]);
+
+      const result = await service.findAll(
+        { page: 1, pageSize: 20 },
+        {
+          sortBy: 'weighted',
+          weightRank: 0,
+          weightAcceptance: 0,
+          weightTuition: 0,
+          weightSalary: 0,
+          weightCampusFood: 100,
+        },
+      );
+
+      expect(result.items[0].id).toBe('food-strong');
+    });
   });
 
   describe('getAvailableCountries', () => {

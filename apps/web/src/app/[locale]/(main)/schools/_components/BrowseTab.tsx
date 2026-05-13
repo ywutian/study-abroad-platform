@@ -25,6 +25,7 @@ import { useAuthStore } from '@/stores/auth';
 import { apiClient, STALE_TIME } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { schoolRoutes, schoolListRoutes, API_ROUTES } from '@study-abroad/shared';
+import { NICHE_GRADE_QUERY_VALUES, type NicheGradeQueryValue } from '@study-abroad/shared/scoring';
 import { toast } from 'sonner';
 
 import { SchoolFilterBar } from './SchoolFilterBar';
@@ -96,6 +97,13 @@ function boolParam(params: URLSearchParams, key: string): boolean | undefined {
   return params.get(key) === 'true' ? true : undefined;
 }
 
+function gradeParam(params: URLSearchParams, key: string): NicheGradeQueryValue | undefined {
+  const raw = params.get(key)?.trim().toUpperCase();
+  return NICHE_GRADE_QUERY_VALUES.includes(raw as NicheGradeQueryValue)
+    ? (raw as NicheGradeQueryValue)
+    : undefined;
+}
+
 function getInitialBrowseState() {
   if (typeof window === 'undefined') {
     return {
@@ -144,6 +152,9 @@ function getInitialBrowseState() {
     testOptional: boolParam(params, 'testOptional'),
     needBlind: boolParam(params, 'needBlind'),
     hasEarlyDecision: boolParam(params, 'hasEarlyDecision'),
+    minSafetyGrade: gradeParam(params, 'minSafetyGrade'),
+    minLifeGrade: gradeParam(params, 'minLifeGrade'),
+    minFoodGrade: gradeParam(params, 'minFoodGrade'),
   };
 
   return {
@@ -163,6 +174,9 @@ function getInitialBrowseState() {
         numberParam(params, 'weightAcceptance') ?? WEIGHT_PRESETS.balanced.acceptanceRate,
       tuition: numberParam(params, 'weightTuition') ?? WEIGHT_PRESETS.balanced.tuition,
       salary: numberParam(params, 'weightSalary') ?? WEIGHT_PRESETS.balanced.salary,
+      campusSafety: numberParam(params, 'weightCampusSafety') ?? 0,
+      campusLife: numberParam(params, 'weightCampusLife') ?? 0,
+      campusFood: numberParam(params, 'weightCampusFood') ?? 0,
     },
   };
 }

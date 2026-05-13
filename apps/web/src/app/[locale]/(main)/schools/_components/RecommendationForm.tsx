@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Shield, Smile, Sparkles, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,7 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
   const [budget, setBudget] = useState('');
   const [schoolCount, setSchoolCount] = useState(10);
   const [additionalPreferences, setAdditionalPreferences] = useState('');
+  const [campusPreferences, setCampusPreferences] = useState<Array<'safety' | 'life' | 'food'>>([]);
 
   const canSubmit = preflight?.canGenerate ?? false;
 
@@ -35,7 +36,14 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
       budget: budget || undefined,
       schoolCount,
       additionalPreferences: additionalPreferences || undefined,
+      campusPreferences: campusPreferences.length ? campusPreferences : undefined,
     });
+  };
+
+  const toggleCampusPreference = (value: 'safety' | 'life' | 'food') => {
+    setCampusPreferences((current) =>
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+    );
   };
 
   return (
@@ -88,6 +96,31 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
                   value={schoolCount}
                   onChange={(e) => setSchoolCount(Number(e.target.value))}
                 />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('campusPreferences')}</Label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: 'safety' as const, icon: Shield, label: t('campusSafety') },
+                  { value: 'life' as const, icon: Smile, label: t('campusLife') },
+                  { value: 'food' as const, icon: Utensils, label: t('campusFood') },
+                ].map(({ value, icon: Icon, label }) => {
+                  const active = campusPreferences.includes(value);
+                  return (
+                    <Button
+                      key={value}
+                      type="button"
+                      variant={active ? 'default' : 'outline'}
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => toggleCampusPreference(value)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {label}
+                    </Button>
+                  );
+                })}
               </div>
             </div>
             <div className="space-y-2">

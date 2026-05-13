@@ -1,4 +1,8 @@
-import type { FieldProvenance, SchoolProvenance } from '@study-abroad/shared';
+import type {
+  FieldProvenance,
+  RealDataStatus,
+  SchoolProvenance,
+} from '@study-abroad/shared';
 import {
   deriveTrustTierFromSource,
   normalizeFieldProvenance,
@@ -354,6 +358,12 @@ export function createFieldProvenance(params: {
   cycleYear?: number;
   notes?: string;
   confidence?: number;
+  extractionMethod?: string;
+  realDataStatus?: RealDataStatus;
+  reason?: string;
+  validatorCount?: number;
+  originalFormula?: string;
+  permanent?: boolean;
 }): FieldProvenance {
   const tier = deriveTrustTierFromSource(params.source);
 
@@ -371,6 +381,20 @@ export function createFieldProvenance(params: {
     ...(typeof params.confidence === 'number'
       ? { confidence: params.confidence }
       : {}),
+    ...(params.extractionMethod
+      ? { extractionMethod: params.extractionMethod }
+      : {}),
+    ...(params.realDataStatus ? { realDataStatus: params.realDataStatus } : {}),
+    ...(params.reason ? { reason: params.reason } : {}),
+    ...(typeof params.validatorCount === 'number'
+      ? { validatorCount: params.validatorCount }
+      : {}),
+    ...(params.originalFormula
+      ? { originalFormula: params.originalFormula }
+      : {}),
+    ...(typeof params.permanent === 'boolean'
+      ? { permanent: params.permanent }
+      : {}),
   };
 }
 
@@ -385,6 +409,12 @@ export function buildFieldProvenanceRecord(
     cycleYear?: number;
     notes?: string;
     confidence?: number;
+    extractionMethod?: string;
+    realDataStatus?: RealDataStatus;
+    reason?: string;
+    validatorCount?: number;
+    originalFormula?: string;
+    permanent?: boolean;
   },
 ): SchoolProvenance {
   const provenance: SchoolProvenance = {};

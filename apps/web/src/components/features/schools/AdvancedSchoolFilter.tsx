@@ -16,6 +16,9 @@ import {
   ChevronUp,
   Sparkles,
   TrendingUp,
+  Shield,
+  Smile,
+  Utensils,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +44,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { SCHOOL_FILTER_DEFAULTS, type SchoolFilters } from './school-filters';
+import type { NicheGradeQueryValue } from '@study-abroad/shared/scoring';
 
 export type { SchoolFilters } from './school-filters';
 
@@ -109,6 +113,12 @@ const US_STATES = [
   { value: 'WY', label: 'WY' },
 ];
 
+const CAMPUS_GRADE_PRESETS: Array<{ value: NicheGradeQueryValue; key: string }> = [
+  { value: 'A_MINUS', key: 'aMinus' },
+  { value: 'B_PLUS', key: 'bPlus' },
+  { value: 'B', key: 'b' },
+];
+
 export function AdvancedSchoolFilter({
   country,
   filters,
@@ -125,6 +135,7 @@ export function AdvancedSchoolFilter({
     'location',
     'ranking',
     'acceptance',
+    'campus',
     'salary',
   ]);
 
@@ -145,6 +156,11 @@ export function AdvancedSchoolFilter({
   const updateFilter = <K extends keyof SchoolFilters>(key: K, value: SchoolFilters[K]) => {
     onChange({ ...filters, [key]: value });
   };
+  const campusFilterCount = [
+    filters.minSafetyGrade,
+    filters.minLifeGrade,
+    filters.minFoodGrade,
+  ].filter(Boolean).length;
 
   const updateRange = <MinKey extends keyof SchoolFilters, MaxKey extends keyof SchoolFilters>(
     minKey: MinKey,
@@ -327,6 +343,38 @@ export function AdvancedSchoolFilter({
               updateFilter('acceptanceMin', min);
               updateFilter('acceptanceMax', max);
             }}
+          />
+        </div>
+      </FilterSection>
+
+      <FilterSection
+        title={t('sections.campus')}
+        icon={Shield}
+        expanded={expandedSections.includes('campus')}
+        onToggle={() => toggleSection('campus')}
+        badge={campusFilterCount > 0 ? String(campusFilterCount) : undefined}
+      >
+        <div className="space-y-5">
+          <GradePresetButtons
+            icon={Shield}
+            label={t('labels.minSafetyGrade')}
+            value={filters.minSafetyGrade}
+            onChange={(value) => updateFilter('minSafetyGrade', value)}
+            t={t}
+          />
+          <GradePresetButtons
+            icon={Smile}
+            label={t('labels.minLifeGrade')}
+            value={filters.minLifeGrade}
+            onChange={(value) => updateFilter('minLifeGrade', value)}
+            t={t}
+          />
+          <GradePresetButtons
+            icon={Utensils}
+            label={t('labels.minFoodGrade')}
+            value={filters.minFoodGrade}
+            onChange={(value) => updateFilter('minFoodGrade', value)}
+            t={t}
           />
         </div>
       </FilterSection>
@@ -536,7 +584,7 @@ export function AdvancedSchoolFilter({
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="h-dvh max-h-dvh w-full gap-0 overflow-hidden p-0 sm:max-w-lg">
+      <SheetContent className="flex h-dvh max-h-dvh w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
         <SheetHeader className="shrink-0 border-b border-border/60 px-6 py-5 pr-16">
           <SheetTitle className="flex items-center gap-2">
             <SlidersHorizontal className="h-5 w-5" />
@@ -567,6 +615,52 @@ export function AdvancedSchoolFilter({
         </SheetFooter>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function GradePresetButtons({
+  icon: Icon,
+  label,
+  value,
+  onChange,
+  t,
+}: {
+  icon: any;
+  label: string;
+  value?: NicheGradeQueryValue;
+  onChange: (value: NicheGradeQueryValue | undefined) => void;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        {label}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={cn('text-xs', !value && 'border-primary bg-primary/5')}
+          onClick={() => onChange(undefined)}
+        >
+          {t('campusGradePresets.all')}
+        </Button>
+        {CAMPUS_GRADE_PRESETS.map((preset) => (
+          <Button
+            key={preset.value}
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn('text-xs', value === preset.value && 'border-primary bg-primary/5')}
+            onClick={() => onChange(preset.value)}
+          >
+            {t(`campusGradePresets.${preset.key}`)}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 }
 
