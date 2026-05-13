@@ -215,6 +215,12 @@ export const FULL_UI_SURFACE_ROUTES: FullUiSurfaceRoute[] = [
     path: '/admin/audit-logs',
     role: 'admin',
   },
+  {
+    name: 'Admin cache health',
+    pattern: '/admin/cache-health',
+    path: '/admin/cache-health',
+    role: 'admin',
+  },
   { name: 'Admin calendar', pattern: '/admin/calendar', path: '/admin/calendar', role: 'admin' },
   {
     name: 'Admin calibrations',

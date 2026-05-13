@@ -12,9 +12,7 @@ import {
   ArrowRight,
   Award,
   Brain,
-  CheckCircle2,
   Sparkles,
-  Zap,
   GraduationCap,
   BarChart,
   TrendingUp,
@@ -24,33 +22,44 @@ import {
   ListChecks,
   School,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { VerificationStatusCard, PointsOverview } from '@/components/features';
 import type { ProfileData } from './types';
 
-interface ProfileHeaderProps {
+interface ProfileActionBarProps {
   completeness: number;
   profile: ProfileData | undefined;
   onOpenResumeExport: () => void;
   onSetActiveTab: (tab: string) => void;
 }
 
-export function ProfileHeader({
-  completeness,
-  profile,
-  onOpenResumeExport: _onOpenResumeExport,
-  onSetActiveTab,
-}: ProfileHeaderProps) {
-  const t = useTranslations();
-  const queryClient = useQueryClient();
-  const cachedAnalysis =
-    queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']) ?? null;
-  const readinessSignals = [
+type ReadinessSignal = {
+  id: 'gpa' | 'scores' | 'activities' | 'awards' | 'major';
+  label: string;
+  impact: string;
+  complete: boolean;
+  tab: string;
+  icon: LucideIcon;
+};
+
+function getReadinessSignals(
+  t: ReturnType<typeof useTranslations>,
+  profile: ProfileData | undefined
+): ReadinessSignal[] {
+  return [
     {
       id: 'gpa',
       label: t('profile.gpa'),
       impact: t('profile.readiness.highImpact'),
-      complete: Boolean(profile?.gpa || profile?.semesterGpas?.length),
+      complete: Boolean(
+        profile?.gpa ||
+        profile?.semesterGpas?.length ||
+        profile?.gpa9 ||
+        profile?.gpa10 ||
+        profile?.gpa11 ||
+        profile?.gpa12
+      ),
       tab: 'gpa',
       icon: GraduationCap,
     },
@@ -58,7 +67,7 @@ export function ProfileHeader({
       id: 'scores',
       label: t('profile.testScores'),
       impact: t('profile.readiness.highImpact'),
-      complete: (profile?.testScores?.length ?? 0) > 0,
+      complete: Boolean(profile?.testScores?.length || profile?.applyingTestOptional),
       tab: 'scores',
       icon: BarChart,
     },
@@ -87,178 +96,168 @@ export function ProfileHeader({
       icon: Sparkles,
     },
   ];
-  const recommendedFixes = readinessSignals.filter((item) => !item.complete).slice(0, 3);
-  const primaryActions = [
-    {
-      type: 'tab' as const,
-      value: recommendedFixes[0]?.tab ?? 'targets',
-      icon: recommendedFixes[0]?.icon ?? School,
-      label: recommendedFixes[0]
-        ? t('profile.readiness.fixSignal', { signal: recommendedFixes[0].label })
-        : t('profile.readiness.reviewTargets'),
-    },
-    {
-      type: 'link' as const,
-      value: '/uncommon-app',
-      icon: Brain,
-      label: t('profile.nextSteps.applicationHub'),
-    },
-    {
-      type: 'link' as const,
-      value: '/prediction',
-      icon: TrendingUp,
-      label: t('profile.nextSteps.prediction'),
-    },
-    {
-      type: 'link' as const,
-      value: '/essays',
-      icon: PenTool,
-      label: t('profile.nextSteps.essays'),
-    },
-  ];
+}
+
+export function ProfileActionBar({
+  completeness,
+  profile,
+  onOpenResumeExport,
+  onSetActiveTab,
+}: ProfileActionBarProps) {
+  const t = useTranslations();
+  const readinessSignals = getReadinessSignals(t, profile);
+  const nextMissing = readinessSignals.find((item) => !item.complete);
+  const starterActions = readinessSignals
+    .filter((item) => ['gpa', 'scores', 'activities'].includes(item.id) && !item.complete)
+    .slice(0, 2);
+  const summary =
+    completeness >= 60
+      ? t('profile.actionBar.readyForAnalysis')
+      : nextMissing
+        ? t('profile.actionBar.nextStep', { signal: nextMissing.label })
+        : t('profile.readiness.allSet');
+  const PrimaryIcon = nextMissing?.icon ?? Brain;
 
   return (
-    <div className="mb-8">
-      <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <Card className="border-primary/20">
-          <CardContent className="p-5">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{t('profile.readiness.title')}</Badge>
-                </div>
-                <div className="mt-4 flex items-end justify-between gap-4">
-                  <div>
-                    <div className="text-3xl font-semibold tabular-nums">{completeness}%</div>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      {completeness < 100
-                        ? t('profile.completenessHint')
-                        : t('profile.completenessComplete')}
-                    </p>
-                  </div>
-                  <Sparkles className="h-8 w-8 text-primary" />
-                </div>
-                <Progress value={completeness} className="mt-4 h-2" />
-              </div>
-              <div className="grid min-w-[260px] gap-2">
-                {readinessSignals.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => onSetActiveTab(item.tab)}
-                      className="flex min-h-10 items-center justify-between gap-3 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-3 py-2 text-left transition hover:border-primary/40"
-                    >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate text-sm font-medium">{item.label}</span>
-                      </span>
-                      <span className="flex shrink-0 items-center gap-2">
-                        <span className="hidden text-xs text-muted-foreground sm:inline">
-                          {item.impact}
-                        </span>
-                        {item.complete ? (
-                          <CheckCircle2 className="h-4 w-4 text-success" />
-                        ) : (
-                          <span className="h-2 w-2 rounded-full bg-warning" />
-                        )}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+    <Card className="mb-5 overflow-hidden border-primary/20 bg-primary/5">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] bg-primary text-primary-foreground shadow-sm">
+              <PrimaryIcon className="h-5 w-5" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">{t('profile.readiness.title')}</Badge>
+                <span className="text-xl font-semibold tabular-nums">{completeness}%</span>
+              </div>
+              <p className="mt-1 truncate text-sm text-muted-foreground">{summary}</p>
+              <Progress value={completeness} className="mt-2 h-1.5 max-w-md" />
+            </div>
+          </div>
 
-        <Card>
-          <CardContent className="grid h-full gap-4 p-5">
-            <div>
-              <h3 className="text-sm font-semibold">{t('profile.readiness.recommendedFixes')}</h3>
-              <div className="mt-3 grid gap-2">
-                {recommendedFixes.length > 0 ? (
-                  recommendedFixes.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => onSetActiveTab(item.tab)}
-                        className="flex min-h-10 items-start gap-3 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-3 text-left transition hover:border-primary/40"
-                      >
-                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                        <span className="min-w-0">
-                          <span className="block text-sm font-medium">
-                            {t('profile.readiness.fixSignal', { signal: item.label })}
-                          </span>
-                          <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                            {item.impact}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="rounded-[var(--theme-radius-card)] border bg-success/10 p-3 text-sm text-success">
-                    {t('profile.readiness.allSet')}
-                  </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {completeness < 30 &&
+              starterActions.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    type="button"
+                    size="sm"
+                    variant={index === 0 ? 'default' : 'outline'}
+                    onClick={() => onSetActiveTab(item.tab)}
+                    className="gap-1.5"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {t('profile.actionBar.completeSignal', { signal: item.label })}
+                  </Button>
+                );
+              })}
+
+            {completeness < 30 && starterActions.length === 0 && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => onSetActiveTab(nextMissing?.tab ?? 'targets')}
+                className="gap-1.5"
+              >
+                <School className="h-4 w-4" />
+                {t('profile.readiness.reviewTargets')}
+              </Button>
+            )}
+
+            {completeness >= 30 && completeness < 60 && (
+              <>
+                {nextMissing && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onSetActiveTab(nextMissing.tab)}
+                    className="gap-1.5"
+                  >
+                    <nextMissing.icon className="h-4 w-4" />
+                    {t('profile.actionBar.completeSignal', { signal: nextMissing.label })}
+                  </Button>
                 )}
-              </div>
-            </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onSetActiveTab('targets')}
+                  className="gap-1.5"
+                >
+                  <School className="h-4 w-4" />
+                  {t('profile.readiness.reviewTargets')}
+                </Button>
+              </>
+            )}
 
-            <div>
-              <h3 className="text-sm font-semibold">{t('profile.readiness.primaryActions')}</h3>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-                {primaryActions.map((item) => {
-                  const Icon = item.icon;
-                  const content = (
-                    <>
-                      <Icon className="h-4 w-4" />
-                      <span className="truncate">{item.label}</span>
-                    </>
-                  );
-                  return item.type === 'link' ? (
-                    <Button key={item.value} asChild variant="outline" className="justify-start">
-                      <Link href={item.value}>{content}</Link>
-                    </Button>
-                  ) : (
-                    <Button
-                      key={item.value}
-                      type="button"
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => onSetActiveTab(item.value)}
-                    >
-                      {content}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            {completeness >= 60 && (
+              <>
+                <Button asChild size="sm" className="gap-1.5">
+                  <Link href="/uncommon-app">
+                    <Brain className="h-4 w-4" />
+                    {t('profile.nextSteps.applicationHub')}
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline" className="gap-1.5">
+                  <Link href="/prediction">
+                    <TrendingUp className="h-4 w-4" />
+                    {t('profile.nextSteps.prediction')}
+                  </Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onOpenResumeExport}
+                  className="gap-1.5"
+                >
+                  <FileText className="h-4 w-4" />
+                  {t('profile.exportResume')}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-      {/* Application strategy entry point — only when profile has enough substance to act on */}
-      {completeness >= 60 && (
+interface ProfileSecondaryWorkflowsProps {
+  completeness: number;
+  profile: ProfileData | undefined;
+}
+
+export function ProfileSecondaryWorkflows({
+  completeness,
+  profile,
+}: ProfileSecondaryWorkflowsProps) {
+  const t = useTranslations();
+  const queryClient = useQueryClient();
+  const cachedAnalysis =
+    queryClient.getQueryData<AIAnalysisResult>(['profile-ai-analysis']) ?? null;
+
+  if (completeness < 60) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <ApplicationStrategyEntryCard analysis={cachedAnalysis} />
+      </motion.div>
+
+      <div className="mt-6">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="mt-6"
-        >
-          <ApplicationStrategyEntryCard analysis={cachedAnalysis} />
-        </motion.div>
-      )}
-
-      {/* Secondary workflow shortcuts — gated to avoid overwhelming first-time users */}
-      {completeness >= 60 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="mt-6"
         >
           <h3 className="text-sm font-semibold mb-3">{t('profile.nextSteps.title')}</h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -286,70 +285,25 @@ export function ProfileHeader({
             })}
           </div>
         </motion.div>
-      )}
+      </div>
 
-      {/* Points & Verification — secondary signals, also gated to keep first-fold focused on profile editing */}
-      {profile && completeness >= 60 && (
+      {profile && (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.35 }}
           >
             <PointsOverview compact />
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.45 }}
           >
             <VerificationStatusCard userId={profile.userId} compact />
           </motion.div>
         </div>
-      )}
-
-      {/* Quick Start prompt for new users */}
-      {completeness < 30 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6"
-        >
-          <Card className="overflow-hidden border-primary/30 bg-primary/5">
-            <CardContent className="p-5">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg">
-                  <Zap className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-primary">{t('profile.quickStart.title')}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('profile.quickStart.description')}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onSetActiveTab('gpa')}
-                    className="gap-1.5"
-                  >
-                    <GraduationCap className="h-4 w-4" />
-                    {t('profile.quickStart.fillGpa')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => onSetActiveTab('scores')}
-                    className="gap-1.5 bg-primary hover:opacity-90"
-                  >
-                    <BarChart className="h-4 w-4" />
-                    {t('profile.quickStart.fillScore')}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
       )}
     </div>
   );

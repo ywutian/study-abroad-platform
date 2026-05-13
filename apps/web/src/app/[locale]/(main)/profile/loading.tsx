@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageContainer } from '@/components/layout';
 
 /**
- * Profile route skeleton — mirrors the actual layout (header + readiness cards + 2-column body)
+ * Profile route skeleton — mirrors the actual layout (header + compact action bar + editor)
  * to avoid layout shift on hydration.
  */
 export default function ProfileLoading() {
@@ -20,27 +20,23 @@ export default function ProfileLoading() {
         </div>
       </div>
 
-      {/* Readiness + Recommended fixes cards */}
-      <div className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="rounded-xl border bg-card p-5 space-y-4">
-          <Skeleton className="h-5 w-32" />
-          <div className="flex items-end justify-between">
-            <Skeleton className="h-10 w-20" />
-            <Skeleton className="h-8 w-8 rounded-full" />
+      {/* Compact action bar */}
+      <div className="mb-5 rounded-xl border bg-card p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-32 rounded-full" />
+                <Skeleton className="h-6 w-12" />
+              </div>
+              <Skeleton className="h-4 w-64 max-w-full" />
+              <Skeleton className="h-1.5 w-72 max-w-full rounded-full" />
+            </div>
           </div>
-          <Skeleton className="h-2 w-full rounded-full" />
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-md" />
-            ))}
-          </div>
-        </div>
-        <div className="rounded-xl border bg-card p-5 space-y-4">
-          <Skeleton className="h-4 w-32" />
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-md" />
-            ))}
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-28 rounded-md" />
+            <Skeleton className="h-9 w-28 rounded-md" />
           </div>
         </div>
       </div>

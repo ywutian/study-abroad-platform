@@ -75,11 +75,7 @@ export function LoadingState({
   const content = loader || (
     <div className="flex flex-col items-center justify-center gap-3">
       <Loader2 className={cn('animate-spin text-primary', sizeClasses[size])} />
-      {text && (
-        <p className={cn('text-muted-foreground', textSizeClasses[size])}>
-          {text}
-        </p>
-      )}
+      {text && <p className={cn('text-muted-foreground', textSizeClasses[size])}>{text}</p>}
     </div>
   );
 
@@ -102,11 +98,7 @@ export function LoadingState({
     );
   }
 
-  return (
-    <div className={cn('flex items-center justify-center py-12', className)}>
-      {content}
-    </div>
-  );
+  return <div className={cn('flex items-center justify-center py-12', className)}>{content}</div>;
 }
 
 // 骨架屏组件
@@ -139,12 +131,7 @@ export function Skeleton({
 
   return (
     <div
-      className={cn(
-        'bg-muted',
-        variantClasses[variant],
-        animationClasses[animation],
-        className
-      )}
+      className={cn('bg-muted', variantClasses[variant], animationClasses[animation], className)}
       style={{
         width: typeof width === 'number' ? `${width}px` : width,
         height: typeof height === 'number' ? `${height}px` : height,
@@ -154,13 +141,7 @@ export function Skeleton({
 }
 
 // 列表骨架屏
-export function ListSkeleton({
-  count = 3,
-  className,
-}: {
-  count?: number;
-  className?: string;
-}) {
+export function ListSkeleton({ count = 3, className }: { count?: number; className?: string }) {
   return (
     <div className={cn('space-y-4', className)}>
       {Array.from({ length: count }).map((_, i) => (
@@ -222,11 +203,7 @@ export function TableSkeleton({
       {Array.from({ length: rows }).map((_, rowIndex) => (
         <div key={rowIndex} className="flex gap-4 py-3 border-b border-muted">
           {Array.from({ length: columns }).map((_, colIndex) => (
-            <Skeleton
-              key={colIndex}
-              width={`${100 / columns}%`}
-              height={14}
-            />
+            <Skeleton key={colIndex} width={`${100 / columns}%`} height={14} />
           ))}
         </div>
       ))}
@@ -238,27 +215,45 @@ export function TableSkeleton({
 export function ProfileSkeleton({ className }: { className?: string }) {
   return (
     <div className={cn('space-y-6', className)}>
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Skeleton variant="circular" width={80} height={80} />
-        <div className="flex-1 space-y-2">
-          <Skeleton width="40%" height={24} />
-          <Skeleton width="60%" height={16} />
+      {/* Compact action bar */}
+      <div className="rounded-lg border p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <Skeleton width={40} height={40} variant="rectangular" className="rounded-xl" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <Skeleton width={120} height={20} />
+                <Skeleton width={44} height={24} />
+              </div>
+              <Skeleton width="70%" height={14} />
+              <Skeleton width="60%" height={6} />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Skeleton width={96} height={36} />
+            <Skeleton width={96} height={36} />
+          </div>
         </div>
       </div>
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border p-4 space-y-2">
-            <Skeleton width="30%" height={14} />
-            <Skeleton width="50%" height={24} />
+
+      {/* Editor */}
+      <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="hidden space-y-2 lg:block">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} width="100%" height={48} />
+          ))}
+        </div>
+        <div className="rounded-lg border p-6 space-y-6">
+          <div className="space-y-2">
+            <Skeleton width={160} height={24} />
+            <Skeleton width={280} height={16} />
           </div>
-        ))}
-      </div>
-      {/* Content */}
-      <div className="space-y-4">
-        <Skeleton width="100%" height={100} variant="rectangular" />
-        <Skeleton width="100%" height={100} variant="rectangular" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} width="100%" height={44} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

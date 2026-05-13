@@ -290,6 +290,8 @@ function HeaderActions() {
   const params = useParams();
   const locale = params.locale as Locale;
   const { user, logout, setUser } = useAuthStore();
+  const userEmail = typeof user?.email === 'string' ? user.email.trim() : '';
+  const userInitial = userEmail[0]?.toUpperCase() ?? 'U';
 
   const switchLocale = (newLocale: Locale) => {
     if (newLocale === locale) return;
@@ -361,7 +363,7 @@ function HeaderActions() {
             >
               <Avatar className="h-7 w-7 ring-2 ring-muted transition-all hover:ring-primary/20">
                 <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-xs font-semibold text-primary-foreground">
-                  {user.email[0].toUpperCase()}
+                  {userInitial}
                 </AvatarFallback>
               </Avatar>
               <ChevronDown className="h-3 w-3 text-muted-foreground hidden sm:block" />
@@ -370,7 +372,9 @@ function HeaderActions() {
           <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
             {/* User Info */}
             <div className="px-3 py-2.5 border-b border-border">
-              <p className="text-sm font-medium text-foreground truncate">{user.email}</p>
+              <p className="text-sm font-medium text-foreground truncate">
+                {userEmail || t('nav.user.manageAccount')}
+              </p>
               <p className="text-xs text-muted-foreground">{t('nav.user.manageAccount')}</p>
             </div>
 
