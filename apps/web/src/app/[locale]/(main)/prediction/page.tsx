@@ -13,6 +13,8 @@ import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
 import { PageContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api/client';
+import { useRouter } from '@/lib/i18n/navigation';
+import { useAuth } from '@/hooks/use-auth';
 import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
 import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { usePredictionDashboard, useRunPrediction } from '@/hooks/use-prediction';
@@ -49,7 +51,19 @@ interface SchoolListItemApi {
 export default function PredictionPage() {
   const t = useTranslations();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { isInitialized, isAuthenticated } = useAuth();
   const hasAutoRun = useRef(false);
+  const canFetchProtectedData = isInitialized && isAuthenticated;
+  const callbackPath = useMemo(() => {
+    const query = searchParams.toString();
+    return `/prediction${query ? `?${query}` : ''}`;
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!isInitialized || isAuthenticated) return;
+    router.replace(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
+  }, [callbackPath, isAuthenticated, isInitialized, router]);
 
   // School selection (pre-filled from user school list)
   const [activeTab, setActiveTab] = useState<'workspace' | 'history' | 'evidence'>('workspace');
@@ -58,6 +72,7 @@ export default function PredictionPage() {
   const { data: schoolListData } = useQuery({
     queryKey: ['school-lists'],
     queryFn: () => apiClient.get<SchoolListItemApi[]>(schoolListRoutes.list()),
+    enabled: canFetchProtectedData,
   });
   useEffect(() => {
     if (hasPreFilled || !schoolListData?.length) return;
@@ -89,16 +104,18 @@ export default function PredictionPage() {
   const [ucExpandedFrom, setUcExpandedFrom] = useState<SchoolSearchItem[] | null>(null);
 
   // Data fetching
-  const { data: dashboardData } = usePredictionDashboard();
+  const { data: dashboardData } = usePredictionDashboard(canFetchProtectedData);
   const predictMutation = useRunPrediction();
   const { data: ucIdsData, isLoading: ucIdsLoading } = useQuery({
     queryKey: ['schools', 'uc-ids'],
     queryFn: () => apiClient.get<{ schoolIds: string[] }>(schoolRoutes.ucIds()),
+    enabled: canFetchProtectedData,
   });
 
   const { data: profileData } = useQuery({
     queryKey: ['profile'],
     queryFn: () => apiClient.get<any>(profileRoutes.me()),
+    enabled: canFetchProtectedData,
   });
 
   const isInternational = useMemo(() => {
@@ -170,6 +187,10 @@ export default function PredictionPage() {
   }, []);
 
   const handlePredict = useCallback(() => {
+    if (!canFetchProtectedData) {
+      router.replace(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
+      return;
+    }
     if (selectedSchools.length === 0) {
       toast.error(t('prediction.selectSchoolsFirst'));
       return;
@@ -221,7 +242,15 @@ export default function PredictionPage() {
       }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- predictMutation.mutate is stable, adding predictMutation object would cause infinite re-renders
-  }, [selectedSchools, ucIdsData?.schoolIds, predictMutation.mutate, t]);
+  }, [
+    callbackPath,
+    canFetchProtectedData,
+    router,
+    selectedSchools,
+    ucIdsData?.schoolIds,
+    predictMutation.mutate,
+    t,
+  ]);
 
   const handleToggleExpand = useCallback((schoolId: string) => {
     setExpandedId((prev) => (prev === schoolId ? null : schoolId));
@@ -304,6 +333,7 @@ export default function PredictionPage() {
 
   useEffect(() => {
     if (hasAutoRun.current) return;
+    if (!canFetchProtectedData) return;
     if (searchParams.get('autorun') !== '1') return;
     if (!hasPreFilled || selectedSchools.length === 0 || predictMutation.isPending || ucIdsLoading)
       return;
@@ -311,12 +341,26 @@ export default function PredictionPage() {
     handlePredict();
   }, [
     handlePredict,
+    canFetchProtectedData,
     hasPreFilled,
     predictMutation.isPending,
     searchParams,
     selectedSchools.length,
     ucIdsLoading,
   ]);
+
+  if (!canFetchProtectedData) {
+    return (
+      <AIErrorBoundary feature="prediction">
+        <PageContainer maxWidth="default">
+          <PredictionHeader />
+          <div className="rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-card-bg)] px-4 py-10 text-center text-sm text-muted-foreground">
+            {t('common.loading')}
+          </div>
+        </PageContainer>
+      </AIErrorBoundary>
+    );
+  }
 
   return (
     <AIErrorBoundary feature="prediction">

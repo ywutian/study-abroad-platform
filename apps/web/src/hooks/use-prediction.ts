@@ -167,11 +167,12 @@ export function useSchoolPrediction(schoolId: string, enabled = true) {
 }
 
 /** 获取预测仪表盘聚合数据 */
-export function usePredictionDashboard() {
+export function usePredictionDashboard(enabled = true) {
   return useQuery<PredictionDashboardData>({
     queryKey: predictionKeys.dashboard(),
     queryFn: () => apiClient.get(`${API_ROUTES.PREDICTIONS}/dashboard`),
     staleTime: STALE_TIME.MODERATE,
+    enabled,
   });
 }
 
