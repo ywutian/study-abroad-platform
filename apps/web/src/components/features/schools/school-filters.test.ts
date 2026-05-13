@@ -52,6 +52,9 @@ describe('school-filters', () => {
       weightAcceptance: '20',
       weightTuition: '25',
       weightSalary: '25',
+      weightCampusSafety: '0',
+      weightCampusLife: '0',
+      weightCampusFood: '0',
     });
     expect(params).not.toHaveProperty('isPrivate');
   });
@@ -89,6 +92,9 @@ describe('school-filters', () => {
       sizeMax: undefined,
       salaryMin: undefined,
       salaryMax: undefined,
+      minSafetyGrade: undefined,
+      minLifeGrade: undefined,
+      minFoodGrade: undefined,
     });
   });
 
@@ -146,6 +152,38 @@ describe('school-filters', () => {
       tuitionMax: '60000',
       salaryMax: '120000',
       testOptional: 'true',
+    });
+  });
+
+  it('serializes URL-safe campus-life grade filters', () => {
+    const filters: SchoolFilters = {
+      minSafetyGrade: 'A_MINUS',
+      minLifeGrade: 'B_PLUS',
+      minFoodGrade: 'B',
+    };
+
+    const params = buildSchoolQueryParams({
+      country: 'US',
+      filters,
+      weights: {
+        ranking: 20,
+        acceptanceRate: 20,
+        tuition: 20,
+        salary: 20,
+        campusSafety: 15,
+        campusLife: 10,
+        campusFood: 15,
+      },
+    });
+
+    expect(countActiveSchoolFilters(filters, 'US')).toBe(3);
+    expect(params).toMatchObject({
+      minSafetyGrade: 'A_MINUS',
+      minLifeGrade: 'B_PLUS',
+      minFoodGrade: 'B',
+      weightCampusSafety: '15',
+      weightCampusLife: '10',
+      weightCampusFood: '15',
     });
   });
 });

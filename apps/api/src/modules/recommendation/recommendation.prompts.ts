@@ -238,6 +238,21 @@ export function buildRecommendationUserPrompt(
     };
     parts.push(`${isZh ? '预算' : 'Budget'}: ${budgetMap[dto.budget]}`);
   }
+  if (dto.campusPreferences?.length) {
+    const preferenceLabels: Record<string, string> = {
+      safety: isZh ? '安全优先' : 'campus safety',
+      life: isZh ? '校园氛围优先' : 'student life',
+      food: isZh ? '食堂/生活便利优先' : 'campus dining',
+    };
+    parts.push(
+      `${isZh ? '校园生活偏好' : 'Campus Lifestyle Preferences'}: ${dto.campusPreferences.map((preference) => preferenceLabels[preference] ?? preference).join(', ')}`,
+    );
+    parts.push(
+      isZh
+        ? '这些校园生活偏好只能用于 lifestyle fit / 排序解释，不得作为录取概率依据。'
+        : 'Use campus lifestyle preferences only for lifestyle fit and ranking explanations, not as admission probability evidence.',
+    );
+  }
   if (dto.additionalPreferences) {
     parts.push(
       `${isZh ? '其他偏好' : 'Other Preferences'}: ${dto.additionalPreferences}`,

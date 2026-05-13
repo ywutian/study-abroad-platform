@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsBoolean,
   IsEnum,
+  IsIn,
   Min,
   Max,
   MaxLength,
@@ -12,6 +13,10 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dto/pagination.dto';
 import { Type, Transform } from 'class-transformer';
 import { TestingPolicy } from '@prisma/client';
+import {
+  NICHE_GRADE_QUERY_VALUES,
+  type NicheGradeQueryValue,
+} from '@study-abroad/shared/scoring';
 
 export enum SchoolType {
   PUBLIC = 'public',
@@ -190,6 +195,30 @@ export class SchoolQueryDto extends PaginationDto {
   @Max(100)
   weightSalary?: number;
 
+  @ApiPropertyOptional({ description: 'Weighted sort campus safety weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightCampusSafety?: number;
+
+  @ApiPropertyOptional({ description: 'Weighted sort campus life weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightCampusLife?: number;
+
+  @ApiPropertyOptional({ description: 'Weighted sort campus food weight' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  weightCampusFood?: number;
+
   @ApiPropertyOptional({
     description: 'School type (public/private)',
     enum: SchoolType,
@@ -220,4 +249,37 @@ export class SchoolQueryDto extends PaginationDto {
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   hasEarlyDecision?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Minimum Niche safety grade, URL-safe (e.g. A_MINUS)',
+    enum: NICHE_GRADE_QUERY_VALUES,
+  })
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsIn(NICHE_GRADE_QUERY_VALUES)
+  minSafetyGrade?: NicheGradeQueryValue;
+
+  @ApiPropertyOptional({
+    description: 'Minimum Niche campus life grade, URL-safe (e.g. B_PLUS)',
+    enum: NICHE_GRADE_QUERY_VALUES,
+  })
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsIn(NICHE_GRADE_QUERY_VALUES)
+  minLifeGrade?: NicheGradeQueryValue;
+
+  @ApiPropertyOptional({
+    description: 'Minimum Niche food grade, URL-safe (e.g. A_MINUS)',
+    enum: NICHE_GRADE_QUERY_VALUES,
+  })
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsIn(NICHE_GRADE_QUERY_VALUES)
+  minFoodGrade?: NicheGradeQueryValue;
 }

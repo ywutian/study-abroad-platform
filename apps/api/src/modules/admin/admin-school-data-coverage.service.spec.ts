@@ -36,6 +36,13 @@ describe('AdminSchoolDataCoverageService', () => {
     testOptional: null,
     testingPolicy: 'UNKNOWN',
     needBlindInternational: false,
+    roomAndBoard: null,
+    studentOrgsCount: null,
+    countriesRepresented: null,
+    nicheSafetyGrade: null,
+    nicheLifeGrade: null,
+    nicheFoodGrade: null,
+    nicheOverallGrade: null,
     metadata: {
       provenance: {
         acceptanceRate: {
@@ -90,6 +97,46 @@ describe('AdminSchoolDataCoverageService', () => {
     expect(report.fieldTotals.acceptanceRate.filled).toBe(1);
     expect(report.fieldTotals.acceptanceRate.official).toBe(1);
     expect(report.totals.officialFields).toBeGreaterThanOrEqual(1);
+  });
+
+  it('reports campus-life filled, terminal, and missing coverage separately', async () => {
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        ...school,
+        roomAndBoard: 18000,
+        nicheSafetyGrade: 'A-',
+        metadata: {
+          provenance: {
+            ...((school.metadata as any).provenance ?? {}),
+            roomAndBoard: {
+              source: 'APPILY',
+              fetchedAt: '2026-01-03T00:00:00.000Z',
+              tier: 'SCRAPED',
+            },
+            nicheSafetyGrade: {
+              source: 'SCRAPER:TAVILY_NICHE',
+              fetchedAt: '2026-01-03T00:00:00.000Z',
+              tier: 'SCRAPED',
+              extractionMethod: 'TAVILY_SEARCH_SNIPPET',
+            },
+            nicheFoodGrade: {
+              source: 'NO_PUBLIC_REAL_DATA:TAVILY_NICHE',
+              fetchedAt: '2026-01-03T00:00:00.000Z',
+              tier: 'UNAVAILABLE',
+              realDataStatus: 'NO_PUBLIC_REAL_DATA',
+            },
+          },
+        },
+      },
+    ]);
+
+    const report = await service.getCoverage();
+
+    expect(report.campusLifeTotals.roomAndBoard.filled).toBe(1);
+    expect(report.campusLifeTotals.nicheSafetyGrade.filled).toBe(1);
+    expect(report.campusLifeTotals.nicheFoodGrade.terminal).toBe(1);
+    expect(report.campusLifeSummary.missingFields).toBe(4);
+    expect(report.items[0].terminalCampusLife).toContain('nicheFoodGrade');
   });
 
   it('buckets terminal unavailable fields without treating them as missing', async () => {

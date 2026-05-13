@@ -54,6 +54,11 @@ import {
   type CatalogRanking,
   type RankingListSelection,
 } from './school-ranking-catalog';
+import {
+  decodeNicheGradeParam,
+  isNicheGradeAtLeast,
+  type NicheGradeQueryValue,
+} from '@study-abroad/shared/scoring';
 
 // Cache TTL in seconds
 const CACHE_TTL = {
@@ -216,6 +221,12 @@ interface SchoolFilters {
   weightAcceptance?: number;
   weightTuition?: number;
   weightSalary?: number;
+  weightCampusSafety?: number;
+  weightCampusLife?: number;
+  weightCampusFood?: number;
+  minSafetyGrade?: NicheGradeQueryValue;
+  minLifeGrade?: NicheGradeQueryValue;
+  minFoodGrade?: NicheGradeQueryValue;
 }
 
 // 地区到州的映射
@@ -464,14 +475,16 @@ export class SchoolService {
               skip,
               pageSize,
               rankingContext,
+              filters,
             )
-          : this.needsRankingAwarePagination(rankingContext)
+          : this.needsInMemoryPagination(filters, rankingContext)
             ? await this.findRankingAwareSortedSchools(
                 where,
                 skip,
                 pageSize,
                 sortBy,
                 rankingContext,
+                filters,
               )
             : await Promise.all([
                 this.prisma.school.findMany({
@@ -556,6 +569,22 @@ export class SchoolService {
     );
   }
 
+  private hasCampusGradeFilters(filters?: SchoolFilters): boolean {
+    return Boolean(
+      filters?.minSafetyGrade || filters?.minLifeGrade || filters?.minFoodGrade,
+    );
+  }
+
+  private needsInMemoryPagination(
+    filters: SchoolFilters | undefined,
+    context: RankingContext,
+  ): boolean {
+    return (
+      this.needsRankingAwarePagination(context) ||
+      this.hasCampusGradeFilters(filters)
+    );
+  }
+
   private filterSchoolsByRankingContext<T extends SchoolWithRankings>(
     schools: T[],
     context: RankingContext,
@@ -578,6 +607,50 @@ export class SchoolService {
       }
       return true;
     });
+  }
+
+  private filterSchoolsByCampusGrades<T extends SchoolWithRankings>(
+    schools: T[],
+    filters?: SchoolFilters,
+  ): T[] {
+    if (!this.hasCampusGradeFilters(filters)) return schools;
+
+    const minimumSafety = decodeNicheGradeParam(filters?.minSafetyGrade);
+    const minimumLife = decodeNicheGradeParam(filters?.minLifeGrade);
+    const minimumFood = decodeNicheGradeParam(filters?.minFoodGrade);
+
+    return schools.filter((school) => {
+      if (
+        minimumSafety &&
+        !isNicheGradeAtLeast(school.nicheSafetyGrade, minimumSafety)
+      ) {
+        return false;
+      }
+      if (
+        minimumLife &&
+        !isNicheGradeAtLeast(school.nicheLifeGrade, minimumLife)
+      ) {
+        return false;
+      }
+      if (
+        minimumFood &&
+        !isNicheGradeAtLeast(school.nicheFoodGrade, minimumFood)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  private filterSchoolsInMemory<T extends SchoolWithRankings>(
+    schools: T[],
+    context: RankingContext,
+    filters?: SchoolFilters,
+  ): T[] {
+    return this.filterSchoolsByCampusGrades(
+      this.filterSchoolsByRankingContext(schools, context),
+      filters,
+    );
   }
 
   private sortSchoolsInMemory<T extends SchoolWithRankings>(
@@ -620,6 +693,7 @@ export class SchoolService {
     pageSize: number,
     sortBy: SchoolFilters['sortBy'],
     context: RankingContext,
+    filters?: SchoolFilters,
   ) {
     const includeRankings = {
       ...schoolRankingsInclude,
@@ -632,7 +706,7 @@ export class SchoolService {
       include: includeRankings,
     });
 
-    const filtered = this.filterSchoolsByRankingContext(allSchools, context);
+    const filtered = this.filterSchoolsInMemory(allSchools, context, filters);
     const sorted = this.sortSchoolsInMemory(filtered, sortBy, context);
 
     return [sorted.slice(skip, skip + pageSize), filtered.length] as const;
@@ -655,9 +729,10 @@ export class SchoolService {
       orderBy: [{ usNewsRank: 'asc' }, { name: 'asc' }],
       include: includeRankings,
     });
-    const filteredSchools = this.filterSchoolsByRankingContext(
+    const filteredSchools = this.filterSchoolsInMemory(
       allSchools,
       context,
+      filters,
     );
 
     const rankedSchools = scoreAndRankSchools(
@@ -667,6 +742,10 @@ export class SchoolService {
         acceptanceRate: filters?.weightAcceptance ?? 20,
         tuition: filters?.weightTuition ?? 25,
         avgSalary: filters?.weightSalary ?? 25,
+        safetyGrade: filters?.weightCampusSafety ?? 0,
+        studentLifeGrade: filters?.weightCampusLife ?? 0,
+        campusFoodGrade: filters?.weightCampusFood ?? 0,
+        nicheOverall: 0,
       },
       { rankingList: context.list },
     ).map((school) => {
@@ -688,6 +767,7 @@ export class SchoolService {
     skip: number,
     pageSize: number,
     context: RankingContext,
+    filters?: SchoolFilters,
   ) {
     const includeRankings = {
       ...schoolRankingsInclude,
@@ -700,9 +780,10 @@ export class SchoolService {
       include: includeRankings,
     });
 
-    const filteredSchools = this.filterSchoolsByRankingContext(
+    const filteredSchools = this.filterSchoolsInMemory(
       allSchools,
       context,
+      filters,
     );
     const sortedSchools = this.sortSchoolsInMemory(
       filteredSchools,

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataReviewStatus } from '@prisma/client';
-import type { SchoolProvenance } from '@study-abroad/shared';
+import type { RealDataStatus, SchoolProvenance } from '@study-abroad/shared';
 import { normalizeSchoolProvenance } from '@study-abroad/shared/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { normalizeSchoolName } from '../../common/utils/school-name.util';
@@ -20,6 +20,7 @@ export enum DataSource {
   APPILY = 'APPILY', // Appily (原 Cappex) 爬虫
   IPEDS = 'IPEDS', // IPEDS CSV 导入（保留备份）
   SCRAPER = 'SCRAPER', // 通用网页爬虫
+  NICHE_TAVILY = 'SCRAPER:TAVILY_NICHE', // Tavily 搜索索引里的 Niche 页面片段
 }
 
 const SOURCE_PRIORITY: Record<DataSource, number> = {
@@ -30,7 +31,8 @@ const SOURCE_PRIORITY: Record<DataSource, number> = {
   [DataSource.SEED]: 5,
   [DataSource.BIGFUTURE]: 6,
   [DataSource.APPILY]: 7,
-  [DataSource.SCRAPER]: 8,
+  [DataSource.NICHE_TAVILY]: 8,
+  [DataSource.SCRAPER]: 9,
 };
 
 export const VERIFIED_SCHOOL_DATA_SOURCES = new Set<DataSource>([
@@ -104,6 +106,23 @@ export const MERGEABLE_FIELDS = [
 
 export type MergeableField = (typeof MERGEABLE_FIELDS)[number];
 
+export interface MergeProvenanceOptions {
+  sourceUrl?: string;
+  cycleYear?: number;
+  notes?: string;
+  confidence?: number;
+  extractionMethod?: string;
+}
+
+export interface TerminalProvenanceOptions {
+  sourceUrl?: string;
+  notes?: string;
+  confidence?: number;
+  extractionMethod?: string;
+  realDataStatus?: RealDataStatus;
+  reason?: string;
+}
+
 export function isMergeableSchoolField(field: string): field is MergeableField {
   return (MERGEABLE_FIELDS as readonly string[]).includes(field);
 }
@@ -137,6 +156,7 @@ export class SchoolDataMerger {
     schoolId: string,
     incomingData: Partial<Record<MergeableField, unknown>>,
     source: DataSource,
+    provenanceOptions: MergeProvenanceOptions = {},
   ): Promise<{ updatedFields: string[]; skippedFields: string[] }> {
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
@@ -193,6 +213,7 @@ export class SchoolDataMerger {
       provenance[field] = createFieldProvenance({
         source,
         fetchedAt: now,
+        ...provenanceOptions,
       });
     }
 
@@ -211,6 +232,62 @@ export class SchoolDataMerger {
     return { updatedFields, skippedFields };
   }
 
+  async markFieldsUnavailable(
+    schoolId: string,
+    fields: Iterable<string>,
+    source: string,
+    options: TerminalProvenanceOptions = {},
+  ): Promise<{ markedFields: string[]; skippedFields: string[] }> {
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+
+    if (!school) {
+      this.logger.warn(`School not found: ${schoolId}`);
+      return { markedFields: [], skippedFields: [] };
+    }
+
+    const metadata = toRecord(school.metadata);
+    const provenance = normalizeSchoolProvenance(metadata.provenance);
+    const now = new Date().toISOString();
+    const markedFields: string[] = [];
+    const skippedFields: string[] = [];
+
+    for (const field of fields) {
+      if (!isMergeableSchoolField(field)) {
+        skippedFields.push(field);
+        continue;
+      }
+
+      const currentValue = (school as Record<string, unknown>)[field];
+      if (currentValue != null && currentValue !== '') {
+        skippedFields.push(field);
+        continue;
+      }
+
+      provenance[field] = createFieldProvenance({
+        source,
+        fetchedAt: now,
+        realDataStatus: options.realDataStatus ?? 'NO_PUBLIC_REAL_DATA',
+        permanent: true,
+        ...options,
+      });
+      markedFields.push(field);
+    }
+
+    if (markedFields.length > 0) {
+      await this.schoolWriteService.update(schoolId, {
+        metadataPatch: metadata,
+        provenance,
+        reviewStatus: DataReviewStatus.AUTO_APPROVED,
+        touchReviewTimestamp: true,
+        existingMetadata: metadata,
+      });
+    }
+
+    return { markedFields, skippedFields };
+  }
+
   /**
    * 按学校名称合并（先查找再合并）
    */
@@ -218,6 +295,7 @@ export class SchoolDataMerger {
     name: string,
     incomingData: Partial<Record<MergeableField, unknown>>,
     source: DataSource,
+    provenanceOptions: MergeProvenanceOptions = {},
   ): Promise<{ updatedFields: string[]; skippedFields: string[] } | null> {
     const nameNorm = normalizeSchoolName(name);
     const school = await this.prisma.school.findUnique({
@@ -229,7 +307,7 @@ export class SchoolDataMerger {
       return null;
     }
 
-    return this.merge(school.id, incomingData, source);
+    return this.merge(school.id, incomingData, source, provenanceOptions);
   }
 
   /**

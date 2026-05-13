@@ -3521,7 +3521,10 @@
         "schoolType": "Type",
         "testOptional": "Test optional",
         "needBlind": "Need-blind",
-        "hasEarlyDecision": "Early decision"
+        "hasEarlyDecision": "Early decision",
+        "safety": "Safety",
+        "life": "Campus life",
+        "food": "Dining"
       }
     },
     "list": {
@@ -6063,6 +6066,10 @@
     "generating": "Generating...",
     "generatingDesc": "AI is analyzing your profile and matching schools",
     "formTitle": "Recommendation Settings",
+    "campusPreferences": "Campus Preferences",
+    "campusSafety": "Safety first",
+    "campusLife": "Campus life",
+    "campusFood": "Dining convenience",
     "additionalPreferences": "Additional Preferences",
     "additionalPreferencesPlaceholder": "Any specific requirements...",
     "completeProfileFirst": "Complete profile first",
@@ -6893,6 +6900,7 @@
       "location": "Location",
       "ranking": "Ranking Range",
       "acceptance": "Acceptance Rate",
+      "campus": "Campus Experience",
       "tuition": "Tuition Range",
       "salary": "Salary / ROI",
       "type": "School Type",
@@ -6907,7 +6915,10 @@
       "annualTuition": "Annual Tuition (10k USD)",
       "postGradSalary": "Post-Grad Salary (10k USD)",
       "publicPrivate": "Public/Private",
-      "schoolSize": "School Size (Students)"
+      "schoolSize": "School Size (Students)",
+      "minSafetyGrade": "Minimum safety grade",
+      "minLifeGrade": "Minimum campus life grade",
+      "minFoodGrade": "Minimum dining grade"
     },
     "placeholders": {
       "selectCountry": "Select Country",
@@ -6967,6 +6978,12 @@
       "top50": "Top 50",
       "range30To50": "30-50",
       "range50To100": "50-100"
+    },
+    "campusGradePresets": {
+      "all": "Any",
+      "aMinus": "A- or better",
+      "bPlus": "B+ or better",
+      "b": "B or better"
     },
     "specialConditions": {
       "testOptional": "Test Optional",
@@ -7769,6 +7786,7 @@
       "refresh": "Refresh",
       "dryRunHeuristic": "Dry-run heuristic fill",
       "fieldCoverage": "Field coverage",
+      "campusLifeCoverage": "Campus life coverage",
       "schoolsNeedingWork": "Schools needing review",
       "none": "None",
       "unknown": "Unknown",
@@ -7778,7 +7796,8 @@
         "missing": "Missing critical",
         "heuristic": "Heuristic fields",
         "official": "Official fields",
-        "terminal": "Terminal fields"
+        "terminal": "Terminal fields",
+        "missingFields": "Missing fields"
       },
       "table": {
         "field": "Field",

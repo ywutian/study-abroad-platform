@@ -19,6 +19,7 @@ import { IpedsDataService } from './ipeds-data.service';
 import { UrbanInstituteDataService } from './urban-institute-data.service';
 import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
 import { AppilyScrapeService } from './scrapers/appily.scraper';
+import { CampusLifeIngestionService } from './campus-life-ingestion.service';
 import { SchoolCommunityRatingService } from './school-community-rating.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AuditLogModule } from '../../common/services/audit-log.module';
@@ -45,6 +46,7 @@ import { SchoolListModule } from '../school-list/school-list.module';
     UrbanInstituteDataService,
     BigFutureScrapeService,
     AppilyScrapeService,
+    CampusLifeIngestionService,
     SchoolCommunityRatingService,
   ],
   exports: [
@@ -60,6 +62,7 @@ import { SchoolListModule } from '../school-list/school-list.module';
     UrbanInstituteDataService,
     BigFutureScrapeService,
     AppilyScrapeService,
+    CampusLifeIngestionService,
     SchoolCommunityRatingService,
   ],
 })

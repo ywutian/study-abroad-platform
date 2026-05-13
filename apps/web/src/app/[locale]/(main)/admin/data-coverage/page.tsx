@@ -44,13 +44,43 @@ interface CoverageItem {
   heuristicCritical: string[];
   terminalCritical: string[];
   staleCritical: string[];
+  campusLifeComplete?: boolean;
+  missingCampusLife?: string[];
+  terminalCampusLife?: string[];
+  staleCampusLife?: string[];
   fields: CoverageField[];
+  campusLifeFields?: CoverageField[];
 }
+
+interface CoverageFieldTotal {
+  total: number;
+  filled: number;
+  percent: number;
+  predictionEligible: number;
+  predictionEligiblePercent: number;
+  official: number;
+  heuristic: number;
+  terminal: number;
+  stale: number;
+}
+
+type CoverageFieldTotals = Record<string, CoverageFieldTotal>;
 
 interface CoverageResponse {
   generatedAt: string;
   criticalFields: string[];
   optionalFields: string[];
+  campusLifeFields?: string[];
+  campusLifeSummary?: {
+    totalSchools: number;
+    complete: number;
+    missingAny: number;
+    terminalSchools: number;
+    staleSchools: number;
+    filledFields: number;
+    terminalFields: number;
+    missingFields: number;
+  };
   totals: {
     schools: number;
     criticalComplete: number;
@@ -63,20 +93,8 @@ interface CoverageResponse {
     terminalFields: number;
     staleFields: number;
   };
-  fieldTotals: Record<
-    string,
-    {
-      total: number;
-      filled: number;
-      percent: number;
-      predictionEligible: number;
-      predictionEligiblePercent: number;
-      official: number;
-      heuristic: number;
-      terminal: number;
-      stale: number;
-    }
-  >;
+  fieldTotals: CoverageFieldTotals;
+  campusLifeTotals?: CoverageFieldTotals;
   bucketCounts: Record<string, number>;
   items: CoverageItem[];
 }
@@ -199,6 +217,58 @@ export default function AdminDataCoveragePage() {
               {JSON.stringify(heuristicFill.data, null, 2)}
             </pre>
           ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('campusLifeCoverage')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-4">
+            <MetricCard
+              label={t('metrics.complete')}
+              value={coverage.data?.campusLifeSummary?.complete}
+            />
+            <MetricCard
+              label={t('metrics.missing')}
+              value={coverage.data?.campusLifeSummary?.missingAny}
+            />
+            <MetricCard
+              label={t('metrics.terminal')}
+              value={coverage.data?.campusLifeSummary?.terminalFields}
+            />
+            <MetricCard
+              label={t('metrics.missingFields')}
+              value={coverage.data?.campusLifeSummary?.missingFields}
+            />
+          </div>
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full min-w-[880px] text-sm">
+              <thead className="bg-muted/60">
+                <tr>
+                  <th className="px-3 py-2 text-left">{t('table.field')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.filled')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.official')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.terminal')}</th>
+                  <th className="px-3 py-2 text-right">{t('table.stale')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(coverage.data?.campusLifeTotals ?? {}).map(([field, total]) => (
+                  <tr key={field} className="border-t">
+                    <td className="px-3 py-2 font-medium">{field}</td>
+                    <td className="px-3 py-2 text-right">
+                      {total.filled}/{total.total} ({total.percent}%)
+                    </td>
+                    <td className="px-3 py-2 text-right">{total.official}</td>
+                    <td className="px-3 py-2 text-right">{total.terminal}</td>
+                    <td className="px-3 py-2 text-right">{total.stale}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 

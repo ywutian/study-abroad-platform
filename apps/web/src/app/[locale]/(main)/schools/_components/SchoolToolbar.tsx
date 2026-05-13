@@ -64,6 +64,26 @@ interface SchoolToolbarProps {
   onResetAll: () => void;
 }
 
+const CAMPUS_GRADE_LABELS: Record<string, string> = {
+  A_PLUS: 'A+',
+  A: 'A',
+  A_MINUS: 'A-',
+  B_PLUS: 'B+',
+  B: 'B',
+  B_MINUS: 'B-',
+  C_PLUS: 'C+',
+  C: 'C',
+  C_MINUS: 'C-',
+  D_PLUS: 'D+',
+  D: 'D',
+  D_MINUS: 'D-',
+  F: 'F',
+};
+
+function formatCampusGrade(value: string) {
+  return CAMPUS_GRADE_LABELS[value] ?? value;
+}
+
 const FALLBACK_RANKING_LIST_OPTIONS: RankingListOption[] = [
   {
     source: 'US_NEWS',
@@ -338,6 +358,27 @@ export function SchoolToolbar({
         label: tt('chip.hasEarlyDecision'),
         onRemove: () =>
           onAdvancedFiltersChange({ ...advancedFilters, hasEarlyDecision: undefined }),
+      });
+    }
+    if (advancedFilters.minSafetyGrade) {
+      out.push({
+        key: 'minSafetyGrade',
+        label: `${tt('chip.safety')}: ${formatCampusGrade(advancedFilters.minSafetyGrade)}+`,
+        onRemove: () => onAdvancedFiltersChange({ ...advancedFilters, minSafetyGrade: undefined }),
+      });
+    }
+    if (advancedFilters.minLifeGrade) {
+      out.push({
+        key: 'minLifeGrade',
+        label: `${tt('chip.life')}: ${formatCampusGrade(advancedFilters.minLifeGrade)}+`,
+        onRemove: () => onAdvancedFiltersChange({ ...advancedFilters, minLifeGrade: undefined }),
+      });
+    }
+    if (advancedFilters.minFoodGrade) {
+      out.push({
+        key: 'minFoodGrade',
+        label: `${tt('chip.food')}: ${formatCampusGrade(advancedFilters.minFoodGrade)}+`,
+        onRemove: () => onAdvancedFiltersChange({ ...advancedFilters, minFoodGrade: undefined }),
       });
     }
 

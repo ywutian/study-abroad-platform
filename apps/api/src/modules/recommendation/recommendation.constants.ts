@@ -32,6 +32,13 @@ export const RECOMMENDATION_SCHOOL_SELECT = {
   isPrivate: true,
   hasEarlyDecision: true,
   retentionRate: true,
+  roomAndBoard: true,
+  studentOrgsCount: true,
+  countriesRepresented: true,
+  nicheSafetyGrade: true,
+  nicheLifeGrade: true,
+  nicheFoodGrade: true,
+  nicheOverallGrade: true,
   mediaAssets: {
     where: {
       status: SchoolMediaStatus.APPROVED,
@@ -104,6 +111,13 @@ export function mapSchoolMeta(school: RecommendationSchoolResult) {
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
     retentionRate:
       school.retentionRate != null ? Number(school.retentionRate) : undefined,
+    roomAndBoard: school.roomAndBoard ?? undefined,
+    studentOrgsCount: school.studentOrgsCount ?? undefined,
+    countriesRepresented: school.countriesRepresented ?? undefined,
+    nicheSafetyGrade: school.nicheSafetyGrade ?? undefined,
+    nicheLifeGrade: school.nicheLifeGrade ?? undefined,
+    nicheFoodGrade: school.nicheFoodGrade ?? undefined,
+    nicheOverallGrade: school.nicheOverallGrade ?? undefined,
     logoUrl: school.logoUrl || undefined,
     media: mapSchoolMedia(school.mediaAssets),
     website: school.website || undefined,

@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import type {
+  ProvenanceStaleness,
+  RealDataStatus,
+  TrustTier,
+} from '@study-abroad/shared';
 import {
   normalizeSchoolProvenance,
   toSchoolFieldSource,
@@ -32,6 +37,15 @@ const CRITICAL_FIELDS = [
   'needBlindInternational',
 ] as const;
 const OPTIONAL_FIELDS = ['satAvg', 'act25', 'actAvg', 'act75'] as const;
+const CAMPUS_LIFE_FIELDS = [
+  'roomAndBoard',
+  'studentOrgsCount',
+  'countriesRepresented',
+  'nicheSafetyGrade',
+  'nicheLifeGrade',
+  'nicheFoodGrade',
+  'nicheOverallGrade',
+] as const;
 const HEURISTIC_SOURCE = 'HEURISTIC:PR-15';
 const TERMINAL_REAL_DATA_STATUSES = new Set([
   'OFFICIAL_BLANK',
@@ -41,16 +55,57 @@ const TERMINAL_REAL_DATA_STATUSES = new Set([
   'PERMANENT_HEURISTIC',
 ]);
 
-type CoverageField =
+export type PredictionCoverageField =
   | (typeof CRITICAL_FIELDS)[number]
   | (typeof OPTIONAL_FIELDS)[number];
-type CoverageBucket =
+export type CampusLifeCoverageField = (typeof CAMPUS_LIFE_FIELDS)[number];
+export type CoverageField = PredictionCoverageField | CampusLifeCoverageField;
+export type CoverageBucket =
   | 'official'
   | 'heuristic'
   | 'terminal'
   | 'stale'
   | 'other'
   | 'missing';
+
+export interface FieldCoverageTotal {
+  total: number;
+  filled: number;
+  percent: number;
+  predictionEligible: number;
+  predictionEligiblePercent: number;
+  heuristic: number;
+  official: number;
+  terminal: number;
+  stale: number;
+}
+
+export interface CoverageFieldStatus {
+  field: CoverageField;
+  value: number | string | boolean | null;
+  filled: boolean;
+  explicitUnknown: boolean;
+  source: string | null;
+  tier: TrustTier | null;
+  confidence: number | null;
+  fetchedAt: string | null;
+  sourceUrl: string | null;
+  cycleYear: number | null;
+  notes: string | null;
+  validatorCount: number | null;
+  originalFormula: string | null;
+  realDataStatus: RealDataStatus | null;
+  terminalStatus: RealDataStatus | string | null;
+  extractionMethod: string | null;
+  reason: string | null;
+  permanent: boolean | null;
+  staleness: ProvenanceStaleness | null;
+  predictionEligible: boolean;
+  isOfficial: boolean;
+  isHeuristic: boolean;
+  isTerminal: boolean;
+  bucket: CoverageBucket;
+}
 
 interface SchoolForCoverage {
   id: string;
@@ -72,6 +127,13 @@ interface SchoolForCoverage {
   testOptional: boolean | null;
   testingPolicy: string;
   needBlindInternational: boolean;
+  roomAndBoard: number | null;
+  studentOrgsCount: number | null;
+  countriesRepresented: number | null;
+  nicheSafetyGrade: string | null;
+  nicheLifeGrade: string | null;
+  nicheFoodGrade: string | null;
+  nicheOverallGrade: string | null;
   metadata: unknown;
   updatedAt: Date;
   scorecardId: string | null;
@@ -93,9 +155,20 @@ export class AdminSchoolDataCoverageService {
     const schools = await this.findCoverageSchools(options);
     const generatedAt = new Date().toISOString();
     const fieldTotals = this.emptyFieldTotals();
+    const campusLifeTotals = this.emptyFieldTotalsFor(CAMPUS_LIFE_FIELDS);
     const sourceCounts: Record<string, number> = {};
     const tierCounts: Record<string, number> = {};
     const bucketCounts: Record<CoverageBucket, number> = {
+      official: 0,
+      heuristic: 0,
+      terminal: 0,
+      stale: 0,
+      other: 0,
+      missing: 0,
+    };
+    const campusLifeSourceCounts: Record<string, number> = {};
+    const campusLifeTierCounts: Record<string, number> = {};
+    const campusLifeBucketCounts: Record<CoverageBucket, number> = {
       official: 0,
       heuristic: 0,
       terminal: 0,
@@ -108,19 +181,20 @@ export class AdminSchoolDataCoverageService {
       const provenance = buildNormalizedSchoolProvenance(school as any);
       const fields = [...CRITICAL_FIELDS, ...OPTIONAL_FIELDS].map((field) => {
         const status = this.buildFieldStatus(school, field, provenance);
-        const total = fieldTotals[field];
-        total.total += 1;
-        if (status.filled) total.filled += 1;
-        if (status.predictionEligible) total.predictionEligible += 1;
-        if (status.isOfficial) total.official += 1;
-        if (status.isHeuristic) total.heuristic += 1;
-        if (status.isTerminal) total.terminal += 1;
-        if (status.staleness === 'STALE') total.stale += 1;
-        bucketCounts[status.bucket] += 1;
-        if (status.source)
-          sourceCounts[status.source] = (sourceCounts[status.source] ?? 0) + 1;
-        if (status.tier)
-          tierCounts[status.tier] = (tierCounts[status.tier] ?? 0) + 1;
+        this.trackFieldStatus(status, fieldTotals[field], {
+          bucketCounts,
+          sourceCounts,
+          tierCounts,
+        });
+        return status;
+      });
+      const campusLifeFields = CAMPUS_LIFE_FIELDS.map((field) => {
+        const status = this.buildFieldStatus(school, field, provenance);
+        this.trackFieldStatus(status, campusLifeTotals[field], {
+          bucketCounts: campusLifeBucketCounts,
+          sourceCounts: campusLifeSourceCounts,
+          tierCounts: campusLifeTierCounts,
+        });
         return status;
       });
 
@@ -139,6 +213,15 @@ export class AdminSchoolDataCoverageService {
       const staleCritical = critical
         .filter((field) => field.staleness === 'STALE')
         .map((field) => field.field);
+      const missingCampusLife = campusLifeFields
+        .filter((field) => !field.filled)
+        .map((field) => field.field);
+      const terminalCampusLife = campusLifeFields
+        .filter((field) => field.isTerminal)
+        .map((field) => field.field);
+      const staleCampusLife = campusLifeFields
+        .filter((field) => field.staleness === 'STALE')
+        .map((field) => field.field);
 
       return {
         schoolId: school.id,
@@ -154,26 +237,25 @@ export class AdminSchoolDataCoverageService {
         heuristicCritical,
         terminalCritical,
         staleCritical,
+        campusLifeComplete: missingCampusLife.length === 0,
+        missingCampusLife,
+        terminalCampusLife,
+        staleCampusLife,
         fields,
+        campusLifeFields,
       };
     });
 
-    for (const total of Object.values(fieldTotals)) {
-      total.percent =
-        total.total > 0
-          ? Math.round((total.filled / total.total) * 1000) / 10
-          : 0;
-      total.predictionEligiblePercent =
-        total.total > 0
-          ? Math.round((total.predictionEligible / total.total) * 1000) / 10
-          : 0;
-    }
+    this.finalizeFieldTotals(fieldTotals);
+    this.finalizeFieldTotals(campusLifeTotals);
+    const campusLifeTotalValues = Object.values(campusLifeTotals);
 
     return {
       generatedAt,
       scope: options?.includeAllCountries ? 'all-schools' : 'us-freshman',
       criticalFields: CRITICAL_FIELDS,
       optionalFields: OPTIONAL_FIELDS,
+      campusLifeFields: CAMPUS_LIFE_FIELDS,
       totals: {
         schools: schools.length,
         criticalComplete: items.filter((item) => item.criticalComplete).length,
@@ -206,9 +288,35 @@ export class AdminSchoolDataCoverageService {
         ),
       },
       fieldTotals,
+      campusLifeTotals,
+      campusLifeSummary: {
+        totalSchools: schools.length,
+        complete: items.filter((item) => item.campusLifeComplete).length,
+        missingAny: items.filter((item) => !item.campusLifeComplete).length,
+        terminalSchools: items.filter(
+          (item) => item.terminalCampusLife.length > 0,
+        ).length,
+        staleSchools: items.filter((item) => item.staleCampusLife.length > 0)
+          .length,
+        filledFields: campusLifeTotalValues.reduce(
+          (sum, total) => sum + total.filled,
+          0,
+        ),
+        terminalFields: campusLifeTotalValues.reduce(
+          (sum, total) => sum + total.terminal,
+          0,
+        ),
+        missingFields: campusLifeTotalValues.reduce(
+          (sum, total) => sum + (total.total - total.filled),
+          0,
+        ),
+      },
       bucketCounts,
       sourceCounts,
       tierCounts,
+      campusLifeBucketCounts,
+      campusLifeSourceCounts,
+      campusLifeTierCounts,
       items,
     };
   }
@@ -517,6 +625,13 @@ export class AdminSchoolDataCoverageService {
         testOptional: true,
         testingPolicy: true,
         needBlindInternational: true,
+        roomAndBoard: true,
+        studentOrgsCount: true,
+        countriesRepresented: true,
+        nicheSafetyGrade: true,
+        nicheLifeGrade: true,
+        nicheFoodGrade: true,
+        nicheOverallGrade: true,
         metadata: true,
         updatedAt: true,
         scorecardId: true,
@@ -531,7 +646,7 @@ export class AdminSchoolDataCoverageService {
     school: SchoolForCoverage,
     field: CoverageField,
     provenance: ReturnType<typeof buildNormalizedSchoolProvenance>,
-  ) {
+  ): CoverageFieldStatus {
     const rawValue = this.fieldValue(school, field);
     const explicitUnknown =
       field === 'testOptional' &&
@@ -579,7 +694,7 @@ export class AdminSchoolDataCoverageService {
       originalFormula: source?.originalFormula ?? null,
       realDataStatus: source?.realDataStatus ?? null,
       terminalStatus: isTerminal
-        ? (source?.realDataStatus ?? source?.source)
+        ? (source?.realDataStatus ?? source?.source ?? null)
         : null,
       extractionMethod: source?.extractionMethod ?? null,
       reason: source?.reason ?? null,
@@ -605,22 +720,9 @@ export class AdminSchoolDataCoverageService {
     return value ?? null;
   }
 
-  private emptyFieldTotals() {
-    const totals = {} as Record<
-      CoverageField,
-      {
-        total: number;
-        filled: number;
-        percent: number;
-        predictionEligible: number;
-        predictionEligiblePercent: number;
-        heuristic: number;
-        official: number;
-        terminal: number;
-        stale: number;
-      }
-    >;
-    for (const field of [...CRITICAL_FIELDS, ...OPTIONAL_FIELDS]) {
+  private emptyFieldTotalsFor<T extends string>(fields: readonly T[]) {
+    const totals = {} as Record<T, FieldCoverageTotal>;
+    for (const field of fields) {
       totals[field] = {
         total: 0,
         filled: 0,
@@ -634,6 +736,52 @@ export class AdminSchoolDataCoverageService {
       };
     }
     return totals;
+  }
+
+  private emptyFieldTotals() {
+    return this.emptyFieldTotalsFor([...CRITICAL_FIELDS, ...OPTIONAL_FIELDS]);
+  }
+
+  private trackFieldStatus(
+    status: ReturnType<AdminSchoolDataCoverageService['buildFieldStatus']>,
+    total: FieldCoverageTotal,
+    counts: {
+      bucketCounts: Record<CoverageBucket, number>;
+      sourceCounts: Record<string, number>;
+      tierCounts: Record<string, number>;
+    },
+  ) {
+    total.total += 1;
+    if (status.filled) total.filled += 1;
+    if (status.predictionEligible) total.predictionEligible += 1;
+    if (status.isOfficial) total.official += 1;
+    if (status.isHeuristic) total.heuristic += 1;
+    if (status.isTerminal) total.terminal += 1;
+    if (status.staleness === 'STALE') total.stale += 1;
+    counts.bucketCounts[status.bucket] += 1;
+    if (status.source) {
+      counts.sourceCounts[status.source] =
+        (counts.sourceCounts[status.source] ?? 0) + 1;
+    }
+    if (status.tier) {
+      counts.tierCounts[status.tier] =
+        (counts.tierCounts[status.tier] ?? 0) + 1;
+    }
+  }
+
+  private finalizeFieldTotals(
+    totals: Record<string, FieldCoverageTotal>,
+  ): void {
+    for (const total of Object.values(totals)) {
+      total.percent =
+        total.total > 0
+          ? Math.round((total.filled / total.total) * 1000) / 10
+          : 0;
+      total.predictionEligiblePercent =
+        total.total > 0
+          ? Math.round((total.predictionEligible / total.total) * 1000) / 10
+          : 0;
+    }
   }
 
   private computeCoverageDiff(

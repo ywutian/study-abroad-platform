@@ -47,9 +47,7 @@ const GRADE_VALUES: Record<string, number> = {
  *   nicheGradeToScore(null)  // null
  *   nicheGradeToScore('?')   // null
  */
-export function nicheGradeToScore(
-  grade: string | null | undefined,
-): number | null {
+export function nicheGradeToScore(grade: string | null | undefined): number | null {
   if (!grade) return null;
   const normalized = grade.trim().toUpperCase();
   return GRADE_VALUES[normalized] ?? null;
@@ -59,9 +57,7 @@ export function nicheGradeToScore(
  * Whether a value is a recognized Niche grade.
  */
 export function isValidNicheGrade(grade: unknown): grade is string {
-  return (
-    typeof grade === 'string' && grade.trim().toUpperCase() in GRADE_VALUES
-  );
+  return typeof grade === 'string' && grade.trim().toUpperCase() in GRADE_VALUES;
 }
 
 /**
@@ -85,3 +81,59 @@ export const NICHE_GRADES = [
 ] as const;
 
 export type NicheGrade = (typeof NICHE_GRADES)[number];
+
+export const NICHE_GRADE_QUERY_VALUES = [
+  'A_PLUS',
+  'A',
+  'A_MINUS',
+  'B_PLUS',
+  'B',
+  'B_MINUS',
+  'C_PLUS',
+  'C',
+  'C_MINUS',
+  'D_PLUS',
+  'D',
+  'D_MINUS',
+  'F',
+] as const;
+
+export type NicheGradeQueryValue = (typeof NICHE_GRADE_QUERY_VALUES)[number];
+
+const GRADE_TO_QUERY_VALUE: Record<NicheGrade, NicheGradeQueryValue> = {
+  'A+': 'A_PLUS',
+  A: 'A',
+  'A-': 'A_MINUS',
+  'B+': 'B_PLUS',
+  B: 'B',
+  'B-': 'B_MINUS',
+  'C+': 'C_PLUS',
+  C: 'C',
+  'C-': 'C_MINUS',
+  'D+': 'D_PLUS',
+  D: 'D',
+  'D-': 'D_MINUS',
+  F: 'F',
+};
+
+const QUERY_VALUE_TO_GRADE: Record<NicheGradeQueryValue, NicheGrade> = Object.fromEntries(
+  Object.entries(GRADE_TO_QUERY_VALUE).map(([grade, value]) => [value, grade])
+) as Record<NicheGradeQueryValue, NicheGrade>;
+
+export function encodeNicheGradeParam(grade: NicheGrade): NicheGradeQueryValue {
+  return GRADE_TO_QUERY_VALUE[grade];
+}
+
+export function decodeNicheGradeParam(value: string | null | undefined): NicheGrade | null {
+  if (!value) return null;
+  return QUERY_VALUE_TO_GRADE[value.trim().toUpperCase() as NicheGradeQueryValue] ?? null;
+}
+
+export function isNicheGradeAtLeast(
+  grade: string | null | undefined,
+  minimum: string | null | undefined
+): boolean {
+  const gradeScore = nicheGradeToScore(grade);
+  const minimumScore = nicheGradeToScore(minimum);
+  return gradeScore != null && minimumScore != null && gradeScore >= minimumScore;
+}

@@ -9,10 +9,10 @@ export class TriggerDataSyncDto {
 
   @ApiPropertyOptional({
     description:
-      'Job-specific params, e.g. { limit: 500 } for COLLEGE_SCORECARD',
+      'Job-specific params, e.g. { limit: 500 } or { limit: 100, dryRun: true, onlyMissing: true }',
     example: { limit: 500 },
   })
   @IsOptional()
   @IsObject()
-  params?: Record<string, number | string>;
+  params?: Record<string, number | string | boolean>;
 }

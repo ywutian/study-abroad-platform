@@ -19,6 +19,12 @@ export enum BudgetRange {
   UNLIMITED = 'unlimited', // 不限
 }
 
+export enum CampusPreference {
+  SAFETY = 'safety',
+  LIFE = 'life',
+  FOOD = 'food',
+}
+
 export class SchoolRecommendationRequestDto {
   @ApiPropertyOptional({
     type: [String],
@@ -66,6 +72,18 @@ export class SchoolRecommendationRequestDto {
   @IsOptional()
   @MaxLength(500)
   additionalPreferences?: string;
+
+  @ApiPropertyOptional({
+    enum: CampusPreference,
+    isArray: true,
+    description:
+      'Campus lifestyle preferences used for fit/tie-breakers, not admission probability',
+  })
+  @IsArray()
+  @IsOptional()
+  @IsEnum(CampusPreference, { each: true })
+  @ArrayMaxSize(3)
+  campusPreferences?: CampusPreference[];
 }
 
 export class RecommendedSchoolDto {
@@ -119,6 +137,13 @@ export class RecommendedSchoolDto {
     testOptional?: boolean;
     hasEarlyDecision?: boolean;
     retentionRate?: number;
+    roomAndBoard?: number;
+    studentOrgsCount?: number;
+    countriesRepresented?: number;
+    nicheSafetyGrade?: string;
+    nicheLifeGrade?: string;
+    nicheFoodGrade?: string;
+    nicheOverallGrade?: string;
     logoUrl?: string;
     media?: SchoolPublicMedia;
     website?: string;

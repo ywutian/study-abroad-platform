@@ -30,9 +30,11 @@ import { SchoolLogo } from '@/components/features';
 import {
   getSchoolEnrollmentCount,
   getSchoolFieldSource,
+  getSupplementalCampusLifeGrades,
   getTrustedValue,
   hasVerifiedFieldSource,
 } from '@/components/features/schools/school-display-utils';
+import { IndexGroup } from '@/components/features/schools/IndexIndicators';
 import { Link } from '@/lib/i18n/navigation';
 import { cn, formatAcceptanceRate, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { type SchoolRankingList } from '@/components/features/schools/school-filters';
@@ -217,6 +219,7 @@ export function SchoolCard({
   );
   const trustedAcceptance = getTrustedValue(school, school.acceptanceRate, 'acceptanceRate');
   const isVerified = Boolean(acceptanceSource ?? enrollmentSource);
+  const campusGrades = getSupplementalCampusLifeGrades(school);
 
   const locationParts = [school.city, school.state, school.country].filter(Boolean).join(', ');
   const typeLabel = school.isPrivate
@@ -490,6 +493,15 @@ export function SchoolCard({
                 </Badge>
               )}
             </div>
+            {campusGrades.hasGrades && (
+              <IndexGroup
+                safetyGrade={campusGrades.safetyGrade}
+                lifeGrade={campusGrades.lifeGrade}
+                foodGrade={campusGrades.foodGrade}
+                size="sm"
+                className="mt-2 gap-2"
+              />
+            )}
           </Link>
 
           <div className="mt-auto flex flex-col gap-3 border-t border-border/60 pt-3 text-xs">
@@ -597,6 +609,16 @@ export function SchoolCard({
             )}
           </div>
         </Link>
+
+        {campusGrades.hasGrades && (
+          <IndexGroup
+            safetyGrade={campusGrades.safetyGrade}
+            lifeGrade={campusGrades.lifeGrade}
+            foodGrade={campusGrades.foodGrade}
+            size="sm"
+            className={cn(isCompact ? 'mb-3 gap-2' : 'mb-4 gap-3')}
+          />
+        )}
 
         <div className="mt-auto flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-2 text-sm">
