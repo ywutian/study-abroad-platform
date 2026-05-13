@@ -58,6 +58,13 @@ interface SchoolCardProps {
 }
 
 const ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD', 'ROLLING'] as const;
+type HeroMediaSize = 'list' | 'grid' | 'gridCompact';
+
+const HERO_MEDIA_FRAME_CLASSES: Record<HeroMediaSize, string> = {
+  list: 'h-[180px] w-full sm:w-[280px]',
+  grid: 'h-40 w-full',
+  gridCompact: 'h-32 w-full',
+};
 
 function schoolHue(school: { id: string; country?: string }) {
   const seed = (school.country ?? '') + school.id;
@@ -68,7 +75,7 @@ function schoolHue(school: { id: string; country?: string }) {
   return h % 360;
 }
 
-function toWikimediaThumbnailSize(url: string, width: 250 | 500): string {
+function toWikimediaThumbnailSize(url: string, width: 500): string {
   let parsed: URL;
   try {
     parsed = new URL(url);
@@ -96,23 +103,34 @@ function canUseOptimizedCover(url: string): boolean {
   }
 }
 
-function HeroGradient({ hue, initial, size }: { hue: number; initial: string; size: 'lg' | 'sm' }) {
+function HeroGradient({
+  hue,
+  initial,
+  size,
+}: {
+  hue: number;
+  initial: string;
+  size: HeroMediaSize;
+}) {
   return (
     <div
       className={cn(
         'relative flex shrink-0 items-center justify-center overflow-hidden',
-        size === 'lg' ? 'h-[180px] w-full sm:w-[280px]' : 'h-16 w-full'
+        HERO_MEDIA_FRAME_CLASSES[size]
       )}
       style={{
         backgroundImage: `linear-gradient(135deg, hsl(${hue} 70% 45%) 0%, hsl(${(hue + 30) % 360} 75% 60%) 100%)`,
       }}
       aria-hidden="true"
     >
-      {size === 'lg' && (
-        <span className="text-display-hero select-none leading-none text-white/30 transition-transform duration-500 group-hover:scale-110">
-          {initial}
-        </span>
-      )}
+      <span
+        className={cn(
+          'select-none leading-none text-white/30 transition-transform duration-500 group-hover:scale-110',
+          size === 'list' ? 'text-display-hero' : size === 'grid' ? 'text-7xl' : 'text-6xl'
+        )}
+      >
+        {initial}
+      </span>
     </div>
   );
 }
@@ -129,7 +147,7 @@ function SchoolHeroMedia({
   schoolName: string;
   hue: number;
   initial: string;
-  size: 'lg' | 'sm';
+  size: HeroMediaSize;
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
@@ -138,7 +156,7 @@ function SchoolHeroMedia({
     return <HeroGradient hue={hue} initial={initial} size={size} />;
   }
 
-  const displayUrl = toWikimediaThumbnailSize(coverUrl, size === 'sm' ? 250 : 500);
+  const displayUrl = toWikimediaThumbnailSize(coverUrl, 500);
   const imageClassName =
     'h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]';
 
@@ -146,7 +164,7 @@ function SchoolHeroMedia({
     <div
       className={cn(
         'relative flex shrink-0 items-center justify-center overflow-hidden bg-muted',
-        size === 'lg' ? 'h-[180px] w-full sm:w-[280px]' : 'h-16 w-full'
+        HERO_MEDIA_FRAME_CLASSES[size]
       )}
     >
       {canUseOptimizedCover(displayUrl) ? (
@@ -155,13 +173,14 @@ function SchoolHeroMedia({
           alt={schoolName}
           fill
           sizes={
-            size === 'lg'
+            size === 'list'
               ? '(min-width: 640px) 280px, 100vw'
               : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'
           }
-          quality={70}
+          quality={75}
           priority={priority}
           loading={priority ? undefined : 'lazy'}
+          unoptimized
           onError={() => setFailed(true)}
           className={imageClassName}
         />
@@ -440,7 +459,7 @@ export function SchoolCard({
             schoolName={schoolName}
             hue={hue}
             initial={initial}
-            size="sm"
+            size={isCompact ? 'gridCompact' : 'grid'}
             priority={priorityMedia}
           />
           {fitScorePill && <div className="absolute right-2 top-2 z-10">{fitScorePill}</div>}
@@ -536,7 +555,7 @@ export function SchoolCard({
           schoolName={schoolName}
           hue={hue}
           initial={initial}
-          size="lg"
+          size="list"
           priority={priorityMedia}
         />
         <Link
