@@ -53,6 +53,7 @@ export function SchoolGrid({
   totalPages,
   onPageChange,
   onPageSizeChange,
+  density = 'comfortable',
   preferredRankingList,
 }: SchoolGridProps) {
   const t = useTranslations('schools');
@@ -64,7 +65,7 @@ export function SchoolGrid({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse overflow-hidden p-0">
-              <div className="h-16 bg-muted/60" />
+              <div className={density === 'compact' ? 'h-32 bg-muted/60' : 'h-40 bg-muted/60'} />
               <CardContent className="space-y-3 px-4 pb-4 pt-3">
                 <Skeleton className="-mt-9 h-12 w-12 rounded-lg" />
                 <Skeleton className="h-5 w-3/4" />
@@ -107,6 +108,7 @@ export function SchoolGrid({
                 onToggleSelection={onToggleSelection}
                 onAddToList={onAddToList}
                 isAddingToList={isAddingToList}
+                density={density}
                 preferredRankingList={preferredRankingList}
                 priorityMedia={index < 3}
               />
