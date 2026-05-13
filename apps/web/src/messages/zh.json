@@ -1388,6 +1388,16 @@
       "reviewTargets": "复核目标院校",
       "allSet": "核心画像已就绪，可以进入预测、文书和组合校准。"
     },
+    "actionBar": {
+      "nextStep": "下一步：{signal}",
+      "completeSignal": "补齐 {signal}",
+      "readyForAnalysis": "核心画像已可用于分析和预测"
+    },
+    "tabStatus": {
+      "complete": "已完成",
+      "partial": "部分完成",
+      "missing": "待补齐"
+    },
     "basicInfo": "基本信息",
     "basicInfoDesc": "填写你的基本信息",
     "testScores": "标化成绩",

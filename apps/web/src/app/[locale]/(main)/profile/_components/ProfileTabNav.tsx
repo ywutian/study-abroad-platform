@@ -14,13 +14,27 @@ import {
 } from '@/components/ui/select';
 import { TAB_CONFIG, TAB_ICON_ACTIVE_CLASSES } from './constants';
 
+export type TabCompletionStatus = 'complete' | 'missing' | 'partial';
+
 interface ProfileTabNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   tabErrors?: Record<string, number>;
+  tabCompletion?: Record<string, TabCompletionStatus>;
 }
 
-export function ProfileTabNav({ activeTab, onTabChange, tabErrors }: ProfileTabNavProps) {
+const TAB_COMPLETION_CLASSES: Record<TabCompletionStatus, string> = {
+  complete: 'bg-success',
+  partial: 'bg-warning',
+  missing: 'bg-muted-foreground/35',
+};
+
+export function ProfileTabNav({
+  activeTab,
+  onTabChange,
+  tabErrors,
+  tabCompletion,
+}: ProfileTabNavProps) {
   const t = useTranslations();
   const activeTabConfig = TAB_CONFIG.find((tab) => tab.value === activeTab);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -65,6 +79,7 @@ export function ProfileTabNav({ activeTab, onTabChange, tabErrors }: ProfileTabN
         >
           {TAB_CONFIG.map((tab, index) => {
             const isActive = activeTab === tab.value;
+            const completion = tabCompletion?.[tab.value];
             return (
               <motion.button
                 key={tab.value}
@@ -101,16 +116,23 @@ export function ProfileTabNav({ activeTab, onTabChange, tabErrors }: ProfileTabN
                   <tab.icon className="h-4 w-4" />
                 </div>
                 <span className="font-medium text-sm">{t(tab.labelKey)}</span>
-                {tabErrors?.[tab.value] ? (
-                  <span
-                    className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-medium px-1"
-                    aria-label={t('profile.tabErrorsAria', { count: tabErrors[tab.value] })}
-                  >
-                    {tabErrors[tab.value]}
-                  </span>
-                ) : isActive ? (
-                  <ChevronRight className="ml-auto h-4 w-4" aria-hidden="true" />
-                ) : null}
+                <span className="ml-auto flex items-center gap-2">
+                  {tabErrors?.[tab.value] ? (
+                    <span
+                      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-xs font-medium px-1"
+                      aria-label={t('profile.tabErrorsAria', { count: tabErrors[tab.value] })}
+                    >
+                      {tabErrors[tab.value]}
+                    </span>
+                  ) : completion ? (
+                    <span
+                      className={cn('h-2.5 w-2.5 rounded-full', TAB_COMPLETION_CLASSES[completion])}
+                      aria-label={t(`profile.tabStatus.${completion}`)}
+                      title={t(`profile.tabStatus.${completion}`)}
+                    />
+                  ) : null}
+                  {isActive ? <ChevronRight className="h-4 w-4" aria-hidden="true" /> : null}
+                </span>
               </motion.button>
             );
           })}
@@ -148,6 +170,14 @@ export function ProfileTabNav({ activeTab, onTabChange, tabErrors }: ProfileTabN
                       >
                         {tabErrors[tab.value]}
                       </span>
+                    ) : tabCompletion?.[tab.value] ? (
+                      <span
+                        className={cn(
+                          'h-2 w-2 rounded-full',
+                          TAB_COMPLETION_CLASSES[tabCompletion[tab.value]]
+                        )}
+                        aria-label={t(`profile.tabStatus.${tabCompletion[tab.value]}`)}
+                      />
                     ) : null}
                   </span>
                 </SelectItem>

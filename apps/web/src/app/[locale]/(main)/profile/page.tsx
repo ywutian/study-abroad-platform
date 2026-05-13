@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -46,8 +46,8 @@ const DataExportDialog = dynamic(
 );
 
 import type { ProfileData, TargetSchool } from './_components/types';
-import { ProfileHeader } from './_components/profile-header';
-import { ProfileTabNav } from './_components/ProfileTabNav';
+import { ProfileActionBar, ProfileSecondaryWorkflows } from './_components/profile-header';
+import { ProfileTabNav, type TabCompletionStatus } from './_components/ProfileTabNav';
 import { useProfileMutations } from './_components/useProfileMutations';
 import { BasicInfoTab } from './_components/basic-info-tab';
 import { DemographicsTab } from './_components/demographics-tab';
@@ -123,6 +123,7 @@ export default function ProfilePage() {
   const { isInitialized, accessToken } = useAuthStore();
   const [showCelebration, setShowCelebration] = useState(false);
   const [previousCompleteness, setPreviousCompleteness] = useState<number | null>(null);
+  const hasAutoSelectedInitialTab = useRef(false);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -194,6 +195,61 @@ export default function ProfilePage() {
     prediction: item.prediction,
   }));
 
+  const tabCompletion = useMemo<Record<string, TabCompletionStatus>>(() => {
+    const status = (complete: boolean, partial = false): TabCompletionStatus => {
+      if (complete) return 'complete';
+      return partial ? 'partial' : 'missing';
+    };
+    const hasGpa = Boolean(
+      profile?.gpa ||
+      profile?.semesterGpas?.length ||
+      profile?.gpa9 ||
+      profile?.gpa10 ||
+      profile?.gpa11 ||
+      profile?.gpa12
+    );
+    const hasBasicCore = Boolean(
+      profile?.grade && profile?.currentSchool && (profile?.targetMajor || profile?.intendedMajor)
+    );
+    const hasAnyBasic = Boolean(
+      profile?.grade ||
+      profile?.currentSchool ||
+      profile?.targetMajor ||
+      profile?.intendedMajor ||
+      profile?.budgetTier
+    );
+    const hasDemographicsCore = Boolean(
+      profile?.nationality &&
+      profile?.countryOfResidence &&
+      profile?.citizenship &&
+      profile?.educationSystem
+    );
+    const hasAnyDemographics = Boolean(
+      profile?.nationality ||
+      profile?.countryOfResidence ||
+      profile?.citizenship ||
+      profile?.educationSystem ||
+      profile?.needsFinancialAid ||
+      profile?.firstGeneration ||
+      profile?.recruitedAthlete ||
+      profile?.applyingTestOptional ||
+      profile?.legacy?.length ||
+      profile?.secondMajor
+    );
+
+    return {
+      basic: status(hasBasicCore, hasAnyBasic),
+      demographics: status(hasDemographicsCore, hasAnyDemographics),
+      scores: status(Boolean(profile?.testScores?.length || profile?.applyingTestOptional)),
+      gpa: status(hasGpa),
+      activities: status(Boolean(profile?.activities?.length)),
+      awards: status(Boolean(profile?.awards?.length)),
+      targets: status(targetSchools.length > 0),
+      recLetters: 'partial',
+      privacy: status(Boolean(profile?.visibility)),
+    };
+  }, [profile, targetSchools.length]);
+
   // Completeness from backend (weighted 6-category system)
   const { data: dashboardData } = useQuery({
     queryKey: ['dashboard'],
@@ -231,6 +287,21 @@ export default function ProfilePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCompleteness]);
+
+  useEffect(() => {
+    if (
+      hasAutoSelectedInitialTab.current ||
+      isLoading ||
+      !profile ||
+      !dashboardData ||
+      currentCompleteness !== 0
+    ) {
+      return;
+    }
+
+    hasAutoSelectedInitialTab.current = true;
+    setActiveTab(tabCompletion.gpa !== 'complete' ? 'gpa' : 'scores');
+  }, [currentCompleteness, dashboardData, isLoading, profile, tabCompletion]);
 
   // Compute tab-level error counts from form errors
   const tabErrors = useMemo(() => {
@@ -272,7 +343,7 @@ export default function ProfilePage() {
     })();
   };
 
-  const completeness = calculateCompleteness();
+  const completeness = currentCompleteness;
 
   if (isLoading) {
     return (
@@ -314,7 +385,7 @@ export default function ProfilePage() {
         }
       />
 
-      <ProfileHeader
+      <ProfileActionBar
         completeness={completeness}
         profile={profile}
         onOpenResumeExport={() => m.setResumeExportOpen(true)}
@@ -322,7 +393,12 @@ export default function ProfilePage() {
       />
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        <ProfileTabNav activeTab={activeTab} onTabChange={setActiveTab} tabErrors={tabErrors} />
+        <ProfileTabNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabErrors={tabErrors}
+          tabCompletion={tabCompletion}
+        />
 
         <div className="flex-1 min-w-0">
           <Form {...form}>
@@ -437,6 +513,8 @@ export default function ProfilePage() {
           </Form>
         </div>
       </div>
+
+      <ProfileSecondaryWorkflows completeness={completeness} profile={profile} />
 
       {/* Form Dialogs */}
       <TestScoreForm

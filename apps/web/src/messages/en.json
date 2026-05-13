@@ -1559,6 +1559,16 @@
       "fillGpa": "Fill GPA",
       "fillScore": "Fill Scores"
     },
+    "actionBar": {
+      "nextStep": "Next: {signal}",
+      "completeSignal": "Complete {signal}",
+      "readyForAnalysis": "Core profile ready for analysis and prediction"
+    },
+    "tabStatus": {
+      "complete": "Complete",
+      "partial": "Partially complete",
+      "missing": "Missing"
+    },
     "nextSteps": {
       "title": "Next Steps",
       "applicationHub": "Application Hub",
