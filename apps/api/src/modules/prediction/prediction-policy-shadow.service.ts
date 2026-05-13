@@ -65,7 +65,7 @@ export class PredictionPolicyShadowService {
     }>;
   }> {
     const results = await this.prisma.predictionResult.findMany({
-      where: { policyVersionId },
+      where: { policyVersionId, authority: 'AUTHORITATIVE' },
       take: 5000,
       orderBy: { createdAt: 'desc' },
       select: {

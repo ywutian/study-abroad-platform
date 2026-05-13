@@ -10,6 +10,7 @@ import { PredictionCalibrationService } from './prediction-calibration.service';
 import { MemoryType } from '@prisma/client';
 import { fireAndForget } from '../../common/utils/async.util';
 import { createPaginatedResponse } from '../../common/dto/pagination.dto';
+import { clampPercentRate } from '../../common/utils/percent.util';
 import {
   computeBrierScore,
   computeECE,
@@ -38,6 +39,8 @@ const LOW_PROBABILITY_ADMIT_THRESHOLD = 0.1;
 const HIGH_PROBABILITY_REJECT_THRESHOLD = 0.8;
 const MANY_ELITE_ADMIT_THRESHOLD = 5;
 const IMMEDIATE_REPORT_WINDOW_MS = 60 * 60 * 1000;
+const PREDICTION_STALE_AFTER_MS = 1000 * 60 * 60 * 24 * 30;
+const HISTORY_DELTA_THRESHOLD = 0.005;
 
 /**
  * Reporting and calibration data service for predictions.
@@ -173,18 +176,27 @@ export class PredictionReportingService {
     >;
   }
 
+  private getHistoryTrend(
+    currentProbability: number,
+    previousProbability: number | null,
+  ): 'new' | 'up' | 'down' | 'stable' {
+    if (previousProbability == null) return 'new';
+    const delta = currentProbability - previousProbability;
+    if (Math.abs(delta) < HISTORY_DELTA_THRESHOLD) return 'stable';
+    return delta > 0 ? 'up' : 'down';
+  }
+
   /**
-   * Retrieve the prediction history for a profile, ordered by most recent first.
+   * Retrieve school-level authoritative prediction history for a profile.
    *
-   * @param profileId - The profile identifier
-   * @param page - Page number (default: 1)
-   * @param pageSize - Items per page (default: 20)
+   * Preview quick-match rows are excluded so this endpoint represents served,
+   * full-pipeline predictions and their historical snapshots.
    */
   async getPredictionHistory(profileId: string, page = 1, pageSize = 20) {
     const skip = (page - 1) * pageSize;
     const [items, total] = await Promise.all([
       this.prisma.predictionResult.findMany({
-        where: { profileId },
+        where: { profileId, authority: 'AUTHORITATIVE' },
         orderBy: { updatedAt: 'desc' },
         skip,
         take: pageSize,
@@ -194,16 +206,121 @@ export class PredictionReportingService {
           },
         },
       }),
-      this.prisma.predictionResult.count({ where: { profileId } }),
+      this.prisma.predictionResult.count({
+        where: { profileId, authority: 'AUTHORITATIVE' },
+      }),
     ]);
+
+    const schoolIds = [...new Set(items.map((item) => item.schoolId))];
+    const [schools, snapshots] =
+      schoolIds.length > 0
+        ? await Promise.all([
+            this.prisma.school.findMany({
+              where: { id: { in: schoolIds } },
+              select: {
+                id: true,
+                name: true,
+                nameZh: true,
+                usNewsRank: true,
+                acceptanceRate: true,
+              },
+            }),
+            this.prisma.predictionSnapshot.findMany({
+              where: {
+                profileId,
+                schoolId: { in: schoolIds },
+                authority: 'AUTHORITATIVE',
+              },
+              orderBy: [{ schoolId: 'asc' }, { createdAt: 'desc' }],
+            }),
+          ])
+        : [[], []];
+
+    const schoolMap = new Map(
+      schools.map((school) => [
+        school.id,
+        {
+          ...school,
+          acceptanceRate:
+            clampPercentRate(school.acceptanceRate) ??
+            (school.acceptanceRate != null
+              ? Number(school.acceptanceRate)
+              : undefined),
+        },
+      ]),
+    );
+    const snapshotMap = new Map<string, typeof snapshots>();
+    for (const snapshot of snapshots) {
+      const list = snapshotMap.get(snapshot.schoolId) ?? [];
+      list.push(snapshot);
+      snapshotMap.set(snapshot.schoolId, list);
+    }
+
+    const now = Date.now();
     const normalizedItems = items.map((item) => {
       const canonical = this.resolveCanonicalOutcome(item.outcomeLabelRecords);
+      const schoolSnapshots = snapshotMap.get(item.schoolId) ?? [];
+      const previousSnapshot = schoolSnapshots[1] ?? null;
+      const currentProbability = Number(item.probability);
+      const previousProbability = previousSnapshot
+        ? Number(previousSnapshot.probability)
+        : null;
+      const probabilityDelta =
+        previousProbability == null
+          ? null
+          : Number((currentProbability - previousProbability).toFixed(4));
+
       return {
-        ...item,
+        id: item.id,
+        schoolId: item.schoolId,
+        school: schoolMap.get(item.schoolId) ?? null,
+        probability: currentProbability,
+        probabilityLow: item.probabilityLow
+          ? Number(item.probabilityLow)
+          : undefined,
+        probabilityHigh: item.probabilityHigh
+          ? Number(item.probabilityHigh)
+          : undefined,
+        tier: item.tier,
+        previousTier: previousSnapshot?.tier ?? undefined,
+        confidence: item.confidence,
+        confidenceReason: item.confidenceReason,
+        cohortKey: item.cohortKey,
+        source: item.source,
+        sourceSummary: item.sourceSummary,
+        uncertaintyReasons: item.uncertaintyReasons,
+        modelVersion: item.modelVersion,
+        previousProbability,
+        probabilityDelta,
+        trend: this.getHistoryTrend(currentProbability, previousProbability),
+        stale: now - item.updatedAt.getTime() > PREDICTION_STALE_AFTER_MS,
+        snapshotCount: schoolSnapshots.length,
+        recentSnapshots: schoolSnapshots.slice(0, 5).map((snapshot) => ({
+          id: snapshot.id,
+          probability: Number(snapshot.probability),
+          probabilityLow: snapshot.probabilityLow
+            ? Number(snapshot.probabilityLow)
+            : undefined,
+          probabilityHigh: snapshot.probabilityHigh
+            ? Number(snapshot.probabilityHigh)
+            : undefined,
+          tier: snapshot.tier,
+          confidence: snapshot.confidence,
+          confidenceReason: snapshot.confidenceReason,
+          roundContext: snapshot.applicationRound ?? undefined,
+          source: snapshot.source,
+          sourceSummary: snapshot.sourceSummary,
+          uncertaintyReasons: snapshot.uncertaintyReasons,
+          modelVersion: snapshot.modelVersion,
+          servedPolicyVersionId: snapshot.policyVersionId ?? undefined,
+          createdAt: snapshot.createdAt,
+        })),
         servedPolicyVersionId: item.policyVersionId ?? undefined,
         roundContext: item.applicationRound ?? undefined,
         latestOutcomeLabel: this.mapLatestOutcomeLabel(canonical.displayRecord),
         calibrationEligible: canonical.eligibleForCalibration,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       };
     });
 
@@ -234,8 +351,8 @@ export class PredictionReportingService {
   ): Promise<void> {
     try {
       const now = new Date();
-      const prediction = await this.prisma.predictionResult.findUnique({
-        where: { profileId_schoolId: { profileId, schoolId } },
+      const prediction = await this.prisma.predictionResult.findFirst({
+        where: { profileId, schoolId, authority: 'AUTHORITATIVE' },
         select: {
           id: true,
           probability: true,
@@ -377,8 +494,8 @@ export class PredictionReportingService {
       // Write prediction feedback to memory system
       if (this.memoryManager) {
         const [prediction, school, profile] = await Promise.all([
-          this.prisma.predictionResult.findUnique({
-            where: { profileId_schoolId: { profileId, schoolId } },
+          this.prisma.predictionResult.findFirst({
+            where: { profileId, schoolId, authority: 'AUTHORITATIVE' },
           }),
           this.prisma.school.findUnique({
             where: { id: schoolId },

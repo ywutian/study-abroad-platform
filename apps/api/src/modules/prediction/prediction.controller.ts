@@ -193,7 +193,7 @@ export class PredictionController {
     }
 
     const predictions = await this.prisma.predictionResult.findMany({
-      where: { profileId: profile.id },
+      where: { profileId: profile.id, authority: 'AUTHORITATIVE' },
       orderBy: { updatedAt: 'desc' },
       include: {
         outcomeLabelRecords: {
@@ -304,12 +304,11 @@ export class PredictionController {
     }
 
     const [current, history, school] = await Promise.all([
-      this.prisma.predictionResult.findUnique({
+      this.prisma.predictionResult.findFirst({
         where: {
-          profileId_schoolId: {
-            profileId: profile.id,
-            schoolId,
-          },
+          profileId: profile.id,
+          schoolId,
+          authority: 'AUTHORITATIVE',
         },
         include: {
           outcomeLabelRecords: {

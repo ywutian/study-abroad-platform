@@ -1,4 +1,7 @@
 export { PredictionHeader } from './PredictionHeader';
+export { PredictionActionBar } from './PredictionActionBar';
+export { PortfolioSnapshot } from './PortfolioSnapshot';
+export { PredictionEvidencePanel } from './PredictionEvidencePanel';
 export { SchoolSelectorCard } from './SchoolSelectorCard';
 export { DashboardSummary } from './DashboardSummary';
 export { PredictionResultList } from './PredictionResultList';

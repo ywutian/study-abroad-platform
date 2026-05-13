@@ -1052,6 +1052,7 @@ export class ProfileApplicationAnalysisV2Service {
       where: {
         profileId,
         schoolId: { in: schoolIds },
+        authority: 'AUTHORITATIVE',
       },
       select: {
         schoolId: true,

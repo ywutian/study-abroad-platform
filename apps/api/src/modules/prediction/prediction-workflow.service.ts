@@ -278,7 +278,7 @@ export class PredictionWorkflowService {
 
   private async getEligibleOutcomeCounts(policyVersionId: string) {
     const results = await this.prisma.predictionResult.findMany({
-      where: { policyVersionId },
+      where: { policyVersionId, authority: 'AUTHORITATIVE' },
       select: {
         id: true,
         cohortKey: true,

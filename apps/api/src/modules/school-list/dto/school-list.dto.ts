@@ -110,6 +110,7 @@ export class SchoolListItemResponseDto {
     tier?: string;
     confidence?: string;
     source?: string;
+    authority?: 'AUTHORITATIVE' | 'PREVIEW';
     updatedAt: Date;
   };
 

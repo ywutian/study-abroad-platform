@@ -45,10 +45,12 @@ describe('PredictionReportingService', () => {
         findMany: jest.fn().mockResolvedValue([]),
       },
       predictionSnapshot: {
+        findMany: jest.fn().mockResolvedValue([]),
         findFirst: jest.fn().mockResolvedValue({ id: 'snap-1' }),
         update: jest.fn().mockResolvedValue({ id: 'snap-1' }),
       },
       school: {
+        findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue(null),
       },
       profile: {
@@ -97,15 +99,37 @@ describe('PredictionReportingService', () => {
           profileId: 'profile-1',
           schoolId: 'school-1',
           probability: 0.45,
+          probabilityLow: null,
+          probabilityHigh: null,
+          tier: 'match',
+          confidence: 'medium',
+          confidenceReason: null,
+          cohortKey: null,
+          source: 'prediction',
+          sourceSummary: null,
+          uncertaintyReasons: null,
+          modelVersion: 'v3',
           policyVersionId: 'policy-1',
           applicationRound: 'RD',
           outcomeLabelRecords: [],
+          createdAt: new Date('2026-04-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-04-04T00:00:00.000Z'),
         },
         {
           id: 'pred-2',
           profileId: 'profile-1',
           schoolId: 'school-2',
           probability: 0.65,
+          probabilityLow: null,
+          probabilityHigh: null,
+          tier: 'safety',
+          confidence: 'high',
+          confidenceReason: null,
+          cohortKey: null,
+          source: 'prediction',
+          sourceSummary: null,
+          uncertaintyReasons: null,
+          modelVersion: 'v3',
           policyVersionId: null,
           applicationRound: null,
           outcomeLabelRecords: [
@@ -113,21 +137,78 @@ describe('PredictionReportingService', () => {
               id: 'label-2',
             }),
           ],
+          createdAt: new Date('2026-04-02T00:00:00.000Z'),
+          updatedAt: new Date('2026-04-05T00:00:00.000Z'),
         },
       ];
       (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue(
         mockItems,
       );
       (prisma.predictionResult.count as jest.Mock).mockResolvedValue(2);
+      (prisma.school.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'school-1',
+          name: 'School One',
+          nameZh: null,
+          usNewsRank: 10,
+          acceptanceRate: 12.5,
+        },
+        {
+          id: 'school-2',
+          name: 'School Two',
+          nameZh: null,
+          usNewsRank: 20,
+          acceptanceRate: 40,
+        },
+      ]);
+      (prisma.predictionSnapshot.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'snap-1-latest',
+          schoolId: 'school-1',
+          probability: 0.45,
+          probabilityLow: null,
+          probabilityHigh: null,
+          tier: 'match',
+          confidence: 'medium',
+          confidenceReason: null,
+          applicationRound: 'RD',
+          source: 'prediction',
+          sourceSummary: null,
+          uncertaintyReasons: null,
+          modelVersion: 'v3',
+          policyVersionId: 'policy-1',
+          createdAt: new Date('2026-04-04T00:00:00.000Z'),
+        },
+        {
+          id: 'snap-1-prev',
+          schoolId: 'school-1',
+          probability: 0.4,
+          probabilityLow: null,
+          probabilityHigh: null,
+          tier: 'reach',
+          confidence: 'medium',
+          confidenceReason: null,
+          applicationRound: 'RD',
+          source: 'prediction',
+          sourceSummary: null,
+          uncertaintyReasons: null,
+          modelVersion: 'v3',
+          policyVersionId: 'policy-1',
+          createdAt: new Date('2026-04-01T00:00:00.000Z'),
+        },
+      ]);
 
       const result = await service.getPredictionHistory('profile-1');
 
       expect(result.items).toEqual([
         expect.objectContaining({
           id: 'pred-1',
-          profileId: 'profile-1',
           schoolId: 'school-1',
+          school: expect.objectContaining({ name: 'School One' }),
           probability: 0.45,
+          previousProbability: 0.4,
+          probabilityDelta: 0.05,
+          trend: 'up',
           servedPolicyVersionId: 'policy-1',
           roundContext: 'RD',
           latestOutcomeLabel: undefined,
@@ -135,9 +216,9 @@ describe('PredictionReportingService', () => {
         }),
         expect.objectContaining({
           id: 'pred-2',
-          profileId: 'profile-1',
           schoolId: 'school-2',
           probability: 0.65,
+          trend: 'new',
           servedPolicyVersionId: undefined,
           roundContext: undefined,
           latestOutcomeLabel: expect.objectContaining({
@@ -161,7 +242,7 @@ describe('PredictionReportingService', () => {
       await service.getPredictionHistory('profile-1', 3, 10);
 
       expect(prisma.predictionResult.findMany).toHaveBeenCalledWith({
-        where: { profileId: 'profile-1' },
+        where: { profileId: 'profile-1', authority: 'AUTHORITATIVE' },
         orderBy: { updatedAt: 'desc' },
         skip: 20, // (3-1) * 10
         take: 10,
@@ -261,7 +342,7 @@ describe('PredictionReportingService', () => {
 
   describe('reportActualResult', () => {
     it('should store self-reported outcomes without treating them as verified truth', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -290,7 +371,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should handle REJECTED result', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -307,7 +388,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should handle WAITLISTED result', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -327,7 +408,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should handle WITHDRAWN result as non-calibration data', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -347,7 +428,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should preserve verified canonical truth when self-reported labels conflict', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -373,7 +454,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should write feedback to memory system when prediction exists', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -406,7 +487,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should mark prediction as incorrect when REJECTED but probability > 0.5', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -431,7 +512,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should mark prediction as correct when REJECTED and probability <= 0.5', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.3,
       });
@@ -456,7 +537,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should not mark WAITLISTED as calibration-correctness data', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });
@@ -478,7 +559,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should return an explicit not-found error when prediction not found', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(
         service.reportActualResult('profile-1', 'school-1', 'ADMITTED'),
@@ -490,7 +571,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should use schoolId in memory content when school name not found', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.5,
       });
@@ -509,7 +590,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should not throw when updateMany fails (graceful degradation)', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.5,
       });
@@ -523,7 +604,7 @@ describe('PredictionReportingService', () => {
     });
 
     it('should not throw when memory recording fails', async () => {
-      (prisma.predictionResult.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.predictionResult.findFirst as jest.Mock).mockResolvedValue({
         id: 'pred-1',
         probability: 0.7,
       });

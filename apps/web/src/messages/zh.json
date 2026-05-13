@@ -2029,12 +2029,83 @@
     "comingSoonDesc": "目前请点击下方按钮查看演示预测",
     "tabPredict": "预测",
     "tabHistory": "历史记录",
+    "tabs": {
+      "workspace": "工作台",
+      "history": "历史",
+      "evidence": "依据"
+    },
+    "workbench": {
+      "profile": "档案",
+      "unknown": "未知",
+      "nextGap": "下一项：{item}",
+      "profileReady": "可用于预测",
+      "selected": "已选",
+      "selectedDetail": "本次目标学校",
+      "coverage": "正式覆盖",
+      "coverageDetail": "{predicted} 条正式预测",
+      "stale": "过期",
+      "staleDetail": "决策前建议刷新",
+      "freshDetail": "近期已更新",
+      "completeProfile": "完善档案",
+      "runPredictions": "运行预测",
+      "refreshPredictions": "刷新预测",
+      "running": "分析中...",
+      "portfolioTitle": "选校组合快照",
+      "portfolioSubtitle": "决策前先看冲刺、匹配、保底和预测新鲜度。",
+      "balanced": "组合均衡",
+      "needsBalance": "需要调整",
+      "notReady": "未就绪",
+      "formalCoverage": "正式预测",
+      "formalCoverageDetail": "完整管线结果",
+      "averageChance": "平均概率",
+      "averageChanceDetail": "仅指个人预估",
+      "portfolioMix": "冲刺 / 匹配 / 保底",
+      "portfolioMixDetail": "当前组合结构",
+      "stalePredictions": "过期预测",
+      "stalePredictionsDetail": "超过 30 天",
+      "allFresh": "全部较新"
+    },
+    "evidence": {
+      "howTitle": "预测如何生成",
+      "howDesc": "工作台会结合学校数据、个人档案信号和历史上下文，形成用于规划的个人预估。",
+      "academic": "学术档案",
+      "historical": "历史结果",
+      "counselor": "顾问规则",
+      "guardrailsTitle": "阅读边界",
+      "guardrailsDesc": "请把结果用于选校规划，而不是当成官方录取决定。",
+      "personalEstimate": "主百分比是你的个人预估，不是学校公开录取率。",
+      "dataSupport": "数据参考程度描述证据质量，不代表概率高低。",
+      "subjectiveFactors": "文书、面试、推荐信和学校当年偏好仍会影响结果。"
+    },
     "emptyHint": "选择学校并运行预测以查看您的录取概率",
     "runPrediction": "开始预测",
     "history": {
       "title": "预测历史",
       "empty": "暂无预测记录",
       "emptyDesc": "运行第一次预测后，您可以在这里追踪变化趋势"
+    },
+    "historyStats": {
+      "formal": "正式预测",
+      "improved": "上升",
+      "declined": "下降",
+      "stale": "过期",
+      "labeled": "结果标签"
+    },
+    "historyColumns": {
+      "current": "当前",
+      "previous": "上次",
+      "delta": "变化"
+    },
+    "historyStatus": {
+      "stale": "过期",
+      "unlabeled": "暂无结果",
+      "new": "新记录",
+      "points": "点"
+    },
+    "historyDrawer": {
+      "description": "查看这所学校的趋势、波动原因和最终结果反馈。",
+      "timeline": "最近快照",
+      "refreshSchool": "刷新这所学校"
     },
     "tier": {
       "reach": "冲刺",
@@ -2062,6 +2133,8 @@
       "improve": "提升录取机会",
       "understanding": "如何理解概率"
     },
+    "decisionSignals": "决策信号",
+    "nextAction": "下一步",
     "completeProfile": "完善档案",
     "recommendedSchoolsTitle": "你也可能感兴趣的学校",
     "recommendedSchoolsLoading": "加载推荐中...",
@@ -2260,8 +2333,10 @@
     },
     "sort": {
       "probability": "按概率",
+      "delta": "按变化",
       "tier": "按分类",
-      "confidence": "按数据参考程度"
+      "confidence": "按数据参考程度",
+      "updatedAt": "按更新时间"
     },
     "filter": {
       "all": "全部"

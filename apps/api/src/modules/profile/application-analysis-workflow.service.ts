@@ -2482,6 +2482,7 @@ export class ApplicationAnalysisWorkflowService {
         where: {
           profileId: { in: profileIds },
           schoolId: { in: schoolIds },
+          authority: 'AUTHORITATIVE',
         },
         select: {
           profileId: true,

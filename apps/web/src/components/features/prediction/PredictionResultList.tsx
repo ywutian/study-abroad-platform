@@ -22,7 +22,7 @@ interface PredictionResultListProps {
   dataCompleteness?: number;
 }
 
-type SortBy = 'probability' | 'tier' | 'confidence';
+type SortBy = 'probability' | 'delta' | 'tier' | 'confidence' | 'updatedAt';
 type FilterTier = TierType | 'all';
 
 const TIER_ORDER: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
@@ -60,6 +60,13 @@ export function PredictionResultList({
           return (TIER_ORDER[a.tier] ?? 3) - (TIER_ORDER[b.tier] ?? 3);
         case 'confidence':
           return (CONFIDENCE_ORDER[b.confidence] ?? 0) - (CONFIDENCE_ORDER[a.confidence] ?? 0);
+        case 'delta':
+          return ((b as any).probabilityDelta ?? -999) - ((a as any).probabilityDelta ?? -999);
+        case 'updatedAt':
+          return (
+            new Date((b as any).updatedAt ?? 0).getTime() -
+            new Date((a as any).updatedAt ?? 0).getTime()
+          );
         default:
           return 0;
       }
@@ -86,10 +93,6 @@ export function PredictionResultList({
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-muted-foreground">{t('probabilityVsRateDisclaimer')}</p>
-      <p className="text-xs text-muted-foreground">{t('confidenceDisclaimer')}</p>
-      <p className="text-xs text-muted-foreground">{t('tierStrategyDisclaimer')}</p>
-      <p className="text-xs text-muted-foreground">{t('essayDisclaimer')}</p>
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-subtitle flex items-center gap-2">
@@ -103,7 +106,7 @@ export function PredictionResultList({
           role="group"
           aria-label={t('sort.probability').replace(/^By /, 'Sort by ')}
         >
-          {(['probability', 'tier', 'confidence'] as SortBy[]).map((s) => (
+          {(['probability', 'delta', 'confidence', 'tier', 'updatedAt'] as SortBy[]).map((s) => (
             <button
               key={s}
               onClick={() => setSortBy(s)}

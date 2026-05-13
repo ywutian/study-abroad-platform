@@ -6,19 +6,11 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Gauge,
-  History,
-  Info,
-  ListChecks,
-  Target,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, History, Info, Lightbulb, Target } from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
-import { EnterpriseStatusStrip, PageContainer } from '@/components/layout';
+import { PageContainer } from '@/components/layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { apiClient } from '@/lib/api/client';
 import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
@@ -26,11 +18,13 @@ import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { usePredictionDashboard, useRunPrediction } from '@/hooks/use-prediction';
 import {
   PredictionHeader,
+  PredictionActionBar,
   SchoolSelectorCard,
-  DashboardSummary,
+  PortfolioSnapshot,
   PredictionResultList,
   AiContextActions,
   RecommendedSchoolsBlock,
+  PredictionEvidencePanel,
 } from '@/components/features/prediction';
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 import { Button } from '@/components/ui/button';
@@ -54,12 +48,11 @@ interface SchoolListItemApi {
 
 export default function PredictionPage() {
   const t = useTranslations();
-  const statusT = useTranslations('enterpriseStatus');
   const searchParams = useSearchParams();
   const hasAutoRun = useRef(false);
 
   // School selection (pre-filled from user school list)
-  const [activeTab, setActiveTab] = useState<'predict' | 'history'>('predict');
+  const [activeTab, setActiveTab] = useState<'workspace' | 'history' | 'evidence'>('workspace');
   const [selectedSchools, setSelectedSchools] = useState<SchoolSearchItem[]>([]);
   const [hasPreFilled, setHasPreFilled] = useState(false);
   const { data: schoolListData } = useQuery({
@@ -134,6 +127,35 @@ export default function PredictionPage() {
     ];
   }, [profileData]);
   const hasProfileGaps = profileChecklist.some((item) => !item.complete);
+  const firstMissingProfileItem = profileChecklist.find((item) => !item.complete);
+  const profileCompleteness =
+    responseMetadata.dataCompleteness ??
+    (profileChecklist.length > 0
+      ? Math.round(
+          (profileChecklist.filter((item) => item.complete).length / profileChecklist.length) * 100
+        )
+      : undefined);
+  const selectedIds = useMemo(
+    () => new Set(selectedSchools.map((school) => school.id)),
+    [selectedSchools]
+  );
+  const dashboardPredictions = useMemo(
+    () => dashboardData?.predictions ?? [],
+    [dashboardData?.predictions]
+  );
+  const activeSnapshotPredictions = results.length > 0 ? results : dashboardPredictions;
+  const formalPredictedCount =
+    results.length > 0
+      ? results.length
+      : dashboardPredictions.filter((prediction) => selectedIds.has(prediction.schoolId)).length;
+  const stalePredictionCount = useMemo(() => {
+    const staleAfterMs = 1000 * 60 * 60 * 24 * 30;
+    return dashboardPredictions.filter((prediction) => {
+      if (!selectedIds.has(prediction.schoolId)) return false;
+      const updatedAt = new Date(prediction.updatedAt).getTime();
+      return Number.isFinite(updatedAt) && Date.now() - updatedAt > staleAfterMs;
+    }).length;
+  }, [dashboardPredictions, selectedIds]);
 
   // Handlers
   const handleAddSchool = useCallback((school: SchoolSearchItem) => {
@@ -300,185 +322,175 @@ export default function PredictionPage() {
     <AIErrorBoundary feature="prediction">
       <PageContainer maxWidth="default">
         <PredictionHeader dataCompleteness={responseMetadata.dataCompleteness} />
-
-        <EnterpriseStatusStrip
-          title={statusT('prediction.title')}
-          description={statusT('prediction.description')}
-          items={[
-            {
-              tone: hasProfileGaps ? 'attention' : 'ready',
-              label: statusT('prediction.profile'),
-              value: hasProfileGaps ? statusT('states.attention') : statusT('states.ready'),
-              description: statusT('prediction.profileDesc'),
-              icon: ListChecks,
-            },
-            {
-              tone: selectedSchools.length > 0 ? 'ready' : 'blocked',
-              label: statusT('prediction.selection'),
-              value:
-                selectedSchools.length > 0
-                  ? String(selectedSchools.length)
-                  : statusT('states.blocked'),
-              description: statusT('prediction.selectionDesc'),
-              icon: Target,
-            },
-            {
-              tone: results.length > 0 ? 'verified' : 'attention',
-              label: statusT('prediction.confidence'),
-              value:
-                responseMetadata.dataCompleteness != null
-                  ? `${responseMetadata.dataCompleteness}%`
-                  : statusT('states.attention'),
-              description: statusT('prediction.confidenceDesc'),
-              icon: Gauge,
-            },
-            {
-              tone: results.length > 0 ? 'ready' : 'attention',
-              label: statusT('prediction.review'),
-              value: results.length > 0 ? statusT('states.ready') : statusT('states.nextAction'),
-              description: statusT('prediction.reviewDesc'),
-              icon: CheckCircle2,
-            },
-          ]}
+        <PredictionActionBar
+          completeness={profileCompleteness}
+          selectedCount={selectedSchools.length}
+          predictedCount={formalPredictedCount}
+          staleCount={stalePredictionCount}
+          hasProfileGaps={hasProfileGaps}
+          firstMissingLabel={
+            firstMissingProfileItem
+              ? t(`prediction.dataChecklist.${firstMissingProfileItem.key}`)
+              : undefined
+          }
+          onRun={handlePredict}
+          isRunning={predictMutation.isPending}
         />
 
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as 'predict' | 'history')}
+          onValueChange={(v) => setActiveTab(v as 'workspace' | 'history' | 'evidence')}
           className="mb-4"
         >
-          <TabsList>
-            <TabsTrigger value="predict" className="gap-1.5">
+          <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+            <TabsTrigger value="workspace" className="gap-1.5">
               <Target className="h-3.5 w-3.5" />
-              {t('prediction.tabPredict')}
+              {t('prediction.tabs.workspace')}
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-1.5">
               <History className="h-3.5 w-3.5" />
-              {t('prediction.tabHistory')}
+              {t('prediction.tabs.history')}
+            </TabsTrigger>
+            <TabsTrigger value="evidence" className="gap-1.5">
+              <Lightbulb className="h-3.5 w-3.5" />
+              {t('prediction.tabs.evidence')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {activeTab === 'history' ? (
-          <PredictionHistoryTab />
+          <PredictionHistoryTab
+            onRefreshSchool={handleRefreshSchool}
+            refreshingSchoolId={refreshingSchoolId}
+          />
+        ) : activeTab === 'evidence' ? (
+          <PredictionEvidencePanel />
         ) : (
-          <>
-            {/* Data completeness checklist for sparse profiles */}
-            {profileData && hasProfileGaps && (
-              <div className="mb-4 rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 p-3">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {t('prediction.dataChecklistTitle')}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {t('prediction.dataChecklistDesc')}
-                    </p>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-                      {profileChecklist.map((item) => (
-                        <div
-                          key={item.key}
-                          className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
-                        >
-                          <CheckCircle2
-                            className={
-                              item.complete
-                                ? 'h-3.5 w-3.5 text-success'
-                                : 'h-3.5 w-3.5 text-muted-foreground'
-                            }
-                          />
-                          <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="shrink-0 border-warning/35 text-warning"
-                  >
-                    <Link href="/profile">{t('prediction.completeProfile')}</Link>
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {dashboardData && dashboardData.totalSchools > 0 && (
-              <DashboardSummary
-                data={dashboardData}
-                dataCompleteness={responseMetadata.dataCompleteness}
+          <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+            <div className="xl:sticky xl:top-24 xl:self-start">
+              <SchoolSelectorCard
+                selectedSchools={selectedSchools}
+                onAdd={handleAddSchool}
+                onRemove={handleRemoveSchool}
+                onPredict={handlePredict}
+                isPredicting={predictMutation.isPending}
+                compact
+                className="mb-0"
               />
-            )}
+            </div>
 
-            {ucIdsData?.schoolIds?.length && (
-              <div className="mb-4 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleUcPredict}
-                  disabled={predictMutation.isPending}
-                >
-                  {predictMutation.isPending
-                    ? t('prediction.loading.analyzing')
-                    : t('prediction.ucOneClick')}
-                </Button>
-              </div>
-            )}
-
-            <SchoolSelectorCard
-              selectedSchools={selectedSchools}
-              onAdd={handleAddSchool}
-              onRemove={handleRemoveSchool}
-              onPredict={handlePredict}
-              isPredicting={predictMutation.isPending}
-            />
-
-            {results.length > 0 ? (
-              <>
-                {ucExpandedFrom && (
-                  <div className="mb-4 flex items-start gap-3 rounded-[var(--theme-radius-card)] border border-primary/20 bg-[color:var(--theme-control-selected-bg)] p-3">
-                    <Info className="h-4 w-4 mt-1 text-primary shrink-0" />
-                    <div className="flex-1 text-sm">
-                      <p className="text-foreground">{t('prediction.ucExpandedDesc')}</p>
+            <div className="min-w-0 space-y-4">
+              {/* Data completeness checklist for sparse profiles */}
+              {profileData && hasProfileGaps && (
+                <div className="rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10 p-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-4 w-4 mt-0.5 text-warning shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground">
+                        {t('prediction.dataChecklistTitle')}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t('prediction.dataChecklistDesc')}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {profileChecklist
+                          .filter((item) => !item.complete)
+                          .map((item) => (
+                            <div
+                              key={item.key}
+                              className="flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5 text-xs"
+                            >
+                              <CheckCircle2
+                                className={
+                                  item.complete
+                                    ? 'h-3.5 w-3.5 text-success'
+                                    : 'h-3.5 w-3.5 text-muted-foreground'
+                                }
+                              />
+                              <span>{t(`prediction.dataChecklist.${item.key}`)}</span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleCollapseUc}
-                      className="shrink-0 border-primary/35 text-primary"
+                      asChild
+                      className="shrink-0 border-warning/35 text-warning"
                     >
-                      {t('prediction.ucCollapseToOriginal')}
+                      <Link href="/profile">{t('prediction.completeProfile')}</Link>
                     </Button>
                   </div>
-                )}
-                <PredictionResultList
-                  results={results}
-                  expandedId={expandedId}
-                  onToggleExpand={handleToggleExpand}
-                  onResultReported={handleResultReported}
-                  onRefresh={handleRefreshSchool}
-                  refreshingSchoolId={refreshingSchoolId}
-                  isInternational={isInternational}
-                  dataCompleteness={responseMetadata.dataCompleteness}
+                </div>
+              )}
+
+              {(activeSnapshotPredictions.length > 0 || selectedSchools.length > 0) && (
+                <PortfolioSnapshot
+                  predictions={activeSnapshotPredictions}
+                  selectedCount={selectedSchools.length}
                 />
-                <AIErrorBoundary feature="recommendation">
-                  <RecommendedSchoolsBlock />
-                </AIErrorBoundary>
-                <AiContextActions results={results} selectedSchools={selectedSchools} />
-              </>
-            ) : (
-              !predictMutation.isPending &&
-              selectedSchools.length === 0 && (
-                <EmptyState
-                  type="first-time"
-                  title={t('prediction.startPrediction')}
-                  description={t('prediction.emptyHint')}
-                />
-              )
-            )}
-          </>
+              )}
+
+              {ucIdsData?.schoolIds?.length && (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUcPredict}
+                    disabled={predictMutation.isPending}
+                  >
+                    {predictMutation.isPending
+                      ? t('prediction.loading.analyzing')
+                      : t('prediction.ucOneClick')}
+                  </Button>
+                </div>
+              )}
+
+              {results.length > 0 ? (
+                <>
+                  {ucExpandedFrom && (
+                    <div className="mb-4 flex items-start gap-3 rounded-[var(--theme-radius-card)] border border-primary/20 bg-[color:var(--theme-control-selected-bg)] p-3">
+                      <Info className="h-4 w-4 mt-1 text-primary shrink-0" />
+                      <div className="flex-1 text-sm">
+                        <p className="text-foreground">{t('prediction.ucExpandedDesc')}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCollapseUc}
+                        className="shrink-0 border-primary/35 text-primary"
+                      >
+                        {t('prediction.ucCollapseToOriginal')}
+                      </Button>
+                    </div>
+                  )}
+                  <PredictionResultList
+                    results={results}
+                    expandedId={expandedId}
+                    onToggleExpand={handleToggleExpand}
+                    onResultReported={handleResultReported}
+                    onRefresh={handleRefreshSchool}
+                    refreshingSchoolId={refreshingSchoolId}
+                    isInternational={isInternational}
+                    dataCompleteness={responseMetadata.dataCompleteness}
+                  />
+                  <AIErrorBoundary feature="recommendation">
+                    <RecommendedSchoolsBlock />
+                  </AIErrorBoundary>
+                  <AiContextActions results={results} selectedSchools={selectedSchools} />
+                </>
+              ) : (
+                !predictMutation.isPending &&
+                selectedSchools.length === 0 && (
+                  <EmptyState
+                    type="first-time"
+                    title={t('prediction.startPrediction')}
+                    description={t('prediction.emptyHint')}
+                  />
+                )
+              )}
+            </div>
+          </div>
         )}
       </PageContainer>
     </AIErrorBoundary>

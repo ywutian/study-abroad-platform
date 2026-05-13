@@ -20,6 +20,7 @@ export function PredictionHeader({ dataCompleteness }: PredictionHeaderProps) {
       description={t('prediction.selectSchoolsDesc')}
       icon={Target}
       variant="ai"
+      className="mb-4 pb-4"
     >
       <div className="mt-3 flex items-center gap-2">
         <Badge variant="secondary" className="text-xs">
