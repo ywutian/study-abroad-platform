@@ -85,6 +85,66 @@ export interface PredictionDashboardData {
   >;
 }
 
+export interface PredictionHistorySnapshot {
+  id: string;
+  probability: number | null;
+  probabilityLow?: number;
+  probabilityHigh?: number;
+  tier?: string;
+  confidence?: string;
+  confidenceReason?: string | null;
+  roundContext?: string | null;
+  sourceSummary?: PredictionSourceSummary[];
+  uncertaintyReasons?: string[];
+  source?: string;
+  modelVersion?: string;
+  servedPolicyVersionId?: string;
+  createdAt: string;
+}
+
+export interface PredictionHistoryItem {
+  id: string;
+  schoolId: string;
+  school: {
+    id: string;
+    name: string;
+    nameZh?: string;
+    usNewsRank?: number;
+    acceptanceRate?: number;
+  } | null;
+  probability: number | null;
+  probabilityLow?: number;
+  probabilityHigh?: number;
+  previousProbability?: number | null;
+  probabilityDelta?: number | null;
+  trend: 'new' | 'up' | 'down' | 'stable';
+  tier?: string;
+  previousTier?: string;
+  confidence?: string;
+  confidenceReason?: string | null;
+  roundContext?: string | null;
+  source?: string;
+  sourceSummary?: PredictionSourceSummary[];
+  uncertaintyReasons?: string[];
+  modelVersion?: string;
+  servedPolicyVersionId?: string;
+  snapshotCount: number;
+  stale: boolean;
+  latestOutcomeLabel?: PredictionOutcomeLabel;
+  calibrationEligible?: boolean;
+  recentSnapshots: PredictionHistorySnapshot[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PredictionHistoryData {
+  items: PredictionHistoryItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export type AdmissionResultReport =
   | 'ADMITTED'
   | 'REJECTED'
@@ -155,7 +215,7 @@ export function useReportResult() {
 
 /** 获取预测历史（分页） */
 export function usePredictionHistory(page = 1, pageSize = 20, enabled = true) {
-  return useQuery({
+  return useQuery<PredictionHistoryData>({
     queryKey: [...predictionKeys.history(), page, pageSize],
     queryFn: () =>
       apiClient.get(predictionRoutes.history(), {

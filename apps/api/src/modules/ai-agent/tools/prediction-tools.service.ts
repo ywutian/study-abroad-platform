@@ -168,12 +168,11 @@ export class PredictionToolsService implements IToolHandlerProvider {
         where: { id: school.id },
         select: SCHOOL_PREDICTION_CONTEXT_SELECT,
       }),
-      this.prisma.predictionResult.findUnique({
+      this.prisma.predictionResult.findFirst({
         where: {
-          profileId_schoolId: {
-            profileId,
-            schoolId: school.id,
-          },
+          profileId,
+          schoolId: school.id,
+          authority: 'AUTHORITATIVE',
         },
         include: {
           outcomeLabelRecords: {
@@ -182,7 +181,11 @@ export class PredictionToolsService implements IToolHandlerProvider {
         },
       }),
       this.prisma.predictionSnapshot.findMany({
-        where: { profileId, schoolId: school.id },
+        where: {
+          profileId,
+          schoolId: school.id,
+          authority: 'AUTHORITATIVE',
+        },
         orderBy: { createdAt: 'desc' },
         take: 20,
       }),
@@ -209,7 +212,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
     }
 
     const predictions = await this.prisma.predictionResult.findMany({
-      where: { profileId },
+      where: { profileId, authority: 'AUTHORITATIVE' },
       take: 100,
       orderBy: { updatedAt: 'desc' },
       include: {
@@ -295,6 +298,7 @@ export class PredictionToolsService implements IToolHandlerProvider {
       where: {
         profileId,
         schoolId: { in: items.map((i) => i.schoolId) },
+        authority: 'AUTHORITATIVE',
       },
       include: {
         outcomeLabelRecords: {

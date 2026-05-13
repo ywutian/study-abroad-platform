@@ -10,6 +10,7 @@ describe('PredictionToolsService', () => {
   let prisma: {
     predictionResult: {
       findUnique: jest.Mock;
+      findFirst: jest.Mock;
       findMany: jest.Mock;
     };
     predictionSnapshot: {
@@ -36,6 +37,7 @@ describe('PredictionToolsService', () => {
           useValue: {
             predictionResult: {
               findUnique: jest.fn(),
+              findFirst: jest.fn(),
               findMany: jest.fn(),
             },
             predictionSnapshot: {
@@ -235,7 +237,7 @@ describe('PredictionToolsService', () => {
       needBlindInternational: false,
       rankings: [],
     });
-    prisma.predictionResult.findUnique.mockResolvedValue({
+    prisma.predictionResult.findFirst.mockResolvedValue({
       probability: 0.44,
       tier: 'match',
       confidence: 'high',
@@ -271,6 +273,16 @@ describe('PredictionToolsService', () => {
       'user-1',
       { schoolId: 'school-1' },
       'en',
+    );
+
+    expect(prisma.predictionResult.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          authority: 'AUTHORITATIVE',
+          profileId: 'profile-1',
+          schoolId: 'school-1',
+        }),
+      }),
     );
 
     expect(result).toEqual({

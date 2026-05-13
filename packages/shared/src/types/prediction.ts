@@ -113,6 +113,7 @@ export interface EngineScores {
 export interface PredictionResult {
   /** PredictionResult row ID. Present for persisted predictions; omitted for dry-run previews. */
   id?: string;
+  authority?: 'AUTHORITATIVE' | 'PREVIEW';
   schoolId: string;
   schoolName: string;
   probability: number | null;

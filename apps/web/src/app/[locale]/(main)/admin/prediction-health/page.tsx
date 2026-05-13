@@ -120,6 +120,16 @@ type TrainingReadiness = {
   generatedAt: string;
 };
 
+const EMPTY_OUTCOME_LOOP: TrainingReadiness['outcomeLoop'] = {
+  verifiedCount: 0,
+  selfReportedCount: 0,
+  calibrationPromotionAllowed: false,
+  externalAccuracyClaimAllowed: false,
+  statusCounts: {},
+  resultCounts: {},
+  recent: [],
+};
+
 function formatNumber(n: number | undefined | null): string {
   if (n == null) return '—';
   return n.toLocaleString();
@@ -155,6 +165,7 @@ export default function AdminPredictionHealthPage() {
   const authorityResultBuckets = authorityQ.data?.result ?? EMPTY_AUTHORITY_BUCKETS;
   const authoritySnapshotBuckets = authorityQ.data?.snapshot ?? EMPTY_AUTHORITY_BUCKETS;
   const invariantChecks = authorityQ.data?.invariantChecks ?? EMPTY_INVARIANT_CHECKS;
+  const outcomeLoop = readinessQ.data?.outcomeLoop ?? EMPTY_OUTCOME_LOOP;
 
   const refetchAll = () => {
     authorityQ.refetch();
@@ -497,24 +508,24 @@ export default function AdminPredictionHealthPage() {
                 <div className="grid gap-2 md:grid-cols-4">
                   <CoverageCell
                     label={t('training.selfReportedLabels')}
-                    value={readinessQ.data.outcomeLoop.selfReportedCount}
+                    value={outcomeLoop.selfReportedCount}
                   />
                   <CoverageCell
                     label={t('training.verifiedLabels')}
-                    value={readinessQ.data.outcomeLoop.verifiedCount}
+                    value={outcomeLoop.verifiedCount}
                   />
                   <CoverageCell
                     label={t('training.calibrationAllowed')}
-                    value={readinessQ.data.outcomeLoop.calibrationPromotionAllowed ? 1 : 0}
+                    value={outcomeLoop.calibrationPromotionAllowed ? 1 : 0}
                   />
                   <CoverageCell
                     label={t('training.accuracyClaimAllowed')}
-                    value={readinessQ.data.outcomeLoop.externalAccuracyClaimAllowed ? 1 : 0}
+                    value={outcomeLoop.externalAccuracyClaimAllowed ? 1 : 0}
                   />
                 </div>
-                {readinessQ.data.outcomeLoop.recent.length > 0 ? (
+                {outcomeLoop.recent.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {readinessQ.data.outcomeLoop.recent.map((row) => (
+                    {outcomeLoop.recent.map((row) => (
                       <Badge key={row.id} variant="outline">
                         {row.result} / {row.status}
                       </Badge>

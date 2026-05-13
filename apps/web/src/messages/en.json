@@ -2045,12 +2045,83 @@
     "comingSoonDesc": "For now, click the button below to see a demo prediction",
     "tabPredict": "Predict",
     "tabHistory": "History",
+    "tabs": {
+      "workspace": "Workspace",
+      "history": "History",
+      "evidence": "Evidence"
+    },
+    "workbench": {
+      "profile": "Profile",
+      "unknown": "Unknown",
+      "nextGap": "Next: {item}",
+      "profileReady": "Ready for estimates",
+      "selected": "Selected",
+      "selectedDetail": "Target schools in this run",
+      "coverage": "Formal coverage",
+      "coverageDetail": "{predicted} full predictions",
+      "stale": "Stale",
+      "staleDetail": "Refresh before deciding",
+      "freshDetail": "Recent enough",
+      "completeProfile": "Complete Profile",
+      "runPredictions": "Run Predictions",
+      "refreshPredictions": "Refresh Predictions",
+      "running": "Analyzing...",
+      "portfolioTitle": "Portfolio Snapshot",
+      "portfolioSubtitle": "Balance reach, match, safety, and freshness before making decisions.",
+      "balanced": "Balanced",
+      "needsBalance": "Needs balance",
+      "notReady": "Not ready",
+      "formalCoverage": "Formal predictions",
+      "formalCoverageDetail": "Full pipeline results",
+      "averageChance": "Average chance",
+      "averageChanceDetail": "Personal estimates only",
+      "portfolioMix": "Reach / Match / Safety",
+      "portfolioMixDetail": "Current portfolio mix",
+      "stalePredictions": "Stale predictions",
+      "stalePredictionsDetail": "Older than 30 days",
+      "allFresh": "All fresh"
+    },
+    "evidence": {
+      "howTitle": "How the estimate is built",
+      "howDesc": "The workbench combines school data, profile signals, and historical context into a personal planning estimate.",
+      "academic": "Academic profile",
+      "historical": "Historical outcomes",
+      "counselor": "Counselor rules",
+      "guardrailsTitle": "Reading guardrails",
+      "guardrailsDesc": "Use the result for school-list planning, not as an official admissions decision.",
+      "personalEstimate": "The main percentage is your personal estimate, not the school's public admit rate.",
+      "dataSupport": "Data support describes evidence quality, not whether the chance is high.",
+      "subjectiveFactors": "Essays, interviews, recommendations, and institutional priorities can still move outcomes."
+    },
     "emptyHint": "Select schools and run prediction to see your chances",
     "runPrediction": "Run Prediction",
     "history": {
       "title": "Prediction History",
       "empty": "No prediction history yet",
       "emptyDesc": "Run your first prediction to start tracking changes over time"
+    },
+    "historyStats": {
+      "formal": "Formal predictions",
+      "improved": "Improved",
+      "declined": "Declined",
+      "stale": "Stale",
+      "labeled": "Outcome labels"
+    },
+    "historyColumns": {
+      "current": "Current",
+      "previous": "Previous",
+      "delta": "Change"
+    },
+    "historyStatus": {
+      "stale": "Stale",
+      "unlabeled": "No outcome yet",
+      "new": "New",
+      "points": "pts"
+    },
+    "historyDrawer": {
+      "description": "Review trend, uncertainty, and final outcome feedback for this school.",
+      "timeline": "Recent snapshots",
+      "refreshSchool": "Refresh this school"
     },
     "tier": {
       "reach": "Reach",
@@ -2078,6 +2149,8 @@
       "improve": "Improve chances",
       "understanding": "Understanding your chances"
     },
+    "decisionSignals": "Decision signals",
+    "nextAction": "Next action",
     "completeProfile": "Complete Profile",
     "recommendedSchoolsTitle": "You may also like",
     "recommendedSchoolsLoading": "Loading recommendations...",
@@ -2276,8 +2349,10 @@
     },
     "sort": {
       "probability": "By Probability",
+      "delta": "By Change",
       "tier": "By Tier",
-      "confidence": "By Data Support"
+      "confidence": "By Data Support",
+      "updatedAt": "By Last Updated"
     },
     "filter": {
       "all": "All"

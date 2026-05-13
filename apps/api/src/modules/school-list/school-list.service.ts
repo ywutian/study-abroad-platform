@@ -162,6 +162,7 @@ export class SchoolListService {
         tier?: string;
         confidence?: string;
         source?: string;
+        authority?: 'AUTHORITATIVE' | 'PREVIEW';
         updatedAt: Date;
       }
     >();
@@ -184,6 +185,7 @@ export class SchoolListService {
             tier: true,
             confidence: true,
             source: true,
+            authority: true,
             updatedAt: true,
           },
         });
@@ -196,6 +198,7 @@ export class SchoolListService {
               tier: p.tier || undefined,
               confidence: p.confidence || undefined,
               source: p.source || undefined,
+              authority: p.authority || undefined,
               updatedAt: p.updatedAt,
             },
           ]),

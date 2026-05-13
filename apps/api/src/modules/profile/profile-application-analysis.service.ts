@@ -719,6 +719,7 @@ export class ProfileApplicationAnalysisService {
       where: {
         profileId,
         schoolId: { in: schoolIds },
+        authority: 'AUTHORITATIVE',
       },
       select: {
         schoolId: true,

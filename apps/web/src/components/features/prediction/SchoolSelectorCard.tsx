@@ -19,6 +19,8 @@ interface SchoolSelectorCardProps {
   onRemove: (schoolId: string) => void;
   onPredict: () => void;
   isPredicting: boolean;
+  className?: string;
+  compact?: boolean;
 }
 
 export function SchoolSelectorCard({
@@ -27,6 +29,8 @@ export function SchoolSelectorCard({
   onRemove,
   onPredict,
   isPredicting,
+  className,
+  compact = false,
 }: SchoolSelectorCardProps) {
   const t = useTranslations();
   const locale = useLocale();
@@ -45,15 +49,15 @@ export function SchoolSelectorCard({
   );
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
+    <Card className={cn('mb-6', compact && 'gap-4 py-4', className)}>
+      <CardHeader className={cn(compact && 'px-4')}>
         <CardTitle className="flex items-center gap-2">
           <School className="h-5 w-5" />
           {t('prediction.selectSchools')}
         </CardTitle>
-        <CardDescription>{t('prediction.searchSchoolsDesc')}</CardDescription>
+        {!compact && <CardDescription>{t('prediction.searchSchoolsDesc')}</CardDescription>}
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className={cn('space-y-4', compact && 'px-4')}>
         {/* Search input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -125,7 +129,7 @@ export function SchoolSelectorCard({
             <p className="text-sm text-muted-foreground">
               {t('prediction.selectedCount', { count: selectedSchools.length })}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className={cn('flex flex-wrap gap-2', compact && 'max-h-56 overflow-auto pr-1')}>
               {selectedSchools.map((school) => (
                 <Badge
                   key={school.id}

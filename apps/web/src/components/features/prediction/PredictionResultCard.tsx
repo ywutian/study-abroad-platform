@@ -228,6 +228,8 @@ export const PredictionResultCard = memo(
     const accuracyBadge = result.actualResult
       ? getAccuracyBadge(result.actualResult, result.tier)
       : null;
+    const topFactors = result.factors.slice(0, 3);
+    const nextSuggestion = result.suggestions[0];
 
     // Focus management: focus expanded region when opened
     useEffect(() => {
@@ -421,6 +423,41 @@ export const PredictionResultCard = memo(
                   <BookOpen className="h-3 w-3" />
                   {t('source.historicalData')}
                 </Badge>
+              )}
+            </div>
+          )}
+
+          {(topFactors.length > 0 || nextSuggestion) && (
+            <div className="mt-3 grid gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] p-3 md:grid-cols-[1fr_auto]">
+              <div className="min-w-0">
+                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                  {t('decisionSignals')}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {topFactors.map((factor) => (
+                    <Badge
+                      key={`${result.schoolId}-signal-${factor.name}`}
+                      variant={
+                        factor.impact === 'positive'
+                          ? 'success'
+                          : factor.impact === 'negative'
+                            ? 'warning'
+                            : 'outline'
+                      }
+                      className="max-w-full text-xs"
+                    >
+                      <span className="truncate">{factor.name}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              {nextSuggestion && (
+                <div className="min-w-0 border-t pt-2 md:max-w-sm md:border-l md:border-t-0 md:pl-3 md:pt-0">
+                  <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                    {t('nextAction')}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-sm">{nextSuggestion}</p>
+                </div>
               )}
             </div>
           )}
