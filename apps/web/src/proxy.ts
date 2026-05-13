@@ -47,6 +47,12 @@ function getLoginUrl(request: NextRequest): string {
   return `/${locale}/login`;
 }
 
+function hasSessionCookie(request: NextRequest): boolean {
+  return Boolean(
+    request.cookies.get('refreshToken')?.value || request.cookies.get('access_token')?.value
+  );
+}
+
 function buildCspHeader(_nonce: string): string {
   const isDev = process.env.NODE_ENV !== 'production';
 
@@ -99,9 +105,7 @@ export default function proxy(request: NextRequest) {
 
   // Auth check for protected routes (cookie-based, no JWT verification in edge)
   if (isProtectedRoute(pathname) || isAdminRoute(pathname)) {
-    const token = request.cookies.get('access_token')?.value;
-
-    if (!token) {
+    if (!hasSessionCookie(request)) {
       const loginUrl = new URL(getLoginUrl(request), request.url);
       const pathWithoutLocale = pathname.replace(/^\/(zh|en)/, '') || '/';
       if (/^\/[\w\-/]*$/.test(pathWithoutLocale)) {
@@ -114,8 +118,7 @@ export default function proxy(request: NextRequest) {
   // Authenticated users hitting locale root (landing) → redirect to dashboard
   const isLocaleRoot = /^\/(zh|en)\/?$/.test(pathname);
   if (isLocaleRoot) {
-    const token = request.cookies.get('access_token')?.value;
-    if (token) {
+    if (hasSessionCookie(request)) {
       const locale = pathname.startsWith('/zh') ? 'zh' : 'en';
       return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
     }

@@ -257,6 +257,7 @@ export class AuthController {
     } catch (error) {
       // 刷新失败时清除可能无效的 cookie
       res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, CLEAR_COOKIE_OPTIONS);
+      res.clearCookie(ACCESS_TOKEN_COOKIE_NAME, CLEAR_ACCESS_TOKEN_OPTIONS);
       this.logger.warn(
         `Token refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );

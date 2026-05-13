@@ -170,7 +170,7 @@ describe('AuthController', () => {
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('should clear cookie when refresh fails', async () => {
+    it('should clear auth cookies when refresh fails', async () => {
       const mockReq = {
         get: jest.fn().mockReturnValue('test-agent'),
         cookies: { refreshToken: 'invalid_token' },
@@ -185,6 +185,13 @@ describe('AuthController', () => {
 
       expect(mockResponse.clearCookie).toHaveBeenCalledWith(
         'refreshToken',
+        expect.objectContaining({
+          httpOnly: true,
+          path: '/',
+        }),
+      );
+      expect(mockResponse.clearCookie).toHaveBeenCalledWith(
+        'access_token',
         expect.objectContaining({
           httpOnly: true,
           path: '/',
