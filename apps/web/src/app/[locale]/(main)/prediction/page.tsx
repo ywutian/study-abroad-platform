@@ -6,7 +6,14 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { AlertTriangle, CheckCircle2, History, Info, Lightbulb, Target } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  History,
+  Info,
+  LayoutDashboard,
+  Lightbulb,
+} from 'lucide-react';
 import { Link } from '@/lib/i18n/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PredictionHistoryTab } from './_components/PredictionHistoryTab';
@@ -391,7 +398,7 @@ export default function PredictionPage() {
         >
           <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
             <TabsTrigger value="workspace" className="gap-1.5">
-              <Target className="h-3.5 w-3.5" />
+              <LayoutDashboard className="h-3.5 w-3.5" />
               {t('prediction.tabs.workspace')}
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-1.5">

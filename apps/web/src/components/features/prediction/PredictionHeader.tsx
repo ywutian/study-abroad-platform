@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Target, BarChart3, Info } from 'lucide-react';
+import { BarChart3, Gauge, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,7 +18,7 @@ export function PredictionHeader({ dataCompleteness }: PredictionHeaderProps) {
     <PageHeader
       title={t('prediction.title')}
       description={t('prediction.selectSchoolsDesc')}
-      icon={Target}
+      icon={Gauge}
       variant="tool"
       tone="target"
       className="mb-4 pb-4"

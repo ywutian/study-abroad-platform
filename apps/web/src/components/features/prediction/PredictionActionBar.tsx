@@ -4,7 +4,16 @@ import { Link } from '@/lib/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { BarChart3, CheckCircle2, Clock3, Loader2, Target, UserRound } from 'lucide-react';
+import {
+  BarChart3,
+  Calculator,
+  CheckCircle2,
+  Clock3,
+  ListChecks,
+  Loader2,
+  RefreshCw,
+  UserRound,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -36,6 +45,7 @@ export function PredictionActionBar({
       : 0;
   const ctaLabel =
     predictedCount > 0 || staleCount > 0 ? t('refreshPredictions') : t('runPredictions');
+  const CtaIcon = predictedCount > 0 || staleCount > 0 ? RefreshCw : Calculator;
 
   return (
     <section className="mb-4 rounded-[var(--theme-radius-card)] border border-primary/15 bg-[color:var(--theme-card-bg)] px-4 py-3 shadow-[var(--theme-card-shadow)]">
@@ -53,7 +63,7 @@ export function PredictionActionBar({
             }
           />
           <ActionMetric
-            icon={Target}
+            icon={ListChecks}
             label={t('selected')}
             value={String(selectedCount)}
             tone={selectedCount > 0 ? 'ready' : 'blocked'}
@@ -88,7 +98,7 @@ export function PredictionActionBar({
             {isRunning ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Target className="h-4 w-4" />
+              <CtaIcon className="h-4 w-4" />
             )}
             {isRunning ? t('running') : ctaLabel}
           </Button>
