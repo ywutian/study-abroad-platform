@@ -564,6 +564,41 @@ describe('PredictionStatisticalEngine', () => {
       expect(nbFactor!.impact).toBe('positive');
     });
 
+    it('applies full need-aware penalty only for verified false status', () => {
+      const intlAidProfile: ProfileInput = {
+        ...baseProfile,
+        isInternational: true,
+        needsFinancialAid: true,
+      };
+
+      const verifiedNeedAware = engine.predictWithStats(
+        intlAidProfile,
+        { ...baseSchool, needBlindInternational: false },
+        undefined,
+        'en',
+      );
+      const unreviewed = engine.predictWithStats(
+        intlAidProfile,
+        { ...baseSchool, needBlindInternational: null },
+        undefined,
+        'en',
+      );
+
+      expect(verifiedNeedAware.probability).toBeLessThan(
+        unreviewed.probability,
+      );
+      expect(
+        verifiedNeedAware.factors.find(
+          (f) => f.name === 'Financial Aid Need (Need-aware)',
+        ),
+      ).toMatchObject({ weight: -0.25 });
+      expect(
+        unreviewed.factors.find(
+          (f) => f.name === 'Financial Aid Need (Unverified policy)',
+        ),
+      ).toMatchObject({ weight: -0.125 });
+    });
+
     it('should not add international factor for domestic students', () => {
       const result = engine.predictWithStats(
         baseProfile,

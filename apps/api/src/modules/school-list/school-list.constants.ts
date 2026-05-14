@@ -77,7 +77,7 @@ export function mapSchoolForList(
     }),
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
     acceptsCommonApp: school.acceptsCommonApp ?? undefined,
-    needBlindInternational: school.needBlindInternational || false,
+    needBlindInternational: school.needBlindInternational ?? null,
     percentNeedMet: school.percentNeedMet
       ? clampPercentRate(school.percentNeedMet)
       : undefined,

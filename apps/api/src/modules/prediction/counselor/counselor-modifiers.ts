@@ -1035,9 +1035,11 @@ export function intlMultiplier(
   //           Notre Dame, W&L — see seed-intl-schools.ts).
   //   false → verified need-aware (Stanford, Columbia, Cornell, Penn etc.).
   //   null  → unreviewed.
-  // We branch only on `=== true`; verified need-aware (false) and unreviewed
-  // (null) both fall into the midpoint branch below. This is conservative:
-  // verified need-aware schools that publish CDS-based intlAcceptanceRate hit
+  // We keep all three states distinct in the fallback path:
+  //   true        -> verified need-blind multiplier
+  //   false       -> verified need-aware multiplier
+  //   null/absent -> unreviewed midpoint between the two
+  // Verified need-aware schools that publish CDS-based intlAcceptanceRate hit
   // the data-driven path earlier and bypass this fallback entirely.
   if (overallRate != null && overallRate >= 0.2) {
     if (school.needBlindInternational === true) {
@@ -1046,6 +1048,15 @@ export function intlMultiplier(
         label: 'International (need-blind, moderately selective)',
         evidence:
           'International pool sees a moderate ~0.85× penalty at this need-blind moderately-selective school',
+        impact: 'negative',
+      };
+    }
+    if (school.needBlindInternational === false) {
+      return {
+        multiplier: 0.7,
+        label: 'International (need-aware, moderately selective)',
+        evidence:
+          'International pool sees a stronger ~0.70x penalty at this verified need-aware moderately-selective school.',
         impact: 'negative',
       };
     }
@@ -1072,6 +1083,15 @@ export function intlMultiplier(
         impact: 'negative',
       };
     }
+    if (school.needBlindInternational === false) {
+      return {
+        multiplier: 0.75,
+        label: 'International (need-aware, highly selective)',
+        evidence:
+          'International pool sees a ~0.75x penalty at this verified need-aware highly-selective school.',
+        impact: 'negative',
+      };
+    }
     return {
       multiplier: 0.78,
       label: 'International (highly selective; need-blind status unverified)',
@@ -1093,6 +1113,15 @@ export function intlMultiplier(
       label: 'International (need-blind, elite school)',
       evidence:
         'International pool sees ~0.5× the domestic admit rate at need-blind elite schools (calibrated from MIT 1.96%/4.55%=0.43, Yale 1.94%/3.65%=0.53, Princeton 2.11%/4.62%=0.46; covers HYPSM, MIT, Princeton, Yale, Amherst, Dartmouth)',
+      impact: 'negative',
+    };
+  }
+  if (school.needBlindInternational === false) {
+    return {
+      multiplier: 0.45,
+      label: 'International (need-aware, elite school)',
+      evidence:
+        'International pool sees ~0.45x the domestic admit rate at verified need-aware elite schools (calibrated from Cornell 0.41x, Northwestern 0.68x, Columbia 0.64x).',
       impact: 'negative',
     };
   }
@@ -1406,20 +1435,24 @@ function financialAidContextComponent(
       'This school is need-blind for international applicants; no aid penalty applied.',
     );
   }
-  // 2026-05: prior code treated `needBlindInternational === false` as
-  // verified need-aware and applied the penalty unconditionally. Because the
-  // column defaults to `false` for un-reviewed schools, this systematically
-  // penalized aid-seeking intl applicants at schools we simply hadn't checked.
-  // We now apply only half the penalty (closer to neutral) when status is
-  // unverified; the full penalty kicks in once a school is explicitly marked
-  // need-aware (which the current schema cannot represent — see TODO in
-  // intlMultiplier above).
+  // 2026-05: the column is tri-state. Verified need-aware schools receive the
+  // full context penalty; unreviewed schools receive a half-strength hedge.
   const overallRate = normalizeRate(school.acceptanceRate);
-  const multiplier = overallRate != null && overallRate < 0.4 ? 0.975 : 0.99;
+  const isVerifiedNeedAware = school.needBlindInternational === false;
+  const multiplier =
+    overallRate != null && overallRate < 0.4
+      ? isVerifiedNeedAware
+        ? 0.95
+        : 0.975
+      : isVerifiedNeedAware
+        ? 0.98
+        : 0.99;
   return makeComponent(
     multiplier,
     'Financial aid context',
-    'International applicant needs financial aid at a need-aware school; applying a small conservative context adjustment.',
+    isVerifiedNeedAware
+      ? 'International applicant needs financial aid at a verified need-aware school; applying the full context adjustment.'
+      : 'International applicant needs financial aid, but need-blind status is unreviewed; applying a half-strength context hedge.',
   );
 }
 

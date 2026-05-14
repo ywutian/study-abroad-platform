@@ -131,17 +131,15 @@ export class PredictionStatisticalEngine {
     }
 
     // === Need-aware financial aid penalty (G4) ===
-    // 2026-05: needBlindInternational became Boolean? — explicit `!== true`
-    // so unreviewed (null) schools are penalized like verified need-aware.
-    // The counselor engine differentiates null with a midpoint multiplier;
-    // this statistical engine is legacy (counselor is at 100% rollout) and
-    // keeps the conservative behavior.
-    if (
-      profile.needsFinancialAid &&
-      profile.isInternational &&
-      school.needBlindInternational !== true
-    ) {
-      probability = probability * 0.75;
+    // 2026-05: needBlindInternational is tri-state. Verified need-aware
+    // (`false`) keeps the full penalty; unreviewed (`null`/missing) receives a
+    // partial hedge so missing data does not collapse into verified need-aware.
+    if (profile.needsFinancialAid && profile.isInternational) {
+      if (school.needBlindInternational === false) {
+        probability = probability * 0.75;
+      } else if (school.needBlindInternational == null) {
+        probability = probability * 0.875;
+      }
     }
 
     // 生成因素分析
@@ -567,21 +565,30 @@ export class PredictionStatisticalEngine {
       });
     }
 
-    // Need-aware financial aid penalty (G4) — see comment above on `!== true`
+    // Need-aware financial aid penalty (G4)
     if (
       profile.needsFinancialAid &&
       profile.isInternational &&
       school.needBlindInternational !== true
     ) {
+      const isVerifiedNeedAware = school.needBlindInternational === false;
       factors.push({
         name: isZh
-          ? '助学金需求（Need-aware）'
-          : 'Financial Aid Need (Need-aware)',
+          ? isVerifiedNeedAware
+            ? '助学金需求（Need-aware）'
+            : '助学金需求（政策未核验）'
+          : isVerifiedNeedAware
+            ? 'Financial Aid Need (Need-aware)'
+            : 'Financial Aid Need (Unverified policy)',
         impact: 'negative',
-        weight: -0.25,
+        weight: isVerifiedNeedAware ? -0.25 : -0.125,
         detail: isZh
-          ? '该校对国际生采用 need-aware 录取政策，申请助学金可能降低录取概率'
-          : 'This school uses need-aware admissions for international students; requesting financial aid may reduce admission probability',
+          ? isVerifiedNeedAware
+            ? '该校对国际生采用 need-aware 录取政策，申请助学金可能降低录取概率'
+            : '该校国际生 need-blind 状态尚未核验；申请助学金时使用较轻的风险折中处理'
+          : isVerifiedNeedAware
+            ? 'This school uses need-aware admissions for international students; requesting financial aid may reduce admission probability'
+            : 'This school has unreviewed need-blind-for-international status; applying a lighter risk hedge for aid-seeking applicants',
       });
     }
 

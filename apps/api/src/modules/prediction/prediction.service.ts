@@ -379,7 +379,7 @@ export class PredictionService {
       intlStudentPct: school.intlStudentPct
         ? Number(school.intlStudentPct)
         : undefined,
-      needBlindInternational: school.needBlindInternational || undefined,
+      needBlindInternational: school.needBlindInternational ?? null,
       graduationRate: clampPercentRate(school.graduationRate),
       satAvg: school.satAvg ?? undefined,
       sat25: school.sat25 ?? undefined,

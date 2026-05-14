@@ -241,6 +241,9 @@ export class AdminSchoolDataCoverageService {
         schoolNameZh: school.nameZh,
         country: school.country,
         state: school.state,
+        // Exposed so downstream consumers (data-health dashboard) can
+        // distinguish "private — OOS not applicable" from a real data gap.
+        isPrivate: school.isPrivate,
         usNewsRank: school.usNewsRank,
         scorecardId: school.scorecardId,
         ipedsId: school.ipedsId,
@@ -384,7 +387,7 @@ export class AdminSchoolDataCoverageService {
         // schools (true) lift the cap on the heuristic — see deriveIntlRate.
         updates.intlAcceptanceRate = this.deriveIntlRate(
           overall,
-          school.needBlindInternational ?? false,
+          school.needBlindInternational,
         );
         changedFields.push('intlAcceptanceRate');
       }
@@ -872,17 +875,24 @@ export class AdminSchoolDataCoverageService {
     return n > 1 ? n : n * 100;
   }
 
-  private deriveIntlRate(overallPercent: number, needBlind: boolean): number {
+  private deriveIntlRate(
+    overallPercent: number,
+    needBlind: boolean | null,
+  ): number {
     const multiplier =
       overallPercent >= 40
         ? 0.95
         : overallPercent >= 20
           ? needBlind
             ? 0.85
-            : 0.7
+            : needBlind === false
+              ? 0.7
+              : 0.78
           : needBlind
             ? 0.7
-            : 0.4;
+            : needBlind === false
+              ? 0.4
+              : 0.55;
     return Math.max(
       0.1,
       Math.min(98, Math.round(overallPercent * multiplier * 100) / 100),

@@ -212,38 +212,42 @@ export class BulkUpdateSchoolRateRowDto {
   percentNeedMet?: number;
 
   @ApiProperty({
-    description: 'Average financial aid package in USD.',
+    description:
+      'Average financial aid package in USD. Min 5000 to reject year-shaped corruption ' +
+      '(e.g. 2024 / 2026) that historically leaked into this column.',
     required: false,
-    minimum: 0,
+    minimum: 5000,
     maximum: 200000,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(5000) // 2026-05: reject year-shaped values; see scripts/cleanup-amount-corruption.ts
   @Max(200000)
   averageAidPackage?: number;
 
   @ApiProperty({
-    description: 'Average annual net price in USD.',
+    description:
+      'Average annual net price in USD. Min 3000 to reject year-shaped corruption.',
     required: false,
-    minimum: 0,
+    minimum: 3000,
     maximum: 200000,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(3000)
   @Max(200000)
   averageNetPrice?: number;
 
   @ApiProperty({
-    description: 'Annual room and board cost in USD.',
+    description:
+      'Annual room and board cost in USD. Min 3000 to reject year-shaped corruption.',
     required: false,
-    minimum: 0,
+    minimum: 3000,
     maximum: 100000,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(3000)
   @Max(100000)
   roomAndBoard?: number;
 

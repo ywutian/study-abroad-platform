@@ -16,6 +16,7 @@ describe('AdminSchoolDataHealthService', () => {
     schoolId: string;
     schoolName: string;
     usNewsRank: number | null;
+    isPrivate?: boolean;
     fields: Array<{
       field: string;
       filled?: boolean;
@@ -23,6 +24,7 @@ describe('AdminSchoolDataHealthService', () => {
       isHeuristic?: boolean;
       isTerminal?: boolean;
       staleness?: 'FRESH' | 'STALE' | null;
+      source?: string | null;
     }>;
   }) => ({
     schoolId: overrides.schoolId,
@@ -30,6 +32,7 @@ describe('AdminSchoolDataHealthService', () => {
     schoolNameZh: null,
     country: 'US',
     state: 'MA',
+    isPrivate: overrides.isPrivate ?? false,
     usNewsRank: overrides.usNewsRank,
     scorecardId: null,
     ipedsId: null,
@@ -47,7 +50,7 @@ describe('AdminSchoolDataHealthService', () => {
       value: null,
       filled: f.filled ?? false,
       explicitUnknown: false,
-      source: null,
+      source: f.source ?? null,
       tier: null,
       confidence: null,
       fetchedAt: null,
@@ -275,5 +278,99 @@ describe('AdminSchoolDataHealthService', () => {
       'ranked',
       'unranked',
     ]);
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // 2026-05: data-health closure-hardening regressions.
+  // ───────────────────────────────────────────────────────────────────────
+
+  it('does not flag oosAcceptanceRate as missing for private universities', async () => {
+    coverage.getCoverage.mockResolvedValue({
+      items: [
+        buildItem({
+          schoolId: 'harvard',
+          schoolName: 'Harvard',
+          usNewsRank: 3,
+          isPrivate: true,
+          fields: [
+            { field: 'oosAcceptanceRate', filled: false }, // missing
+          ],
+        }),
+        buildItem({
+          schoolId: 'ucb',
+          schoolName: 'UC Berkeley',
+          usNewsRank: 15,
+          isPrivate: false,
+          fields: [
+            { field: 'oosAcceptanceRate', filled: false }, // missing
+          ],
+        }),
+      ],
+    });
+
+    const result = await service.getHealthDashboard({ focus: 'rounds' });
+
+    // Harvard (private) should be skipped; UC Berkeley (public) should appear.
+    expect(result.rows.map((r) => r.schoolId)).toEqual(['ucb']);
+
+    const oosTotal = result.totalsByField.find(
+      (t) => t.field === 'oosAcceptanceRate',
+    );
+    expect(oosTotal?.terminal).toBe(1); // Harvard counted as terminal
+    expect(oosTotal?.missing).toBe(1); // UCB counted as missing
+  });
+
+  it('demotes "official" provenance for needBlindInternational when source is misattributed', async () => {
+    coverage.getCoverage.mockResolvedValue({
+      items: [
+        // Mit: trusted MANUAL_REVIEW source — should count as official
+        buildItem({
+          schoolId: 'mit',
+          schoolName: 'MIT',
+          usNewsRank: 2,
+          fields: [
+            {
+              field: 'needBlindInternational',
+              filled: true,
+              isOfficial: true,
+              source: 'MANUAL_REVIEW:need-blind-intl-reconciler-2026-05',
+            },
+          ],
+        }),
+        // Mystery school with COLLEGE_SCORECARD source — Scorecard does not
+        // publish need-blind status, so this is misattribution → demote.
+        buildItem({
+          schoolId: 'mystery',
+          schoolName: 'Mystery School',
+          usNewsRank: 50,
+          fields: [
+            {
+              field: 'needBlindInternational',
+              filled: true,
+              isOfficial: true,
+              source: 'COLLEGE_SCORECARD:2025-04',
+            },
+          ],
+        }),
+      ],
+    });
+
+    const result = await service.getHealthDashboard({ focus: 'intl' });
+
+    // MIT is healthy → drops out of the action list.
+    // Mystery School appears with a heuristic-bucketed gap.
+    expect(result.rows.map((r) => r.schoolId)).toEqual(['mystery']);
+    expect(result.rows[0].gapFields).toEqual([
+      expect.objectContaining({
+        field: 'needBlindInternational',
+        bucket: 'heuristic',
+      }),
+    ]);
+
+    const total = result.totalsByField.find(
+      (t) => t.field === 'needBlindInternational',
+    );
+    expect(total?.official).toBe(1); // MIT
+    expect(total?.heuristic).toBe(1); // mystery school demoted
   });
 });

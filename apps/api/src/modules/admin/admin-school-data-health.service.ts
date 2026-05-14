@@ -71,6 +71,49 @@ function importanceWeight(usNewsRank: number | null | undefined): number {
   return 1;
 }
 
+/**
+ * Fields where a non-authoritative provenance source is misattribution
+ * rather than a legitimate fill. For these fields we down-grade an
+ * "official"-looking but wrong-source value to a gap so operators know to
+ * re-fetch from the right place.
+ *
+ * Example: `College Scorecard` does NOT publish need-blind-for-intl status,
+ * so a needBlindInternational row whose provenance.source contains
+ * COLLEGE_SCORECARD has the wrong source and the value cannot be trusted.
+ *
+ * The set of *trusted* substrings for each field. A source qualifies if it
+ * contains any one of these. Anything else is a misattribution gap.
+ */
+const TRUSTED_SOURCES_BY_FIELD: Record<string, ReadonlyArray<string>> = {
+  needBlindInternational: ['CDS_', 'MANUAL_REVIEW', 'OFFICIAL_PAGE'],
+};
+
+/**
+ * Returns true if a public university would publish an `oosAcceptanceRate`
+ * and false otherwise. Private universities do not have an in-state vs OOS
+ * distinction in CDS Section C1, so a missing value there is not a data
+ * gap — it's "not applicable" and shouldn't drive the action list.
+ */
+function isOosNotApplicable(item: {
+  isPrivate?: boolean | null;
+  state?: string | null;
+}): boolean {
+  // SchoolForCoverage carries `isPrivate` as `boolean`. We treat
+  // explicit-true as "private → not applicable". Anything else (false,
+  // null, undefined) leaves OOS in scope.
+  return item.isPrivate === true;
+}
+
+function provenanceMisattributed(
+  fieldName: string,
+  fieldStatus: { source: string | null },
+): boolean {
+  const trusted = TRUSTED_SOURCES_BY_FIELD[fieldName];
+  if (!trusted) return false; // no trust whitelist → can't tell, assume ok
+  if (!fieldStatus.source) return false;
+  return !trusted.some((sig) => fieldStatus.source!.includes(sig));
+}
+
 export interface DataHealthRow {
   schoolId: string;
   schoolName: string;
@@ -149,6 +192,17 @@ export class AdminSchoolDataHealthService {
 
         const total = totalsIndex.get(fieldName);
 
+        // ── Special-case: oosAcceptanceRate at private schools is N/A ──
+        // Private universities don't have an in-state vs OOS distinction,
+        // so a missing value isn't a data gap. Skip the row entirely.
+        if (
+          fieldName === 'oosAcceptanceRate' &&
+          isOosNotApplicable(item as { isPrivate?: boolean })
+        ) {
+          if (total) total.terminal++;
+          continue;
+        }
+
         // Classify the field. Order matters: terminal beats missing,
         // because a school explicitly opting out is not actionable.
         if (fieldStatus.isTerminal) {
@@ -156,6 +210,20 @@ export class AdminSchoolDataHealthService {
           continue;
         }
         if (fieldStatus.isOfficial) {
+          // ── Special-case: misattributed provenance ──
+          // For fields with a known trusted-source whitelist, an "official"-
+          // marked entry whose source isn't on the whitelist is actually
+          // wrong (e.g. needBlindInternational sourced from College
+          // Scorecard). Demote it to a gap so operators re-fetch.
+          if (provenanceMisattributed(fieldName, fieldStatus)) {
+            if (total) total.heuristic++;
+            gapFields.push({
+              field: fieldName,
+              bucket: 'heuristic',
+              weight: 0.5,
+            });
+            continue;
+          }
           if (total) total.official++;
           continue;
         }

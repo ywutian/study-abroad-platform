@@ -78,11 +78,11 @@ Specifically:
 Concrete code changes shipping with this ADR:
 
 - [apps/api/prisma/seed-calibrations.ts](../../apps/api/prisma/seed-calibrations.ts) — calibrations array emptied; file header documents the rationale and the production cleanup SQL.
-- [apps/api/src/modules/prediction/counselor/counselor-modifiers.ts](../../apps/api/src/modules/prediction/counselor/counselor-modifiers.ts) — `intlMultiplier` branches now require `needBlindInternational === true` (rather than truthy) to apply the verified-need-blind multiplier; unverified status uses a midpoint between need-blind and need-aware. Same change in `financialAidContextComponent`. International applicants with no English score now get 0.92× instead of neutral.
+- [apps/api/src/modules/prediction/counselor/counselor-modifiers.ts](../../apps/api/src/modules/prediction/counselor/counselor-modifiers.ts) — `intlMultiplier` now preserves all three states: verified need-blind (`true`), verified need-aware (`false`), and unreviewed (`null`/missing midpoint). Same tri-state distinction applies in `financialAidContextComponent`. International applicants with no English score now get 0.92× instead of neutral.
 - [apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts](../../apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts) — new regression tests for both behaviors.
 
 Future work (tracked in [docs/PREDICTION_ACCURACY_STRATEGY.md](../PREDICTION_ACCURACY_STRATEGY.md)):
 
-- Migrate `School.needBlindInternational` from `Boolean @default(false)` to an enum `{ UNKNOWN, NEED_AWARE, NEED_BLIND }` so unreviewed and verified-need-aware schools can be distinguished at the schema level.
+- Consider migrating `School.needBlindInternational` from nullable Boolean to an enum `{ UNKNOWN, NEED_AWARE, NEED_BLIND }` if future policy states need more than the current three values.
 - Build the diagnostic dashboard (admin/calibrations/drift) for surfacing systematic bias without feeding it back to the model.
 - Backfill CDS Section C7 (international admit rate) for Top 200 schools.

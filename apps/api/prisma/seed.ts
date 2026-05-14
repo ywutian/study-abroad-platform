@@ -12,6 +12,10 @@ import {
   LEGACY_PREDICTION_POLICY_VERSION,
 } from '../src/modules/prediction/prediction-policy.constants';
 import { seedCompetitions } from './seed-competitions';
+import { seedDeadlines20262027 } from './seed-deadlines-2026-2027';
+import { seedEdEaRates } from './seed-ed-ea-rates';
+import { seedGlobalEvents20262027 } from './seed-global-events-2026-2027';
+import { seedGpaDistributions } from './seed-gpa-distributions';
 import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
@@ -2076,6 +2080,37 @@ export async function main() {
         ? `, ${intlRates.notFound.length} schools not yet in DB`
         : ''),
   );
+
+  // ========== ED / EA Acceptance Rates ==========
+  const edEaRates = await seedEdEaRates(prisma);
+  console.log(
+    `  ✅ ED/EA rates: ${edEaRates.updated} rows seeded` +
+      (edEaRates.notFound.length > 0
+        ? `, ${edEaRates.notFound.length} schools not yet in DB`
+        : ''),
+  );
+
+  // ========== GPA Distributions (CDS Section C9) ==========
+  const gpaDists = await seedGpaDistributions(prisma);
+  console.log(
+    `  ✅ GPA distributions: ${gpaDists.updated} rows seeded` +
+      (gpaDists.notFound.length > 0
+        ? `, ${gpaDists.notFound.length} schools not yet in DB`
+        : ''),
+  );
+
+  // ========== 2026-2027 Application Cycle Deadlines ==========
+  const deadlines = await seedDeadlines20262027(prisma);
+  console.log(
+    `  ✅ 2026-2027 deadlines: ${deadlines.upserted} rows seeded` +
+      (deadlines.notFound.length > 0
+        ? `, ${deadlines.notFound.length} schools not in DB`
+        : ''),
+  );
+
+  // ========== 2026-2027 Global Events ==========
+  const events = await seedGlobalEvents20262027(prisma);
+  console.log(`  ✅ 2026-2027 global events: ${events.upserted} rows seeded`);
 
   // ========== Feature Flags ==========
   await seedFeatureFlags();

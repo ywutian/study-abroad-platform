@@ -281,8 +281,7 @@ export class PredictionController {
             (s as any).intlStudentPct != null
               ? Number((s as any).intlStudentPct)
               : undefined,
-          needBlindInternational:
-            (s as any).needBlindInternational || undefined,
+          needBlindInternational: (s as any).needBlindInternational ?? null,
         },
       ]),
     );

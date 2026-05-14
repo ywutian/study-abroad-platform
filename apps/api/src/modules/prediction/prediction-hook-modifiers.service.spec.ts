@@ -57,7 +57,7 @@ describe('PredictionHookModifiersService', () => {
   const makeSchoolInput = (
     overrides: Record<string, unknown> = {},
   ): SchoolInput & {
-    needBlindInternational?: boolean;
+    needBlindInternational?: boolean | null;
     considersLegacy?: boolean;
   } => ({
     id: 'school-1',
@@ -371,6 +371,25 @@ describe('PredictionHookModifiersService', () => {
       );
       expect(needAwareShift).toBeDefined();
       expect(needAwareShift!.logOddsShift).toBeCloseTo(-1.0, 2);
+    });
+
+    it('should return partial need-aware hedge for unreviewed schools', () => {
+      const profile = makeProfile({
+        isInternational: true,
+        needsFinancialAid: true,
+      });
+      const school = makeSchoolInput({ needBlindInternational: null });
+
+      const shifts = service.computeHookShifts(profile, school);
+
+      const partialShift = shifts.find(
+        (s) => s.hookType === 'NEED_AWARE_PARTIAL',
+      );
+      expect(partialShift).toBeDefined();
+      expect(partialShift!.logOddsShift).toBeCloseTo(-0.5, 2);
+      expect(
+        shifts.find((s) => s.hookType === 'NEED_AWARE_FULL'),
+      ).toBeUndefined();
     });
 
     it('should not apply need-aware penalty when school is need-blind for intl', () => {

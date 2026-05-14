@@ -388,7 +388,7 @@ export class PredictionResultDto {
     intlAcceptanceRate?: number;
     oosAcceptanceRate?: number;
     intlStudentPct?: number;
-    needBlindInternational?: boolean;
+    needBlindInternational?: boolean | null;
     graduationRate?: number;
     satAvg?: number;
     sat25?: number;

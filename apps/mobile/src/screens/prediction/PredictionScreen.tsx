@@ -59,7 +59,7 @@ interface PredictionResultItem {
   schoolMeta?: {
     acceptanceRate?: number | null;
     intlAcceptanceRate?: number | null;
-    needBlindInternational?: boolean;
+    needBlindInternational?: boolean | null;
   };
   roundContext?: string | null;
   contextualBaseline?: ReturnType<typeof resolveContextualBaseline>;
@@ -79,7 +79,7 @@ interface DashboardResponse {
       nameZh?: string;
       acceptanceRate?: number | null;
       intlAcceptanceRate?: number | null;
-      needBlindInternational?: boolean;
+      needBlindInternational?: boolean | null;
     } | null;
     probability: number | null;
     tier: 'reach' | 'match' | 'safety' | 'unavailable';
@@ -109,7 +109,7 @@ export function mapDashboardToPredictions(
       ? {
           acceptanceRate: p.school.acceptanceRate,
           intlAcceptanceRate: p.school.intlAcceptanceRate,
-          needBlindInternational: p.school.needBlindInternational || undefined,
+          needBlindInternational: p.school.needBlindInternational ?? null,
         }
       : undefined,
     roundContext: p.roundContext,
