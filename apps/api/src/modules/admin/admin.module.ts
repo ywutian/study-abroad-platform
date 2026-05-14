@@ -19,6 +19,7 @@ import { AdminSchoolRatesService } from './admin-school-rates.service';
 import { AdminCdsPipelineController } from './admin-cds-pipeline.controller';
 import { AdminSchoolDataPipelineController } from './admin-school-data-pipeline.controller';
 import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.service';
+import { AdminSchoolDataHealthService } from './admin-school-data-health.service';
 import { AdminThemeStyleController } from './admin-theme-style.controller';
 import { AdminCacheHealthController } from './admin-cache-health.controller';
 import { AuditLogService } from '../../common/services/audit-log.service';
@@ -64,6 +65,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminProgressGateway,
     AdminSchoolRatesService,
     AdminSchoolDataCoverageService,
+    AdminSchoolDataHealthService,
     AuditLogService,
     PermissionGuard,
   ],

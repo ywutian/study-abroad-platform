@@ -197,6 +197,12 @@ export function AdminSidebar() {
           requiredPermission: 'data:health',
         },
         {
+          href: '/admin/schools/data-health',
+          icon: BarChart3,
+          label: t('sidebar.dataHealth'),
+          requiredPermission: 'data:health',
+        },
+        {
           href: '/admin/application-analysis-workflow',
           icon: ShieldCheck,
           label: t('sidebar.applicationAnalysisWorkflow'),

@@ -132,7 +132,7 @@ interface SchoolForCoverage {
   act75: number | null;
   testOptional: boolean | null;
   testingPolicy: string;
-  needBlindInternational: boolean;
+  needBlindInternational: boolean | null;
   roomAndBoard: number | null;
   studentOrgsCount: number | null;
   countriesRepresented: number | null;

@@ -187,6 +187,35 @@ We avoid claiming "accuracy" in absolute terms. The claim is **methodological**:
 
 ## 8. Decision log
 
-| Date       | Decision                                                                                           | Author                                       |
-| ---------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| 2026-05-14 | Adopt no-sample-calibration policy; ship Phase A cleanup; record competitor and literature context | Product owner, advised by deep-research pass |
+| Date       | Decision                                                                                                                                                                                                                                                                            | Author                                       |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| 2026-05-14 | Adopt no-sample-calibration policy; ship Phase A cleanup; record competitor and literature context                                                                                                                                                                                  | Product owner, advised by deep-research pass |
+| 2026-05-14 | Phase B-C kickoff: schema (needBlindInternational → nullable), need-blind seed expansion 5 → 10 verified + 16 explicit need-aware, intlAcceptanceRate seeded for 23 high/medium-confidence schools, admin data-health dashboard service + endpoint + page, operations SOP published | Product owner                                |
+
+---
+
+## 9. Phase B-C shipped (2026-05-14)
+
+This section records the concrete artifacts produced in the second round of work. It is _not_ an architecture description — that lives in inline code comments and ADR-0020.
+
+### Code
+
+- `apps/api/prisma/schema.prisma` — `needBlindInternational` migrated from `Boolean @default(false)` to `Boolean?` so "unreviewed" can be distinguished from "verified need-aware"
+- `apps/api/prisma/migrations/20260514141500_need_blind_intl_nullable/` — migration + data backfill that resets all existing `false` rows to `null` (the only `true` rows came from the trusted seed and are preserved)
+- `apps/api/prisma/seed-intl-schools.ts` — extended from 5 → 10 verified need-blind schools plus 16 explicitly-confirmed need-aware schools, each with a source URL
+- `apps/api/prisma/seed-intl-acceptance-rates.ts` — new seed: 23 HIGH/MEDIUM-confidence `intlAcceptanceRate` rows with source provenance
+- `apps/api/src/modules/admin/admin-school-data-health.service.ts` — new service that ranks schools by `(importanceWeight × gapWeight)` so operators can work top-down
+- `apps/api/src/modules/admin/admin-school-data-pipeline.controller.ts` — new endpoint `GET /admin/schools/data-health`
+- `apps/web/src/app/[locale]/(main)/admin/schools/data-health/page.tsx` — operator-facing dashboard with focus tabs (`all` / `intl` / `rounds` / `academic`)
+- `apps/web/src/app/[locale]/(main)/admin/_components/admin-sidebar.tsx` — sidebar entry
+- `apps/api/src/modules/prediction/counselor/counselor-modifiers.ts` — `intlMultiplier` and `financialAidContextComponent` now branch on `=== true` instead of truthy
+
+### Tests
+
+- `apps/api/src/modules/admin/admin-school-data-health.service.spec.ts` — 6 tests covering rank-weight ordering, gap-bucket weights, healthy-school exclusion, terminal-field handling, limit, unranked-school filter
+- `apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts` — regression tests for needBlind-unverified midpoints
+
+### Docs
+
+- [adr/0020-prediction-no-sample-calibration.md](adr/0020-prediction-no-sample-calibration.md) — decision record
+- [SCHOOL_DATA_COLLECTION_SOP.md](SCHOOL_DATA_COLLECTION_SOP.md) — runbook for operators
