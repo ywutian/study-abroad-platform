@@ -6248,7 +6248,7 @@
   },
   "timeline": {
     "title": "申请时间线",
-    "description": "追踪您的申请截止日期、竞赛、活动等重要时间节点",
+    "description": "聚焦下一步行动、截止风险与任务完成状态",
     "dynamicNote": "时间线根据您的选校清单和订阅的事件自动生成，截止日期数据来源于学校官网和管理员配置。",
     "addSchool": "添加学校",
     "daysLeft": "剩余 {days} 天",
@@ -6263,9 +6263,31 @@
     "cancel": "取消",
     "deleteTimeline": "删除时间线",
     "tabs": {
-      "all": "全部",
+      "todo": "待办",
+      "all": "待办",
       "school": "学校申请",
-      "personal": "个人事件"
+      "personal": "个人事件",
+      "archive": "归档"
+    },
+    "actionBoard": {
+      "dueWindow": "7/30天内截止",
+      "dueWindowDesc": "先处理最近窗口",
+      "overdue": "逾期未完成",
+      "overdueDesc": "已移入归档待处理",
+      "pendingSchools": "待生成学校时间线",
+      "pendingSchoolsDesc": "从选校清单补齐",
+      "incompleteTasks": "未完成任务",
+      "incompleteTasksDesc": "当前可行动事项"
+    },
+    "todo": {
+      "title": "下一步行动",
+      "description": "只显示未完成、未取消，且有效日期为今天或未来的事项。",
+      "emptyTitle": "暂无待办事项",
+      "emptyDescription": "当前没有需要立刻处理的未来截止日期。过期事项可在归档里查看。"
+    },
+    "archive": {
+      "emptyTitle": "归档为空",
+      "emptyDescription": "已完成、已取消或过期未完成的事项会出现在这里，不会压住默认待办。"
     },
     "statuses": {
       "notStarted": "未开始",
@@ -6292,8 +6314,8 @@
       "action": "去选校"
     },
     "globalEvents": {
-      "title": "全局事件",
-      "description": "考试、竞赛、夏校、助学金等重要日期 — 点击订阅添加到你的时间线",
+      "title": "推荐事件",
+      "description": "考试、竞赛、夏校、助学金等未来日期，可按需订阅到个人事件",
       "regBy": "报名截止",
       "subscribe": "订阅",
       "subscribed": "已订阅"
@@ -6310,6 +6332,8 @@
       "deadline": "报名截止日",
       "eventDate": "比赛日期",
       "fromGlobal": "订阅事件",
+      "emptyTitle": "暂无个人事件",
+      "emptyDescription": "创建竞赛、考试、夏校或材料准备事项，也可以从下方推荐事件订阅。",
       "categories": {
         "COMPETITION": "竞赛",
         "TEST": "标化考试",
@@ -6340,7 +6364,9 @@
       "noTasks": "暂无任务",
       "pendingSchools": "待添加时间线的学校",
       "pendingSchoolsDesc": "这些学校已在你的选校清单中，但尚未生成申请时间线",
-      "generateTimeline": "生成时间线"
+      "generateTimeline": "生成时间线",
+      "emptyTitle": "暂无学校申请待办",
+      "emptyDescription": "添加学校后可以生成申请时间线；旧申请季的过期项会进入归档。"
     },
     "generateSuccess": "时间线已生成",
     "taskTypes": {

@@ -11,6 +11,7 @@ import {
   ClipboardList,
   GraduationCap,
 } from 'lucide-react';
+import { daysUntilDate } from './timeline-view-model';
 
 export function formatDate(
   dateStr: string | undefined,
@@ -21,10 +22,7 @@ export function formatDate(
 }
 
 export function getDaysUntil(dateStr?: string): number | null {
-  if (!dateStr) return null;
-  const now = new Date();
-  const target = new Date(dateStr);
-  return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return daysUntilDate(dateStr);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

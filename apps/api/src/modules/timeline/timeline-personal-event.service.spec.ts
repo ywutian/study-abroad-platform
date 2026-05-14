@@ -61,6 +61,7 @@ describe('TimelinePersonalEventService', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -90,6 +91,7 @@ describe('TimelinePersonalEventService', () => {
         titleZh: 'SAT考试',
         category: 'TEST',
         eventDate: new Date(),
+        isRecurring: false,
       });
       mockPrisma.personalEvent.findUnique.mockResolvedValue(null);
       mockPrisma.personalEvent.create.mockResolvedValue(mockEvent);
@@ -100,6 +102,48 @@ describe('TimelinePersonalEventService', () => {
 
       expect(result).toBeDefined();
       expect(mockPrisma.personalEvent.create).toHaveBeenCalled();
+    });
+
+    it('should subscribe recurring old global events with future effective dates', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.globalEvent.findUnique.mockResolvedValue({
+        id: 'ge-recurring',
+        title: 'Recurring Competition',
+        titleZh: '周期竞赛',
+        category: 'COMPETITION',
+        eventDate: new Date('2026-04-01T00:00:00Z'),
+        registrationDeadline: new Date('2026-03-01T00:00:00Z'),
+        lateDeadline: null,
+        resultDate: null,
+        description: null,
+        descriptionZh: null,
+        url: null,
+        year: 2026,
+        isRecurring: true,
+      });
+      mockPrisma.personalEvent.findUnique.mockResolvedValue(null);
+      mockPrisma.personalEvent.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          ...mockEvent,
+          ...data,
+          id: 'evt-recurring',
+          createdAt: new Date('2026-05-14T12:00:00Z'),
+          tasks: [],
+        }),
+      );
+
+      const result = await service.subscribeGlobalEvent('user-1', {
+        globalEventId: 'ge-recurring',
+      });
+
+      expect(mockPrisma.personalEvent.create.mock.calls[0][0].data).toEqual(
+        expect.objectContaining({
+          deadline: new Date('2027-03-01T00:00:00Z'),
+          eventDate: new Date('2027-04-01T00:00:00Z'),
+        }),
+      );
+      expect(result.deadline).toEqual(new Date('2027-03-01T00:00:00Z'));
+      expect(result.eventDate).toEqual(new Date('2027-04-01T00:00:00Z'));
     });
 
     it('should throw NotFoundException for missing global event', async () => {

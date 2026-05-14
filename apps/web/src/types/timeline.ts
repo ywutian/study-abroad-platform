@@ -91,7 +91,7 @@ export interface PersonalEventDetail extends PersonalEventResponse {
   tasks?: PersonalTaskResponse[];
 }
 
-export type TabType = 'all' | 'school' | 'personal';
+export type TabType = 'todo' | 'school' | 'personal' | 'archive';
 
 export const PERSONAL_CATEGORIES = [
   'COMPETITION',

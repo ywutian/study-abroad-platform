@@ -6,9 +6,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ERR } from '../../common/constants/error-messages';
-import { ApplicationStatus } from '@prisma/client';
+import { ApplicationStatus, type GlobalEvent } from '@prisma/client';
 import { TaskType } from '../../common/types/enums';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
+import {
+  isBeforeUtcDay,
+  rollAnnualDateForward,
+  withEffectiveRecurringGlobalEvent,
+} from './timeline-date.util';
 import {
   CreateTimelineDto,
   UpdateTimelineDto,
@@ -106,13 +111,13 @@ export class TimelineApplicationService {
       currentMonth >= 8 ? now.getFullYear() + 1 : now.getFullYear();
 
     for (const schoolId of dto.schoolIds) {
+      let createdForSchool = 0;
       try {
         const school = await this.prisma.school.findUnique({
           where: { id: schoolId },
           include: {
             deadlines: {
-              where: { year: applicationYear },
-              orderBy: { applicationDeadline: 'asc' },
+              orderBy: [{ year: 'desc' }, { applicationDeadline: 'asc' }],
             },
           },
         });
@@ -129,8 +134,13 @@ export class TimelineApplicationService {
           });
         const existingRounds = new Set(existingTimelines.map((t) => t.round));
 
-        if (school.deadlines && school.deadlines.length > 0) {
-          for (const dl of school.deadlines) {
+        const effectiveDeadlines = this.selectEffectiveDeadlines(
+          school.deadlines ?? [],
+          now,
+        );
+
+        if (effectiveDeadlines.length > 0) {
+          for (const dl of effectiveDeadlines) {
             if (existingRounds.has(dl.round)) continue;
 
             const tasks = this.buildSmartTasks(
@@ -148,17 +158,18 @@ export class TimelineApplicationService {
                 schoolId,
                 schoolName: getSchoolDisplayName(school, locale),
                 round: dl.round,
-                deadline: dl.applicationDeadline,
+                deadline: rollAnnualDateForward(dl.applicationDeadline, now),
                 tasks: { create: tasks },
               },
               include: { tasks: true },
             });
             created.push(this.mapTimelineToResponse(timeline));
+            createdForSchool += 1;
             existingRounds.add(dl.round);
           }
         }
 
-        if (created.filter((r) => r.schoolId === schoolId).length === 0) {
+        if (createdForSchool === 0) {
           const metadata = school.metadata as Record<string, any> | null;
           const deadlines = metadata?.deadlines as
             | Record<string, string>
@@ -169,9 +180,11 @@ export class TimelineApplicationService {
               const round = roundKey.toUpperCase();
               if (existingRounds.has(round)) continue;
 
-              const parsedDate =
+              const parsedDate = rollAnnualDateForward(
                 this.parseMetadataDate(dateStr, applicationYear) ??
-                new Date(applicationYear, 0, 15); // Jan 15 typical RD fallback
+                  new Date(applicationYear, 0, 15),
+                now,
+              ); // Jan 15 typical RD fallback
               const verifiedPrompts = await this.prisma.essayPrompt.findMany({
                 where: { schoolId, isActive: true, status: 'VERIFIED' },
                 orderBy: { sortOrder: 'asc' },
@@ -194,16 +207,17 @@ export class TimelineApplicationService {
                 include: { tasks: true },
               });
               created.push(this.mapTimelineToResponse(timeline));
+              createdForSchool += 1;
               existingRounds.add(round);
             }
           }
         }
 
-        if (
-          created.filter((r) => r.schoolId === schoolId).length === 0 &&
-          !existingRounds.has('RD')
-        ) {
-          const defaultDeadline = new Date(applicationYear, 0, 15); // Jan 15 typical RD
+        if (createdForSchool === 0 && !existingRounds.has('RD')) {
+          const defaultDeadline = rollAnnualDateForward(
+            new Date(applicationYear, 0, 15),
+            now,
+          ); // Jan 15 typical RD
           const timeline = await this.prisma.applicationTimeline.create({
             data: {
               userId,
@@ -221,6 +235,7 @@ export class TimelineApplicationService {
             include: { tasks: true },
           });
           created.push(this.mapTimelineToResponse(timeline));
+          createdForSchool += 1;
         }
       } catch (error) {
         this.logger.warn(
@@ -232,6 +247,40 @@ export class TimelineApplicationService {
     }
 
     return { created, failed };
+  }
+
+  private selectEffectiveDeadlines<
+    T extends { round: string; applicationDeadline: Date },
+  >(deadlines: T[], now: Date): T[] {
+    const byRound = new Map<string, T[]>();
+
+    for (const deadline of deadlines) {
+      const group = byRound.get(deadline.round) ?? [];
+      group.push(deadline);
+      byRound.set(deadline.round, group);
+    }
+
+    return Array.from(byRound.values())
+      .map((items) => {
+        const future = items
+          .filter((item) => !isBeforeUtcDay(item.applicationDeadline, now))
+          .sort(
+            (a, b) =>
+              a.applicationDeadline.getTime() - b.applicationDeadline.getTime(),
+          );
+
+        if (future[0]) return future[0];
+
+        return [...items].sort(
+          (a, b) =>
+            b.applicationDeadline.getTime() - a.applicationDeadline.getTime(),
+        )[0];
+      })
+      .sort(
+        (a, b) =>
+          rollAnnualDateForward(a.applicationDeadline, now).getTime() -
+          rollAnnualDateForward(b.applicationDeadline, now).getTime(),
+      );
   }
 
   private buildSmartTasks(
@@ -508,19 +557,28 @@ export class TimelineApplicationService {
     };
   }
 
-  async getGlobalEvents(year?: number) {
+  async getGlobalEvents(year?: number): Promise<GlobalEvent[]> {
     const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const targetYear =
-      year || (currentMonth >= 8 ? now.getFullYear() + 1 : now.getFullYear());
 
-    return this.prisma.globalEvent.findMany({
-      where: {
-        isActive: true,
-        year: targetYear,
-      },
+    if (typeof year === 'number') {
+      return this.prisma.globalEvent.findMany({
+        where: {
+          isActive: true,
+          year,
+        },
+        orderBy: { eventDate: 'asc' },
+      });
+    }
+
+    const events = await this.prisma.globalEvent.findMany({
+      where: { isActive: true },
       orderBy: { eventDate: 'asc' },
     });
+
+    return events
+      .map((event) => withEffectiveRecurringGlobalEvent(event, now))
+      .filter((event) => !isBeforeUtcDay(event.eventDate, now))
+      .sort((a, b) => a.eventDate.getTime() - b.eventDate.getTime());
   }
 
   // ============ Task Methods ============
