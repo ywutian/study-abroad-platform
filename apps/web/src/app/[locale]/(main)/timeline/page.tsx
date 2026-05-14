@@ -49,7 +49,12 @@ import {
   getCategoryLabel as getCategoryLabelHelper,
   getCategoryColor,
 } from './_components/timeline.helpers';
-import { buildTimelineBoardModel, resolveTimelineTab } from './_components/timeline-view-model';
+import {
+  buildTimelineBoardModel,
+  daysUntilDate,
+  getArchivedDisplayStatus,
+  resolveTimelineTab,
+} from './_components/timeline-view-model';
 
 function listFromResponse<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
@@ -280,6 +285,26 @@ export default function TimelinePage() {
       .map((e) => ({ ...e, subscribed: subscribedIds.has(e.id) }))
       .slice(0, 12);
   }, [globalEvents, personalEvents]);
+
+  const archivedTimelines = useMemo(
+    () =>
+      board.archivedTimelines.map((timeline) => ({
+        ...timeline,
+        status: getArchivedDisplayStatus(timeline.status, daysUntilDate(timeline.deadline)),
+      })),
+    [board.archivedTimelines]
+  );
+  const archivedPersonalEvents = useMemo(
+    () =>
+      board.archivedPersonalEvents.map((event) => ({
+        ...event,
+        status: getArchivedDisplayStatus(
+          event.status,
+          daysUntilDate(event.deadline ?? event.eventDate)
+        ),
+      })),
+    [board.archivedPersonalEvents]
+  );
 
   const actionMetrics = [
     {
@@ -597,7 +622,7 @@ export default function TimelinePage() {
 
       {activeTab === 'archive' && (
         <>
-          {board.archivedTimelines.length === 0 && board.archivedPersonalEvents.length === 0 ? (
+          {archivedTimelines.length === 0 && archivedPersonalEvents.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-10 text-center">
                 <Archive className="h-10 w-10 text-muted-foreground/50 mb-3" />
@@ -611,7 +636,7 @@ export default function TimelinePage() {
             <>
               <TimelineTabs
                 activeTab={activeTab}
-                sortedTimelines={board.archivedTimelines}
+                sortedTimelines={archivedTimelines}
                 expandedTimeline={expandedTimeline}
                 setExpandedTimeline={setExpandedTimeline}
                 timelineDetail={timelineDetail}
@@ -630,7 +655,7 @@ export default function TimelinePage() {
                 getCategoryColor={getCategoryColor}
               />
               <PersonalEventsSection
-                sortedPersonalEvents={board.archivedPersonalEvents}
+                sortedPersonalEvents={archivedPersonalEvents}
                 expandedPersonalEvent={expandedPersonalEvent}
                 setExpandedPersonalEvent={setExpandedPersonalEvent}
                 personalEventDetail={personalEventDetail}

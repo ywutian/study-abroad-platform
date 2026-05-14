@@ -35,6 +35,10 @@ const SCHOOL_ARCHIVE_STATUSES = new Set([
   'WITHDRAWN',
 ]);
 const PERSONAL_ARCHIVE_STATUSES = new Set(['COMPLETED', 'CANCELLED']);
+const TERMINAL_ARCHIVE_STATUSES = new Set([
+  ...SCHOOL_ARCHIVE_STATUSES,
+  ...PERSONAL_ARCHIVE_STATUSES,
+]);
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function resolveTimelineTab(tab: string | null): TabType {
@@ -53,6 +57,14 @@ export function daysUntilDate(dateStr?: string, now = new Date()): number | null
   if (Number.isNaN(target.getTime())) return null;
 
   return Math.ceil((startOfUtcDay(target).getTime() - startOfUtcDay(now).getTime()) / DAY_MS);
+}
+
+export function getArchivedDisplayStatus(status: string, daysUntil: number | null): string {
+  if (daysUntil !== null && daysUntil < 0 && !TERMINAL_ARCHIVE_STATUSES.has(status)) {
+    return 'OVERDUE';
+  }
+
+  return status;
 }
 
 function getSchoolEffectiveDeadline(timeline: TimelineResponse): string | undefined {

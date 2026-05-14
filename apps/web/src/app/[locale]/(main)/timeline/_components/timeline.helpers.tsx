@@ -39,6 +39,8 @@ export function formatDaysUntil(
 
 export function getStatusBadge(status: string, t: (key: string) => string): ReactNode {
   switch (status) {
+    case 'OVERDUE':
+      return <Badge variant="destructive">{t('statuses.overdue')}</Badge>;
     case 'SUBMITTED':
       return <Badge variant="success">{t('statuses.submitted')}</Badge>;
     case 'IN_PROGRESS':

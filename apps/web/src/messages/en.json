@@ -6319,7 +6319,8 @@
       "waitlisted": "Waitlisted",
       "withdrawn": "Withdrawn",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "overdue": "Overdue"
     },
     "overview": {
       "totalSchools": "Target Schools",
@@ -6379,6 +6380,8 @@
     "schoolTimelines": {
       "title": "School Timelines",
       "description": "Application progress sorted by registration deadline",
+      "archiveTitle": "Archived School Applications",
+      "archiveDescription": "Finished, withdrawn, or overdue unfinished school applications",
       "deadline": "Registration Deadline",
       "tasks": "Tasks",
       "loadingTasks": "Loading tasks...",
