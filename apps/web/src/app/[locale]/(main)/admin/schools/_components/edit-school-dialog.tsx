@@ -56,7 +56,7 @@ interface School {
   acceptsCommonApp?: boolean;
   acceptsCoalition?: boolean;
   feeWaiverAvailable?: boolean;
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
   avgSalary?: number;
   salary6YrPostGrad?: number;
   metadata?: {
@@ -96,7 +96,8 @@ interface FormState {
   acceptsCommonApp: boolean;
   acceptsCoalition: boolean;
   feeWaiverAvailable: boolean;
-  needBlindInternational: boolean;
+  // tri-state: null = unreviewed (clears DB column), true/false = verified
+  needBlindInternational: boolean | null;
   avgSalary: string;
   salary6YrPostGrad: string;
   toeflMin: string;
@@ -130,7 +131,9 @@ function schoolToForm(school: School | null): FormState {
     acceptsCommonApp: school?.acceptsCommonApp ?? false,
     acceptsCoalition: school?.acceptsCoalition ?? false,
     feeWaiverAvailable: school?.feeWaiverAvailable ?? false,
-    needBlindInternational: school?.needBlindInternational ?? false,
+    // Preserve `null` (unreviewed). Don't collapse to false — that would
+    // silently re-record "verified need-aware" for un-reviewed schools.
+    needBlindInternational: school?.needBlindInternational ?? null,
     avgSalary: school?.avgSalary?.toString() ?? '',
     salary6YrPostGrad: school?.salary6YrPostGrad?.toString() ?? '',
     toeflMin: school?.metadata?.requirements?.toeflMin?.toString() ?? '',
@@ -280,7 +283,8 @@ export function EditSchoolDialog({
     metaNumDiff('ieltsMin', 'ieltsMin', school.metadata?.requirements?.ieltsMin);
     metaNumDiff('essayCount', 'essayCount', school.metadata?.essayCount);
 
-    // Boolean fields
+    // Boolean fields — these default to false in the schema, so missing
+    // means "false" for diffing purposes.
     const boolDiff = (key: keyof FormState & keyof School) => {
       const orig = school[key] ?? false;
       if (form[key] !== orig) payload[key] = form[key];
@@ -289,7 +293,16 @@ export function EditSchoolDialog({
     boolDiff('acceptsCommonApp');
     boolDiff('acceptsCoalition');
     boolDiff('feeWaiverAvailable');
-    boolDiff('needBlindInternational');
+
+    // needBlindInternational is tri-state (Boolean?). Send explicit null when
+    // the admin sets the field back to "unreviewed" — the DTO accepts null
+    // and the bulk-update service clears the column.
+    {
+      const orig = school.needBlindInternational ?? null;
+      if (form.needBlindInternational !== orig) {
+        payload.needBlindInternational = form.needBlindInternational;
+      }
+    }
 
     const originalTestingPolicy = resolveSchoolTestingPolicyValue({
       testingPolicy: school.testingPolicy,
@@ -555,12 +568,43 @@ export function EditSchoolDialog({
                 checked={form.feeWaiverAvailable}
                 onChange={(v) => setField('feeWaiverAvailable', v)}
               />
-              <BooleanField
-                id="edit-needBlindInternational"
-                label={t('schools.editDialog.needBlindIntl')}
-                checked={form.needBlindInternational}
-                onChange={(v) => setField('needBlindInternational', v)}
-              />
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="edit-needBlindInternational" className="text-sm">
+                  {t('schools.editDialog.needBlindIntl')}
+                </Label>
+                <Select
+                  // tri-state: encode null as the sentinel string "unreviewed"
+                  // because Radix Select cannot hold a literal null value.
+                  value={
+                    form.needBlindInternational === true
+                      ? 'true'
+                      : form.needBlindInternational === false
+                        ? 'false'
+                        : 'unreviewed'
+                  }
+                  onValueChange={(v) =>
+                    setField(
+                      'needBlindInternational',
+                      v === 'true' ? true : v === 'false' ? false : null
+                    )
+                  }
+                >
+                  <SelectTrigger id="edit-needBlindInternational" size="sm" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unreviewed">
+                      {t('schools.editDialog.needBlindIntlOptions.unreviewed')}
+                    </SelectItem>
+                    <SelectItem value="true">
+                      {t('schools.editDialog.needBlindIntlOptions.needBlind')}
+                    </SelectItem>
+                    <SelectItem value="false">
+                      {t('schools.editDialog.needBlindIntlOptions.needAware')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-4 pt-2">
               <NumberInput

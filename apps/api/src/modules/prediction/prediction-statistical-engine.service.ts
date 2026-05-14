@@ -131,10 +131,15 @@ export class PredictionStatisticalEngine {
     }
 
     // === Need-aware financial aid penalty (G4) ===
+    // 2026-05: needBlindInternational became Boolean? — explicit `!== true`
+    // so unreviewed (null) schools are penalized like verified need-aware.
+    // The counselor engine differentiates null with a midpoint multiplier;
+    // this statistical engine is legacy (counselor is at 100% rollout) and
+    // keeps the conservative behavior.
     if (
       profile.needsFinancialAid &&
       profile.isInternational &&
-      !school.needBlindInternational
+      school.needBlindInternational !== true
     ) {
       probability = probability * 0.75;
     }
@@ -389,7 +394,7 @@ export class PredictionStatisticalEngine {
             ? '暂无该校国际生录取率数据'
             : 'International rate data not available for this school',
       });
-      if (school.needBlindInternational) {
+      if (school.needBlindInternational === true) {
         factors.push({
           name: isZh ? 'Need-Blind政策' : 'Need-Blind Policy',
           impact: 'positive',
@@ -562,11 +567,11 @@ export class PredictionStatisticalEngine {
       });
     }
 
-    // Need-aware financial aid penalty (G4)
+    // Need-aware financial aid penalty (G4) — see comment above on `!== true`
     if (
       profile.needsFinancialAid &&
       profile.isInternational &&
-      !school.needBlindInternational
+      school.needBlindInternational !== true
     ) {
       factors.push({
         name: isZh

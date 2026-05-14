@@ -217,7 +217,7 @@ export class PredictionHookModifiersService {
   computeHookShifts(
     profile: ProfileInput,
     school: SchoolInput & {
-      needBlindInternational?: boolean;
+      needBlindInternational?: boolean | null;
       considersLegacy?: boolean;
     },
   ): HookShift[] {
@@ -251,10 +251,14 @@ export class PredictionHookModifiersService {
     }
 
     // --- Need-aware penalty (international students only) ---
+    // 2026-05: explicit `!== true` so unreviewed (null) schools take the
+    // same conservative penalty as verified need-aware. The counselor
+    // engine differentiates null with a midpoint; this hook layer is part
+    // of the legacy fusion path and stays conservative.
     if (
       profile.needsFinancialAid &&
       profile.isInternational &&
-      !school.needBlindInternational
+      school.needBlindInternational !== true
     ) {
       // Distinguish partial vs. full need-aware based on school's needBlind status
       // If the school is not need-blind for internationals and the student needs aid,

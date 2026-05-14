@@ -7810,7 +7810,12 @@
         "commonApp": "Common App",
         "coalitionApp": "Coalition App",
         "feeWaiver": "申请费减免",
-        "needBlindIntl": "国际生 Need Blind"
+        "needBlindIntl": "国际生 Need Blind",
+        "needBlindIntlOptions": {
+          "unreviewed": "未审核",
+          "needBlind": "确认 Need-Blind",
+          "needAware": "确认 Need-Aware"
+        }
       },
       "dataQuality": {
         "loadFailedTitle": "数据质量报告加载失败",

@@ -993,7 +993,7 @@ function normalizeRate(raw: number | null | undefined): number | null {
 export function intlMultiplier(
   profile: ProfileInput,
   school: SchoolInput & {
-    needBlindInternational?: boolean;
+    needBlindInternational?: boolean | null;
     intlAcceptanceRate?: number | null;
     acceptanceRate?: number | null;
   },
@@ -1030,16 +1030,15 @@ export function intlMultiplier(
     };
   }
 
-  // 2026-05: `needBlindInternational` is `Boolean @default(false)` in the DB,
-  // so the vast majority of schools have it as false because they were never
-  // reviewed, not because they were verified need-aware. Treating `false` as
-  // confirmed need-aware was systematically pessimistic. We now branch only
-  // on `=== true` (verified need-blind, e.g. MIT/Yale/Princeton/Harvard/
-  // Amherst/Dartmouth seeded in seed-intl-schools.ts); any other value
-  // (false or undefined) gets a midpoint that hedges between the two regimes.
-  // Long-term fix: migrate this column to an enum
-  //   { UNKNOWN, NEED_AWARE, NEED_BLIND } so reviewed need-aware schools can
-  // be distinguished from the default-false majority.
+  // 2026-05: `needBlindInternational` is `Boolean?` (tri-state).
+  //   true  → verified need-blind (HYPSM, Amherst, Dartmouth, Bowdoin, Brown,
+  //           Notre Dame, W&L — see seed-intl-schools.ts).
+  //   false → verified need-aware (Stanford, Columbia, Cornell, Penn etc.).
+  //   null  → unreviewed.
+  // We branch only on `=== true`; verified need-aware (false) and unreviewed
+  // (null) both fall into the midpoint branch below. This is conservative:
+  // verified need-aware schools that publish CDS-based intlAcceptanceRate hit
+  // the data-driven path earlier and bypass this fallback entirely.
   if (overallRate != null && overallRate >= 0.2) {
     if (school.needBlindInternational === true) {
       return {

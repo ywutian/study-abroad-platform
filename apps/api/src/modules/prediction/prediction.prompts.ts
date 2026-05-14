@@ -115,7 +115,8 @@ export interface SchoolInput {
   intlAcceptanceRate?: number;
   oosAcceptanceRate?: number;
   intlStudentPct?: number;
-  needBlindInternational?: boolean;
+  // null = unreviewed (treated as midpoint by counselor); true/false = verified
+  needBlindInternational?: boolean | null;
   satAvg?: number;
   sat25?: number;
   sat75?: number;

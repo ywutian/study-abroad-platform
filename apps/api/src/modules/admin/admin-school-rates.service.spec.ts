@@ -567,4 +567,73 @@ describe('AdminSchoolRatesService', () => {
     );
     expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
   });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // 2026-05: needBlindInternational is tri-state (Boolean?). Explicit null
+  // from the admin DTO must clear the column back to "unreviewed".
+  // ───────────────────────────────────────────────────────────────────────
+
+  it('clears needBlindInternational when admin sends explicit null', async () => {
+    const schoolWithVerifiedFalse = {
+      ...ucd,
+      needBlindInternational: false,
+    };
+    prisma.school.findMany.mockImplementation(async (args: any) => {
+      if (args.where.id) return [schoolWithVerifiedFalse];
+      return [];
+    });
+
+    const dto: BulkUpdateSchoolRatesDto = {
+      rows: [
+        {
+          schoolId: 'ucd-id',
+          // explicit null → "mark as unreviewed"
+          needBlindInternational: null as unknown as boolean,
+          source: 'admin-review:2026-05:reset-to-unreviewed',
+        },
+      ],
+    };
+
+    const result = await service.runBulkUpdate(dto, 'admin-user-1');
+
+    expect(result.updated).toBe(1);
+    expect(result.changes[0].changedFields).toContain('needBlindInternational');
+    expect(result.changes[0].before.needBlindInternational).toBe(false);
+    expect(result.changes[0].after.needBlindInternational).toBeNull();
+    expect(schoolWrite.update).toHaveBeenCalledWith(
+      'ucd-id',
+      expect.objectContaining({
+        fields: expect.objectContaining({
+          needBlindInternational: null,
+        }),
+      }),
+    );
+  });
+
+  it('treats null on a non-nullable boolean field as a no-op', async () => {
+    prisma.school.findMany.mockImplementation(async (args: any) => {
+      if (args.where.id) return [ucd];
+      return [];
+    });
+
+    const dto: BulkUpdateSchoolRatesDto = {
+      rows: [
+        {
+          schoolId: 'ucd-id',
+          // null on testOptional (which is `boolean | null` in the schema but
+          // shouldn't be cleared by the admin path) — must be a no-op rather
+          // than an error.
+          testOptional: null as unknown as boolean,
+          // Need at least one real field to pass the pre-check.
+          acceptanceRate: 37.0,
+          source: 'no-op-test',
+        },
+      ],
+    };
+
+    const result = await service.runBulkUpdate(dto, 'admin-user-1');
+
+    // testOptional should NOT appear in changedFields
+    expect(result.changes[0].changedFields).not.toContain('testOptional');
+  });
 });

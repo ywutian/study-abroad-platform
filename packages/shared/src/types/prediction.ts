@@ -163,7 +163,7 @@ export interface PredictionResult {
     oosAcceptanceRate?: number;
     /** 0–100 percentage — share of international students */
     intlStudentPct?: number;
-    needBlindInternational?: boolean;
+    needBlindInternational?: boolean | null;
     /** 0–100 percentage */
     graduationRate?: number;
     satAvg?: number;

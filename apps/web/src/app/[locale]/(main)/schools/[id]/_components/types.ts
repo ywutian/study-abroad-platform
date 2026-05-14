@@ -64,7 +64,7 @@ export interface SchoolDetail {
   hasEarlyDecision?: boolean;
 
   // International
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
   intlStudentPct?: number;
   intlAcceptanceRate?: number;
 

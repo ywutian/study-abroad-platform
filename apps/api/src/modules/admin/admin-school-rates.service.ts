@@ -50,7 +50,7 @@ export interface BulkUpdateRowResult {
   schoolName: string;
   changedFields: string[]; // empty when no diff (idempotent skip)
   before: Record<string, number | boolean | null>;
-  after: Record<string, number | boolean>;
+  after: Record<string, number | boolean | null>;
 }
 
 export interface BulkUpdateError {
@@ -174,7 +174,15 @@ export class AdminSchoolRatesService {
         PERCENT_POINT_FIELDS.some((field) => row[field] != null) ||
         DECIMAL_PERCENT_FIELDS.some((field) => row[field] != null) ||
         INTEGER_FIELDS.some((field) => row[field] != null) ||
-        BOOLEAN_FIELDS.some((field) => row[field] != null);
+        // For booleans the row[field] presence semantics are:
+        //   undefined = field omitted, !== undefined = explicit edit (incl. null).
+        // Only needBlindInternational accepts explicit `null` as a clear; for
+        // the rest, null is treated as "no edit" downstream.
+        BOOLEAN_FIELDS.some((field) =>
+          field === 'needBlindInternational'
+            ? row[field] !== undefined
+            : row[field] != null,
+        );
       if (!hasAnyField) {
         result.errors.push({
           rowIndex: i,
@@ -341,9 +349,15 @@ export class AdminSchoolRatesService {
 
       const tryBooleanField = (
         key: BooleanField,
-        rawInput: boolean | undefined,
+        rawInput: boolean | null | undefined,
       ) => {
-        if (rawInput == null) return;
+        // `undefined` always means "no edit". For `needBlindInternational`
+        // only, accept explicit `null` as "clear back to unreviewed". Other
+        // boolean columns are non-nullable in the schema, so we coerce null
+        // to no-op there.
+        if (rawInput === undefined) return;
+        if (rawInput === null && key !== 'needBlindInternational') return;
+
         const currentValue = (school as any)[key] as boolean | null;
         if (currentValue === rawInput) {
           before[key] = currentValue;

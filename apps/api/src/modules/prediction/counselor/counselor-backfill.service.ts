@@ -205,7 +205,9 @@ export class CounselorBackfillService {
               : undefined,
             state: school.state ?? undefined,
             isPrivate: school.isPrivate,
-            needBlindInternational: school.needBlindInternational ?? false,
+            // Preserve null (unreviewed) so counselor uses the midpoint
+            // instead of treating un-reviewed schools as verified need-aware.
+            needBlindInternational: school.needBlindInternational,
             intlAcceptanceRate: school.intlAcceptanceRate
               ? Number(school.intlAcceptanceRate)
               : undefined,

@@ -65,7 +65,7 @@ export interface School {
   scorecardId?: string;
   ipedsId?: string;
   transferAcceptanceRate?: number;
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
   percentNeedMet?: number;
   averageAidPackage?: number;
   averageNetPrice?: number;

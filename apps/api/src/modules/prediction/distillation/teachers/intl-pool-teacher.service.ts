@@ -46,7 +46,9 @@ export class IntlPoolTeacherService implements TeacherSignalProvider {
       metadata: {
         intlAcceptanceRate: probability,
         intlStudentPct: input.school.intlStudentPct ?? null,
-        needBlindInternational: input.school.needBlindInternational ?? false,
+        // Preserve null (unreviewed) so downstream consumers and shadow
+        // comparisons can distinguish un-reviewed from verified need-aware.
+        needBlindInternational: input.school.needBlindInternational ?? null,
         nationality: input.profile.nationality ?? null,
         needsFinancialAid: input.profile.needsFinancialAid ?? null,
       },

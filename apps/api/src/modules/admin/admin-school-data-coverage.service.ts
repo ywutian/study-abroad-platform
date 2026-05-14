@@ -379,9 +379,12 @@ export class AdminSchoolDataCoverageService {
       };
 
       if (canFill('intlAcceptanceRate', school.intlAcceptanceRate)) {
+        // For the heuristic derivation a null status (unreviewed) is treated
+        // the same as need-aware (the safer fallback). Explicit need-blind
+        // schools (true) lift the cap on the heuristic — see deriveIntlRate.
         updates.intlAcceptanceRate = this.deriveIntlRate(
           overall,
-          school.needBlindInternational,
+          school.needBlindInternational ?? false,
         );
         changedFields.push('intlAcceptanceRate');
       }

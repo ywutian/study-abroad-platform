@@ -7831,7 +7831,12 @@
         "commonApp": "Common App",
         "coalitionApp": "Coalition App",
         "feeWaiver": "Fee Waiver",
-        "needBlindIntl": "Need Blind (Intl)"
+        "needBlindIntl": "Need Blind (Intl)",
+        "needBlindIntlOptions": {
+          "unreviewed": "Unreviewed",
+          "needBlind": "Verified need-blind",
+          "needAware": "Verified need-aware"
+        }
       },
       "dataQuality": {
         "loadFailedTitle": "Failed to load data quality report",

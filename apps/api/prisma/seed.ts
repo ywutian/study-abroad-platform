@@ -12,6 +12,8 @@ import {
   LEGACY_PREDICTION_POLICY_VERSION,
 } from '../src/modules/prediction/prediction-policy.constants';
 import { seedCompetitions } from './seed-competitions';
+import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
+import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
 
 const prisma = new PrismaClient();
@@ -2052,6 +2054,28 @@ export async function main() {
 
   // ========== Team & Recruitment Data ==========
   await seedTeamData(prisma);
+
+  // ========== International Financial Aid Policy ==========
+  // Seeds the verified need-blind-for-intl list (10 schools) and the
+  // verified need-aware list (16 schools). Schools not in either list
+  // keep needBlindInternational = null (unreviewed) so the counselor
+  // engine uses a midpoint penalty.
+  // See: ADR-0020, docs/PREDICTION_ACCURACY_STRATEGY.md.
+  const intlPolicy = await seedIntlSchools(prisma);
+  console.log(
+    `  ✅ Intl FA policy: ${intlPolicy.needBlindCount} need-blind, ${intlPolicy.needAwareCount} need-aware`,
+  );
+
+  // ========== International Acceptance Rates ==========
+  // Seeds intlAcceptanceRate for 23 HIGH/MEDIUM-confidence schools from
+  // public CDS / IR / admissions stats pages. Idempotent.
+  const intlRates = await seedIntlAcceptanceRates(prisma);
+  console.log(
+    `  ✅ Intl acceptance rates: ${intlRates.updated} rows seeded` +
+      (intlRates.notFound.length > 0
+        ? `, ${intlRates.notFound.length} schools not yet in DB`
+        : ''),
+  );
 
   // ========== Feature Flags ==========
   await seedFeatureFlags();

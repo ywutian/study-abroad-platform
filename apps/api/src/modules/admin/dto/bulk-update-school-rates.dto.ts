@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -260,12 +261,16 @@ export class BulkUpdateSchoolRateRowDto {
 
   @ApiProperty({
     description:
-      'Whether the school is need-blind for international applicants.',
+      'Need-blind-for-international status. `true` = verified need-blind, ' +
+      '`false` = verified need-aware, `null` = clear status / mark as unreviewed. ' +
+      'Omit the property entirely to leave the current value unchanged.',
     required: false,
+    nullable: true,
   })
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsBoolean()
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
 
   @ApiProperty({
     description: 'SAT 25th percentile total score.',
