@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { School, Search, X, CheckCircle, Loader2, Target } from 'lucide-react';
+import { Calculator, CheckCircle, Loader2, RefreshCw, School, Search, X } from 'lucide-react';
 import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import { useSchoolSearch } from '@/hooks/use-school-search';
 import type { SchoolSearchItem, TierType } from './types';
@@ -232,7 +232,11 @@ export function SchoolSelectorCard({
             </>
           ) : (
             <>
-              <Target className="mr-2 h-4 w-4" />
+              {hasPredictions ? (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              ) : (
+                <Calculator className="mr-2 h-4 w-4" />
+              )}
               {hasPredictions ? t('prediction.rerunPrediction') : t('prediction.runPrediction')}
             </>
           )}
