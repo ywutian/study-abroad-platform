@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { SchoolFieldSource } from '@study-abroad/shared';
+import { DATA_SOURCE_LABELS, type SchoolFieldSource } from '@study-abroad/shared';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { IconFrame, InlineIcon } from '@/components/ui/icon-frame';
@@ -12,6 +12,7 @@ import {
   Calendar,
   ChevronDown,
   ClipboardList,
+  ExternalLink,
   Globe2,
   GraduationCap,
   Info,
@@ -196,6 +197,12 @@ type CampusLifeEvidenceRow = {
   usedForRecommendation?: boolean;
 };
 
+type CampusLifeSourceSummary = {
+  key: string;
+  label: string;
+  count: number;
+};
+
 type CampusLifeDimension = {
   key: CampusLifeDimensionKey;
   title: string;
@@ -244,6 +251,36 @@ function sourceDateLabel(source: SchoolFieldSource | undefined, locale: string):
     month: 'short',
     year: 'numeric',
   });
+}
+
+function sourceNameLabel(source: SchoolFieldSource | undefined, locale: string): string {
+  if (!source) return '';
+  const localeKey = locale === 'zh' ? 'zh' : 'en';
+  return DATA_SOURCE_LABELS[source.source]?.[localeKey] ?? source.source;
+}
+
+function buildSourceSummaries(
+  rows: CampusLifeEvidenceRow[],
+  locale: string
+): CampusLifeSourceSummary[] {
+  const summaries = new Map<string, CampusLifeSourceSummary>();
+
+  for (const row of rows) {
+    if (!row.source) continue;
+    const key = row.source.source;
+    const existing = summaries.get(key);
+    if (existing) {
+      existing.count += 1;
+      continue;
+    }
+    summaries.set(key, {
+      key,
+      label: sourceNameLabel(row.source, locale),
+      count: 1,
+    });
+  }
+
+  return Array.from(summaries.values());
 }
 
 function CampusDimensionCard({ dimension }: { dimension: CampusLifeDimension }) {
@@ -675,6 +712,11 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
   ].filter(Boolean) as string[];
 
   const hasCampusLifeSection = evidenceRows.length > 0;
+  const campusLifeSourceSummaries = buildSourceSummaries(evidenceRows, locale);
+  const campusLifeSourceSummaryLabel = joinReadableList(
+    campusLifeSourceSummaries.map((source) => source.label),
+    locale
+  );
   const campusLifeInsight: CampusLifeInsight = {
     dataDepth,
     hasAnyData: hasCampusLifeSection,
@@ -1039,34 +1081,82 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
               <details className="group rounded-lg border bg-background/40">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium">
-                  <span className="flex items-center gap-2">
-                    <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                    {t('school.campusLifeOfficial.evidence.title')}
-                    <Badge variant="outline">{campusLifeInsight.evidenceRows.length}</Badge>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ClipboardList className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span>{t('school.campusLifeOfficial.evidence.title')}</span>
+                    <Badge variant="outline">
+                      {t('school.campusLifeOfficial.evidence.itemCount', {
+                        count: campusLifeInsight.evidenceRows.length,
+                      })}
+                    </Badge>
+                    {campusLifeSourceSummaryLabel ? (
+                      <span className="hidden truncate text-xs font-normal text-muted-foreground md:inline">
+                        {campusLifeSourceSummaryLabel}
+                      </span>
+                    ) : null}
                   </span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="space-y-3 border-t px-4 py-4">
+                  {campusLifeSourceSummaryLabel ? (
+                    <div className="rounded-lg border bg-muted/25 p-3 text-sm">
+                      <p className="font-medium">
+                        {t('school.campusLifeOfficial.evidence.summaryTitle', {
+                          sources: campusLifeSourceSummaryLabel,
+                        })}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {t('school.campusLifeOfficial.evidence.summaryDescription')}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {campusLifeSourceSummaries.map((source) => (
+                          <Badge key={source.key} variant="secondary" className="font-normal">
+                            {source.label} ·{' '}
+                            {t('school.campusLifeOfficial.evidence.itemCount', {
+                              count: source.count,
+                            })}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                   {campusLifeInsight.evidenceRows.map((row, index) => (
                     <div key={row.id}>
                       {index > 0 && <Separator className="mb-3" />}
-                      <div className="grid gap-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
+                      <div className="grid gap-3 text-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)_auto] lg:items-center">
                         <div>
                           <p className="font-medium">{row.label}</p>
                           <p className="text-muted-foreground">{row.value}</p>
                         </div>
                         <div className="text-xs text-muted-foreground">
                           <p>
+                            {t('school.campusLifeOfficial.evidence.source')}:{' '}
+                            <span className="font-medium text-foreground">
+                              {sourceNameLabel(row.source, locale) ||
+                                t('school.campusLifeOfficial.evidence.sourceFallback')}
+                            </span>
+                          </p>
+                          <p>
                             {t('school.campusLifeOfficial.evidence.updated')}:{' '}
                             {sourceDateLabel(row.source, locale) ?? tc('notAvailable')}
                           </p>
-                          <p>
+                          <p className="mt-1">
                             {row.usedForRecommendation
                               ? t('school.campusLifeOfficial.evidence.usedForFit')
                               : t('school.campusLifeOfficial.evidence.notUsedForFit')}
                           </p>
                         </div>
-                        <TrustBadge source={row.source} sourceUrl={row.sourceUrl} />
+                        {row.sourceUrl ? (
+                          <a
+                            href={row.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 justify-self-start rounded-md border px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/5 lg:justify-self-end"
+                          >
+                            {t('school.campusLifeOfficial.evidence.openSource')}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : null}
                       </div>
                     </div>
                   ))}

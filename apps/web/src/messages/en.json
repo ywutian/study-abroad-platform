@@ -5853,7 +5853,13 @@
         "fitOnly": "Campus-life data is used for lifestyle fit and school-list preference, not admission probability."
       },
       "evidence": {
-        "title": "Data Basis",
+        "title": "Sources & Usage",
+        "itemCount": "{count} items",
+        "summaryTitle": "These fields come from: {sources}",
+        "summaryDescription": "Sources explain where the fit signals came from. Public grades are best for comparison; fact fields help verify budget, housing, and campus services.",
+        "source": "Source",
+        "sourceFallback": "public data source",
+        "openSource": "Open source page",
         "updated": "Updated",
         "usedForFit": "Used for lifestyle-fit ranking",
         "notUsedForFit": "Background reference only"

@@ -5832,7 +5832,13 @@
         "fitOnly": "校园生活数据只用于生活适配和选校偏好，不会改变录取概率。"
       },
       "evidence": {
-        "title": "数据依据",
+        "title": "来源与使用说明",
+        "itemCount": "{count} 项",
+        "summaryTitle": "这些字段来自：{sources}",
+        "summaryDescription": "来源用于说明这些生活适配判断的出处；公开评级适合横向比较，事实字段适合核对预算、住宿和校园服务。",
+        "source": "来源",
+        "sourceFallback": "公开数据来源",
+        "openSource": "查看来源页",
         "updated": "更新",
         "usedForFit": "用于生活适配排序参考",
         "notUsedForFit": "仅作背景参考"
