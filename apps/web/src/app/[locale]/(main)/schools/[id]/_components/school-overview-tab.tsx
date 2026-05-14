@@ -293,14 +293,6 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           source: getSchoolFieldSource(school, 'roomAndBoard'),
         }
       : null,
-    isPublicFieldSource(getSchoolFieldSource(school, 'countriesRepresented')) &&
-    school.countriesRepresented != null
-      ? {
-          label: t('school.international.countries'),
-          value: school.countriesRepresented.toLocaleString(),
-          source: getSchoolFieldSource(school, 'countriesRepresented'),
-        }
-      : null,
     isPublicFieldSource(getSchoolFieldSource(school, 'studentOrgsCount')) &&
     school.studentOrgsCount != null
       ? {
@@ -382,6 +374,14 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           value: `${Number(school.intlAcceptanceRate).toFixed(1)}%`,
           bar: Number(school.intlAcceptanceRate),
           source: getSchoolFieldSource(school, 'intlAcceptanceRate'),
+        }
+      : null,
+    isSupplementalFieldSource(getSchoolFieldSource(school, 'countriesRepresented')) &&
+    school.countriesRepresented != null
+      ? {
+          label: t('school.international.countries'),
+          value: school.countriesRepresented.toLocaleString(),
+          source: getSchoolFieldSource(school, 'countriesRepresented'),
         }
       : null,
     isSupplementalFieldSource(getSchoolFieldSource(school, 'salary6YrPostGrad')) &&
@@ -466,6 +466,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
     Boolean(school.usNewsRank || school.qsRank) ||
     supplementalMetricRows.length > 0 ||
     supplementalBadges.length > 0;
+  const hasCampusLifeSection = campusLifeRows.length > 0;
 
   return (
     <div className="space-y-6">
@@ -588,18 +589,18 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
         </Card>
       )}
 
-      <div className="grid items-start gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Shield className="h-5 w-5" />
-              {t('school.campusLifeOfficial.title')}
-            </CardTitle>
-            <CardDescription>{t('school.campusLifeOfficial.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {campusLifeRows.length > 0 ? (
-              campusLifeRows.map((row, index) => (
+      {hasCampusLifeSection ? (
+        <div className="grid items-start gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="h-5 w-5" />
+                {t('school.campusLifeOfficial.title')}
+              </CardTitle>
+              <CardDescription>{t('school.campusLifeOfficial.description')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {campusLifeRows.map((row, index) => (
                 <div key={row.label}>
                   {index > 0 && <Separator className="mb-4" />}
                   <StatRow
@@ -609,13 +610,24 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                     sourceUrl={getFieldSourceUrl(row.source, school)}
                   />
                 </div>
-              ))
-            ) : (
-              <EmptyCardState message={t('school.campusLifeOfficial.empty')} />
-            )}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
 
+          <SchoolCommunityRatingCard
+            schoolId={school.id}
+            summary={
+              school.communityRatingSummary ?? {
+                count: 0,
+                safetyAvg: null,
+                lifeAvg: null,
+                foodAvg: null,
+                isPublic: false,
+              }
+            }
+          />
+        </div>
+      ) : (
         <SchoolCommunityRatingCard
           schoolId={school.id}
           summary={
@@ -628,7 +640,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
             }
           }
         />
-      </div>
+      )}
 
       {hasSupplementalSection && (
         <Card>
