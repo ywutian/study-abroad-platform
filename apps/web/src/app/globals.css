@@ -106,11 +106,11 @@
   --secondary: var(--ds-secondary);
   --secondary-foreground: var(--ds-secondary-foreground);
 
-  /* ✅ 成功色 - 翠绿 */
+  /* 成功色 - 翠绿 */
   --success: var(--ds-success);
   --success-foreground: var(--ds-success-foreground);
 
-  /* ⚠️ 警示色 - 琥珀 */
+  /* 警示色 - 琥珀 */
   --warning: var(--ds-warning);
   --warning-foreground: var(--ds-warning-foreground);
 
@@ -118,11 +118,11 @@
   --destructive: var(--ds-destructive);
   --destructive-foreground: var(--ds-destructive-foreground);
 
-  /* 💡 信息色 */
+  /* 信息色 */
   --info: var(--ds-info);
   --info-foreground: var(--ds-info-foreground);
 
-  /* 📄 背景 */
+  /* 背景 */
   --background: var(--theme-canvas);
   --foreground: var(--ds-foreground);
 
@@ -138,7 +138,7 @@
   --muted: var(--ds-muted);
   --muted-foreground: var(--ds-muted-foreground);
 
-  /* ✨ 强调色 */
+  /* 强调色 */
   --accent: var(--ds-accent);
   --accent-foreground: var(--ds-accent-foreground);
 
@@ -147,7 +147,7 @@
   --input: var(--ds-input);
   --ring: var(--ds-ring);
 
-  /* 📊 图表色 - 暖米黑金系 */
+  /* 图表色 - 暖米黑金系 */
   --chart-1: var(--ds-primary);
   --chart-2: var(--ds-success);
   --chart-3: var(--ds-info);
@@ -205,7 +205,7 @@
   --hero-text: var(--ds-foreground);
   --hero-text-muted: var(--ds-muted-foreground);
 
-  /* 📊 Stats 卡片 - 亮色 */
+  /* Stats 卡片 - 亮色 */
   --stat-card-bg: var(--ds-card);
   --stat-card-border: var(--ds-border);
   --stat-card-text: var(--ds-foreground);
@@ -224,7 +224,7 @@
   --hero-scroll-border: var(--ds-border-strong);
   --hero-scroll-dot: var(--ds-primary);
 
-  /* 🎯 CTA 区域 - 亮色 */
+  /* CTA 区域 - 亮色 */
   --cta-badge-border: var(--ds-border);
   --cta-badge-bg: var(--ds-muted);
   --cta-badge-text: color-mix(in oklab, var(--ds-foreground) 72%, var(--ds-muted-foreground) 28%);
@@ -247,7 +247,7 @@
   /* --ds-* 由内联 getThemeCssText() 注入 */
 
   /* ========== 语义别名层 (existing) ========== */
-  /* 📄 背景 - 深邃夜空 */
+  /* 背景 - 深邃夜空 */
   --background: var(--theme-canvas);
   --foreground: var(--ds-foreground);
 
@@ -267,11 +267,11 @@
   --secondary: var(--ds-secondary);
   --secondary-foreground: var(--ds-secondary-foreground);
 
-  /* ✅ 成功色 */
+  /* 成功色 */
   --success: var(--ds-success);
   --success-foreground: var(--ds-success-foreground);
 
-  /* ⚠️ 警示色 */
+  /* 警示色 */
   --warning: var(--ds-warning);
   --warning-foreground: var(--ds-warning-foreground);
 
@@ -279,7 +279,7 @@
   --muted: var(--ds-muted);
   --muted-foreground: var(--ds-muted-foreground);
 
-  /* ✨ 强调色 */
+  /* 强调色 */
   --accent: var(--ds-accent);
   --accent-foreground: var(--ds-accent-foreground);
 
@@ -287,7 +287,7 @@
   --destructive: var(--ds-destructive);
   --destructive-foreground: var(--ds-destructive-foreground);
 
-  /* 💡 信息色 */
+  /* 信息色 */
   --info: var(--ds-info);
   --info-foreground: var(--ds-info-foreground);
 
@@ -296,7 +296,7 @@
   --input: var(--ds-input);
   --ring: var(--ds-ring);
 
-  /* 📊 图表色 */
+  /* 图表色 */
   --chart-1: var(--ds-primary);
   --chart-2: var(--ds-success);
   --chart-3: var(--ds-info);
@@ -354,7 +354,7 @@
   --hero-text: var(--ds-foreground);
   --hero-text-muted: var(--ds-muted-foreground);
 
-  /* 📊 Stats 卡片 - 暗色 */
+  /* Stats 卡片 - 暗色 */
   --stat-card-bg: color-mix(in oklab, var(--ds-card) 60%, transparent);
   --stat-card-border: var(--ds-border);
   --stat-card-text: var(--ds-foreground);
@@ -373,7 +373,7 @@
   --hero-scroll-border: var(--ds-border-strong);
   --hero-scroll-dot: var(--ds-primary);
 
-  /* 🎯 CTA 区域 - 暗色 */
+  /* CTA 区域 - 暗色 */
   --cta-badge-border: color-mix(in oklab, var(--ds-foreground) 10%, transparent);
   --cta-badge-bg: color-mix(in oklab, var(--ds-foreground) 5%, transparent);
   --cta-badge-text: var(--ds-muted-foreground);
@@ -1450,7 +1450,7 @@
   }
 
   /* ========================================
-     📝 输入框效果
+     输入框效果
      ======================================== */
   .input-glow:focus {
     /* @design-system-ignore-next-line */
@@ -1680,7 +1680,7 @@
   }
 
   /* ========================================
-     📝 排版工具类
+     排版工具类
      字号阶梯 (px): 12 / 14 / 16 / 20 / 24 / 30 / 38 / 46
      行高公式: fontSize + 8px
      ======================================== */

@@ -18,7 +18,7 @@ import { isSafeUrl } from '@/lib/utils/url';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertTriangle,
-  Target,
+  School,
   Plus,
   Trash2,
   Globe,
@@ -298,7 +298,7 @@ export function SchoolSelectionTab({
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-destructive" />
+            <School className="h-5 w-5 text-destructive" />
             {t('profile.targetSchools')}
           </CardTitle>
           <CardDescription>{t('profile.targetSchoolsDesc')}</CardDescription>
@@ -667,7 +667,7 @@ export function SchoolSelectionTab({
         ) : (
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-destructive/10">
-              <Target className="h-8 w-8 text-destructive/50" />
+              <School className="h-8 w-8 text-destructive/50" />
             </div>
             <p className="font-medium">{t('profile.empty.noTargets')}</p>
             <p className="text-sm text-muted-foreground mt-1">{t('profile.empty.noTargetsHint')}</p>

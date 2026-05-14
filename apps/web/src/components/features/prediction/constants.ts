@@ -1,5 +1,5 @@
 import {
-  Target,
+  Scale,
   ShieldCheck,
   BarChart3,
   ClipboardCheck,
@@ -24,7 +24,7 @@ export const TIER_CONFIG = {
     barColor: 'bg-rose-500',
   },
   match: {
-    icon: Target,
+    icon: Scale,
     bar: 'bg-primary',
     bg: 'bg-blue-500/10',
     border: 'border-blue-500/30',

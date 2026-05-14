@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, BarChart3, Clock3, ShieldCheck, Target } from 'lucide-react';
+import { AlertTriangle, BarChart3, ClipboardCheck, Clock3, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
@@ -86,7 +86,7 @@ export function PortfolioSnapshot({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <SnapshotTile
-          icon={Target}
+          icon={ClipboardCheck}
           label={t('formalCoverage')}
           value={`${summary.predictedCount}/${Math.max(selectedCount, summary.predictedCount)}`}
           detail={t('formalCoverageDetail', {

@@ -21,10 +21,10 @@ import {
   Users,
   Clock,
   BadgeCheck,
+  CalendarCheck,
   CircleHelp,
   FileText,
   Medal,
-  Target,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
@@ -41,7 +41,7 @@ const TAG_VARIANTS: Record<
   { variant: 'warning' | 'info' | 'purple' | 'success' | 'secondary'; icon: LucideIcon }
 > = {
   COMPETITION: { variant: 'warning', icon: Medal },
-  ACTIVITY: { variant: 'info', icon: Target },
+  ACTIVITY: { variant: 'info', icon: CalendarCheck },
   QUESTION: { variant: 'purple', icon: CircleHelp },
   SHARING: { variant: 'success', icon: FileText },
   OTHER: { variant: 'secondary', icon: Pin },

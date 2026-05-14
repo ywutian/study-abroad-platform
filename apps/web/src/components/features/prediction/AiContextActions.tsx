@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { AgentType } from '@study-abroad/shared';
-import { BarChart3, TrendingUp, School, Target, Lightbulb, GraduationCap } from 'lucide-react';
+import { BarChart3, Compass, GraduationCap, Lightbulb, School, TrendingUp } from 'lucide-react';
 import { getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import type { PredictionResult, SchoolSearchItem } from './types';
@@ -88,7 +88,7 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
         id: 'recommend-schools',
         label: t('prediction.aiActions.recommendSchools'),
         prompt: t('prediction.aiActions.recommendSchoolsPrompt'),
-        icon: <Target className="h-4 w-4" />,
+        icon: <Compass className="h-4 w-4" />,
         contextMode: 'auto',
       },
       {

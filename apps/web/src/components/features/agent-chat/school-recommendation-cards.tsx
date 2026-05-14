@@ -8,7 +8,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { School, ShieldCheck, Target, TrendingUp } from 'lucide-react';
+import { Scale, School, ShieldCheck, TrendingUp } from 'lucide-react';
 
 // 学校推荐数据类型
 export interface SchoolRecommendation {
@@ -32,7 +32,7 @@ export function SchoolRecommendationCards({ schools }: { schools: SchoolRecommen
       label: t('tierTarget'),
       description: t('tierTargetDesc'),
       color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      icon: Target,
+      icon: Scale,
     },
     safety: {
       label: t('tierSafety'),

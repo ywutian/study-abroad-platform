@@ -5412,7 +5412,7 @@
       "description": "Discover your personality type",
       "start": "Start Test",
       "intro": "Through 48 questions based on Jungian psychological type theory, discover your personality type and learn about suitable learning styles and career directions.",
-      "disclaimer": "⚠️ This is not an official MBTI® assessment, for reference only",
+      "disclaimer": "This is not an official MBTI® assessment, for reference only",
       "strengths": "Personality Strengths",
       "majors": "Recommended Majors",
       "careers": "Recommended Careers"
@@ -5472,7 +5472,7 @@
         "right": "P Perceiving"
       }
     },
-    "mbtiDisclaimer": "⚠️ This assessment is based on Jungian psychological type theory, not an official MBTI® assessment, for personal exploration and educational purposes only.",
+    "mbtiDisclaimer": "This assessment is based on Jungian psychological type theory, not an official MBTI® assessment, for personal exploration and educational purposes only.",
     "mbtiTrademark": "MBTI® is a registered trademark of The Myers-Briggs Company.",
     "hollandCode": "Your Career Code: {code}",
     "interestScores": "Interest Type Scores",

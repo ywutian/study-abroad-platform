@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
 import { SchoolLogo } from '@/components/features';
-import { MapPin, Target, Globe, ExternalLink } from 'lucide-react';
+import { ExternalLink, Gauge, Globe, MapPin } from 'lucide-react';
 
 import type { SchoolDetail, PredictionData } from './types';
 
@@ -79,7 +79,7 @@ export function SchoolHeroHeader({
               {isLoggedIn && predictionData?.current && (
                 <>
                   <Badge variant="secondary" className="gap-1">
-                    <Target className="h-3 w-3" />
+                    <Gauge className="h-3 w-3" />
                     {predictionData.current.probability == null
                       ? t('school.prediction.unavailable')
                       : `${t('school.prediction.personalEstimate')} ${Math.round(

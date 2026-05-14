@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { GraduationCap, Search, ShieldCheck, Lightbulb, Target } from 'lucide-react';
+import { GraduationCap, Lightbulb, ListChecks, Search, ShieldCheck } from 'lucide-react';
 import { EnterpriseStatusStrip, PageContainer, PageHeader } from '@/components/layout';
 import {
   Breadcrumb,
@@ -63,7 +63,7 @@ export default function SchoolsPage() {
             label: statusT('schools.portfolio'),
             value: statusT('states.attention'),
             description: statusT('schools.portfolioDesc'),
-            icon: Target,
+            icon: ListChecks,
           },
           {
             tone: 'attention',

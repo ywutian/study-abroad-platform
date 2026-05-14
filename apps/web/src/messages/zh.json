@@ -5391,7 +5391,7 @@
       "description": "发现你的性格类型",
       "start": "开始测试",
       "intro": "通过 48 道题目，基于荣格心理类型理论，发现你的性格类型，了解适合你的学习方式和职业方向。",
-      "disclaimer": "⚠️ 本测评非官方 MBTI®，仅供参考",
+      "disclaimer": "本测评非官方 MBTI®，仅供参考",
       "strengths": "性格优势",
       "majors": "推荐专业",
       "careers": "推荐职业"
@@ -5451,7 +5451,7 @@
         "right": "P 知觉"
       }
     },
-    "mbtiDisclaimer": "⚠️ 本测评基于荣格心理类型理论，非官方 MBTI® 测评，仅供个人探索和教育用途。",
+    "mbtiDisclaimer": "本测评基于荣格心理类型理论，非官方 MBTI® 测评，仅供个人探索和教育用途。",
     "mbtiTrademark": "MBTI® 是 The Myers-Briggs Company 的注册商标。",
     "hollandCode": "你的职业代码: {code}",
     "interestScores": "兴趣类型得分",
@@ -6932,7 +6932,7 @@
       "title": "积分规则",
       "earn": "获取积分",
       "spend": "消耗积分",
-      "tip": "💡 提示：提交并验证录取案例可获得最多150积分！分享越多，积分越多。"
+      "tip": "提示：提交并验证录取案例可获得最多150积分！分享越多，积分越多。"
     },
     "history": {
       "title": "积分记录",
