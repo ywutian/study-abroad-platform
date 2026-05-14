@@ -5827,12 +5827,12 @@
     "about": "About",
     "dataSource": "Source: {source}",
     "updatedAt": "Updated {date}",
-    "viewSource": "View official source",
+    "viewSource": "View source",
     "trust": {
       "badges": {
         "OFFICIAL": "Official",
         "PARTNER": "Partner",
-        "SCRAPED": "Scraped",
+        "SCRAPED": "Sourced",
         "SEED": "Seed",
         "COMMUNITY": "Community",
         "INFERRED": "AI",
@@ -5841,7 +5841,7 @@
       "tiers": {
         "OFFICIAL": "Official source",
         "PARTNER": "Partner source",
-        "SCRAPED": "Publicly scraped",
+        "SCRAPED": "Public source",
         "SEED": "Seeded data",
         "COMMUNITY": "Community provided",
         "INFERRED": "AI inferred",
