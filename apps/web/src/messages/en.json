@@ -5791,6 +5791,10 @@
       "description": "Verified official or federal school statistics",
       "empty": "No verified official academic data is available yet."
     },
+    "publishedSnapshot": {
+      "title": "Admissions & Cost Snapshot",
+      "description": "Traceable admit, cost, and enrollment data from sourced records"
+    },
     "supplemental": {
       "title": "Supplemental Information",
       "description": "Traceable non-official data sources and supplemental rankings"
@@ -5865,6 +5869,8 @@
       "ed": "ED Early Decision",
       "ed2": "ED2 Early Decision II",
       "rd": "RD Regular Decision",
+      "decision": "Decision",
+      "financialAid": "Financial aid",
       "noData": "No deadline information available"
     },
     "requirements": {

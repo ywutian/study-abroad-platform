@@ -5770,6 +5770,10 @@
       "description": "仅展示已验证的官方/联邦学校统计",
       "empty": "目前暂无已验证的官方学术数据。"
     },
+    "publishedSnapshot": {
+      "title": "申请与费用快照",
+      "description": "展示有来源记录的录取、费用和学生规模数据"
+    },
     "supplemental": {
       "title": "补充信息",
       "description": "可追溯但非官方的数据来源与补充排名"
@@ -5844,6 +5848,8 @@
       "ed": "ED 提前决定",
       "ed2": "ED2 提前决定",
       "rd": "RD 常规申请",
+      "decision": "放榜",
+      "financialAid": "资助截止",
       "noData": "暂无截止日期信息"
     },
     "requirements": {

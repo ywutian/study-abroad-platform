@@ -65,6 +65,13 @@ function EmptyCardState({ message }: { message: string }) {
 
 type DeadlineKey = 'rea' | 'ea' | 'ed' | 'ed2' | 'rd';
 type DeadlineMap = Partial<Record<DeadlineKey, string>>;
+type DeadlineRow = {
+  key: DeadlineKey;
+  applicationDeadline: string;
+  decisionDate?: string;
+  financialAidDeadline?: string;
+  applicationFee?: number | null;
+};
 
 const DEADLINE_KEYS: DeadlineKey[] = ['rea', 'ea', 'ed', 'ed2', 'rd'];
 
@@ -120,6 +127,37 @@ function buildDeadlineMap(school: SchoolDetail, locale: string): DeadlineMap {
   return deadlines;
 }
 
+function buildDeadlineRows(school: SchoolDetail, locale: string): DeadlineRow[] {
+  const rows = new Map<DeadlineKey, DeadlineRow>();
+  const metadataDeadlines = school.metadata?.deadlines ?? {};
+
+  for (const key of DEADLINE_KEYS) {
+    const value = metadataDeadlines[key];
+    if (typeof value === 'string' && value.trim()) {
+      rows.set(key, {
+        key,
+        applicationDeadline: value.trim(),
+      });
+    }
+  }
+
+  for (const deadline of school.deadlines ?? []) {
+    const key = normalizeDeadlineRound(deadline.round);
+    const applicationDeadline = formatDeadlineDate(deadline.applicationDeadline, locale);
+    if (!key || !applicationDeadline) continue;
+
+    rows.set(key, {
+      key,
+      applicationDeadline,
+      decisionDate: formatDeadlineDate(deadline.decisionDate, locale),
+      financialAidDeadline: formatDeadlineDate(deadline.financialAidDeadline, locale),
+      applicationFee: deadline.applicationFee,
+    });
+  }
+
+  return DEADLINE_KEYS.map((key) => rows.get(key)).filter(Boolean) as DeadlineRow[];
+}
+
 function getFieldSourceUrl(source: SchoolFieldSource | undefined, school: SchoolDetail) {
   if (!source) return null;
   return source.sourceUrl ?? getSourceUrl(source.source, school);
@@ -132,9 +170,16 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
   const locale = useLocale();
 
   const deadlines = buildDeadlineMap(school, locale);
+  const deadlineRows = buildDeadlineRows(school, locale);
 
   const fmtCurrency = (value?: number | null) =>
     value != null ? `$${value.toLocaleString()}` : tc('notAvailable');
+
+  const fmtPercent = (value?: number | null, digits = 1) =>
+    value != null ? `${Number(value).toFixed(digits)}%` : tc('notAvailable');
+
+  const fmtNumber = (value?: number | null) =>
+    value != null ? value.toLocaleString() : tc('notAvailable');
 
   const verifiedAcademicRows = [
     isOfficialFieldSource(getSchoolFieldSource(school, 'satAvg', 'sat25', 'sat75')) && {
@@ -162,6 +207,53 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       bar: school.graduationRate != null ? Number(school.graduationRate) : undefined,
       source: getSchoolFieldSource(school, 'graduationRate'),
     },
+  ].filter(Boolean) as Array<{
+    label: string;
+    value: ReactNode;
+    bar?: number;
+    source?: SchoolFieldSource;
+  }>;
+
+  const publishedSnapshotRows = [
+    isPublicFieldSource(getSchoolFieldSource(school, 'acceptanceRate')) &&
+    school.acceptanceRate != null
+      ? {
+          label: t('school.stats.acceptanceRate'),
+          value: fmtPercent(school.acceptanceRate),
+          source: getSchoolFieldSource(school, 'acceptanceRate'),
+        }
+      : null,
+    isPublicFieldSource(getSchoolFieldSource(school, 'tuition')) && school.tuition != null
+      ? {
+          label: t('school.stats.tuition'),
+          value: fmtCurrency(school.tuition),
+          source: getSchoolFieldSource(school, 'tuition'),
+        }
+      : null,
+    isPublicFieldSource(getSchoolFieldSource(school, 'studentCount', 'totalEnrollment')) &&
+    (school.studentCount != null || school.totalEnrollment != null)
+      ? {
+          label: t('school.stats.studentCount'),
+          value: fmtNumber(school.studentCount ?? school.totalEnrollment),
+          source: getSchoolFieldSource(school, 'studentCount', 'totalEnrollment'),
+        }
+      : null,
+    isPublicFieldSource(getSchoolFieldSource(school, 'graduationRate')) &&
+    school.graduationRate != null
+      ? {
+          label: t('school.graduationRate'),
+          value: fmtPercent(school.graduationRate, 0),
+          bar: Number(school.graduationRate),
+          source: getSchoolFieldSource(school, 'graduationRate'),
+        }
+      : null,
+    isPublicFieldSource(getSchoolFieldSource(school, 'avgSalary')) && school.avgSalary != null
+      ? {
+          label: t('school.stats.avgSalary'),
+          value: fmtCurrency(school.avgSalary),
+          source: getSchoolFieldSource(school, 'avgSalary'),
+        }
+      : null,
   ].filter(Boolean) as Array<{
     label: string;
     value: ReactNode;
@@ -377,7 +469,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid items-start gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -417,71 +509,86 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {deadlines.rea && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="destructive">REA</Badge>
-                    <span>{t('school.deadlines.rea')}</span>
+            {deadlineRows.length > 0 ? (
+              deadlineRows.map((deadline, index) => (
+                <div key={deadline.key}>
+                  {index > 0 && <Separator className="mb-4" />}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            deadline.key === 'rea'
+                              ? 'destructive'
+                              : deadline.key === 'ea'
+                                ? 'secondary'
+                                : 'outline'
+                          }
+                        >
+                          {deadline.key === 'ed2' ? 'ED II' : deadline.key.toUpperCase()}
+                        </Badge>
+                        <span>{t(`school.deadlines.${deadline.key}`)}</span>
+                      </div>
+                      <span className="font-semibold">{deadline.applicationDeadline}</span>
+                    </div>
+                    {(deadline.decisionDate ||
+                      deadline.financialAidDeadline ||
+                      deadline.applicationFee != null) && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 pl-12 text-sm text-muted-foreground">
+                        {deadline.decisionDate && (
+                          <span>
+                            {t('school.deadlines.decision')}: {deadline.decisionDate}
+                          </span>
+                        )}
+                        {deadline.financialAidDeadline && (
+                          <span>
+                            {t('school.deadlines.financialAid')}: {deadline.financialAidDeadline}
+                          </span>
+                        )}
+                        {deadline.applicationFee != null && (
+                          <span>
+                            {t('school.financialAid.applicationFee')}:{' '}
+                            {fmtCurrency(deadline.applicationFee)}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <span className="font-semibold">{deadlines.rea}</span>
                 </div>
-                <Separator />
-              </>
-            )}
-            {deadlines.ea && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">EA</Badge>
-                    <span>{t('school.deadlines.ea')}</span>
-                  </div>
-                  <span className="font-semibold">{deadlines.ea}</span>
-                </div>
-                <Separator />
-              </>
-            )}
-            {deadlines.ed && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge>ED</Badge>
-                    <span>{t('school.deadlines.ed')}</span>
-                  </div>
-                  <span className="font-semibold">{deadlines.ed}</span>
-                </div>
-                <Separator />
-              </>
-            )}
-            {deadlines.ed2 && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">ED II</Badge>
-                    <span>{t('school.deadlines.ed2')}</span>
-                  </div>
-                  <span className="font-semibold">{deadlines.ed2}</span>
-                </div>
-                <Separator />
-              </>
-            )}
-            {deadlines.rd && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">RD</Badge>
-                  <span>{t('school.deadlines.rd')}</span>
-                </div>
-                <span className="font-semibold">{deadlines.rd}</span>
-              </div>
-            )}
-            {Object.keys(deadlines).length === 0 && (
+              ))
+            ) : Object.keys(deadlines).length === 0 ? (
               <EmptyCardState message={t('school.deadlines.noData')} />
-            )}
+            ) : null}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {publishedSnapshotRows.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <ClipboardList className="h-5 w-5" />
+              {t('school.publishedSnapshot.title')}
+            </CardTitle>
+            <CardDescription>{t('school.publishedSnapshot.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {publishedSnapshotRows.map((row) => (
+              <div key={row.label} className="rounded-lg border bg-background/40 p-4">
+                <StatRow
+                  label={row.label}
+                  value={row.value}
+                  bar={row.bar}
+                  source={row.source}
+                  sourceUrl={getFieldSourceUrl(row.source, school)}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid items-start gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
