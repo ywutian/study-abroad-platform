@@ -97,7 +97,7 @@ export const TAG_CONFIG: Record<
   { label: string; labelZh: string; icon: string; color: string }
 > = {
   COMPETITION: { label: 'Competition', labelZh: '竞赛', icon: 'Medal', color: 'warning' },
-  ACTIVITY: { label: 'Activity', labelZh: '活动', icon: 'Target', color: 'info' },
+  ACTIVITY: { label: 'Activity', labelZh: '活动', icon: 'CalendarCheck', color: 'info' },
   QUESTION: { label: 'Question', labelZh: '提问', icon: 'CircleHelp', color: 'purple' },
   SHARING: { label: 'Sharing', labelZh: '分享', icon: 'FileText', color: 'success' },
   OTHER: { label: 'Other', labelZh: '其他', icon: 'Pin', color: 'secondary' },

@@ -2,7 +2,7 @@
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { motion } from 'framer-motion';
-import { Trophy, Target, HelpCircle, FileText, FolderOpen, Users } from 'lucide-react';
+import { CalendarCheck, FileText, FolderOpen, HelpCircle, Trophy, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ForumPostTag } from '@/types/forum';
@@ -10,7 +10,7 @@ import type { ForumPostTag } from '@/types/forum';
 const TAGS: { value: ForumPostTag | null; labelKey: string; icon: typeof Trophy }[] = [
   { value: null, labelKey: 'tagAll', icon: FolderOpen },
   { value: 'COMPETITION', labelKey: 'tagCompetition', icon: Trophy },
-  { value: 'ACTIVITY', labelKey: 'tagActivity', icon: Target },
+  { value: 'ACTIVITY', labelKey: 'tagActivity', icon: CalendarCheck },
   { value: 'QUESTION', labelKey: 'tagQuestion', icon: HelpCircle },
   { value: 'SHARING', labelKey: 'tagSharing', icon: FileText },
 ];

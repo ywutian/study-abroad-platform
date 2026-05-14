@@ -5,7 +5,7 @@ import {
   GraduationCap,
   BookOpen,
   Award,
-  Target,
+  School,
   Shield,
   Check,
   Mail,
@@ -109,7 +109,7 @@ export const TAB_CONFIG: TabConfig[] = [
     icon: Award,
     color: 'from-yellow-500 to-orange-500',
   },
-  { value: 'targets', labelKey: 'profile.steps.targets', icon: Target, color: 'bg-destructive' },
+  { value: 'targets', labelKey: 'profile.steps.targets', icon: School, color: 'bg-destructive' },
   {
     value: 'recLetters',
     labelKey: 'profile.steps.recLetters',

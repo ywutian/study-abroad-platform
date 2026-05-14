@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { User, FileText, GraduationCap, Target, Users, Coins } from 'lucide-react';
+import { Coins, FileText, Gauge, GraduationCap, User, Users } from 'lucide-react';
 
 interface DashboardStatsProps {
   data: {
@@ -59,7 +59,7 @@ export function DashboardStats({ data, className }: DashboardStatsProps) {
     {
       label: t('stats.predictions'),
       value: data.stats.predictions.toString(),
-      icon: Target,
+      icon: Gauge,
       color: 'text-rose-500',
       bgColor: 'bg-rose-500/10',
     },

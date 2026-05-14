@@ -9,7 +9,7 @@ const allowedSubpaths = new Set(['components/features/chat/EmojiPicker.tsx']);
 const bannedLucideNames = ['Sparkles', 'Bot', 'Brain', 'Wand2', 'WandSparkles', 'Rocket'];
 const bannedLucidePattern = new RegExp(`\\b(${bannedLucideNames.join('|')})\\b`);
 const emojiPattern = /[🤖✨🏆🎯📊📅📄📝❓📌🛡✅🎓⭐💡⚠🥇🥈🥉⏱]/u;
-const scanExtensions = new Set(['.ts', '.tsx']);
+const scanExtensions = new Set(['.ts', '.tsx', '.css', '.json']);
 
 interface Violation {
   file: string;
@@ -37,6 +37,9 @@ const violations: Violation[] = [];
 for (const file of walk(webSrc)) {
   const relativePath = path.relative(webSrc, file);
   if (allowedSubpaths.has(relativePath)) continue;
+  const isPredictionUi =
+    relativePath.includes('components/features/prediction/') ||
+    relativePath.includes('(main)/prediction/');
 
   const lines = readFileSync(file, 'utf8').split('\n');
 
@@ -46,6 +49,15 @@ for (const file of walk(webSrc)) {
         file: relativePath,
         line: index + 1,
         reason: `banned AI-feeling lucide icon (${bannedLucideNames.join(', ')})`,
+        text: line.trim(),
+      });
+    }
+
+    if (isPredictionUi && /\bTarget\b/.test(line)) {
+      violations.push({
+        file: relativePath,
+        line: index + 1,
+        reason: 'overused Target icon in prediction UI; choose a more specific tool icon',
         text: line.trim(),
       });
     }

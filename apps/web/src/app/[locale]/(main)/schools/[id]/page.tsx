@@ -24,8 +24,9 @@ import { TrustBadge } from '@/components/features/schools/TrustBadge';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import {
-  Target,
+  ClipboardCheck,
   DollarSign,
+  Gauge,
   Users,
   GraduationCap,
   FileText,
@@ -36,6 +37,7 @@ import {
   BarChart3,
   School,
   ExternalLink,
+  Percent,
 } from 'lucide-react';
 
 import { AgentType, DATA_SOURCE_LABELS, schoolRoutes } from '@study-abroad/shared';
@@ -96,7 +98,7 @@ export default function SchoolDetailPage() {
     return [
       {
         id: 'analyze-chance',
-        icon: <Target className="h-3.5 w-3.5" />,
+        icon: <Gauge className="h-3.5 w-3.5" />,
         label: t('school.ai.analyzeChance'),
         message: t('school.ai.analyzeChancePrompt', { schoolName }),
       },
@@ -205,7 +207,7 @@ export default function SchoolDetailPage() {
           );
           return [
             {
-              icon: Target,
+              icon: Percent,
               label: t('school.stats.acceptanceRate'),
               value:
                 trustedAcceptanceRate != null
@@ -356,7 +358,7 @@ export default function SchoolDetailPage() {
             value="admission"
             className="min-w-10 gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           >
-            <Target className="h-4 w-4" />
+            <ClipboardCheck className="h-4 w-4" />
             <span className="hidden sm:inline">{t('school.tabs.admission')}</span>
           </TabsTrigger>
           <TabsTrigger

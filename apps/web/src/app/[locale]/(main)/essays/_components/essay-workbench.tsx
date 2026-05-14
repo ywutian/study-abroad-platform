@@ -16,7 +16,7 @@ import {
   RotateCcw,
   Save,
   Lightbulb,
-  Target,
+  School,
   Trash2,
   PencilLine,
   X,
@@ -288,7 +288,7 @@ export function EssayWorkbench({
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {schoolName && (
               <Badge variant="outline" className="gap-1">
-                <Target className="h-3 w-3" />
+                <School className="h-3 w-3" />
                 {schoolName}
               </Badge>
             )}
@@ -558,7 +558,7 @@ function EmptyEditor({
         <p className="mt-2 text-sm text-muted-foreground">{t('essays.clickNewToCreate')}</p>
         <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
           <Button onClick={onCreateFromPrompt}>
-            <Target className="mr-2 h-4 w-4" />
+            <FileText className="mr-2 h-4 w-4" />
             {t('essays.onboarding.fromPromptTitle')}
           </Button>
           <Button variant="outline" onClick={onCreate}>
