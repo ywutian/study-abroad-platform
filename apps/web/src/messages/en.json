@@ -5771,7 +5771,8 @@
       "title": "International Students",
       "studentPct": "International Student %",
       "acceptanceRate": "International Acceptance Rate",
-      "countries": "Student Countries/Regions"
+      "countries": "Student Countries/Regions",
+      "countriesHint": "The number of countries or regions represented in the student body. It signals international diversity, not admission odds."
     },
     "campusLife": {
       "title": "Campus Life Ratings",
@@ -5782,9 +5783,81 @@
       "studentOrgs": "Student Organizations"
     },
     "campusLifeOfficial": {
-      "title": "Campus Life Snapshot",
-      "description": "Traceable campus-life and cost-of-living signals from sourced records",
-      "empty": "No traceable campus-life data is available yet."
+      "title": "Campus Fit Overview",
+      "description": "Turns sourced campus-life, housing, and cost-of-living records into fit signals",
+      "empty": "No traceable campus-life data is available yet.",
+      "emptyHelp": "This school does not yet have enough public campus-life fields. You can still use official data, supplemental facts, and community ratings.",
+      "fitNote": "These signals help evaluate daily-life fit. They do not affect admission probability.",
+      "boundaries": "How to Use This",
+      "dataDepth": {
+        "rich": "Stronger data",
+        "partial": "Partial data",
+        "thin": "Limited data"
+      },
+      "headlines": {
+        "withStrengths": "{strengths} look strong{caveat}",
+        "missingSuffix": ", but {dimensions} still need more public data",
+        "rich": "Campus-life data is broad enough to compare daily fit across the three dimensions.",
+        "partial": "Some campus-life signals are available, but the source details still matter.",
+        "thin": "Only a few public campus-life fields are available, so treat this as a light reference."
+      },
+      "gradeLabels": {
+        "strong": "above most schools",
+        "good": "solid",
+        "mixed": "mixed; preference matters",
+        "limited": "limited or uneven",
+        "noGrade": "no public grade"
+      },
+      "dimensions": {
+        "safety": {
+          "title": "Safety",
+          "withGrade": "Uses public safety and crime-related campus ratings as a first-pass safety signal.",
+          "withFacts": "No public grade yet, but school safety-service facts are available.",
+          "noData": "Public safety data is thin. Check the school site and student feedback before relying on it."
+        },
+        "life": {
+          "title": "Campus Atmosphere",
+          "withGrade": "Uses student-life ratings plus facts like clubs and on-campus living.",
+          "withFacts": "No public student-life grade yet, but club or housing-participation facts are available.",
+          "noData": "Public campus-atmosphere data is thin, so avoid making a strong call from this section."
+        },
+        "diningHousing": {
+          "title": "Dining & Housing",
+          "withGrade": "Uses food ratings alongside housing availability, requirements, and living-cost facts.",
+          "withFacts": "No public food grade yet, but housing or meal-cost facts are available.",
+          "noData": "Public dining and housing data is thin. Check the school housing and dining pages."
+        }
+      },
+      "fields": {
+        "safetyServices": "Safety services",
+        "livingOnCampus": "Students living on campus",
+        "mealPlanCost": "Meal plan cost",
+        "housingAvailable": "On-campus housing",
+        "housingRequiredYears": "Required on-campus years"
+      },
+      "safetyServices": {
+        "securityPatrol": "24-hour security patrol",
+        "publicSafetyOffice": "campus police/public safety office",
+        "emergencyPhones": "emergency phones",
+        "lateNightEscort": "late-night transport or escort",
+        "controlledResidenceAccess": "controlled residence access",
+        "securityCameras": "security cameras"
+      },
+      "values": {
+        "years": "{count} yr"
+      },
+      "caveats": {
+        "missingDimensions": "{dimensions} still have limited public fields.",
+        "costMissing": "Housing or meal costs are missing, so confirm the real budget on the school site.",
+        "gradeOnly": "Some judgments come from public grades. They are useful for comparison, not a guarantee of personal experience.",
+        "fitOnly": "Campus-life data is used for lifestyle fit and school-list preference, not admission probability."
+      },
+      "evidence": {
+        "title": "Data Basis",
+        "updated": "Updated",
+        "usedForFit": "Used for lifestyle-fit ranking",
+        "notUsedForFit": "Background reference only"
+      }
     },
     "officialData": {
       "title": "Official Data",

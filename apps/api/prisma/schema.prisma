@@ -616,13 +616,13 @@ model Profile {
   // Both default to "no effect" so existing profiles aren't impacted by the
   // counselor-mode rollout. Surfaced via profile settings UI when users
   // self-identify (athletes for recruitment, demographic for URM context).
-  recruitedAthlete   Boolean?         @default(false)
+  recruitedAthlete Boolean? @default(false)
   // 'PREFER_NOT_SAY' | 'BLACK' | 'HISPANIC' | 'NATIVE_AMERICAN' | 'PACIFIC_ISLANDER' | null
   // Stored as free-text string (not enum) because:
   //   1. Categories may evolve as US Census revises (NACAC tracks 2030 reform)
   //   2. Some users prefer multi-select; deferring to comma-separated string future-proofs
   // Counselor's urmMultiplier reads only the canonical 4 values above.
-  urmStatus          String?
+  urmStatus        String?
 
   // PR-14 (4/27): test-optional applicants. Common App data shows top-30
   // private schools admit test-optional applicants 5-10pp lower than
@@ -630,7 +630,7 @@ model Profile {
   // schools when this flag is true. Defaults false (legacy behavior).
   // Different from "no test scores in profile" — this is an EXPLICIT
   // declaration "I'm applying test-optional" vs "I haven't filled in yet".
-  applyingTestOptional Boolean?       @default(false)
+  applyingTestOptional Boolean? @default(false)
 
   // Recommendation preferences (JSON)
   recommendationPreferences Json?
@@ -1161,8 +1161,14 @@ model School {
   monthlyLoanPayment Int? // Median monthly loan payment
 
   // Campus Life (from Appily)
-  countriesRepresented Int? // Number of countries represented
-  studentOrgsCount     Int? // Number of student organizations
+  countriesRepresented  Int? // Number of countries represented
+  studentOrgsCount      Int? // Number of student organizations
+  housingAvailable      Boolean? // Whether on-campus housing is available
+  housingRequiredYears  Int? // Number of years students are required to live on campus
+  percentLivingOnCampus Decimal? @db.Decimal(5, 2) // Percent of students living on campus
+  mealPlanCost          Int? // Annual meal plan cost in USD
+  campusSafetyServices  String[] @default([]) // Source-backed campus safety services
+  campusLifeSummary     Json? // Source-backed campus-life summary facts
 
   // Search aliases (abbreviations, short names, nicknames)
   aliases String[] @default([]) // e.g. ["MIT", "麻省理工", "Mass Tech"]

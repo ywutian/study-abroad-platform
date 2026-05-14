@@ -41,6 +41,12 @@ const CAMPUS_LIFE_FIELDS = [
   'roomAndBoard',
   'studentOrgsCount',
   'countriesRepresented',
+  'housingAvailable',
+  'housingRequiredYears',
+  'percentLivingOnCampus',
+  'mealPlanCost',
+  'campusSafetyServices',
+  'campusLifeSummary',
   'nicheSafetyGrade',
   'nicheLifeGrade',
   'nicheFoodGrade',
@@ -82,7 +88,7 @@ export interface FieldCoverageTotal {
 
 export interface CoverageFieldStatus {
   field: CoverageField;
-  value: number | string | boolean | null;
+  value: unknown;
   filled: boolean;
   explicitUnknown: boolean;
   source: string | null;
@@ -130,6 +136,12 @@ interface SchoolForCoverage {
   roomAndBoard: number | null;
   studentOrgsCount: number | null;
   countriesRepresented: number | null;
+  housingAvailable: boolean | null;
+  housingRequiredYears: number | null;
+  percentLivingOnCampus: Prisma.Decimal | null;
+  mealPlanCost: number | null;
+  campusSafetyServices: string[];
+  campusLifeSummary: Prisma.JsonValue | null;
   nicheSafetyGrade: string | null;
   nicheLifeGrade: string | null;
   nicheFoodGrade: string | null;
@@ -628,6 +640,12 @@ export class AdminSchoolDataCoverageService {
         roomAndBoard: true,
         studentOrgsCount: true,
         countriesRepresented: true,
+        housingAvailable: true,
+        housingRequiredYears: true,
+        percentLivingOnCampus: true,
+        mealPlanCost: true,
+        campusSafetyServices: true,
+        campusLifeSummary: true,
         nicheSafetyGrade: true,
         nicheLifeGrade: true,
         nicheFoodGrade: true,
@@ -717,6 +735,12 @@ export class AdminSchoolDataCoverageService {
     }
     const value = (school as any)[field];
     if (value instanceof Prisma.Decimal) return value.toNumber();
+    if (Array.isArray(value)) return value.length > 0 ? value : null;
+    if (value && typeof value === 'object') {
+      return Object.keys(value as Record<string, unknown>).length > 0
+        ? value
+        : null;
+    }
     return value ?? null;
   }
 

@@ -10,6 +10,7 @@ import {
 } from './school-data-merger';
 import { toRecord } from './school-provenance.helpers';
 import { AppilyScrapeService } from './scrapers/appily.scraper';
+import { BigFutureScrapeService } from './scrapers/bigfuture.scraper';
 
 const NICHE_CAMPUS_FIELDS = [
   'nicheOverallGrade',
@@ -43,6 +44,13 @@ export interface CampusLifeIngestionResult {
   onlyMissing: boolean;
   limit: number;
   appily: {
+    scraped: number;
+    updated: number;
+    failed: number;
+    skipped: number;
+    dryRun: boolean;
+  };
+  bigFuture: {
     scraped: number;
     updated: number;
     failed: number;
@@ -245,6 +253,7 @@ export class CampusLifeIngestionService {
     private readonly prisma: PrismaService,
     private readonly merger: SchoolDataMerger,
     private readonly appilyScrapeService: AppilyScrapeService,
+    private readonly bigFutureScrapeService: BigFutureScrapeService,
   ) {}
 
   async ingest(
@@ -256,6 +265,14 @@ export class CampusLifeIngestionService {
     const limit = Math.min(options.limit ?? 200, 500);
 
     const appily = await this.appilyScrapeService.scrapeSchools(
+      limit,
+      actorUserId,
+      {
+        dryRun,
+        onlyMissingCampusLife: onlyMissing,
+      },
+    );
+    const bigFuture = await this.bigFutureScrapeService.scrapeSchools(
       limit,
       actorUserId,
       {
@@ -275,6 +292,7 @@ export class CampusLifeIngestionService {
       onlyMissing,
       limit,
       appily,
+      bigFuture,
       tavily,
     };
   }

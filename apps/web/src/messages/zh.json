@@ -5750,7 +5750,8 @@
       "title": "国际生信息",
       "studentPct": "国际生比例",
       "acceptanceRate": "国际生录取率",
-      "countries": "学生来源国家/地区"
+      "countries": "学生来源国家/地区",
+      "countriesHint": "指学生群体覆盖的国家或地区数量，用来判断国际化程度，不代表录取机会。"
     },
     "campusLife": {
       "title": "校园生活评级",
@@ -5761,9 +5762,81 @@
       "studentOrgs": "学生社团数量"
     },
     "campusLifeOfficial": {
-      "title": "校园生活快照",
-      "description": "展示有来源记录的校园生活与生活成本信息",
-      "empty": "目前暂无可追溯的校园生活数据。"
+      "title": "生活适配概览",
+      "description": "把有来源记录的校园生活、住宿和生活成本信息翻译成选校判断",
+      "empty": "目前暂无可追溯的校园生活数据。",
+      "emptyHelp": "这所学校暂时没有足够的公开校园生活字段。你仍可以参考官方数据、补充信息和社区评分。",
+      "fitNote": "这些信息帮助判断日常体验和生活适配，不参与录取概率计算。",
+      "boundaries": "适用边界",
+      "dataDepth": {
+        "rich": "资料较完整",
+        "partial": "资料部分可用",
+        "thin": "资料有限"
+      },
+      "headlines": {
+        "withStrengths": "{strengths}表现较强{caveat}",
+        "missingSuffix": "，但{dimensions}仍缺少足够公开字段",
+        "rich": "校园生活资料较完整，可以结合三个维度判断是否适合长期生活。",
+        "partial": "已有部分校园生活信号，适合做初步判断，但仍建议查看来源。",
+        "thin": "校园生活公开字段较少，目前只能作为轻量参考。"
+      },
+      "gradeLabels": {
+        "strong": "高于多数学校",
+        "good": "偏稳",
+        "mixed": "中等，需要结合偏好",
+        "limited": "偏弱或争议较多",
+        "noGrade": "暂无公开等级"
+      },
+      "dimensions": {
+        "safety": {
+          "title": "安全感",
+          "withGrade": "参考校园安全/治安相关公开评级，适合作为生活安全感的初筛。",
+          "withFacts": "目前没有公开等级，但可参考学校公开的安全服务。",
+          "noData": "公开安全数据不足，建议进一步查看学校官网和学生反馈。"
+        },
+        "life": {
+          "title": "校园氛围",
+          "withGrade": "参考学生生活评级，并结合社团、住宿参与度等事实字段。",
+          "withFacts": "目前没有公开生活评级，但已有学生组织或住宿参与度等事实信号。",
+          "noData": "公开校园氛围数据不足，暂不建议据此做强判断。"
+        },
+        "diningHousing": {
+          "title": "餐饮与住宿",
+          "withGrade": "参考餐饮评价，并结合住宿可用性、住宿要求和生活成本。",
+          "withFacts": "目前没有公开餐饮等级，但可参考住宿与餐食费用等事实字段。",
+          "noData": "公开餐饮和住宿数据不足，建议查看学校住宿/餐饮页面。"
+        }
+      },
+      "fields": {
+        "safetyServices": "安全服务",
+        "livingOnCampus": "住校学生比例",
+        "mealPlanCost": "餐食计划费用",
+        "housingAvailable": "校内住宿",
+        "housingRequiredYears": "强制住校年限"
+      },
+      "safetyServices": {
+        "securityPatrol": "24小时安全巡逻",
+        "publicSafetyOffice": "校园警务/公共安全办公室",
+        "emergencyPhones": "紧急电话点",
+        "lateNightEscort": "夜间交通或护送",
+        "controlledResidenceAccess": "宿舍门禁",
+        "securityCameras": "安全监控"
+      },
+      "values": {
+        "years": "{count} 年"
+      },
+      "caveats": {
+        "missingDimensions": "{dimensions}公开字段仍有限。",
+        "costMissing": "住宿/餐食费用暂缺，实际预算需要到学校官网确认。",
+        "gradeOnly": "部分判断来自公开评级，适合比较学校，不等同于每个学生的个人体验。",
+        "fitOnly": "校园生活数据只用于生活适配和选校偏好，不会改变录取概率。"
+      },
+      "evidence": {
+        "title": "数据依据",
+        "updated": "更新",
+        "usedForFit": "用于生活适配排序参考",
+        "notUsedForFit": "仅作背景参考"
+      }
     },
     "officialData": {
       "title": "官方数据",

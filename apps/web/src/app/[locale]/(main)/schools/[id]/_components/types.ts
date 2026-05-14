@@ -52,6 +52,7 @@ export interface SchoolDetail {
   averageAidPackage?: number;
   averageNetPrice?: number;
   roomAndBoard?: number;
+  mealPlanCost?: number;
 
   // Application Info
   applicationFee?: number;
@@ -75,6 +76,11 @@ export interface SchoolDetail {
   // Campus Life
   countriesRepresented?: number;
   studentOrgsCount?: number;
+  housingAvailable?: boolean;
+  housingRequiredYears?: number;
+  percentLivingOnCampus?: number;
+  campusSafetyServices?: string[];
+  campusLifeSummary?: Record<string, unknown>;
 
   description?: string;
   descriptionZh?: string;

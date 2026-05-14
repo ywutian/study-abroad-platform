@@ -9,10 +9,13 @@ import {
   Min,
   Max,
   MaxLength,
+  IsArray,
+  IsObject,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { TestingPolicy } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 export class CreateSchoolDto {
   @ApiProperty({ description: 'School name in English' })
@@ -366,6 +369,52 @@ export class CreateSchoolDto {
   @IsInt()
   @Min(0)
   studentOrgsCount?: number;
+
+  @ApiPropertyOptional({
+    description: 'Whether on-campus housing is available',
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  housingAvailable?: boolean;
+
+  @ApiPropertyOptional({ description: 'Years of required on-campus housing' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  housingRequiredYears?: number;
+
+  @ApiPropertyOptional({ description: 'Percent of students living on campus' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  percentLivingOnCampus?: number;
+
+  @ApiPropertyOptional({ description: 'Annual meal plan cost in USD' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  mealPlanCost?: number;
+
+  @ApiPropertyOptional({
+    description: 'Source-backed campus safety services',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  campusSafetyServices?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Source-backed campus-life summary facts',
+  })
+  @IsOptional()
+  @IsObject()
+  campusLifeSummary?: Prisma.InputJsonValue;
 
   // Admission Requirements (stored in metadata JSON)
   @ApiPropertyOptional({ description: 'Minimum TOEFL score required' })
