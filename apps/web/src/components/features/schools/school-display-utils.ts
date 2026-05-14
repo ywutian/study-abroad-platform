@@ -63,8 +63,12 @@ export function isOfficialFieldSource(source?: SchoolFieldSource): boolean {
   return source?.tier === 'OFFICIAL' || source?.tier === 'PARTNER';
 }
 
+export function isPublicFieldSource(source?: SchoolFieldSource): source is SchoolFieldSource {
+  return source?.tier === 'OFFICIAL' || source?.tier === 'PARTNER' || source?.tier === 'SCRAPED';
+}
+
 export function isSupplementalFieldSource(source?: SchoolFieldSource): boolean {
-  return Boolean(source) && !isOfficialFieldSource(source);
+  return isPublicFieldSource(source) && !isOfficialFieldSource(source);
 }
 
 export function getSupplementalCampusLifeGrades(school: {
@@ -74,16 +78,16 @@ export function getSupplementalCampusLifeGrades(school: {
   nicheOverallGrade?: string | null;
   fieldSources?: SchoolFieldSources | null;
 }) {
-  const overallGrade = getSchoolFieldSource(school, 'nicheOverallGrade')
+  const overallGrade = isPublicFieldSource(getSchoolFieldSource(school, 'nicheOverallGrade'))
     ? normalizeGrade(school.nicheOverallGrade)
     : undefined;
-  const safetyGrade = getSchoolFieldSource(school, 'nicheSafetyGrade')
+  const safetyGrade = isPublicFieldSource(getSchoolFieldSource(school, 'nicheSafetyGrade'))
     ? normalizeGrade(school.nicheSafetyGrade)
     : undefined;
-  const lifeGrade = getSchoolFieldSource(school, 'nicheLifeGrade')
+  const lifeGrade = isPublicFieldSource(getSchoolFieldSource(school, 'nicheLifeGrade'))
     ? normalizeGrade(school.nicheLifeGrade)
     : undefined;
-  const foodGrade = getSchoolFieldSource(school, 'nicheFoodGrade')
+  const foodGrade = isPublicFieldSource(getSchoolFieldSource(school, 'nicheFoodGrade'))
     ? normalizeGrade(school.nicheFoodGrade)
     : undefined;
 

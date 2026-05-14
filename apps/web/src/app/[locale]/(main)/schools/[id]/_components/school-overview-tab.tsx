@@ -9,8 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Calendar, ClipboardList, Globe2, GraduationCap, Shield, TrendingUp } from 'lucide-react';
 import {
   getSchoolFieldSource,
-  getSupplementalCampusLifeGrades,
   isOfficialFieldSource,
+  isPublicFieldSource,
   isSupplementalFieldSource,
 } from '@/components/features/schools/school-display-utils';
 import { TrustBadge } from '@/components/features/schools/TrustBadge';
@@ -63,14 +63,75 @@ function EmptyCardState({ message }: { message: string }) {
   return <p className="py-6 text-sm text-muted-foreground">{message}</p>;
 }
 
+type DeadlineKey = 'rea' | 'ea' | 'ed' | 'ed2' | 'rd';
+type DeadlineMap = Partial<Record<DeadlineKey, string>>;
+
+const DEADLINE_KEYS: DeadlineKey[] = ['rea', 'ea', 'ed', 'ed2', 'rd'];
+
+function normalizeDeadlineRound(round?: string | null): DeadlineKey | undefined {
+  const normalized = round?.toLowerCase().replace(/[\s_-]/g, '');
+  if (!normalized) return undefined;
+
+  if (normalized === 'rea' || normalized === 'restrictiveearlyaction') return 'rea';
+  if (normalized === 'ea' || normalized === 'earlyaction') return 'ea';
+  if (normalized === 'ed' || normalized === 'earlydecision') return 'ed';
+  if (normalized === 'ed2' || normalized === 'edii' || normalized === 'earlydecision2') {
+    return 'ed2';
+  }
+  if (normalized === 'rd' || normalized === 'regular' || normalized === 'regulardecision') {
+    return 'rd';
+  }
+
+  return undefined;
+}
+
+function formatDeadlineDate(value: string | null | undefined, locale: string): string | undefined {
+  if (!value) return undefined;
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(parsed);
+}
+
+function buildDeadlineMap(school: SchoolDetail, locale: string): DeadlineMap {
+  const deadlines: DeadlineMap = {};
+  const metadataDeadlines = school.metadata?.deadlines ?? {};
+
+  for (const key of DEADLINE_KEYS) {
+    const value = metadataDeadlines[key];
+    if (typeof value === 'string' && value.trim()) {
+      deadlines[key] = value.trim();
+    }
+  }
+
+  for (const deadline of school.deadlines ?? []) {
+    const key = normalizeDeadlineRound(deadline.round);
+    const value = formatDeadlineDate(deadline.applicationDeadline, locale);
+    if (key && value) {
+      deadlines[key] = value;
+    }
+  }
+
+  return deadlines;
+}
+
+function getFieldSourceUrl(source: SchoolFieldSource | undefined, school: SchoolDetail) {
+  if (!source) return null;
+  return source.sourceUrl ?? getSourceUrl(source.source, school);
+}
+
 export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
   const t = useTranslations();
   const tc = useTranslations('common');
   const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
   const locale = useLocale();
 
-  const deadlines = school.metadata?.deadlines || {};
-  const supplementalCampusLife = getSupplementalCampusLifeGrades(school);
+  const deadlines = buildDeadlineMap(school, locale);
 
   const fmtCurrency = (value?: number | null) =>
     value != null ? `$${value.toLocaleString()}` : tc('notAvailable');
@@ -108,27 +169,54 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
     source?: SchoolFieldSource;
   }>;
 
-  const verifiedCampusLifeRows = [
-    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheOverallGrade')) && {
-      label: t('school.campusLife.overall'),
-      value: school.nicheOverallGrade,
-      source: getSchoolFieldSource(school, 'nicheOverallGrade'),
-    },
-    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheSafetyGrade')) && {
-      label: t('school.campusLife.safety'),
-      value: school.nicheSafetyGrade,
-      source: getSchoolFieldSource(school, 'nicheSafetyGrade'),
-    },
-    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheLifeGrade')) && {
-      label: t('school.campusLife.life'),
-      value: school.nicheLifeGrade,
-      source: getSchoolFieldSource(school, 'nicheLifeGrade'),
-    },
-    isOfficialFieldSource(getSchoolFieldSource(school, 'nicheFoodGrade')) && {
-      label: t('school.campusLife.food'),
-      value: school.nicheFoodGrade,
-      source: getSchoolFieldSource(school, 'nicheFoodGrade'),
-    },
+  const campusLifeRows = [
+    isPublicFieldSource(getSchoolFieldSource(school, 'nicheOverallGrade')) &&
+      school.nicheOverallGrade && {
+        label: t('school.campusLife.overall'),
+        value: school.nicheOverallGrade,
+        source: getSchoolFieldSource(school, 'nicheOverallGrade'),
+      },
+    isPublicFieldSource(getSchoolFieldSource(school, 'nicheSafetyGrade')) &&
+      school.nicheSafetyGrade && {
+        label: t('school.campusLife.safety'),
+        value: school.nicheSafetyGrade,
+        source: getSchoolFieldSource(school, 'nicheSafetyGrade'),
+      },
+    isPublicFieldSource(getSchoolFieldSource(school, 'nicheLifeGrade')) &&
+      school.nicheLifeGrade && {
+        label: t('school.campusLife.life'),
+        value: school.nicheLifeGrade,
+        source: getSchoolFieldSource(school, 'nicheLifeGrade'),
+      },
+    isPublicFieldSource(getSchoolFieldSource(school, 'nicheFoodGrade')) &&
+      school.nicheFoodGrade && {
+        label: t('school.campusLife.food'),
+        value: school.nicheFoodGrade,
+        source: getSchoolFieldSource(school, 'nicheFoodGrade'),
+      },
+    isPublicFieldSource(getSchoolFieldSource(school, 'roomAndBoard')) && school.roomAndBoard != null
+      ? {
+          label: t('school.financialAid.roomAndBoard'),
+          value: fmtCurrency(school.roomAndBoard),
+          source: getSchoolFieldSource(school, 'roomAndBoard'),
+        }
+      : null,
+    isPublicFieldSource(getSchoolFieldSource(school, 'countriesRepresented')) &&
+    school.countriesRepresented != null
+      ? {
+          label: t('school.international.countries'),
+          value: school.countriesRepresented.toLocaleString(),
+          source: getSchoolFieldSource(school, 'countriesRepresented'),
+        }
+      : null,
+    isPublicFieldSource(getSchoolFieldSource(school, 'studentOrgsCount')) &&
+    school.studentOrgsCount != null
+      ? {
+          label: t('school.campusLife.studentOrgs'),
+          value: school.studentOrgsCount.toLocaleString(),
+          source: getSchoolFieldSource(school, 'studentOrgsCount'),
+        }
+      : null,
   ].filter(Boolean) as Array<{
     label: string;
     value: ReactNode;
@@ -186,14 +274,6 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           source: getSchoolFieldSource(school, 'applicationFee'),
         }
       : null,
-    isSupplementalFieldSource(getSchoolFieldSource(school, 'roomAndBoard')) &&
-    school.roomAndBoard != null
-      ? {
-          label: t('school.financialAid.roomAndBoard'),
-          value: fmtCurrency(school.roomAndBoard),
-          source: getSchoolFieldSource(school, 'roomAndBoard'),
-        }
-      : null,
     isSupplementalFieldSource(getSchoolFieldSource(school, 'intlStudentPct')) &&
     school.intlStudentPct != null
       ? {
@@ -210,14 +290,6 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           value: `${Number(school.intlAcceptanceRate).toFixed(1)}%`,
           bar: Number(school.intlAcceptanceRate),
           source: getSchoolFieldSource(school, 'intlAcceptanceRate'),
-        }
-      : null,
-    isSupplementalFieldSource(getSchoolFieldSource(school, 'countriesRepresented')) &&
-    school.countriesRepresented != null
-      ? {
-          label: t('school.international.countries'),
-          value: school.countriesRepresented.toLocaleString(),
-          source: getSchoolFieldSource(school, 'countriesRepresented'),
         }
       : null,
     isSupplementalFieldSource(getSchoolFieldSource(school, 'salary6YrPostGrad')) &&
@@ -243,14 +315,6 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           label: t('school.postGrad.monthlyLoan'),
           value: fmtCurrency(school.monthlyLoanPayment),
           source: getSchoolFieldSource(school, 'monthlyLoanPayment'),
-        }
-      : null,
-    isSupplementalFieldSource(getSchoolFieldSource(school, 'studentOrgsCount')) &&
-    school.studentOrgsCount != null
-      ? {
-          label: t('school.campusLife.studentOrgs'),
-          value: school.studentOrgsCount.toLocaleString(),
-          source: getSchoolFieldSource(school, 'studentOrgsCount'),
         }
       : null,
   ].filter(Boolean) as Array<{
@@ -308,7 +372,6 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
   const hasSupplementalSection =
     Boolean(school.usNewsRank || school.qsRank) ||
-    supplementalCampusLife.hasGrades ||
     supplementalMetricRows.length > 0 ||
     supplementalBadges.length > 0;
 
@@ -333,7 +396,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                     value={row.value}
                     bar={row.bar}
                     source={row.source}
-                    sourceUrl={row.source ? getSourceUrl(row.source.source, school) : null}
+                    sourceUrl={getFieldSourceUrl(row.source, school)}
                   />
                 </div>
               ))
@@ -428,15 +491,15 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
             <CardDescription>{t('school.campusLifeOfficial.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {verifiedCampusLifeRows.length > 0 ? (
-              verifiedCampusLifeRows.map((row, index) => (
+            {campusLifeRows.length > 0 ? (
+              campusLifeRows.map((row, index) => (
                 <div key={row.label}>
                   {index > 0 && <Separator className="mb-4" />}
                   <StatRow
                     label={row.label}
                     value={row.value}
                     source={row.source}
-                    sourceUrl={row.source ? getSourceUrl(row.source.source, school) : null}
+                    sourceUrl={getFieldSourceUrl(row.source, school)}
                   />
                 </div>
               ))
@@ -486,74 +549,15 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                     label={t('school.qsRank')}
                     value={`#${school.qsRank}`}
                     source={getSchoolFieldSource(school, 'qsRank')}
-                    sourceUrl={
-                      getSchoolFieldSource(school, 'qsRank')
-                        ? getSourceUrl(getSchoolFieldSource(school, 'qsRank')!.source, school)
-                        : null
-                    }
+                    sourceUrl={getFieldSourceUrl(getSchoolFieldSource(school, 'qsRank'), school)}
                   />
                 )}
               </div>
             )}
 
-            {supplementalCampusLife.hasGrades && (
-              <>
-                {(school.usNewsRank || school.qsRank) && <Separator />}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{t('school.supplementalCampusLife')}</Badge>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {supplementalCampusLife.overallGrade && (
-                      <div className="text-center">
-                        <Badge variant="outline" className="px-3 py-1 text-lg">
-                          {supplementalCampusLife.overallGrade}
-                        </Badge>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t('school.campusLife.overall')}
-                        </p>
-                      </div>
-                    )}
-                    {supplementalCampusLife.safetyGrade && (
-                      <div className="text-center">
-                        <Badge variant="outline" className="px-3 py-1 text-lg">
-                          {supplementalCampusLife.safetyGrade}
-                        </Badge>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t('school.campusLife.safety')}
-                        </p>
-                      </div>
-                    )}
-                    {supplementalCampusLife.lifeGrade && (
-                      <div className="text-center">
-                        <Badge variant="outline" className="px-3 py-1 text-lg">
-                          {supplementalCampusLife.lifeGrade}
-                        </Badge>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t('school.campusLife.life')}
-                        </p>
-                      </div>
-                    )}
-                    {supplementalCampusLife.foodGrade && (
-                      <div className="text-center">
-                        <Badge variant="outline" className="px-3 py-1 text-lg">
-                          {supplementalCampusLife.foodGrade}
-                        </Badge>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t('school.campusLife.food')}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
             {supplementalMetricRows.length > 0 && (
               <>
-                {(school.usNewsRank || school.qsRank || supplementalCampusLife.hasGrades) && (
-                  <Separator />
-                )}
+                {(school.usNewsRank || school.qsRank) && <Separator />}
                 <div className="space-y-4">
                   {supplementalMetricRows.map((row, index) => (
                     <div key={row.label}>
@@ -563,7 +567,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                         value={row.value}
                         bar={row.bar}
                         source={row.source}
-                        sourceUrl={row.source ? getSourceUrl(row.source.source, school) : null}
+                        sourceUrl={getFieldSourceUrl(row.source, school)}
                       />
                     </div>
                   ))}
@@ -573,10 +577,9 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
             {supplementalBadges.length > 0 && (
               <>
-                {(school.usNewsRank ||
-                  school.qsRank ||
-                  supplementalCampusLife.hasGrades ||
-                  supplementalMetricRows.length > 0) && <Separator />}
+                {(school.usNewsRank || school.qsRank || supplementalMetricRows.length > 0) && (
+                  <Separator />
+                )}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Globe2 className="h-4 w-4 text-muted-foreground" />
@@ -591,9 +594,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                         <Badge variant="outline">{badge.label}</Badge>
                         <TrustBadge
                           source={badge.source}
-                          sourceUrl={
-                            badge.source ? getSourceUrl(badge.source.source, school) : null
-                          }
+                          sourceUrl={getFieldSourceUrl(badge.source, school)}
                         />
                       </div>
                     ))}

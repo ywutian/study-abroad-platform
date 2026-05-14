@@ -95,6 +95,16 @@ export interface SchoolDetail {
   };
   fieldSources?: SchoolFieldSources;
   communityRatingSummary?: SchoolCommunityRatingSummary;
+  deadlines?: Array<{
+    id?: string;
+    year?: number;
+    round?: string;
+    applicationDeadline?: string | null;
+    financialAidDeadline?: string | null;
+    decisionDate?: string | null;
+    notes?: string | null;
+    applicationFee?: number | null;
+  }>;
   cases?: Array<{
     id: string;
     year: number;

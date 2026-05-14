@@ -82,6 +82,39 @@ describe('school-display-utils', () => {
     });
   });
 
+  it('hides seed campus-life grades from public display', () => {
+    expect(
+      getSupplementalCampusLifeGrades({
+        nicheOverallGrade: 'A',
+        nicheSafetyGrade: 'B+',
+        fieldSources: {
+          nicheOverallGrade: {
+            tier: 'SEED',
+            source: 'SEED',
+            fetchedAt: '2026-04-02T00:00:00.000Z',
+            staleness: 'FRESH' as const,
+            isVerified: false,
+            predictionEligible: true,
+          },
+          nicheSafetyGrade: {
+            tier: 'UNAVAILABLE',
+            source: 'Niche',
+            fetchedAt: '2026-04-02T00:00:00.000Z',
+            staleness: 'FRESH' as const,
+            isVerified: false,
+            predictionEligible: false,
+          },
+        },
+      })
+    ).toEqual({
+      overallGrade: undefined,
+      safetyGrade: undefined,
+      lifeGrade: undefined,
+      foodGrade: undefined,
+      hasGrades: false,
+    });
+  });
+
   it('returns an empty community summary when none is present', () => {
     expect(getSchoolCommunityRatingSummary({})).toEqual({
       count: 0,
