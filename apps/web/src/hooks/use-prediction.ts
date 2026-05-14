@@ -8,6 +8,7 @@ import type {
   PredictionOutcomeLabel,
   PredictionResponse,
   PredictionResult,
+  PredictionPublicExplanation,
   PredictionSourceSummary,
 } from '@/components/features/prediction/types';
 
@@ -32,6 +33,7 @@ export interface SchoolPredictionData {
     tier?: string;
     confidence?: string;
     confidenceReason?: string | null;
+    publicExplanation?: PredictionPublicExplanation;
     cohortKey?: string | null;
     roundContext?: string | null;
     sourceSummary?: PredictionSourceSummary[];
@@ -48,6 +50,7 @@ export interface SchoolPredictionData {
     tier?: string;
     confidence?: string;
     confidenceReason?: string | null;
+    publicExplanation?: PredictionPublicExplanation;
     cohortKey?: string | null;
     roundContext?: string | null;
     sourceSummary?: PredictionSourceSummary[];
@@ -93,6 +96,7 @@ export interface PredictionHistorySnapshot {
   tier?: string;
   confidence?: string;
   confidenceReason?: string | null;
+  publicExplanation?: PredictionPublicExplanation;
   roundContext?: string | null;
   sourceSummary?: PredictionSourceSummary[];
   uncertaintyReasons?: string[];

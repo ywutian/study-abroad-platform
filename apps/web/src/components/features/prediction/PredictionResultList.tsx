@@ -22,11 +22,10 @@ interface PredictionResultListProps {
   dataCompleteness?: number;
 }
 
-type SortBy = 'probability' | 'delta' | 'tier' | 'confidence' | 'updatedAt';
+type SortBy = 'probability' | 'delta' | 'tier' | 'updatedAt';
 type FilterTier = TierType | 'all';
 
 const TIER_ORDER: Record<string, number> = { reach: 0, match: 1, safety: 2, unavailable: 3 };
-const CONFIDENCE_ORDER: Record<string, number> = { low: 0, medium: 1, high: 2 };
 
 const VIRTUALIZATION_THRESHOLD = 15;
 
@@ -58,8 +57,6 @@ export function PredictionResultList({
           return (b.probability ?? -1) - (a.probability ?? -1);
         case 'tier':
           return (TIER_ORDER[a.tier] ?? 3) - (TIER_ORDER[b.tier] ?? 3);
-        case 'confidence':
-          return (CONFIDENCE_ORDER[b.confidence] ?? 0) - (CONFIDENCE_ORDER[a.confidence] ?? 0);
         case 'delta':
           return ((b as any).probabilityDelta ?? -999) - ((a as any).probabilityDelta ?? -999);
         case 'updatedAt':
@@ -106,7 +103,7 @@ export function PredictionResultList({
           role="group"
           aria-label={t('sort.probability').replace(/^By /, 'Sort by ')}
         >
-          {(['probability', 'delta', 'confidence', 'tier', 'updatedAt'] as SortBy[]).map((s) => (
+          {(['probability', 'delta', 'tier', 'updatedAt'] as SortBy[]).map((s) => (
             <button
               key={s}
               onClick={() => setSortBy(s)}

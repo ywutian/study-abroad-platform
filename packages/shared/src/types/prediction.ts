@@ -110,6 +110,17 @@ export interface EngineScores {
   }>;
 }
 
+export interface PredictionPublicExplanation {
+  headline: string;
+  reasons: string[];
+  nextAction?: string;
+  dataSupportLabel: string;
+  dataSupportLevel: 'strong' | 'moderate' | 'limited';
+  caveats: string[];
+  source: 'rules' | 'llm';
+  generatedAt?: string;
+}
+
 export interface PredictionResult {
   /** PredictionResult row ID. Present for persisted predictions; omitted for dry-run previews. */
   id?: string;
@@ -137,6 +148,7 @@ export interface PredictionResult {
   sourceSummary?: PredictionSourceSummary[];
   uncertaintyReasons?: string[];
   confidenceReason?: string;
+  publicExplanation?: PredictionPublicExplanation;
   insufficientData?: PredictionInsufficientData;
   latestOutcomeLabel?: PredictionOutcomeLabel;
   policyContext?: SchoolPolicyContext;

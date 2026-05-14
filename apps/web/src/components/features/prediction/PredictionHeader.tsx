@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Target, Zap, Info } from 'lucide-react';
+import { Target, BarChart3, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -19,12 +19,13 @@ export function PredictionHeader({ dataCompleteness }: PredictionHeaderProps) {
       title={t('prediction.title')}
       description={t('prediction.selectSchoolsDesc')}
       icon={Target}
-      variant="ai"
+      variant="tool"
+      tone="target"
       className="mb-4 pb-4"
     >
       <div className="mt-3 flex items-center gap-2">
         <Badge variant="secondary" className="text-xs">
-          <Zap className="h-3 w-3 mr-1" />
+          <BarChart3 className="h-3 w-3 mr-1" />
           {t('prediction.badge.ensemble')}
         </Badge>
         {dataCompleteness !== undefined && (
