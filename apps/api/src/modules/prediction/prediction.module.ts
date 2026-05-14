@@ -18,6 +18,7 @@ import { PredictionMemoryService } from './prediction-memory.service';
 import { PredictionPersistenceService } from './prediction-persistence.service';
 import { PredictionReportingService } from './prediction-reporting.service';
 import { PredictionFeedbackService } from './prediction-feedback.service';
+import { PredictionExplanationService } from './prediction-explanation.service';
 import { PredictionPolicyService } from './prediction-policy.service';
 import { PredictionWorkflowService } from './prediction-workflow.service';
 import { PredictionPolicyShadowService } from './prediction-policy-shadow.service';
@@ -72,6 +73,7 @@ import { forwardRef } from '@nestjs/common';
     PredictionPersistenceService,
     PredictionReportingService,
     PredictionFeedbackService,
+    PredictionExplanationService,
     PredictionPolicyService,
     PredictionWorkflowService,
     PredictionPolicyShadowService,
@@ -82,6 +84,7 @@ import { forwardRef } from '@nestjs/common';
     PredictionHistoricalService,
     PredictionCalibrationService,
     PredictionReportingService,
+    PredictionExplanationService,
     PredictionPolicyService,
     PredictionWorkflowService,
     PredictionPolicyShadowService,

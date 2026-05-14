@@ -10,6 +10,7 @@ export type {
   PredictionOutcomeLabel,
   PredictionOutcomeLabelStatus,
   PredictionSourceSummary,
+  PredictionPublicExplanation,
   PredictionResult,
   PredictionResponse,
   PredictionComparison,

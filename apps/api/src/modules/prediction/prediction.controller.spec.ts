@@ -6,6 +6,7 @@ import { SchoolService } from '../school/school.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PredictionReportingService } from './prediction-reporting.service';
 import { PredictionFeedbackService } from './prediction-feedback.service';
+import { PredictionExplanationService } from './prediction-explanation.service';
 
 describe('PredictionController', () => {
   let controller: PredictionController;
@@ -91,6 +92,13 @@ describe('PredictionController', () => {
             submitFeedback: jest.fn(),
           },
         },
+        {
+          provide: PredictionExplanationService,
+          useValue: {
+            streamPredictionExplanation: jest.fn(),
+            streamPortfolioSummary: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -171,6 +179,7 @@ describe('PredictionController', () => {
         'profile-1',
         1,
         20,
+        'zh',
       );
       expect(result).toEqual(mockHistory);
     });

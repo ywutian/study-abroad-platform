@@ -1,6 +1,8 @@
 export { PredictionHeader } from './PredictionHeader';
 export { PredictionActionBar } from './PredictionActionBar';
+export { ProfileSnapshotBar } from './ProfileSnapshotBar';
 export { PortfolioSnapshot } from './PortfolioSnapshot';
+export { PortfolioDiagnosisCard } from './PortfolioDiagnosisCard';
 export { PredictionEvidencePanel } from './PredictionEvidencePanel';
 export { SchoolSelectorCard } from './SchoolSelectorCard';
 export { DashboardSummary } from './DashboardSummary';
@@ -15,6 +17,8 @@ export { ResultFeedbackButtons } from './ResultFeedbackButtons';
 export { PredictionHistoryPanel } from './PredictionHistoryPanel';
 export { RateBreakdownPanel } from './RateBreakdownPanel';
 export { AiContextActions } from './AiContextActions';
+export { PredictionExplanationStream } from './PredictionExplanationStream';
+export { PredictionPortfolioSummaryStream } from './PredictionPortfolioSummaryStream';
 
 export type {
   PredictionResult,
@@ -25,4 +29,5 @@ export type {
   SchoolSearchItem,
   TierType,
   ConfidenceLevel,
+  PredictionPublicExplanation,
 } from './types';

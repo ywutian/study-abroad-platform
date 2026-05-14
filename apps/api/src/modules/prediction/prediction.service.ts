@@ -3,6 +3,7 @@ import {
   Logger,
   Optional,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   SchoolMediaSourceType,
@@ -60,6 +61,7 @@ import {
   PredictionPolicyService,
   type PredictionTracePayload,
 } from './prediction-policy.service';
+import { buildPredictionPublicExplanation } from './prediction-public-explanation';
 // `DistillationService` (benchmark variant) removed 2026-05-07 with benchmark/
 import { CompliantDistillationService } from './distillation/compliant-distillation.service';
 import { DistillationObservationService } from './distillation/distillation-observation.service';
@@ -491,7 +493,9 @@ export class PredictionService {
     persist: boolean;
   }): Promise<PredictionResultDto> {
     if (!this.counselorEngine) {
-      throw new Error('Counselor engine is not available');
+      throw new InternalServerErrorException(
+        'Counselor engine is not available',
+      );
     }
 
     const {
@@ -562,6 +566,18 @@ export class PredictionService {
             `Missing ${field}; this signal was skipped neutrally instead of penalized.`,
         ),
       ];
+      const publicExplanation = buildPredictionPublicExplanation({
+        locale,
+        schoolName,
+        probability: null,
+        tier: 'unavailable',
+        confidence: 'low',
+        factors: [],
+        suggestions: [],
+        sourceSummary,
+        uncertaintyReasons,
+        predictionMethod: 'insufficient_data',
+      });
       const result: InternalPredictionResult = {
         schoolId: school.id,
         schoolName,
@@ -582,6 +598,7 @@ export class PredictionService {
         uncertaintyReasons,
         confidenceReason:
           'Public admission-rate data is too limited for a numeric estimate.',
+        publicExplanation,
         insufficientData: {
           tier: 4,
           reason,
@@ -607,6 +624,9 @@ export class PredictionService {
           insufficientData: {
             tier: 4,
             reason,
+          },
+          publicExplanation: {
+            rules: publicExplanation,
           },
         },
       };
@@ -663,6 +683,29 @@ export class PredictionService {
       uncertaintyReasons,
       locale,
     );
+    const suggestions = this.generateSuggestions(
+      tier,
+      'medium',
+      profileInput,
+      schoolInput,
+      undefined,
+      locale,
+    );
+    const publicExplanation = buildPredictionPublicExplanation({
+      locale,
+      schoolName,
+      probability: counselorResult.probability,
+      probabilityLow: Math.max(0.02, counselorResult.probability - 0.05),
+      probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
+      tier,
+      confidence: 'medium',
+      factors: counselorResult.factors,
+      suggestions,
+      sourceSummary,
+      uncertaintyReasons,
+      predictionMethod: 'counselor',
+      schoolAcceptanceRate: schoolInput.acceptanceRate,
+    });
     const result: InternalPredictionResult = {
       schoolId: school.id,
       schoolName,
@@ -672,14 +715,7 @@ export class PredictionService {
       confidence: 'medium',
       tier,
       factors: counselorResult.factors,
-      suggestions: this.generateSuggestions(
-        tier,
-        'medium',
-        profileInput,
-        schoolInput,
-        undefined,
-        locale,
-      ),
+      suggestions,
       comparison: undefined,
       modelVersion: counselorResult.ruleVersion,
       servedPolicyVersionId: resolvedPolicyVersionId,
@@ -689,6 +725,7 @@ export class PredictionService {
       sourceSummary,
       uncertaintyReasons,
       confidenceReason,
+      publicExplanation,
       policyVersionId: resolvedPolicyVersionId,
       applicationRound: resolvedApplicationRound,
       // selectivityBand was computed via ml/tier-strategy; analytics-only
@@ -709,6 +746,9 @@ export class PredictionService {
           profileSignals: counselorResult.profileSignals,
           sourceContributions: counselorResult.sourceContributions,
           ruleVersion: counselorResult.ruleVersion,
+        },
+        publicExplanation: {
+          rules: publicExplanation,
         },
       },
     };
@@ -1946,6 +1986,24 @@ export class PredictionService {
       servedTrace?.uncertaintyReasons,
       locale,
     );
+    const publicExplanation = buildPredictionPublicExplanation({
+      locale,
+      schoolName:
+        locale === 'zh'
+          ? school.nameZh || school.name
+          : school.name || school.nameZh,
+      probability: fusedResult.probability,
+      probabilityLow: fusedResult.probabilityLow,
+      probabilityHigh: fusedResult.probabilityHigh,
+      tier,
+      confidence: confidenceLevel,
+      factors,
+      suggestions,
+      sourceSummary: servedTrace?.sourceSummary,
+      uncertaintyReasons: servedTrace?.uncertaintyReasons,
+      predictionMethod: 'fusion',
+      schoolAcceptanceRate: schoolInput.acceptanceRate,
+    });
 
     const result: InternalPredictionResult = {
       schoolId: school.id,
@@ -1976,12 +2034,20 @@ export class PredictionService {
       sourceSummary: servedTrace?.sourceSummary,
       uncertaintyReasons: servedTrace?.uncertaintyReasons,
       confidenceReason,
+      publicExplanation,
       majorBreakdown: majorBreakdownResult,
       // Internal fields for DB persistence (not in public DTO)
       policyVersionId: resolvedPolicyVersionId,
       applicationRound: resolvedApplicationRound,
       selectivityBand: selectivityBand ?? undefined,
-      servedTrace: servedTrace ?? undefined,
+      servedTrace: servedTrace
+        ? {
+            ...servedTrace,
+            publicExplanation: {
+              rules: publicExplanation,
+            },
+          }
+        : undefined,
     };
 
     if (compliantEvaluation) {
@@ -2076,6 +2142,21 @@ export class PredictionService {
                 `Missing ${field}; this signal was skipped neutrally instead of penalized.`,
             ),
           ];
+          result.publicExplanation = buildPredictionPublicExplanation({
+            locale,
+            schoolName: result.schoolName,
+            probability: result.probability,
+            probabilityLow: result.probabilityLow,
+            probabilityHigh: result.probabilityHigh,
+            tier: result.tier,
+            confidence: result.confidence,
+            factors: result.factors,
+            suggestions: result.suggestions,
+            sourceSummary: result.sourceSummary,
+            uncertaintyReasons: result.uncertaintyReasons,
+            predictionMethod: 'counselor',
+            schoolAcceptanceRate: schoolInput.acceptanceRate,
+          });
 
           // Annotate trace — engine label + counselor metadata + shadow fusion
           result.servedTrace = {
@@ -2093,6 +2174,11 @@ export class PredictionService {
             shadow: {
               ...(((result.servedTrace as any)?.shadow ?? {}) as object),
               fusion: shadowFusion,
+            },
+            publicExplanation: {
+              ...(((result.servedTrace as any)?.publicExplanation ??
+                {}) as object),
+              rules: result.publicExplanation,
             },
           };
         } else {
@@ -2596,11 +2682,13 @@ export class PredictionService {
     profileId: string,
     page?: number,
     pageSize?: number,
+    locale: 'zh' | 'en' = 'zh',
   ) {
     return this.reportingService.getPredictionHistory(
       profileId,
       page,
       pageSize,
+      locale,
     );
   }
 

@@ -49,8 +49,9 @@ export function PortfolioSnapshot({
       counts,
       staleCount,
       predictedCount: probabilityCount,
+      missingCount: Math.max(0, selectedCount - probabilityCount),
     };
-  }, [predictions]);
+  }, [predictions, selectedCount]);
 
   const balanceTone =
     summary.counts.safety > 0 && summary.counts.match > 0
@@ -88,7 +89,10 @@ export function PortfolioSnapshot({
           icon={Target}
           label={t('formalCoverage')}
           value={`${summary.predictedCount}/${Math.max(selectedCount, summary.predictedCount)}`}
-          detail={t('formalCoverageDetail')}
+          detail={t('formalCoverageDetail', {
+            predicted: summary.predictedCount,
+            missing: summary.missingCount,
+          })}
         />
         <SnapshotTile
           icon={BarChart3}
@@ -106,7 +110,11 @@ export function PortfolioSnapshot({
           icon={summary.staleCount > 0 ? AlertTriangle : Clock3}
           label={t('stalePredictions')}
           value={String(summary.staleCount)}
-          detail={summary.staleCount > 0 ? t('stalePredictionsDetail') : t('allFresh')}
+          detail={
+            summary.staleCount > 0
+              ? t('stalePredictionsDetail', { count: summary.staleCount })
+              : t('allFresh')
+          }
           muted={summary.staleCount === 0}
         />
       </div>
@@ -154,7 +162,7 @@ function SnapshotTile({
         <span>{label}</span>
       </div>
       <p className="mt-1 text-2xl font-semibold text-metric">{value}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+      <p className="mt-1 text-xs leading-snug text-muted-foreground">{detail}</p>
     </div>
   );
 }

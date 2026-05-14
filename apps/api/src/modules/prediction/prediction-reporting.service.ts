@@ -19,12 +19,14 @@ import {
   isCalibrationEligibleOutcomeRecord,
   resolveCanonicalPredictionOutcome,
 } from '@study-abroad/shared/scoring';
+import type { SupportedLocale } from '@study-abroad/shared';
 import type {
   PredictionOutcomeQueryDto,
   ReviewPredictionOutcomeDto,
 } from '../admin/dto';
 // ShadowEvaluatorService removed 2026-05-07 with the ML platform layer.
 import { DistillationStatsRollupService } from './distillation/distillation-stats-rollup.service';
+import { buildPredictionPublicExplanation } from './prediction-public-explanation';
 
 type ReportedOutcomeResult =
   | 'ADMITTED'
@@ -192,7 +194,12 @@ export class PredictionReportingService {
    * Preview quick-match rows are excluded so this endpoint represents served,
    * full-pipeline predictions and their historical snapshots.
    */
-  async getPredictionHistory(profileId: string, page = 1, pageSize = 20) {
+  async getPredictionHistory(
+    profileId: string,
+    page = 1,
+    pageSize = 20,
+    locale: SupportedLocale = 'zh',
+  ) {
     const skip = (page - 1) * pageSize;
     const [items, total] = await Promise.all([
       this.prisma.predictionResult.findMany({
@@ -285,6 +292,41 @@ export class PredictionReportingService {
         previousTier: previousSnapshot?.tier ?? undefined,
         confidence: item.confidence,
         confidenceReason: item.confidenceReason,
+        publicExplanation: buildPredictionPublicExplanation({
+          locale,
+          schoolName:
+            locale === 'zh'
+              ? schoolMap.get(item.schoolId)?.nameZh ||
+                schoolMap.get(item.schoolId)?.name
+              : schoolMap.get(item.schoolId)?.name,
+          probability: currentProbability,
+          probabilityLow: item.probabilityLow
+            ? Number(item.probabilityLow)
+            : undefined,
+          probabilityHigh: item.probabilityHigh
+            ? Number(item.probabilityHigh)
+            : undefined,
+          tier: item.tier,
+          confidence: item.confidence,
+          factors: Array.isArray(item.factors) ? (item.factors as any) : [],
+          suggestions: Array.isArray(item.suggestions)
+            ? (item.suggestions as any)
+            : [],
+          sourceSummary: Array.isArray(item.sourceSummary)
+            ? (item.sourceSummary as any)
+            : [],
+          uncertaintyReasons: Array.isArray(item.uncertaintyReasons)
+            ? (item.uncertaintyReasons as string[])
+            : [],
+          predictionMethod:
+            (item.servedTrace as any)?.engine === 'counselor'
+              ? 'counselor'
+              : 'fusion',
+          schoolAcceptanceRate:
+            schoolMap.get(item.schoolId)?.acceptanceRate != null
+              ? Number(schoolMap.get(item.schoolId)?.acceptanceRate)
+              : undefined,
+        }),
         cohortKey: item.cohortKey,
         source: item.source,
         sourceSummary: item.sourceSummary,
@@ -307,6 +349,39 @@ export class PredictionReportingService {
           tier: snapshot.tier,
           confidence: snapshot.confidence,
           confidenceReason: snapshot.confidenceReason,
+          publicExplanation: buildPredictionPublicExplanation({
+            locale,
+            schoolName:
+              locale === 'zh'
+                ? schoolMap.get(snapshot.schoolId)?.nameZh ||
+                  schoolMap.get(snapshot.schoolId)?.name
+                : schoolMap.get(snapshot.schoolId)?.name,
+            probability: Number(snapshot.probability),
+            probabilityLow: snapshot.probabilityLow
+              ? Number(snapshot.probabilityLow)
+              : undefined,
+            probabilityHigh: snapshot.probabilityHigh
+              ? Number(snapshot.probabilityHigh)
+              : undefined,
+            tier: snapshot.tier,
+            confidence: snapshot.confidence,
+            factors: [],
+            suggestions: [],
+            sourceSummary: Array.isArray(snapshot.sourceSummary)
+              ? (snapshot.sourceSummary as any)
+              : [],
+            uncertaintyReasons: Array.isArray(snapshot.uncertaintyReasons)
+              ? (snapshot.uncertaintyReasons as string[])
+              : [],
+            predictionMethod:
+              (snapshot.servedTrace as any)?.engine === 'counselor'
+                ? 'counselor'
+                : 'fusion',
+            schoolAcceptanceRate:
+              schoolMap.get(snapshot.schoolId)?.acceptanceRate != null
+                ? Number(schoolMap.get(snapshot.schoolId)?.acceptanceRate)
+                : undefined,
+          }),
           roundContext: snapshot.applicationRound ?? undefined,
           source: snapshot.source,
           sourceSummary: snapshot.sourceSummary,

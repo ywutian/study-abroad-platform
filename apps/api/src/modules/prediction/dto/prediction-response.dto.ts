@@ -125,6 +125,47 @@ export class PredictionInsufficientDataDto {
   reason: string;
 }
 
+export class PredictionPublicExplanationDto {
+  @ApiProperty({ description: 'Short user-facing explanation headline' })
+  headline: string;
+
+  @ApiProperty({
+    description: 'Top human-readable reasons for this estimate',
+    type: [String],
+  })
+  reasons: string[];
+
+  @ApiPropertyOptional({ description: 'Most useful next action' })
+  nextAction?: string;
+
+  @ApiProperty({
+    description: 'User-facing data support label',
+    example: '信息有限',
+  })
+  dataSupportLabel: string;
+
+  @ApiProperty({
+    description: 'Normalized data support level',
+    enum: ['strong', 'moderate', 'limited'],
+  })
+  dataSupportLevel: 'strong' | 'moderate' | 'limited';
+
+  @ApiProperty({
+    description: 'Plain-language caveats for this estimate',
+    type: [String],
+  })
+  caveats: string[];
+
+  @ApiProperty({
+    description: 'Explanation source',
+    enum: ['rules', 'llm'],
+  })
+  source: 'rules' | 'llm';
+
+  @ApiPropertyOptional({ description: 'When this explanation was generated' })
+  generatedAt?: string;
+}
+
 export class PredictionOutcomeLabelDto {
   @ApiProperty({ description: 'Outcome label ID' })
   id: string;
@@ -313,6 +354,12 @@ export class PredictionResultDto {
     description: 'Human-readable confidence explanation',
   })
   confidenceReason?: string;
+
+  @ApiPropertyOptional({
+    description: 'User-friendly explanation and next action',
+    type: PredictionPublicExplanationDto,
+  })
+  publicExplanation?: PredictionPublicExplanationDto;
 
   @ApiPropertyOptional({
     description: 'Insufficient data details when tier=unavailable',

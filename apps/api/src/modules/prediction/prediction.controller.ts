@@ -6,6 +6,8 @@ import {
   Param,
   Patch,
   Query,
+  Res,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -14,10 +16,12 @@ import {
   ApiResponse,
   ApiParam,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { PredictionService } from './prediction.service';
 import { SchoolService } from '../school/school.service';
-import { CurrentUser, Roles } from '../../common/decorators';
+import { CurrentLocale, CurrentUser, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import type { SupportedLocale } from '@study-abroad/shared';
 import { Role } from '@prisma/client';
 import {
   ThrottleAI,
@@ -27,6 +31,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   PredictionRequestDto,
   PredictionResponseDto,
+  PredictionExplanationStreamRequestDto,
+  PredictionPortfolioSummaryStreamRequestDto,
   SubmitPredictionFeedbackDto,
   ReportResultDto,
 } from './dto';
@@ -35,18 +41,62 @@ import { clampPercentRate } from '../../common/utils/percent.util';
 import { SCHOOL_PREDICTION_CONTEXT_SELECT } from '../../common/constants/prisma-selects';
 import { PredictionReportingService } from './prediction-reporting.service';
 import { PredictionFeedbackService } from './prediction-feedback.service';
+import { PredictionExplanationService } from './prediction-explanation.service';
+import { buildPredictionPublicExplanation } from './prediction-public-explanation';
+
+function readStoredPublicExplanation(
+  row: any,
+  locale: SupportedLocale,
+  school?: any,
+) {
+  const stored =
+    row?.servedTrace?.publicExplanation?.rules ??
+    row?.servedTrace?.publicExplanation?.llm?.publicExplanation;
+  if (stored?.headline && Array.isArray(stored.reasons)) {
+    return stored;
+  }
+
+  return buildPredictionPublicExplanation({
+    locale,
+    schoolName: school?.nameZh || school?.name || row?.schoolName,
+    probability: row?.probability != null ? Number(row.probability) : null,
+    probabilityLow:
+      row?.probabilityLow != null ? Number(row.probabilityLow) : undefined,
+    probabilityHigh:
+      row?.probabilityHigh != null ? Number(row.probabilityHigh) : undefined,
+    tier: row?.tier,
+    confidence: row?.confidence,
+    factors: Array.isArray(row?.factors) ? row.factors : [],
+    suggestions: Array.isArray(row?.suggestions) ? row.suggestions : [],
+    sourceSummary: Array.isArray(row?.sourceSummary) ? row.sourceSummary : [],
+    uncertaintyReasons: Array.isArray(row?.uncertaintyReasons)
+      ? row.uncertaintyReasons
+      : [],
+    predictionMethod:
+      row?.servedTrace?.engine === 'counselor'
+        ? 'counselor'
+        : (row?.predictionMethod ?? 'fusion'),
+    schoolAcceptanceRate:
+      school?.acceptanceRate != null
+        ? Number(school.acceptanceRate)
+        : undefined,
+  });
+}
 
 @ApiTags('predictions')
 @ApiBearerAuth()
 @ThrottleAI()
 @Controller('predictions')
 export class PredictionController {
+  private readonly logger = new Logger(PredictionController.name);
+
   constructor(
     private readonly predictionService: PredictionService,
     private readonly schoolService: SchoolService,
     private readonly prisma: PrismaService,
     private readonly reportingService: PredictionReportingService,
     private readonly feedbackService: PredictionFeedbackService,
+    private readonly explanationService: PredictionExplanationService,
   ) {}
 
   @Post()
@@ -97,8 +147,16 @@ export class PredictionController {
   @ApiOperation({ summary: 'Get prediction history (paginated)' })
   async getHistory(
     @CurrentUser() user: CurrentUserPayload,
-    @Query() pagination: PaginationDto,
+    @CurrentLocale() localeOrPagination: SupportedLocale | PaginationDto,
+    @Query() paginationMaybe?: PaginationDto,
   ) {
+    const locale =
+      typeof localeOrPagination === 'string' ? localeOrPagination : 'zh';
+    const pagination =
+      typeof localeOrPagination === 'string'
+        ? (paginationMaybe ?? { page: 1, pageSize: 20 })
+        : localeOrPagination;
+
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },
     });
@@ -111,6 +169,7 @@ export class PredictionController {
       profile.id,
       pagination.page,
       pagination.pageSize,
+      locale,
     );
   }
 
@@ -177,7 +236,10 @@ export class PredictionController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get prediction dashboard aggregated data' })
-  async getDashboard(@CurrentUser() user: CurrentUserPayload) {
+  async getDashboard(
+    @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
+  ) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId: user.id },
     });
@@ -267,9 +329,18 @@ export class PredictionController {
         schoolId: p.schoolId,
         school: schoolMap.get(p.schoolId) ?? null,
         probability: Number(p.probability),
+        probabilityLow: p.probabilityLow ? Number(p.probabilityLow) : undefined,
+        probabilityHigh: p.probabilityHigh
+          ? Number(p.probabilityHigh)
+          : undefined,
         tier: p.tier,
         confidence: p.confidence,
         confidenceReason: p.confidenceReason,
+        publicExplanation: readStoredPublicExplanation(
+          p,
+          locale,
+          schoolMap.get(p.schoolId),
+        ),
         cohortKey: p.cohortKey,
         roundContext: p.applicationRound,
         sourceSummary: p.sourceSummary,
@@ -280,10 +351,53 @@ export class PredictionController {
             ? 'counselor'
             : 'fusion',
         source: p.source,
+        factors: Array.isArray(p.factors) ? p.factors : [],
+        suggestions: Array.isArray(p.suggestions) ? p.suggestions : [],
         modelVersion: p.modelVersion,
         updatedAt: p.updatedAt,
       })),
     };
+  }
+
+  @Post(':predictionResultId/explanation/stream')
+  @ApiOperation({ summary: 'Stream an LLM explanation for one prediction' })
+  async streamPredictionExplanation(
+    @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
+    @Param('predictionResultId') predictionResultId: string,
+    @Body() body: PredictionExplanationStreamRequestDto | undefined,
+    @Res() res: Response,
+  ) {
+    await this.writeSse(
+      res,
+      this.explanationService.streamPredictionExplanation({
+        userId: user.id,
+        predictionResultId,
+        locale,
+        refresh: Boolean(body?.refresh),
+      }),
+    );
+  }
+
+  @Post('portfolio-summary/stream')
+  @ApiOperation({
+    summary: 'Stream an LLM summary for the prediction portfolio',
+  })
+  async streamPortfolioSummary(
+    @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
+    @Body() body: PredictionPortfolioSummaryStreamRequestDto | undefined,
+    @Res() res: Response,
+  ) {
+    await this.writeSse(
+      res,
+      this.explanationService.streamPortfolioSummary({
+        userId: user.id,
+        locale,
+        predictionResultIds: body?.predictionResultIds,
+        refresh: Boolean(body?.refresh),
+      }),
+    );
   }
 
   @Get('school/:schoolId')
@@ -293,6 +407,7 @@ export class PredictionController {
   @ApiParam({ name: 'schoolId', description: 'School ID' })
   async getSchoolPrediction(
     @CurrentUser() user: CurrentUserPayload,
+    @CurrentLocale() locale: SupportedLocale,
     @Param('schoolId') schoolId: string,
   ) {
     const profile = await this.prisma.profile.findUnique({
@@ -367,6 +482,11 @@ export class PredictionController {
             tier: current.tier,
             confidence: current.confidence,
             confidenceReason: current.confidenceReason,
+            publicExplanation: readStoredPublicExplanation(
+              current,
+              locale,
+              school,
+            ),
             cohortKey: current.cohortKey,
             roundContext: current.applicationRound,
             sourceSummary: current.sourceSummary,
@@ -388,6 +508,7 @@ export class PredictionController {
         tier: h.tier,
         confidence: h.confidence,
         confidenceReason: h.confidenceReason,
+        publicExplanation: readStoredPublicExplanation(h, locale, school),
         cohortKey: h.cohortKey,
         roundContext: h.applicationRound,
         sourceSummary: h.sourceSummary,
@@ -409,5 +530,40 @@ export class PredictionController {
           }
         : null,
     };
+  }
+
+  private async writeSse(
+    res: Response,
+    events: AsyncGenerator<Record<string, unknown>>,
+  ) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    let clientDisconnected = false;
+    res.on('close', () => {
+      clientDisconnected = true;
+    });
+
+    try {
+      for await (const event of events) {
+        if (clientDisconnected) break;
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+      }
+    } catch (error) {
+      this.logger.error('Prediction SSE stream failed', error);
+      if (!clientDisconnected) {
+        res.write(
+          `data: ${JSON.stringify({ type: 'error', error: 'Stream failed' })}\n\n`,
+        );
+      }
+    }
+
+    if (!clientDisconnected) {
+      res.write('data: [DONE]\n\n');
+    }
+    res.end();
   }
 }

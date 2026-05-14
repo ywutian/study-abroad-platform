@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { School, Search, X, CheckCircle, Loader2, Target } from 'lucide-react';
 import { cn, getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import { useSchoolSearch } from '@/hooks/use-school-search';
-import type { SchoolSearchItem } from './types';
+import type { SchoolSearchItem, TierType } from './types';
 
 interface SchoolSelectorCardProps {
   selectedSchools: SchoolSearchItem[];
@@ -19,6 +19,8 @@ interface SchoolSelectorCardProps {
   onRemove: (schoolId: string) => void;
   onPredict: () => void;
   isPredicting: boolean;
+  predictionTiers?: Partial<Record<string, TierType>>;
+  hasPredictions?: boolean;
   className?: string;
   compact?: boolean;
 }
@@ -29,6 +31,8 @@ export function SchoolSelectorCard({
   onRemove,
   onPredict,
   isPredicting,
+  predictionTiers = {},
+  hasPredictions = false,
   className,
   compact = false,
 }: SchoolSelectorCardProps) {
@@ -51,10 +55,17 @@ export function SchoolSelectorCard({
   return (
     <Card className={cn('mb-6', compact && 'gap-4 py-4', className)}>
       <CardHeader className={cn(compact && 'px-4')}>
-        <CardTitle className="flex items-center gap-2">
-          <School className="h-5 w-5" />
-          {t('prediction.selectSchools')}
-        </CardTitle>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="flex items-center gap-2">
+            <School className="h-5 w-5" />
+            {compact ? t('prediction.calculationList') : t('prediction.selectSchools')}
+          </CardTitle>
+          {compact && (
+            <Badge variant="secondary" className="shrink-0">
+              {t('prediction.selectorProgress', { count: selectedSchools.length })}
+            </Badge>
+          )}
+        </div>
         {!compact && <CardDescription>{t('prediction.searchSchoolsDesc')}</CardDescription>}
       </CardHeader>
       <CardContent className={cn('space-y-4', compact && 'px-4')}>
@@ -123,34 +134,88 @@ export function SchoolSelectorCard({
           )}
         </div>
 
-        {/* Selected school chips */}
+        {/* Selected school list */}
         {selectedSchools.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
               {t('prediction.selectedCount', { count: selectedSchools.length })}
             </p>
-            <div className={cn('flex flex-wrap gap-2', compact && 'max-h-56 overflow-auto pr-1')}>
-              {selectedSchools.map((school) => (
-                <Badge
-                  key={school.id}
-                  variant="secondary"
-                  className="flex items-center gap-1 py-1.5 px-3"
-                >
-                  {getSchoolName(school, locale)}
-                  <RankingBadge
-                    rankings={school.rankings}
-                    usNewsRank={school.usNewsRank}
-                    variant="plain"
-                  />
-                  <button
-                    onClick={() => onRemove(school.id)}
-                    className="-mr-2 ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-destructive/10 hover:text-destructive md:h-8 md:w-8"
-                    aria-label={t('common.remove')}
+            <div
+              className={cn(
+                compact ? 'max-h-72 space-y-2 overflow-auto pr-1' : 'flex flex-wrap gap-2'
+              )}
+            >
+              {selectedSchools.map((school) => {
+                const tier = predictionTiers[school.id];
+                if (!compact) {
+                  return (
+                    <Badge
+                      key={school.id}
+                      variant="secondary"
+                      className="flex items-center gap-1 py-1.5 px-3"
+                    >
+                      {getSchoolName(school, locale)}
+                      <RankingBadge
+                        rankings={school.rankings}
+                        usNewsRank={school.usNewsRank}
+                        variant="plain"
+                      />
+                      {tier && tier !== 'unavailable' && (
+                        <span className="text-muted-foreground">
+                          · {t(`prediction.tier.${tier}`)}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => onRemove(school.id)}
+                        className="-mr-2 ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-destructive/10 hover:text-destructive md:h-8 md:w-8"
+                        aria-label={t('common.remove')}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  );
+                }
+
+                return (
+                  <div
+                    key={school.id}
+                    className="flex items-center justify-between gap-3 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] px-3 py-2"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {getSchoolName(school, locale)}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                        <RankingBadge
+                          rankings={school.rankings}
+                          usNewsRank={school.usNewsRank}
+                          variant="plain"
+                        />
+                        {tier && tier !== 'unavailable' && (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'h-5 px-1.5 text-2xs',
+                              tier === 'reach' && 'border-rose-500/25 text-rose-600',
+                              tier === 'match' && 'border-amber-500/30 text-amber-600',
+                              tier === 'safety' && 'border-emerald-500/30 text-emerald-600'
+                            )}
+                          >
+                            {t(`prediction.tier.${tier}`)}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onRemove(school.id)}
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={t('common.remove')}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -168,7 +233,7 @@ export function SchoolSelectorCard({
           ) : (
             <>
               <Target className="mr-2 h-4 w-4" />
-              {t('prediction.runPrediction')}
+              {hasPredictions ? t('prediction.rerunPrediction') : t('prediction.runPrediction')}
             </>
           )}
         </Button>

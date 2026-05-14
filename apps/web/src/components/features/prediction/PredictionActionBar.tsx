@@ -57,21 +57,21 @@ export function PredictionActionBar({
             label={t('selected')}
             value={String(selectedCount)}
             tone={selectedCount > 0 ? 'ready' : 'blocked'}
-            detail={t('selectedDetail')}
+            detail={t('selectedDetail', { count: selectedCount })}
           />
           <ActionMetric
             icon={BarChart3}
             label={t('coverage')}
             value={`${coverage}%`}
             tone={coverage >= 80 ? 'ready' : selectedCount > 0 ? 'attention' : 'blocked'}
-            detail={t('coverageDetail', { predicted: predictedCount })}
+            detail={t('coverageDetail', { predicted: predictedCount, selected: selectedCount })}
           />
           <ActionMetric
             icon={Clock3}
             label={t('stale')}
             value={String(staleCount)}
             tone={staleCount > 0 ? 'attention' : 'ready'}
-            detail={staleCount > 0 ? t('staleDetail') : t('freshDetail')}
+            detail={staleCount > 0 ? t('staleDetail', { count: staleCount }) : t('freshDetail')}
           />
         </div>
 
@@ -132,7 +132,7 @@ function ActionMetric({
             {value}
           </Badge>
         </div>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">{detail}</p>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{detail}</p>
       </div>
     </div>
   );

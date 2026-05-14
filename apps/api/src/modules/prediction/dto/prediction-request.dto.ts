@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsString,
   IsOptional,
   IsNotEmpty,
@@ -31,5 +32,41 @@ export class PredictionRequestDto {
     default: false,
   })
   @IsOptional()
+  @IsBoolean()
   forceRefresh?: boolean;
+}
+
+export class PredictionExplanationStreamRequestDto {
+  @ApiProperty({
+    description: 'Whether to ignore any cached explanation and regenerate',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  refresh?: boolean;
+}
+
+export class PredictionPortfolioSummaryStreamRequestDto {
+  @ApiProperty({
+    description: 'Prediction result IDs to summarize',
+    required: false,
+    type: [String],
+    maxItems: 100,
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100)
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  predictionResultIds?: string[];
+
+  @ApiProperty({
+    description: 'Whether to ignore any cached summary and regenerate',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  refresh?: boolean;
 }

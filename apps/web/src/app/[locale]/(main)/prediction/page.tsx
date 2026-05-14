@@ -20,11 +20,11 @@ import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { usePredictionDashboard, useRunPrediction } from '@/hooks/use-prediction';
 import {
   PredictionHeader,
-  PredictionActionBar,
+  ProfileSnapshotBar,
   SchoolSelectorCard,
-  PortfolioSnapshot,
+  PortfolioDiagnosisCard,
+  PredictionPortfolioSummaryStream,
   PredictionResultList,
-  AiContextActions,
   RecommendedSchoolsBlock,
   PredictionEvidencePanel,
 } from '@/components/features/prediction';
@@ -34,6 +34,7 @@ import type {
   PredictionResult,
   PredictionResponse,
   SchoolSearchItem,
+  TierType,
 } from '@/components/features/prediction';
 
 interface SchoolListItemApi {
@@ -165,14 +166,20 @@ export default function PredictionPage() {
     results.length > 0
       ? results.length
       : dashboardPredictions.filter((prediction) => selectedIds.has(prediction.schoolId)).length;
-  const stalePredictionCount = useMemo(() => {
-    const staleAfterMs = 1000 * 60 * 60 * 24 * 30;
-    return dashboardPredictions.filter((prediction) => {
-      if (!selectedIds.has(prediction.schoolId)) return false;
-      const updatedAt = new Date(prediction.updatedAt).getTime();
-      return Number.isFinite(updatedAt) && Date.now() - updatedAt > staleAfterMs;
-    }).length;
-  }, [dashboardPredictions, selectedIds]);
+  const predictionTierBySchoolId = useMemo(() => {
+    const tierBySchoolId: Partial<Record<string, TierType>> = {};
+    for (const prediction of activeSnapshotPredictions) {
+      if (
+        prediction.tier === 'reach' ||
+        prediction.tier === 'match' ||
+        prediction.tier === 'safety' ||
+        prediction.tier === 'unavailable'
+      ) {
+        tierBySchoolId[prediction.schoolId] = prediction.tier;
+      }
+    }
+    return tierBySchoolId;
+  }, [activeSnapshotPredictions]);
 
   // Handlers
   const handleAddSchool = useCallback((school: SchoolSearchItem) => {
@@ -366,19 +373,15 @@ export default function PredictionPage() {
     <AIErrorBoundary feature="prediction">
       <PageContainer maxWidth="default">
         <PredictionHeader dataCompleteness={responseMetadata.dataCompleteness} />
-        <PredictionActionBar
+        <ProfileSnapshotBar
+          profile={profileData}
           completeness={profileCompleteness}
-          selectedCount={selectedSchools.length}
-          predictedCount={formalPredictedCount}
-          staleCount={stalePredictionCount}
           hasProfileGaps={hasProfileGaps}
           firstMissingLabel={
             firstMissingProfileItem
               ? t(`prediction.dataChecklist.${firstMissingProfileItem.key}`)
               : undefined
           }
-          onRun={handlePredict}
-          isRunning={predictMutation.isPending}
         />
 
         <Tabs
@@ -418,6 +421,8 @@ export default function PredictionPage() {
                 onRemove={handleRemoveSchool}
                 onPredict={handlePredict}
                 isPredicting={predictMutation.isPending}
+                predictionTiers={predictionTierBySchoolId}
+                hasPredictions={formalPredictedCount > 0}
                 compact
                 className="mb-0"
               />
@@ -469,13 +474,15 @@ export default function PredictionPage() {
               )}
 
               {(activeSnapshotPredictions.length > 0 || selectedSchools.length > 0) && (
-                <PortfolioSnapshot
+                <PortfolioDiagnosisCard
                   predictions={activeSnapshotPredictions}
                   selectedCount={selectedSchools.length}
                 />
               )}
 
-              {ucIdsData?.schoolIds?.length && (
+              {results.length > 0 && <PredictionPortfolioSummaryStream results={results} />}
+
+              {Boolean(ucIdsData?.schoolIds?.length) && (
                 <div className="flex justify-end">
                   <Button
                     variant="outline"
@@ -521,7 +528,6 @@ export default function PredictionPage() {
                   <AIErrorBoundary feature="recommendation">
                     <RecommendedSchoolsBlock />
                   </AIErrorBoundary>
-                  <AiContextActions results={results} selectedSchools={selectedSchools} />
                 </>
               ) : (
                 !predictMutation.isPending &&

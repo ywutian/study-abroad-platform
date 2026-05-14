@@ -7,28 +7,26 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { RankingBadge } from '@/components/ui/ranking-badge';
 import {
-  Shield,
   ChevronDown,
   ChevronUp,
-  Bot,
   Award,
   RefreshCw,
   CheckCircle2,
-  BarChart3,
-  Brain,
-  BookOpen,
   Info,
   Database,
   AlertTriangle,
+  MessageSquareText,
 } from 'lucide-react';
 import { cn, formatAcceptanceRate } from '@/lib/utils';
 import { AgentType } from '@study-abroad/shared';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
-import { TIER_CONFIG, CONFIDENCE_CONFIG, getProbabilityColor } from './constants';
+import { TIER_CONFIG, getProbabilityColor } from './constants';
 import type { PredictionResult } from './types';
 import { formatPercentValue, resolveContextualBaseline } from './benchmark-utils';
+import { PredictionExplanationStream } from './PredictionExplanationStream';
 
 // Lazy load expanded panels
 const FactorsPanel = dynamic(
@@ -156,8 +154,10 @@ export const PredictionResultCard = memo(
       result.predictionMethod === 'insufficient_data';
     const numericProbability = result.probability ?? 0;
     const tierConfig = TIER_CONFIG[result.tier] ?? TIER_CONFIG.unavailable;
-    const confidenceConfig = CONFIDENCE_CONFIG[result.confidence];
     const TierIcon = tierConfig.icon;
+    const publicExplanation = result.publicExplanation;
+    const dataSupportLabel =
+      publicExplanation?.dataSupportLabel ?? t(`confidence.${result.confidence ?? 'medium'}`);
 
     const probPercent = isUnavailable ? null : (numericProbability * 100).toFixed(0);
     const normalizedSourceSummary = normalizeSourceSummary(result.sourceSummary);
@@ -221,6 +221,7 @@ export const PredictionResultCard = memo(
       result.suggestions.length > 0 ||
       result.comparison ||
       result.engineScores ||
+      publicExplanation ||
       hasPredictionContext ||
       hasDataQualityWarning;
 
@@ -253,12 +254,9 @@ export const PredictionResultCard = memo(
                   <TierIcon className="h-3 w-3 mr-1" />
                   {isUnavailable ? 'Unavailable' : t(`tier.${result.tier}`)}
                 </Badge>
-                <Badge
-                  variant="outline"
-                  className={cn(confidenceConfig.border, confidenceConfig.text)}
-                >
-                  <Shield className="h-3 w-3 mr-1" />
-                  {t(`confidence.${result.confidence}`)}
+                <Badge variant="outline" className="gap-1 border-primary/20 text-primary">
+                  <Database className="h-3 w-3" />
+                  {dataSupportLabel}
                 </Badge>
                 {/* Accuracy badge when actual result reported */}
                 {accuracyBadge && (
@@ -299,11 +297,6 @@ export const PredictionResultCard = memo(
                     {t('roundContextChip', {
                       value: humanizeMachineLabel(result.roundContext),
                     })}
-                  </Badge>
-                )}
-                {result.modelVersion && (
-                  <Badge variant="outline" className="hidden sm:inline text-xs py-0">
-                    {t('modelLabel')}
                   </Badge>
                 )}
                 {probabilityRange && (
@@ -400,39 +393,39 @@ export const PredictionResultCard = memo(
                   })}
                 </span>
               )}
+              {hasExpandedContent && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onToggleExpand}
+                  className="mt-2 h-8 px-3 text-xs"
+                >
+                  {isExpanded ? t('collapse') : t('viewBasis')}
+                </Button>
+              )}
             </div>
           </div>
 
-          {/* Row 2: Data source indicators */}
-          {result.engineScores && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {result.engineScores.stats !== undefined && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <BarChart3 className="h-3 w-3" />
-                  {t('source.academic')}
-                </Badge>
-              )}
-              {result.engineScores.ai !== undefined && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Brain className="h-3 w-3" />
-                  {t('source.aiAnalysis')}
-                </Badge>
-              )}
-              {result.engineScores.historical !== undefined && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <BookOpen className="h-3 w-3" />
-                  {t('source.historicalData')}
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {(topFactors.length > 0 || nextSuggestion) && (
-            <div className="mt-3 grid gap-2 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] p-3 md:grid-cols-[1fr_auto]">
-              <div className="min-w-0">
-                <p className="text-2xs uppercase tracking-wide text-muted-foreground">
-                  {t('decisionSignals')}
+          {(publicExplanation || topFactors.length > 0 || nextSuggestion) && (
+            <div className="mt-3 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] p-3">
+              <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+                {t('decisionSignals')}
+              </p>
+              {publicExplanation?.headline && (
+                <p className="mt-1 text-sm font-medium text-foreground">
+                  {publicExplanation.headline}
                 </p>
+              )}
+              {publicExplanation?.reasons?.length ? (
+                <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                  {publicExplanation.reasons.slice(0, 3).map((reason, index) => (
+                    <li key={`${result.schoolId}-public-reason-${index}`} className="flex gap-2">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
+                      <span>{reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {topFactors.map((factor) => (
                     <Badge
@@ -450,13 +443,13 @@ export const PredictionResultCard = memo(
                     </Badge>
                   ))}
                 </div>
-              </div>
-              {nextSuggestion && (
-                <div className="min-w-0 border-t pt-2 md:max-w-sm md:border-l md:border-t-0 md:pl-3 md:pt-0">
+              )}
+              {(publicExplanation?.nextAction || nextSuggestion) && (
+                <div className="mt-3 rounded-[var(--theme-radius-button)] border bg-background/70 px-3 py-2">
                   <p className="text-2xs uppercase tracking-wide text-muted-foreground">
                     {t('nextAction')}
                   </p>
-                  <p className="mt-1 line-clamp-2 text-sm">{nextSuggestion}</p>
+                  <p className="mt-1 text-sm">{publicExplanation?.nextAction ?? nextSuggestion}</p>
                 </div>
               )}
             </div>
@@ -471,18 +464,7 @@ export const PredictionResultCard = memo(
                 aria-expanded={isExpanded}
                 aria-controls={`prediction-detail-${result.schoolId}`}
               >
-                <span>
-                  {isExpanded ? t('collapse') : t('expand')}
-                  {!isExpanded && result.factors.length > 0 && (
-                    <span className="ml-1">
-                      ({result.factors.length} {t('factorsCount')}
-                      {result.suggestions.length > 0
-                        ? `, ${result.suggestions.length} ${t('suggestionsCount')}`
-                        : ''}
-                      )
-                    </span>
-                  )}
-                </span>
+                <span>{isExpanded ? t('collapse') : t('expand')}</span>
                 {isExpanded ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
@@ -644,44 +626,51 @@ export const PredictionResultCard = memo(
                       )}
 
                       {isCounselorEstimate && (
-                        <div className="rounded-lg border bg-primary/5 border-primary/15 p-3 space-y-3">
-                          <div className="space-y-1">
-                            <p className="text-overline text-primary flex items-center gap-1.5">
-                              <Info className="h-3.5 w-3.5" />
-                              {t('counselor.howWeComputed')}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {t('counselor.disclaimerBody')}
-                            </p>
-                          </div>
-                          {result.factors.length > 0 && (
-                            <div className="space-y-2">
-                              {result.factors.map((factor) => (
-                                <div
-                                  key={`${result.schoolId}-counselor-${factor.name}`}
-                                  className="flex items-start justify-between gap-3 text-sm"
-                                >
-                                  <div className="min-w-0">
-                                    <p className="font-medium">{factor.name}</p>
-                                    <p className="text-xs text-muted-foreground">{factor.detail}</p>
-                                  </div>
-                                  {typeof factor.weight === 'number' &&
-                                    factor.weight > 0 &&
-                                    factor.impact !== 'neutral' && (
-                                      <Badge variant="outline" className="shrink-0 text-xs">
-                                        {factor.impact === 'negative'
-                                          ? '-'
-                                          : factor.impact === 'positive'
-                                            ? '+'
-                                            : ''}
-                                        {(factor.weight * 100).toFixed(0)}%
-                                      </Badge>
-                                    )}
-                                </div>
-                              ))}
+                        <details className="rounded-lg border bg-primary/5 border-primary/15 p-3">
+                          <summary className="cursor-pointer text-sm font-medium text-primary">
+                            {t('technicalDetails')}
+                          </summary>
+                          <div className="mt-3 space-y-3">
+                            <div className="space-y-1">
+                              <p className="text-overline text-primary flex items-center gap-1.5">
+                                <Info className="h-3.5 w-3.5" />
+                                {t('counselor.howWeComputed')}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {t('counselor.disclaimerBody')}
+                              </p>
                             </div>
-                          )}
-                        </div>
+                            {result.factors.length > 0 && (
+                              <div className="space-y-2">
+                                {result.factors.map((factor) => (
+                                  <div
+                                    key={`${result.schoolId}-counselor-${factor.name}`}
+                                    className="flex items-start justify-between gap-3 text-sm"
+                                  >
+                                    <div className="min-w-0">
+                                      <p className="font-medium">{factor.name}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {factor.detail}
+                                      </p>
+                                    </div>
+                                    {typeof factor.weight === 'number' &&
+                                      factor.weight > 0 &&
+                                      factor.impact !== 'neutral' && (
+                                        <Badge variant="outline" className="shrink-0 text-xs">
+                                          {factor.impact === 'negative'
+                                            ? '-'
+                                            : factor.impact === 'positive'
+                                              ? '+'
+                                              : ''}
+                                          {(factor.weight * 100).toFixed(0)}%
+                                        </Badge>
+                                      )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </details>
                       )}
 
                       {/* School stats overview */}
@@ -746,11 +735,42 @@ export const PredictionResultCard = memo(
                     </PredictionDetailSection>
                   )}
 
-                  {/* Impact factors */}
-                  {(result.factors.length > 0 || result.comparison) && (
+                  {/* User-facing reasons */}
+                  {(publicExplanation || result.factors.length > 0 || result.comparison) && (
                     <PredictionDetailSection title={t('detailSections.why')}>
+                      {publicExplanation && (
+                        <div className="space-y-3 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] p-3">
+                          <p className="text-sm font-medium">{publicExplanation.headline}</p>
+                          <ul className="space-y-1.5 text-sm text-muted-foreground">
+                            {publicExplanation.reasons.map((reason, index) => (
+                              <li
+                                key={`${result.schoolId}-expanded-reason-${index}`}
+                                className="flex gap-2"
+                              >
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
+                                <span>{reason}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {publicExplanation.caveats.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {publicExplanation.caveats[0]}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      <PredictionExplanationStream result={result} />
+
                       {result.factors.length > 0 && !isCounselorEstimate && (
-                        <FactorsPanel factors={result.factors} />
+                        <details className="rounded-[var(--theme-radius-button)] border bg-background p-3">
+                          <summary className="cursor-pointer text-sm font-medium">
+                            {t('technicalDetails')}
+                          </summary>
+                          <div className="pt-3">
+                            <FactorsPanel factors={result.factors} />
+                          </div>
+                        </details>
                       )}
 
                       {/* Applicant comparison */}
@@ -783,7 +803,7 @@ export const PredictionResultCard = memo(
 
                     <PredictionFeedbackWidget predictionResultId={result.id} />
 
-                    {/* AI deep analysis link */}
+                    {/* Optional counselor follow-up */}
                     <button
                       onClick={() => {
                         openFloatingAgentChat({
@@ -796,7 +816,7 @@ export const PredictionResultCard = memo(
                       }}
                       className="text-sm text-primary hover:underline flex items-center gap-1"
                     >
-                      <Bot className="h-3.5 w-3.5" />
+                      <MessageSquareText className="h-3.5 w-3.5" />
                       {t('detailedAnalysis')}
                     </button>
                   </PredictionDetailSection>
