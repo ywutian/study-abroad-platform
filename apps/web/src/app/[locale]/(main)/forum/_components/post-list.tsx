@@ -94,17 +94,18 @@ export function PostList({
 
   return (
     <div className="space-y-4">
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden py-0 lg:sticky lg:top-16 lg:z-20">
         <CardContent className="space-y-3 p-3">
           <div className="flex gap-2">
             <Button
               variant="outline"
-              size="icon"
-              className="lg:hidden"
+              size="sm"
+              className="shrink-0 gap-2 lg:hidden"
               onClick={onOpenCommunities}
               aria-label={t('openCommunities')}
             >
               <SlidersHorizontal className="h-4 w-4" />
+              {t('chooseCommunity')}
             </Button>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -116,7 +117,7 @@ export function PostList({
                 className="pl-9"
               />
             </div>
-            <Button onClick={onCreatePost}>
+            <Button className="shrink-0" onClick={onCreatePost}>
               <Plus className="mr-2 h-4 w-4" />
               {t('createPost')}
             </Button>
@@ -161,10 +162,16 @@ export function PostList({
               <MessageCircle className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
               <h3 className="mb-1 text-lg font-medium text-muted-foreground">{t('noPosts')}</h3>
               <p className="mb-4 text-sm text-muted-foreground/70">{t('noPostsDesc')}</p>
-              <Button onClick={onCreatePost}>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('firstPost')}
-              </Button>
+              <div className="flex flex-col items-center justify-center gap-2 sm:flex-row">
+                <Button onClick={onCreatePost}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('firstPost')}
+                </Button>
+                <Button variant="outline" className="lg:hidden" onClick={onOpenCommunities}>
+                  <SlidersHorizontal className="mr-2 h-4 w-4" />
+                  {t('chooseCommunity')}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -221,11 +228,11 @@ function PostCard({
   const t = useTranslations('forum');
 
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-md">
+    <Card className="overflow-hidden py-0 shadow-none transition-colors hover:border-primary/40">
       <CardContent className="p-0">
-        <button className="block w-full p-4 text-left" onClick={() => onViewPost(post)}>
-          <div className="mb-3 flex items-start gap-3">
-            <Avatar className="h-9 w-9">
+        <button className="block w-full p-3 text-left sm:p-4" onClick={() => onViewPost(post)}>
+          <div className="mb-2 flex items-start gap-3">
+            <Avatar className="h-8 w-8">
               <AvatarImage src={post.author.avatar || ''} />
               <AvatarFallback>{(post.author.name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
@@ -244,7 +251,7 @@ function PostCard({
           </div>
 
           {post.content && (
-            <p className="mb-3 line-clamp-3 text-sm text-muted-foreground">
+            <p className="mb-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
               {stripMarkdown(post.content)}
             </p>
           )}
@@ -252,7 +259,7 @@ function PostCard({
           {post.images.length > 0 && <ImageGrid images={post.images} />}
         </button>
 
-        <div className="flex items-center justify-between border-t px-4 py-2 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between border-t px-3 py-2 text-sm text-muted-foreground sm:px-4">
           <div className="flex items-center gap-1.5">
             <button
               className={`inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors ${

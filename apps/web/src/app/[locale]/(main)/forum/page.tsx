@@ -5,7 +5,6 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
 import { BreadcrumbJsonLd } from '@/components/seo';
-import { PageContainer } from '@/components/layout';
 import { ReportDialog } from '@/components/features/forum/ReportDialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { apiClient as api } from '@/lib/api';
@@ -14,6 +13,7 @@ import { useAuthStore } from '@/stores/auth';
 import type { Category, Community, Post } from './_components/forum-types';
 import { CommunitySidebar } from './_components/community-sidebar';
 import { CreatePostDialog } from './_components/create-post-dialog';
+import { ForumRightRail } from './_components/forum-right-rail';
 import { PostDetailDialog } from './_components/post-detail-dialog';
 import { PostList } from './_components/post-list';
 
@@ -176,6 +176,11 @@ export default function ForumPage() {
     setSelectedCommunity(community);
   };
 
+  const handleCreateCommunity = () => {
+    setSelectedCommunity(null);
+    setShowCreateDialog(true);
+  };
+
   const formatNumber = (num: number) => (num >= 1000 ? format.number(num, 'compact') : String(num));
 
   const sidebar = (
@@ -185,13 +190,13 @@ export default function ForumPage() {
       activeFeed={activeFeed}
       onSelectFeed={handleSelectFeed}
       onSelectCommunity={handleSelectCommunity}
-      onCreateCommunity={() => setShowCreateDialog(true)}
+      onCreateCommunity={handleCreateCommunity}
       onToggleFollow={handleToggleFollow}
     />
   );
 
   return (
-    <PageContainer maxWidth="7xl">
+    <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-4 xl:px-6">
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: env.NEXT_PUBLIC_APP_URL },
@@ -199,47 +204,67 @@ export default function ForumPage() {
         ]}
       />
 
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-            <MessageSquare className="h-4 w-4" />
-            {t('title')}
-          </div>
-          <h1 className="text-2xl font-semibold tracking-normal">{currentTitle}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {selectedCommunity?.description || t('redditForumDescription')}
-          </p>
-        </div>
-        <div className="hidden text-right text-sm text-muted-foreground sm:block">
-          {t('communityCount', { count: formatNumber(communities.length) })}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_300px]">
         <div className="hidden lg:block">
-          <div className="sticky top-24">{sidebar}</div>
+          <div className="sticky top-16 max-h-[calc(100dvh-4.5rem)] overflow-y-auto pr-1">
+            {sidebar}
+          </div>
         </div>
 
-        <PostList
-          posts={posts}
-          loading={loading}
-          hasMore={hasMore}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onSearch={() => fetchPosts(1, false)}
-          selectedCommunity={selectedCommunity}
-          activeFeed={activeFeed}
-          onClearCommunity={() => setSelectedCommunity(null)}
-          onClearSearch={() => setSearchQuery('')}
-          onLoadMore={() => fetchPosts(page + 1, true)}
-          onViewPost={setSelectedPost}
-          onLike={handleLike}
-          onReport={setReportTarget}
-          onCreatePost={() => setShowCreateDialog(true)}
-          onOpenCommunities={() => setMobileCommunitiesOpen(true)}
-        />
+        <div className="min-w-0 space-y-4">
+          <section className="rounded-lg border bg-card px-4 py-3 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground">
+                  <MessageSquare className="h-4 w-4" />
+                  {t('title')}
+                </div>
+                <h1 className="truncate text-2xl font-semibold tracking-normal">{currentTitle}</h1>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {selectedCommunity?.description || t('redditForumDescription')}
+                </p>
+              </div>
+              <div className="hidden shrink-0 text-right text-sm text-muted-foreground sm:block">
+                {t('communityCount', { count: formatNumber(communities.length) })}
+              </div>
+            </div>
+          </section>
+
+          <PostList
+            posts={posts}
+            loading={loading}
+            hasMore={hasMore}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onSearch={() => fetchPosts(1, false)}
+            selectedCommunity={selectedCommunity}
+            activeFeed={activeFeed}
+            onClearCommunity={() => setSelectedCommunity(null)}
+            onClearSearch={() => setSearchQuery('')}
+            onLoadMore={() => fetchPosts(page + 1, true)}
+            onViewPost={setSelectedPost}
+            onLike={handleLike}
+            onReport={setReportTarget}
+            onCreatePost={() => setShowCreateDialog(true)}
+            onOpenCommunities={() => setMobileCommunitiesOpen(true)}
+          />
+        </div>
+
+        <div className="hidden xl:block">
+          <div className="sticky top-16 max-h-[calc(100dvh-4.5rem)] overflow-y-auto">
+            <ForumRightRail
+              communities={communities}
+              selectedCommunity={selectedCommunity}
+              onCreatePost={() => setShowCreateDialog(true)}
+              onCreateCommunity={handleCreateCommunity}
+              onSelectCommunity={handleSelectCommunity}
+              onToggleFollow={handleToggleFollow}
+              formatNumber={formatNumber}
+            />
+          </div>
+        </div>
       </div>
 
       <Sheet open={mobileCommunitiesOpen} onOpenChange={setMobileCommunitiesOpen}>
@@ -278,6 +303,6 @@ export default function ForumPage() {
         targetType={reportTarget?.type || 'POST'}
         targetId={reportTarget?.id || ''}
       />
-    </PageContainer>
+    </div>
   );
 }

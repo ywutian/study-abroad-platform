@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Compass, Flame, Home, Newspaper, Plus, Star, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import type { Community } from './forum-types';
 
 interface CommunitySidebarProps {
@@ -14,6 +15,7 @@ interface CommunitySidebarProps {
   onSelectCommunity: (community: Community) => void;
   onCreateCommunity: () => void;
   onToggleFollow: (community: Community) => void;
+  className?: string;
 }
 
 export function CommunitySidebar({
@@ -24,10 +26,12 @@ export function CommunitySidebar({
   onSelectCommunity,
   onCreateCommunity,
   onToggleFollow,
+  className,
 }: CommunitySidebarProps) {
   const t = useTranslations('forum');
   const myCommunities = communities.filter((community) => community.isFollowing);
   const recommendedCommunities = communities.filter((community) => !community.isFollowing);
+  const fallbackCommunities = myCommunities.length ? myCommunities : communities.slice(0, 4);
 
   const feedItems = [
     { key: 'popular' as const, icon: Flame, label: t('feedPopular') },
@@ -36,12 +40,12 @@ export function CommunitySidebar({
   ];
 
   return (
-    <aside className="space-y-5">
+    <aside className={cn('space-y-5 text-sm', className)}>
       <div className="space-y-1">
         {feedItems.map(({ key, icon: Icon, label }) => (
           <button
             key={key}
-            className={`flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium transition-colors ${
+            className={`flex h-10 w-full items-center gap-3 rounded-md px-3 text-left font-medium transition-colors ${
               activeFeed === key && !selectedCommunityId
                 ? 'bg-primary text-primary-foreground'
                 : 'hover:bg-muted'
@@ -53,7 +57,7 @@ export function CommunitySidebar({
           </button>
         ))}
         <button
-          className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium transition-colors hover:bg-muted"
+          className="flex h-10 w-full items-center gap-3 rounded-md px-3 text-left font-medium transition-colors hover:bg-muted"
           onClick={onCreateCommunity}
         >
           <Plus className="h-4 w-4" />
@@ -67,7 +71,7 @@ export function CommunitySidebar({
           {t('myCommunities')}
         </div>
         <div className="space-y-1">
-          {(myCommunities.length ? myCommunities : communities.slice(0, 4)).map((community) => (
+          {fallbackCommunities.map((community) => (
             <CommunityRow
               key={community.id}
               community={community}
@@ -80,7 +84,9 @@ export function CommunitySidebar({
             />
           ))}
           {myCommunities.length === 0 && (
-            <p className="px-3 py-2 text-xs text-muted-foreground">{t('noFollowedCommunities')}</p>
+            <p className="px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+              {t('noFollowedCommunities')}
+            </p>
           )}
         </div>
       </section>
