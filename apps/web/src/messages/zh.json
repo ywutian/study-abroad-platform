@@ -5806,12 +5806,12 @@
     "about": "学校简介",
     "dataSource": "来源：{source}",
     "updatedAt": "更新于 {date}",
-    "viewSource": "查看官方数据源",
+    "viewSource": "查看来源",
     "trust": {
       "badges": {
         "OFFICIAL": "官方",
         "PARTNER": "合作",
-        "SCRAPED": "抓取",
+        "SCRAPED": "有来源",
         "SEED": "初始",
         "COMMUNITY": "社区",
         "INFERRED": "AI",
@@ -5820,7 +5820,7 @@
       "tiers": {
         "OFFICIAL": "官方来源",
         "PARTNER": "合作数据源",
-        "SCRAPED": "公开抓取",
+        "SCRAPED": "公开来源",
         "SEED": "初始数据",
         "COMMUNITY": "社区提供",
         "INFERRED": "AI 推断",
