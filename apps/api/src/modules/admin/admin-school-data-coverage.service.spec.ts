@@ -39,6 +39,12 @@ describe('AdminSchoolDataCoverageService', () => {
     roomAndBoard: null,
     studentOrgsCount: null,
     countriesRepresented: null,
+    housingAvailable: null,
+    housingRequiredYears: null,
+    percentLivingOnCampus: null,
+    mealPlanCost: null,
+    campusSafetyServices: [],
+    campusLifeSummary: null,
     nicheSafetyGrade: null,
     nicheLifeGrade: null,
     nicheFoodGrade: null,
@@ -135,7 +141,7 @@ describe('AdminSchoolDataCoverageService', () => {
     expect(report.campusLifeTotals.roomAndBoard.filled).toBe(1);
     expect(report.campusLifeTotals.nicheSafetyGrade.filled).toBe(1);
     expect(report.campusLifeTotals.nicheFoodGrade.terminal).toBe(1);
-    expect(report.campusLifeSummary.missingFields).toBe(4);
+    expect(report.campusLifeSummary.missingFields).toBe(10);
     expect(report.items[0].terminalCampusLife).toContain('nicheFoodGrade');
   });
 

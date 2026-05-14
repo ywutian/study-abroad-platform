@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import * as cheerio from 'cheerio';
 import { BaseSchoolScraper } from './base-school-scraper';
 import { getAppilySlug } from './slug-mapper';
@@ -26,6 +26,7 @@ import { SchoolWriteService } from '../school-write.service';
  * - Monthly loan payment (月还款额)
  * - Countries represented (国际生来源国数量)
  * - Student orgs count (社团数量)
+ * - Housing, meal plan, and campus safety service signals
  */
 
 export class AppilyParser extends BaseSchoolScraper {
@@ -230,6 +231,98 @@ export class AppilyParser extends BaseSchoolScraper {
       data.roomAndBoard = parseInt(roomMatch[1].replace(/,/g, ''));
     }
 
+    const mealPlanMatch = pageText.match(
+      /meal\s*plan(?:\s*cost)?[:\s]*\$?([\d,]+)/i,
+    );
+    if (mealPlanMatch) {
+      const mealPlanCost = parseInt(mealPlanMatch[1].replace(/,/g, ''));
+      if (mealPlanCost > 500 && mealPlanCost < 30000) {
+        data.mealPlanCost = mealPlanCost;
+      }
+    }
+
+    if (
+      /on[-\s]*campus\s+housing|residence\s+halls?|dormitor(?:y|ies)|campus\s+housing/i.test(
+        pageText,
+      )
+    ) {
+      data.housingAvailable = true;
+    }
+
+    const requiredHousingMatch =
+      pageText.match(
+        /(?:required|must)\s+(?:to\s+)?live\s+on\s+campus\s+(?:for\s+)?(\d+)\s+years?/i,
+      ) ??
+      pageText.match(
+        /(\d+)\s+years?\s+of\s+(?:required\s+)?(?:on[-\s]*)?campus\s+housing/i,
+      );
+    if (requiredHousingMatch) {
+      data.housingRequiredYears = parseInt(requiredHousingMatch[1]);
+      data.housingAvailable = true;
+    } else if (
+      /freshmen\s+(?:are\s+)?(?:required|must)\s+(?:to\s+)?live\s+on\s+campus/i.test(
+        pageText,
+      )
+    ) {
+      data.housingRequiredYears = 1;
+      data.housingAvailable = true;
+    }
+
+    const livingOnCampusMatch =
+      pageText.match(
+        /(\d+(?:\.\d+)?)\s*%\s+(?:of\s+)?students\s+live\s+on\s+campus/i,
+      ) ??
+      pageText.match(
+        /students\s+living\s+on\s+campus[:\s]*(\d+(?:\.\d+)?)\s*%/i,
+      );
+    if (livingOnCampusMatch) {
+      data.percentLivingOnCampus = parseFloat(livingOnCampusMatch[1]);
+    }
+
+    const safetyServicePatterns: Array<[RegExp, string]> = [
+      [/24[-\s]*hour\s+(?:security|patrol)/i, '24-hour security patrol'],
+      [
+        /campus\s+police|public\s+safety\s+office/i,
+        'campus police/public safety office',
+      ],
+      [/emergency\s+(?:phones?|call\s+boxes?)/i, 'emergency phones'],
+      [
+        /late[-\s]*night\s+(?:transport|escort|shuttle)/i,
+        'late-night transport or escort',
+      ],
+      [
+        /controlled\s+(?:dormitory|residence\s+hall)\s+access/i,
+        'controlled residence access',
+      ],
+      [/security\s+camera|video\s+surveillance/i, 'security cameras'],
+    ];
+    const campusSafetyServices = safetyServicePatterns
+      .filter(([pattern]) => pattern.test(pageText))
+      .map(([, label]) => label);
+    if (campusSafetyServices.length > 0) {
+      data.campusSafetyServices = [...new Set(campusSafetyServices)];
+    }
+
+    const campusLifeSummary: Record<string, unknown> = {};
+    if (data.housingAvailable != null) {
+      campusLifeSummary.housingAvailable = data.housingAvailable;
+    }
+    if (data.housingRequiredYears != null) {
+      campusLifeSummary.housingRequiredYears = data.housingRequiredYears;
+    }
+    if (data.percentLivingOnCampus != null) {
+      campusLifeSummary.percentLivingOnCampus = data.percentLivingOnCampus;
+    }
+    if (data.mealPlanCost != null) {
+      campusLifeSummary.mealPlanCost = data.mealPlanCost;
+    }
+    if (Array.isArray(data.campusSafetyServices)) {
+      campusLifeSummary.campusSafetyServices = data.campusSafetyServices;
+    }
+    if (Object.keys(campusLifeSummary).length > 0) {
+      data.campusLifeSummary = campusLifeSummary;
+    }
+
     // Average aid
     const aidMatch = pageText.match(
       /average\s*(?:financial\s*)?aid[:\s]*\$?([\d,]+)/i,
@@ -278,6 +371,13 @@ export class AppilyScrapeService {
               { roomAndBoard: null },
               { studentOrgsCount: null },
               { countriesRepresented: null },
+              { housingAvailable: null },
+              { housingRequiredYears: null },
+              { percentLivingOnCampus: null },
+              { mealPlanCost: null },
+              { campusSafetyServices: { isEmpty: true } },
+              { campusLifeSummary: { equals: Prisma.DbNull } },
+              { campusLifeSummary: { equals: Prisma.JsonNull } },
             ],
           }
         : {}),

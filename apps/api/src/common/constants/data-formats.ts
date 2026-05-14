@@ -273,6 +273,7 @@ export interface SchoolStandardFormat {
 
   tuition?: number;
   roomAndBoard?: number;
+  mealPlanCost?: number;
   applicationFee?: number;
   averageAidPackage?: number;
   averageNetPrice?: number;
@@ -292,6 +293,13 @@ export interface SchoolStandardFormat {
   nicheSafetyGrade?: string;
   nicheLifeGrade?: string;
   nicheFoodGrade?: string;
+  studentOrgsCount?: number;
+  countriesRepresented?: number;
+  housingAvailable?: boolean;
+  housingRequiredYears?: number;
+  percentLivingOnCampus?: number;
+  campusSafetyServices?: string[];
+  campusLifeSummary?: Record<string, unknown>;
 
   deadlines?: SchoolDeadlineEntry[];
 }

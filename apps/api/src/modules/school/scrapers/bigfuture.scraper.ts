@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as cheerio from 'cheerio';
 import { BaseSchoolScraper } from './base-school-scraper';
 import { getBigFutureSlug } from './slug-mapper';
@@ -24,6 +25,7 @@ import { SchoolWriteService } from '../school-write.service';
  * - Fee waiver availability
  * - Retention rate
  * - College Board code
+ * - Housing, meal plan, and campus safety service signals
  */
 
 class BigFutureParser extends BaseSchoolScraper {
@@ -146,6 +148,100 @@ class BigFutureParser extends BaseSchoolScraper {
       data.acceptsCoalition = true;
     }
 
+    if (
+      /on[-\s]*campus\s+housing|residence\s+halls?|dormitor(?:y|ies)|campus\s+housing/i.test(
+        pageText,
+      )
+    ) {
+      data.housingAvailable = true;
+    }
+
+    const requiredHousingMatch =
+      pageText.match(
+        /(?:required|must)\s+(?:to\s+)?live\s+on\s+campus\s+(?:for\s+)?(\d+)\s+years?/i,
+      ) ??
+      pageText.match(
+        /(\d+)\s+years?\s+of\s+(?:required\s+)?(?:on[-\s]*)?campus\s+housing/i,
+      );
+    if (requiredHousingMatch) {
+      data.housingRequiredYears = parseInt(requiredHousingMatch[1]);
+      data.housingAvailable = true;
+    } else if (
+      /freshmen\s+(?:are\s+)?(?:required|must)\s+(?:to\s+)?live\s+on\s+campus/i.test(
+        pageText,
+      )
+    ) {
+      data.housingRequiredYears = 1;
+      data.housingAvailable = true;
+    }
+
+    const livingOnCampusMatch =
+      pageText.match(
+        /(\d+(?:\.\d+)?)\s*%\s+(?:of\s+)?students\s+live\s+on\s+campus/i,
+      ) ??
+      pageText.match(
+        /students\s+living\s+on\s+campus[:\s]*(\d+(?:\.\d+)?)\s*%/i,
+      );
+    if (livingOnCampusMatch) {
+      data.percentLivingOnCampus = parseFloat(livingOnCampusMatch[1]);
+    }
+
+    const roomMatch = pageText.match(
+      /room\s*(?:and|&)\s*board[:\s]*\$?([\d,]+)/i,
+    );
+    if (roomMatch) {
+      data.roomAndBoard = parseInt(roomMatch[1].replace(/,/g, ''));
+    }
+
+    const mealPlanMatch = pageText.match(
+      /meal\s*plan(?:\s*cost)?[:\s]*\$?([\d,]+)/i,
+    );
+    if (mealPlanMatch) {
+      const mealPlanCost = parseInt(mealPlanMatch[1].replace(/,/g, ''));
+      if (mealPlanCost > 500 && mealPlanCost < 30000) {
+        data.mealPlanCost = mealPlanCost;
+      }
+    }
+
+    const safetyServicePatterns: Array<[RegExp, string]> = [
+      [/24[-\s]*hour\s+(?:security|patrol)/i, '24-hour security patrol'],
+      [
+        /campus\s+police|public\s+safety\s+office/i,
+        'campus police/public safety office',
+      ],
+      [/emergency\s+(?:phones?|call\s+boxes?)/i, 'emergency phones'],
+      [
+        /late[-\s]*night\s+(?:transport|escort|shuttle)/i,
+        'late-night transport or escort',
+      ],
+      [
+        /controlled\s+(?:dormitory|residence\s+hall)\s+access/i,
+        'controlled residence access',
+      ],
+      [/security\s+camera|video\s+surveillance/i, 'security cameras'],
+    ];
+    const campusSafetyServices = safetyServicePatterns
+      .filter(([pattern]) => pattern.test(pageText))
+      .map(([, label]) => label);
+    if (campusSafetyServices.length > 0) {
+      data.campusSafetyServices = [...new Set(campusSafetyServices)];
+    }
+
+    const campusLifeSummary: Record<string, unknown> = {};
+    for (const key of [
+      'housingAvailable',
+      'housingRequiredYears',
+      'percentLivingOnCampus',
+      'roomAndBoard',
+      'mealPlanCost',
+      'campusSafetyServices',
+    ]) {
+      if (data[key] != null) campusLifeSummary[key] = data[key];
+    }
+    if (Object.keys(campusLifeSummary).length > 0) {
+      data.campusLifeSummary = campusLifeSummary;
+    }
+
     // SAT/ACT scores (as backup, Scorecard has priority)
     const satMatch = pageText.match(/SAT.*?(\d{3,4})\s*[-–]\s*(\d{3,4})/);
     if (satMatch) {
@@ -194,14 +290,37 @@ export class BigFutureScrapeService {
   async scrapeSchools(
     limit = 100,
     userId?: string,
+    options: {
+      dryRun?: boolean;
+      onlyMissingCampusLife?: boolean;
+    } = {},
   ): Promise<{
     scraped: number;
     updated: number;
     failed: number;
     skipped: number;
+    dryRun: boolean;
   }> {
+    const where: Prisma.SchoolWhereInput = {
+      country: 'US',
+      ...(options.onlyMissingCampusLife
+        ? {
+            OR: [
+              { roomAndBoard: null },
+              { housingAvailable: null },
+              { housingRequiredYears: null },
+              { percentLivingOnCampus: null },
+              { mealPlanCost: null },
+              { campusSafetyServices: { isEmpty: true } },
+              { campusLifeSummary: { equals: Prisma.DbNull } },
+              { campusLifeSummary: { equals: Prisma.JsonNull } },
+            ],
+          }
+        : {}),
+    };
+
     const schools = await this.prisma.school.findMany({
-      where: { country: 'US' },
+      where,
       select: { id: true, name: true, website: true, metadata: true },
       take: Math.min(limit, 500),
       orderBy: { usNewsRank: { sort: 'asc', nulls: 'last' } },
@@ -213,13 +332,24 @@ export class BigFutureScrapeService {
     this.scraper.onSchoolScraped = async (result) => {
       // Merge school fields
       if (Object.keys(result.data).length > 0) {
+        if (options.dryRun) {
+          updated++;
+          return;
+        }
+
         const mergeResult = await this.merger.merge(
           result.schoolId,
           result.data,
           DataSource.BIGFUTURE,
+          {
+            sourceUrl: result.url,
+            extractionMethod: 'BIGFUTURE_HTML',
+          },
         );
         if (mergeResult.updatedFields.length > 0) updated++;
       }
+
+      if (options.dryRun) return;
 
       // Write metrics
       for (const metric of result.metrics) {
@@ -290,6 +420,7 @@ export class BigFutureScrapeService {
       updated,
       failed: batchResult.failed,
       skipped: batchResult.skipped,
+      dryRun: Boolean(options.dryRun),
     };
   }
 }

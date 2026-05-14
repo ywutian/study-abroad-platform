@@ -52,6 +52,13 @@ describe('AdminDataSyncService', () => {
       onlyMissing: true,
       limit: 25,
       appily: { scraped: 5, updated: 2, failed: 0, skipped: 1, dryRun: true },
+      bigFuture: {
+        scraped: 4,
+        updated: 2,
+        failed: 0,
+        skipped: 0,
+        dryRun: true,
+      },
       tavily: {
         scanned: 5,
         updatedFields: 3,
@@ -159,7 +166,7 @@ describe('AdminDataSyncService', () => {
         'admin-1',
       );
 
-      expect(result.synced).toBe(5);
+      expect(result.synced).toBe(7);
       expect(result.errors).toBe(1);
       expect(result.message).toContain('terminal marked 7');
       expect(mockCampusLifeIngestionService.ingest).toHaveBeenCalledWith(

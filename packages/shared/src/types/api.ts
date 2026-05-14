@@ -83,6 +83,14 @@ export const DATA_SOURCE_LABELS: Record<string, { en: string; zh: string }> = {
   MANUAL_ADMIN: { en: 'Platform entry', zh: '平台录入' },
   SEED: { en: 'Curated dataset', zh: '整理数据集' },
   SCRAPER: { en: 'School website', zh: '学校官网' },
+  'SCRAPER:TAVILY_NICHE': {
+    en: 'Niche search index',
+    zh: 'Niche 搜索索引',
+  },
+  'NO_PUBLIC_REAL_DATA:TAVILY_NICHE': {
+    en: 'Niche search index checked',
+    zh: '已检查 Niche 搜索索引',
+  },
 };
 
 // Additional enums from Prisma schema

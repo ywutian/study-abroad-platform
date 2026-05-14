@@ -102,6 +102,12 @@ export const MERGEABLE_FIELDS = [
   'monthlyLoanPayment',
   'countriesRepresented',
   'studentOrgsCount',
+  'housingAvailable',
+  'housingRequiredYears',
+  'percentLivingOnCampus',
+  'mealPlanCost',
+  'campusSafetyServices',
+  'campusLifeSummary',
 ] as const;
 
 export type MergeableField = (typeof MERGEABLE_FIELDS)[number];

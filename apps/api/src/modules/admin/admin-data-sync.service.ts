@@ -60,7 +60,7 @@ const JOB_DEFINITIONS: Record<
   CAMPUS_LIFE: {
     name: 'Campus Life Ingestion',
     description:
-      'Fill Appily campus-life fields and Niche safety/life/food grades with provenance',
+      'Fill Appily/BigFuture campus-life facts, housing/meal/safety fields, and Niche safety/life/food grades with provenance',
     nextScheduledRun: 'Manual or quarterly after Appily refresh',
   },
 };
@@ -255,8 +255,12 @@ export class AdminDataSyncService {
           { limit, dryRun, onlyMissing },
           userId,
         );
-        const synced = result.appily.updated + result.tavily.updatedFields;
-        const errors = result.appily.failed + result.tavily.failed;
+        const synced =
+          result.appily.updated +
+          result.bigFuture.updated +
+          result.tavily.updatedFields;
+        const errors =
+          result.appily.failed + result.bigFuture.failed + result.tavily.failed;
         await this.logSync(
           userId,
           jobId,
