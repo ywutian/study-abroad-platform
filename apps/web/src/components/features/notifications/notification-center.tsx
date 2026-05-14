@@ -21,7 +21,7 @@ import {
   BadgeCheck,
   Coins,
   Calendar,
-  Sparkles,
+  Lightbulb,
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -218,7 +218,7 @@ function EmptyState({ emptyText, emptyHint }: { emptyText: string; emptyHint: st
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center mb-3">
-        <Sparkles className="w-7 h-7 text-muted-foreground" />
+        <Lightbulb className="w-7 h-7 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-foreground">{emptyText}</p>
       <p className="text-xs text-muted-foreground mt-1">{emptyHint}</p>

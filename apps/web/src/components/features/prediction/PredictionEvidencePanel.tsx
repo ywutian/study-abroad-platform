@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, BarChart3, BookOpen, Brain, Database, Shield } from 'lucide-react';
+import { AlertTriangle, BarChart3, BookOpen, ClipboardCheck, Database, Shield } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -20,7 +20,7 @@ export function PredictionEvidencePanel() {
           <div className="grid gap-3 sm:grid-cols-3">
             <EvidenceSignal icon={BarChart3} label={t('academic')} />
             <EvidenceSignal icon={BookOpen} label={t('historical')} />
-            <EvidenceSignal icon={Brain} label={t('counselor')} />
+            <EvidenceSignal icon={ClipboardCheck} label={t('counselor')} />
           </div>
         </CardContent>
       </Card>

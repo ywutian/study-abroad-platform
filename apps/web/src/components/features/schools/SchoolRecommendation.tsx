@@ -16,14 +16,14 @@ import { schoolRoutes } from '@study-abroad/shared';
 import { AI_TIMEOUTS } from '@/lib/constants';
 import { GC_TIME } from '@/lib/constants';
 import {
-  Brain,
-  Sparkles,
+  ClipboardCheck,
+  Lightbulb,
   RefreshCw,
   ChevronDown,
   ChevronUp,
   Target,
   Shield,
-  Rocket,
+  Compass,
   TrendingUp,
   Star,
   Info,
@@ -36,7 +36,7 @@ import type { RecommendationResponse } from './school-recommendation.types';
 
 const CATEGORY_STYLES = {
   reach: {
-    icon: Rocket,
+    icon: Compass,
     color: 'bg-destructive',
     bg: 'bg-rose-500/10',
     border: 'border-rose-500/30',
@@ -97,7 +97,7 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <div className="h-16 w-16 rounded-lg bg-gradient-to-br bg-primary/10 animate-pulse" />
-              <Brain className="absolute inset-0 m-auto h-8 w-8 text-blue-500/50" />
+              <ClipboardCheck className="absolute inset-0 m-auto h-8 w-8 text-blue-500/50" />
             </div>
             <div className="text-center">
               <p className="font-medium">{t('loading')}</p>
@@ -166,12 +166,12 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg">
-              <Brain className="h-5 w-5" />
+              <ClipboardCheck className="h-5 w-5" />
             </div>
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
                 {t('aiSmartMatch')}
-                <Sparkles className="h-4 w-4 text-blue-500" />
+                <Lightbulb className="h-4 w-4 text-blue-500" />
               </CardTitle>
               <CardDescription>
                 {t('recommendCount', { count: totalSchools })}
@@ -411,7 +411,10 @@ export function SchoolRecommendation({ className }: SchoolRecommendationProps) {
         )}
 
         {/* 底部提示 */}
-        <p className="text-xs text-muted-foreground text-center pt-2">💡 {t('disclaimer')}</p>
+        <p className="flex items-center justify-center gap-1.5 pt-2 text-center text-xs text-muted-foreground">
+          <Lightbulb className="h-3.5 w-3.5" />
+          {t('disclaimer')}
+        </p>
       </CardContent>
     </Card>
   );

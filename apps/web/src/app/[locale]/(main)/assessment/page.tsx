@@ -7,14 +7,13 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Loader2,
-  Brain,
+  ClipboardCheck,
   Compass,
-  Sparkles,
+  Lightbulb,
   Trophy,
   GraduationCap,
-  Lightbulb,
   Target,
-  Bot,
+  MessageCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
@@ -212,7 +211,7 @@ export default function AssessmentPage() {
               type: currentResult.mbtiResult.type,
               scores: mbtiScores,
             }),
-            icon: <Brain className="h-4 w-4" />,
+            icon: <ClipboardCheck className="h-4 w-4" />,
           },
           {
             id: 'recommend-majors-mbti',
@@ -275,7 +274,7 @@ export default function AssessmentPage() {
           id: 'explain-mbti',
           label: t('aiActions.explainMbti'),
           prompt: t('aiActions.explainMbtiPrompt'),
-          icon: <Brain className="h-4 w-4" />,
+          icon: <ClipboardCheck className="h-4 w-4" />,
         },
         {
           id: 'explain-holland',
@@ -314,16 +313,21 @@ export default function AssessmentPage() {
 
   return (
     <PageContainer maxWidth="4xl">
-      <PageHeader title={t('title')} description={t('description')} icon={Brain} color="violet" />
+      <PageHeader
+        title={t('title')}
+        description={t('description')}
+        icon={ClipboardCheck}
+        color="violet"
+      />
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4">
           <TabsTrigger value="intro" className="min-w-0 text-xs sm:text-sm">
-            <Sparkles className="h-4 w-4 mr-2" />
+            <Lightbulb className="h-4 w-4 mr-2" />
             {t('tabs.intro')}
           </TabsTrigger>
           <TabsTrigger value="mbti" className="min-w-0 text-xs sm:text-sm">
-            <Brain className="h-4 w-4 mr-2" />
+            <ClipboardCheck className="h-4 w-4 mr-2" />
             {t('tabs.mbti')}
           </TabsTrigger>
           <TabsTrigger value="holland" className="min-w-0 text-xs sm:text-sm">
@@ -408,7 +412,7 @@ export default function AssessmentPage() {
           showAiPanel && 'hidden'
         )}
       >
-        <Bot className="h-6 w-6" />
+        <MessageCircle className="h-6 w-6" />
       </motion.button>
 
       {/* AI assistant panel */}

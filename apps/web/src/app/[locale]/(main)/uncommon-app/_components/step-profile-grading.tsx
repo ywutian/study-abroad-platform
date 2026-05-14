@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Brain } from 'lucide-react';
+import { User, ClipboardCheck } from 'lucide-react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -82,12 +82,12 @@ export function StepProfileGrading({
             <Button className="w-full" size="lg" onClick={onGradeProfile} disabled={isAnalyzing}>
               {isAnalyzing ? (
                 <>
-                  <Brain className="h-4 w-4 mr-2 animate-pulse" />
+                  <ClipboardCheck className="h-4 w-4 mr-2 animate-pulse" />
                   <span className="animate-pulse">{t('aiAnalyzing')}</span>
                 </>
               ) : (
                 <>
-                  <Brain className="h-4 w-4 mr-2" />
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
                   {t('generateAnalysis')}
                 </>
               )}

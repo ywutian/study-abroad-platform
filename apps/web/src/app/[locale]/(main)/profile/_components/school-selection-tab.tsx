@@ -29,7 +29,7 @@ import {
   Loader2,
   Info,
   Calendar,
-  Sparkles,
+  Lightbulb,
   MoreHorizontal,
   HelpCircle,
 } from 'lucide-react';
@@ -618,7 +618,7 @@ export function SchoolSelectionTab({
                       <DropdownMenuContent align="end">
                         {school.prediction && (
                           <DropdownMenuItem onClick={() => askAiForSchool(school)}>
-                            <Sparkles className="h-4 w-4" />
+                            <Lightbulb className="h-4 w-4" />
                             {t('profile.schoolSelection.askAi')}
                           </DropdownMenuItem>
                         )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { User, Database, Sparkles, CheckCircle } from 'lucide-react';
+import { User, Database, Lightbulb, CheckCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AnimatedProgress, PopIn } from '@/components/ui/motion';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,7 @@ export function RecommendationLoadingState({ t }: RecommendationLoadingStateProp
   const steps = [
     { icon: User, labelKey: 'loadingStep1' },
     { icon: Database, labelKey: 'loadingStep2' },
-    { icon: Sparkles, labelKey: 'loadingStep3' },
+    { icon: Lightbulb, labelKey: 'loadingStep3' },
   ];
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export function MarkdownContent({ content }: { content: string }) {
         ),
         h3: ({ children }) => (
           <h3 className="text-base font-medium mb-2 mt-3 text-foreground flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Lightbulb className="h-4 w-4 text-primary" />
             {children}
           </h3>
         ),

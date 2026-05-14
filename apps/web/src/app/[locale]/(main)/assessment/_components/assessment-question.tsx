@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, ChevronRight, ChevronLeft, Check, Sparkles, Target } from 'lucide-react';
+import { Loader2, ChevronRight, ChevronLeft, Check, Lightbulb, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   type Assessment,
@@ -188,7 +188,7 @@ export function AssessmentQuestion({
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Lightbulb className="mr-2 h-4 w-4" />
             )}
             {t('submit')}
           </Button>

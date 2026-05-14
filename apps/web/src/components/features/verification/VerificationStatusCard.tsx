@@ -22,7 +22,7 @@ import {
   GraduationCap,
   Calendar,
   AlertTriangle,
-  Sparkles,
+  Lightbulb,
   Trophy,
 } from 'lucide-react';
 
@@ -218,7 +218,7 @@ export function VerificationStatusCard({
                 {/* 认证权益 */}
                 <div className="mt-4 pt-4 border-t border-blue-500/10">
                   <p className="text-xs font-medium text-blue-600 mb-2 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
+                    <Lightbulb className="h-3 w-3" />
                     {t('verification.benefits.title')}
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">

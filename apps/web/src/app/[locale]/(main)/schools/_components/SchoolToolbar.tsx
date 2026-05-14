@@ -416,7 +416,7 @@ export function SchoolToolbar({
         <div className="flex flex-wrap items-center gap-2">
           {/* Sort */}
           <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SchoolSortBy)}>
-            <SelectTrigger className="h-9 w-[148px]" aria-label={tt('sortLabel')}>
+            <SelectTrigger className="h-10 w-[148px]" aria-label={tt('sortLabel')}>
               <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
@@ -433,7 +433,7 @@ export function SchoolToolbar({
             value={rankingList}
             onValueChange={(v) => onRankingListChange(v as SchoolRankingList)}
           >
-            <SelectTrigger className="h-9 w-[190px]" aria-label={tt('rankingListLabel')}>
+            <SelectTrigger className="h-10 w-[190px]" aria-label={tt('rankingListLabel')}>
               <Trophy className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
@@ -459,7 +459,7 @@ export function SchoolToolbar({
           {/* Density (only for card view) */}
           {viewMode === 'card' && (
             <div
-              className="flex h-9 items-center rounded-md border border-border/70 bg-background p-0.5"
+              className="flex min-h-11 items-center rounded-md border border-border/70 bg-background p-0.5"
               role="radiogroup"
               aria-label={tt('density')}
             >
@@ -471,7 +471,7 @@ export function SchoolToolbar({
                   aria-checked={density === d}
                   onClick={() => onDensityChange(d)}
                   className={cn(
-                    'rounded-sm px-2 py-1 text-xs font-medium transition-colors',
+                    'h-10 rounded-sm px-3 text-xs font-medium transition-colors',
                     density === d
                       ? 'bg-primary/10 text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
@@ -485,7 +485,7 @@ export function SchoolToolbar({
 
           {/* View toggle */}
           <div
-            className="flex h-9 items-center rounded-md border border-border/70 bg-background p-0.5"
+            className="flex min-h-11 items-center rounded-md border border-border/70 bg-background p-0.5"
             role="radiogroup"
             aria-label={tt('view')}
           >
@@ -496,7 +496,7 @@ export function SchoolToolbar({
               aria-label={tt('viewCard')}
               onClick={() => onViewModeChange('card')}
               className={cn(
-                'flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors',
+                'flex h-10 min-w-10 items-center justify-center gap-1 rounded-sm px-3 text-xs font-medium transition-colors',
                 viewMode === 'card'
                   ? 'bg-primary/10 text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -512,7 +512,7 @@ export function SchoolToolbar({
               aria-label={tt('viewList')}
               onClick={() => onViewModeChange('list')}
               className={cn(
-                'flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium transition-colors',
+                'flex h-10 min-w-10 items-center justify-center gap-1 rounded-sm px-3 text-xs font-medium transition-colors',
                 viewMode === 'list'
                   ? 'bg-primary/10 text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -533,7 +533,7 @@ export function SchoolToolbar({
               <span className="max-w-[180px] truncate">{chip.label}</span>
               <button
                 onClick={chip.onRemove}
-                className="rounded-full p-0.5 hover:bg-muted"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted"
                 aria-label={tt('removeFilter')}
               >
                 <X className="h-3 w-3" />
@@ -541,7 +541,7 @@ export function SchoolToolbar({
             </Badge>
           ))}
           {chips.length >= 2 && (
-            <Button variant="ghost" size="sm" onClick={onResetAll} className="h-7 px-2 text-xs">
+            <Button variant="ghost" size="sm" onClick={onResetAll} className="h-10 px-3 text-xs">
               {tt('resetAll')}
             </Button>
           )}

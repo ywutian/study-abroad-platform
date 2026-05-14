@@ -18,11 +18,11 @@ import {
   FileText,
   CheckCircle,
   Eye,
-  Brain,
+  ClipboardCheck,
   MessageSquare,
   UserPlus,
   Award,
-  Sparkles,
+  Lightbulb,
 } from 'lucide-react';
 
 interface PointHistoryItem {
@@ -44,9 +44,9 @@ const ACTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   REFER_USER: UserPlus,
   VERIFICATION_APPROVED: CheckCircle,
   VIEW_CASE_DETAIL: Eye,
-  AI_ANALYSIS: Brain,
+  AI_ANALYSIS: ClipboardCheck,
   MESSAGE_VERIFIED: MessageSquare,
-  ESSAY_POLISH: Sparkles,
+  ESSAY_POLISH: Lightbulb,
   ESSAY_REVIEW: FileText,
 };
 

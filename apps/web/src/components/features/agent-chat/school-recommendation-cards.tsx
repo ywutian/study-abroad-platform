@@ -8,7 +8,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { cn, getSchoolName, getSchoolSubName } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { School } from 'lucide-react';
+import { School, ShieldCheck, Target, TrendingUp } from 'lucide-react';
 
 // 学校推荐数据类型
 export interface SchoolRecommendation {
@@ -26,19 +26,19 @@ export function SchoolRecommendationCards({ schools }: { schools: SchoolRecommen
       label: t('tierReach'),
       description: t('tierReachDesc'),
       color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-      icon: '🎯',
+      icon: TrendingUp,
     },
     target: {
       label: t('tierTarget'),
       description: t('tierTargetDesc'),
       color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      icon: '✅',
+      icon: Target,
     },
     safety: {
       label: t('tierSafety'),
       description: t('tierSafetyDesc'),
       color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      icon: '🛡️',
+      icon: ShieldCheck,
     },
   };
 
@@ -62,11 +62,12 @@ export function SchoolRecommendationCards({ schools }: { schools: SchoolRecommen
         const tierSchools = grouped[tier];
         if (!tierSchools?.length) return null;
         const config = tierConfig[tier];
+        const TierIcon = config.icon;
 
         return (
           <div key={tier} className="space-y-2">
             <div className="flex items-center gap-2">
-              <span>{config.icon}</span>
+              <TierIcon className="h-3.5 w-3.5 text-muted-foreground" />
               <Badge variant="secondary" className={cn('text-xs', config.color)}>
                 {t('tierSchoolCount', { label: config.label, count: tierSchools.length })}
               </Badge>

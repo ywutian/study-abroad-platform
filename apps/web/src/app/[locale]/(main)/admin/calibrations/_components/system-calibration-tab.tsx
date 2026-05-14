@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Brain, CheckCircle2, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, ClipboardCheck, CheckCircle2, Clock, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import {
@@ -87,7 +87,7 @@ export function SystemCalibrationTab() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Brain className="h-5 w-5" />
+              <ClipboardCheck className="h-5 w-5" />
               {t('title')}
             </CardTitle>
             <Badge

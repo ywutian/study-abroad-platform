@@ -10,7 +10,7 @@ import {
   Loader2Icon,
   OctagonXIcon,
   TriangleAlertIcon,
-  Sparkles,
+  Lightbulb,
   PartyPopper,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -196,7 +196,7 @@ export function toastCustom(
 export function toastAIComplete(message: string, description?: string) {
   return sonnerToast(message, {
     description,
-    icon: <Sparkles className="size-5 text-primary animate-scale-in" />,
+    icon: <Lightbulb className="size-5 text-primary animate-scale-in" />,
     className: 'border-primary/30 bg-[color:var(--theme-control-selected-bg)]',
     duration: 5000,
   });

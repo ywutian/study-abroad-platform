@@ -14,6 +14,15 @@ export type {
 } from '@study-abroad/shared';
 import { AgentType } from '@study-abroad/shared';
 import type { ActionButton, AgentChatContext } from '@study-abroad/shared';
+import {
+  BarChart3,
+  CalendarDays,
+  ClipboardList,
+  Compass,
+  FileText,
+  MessageCircle,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export interface ChatMessage {
   id: string;
@@ -46,14 +55,34 @@ export interface QuickAction {
 
 export const AGENT_INFO: Record<
   AgentType,
-  { name: string; nameZh: string; icon: string; color: string }
+  { name: string; nameZh: string; icon: LucideIcon; color: string }
 > = {
-  orchestrator: { name: 'AI Assistant', nameZh: '智能助手', icon: '🤖', color: 'text-primary' },
-  essay: { name: 'Essay Expert', nameZh: '文书专家', icon: '📝', color: 'text-purple-500' },
-  school: { name: 'School Advisor', nameZh: '选校专家', icon: '🎯', color: 'text-blue-500' },
-  profile: { name: 'Profile Analyst', nameZh: '档案分析', icon: '📊', color: 'text-green-500' },
-  timeline: { name: 'Timeline Planner', nameZh: '时间规划', icon: '📅', color: 'text-orange-500' },
-  resume: { name: 'Resume Expert', nameZh: '简历专家', icon: '📄', color: 'text-teal-500' },
+  orchestrator: {
+    name: 'AI Assistant',
+    nameZh: '智能助手',
+    icon: MessageCircle,
+    color: 'text-primary',
+  },
+  essay: { name: 'Essay Expert', nameZh: '文书专家', icon: FileText, color: 'text-purple-500' },
+  school: { name: 'School Advisor', nameZh: '选校专家', icon: Compass, color: 'text-blue-500' },
+  profile: {
+    name: 'Profile Analyst',
+    nameZh: '档案分析',
+    icon: BarChart3,
+    color: 'text-green-500',
+  },
+  timeline: {
+    name: 'Timeline Planner',
+    nameZh: '时间规划',
+    icon: CalendarDays,
+    color: 'text-orange-500',
+  },
+  resume: {
+    name: 'Resume Expert',
+    nameZh: '简历专家',
+    icon: ClipboardList,
+    color: 'text-teal-500',
+  },
 };
 
 export interface ConversationSummary {

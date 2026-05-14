@@ -3,7 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, GraduationCap, Brain, Target, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import {
+  Compass,
+  GraduationCap,
+  ClipboardCheck,
+  Target,
+  ChevronRight,
+  ChevronLeft,
+  X,
+} from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,7 +21,7 @@ import { useTour, TOURS, getWelcomeTourSteps } from './tour-provider';
 const welcomeStepConfigs = [
   {
     id: 'welcome',
-    icon: Rocket,
+    icon: Compass,
     titleKey: 'welcome',
     color: 'from-primary/20 to-primary/5',
   },
@@ -25,7 +33,7 @@ const welcomeStepConfigs = [
   },
   {
     id: 'ai',
-    icon: Brain,
+    icon: ClipboardCheck,
     titleKey: 'ai',
     color: 'from-primary/20 to-purple-500/5',
   },

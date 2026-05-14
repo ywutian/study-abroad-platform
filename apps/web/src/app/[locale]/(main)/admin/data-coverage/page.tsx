@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { BarChart3, RefreshCw, Wand2 } from 'lucide-react';
+import { BarChart3, RefreshCw, PencilLine } from 'lucide-react';
 import { adminRoutes } from '@study-abroad/shared';
 import { PageHeader } from '@/components/layout';
 import { Badge } from '@/components/ui/badge';
@@ -175,7 +175,7 @@ export default function AdminDataCoveragePage() {
                 onClick={() => heuristicFill.mutate(true)}
                 disabled={heuristicFill.isPending}
               >
-                <Wand2 className="mr-2 h-4 w-4" />
+                <PencilLine className="mr-2 h-4 w-4" />
                 {t('dryRunHeuristic')}
               </Button>
             </div>

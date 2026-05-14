@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bell, BellRing, CheckCheck, Trash2, CheckCircle, Sparkles } from 'lucide-react';
+import { Bell, BellRing, CheckCheck, Trash2, CheckCircle, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -227,7 +227,7 @@ export default function NotificationsPage() {
               {activeTab === 'unread' ? (
                 <CheckCircle className="w-8 h-8 text-emerald-500" />
               ) : (
-                <Sparkles className="w-8 h-8 text-muted-foreground" />
+                <Lightbulb className="w-8 h-8 text-muted-foreground" />
               )}
             </div>
             <p className="text-sm font-medium text-foreground">

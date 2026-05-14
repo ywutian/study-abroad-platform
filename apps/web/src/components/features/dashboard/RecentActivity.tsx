@@ -14,8 +14,8 @@ import {
   FileText,
   CheckCircle,
   Eye,
-  Brain,
-  Sparkles,
+  ClipboardCheck,
+  Lightbulb,
   Award,
 } from 'lucide-react';
 
@@ -38,8 +38,8 @@ const ACTIVITY_ICONS: Record<string, React.ElementType> = {
   CASE_VERIFIED: CheckCircle,
   COMPLETE_PROFILE: Award,
   VIEW_CASE_DETAIL: Eye,
-  AI_ANALYSIS: Brain,
-  ESSAY_POLISH: Sparkles,
+  AI_ANALYSIS: ClipboardCheck,
+  ESSAY_POLISH: Lightbulb,
   ESSAY_REVIEW: FileText,
 };
 

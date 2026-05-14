@@ -26,7 +26,7 @@ import {
   MessageSquare,
   Plus,
   ShieldCheck,
-  Sparkles,
+  Lightbulb,
   Target,
   Users,
 } from 'lucide-react';
@@ -2025,7 +2025,7 @@ function DisplaySettingsCard({
           <ToggleBadge
             active={showAwards}
             onClick={() => setShowAwards(!showAwards)}
-            icon={Sparkles}
+            icon={Lightbulb}
             label={t('recruitment.display.showAwards')}
           />
           <ToggleBadge
@@ -2037,7 +2037,7 @@ function DisplaySettingsCard({
           <ToggleBadge
             active={showExperiences}
             onClick={() => setShowExperiences(!showExperiences)}
-            icon={Sparkles}
+            icon={Lightbulb}
             label={t('recruitment.display.showExperiences')}
           />
           <ToggleBadge

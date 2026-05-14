@@ -44,7 +44,7 @@ export function SchoolPagination({
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{t('perPage')}</span>
           <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-            <SelectTrigger className="h-8 w-[72px]" aria-label={t('perPage')}>
+            <SelectTrigger className="h-10 w-[80px]" aria-label={t('perPage')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -61,7 +61,7 @@ export function SchoolPagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10"
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
             aria-label={t('previous')}
@@ -74,7 +74,7 @@ export function SchoolPagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10"
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
             aria-label={t('next')}

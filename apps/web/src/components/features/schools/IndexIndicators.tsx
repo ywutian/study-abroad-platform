@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Shield, Smile, Utensils } from 'lucide-react';
+import { ShieldCheck, UsersRound, Utensils } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,74 @@ interface IndexIndicatorProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+function getGradeTone(score: number) {
+  if (score >= 4)
+    return 'border-emerald-500/20 bg-emerald-500/8 text-emerald-700 dark:text-emerald-300';
+  if (score >= 3) return 'border-blue-500/20 bg-blue-500/8 text-blue-700 dark:text-blue-300';
+  if (score >= 2) return 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300';
+  return 'border-rose-500/20 bg-rose-500/8 text-rose-700 dark:text-rose-300';
+}
+
+function GradeIndexChip({
+  grade,
+  showEmpty,
+  size,
+  icon: Icon,
+  label,
+  shortLabel,
+}: IndexIndicatorProps & { icon: LucideIcon; label: string; shortLabel: string }) {
+  const t = useTranslations('schools');
+  const { tone, displayLabel, hasData } = useMemo(() => {
+    if (!grade) {
+      return {
+        tone: 'border-border bg-muted/50 text-muted-foreground',
+        displayLabel: t('indices.noData'),
+        hasData: false,
+      };
+    }
+
+    const score = GRADE_SCORES[grade] ?? 0;
+    const gradeLabel = GRADE_KEYS.includes(grade) ? t(`gradeLabels.${grade}`) : grade;
+
+    return {
+      tone: getGradeTone(score),
+      displayLabel: `${gradeLabel} (${grade})`,
+      hasData: true,
+    };
+  }, [grade, t]);
+
+  if (!hasData && !showEmpty) return null;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className={cn(
+              'inline-flex cursor-help items-center border font-medium',
+              size === 'lg'
+                ? 'h-8 gap-1.5 rounded-lg px-2.5 text-xs'
+                : size === 'md'
+                  ? 'h-7 gap-1.5 rounded-md px-2 text-xs'
+                  : 'h-6 gap-1 rounded-md px-1.5 text-2xs',
+              tone
+            )}
+          >
+            <Icon strokeWidth={1.8} className={cn(size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
+            <span>{shortLabel}</span>
+            <span className="tabular-nums">{grade ?? '—'}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <p className="text-xs">
+            <span className="font-medium">{label}:</span> {displayLabel}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 /**
  * 安全指数指示器
  *
@@ -42,74 +111,15 @@ interface IndexIndicatorProps {
  */
 export function SafetyIndex({ grade, showEmpty = false, size = 'sm' }: IndexIndicatorProps) {
   const t = useTranslations('schools');
-  const { count, colorClass, label, hasData } = useMemo(() => {
-    if (!grade) {
-      return {
-        count: 0,
-        colorClass: 'text-muted-foreground/30',
-        label: t('indices.noData'),
-        hasData: false,
-      };
-    }
-
-    const score = GRADE_SCORES[grade] ?? 0;
-    const gradeLabel = GRADE_KEYS.includes(grade) ? t(`gradeLabels.${grade}`) : grade;
-
-    // 计算显示图标数量 (1-3)
-    let iconCount: number;
-    let color: string;
-
-    if (score >= 4) {
-      iconCount = 3;
-      color = 'text-emerald-500';
-    } else if (score >= 3) {
-      iconCount = 2;
-      color = 'text-emerald-500';
-    } else if (score >= 2) {
-      iconCount = 2;
-      color = 'text-amber-500';
-    } else {
-      iconCount = 1;
-      color = 'text-red-500';
-    }
-
-    return {
-      count: iconCount,
-      colorClass: color,
-      label: `${gradeLabel} (${grade})`,
-      hasData: true,
-    };
-  }, [grade, t]);
-
-  if (!hasData && !showEmpty) return null;
-
-  const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5';
-  const maxIcons = 3;
-
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-0.5 cursor-help">
-            {[...Array(maxIcons)].map((_, i) => (
-              <Shield
-                key={i}
-                className={cn(
-                  iconSize,
-                  'transition-colors',
-                  i < count ? colorClass : 'text-muted-foreground/20'
-                )}
-              />
-            ))}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          <p className="text-xs">
-            <span className="font-medium">{t('indices.safetyIndex')}:</span> {label}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <GradeIndexChip
+      grade={grade}
+      showEmpty={showEmpty}
+      size={size}
+      icon={ShieldCheck}
+      label={t('indices.safetyIndex')}
+      shortLabel={t('indices.safetyShort')}
+    />
   );
 }
 
@@ -124,73 +134,15 @@ export function SafetyIndex({ grade, showEmpty = false, size = 'sm' }: IndexIndi
  */
 export function HappinessIndex({ grade, showEmpty = false, size = 'sm' }: IndexIndicatorProps) {
   const t = useTranslations('schools');
-  const { count, colorClass, label, hasData } = useMemo(() => {
-    if (!grade) {
-      return {
-        count: 0,
-        colorClass: 'text-muted-foreground/30',
-        label: t('indices.noData'),
-        hasData: false,
-      };
-    }
-
-    const score = GRADE_SCORES[grade] ?? 0;
-    const gradeLabel = GRADE_KEYS.includes(grade) ? t(`gradeLabels.${grade}`) : grade;
-
-    let iconCount: number;
-    let color: string;
-
-    if (score >= 4) {
-      iconCount = 3;
-      color = 'text-amber-500';
-    } else if (score >= 3) {
-      iconCount = 2;
-      color = 'text-amber-500';
-    } else if (score >= 2) {
-      iconCount = 2;
-      color = 'text-amber-400/70';
-    } else {
-      iconCount = 1;
-      color = 'text-muted-foreground';
-    }
-
-    return {
-      count: iconCount,
-      colorClass: color,
-      label: `${gradeLabel} (${grade})`,
-      hasData: true,
-    };
-  }, [grade, t]);
-
-  if (!hasData && !showEmpty) return null;
-
-  const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5';
-  const maxIcons = 3;
-
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-0.5 cursor-help">
-            {[...Array(maxIcons)].map((_, i) => (
-              <Smile
-                key={i}
-                className={cn(
-                  iconSize,
-                  'transition-colors',
-                  i < count ? colorClass : 'text-muted-foreground/20'
-                )}
-              />
-            ))}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          <p className="text-xs">
-            <span className="font-medium">{t('indices.happinessIndex')}:</span> {label}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <GradeIndexChip
+      grade={grade}
+      showEmpty={showEmpty}
+      size={size}
+      icon={UsersRound}
+      label={t('indices.happinessIndex')}
+      shortLabel={t('indices.lifeShort')}
+    />
   );
 }
 
@@ -199,73 +151,15 @@ export function HappinessIndex({ grade, showEmpty = false, size = 'sm' }: IndexI
  */
 export function FoodIndex({ grade, showEmpty = false, size = 'sm' }: IndexIndicatorProps) {
   const t = useTranslations('schools');
-  const { count, colorClass, label, hasData } = useMemo(() => {
-    if (!grade) {
-      return {
-        count: 0,
-        colorClass: 'text-muted-foreground/30',
-        label: t('indices.noData'),
-        hasData: false,
-      };
-    }
-
-    const score = GRADE_SCORES[grade] ?? 0;
-    const gradeLabel = GRADE_KEYS.includes(grade) ? t(`gradeLabels.${grade}`) : grade;
-
-    let iconCount: number;
-    let color: string;
-
-    if (score >= 4) {
-      iconCount = 3;
-      color = 'text-orange-500';
-    } else if (score >= 3) {
-      iconCount = 2;
-      color = 'text-orange-500';
-    } else if (score >= 2) {
-      iconCount = 2;
-      color = 'text-orange-400/70';
-    } else {
-      iconCount = 1;
-      color = 'text-muted-foreground';
-    }
-
-    return {
-      count: iconCount,
-      colorClass: color,
-      label: `${gradeLabel} (${grade})`,
-      hasData: true,
-    };
-  }, [grade, t]);
-
-  if (!hasData && !showEmpty) return null;
-
-  const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5';
-  const maxIcons = 3;
-
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-0.5 cursor-help">
-            {[...Array(maxIcons)].map((_, i) => (
-              <Utensils
-                key={i}
-                className={cn(
-                  iconSize,
-                  'transition-colors',
-                  i < count ? colorClass : 'text-muted-foreground/20'
-                )}
-              />
-            ))}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          <p className="text-xs">
-            <span className="font-medium">{t('indices.foodIndex')}:</span> {label}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <GradeIndexChip
+      grade={grade}
+      showEmpty={showEmpty}
+      size={size}
+      icon={Utensils}
+      label={t('indices.foodIndex')}
+      shortLabel={t('indices.foodShort')}
+    />
   );
 }
 
@@ -317,11 +211,11 @@ export function IndexLegend({ className }: IndexLegendProps) {
     >
       <span className="font-medium">{t('indices.legend')}:</span>
       <div className="flex items-center gap-1.5">
-        <Shield className="h-4 w-4 text-emerald-500" />
+        <ShieldCheck className="h-4 w-4 text-emerald-500" />
         <span className="text-xs">{t('indices.safetyIndex')}</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <Smile className="h-4 w-4 text-amber-500" />
+        <UsersRound className="h-4 w-4 text-blue-500" />
         <span className="text-xs">{t('indices.happinessIndex')}</span>
       </div>
       <div className="flex items-center gap-1.5">

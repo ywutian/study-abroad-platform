@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Activity, Database, ShieldCheck, Sparkles } from 'lucide-react';
+import { Activity, Database, ShieldCheck, Lightbulb } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { adminRoutes } from '@study-abroad/shared';
@@ -155,7 +155,7 @@ export function DistillationTab() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-violet-500/10 p-2">
-                <Sparkles className="h-5 w-5 text-violet-600" />
+                <Lightbulb className="h-5 w-5 text-violet-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">

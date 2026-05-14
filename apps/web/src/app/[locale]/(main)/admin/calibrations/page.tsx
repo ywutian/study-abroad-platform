@@ -2,7 +2,7 @@
 
 import {
   BarChart3,
-  Brain,
+  ClipboardCheck,
   Database,
   GitBranch,
   ShieldCheck,
@@ -95,7 +95,7 @@ const TAB_CONFIG = [
   },
   {
     value: 'system' as const,
-    icon: Brain,
+    icon: ClipboardCheck,
     labelKey: 'admin.calibrations.tabs.systemCalibration',
   },
   {

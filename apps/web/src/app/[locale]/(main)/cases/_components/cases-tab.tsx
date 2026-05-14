@@ -21,7 +21,7 @@ import { CaseCard, SubmitCaseDialog } from '@/components/features';
 import { LoadingState } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, CheckCircle, XCircle, Clock, Sparkles, BookOpen } from 'lucide-react';
+import { Search, Plus, CheckCircle, XCircle, Clock, Lightbulb, BookOpen } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTour, TOURS, getCasesTourSteps } from '@/components/features/onboarding/tour-provider';
 
@@ -128,7 +128,7 @@ export function CasesTab() {
             <Card className="border-success/20 bg-success/5">
               <CardContent className="py-4">
                 <div className="flex items-start gap-3">
-                  <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-success" />
+                  <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-success" />
                   <div className="flex-1 space-y-2">
                     <p className="text-sm font-medium">{t('cases.guide.title')}</p>
                     <ul className="space-y-1 text-xs text-muted-foreground">

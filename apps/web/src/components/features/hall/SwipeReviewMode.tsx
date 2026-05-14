@@ -16,7 +16,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Check,
-  Brain,
+  ClipboardCheck,
   User,
   Maximize2,
   Minimize2,
@@ -389,7 +389,7 @@ export function SwipeReviewMode({ profile, onClose, onComplete }: SwipeReviewMod
           <div className="space-y-6">
             <div className="text-center">
               <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-lg bg-gradient-to-br bg-destructive text-white shadow-xl mb-4">
-                <Brain className="h-10 w-10" />
+                <ClipboardCheck className="h-10 w-10" />
               </div>
               <h2 className="text-xl font-bold">{t('review.finalVerdict')}</h2>
             </div>

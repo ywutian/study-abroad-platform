@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { GraduationCap, Search, ShieldCheck, Sparkles, Target } from 'lucide-react';
+import { GraduationCap, Search, ShieldCheck, Lightbulb, Target } from 'lucide-react';
 import { EnterpriseStatusStrip, PageContainer, PageHeader } from '@/components/layout';
 import {
   Breadcrumb,
@@ -70,7 +70,7 @@ export default function SchoolsPage() {
             label: statusT('schools.recommend'),
             value: statusT('states.nextAction'),
             description: statusT('schools.recommendDesc'),
-            icon: Sparkles,
+            icon: Lightbulb,
           },
           {
             tone: 'verified',

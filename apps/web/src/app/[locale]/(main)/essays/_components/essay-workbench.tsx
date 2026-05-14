@@ -15,10 +15,10 @@ import {
   Plus,
   RotateCcw,
   Save,
-  Sparkles,
+  Lightbulb,
   Target,
   Trash2,
-  Wand2,
+  PencilLine,
   X,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
@@ -111,15 +111,16 @@ export function EssayWorkbench({
     );
   }, [essays, query]);
 
-  const wordCount = getWordCount(draft.content);
+  const draftContent = draft.content ?? '';
+  const wordCount = getWordCount(draftContent);
   const wordLimit = selectedEssay?.linkedPrompt?.wordLimit;
   const wordRatio = wordLimit ? Math.min(100, Math.round((wordCount / wordLimit) * 100)) : 0;
   const isOverLimit = Boolean(wordLimit && wordCount > wordLimit);
   const isDirty =
     !!selectedEssay &&
-    (draft.title !== selectedEssay.title ||
+    ((draft.title ?? '') !== (selectedEssay.title ?? '') ||
       draft.prompt !== (selectedEssay.prompt ?? '') ||
-      draft.content !== selectedEssay.content);
+      draftContent !== (selectedEssay.content ?? ''));
 
   const suggestionsQuery = useQuery({
     queryKey: ['essay-suggestions', selectedEssay?.id],
@@ -208,9 +209,9 @@ export function EssayWorkbench({
     }
 
     const nextDraft = {
-      title: selectedEssay.title,
+      title: selectedEssay.title ?? '',
       prompt: selectedEssay.prompt ?? '',
-      content: selectedEssay.content,
+      content: selectedEssay.content ?? '',
     };
 
     if (loadedEssayIdRef.current !== selectedEssay.id || (!isDirty && saveState === 'saved')) {
@@ -222,14 +223,14 @@ export function EssayWorkbench({
 
   useEffect(() => {
     if (!selectedEssay || !isDirty) return;
-    if (!debouncedDraft.title.trim() || !debouncedDraft.content.trim()) return;
+    if (!debouncedDraft.title.trim() || !(debouncedDraft.content ?? '').trim()) return;
     setSaveState('saving');
     onSave(
       selectedEssay.id,
       {
         title: debouncedDraft.title,
         prompt: debouncedDraft.prompt || undefined,
-        content: debouncedDraft.content,
+        content: debouncedDraft.content ?? '',
         essayPromptId: selectedEssay.essayPromptId,
       },
       true
@@ -251,7 +252,7 @@ export function EssayWorkbench({
     setSaveState('dirty');
   };
 
-  const canRunAi = Boolean(selectedEssay && saveState === 'saved' && draft.content.trim());
+  const canRunAi = Boolean(selectedEssay && saveState === 'saved' && draftContent.trim());
   const selectedUpdatedAt = toValidDate(selectedEssay?.updatedAt);
   const schoolName = selectedEssay?.linkedPrompt?.school
     ? getLocalizedName(
@@ -279,7 +280,7 @@ export function EssayWorkbench({
       <div className="flex flex-col gap-3 border-b p-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
           <Input
-            value={draft.title}
+            value={draft.title ?? ''}
             onChange={(event) => updateDraft('title', event.target.value)}
             className="h-auto border-0 bg-transparent px-0 text-xl font-semibold shadow-none focus-visible:ring-0"
             aria-label={t('essays.label.title')}
@@ -342,7 +343,7 @@ export function EssayWorkbench({
             {suggestMutation.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Wand2 className="mr-2 h-4 w-4" />
+              <PencilLine className="mr-2 h-4 w-4" />
             )}
             {t('essays.workbench.actions.suggest')}
           </Button>
@@ -375,7 +376,7 @@ export function EssayWorkbench({
             )}
           </div>
           <Textarea
-            value={draft.prompt}
+            value={draft.prompt ?? ''}
             onChange={(event) => updateDraft('prompt', event.target.value)}
             rows={3}
             className="resize-none border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
@@ -390,7 +391,7 @@ export function EssayWorkbench({
         </div>
 
         <Textarea
-          value={draft.content}
+          value={draftContent}
           onChange={(event) => updateDraft('content', event.target.value)}
           className="min-h-[520px] resize-y rounded-md border bg-background p-5 text-base leading-8 shadow-none focus-visible:ring-1"
           placeholder={t('essays.placeholder.content')}
@@ -645,7 +646,7 @@ function InsightPanel({
             {reviewPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Lightbulb className="mr-2 h-4 w-4" />
             )}
             {t('essays.aiActions.review')}
           </Button>
@@ -653,7 +654,7 @@ function InsightPanel({
             {suggestPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Wand2 className="mr-2 h-4 w-4" />
+              <PencilLine className="mr-2 h-4 w-4" />
             )}
             {t('essays.workbench.actions.suggest')}
           </Button>
@@ -677,7 +678,7 @@ function InsightPanel({
             {suggestionsLoading && <Skeleton className="h-32 rounded-md" />}
             {!suggestionsLoading && pendingSuggestions.length === 0 && (
               <PanelEmpty
-                icon={<Wand2 className="h-8 w-8" />}
+                icon={<PencilLine className="h-8 w-8" />}
                 title={t('essays.workbench.suggestions.emptyTitle')}
                 description={t('essays.workbench.suggestions.emptyDesc')}
               />
@@ -741,7 +742,7 @@ function InsightPanel({
           <ScrollArea className="h-[600px] p-4">
             {!reviewResult ? (
               <PanelEmpty
-                icon={<Sparkles className="h-8 w-8" />}
+                icon={<Lightbulb className="h-8 w-8" />}
                 title={t('essays.workbench.review.emptyTitle')}
                 description={t('essays.workbench.review.emptyDesc')}
               />

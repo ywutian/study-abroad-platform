@@ -28,7 +28,7 @@ import { ListSkeleton } from '@/components/ui/loading-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PaginationControls } from '../../_components/pagination-controls';
 import { apiClient } from '@/lib/api';
-import { Bot, Info } from 'lucide-react';
+import { MessageCircle, Info } from 'lucide-react';
 
 interface AgentAuditLog {
   id: string;
@@ -240,7 +240,7 @@ export function AgentAuditTab() {
         </>
       ) : (
         <EmptyState
-          icon={<Bot className="h-12 w-12" />}
+          icon={<MessageCircle className="h-12 w-12" />}
           title={t('auditLogs.agentEmpty')}
           description={t('auditLogs.agentEmptyDesc')}
         />

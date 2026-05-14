@@ -1,6 +1,14 @@
 'use client';
 
-import { Sparkles, Brain, MessageSquare, RefreshCw, Shield, Target, Zap } from 'lucide-react';
+import {
+  Lightbulb,
+  ClipboardCheck,
+  MessageSquare,
+  RefreshCw,
+  Shield,
+  Target,
+  Zap,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,12 +40,12 @@ export function StepAIRecommendations({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-primary/10">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
             </div>
             {t('aiRecommendations')}
           </CardTitle>
           <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-            <Brain className="h-3 w-3 mr-1" />
+            <ClipboardCheck className="h-3 w-3 mr-1" />
             {t('recommendationSystem')}
           </Badge>
         </div>
@@ -178,7 +186,7 @@ function RecommendationResults({
       {/* Refresh */}
       <div className="flex items-center justify-between pt-2 border-t">
         <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Brain className="h-3 w-3" />
+          <ClipboardCheck className="h-3 w-3" />
           {t('poweredByRecommendations')}
         </span>
         <Button
@@ -212,7 +220,7 @@ function RecommendationEmptyState({
     >
       <div className="relative mb-5">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
-          <Brain className="h-8 w-8 text-primary" />
+          <ClipboardCheck className="h-8 w-8 text-primary" />
         </div>
         <motion.div
           className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500"
@@ -275,7 +283,7 @@ function RecommendationEmptyState({
         onClick={onGetRecommendations}
         className="w-full max-w-[280px] bg-gradient-to-r from-primary to-violet-600 dark:from-primary dark:to-violet-500 hover:from-primary/90 hover:to-violet-600/90 text-white border-0"
       >
-        <Sparkles className="h-4 w-4 mr-2" />
+        <Lightbulb className="h-4 w-4 mr-2" />
         {t('getRecommendations')}
       </Button>
     </motion.div>

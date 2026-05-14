@@ -9,12 +9,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  Brain,
-  Sparkles,
+  ClipboardCheck,
+  Lightbulb,
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  Lightbulb,
   Copy,
   Check,
   Type,
@@ -267,7 +266,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                     {t('detail.tabs.original')}
                   </TabsTrigger>
                   <TabsTrigger value="analysis" className="gap-1.5 text-sm px-3 h-7">
-                    <Brain className="h-3.5 w-3.5" />
+                    <ClipboardCheck className="h-3.5 w-3.5" />
                     {t('detail.tabs.aiReview')}
                   </TabsTrigger>
                 </TabsList>
@@ -324,7 +323,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                 {!accessToken ? (
                   <Card className="border-dashed">
                     <CardContent className="py-8 text-center">
-                      <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <ClipboardCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="font-medium mb-2">{t('detail.ai.loginRequired')}</p>
                       <p className="text-sm text-muted-foreground mb-4">
                         {t('detail.ai.costHint')}
@@ -344,7 +343,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                   <Card className="border-dashed">
                     <CardContent className="py-8 text-center">
                       <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-lg bg-primary/20 mb-4">
-                        <Sparkles className="h-8 w-8 text-primary" />
+                        <Lightbulb className="h-8 w-8 text-primary" />
                       </div>
                       <p className="font-medium mb-2">{t('detail.ai.title')}</p>
                       <p className="text-sm text-muted-foreground mb-4">
@@ -362,7 +361,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                           </>
                         ) : (
                           <>
-                            <Brain className="h-4 w-4" />
+                            <ClipboardCheck className="h-4 w-4" />
                             {t('detail.ai.startAnalysis')}
                           </>
                         )}
@@ -575,7 +574,7 @@ function AnalysisResultView({
                       {p.highlights.length > 0 && (
                         <div>
                           <p className="text-xs font-medium text-emerald-600 mb-1.5">
-                            ✨ {t('detail.analysis.highlights')}
+                            {t('detail.analysis.highlights')}
                           </p>
                           <div className="flex flex-wrap gap-1">
                             {p.highlights.map((h, i) => (
@@ -595,7 +594,7 @@ function AnalysisResultView({
                       {p.suggestions.length > 0 && (
                         <div>
                           <p className="text-xs font-medium text-amber-600 mb-1.5">
-                            💡 {t('detail.analysis.suggestions')}
+                            {t('detail.analysis.suggestions')}
                           </p>
                           <ul className="text-sm text-muted-foreground space-y-1">
                             {p.suggestions.map((s, i) => (

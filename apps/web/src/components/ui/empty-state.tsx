@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { IconFrame, type IconTone } from '@/components/ui/icon-frame';
 import {
   FileQuestion,
   Search,
@@ -12,12 +13,13 @@ import {
   AlertCircle,
   Plus,
   RefreshCw,
-  Sparkles,
+  Loader2,
   GraduationCap,
   BookOpen,
   Users,
-  Rocket,
+  Compass,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 type EmptyStateType =
   | 'empty'
@@ -66,83 +68,57 @@ interface EmptyStateProps {
 const presetConfig: Record<
   EmptyStateType,
   {
-    icon: React.ReactNode;
-    iconBg: string;
-    iconBorder: string;
-    iconColor: string;
+    icon: LucideIcon;
+    tone: IconTone;
   }
 > = {
   empty: {
-    icon: <Inbox className="h-8 w-8" />,
-    iconBg: 'bg-muted/50',
-    iconBorder: 'border-border',
-    iconColor: 'text-muted-foreground',
+    icon: Inbox,
+    tone: 'neutral',
   },
   'no-results': {
-    icon: <Search className="h-8 w-8" />,
-    iconBg: 'bg-primary/5',
-    iconBorder: 'border-primary/20',
-    iconColor: 'text-primary',
+    icon: Search,
+    tone: 'default',
   },
   'no-data': {
-    icon: <FolderOpen className="h-8 w-8" />,
-    iconBg: 'bg-primary/5',
-    iconBorder: 'border-violet-700/20',
-    iconColor: 'text-violet-700 dark:text-violet-400',
+    icon: FolderOpen,
+    tone: 'neutral',
   },
   error: {
-    icon: <AlertCircle className="h-8 w-8" />,
-    iconBg: 'bg-destructive/5',
-    iconBorder: 'border-destructive/20',
-    iconColor: 'text-destructive',
+    icon: AlertCircle,
+    tone: 'danger',
   },
   offline: {
-    icon: <Wifi className="h-8 w-8" />,
-    iconBg: 'bg-warning/5',
-    iconBorder: 'border-warning/20',
-    iconColor: 'text-warning',
+    icon: Wifi,
+    tone: 'warning',
   },
   'first-time': {
-    icon: <Rocket className="h-8 w-8" />,
-    iconBg: 'bg-primary/5',
-    iconBorder: 'border-primary/20',
-    iconColor: 'text-primary',
+    icon: Compass,
+    tone: 'default',
   },
   schools: {
-    icon: <GraduationCap className="h-8 w-8" />,
-    iconBg: 'bg-primary/5',
-    iconBorder: 'border-violet-700/20',
-    iconColor: 'text-violet-700 dark:text-violet-400',
+    icon: GraduationCap,
+    tone: 'default',
   },
   cases: {
-    icon: <BookOpen className="h-8 w-8" />,
-    iconBg: 'bg-success/5',
-    iconBorder: 'border-success/20',
-    iconColor: 'text-success',
+    icon: BookOpen,
+    tone: 'success',
   },
   essays: {
-    icon: <FileQuestion className="h-8 w-8" />,
-    iconBg: 'bg-destructive/5',
-    iconBorder: 'border-destructive/20',
-    iconColor: 'text-destructive',
+    icon: FileQuestion,
+    tone: 'warning',
   },
   teams: {
-    icon: <Users className="h-8 w-8" />,
-    iconBg: 'bg-primary/5',
-    iconBorder: 'border-primary/20',
-    iconColor: 'text-primary',
+    icon: Users,
+    tone: 'default',
   },
   loading: {
-    icon: <Sparkles className="h-8 w-8 animate-pulse" />,
-    iconBg: 'bg-primary/5',
-    iconBorder: 'border-primary/20',
-    iconColor: 'text-primary',
+    icon: Loader2,
+    tone: 'default',
   },
   custom: {
-    icon: <FileQuestion className="h-8 w-8" />,
-    iconBg: 'bg-muted/50',
-    iconBorder: 'border-border',
-    iconColor: 'text-muted-foreground',
+    icon: FileQuestion,
+    tone: 'neutral',
   },
 };
 
@@ -166,18 +142,6 @@ const sizeClasses = {
   sm: 'py-8',
   md: 'py-12',
   lg: 'py-20',
-};
-
-const iconContainerClasses = {
-  sm: 'h-12 w-12 rounded-lg',
-  md: 'h-16 w-16 rounded-lg',
-  lg: 'h-20 w-20 rounded-xl',
-};
-
-const iconSizeClasses = {
-  sm: '[&>svg]:h-6 [&>svg]:w-6',
-  md: '[&>svg]:h-8 [&>svg]:w-8',
-  lg: '[&>svg]:h-10 [&>svg]:w-10',
 };
 
 export function EmptyState({
@@ -205,18 +169,19 @@ export function EmptyState({
         className
       )}
     >
-      {/* 学术风图标容器：方形 + 边框 */}
-      <div
-        className={cn(
-          'relative flex items-center justify-center mb-4 border-2',
-          iconContainerClasses[size],
-          iconSizeClasses[size],
-          config.iconBg,
-          config.iconBorder,
-          config.iconColor
+      <div className="mb-4">
+        {icon ? (
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-muted/50 text-muted-foreground shadow-[0_1px_2px_rgba(15,23,42,0.06)] [&>svg]:h-8 [&>svg]:w-8">
+            {icon}
+          </span>
+        ) : (
+          <IconFrame
+            icon={config.icon}
+            tone={config.tone}
+            size={size === 'sm' ? 'lg' : 'xl'}
+            iconClassName={type === 'loading' ? 'animate-spin' : undefined}
+          />
         )}
-      >
-        {icon || config.icon}
       </div>
 
       {/* 标题 */}

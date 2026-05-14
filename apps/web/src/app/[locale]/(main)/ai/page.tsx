@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Bot } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { AgentChat } from '@/components/features/agent-chat/agent-chat';
 
@@ -10,7 +10,12 @@ export default function AIPage() {
 
   return (
     <PageContainer maxWidth="4xl" className="lg:flex lg:flex-col lg:h-[calc(100dvh-7.5rem)]">
-      <PageHeader title={t('title')} description={t('welcomeDesc')} icon={Bot} color="violet" />
+      <PageHeader
+        title={t('title')}
+        description={t('welcomeDesc')}
+        icon={MessageCircle}
+        color="violet"
+      />
 
       <div className="bg-card rounded-xl border shadow-sm overflow-hidden lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
         <AgentChat

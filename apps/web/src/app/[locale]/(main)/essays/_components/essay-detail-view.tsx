@@ -5,15 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Sparkles,
+  Lightbulb,
   Pencil,
   Trash2,
-  Wand2,
+  PencilLine,
   RefreshCw,
   PenTool,
   ArrowRight,
   ChevronDown,
-  Lightbulb,
   Calendar,
   Hash,
   BookOpen,
@@ -79,7 +78,7 @@ export function EssayDetailView({
             <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Lightbulb className="h-5 w-5 text-primary" />
                 </div>
                 <div className="space-y-1">
                   <CardTitle className="text-xl">{selectedEssay.title}</CardTitle>
@@ -94,7 +93,7 @@ export function EssayDetailView({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
-                      <Sparkles className="mr-1 h-4 w-4" />
+                      <Lightbulb className="mr-1 h-4 w-4" />
                       {t('essays.aiTools')}
                       <ChevronDown className="ml-1 h-3 w-3" />
                     </Button>
@@ -104,14 +103,14 @@ export function EssayDetailView({
                       onClick={() => onReview(selectedEssay)}
                       disabled={reviewPending}
                     >
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Lightbulb className="mr-2 h-4 w-4" />
                       {t('essays.aiActions.review')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => onPolish(selectedEssay)}
                       disabled={polishPending}
                     >
-                      <Wand2 className="mr-2 h-4 w-4" />
+                      <PencilLine className="mr-2 h-4 w-4" />
                       {t('essays.aiActions.polish')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

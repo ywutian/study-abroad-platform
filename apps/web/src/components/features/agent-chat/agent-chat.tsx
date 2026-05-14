@@ -10,7 +10,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Sparkles, RefreshCw, ChevronDown, Clock } from 'lucide-react';
+import { Trash2, Lightbulb, RefreshCw, ChevronDown, Clock, GraduationCap } from 'lucide-react';
 import { useAgentChat } from './use-agent-chat';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
@@ -158,6 +158,7 @@ export function AgentChat({
   const lastConsumedActionRef = useRef<string | null>(null);
 
   const agentInfo = AGENT_INFO[currentAgent];
+  const AgentIcon = agentInfo.icon;
   const agentName = getLocalizedName(agentInfo.nameZh, agentInfo.name, locale);
   const prefersReducedMotion = useReducedMotion();
 
@@ -226,7 +227,7 @@ export function AgentChat({
               whileTap={{ scale: 0.95 }}
             >
               <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 ring-2 ring-primary/10">
-                <span className="text-xl">{agentInfo.icon}</span>
+                <AgentIcon className={cn('h-5 w-5', agentInfo.color)} />
               </div>
               {/* Online indicator */}
               <motion.span
@@ -318,7 +319,7 @@ export function AgentChat({
                   {/* Animated Logo */}
                   <motion.div variants={itemVariants} className="relative mb-6">
                     <motion.div
-                      className="text-7xl"
+                      className="flex h-20 w-20 items-center justify-center rounded-2xl border border-primary/15 bg-primary/8 text-primary"
                       animate={
                         prefersReducedMotion
                           ? {}
@@ -333,31 +334,27 @@ export function AgentChat({
                         ease: 'easeInOut',
                       }}
                     >
-                      🎓
+                      <GraduationCap className="h-10 w-10" />
                     </motion.div>
-                    {/* Sparkle effects */}
+                    {/* Accent effects */}
                     {!prefersReducedMotion && (
                       <>
                         <motion.span
-                          className="absolute -top-2 -right-2 text-lg"
+                          className="absolute -top-2 -right-2 h-3 w-3 rounded-full bg-primary/50"
                           animate={{
                             scale: [0, 1, 0],
                             rotate: [0, 180],
                           }}
                           transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                        >
-                          ✨
-                        </motion.span>
+                        />
                         <motion.span
-                          className="absolute -bottom-1 -left-3 text-sm"
+                          className="absolute -bottom-1 -left-3 h-2.5 w-2.5 rounded-full bg-amber-500/55"
                           animate={{
                             scale: [0, 1, 0],
                             rotate: [0, -180],
                           }}
                           transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                        >
-                          ⭐
-                        </motion.span>
+                        />
                       </>
                     )}
                   </motion.div>
@@ -455,7 +452,7 @@ export function AgentChat({
             className="px-4 pb-2 overflow-hidden"
           >
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
-              <Sparkles className="h-3 w-3 text-muted-foreground shrink-0" />
+              <Lightbulb className="h-3 w-3 text-muted-foreground shrink-0" />
               {QUICK_ACTION_KEYS.slice(0, 3).map((action, idx) => (
                 <motion.div
                   key={idx}

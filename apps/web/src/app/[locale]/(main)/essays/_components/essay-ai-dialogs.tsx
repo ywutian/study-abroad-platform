@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Wand2, ArrowRight, PenTool, RefreshCw, Copy, Check } from 'lucide-react';
+import { Lightbulb, PencilLine, ArrowRight, PenTool, RefreshCw, Copy, Check } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type {
   Essay,
@@ -103,7 +103,7 @@ export function EssayAIDialogs({
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Lightbulb className="h-5 w-5 text-primary" />
               {t('essays.dialog.reviewTitle')}
             </DialogTitle>
             <DialogDescription>{t('essayAi.review.description')}</DialogDescription>
@@ -278,7 +278,7 @@ export function EssayAIDialogs({
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Wand2 className="h-5 w-5 text-primary" />
+              <PencilLine className="h-5 w-5 text-primary" />
               {t('essays.dialog.polishTitle')}
             </DialogTitle>
             <DialogDescription>{t('essays.dialog.polishDesc')}</DialogDescription>

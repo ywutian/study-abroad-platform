@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { PageHeader } from '@/components/layout';
-import { Brain } from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import { GlobalStatsSection } from './_components/global-stats-section';
 import { UserQuerySection } from './_components/user-query-section';
 import { MemoryBrowserSection } from './_components/memory-browser-section';
@@ -15,7 +15,7 @@ export default function AdminMemoryPage() {
 
   return (
     <>
-      <PageHeader title={t('title')} description={t('desc')} icon={Brain} color="violet" />
+      <PageHeader title={t('title')} description={t('desc')} icon={ClipboardCheck} color="violet" />
 
       <div className="mt-6 space-y-6">
         <GlobalStatsSection />

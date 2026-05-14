@@ -10,9 +10,9 @@ import {
   FileText,
   GraduationCap,
   RefreshCw,
-  Sparkles,
+  Lightbulb,
   Target,
-  WandSparkles,
+  PencilLine,
 } from 'lucide-react';
 import {
   profileRoutes,
@@ -202,7 +202,7 @@ export default function UncommonAppPage() {
               value: analysis
                 ? t(`strategyStatus.${analysis.status ?? 'fresh'}`)
                 : t('strategyStatus.manual'),
-              icon: Sparkles,
+              icon: Lightbulb,
             },
           ]}
           actions={
@@ -210,7 +210,7 @@ export default function UncommonAppPage() {
               {isAnalyzing ? (
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <WandSparkles className="mr-2 h-4 w-4" />
+                <PencilLine className="mr-2 h-4 w-4" />
               )}
               {isAnalyzing ? t('analyzing') : t('generateAnalysis')}
             </Button>
@@ -349,7 +349,7 @@ function ApplicationCommandCenter({
             <OverviewMetric
               label={t('dashboard.recommendations')}
               value={recommendations ? String(countRecommendations(recommendations)) : '0'}
-              icon={Sparkles}
+              icon={Lightbulb}
             />
           </div>
 
@@ -372,7 +372,7 @@ function ApplicationCommandCenter({
                   {isGeneratingRecommendations ? (
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <Lightbulb className="mr-2 h-4 w-4" />
                   )}
                   {t('getRecommendations')}
                 </Button>
@@ -380,7 +380,7 @@ function ApplicationCommandCenter({
                   {isAnalyzing ? (
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <WandSparkles className="mr-2 h-4 w-4" />
+                    <PencilLine className="mr-2 h-4 w-4" />
                   )}
                   {t('generateAnalysis')}
                 </Button>

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Brain, Compass, ChevronRight, Trophy } from 'lucide-react';
+import { ClipboardCheck, Compass, ChevronRight, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AssessmentResult } from './assessment-constants';
 
@@ -64,7 +64,7 @@ export function AssessmentHistory({
                       )}
                     >
                       {result.type === 'MBTI' ? (
-                        <Brain className="h-6 w-6" />
+                        <ClipboardCheck className="h-6 w-6" />
                       ) : (
                         <Compass className="h-6 w-6" />
                       )}

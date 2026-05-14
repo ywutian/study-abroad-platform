@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { RotateCcw, Plus, Star, Globe } from 'lucide-react';
+import { AlertTriangle, Lightbulb, Plus, RotateCcw, Star, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,9 +140,12 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                   ))}
                 </ul>
                 {school.concerns && school.concerns.length > 0 && (
-                  <div className="text-sm text-muted-foreground/70">
+                  <div className="flex flex-wrap gap-2 text-sm text-muted-foreground/70">
                     {school.concerns.map((c, j) => (
-                      <span key={j}>⚠ {c} </span>
+                      <span key={j} className="inline-flex items-center gap-1">
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                        {c}
+                      </span>
                     ))}
                   </div>
                 )}
@@ -187,7 +190,10 @@ export function ResultsView({ result, schoolList, onReset }: ResultsViewProps) {
                 <p className="font-medium text-primary mb-1">{t('tips')}</p>
                 <ul className="space-y-0.5 text-muted-foreground">
                   {result.analysis.improvementTips.map((tip, i) => (
-                    <li key={i}>💡 {tip}</li>
+                    <li key={i} className="flex items-start gap-1.5">
+                      <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span>{tip}</span>
+                    </li>
                   ))}
                 </ul>
               </div>

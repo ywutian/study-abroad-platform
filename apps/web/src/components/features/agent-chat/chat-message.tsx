@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { User, Copy, Check, ChevronDown, ChevronUp, Sparkles, Wrench } from 'lucide-react';
+import { User, Copy, Check, ChevronDown, ChevronUp, MessageCircle, Wrench } from 'lucide-react';
 import { ChatMessage as ChatMessageType, AGENT_INFO, AgentType } from './types';
 import { useRouter } from '@/lib/i18n/navigation';
 import { transitions } from '@/lib/motion';
@@ -45,6 +45,7 @@ export const ChatMessage = memo(function ChatMessage({
   const locale = useLocale();
   const isUser = message.role === 'user';
   const agentInfo = message.agent ? AGENT_INFO[message.agent] : null;
+  const AgentIcon = agentInfo?.icon ?? MessageCircle;
   const agentName = agentInfo ? getLocalizedName(agentInfo.nameZh, agentInfo.name, locale) : null;
   const prefersReducedMotion = useReducedMotion();
   const [copied, setCopied] = useState(false);
@@ -133,7 +134,7 @@ export const ChatMessage = memo(function ChatMessage({
             {isUser ? (
               <User className="h-4 w-4" />
             ) : (
-              <span className="text-lg">{agentInfo?.icon || '🤖'}</span>
+              <AgentIcon className={cn('h-4 w-4', agentInfo?.color ?? 'text-primary')} />
             )}
           </AvatarFallback>
         </Avatar>
@@ -149,7 +150,7 @@ export const ChatMessage = memo(function ChatMessage({
             transition={{ delay: 0.15 }}
             className="flex items-center gap-1.5"
           >
-            <Sparkles className="h-3 w-3 text-primary/60" />
+            <AgentIcon className="h-3 w-3 text-primary/60" />
             <span className={cn('text-xs font-medium', agentInfo.color)}>{agentName}</span>
           </motion.div>
         )}
@@ -300,12 +301,17 @@ function StaticChatMessage({
   isUser: boolean;
 }) {
   const router = useRouter();
+  const AgentIcon = agentInfo?.icon ?? MessageCircle;
 
   return (
     <div className={cn('flex gap-3', isUser ? 'flex-row-reverse' : 'flex-row')}>
       <Avatar className={cn('h-8 w-8 shrink-0', isUser ? 'bg-primary' : '')}>
         <AvatarFallback className={cn(isUser ? 'bg-primary text-primary-foreground' : '')}>
-          {isUser ? <User className="h-4 w-4" /> : agentInfo?.icon || '🤖'}
+          {isUser ? (
+            <User className="h-4 w-4" />
+          ) : (
+            <AgentIcon className={cn('h-4 w-4', agentInfo?.color ?? 'text-primary')} />
+          )}
         </AvatarFallback>
       </Avatar>
       <div className={cn('flex flex-col gap-1 max-w-[80%]', isUser ? 'items-end' : 'items-start')}>

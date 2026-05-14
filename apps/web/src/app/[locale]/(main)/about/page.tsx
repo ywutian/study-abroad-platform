@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Target,
   Users,
-  Sparkles,
+  Lightbulb,
   Shield,
   Globe,
   Award,
@@ -90,7 +90,7 @@ const stats = [
 const values = [
   { icon: Target, titleKey: 'values.mission.title', descKey: 'values.mission.desc', color: 'blue' },
   {
-    icon: Sparkles,
+    icon: Lightbulb,
     titleKey: 'values.innovation.title',
     descKey: 'values.innovation.desc',
     color: 'violet',

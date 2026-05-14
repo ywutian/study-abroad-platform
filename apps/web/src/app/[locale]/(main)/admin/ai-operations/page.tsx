@@ -5,7 +5,15 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
 import dynamic from 'next/dynamic';
-import { Bot, Activity, Settings, BarChart3, ShieldCheck, Users, Terminal } from 'lucide-react';
+import {
+  MessageCircle,
+  Activity,
+  Settings,
+  BarChart3,
+  ShieldCheck,
+  Users,
+  Terminal,
+} from 'lucide-react';
 
 import { PageHeader } from '@/components/layout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -78,7 +86,7 @@ export default function AdminAiOperationsPage() {
       <PageHeader
         title={t('admin.aiOps.title')}
         description={t('admin.aiOps.description')}
-        icon={Bot}
+        icon={MessageCircle}
         color="blue"
       />
 

@@ -13,8 +13,8 @@ import {
   GraduationCap,
   ChevronRight,
   CheckCircle2,
-  Sparkles,
-  Rocket,
+  Lightbulb,
+  Compass,
   X,
 } from 'lucide-react';
 
@@ -126,12 +126,12 @@ export function OnboardingGuide({
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-primary text-white">
-                <Rocket className="h-5 w-5" />
+                <Compass className="h-5 w-5" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   {t('title')}
-                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {t('subtitle', { completed: completedCount, total: steps.length })}

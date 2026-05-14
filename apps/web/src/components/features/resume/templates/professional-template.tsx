@@ -131,7 +131,7 @@ export function ProfessionalTemplate({ data, options }: ProfessionalTemplateProp
                 )}
                 {(activity.hoursPerWeek || activity.weeksPerYear) && (
                   <Text style={{ fontSize: 7, color: colors.textMuted, marginTop: 4 }}>
-                    ⏱ {activity.hoursPerWeek && `${activity.hoursPerWeek} ${t.hoursPerWeek}`}
+                    {activity.hoursPerWeek && `${activity.hoursPerWeek} ${t.hoursPerWeek}`}
                     {activity.hoursPerWeek && activity.weeksPerYear && ' · '}
                     {activity.weeksPerYear && `${activity.weeksPerYear} ${t.weeksPerYear}`}
                   </Text>

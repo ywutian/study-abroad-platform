@@ -20,7 +20,7 @@ export function LumniMark({
       className={cn(
         'inline-flex items-center justify-center',
         showDisc
-          ? 'rounded-lg border border-primary/20 bg-primary text-primary-foreground shadow-[var(--ds-shadow-card)]'
+          ? 'rounded-lg border border-primary/15 bg-primary text-primary-foreground shadow-[0_1px_2px_rgba(15,23,42,0.08)]'
           : 'text-current',
         className
       )}
@@ -43,14 +43,14 @@ export function LumniMark({
         <path
           d="M48 75C43 63.5 38.5 55.2 31.3 47.2C24.1 39.1 18.3 30.5 14 20M31.3 47.2C25 46.1 19.3 48.1 13.8 53.2M31.3 47.2C28.3 37.1 30.3 27.5 37.4 18.4M48 75C53 63.5 57.5 55.2 64.7 47.2C71.9 39.1 77.7 30.5 82 20M64.7 47.2C71 46.1 76.7 48.1 82.2 53.2M64.7 47.2C67.7 37.1 65.7 27.5 58.6 18.4"
           stroke="var(--lumni-mark-antler, currentColor)"
-          strokeWidth="5.2"
+          strokeWidth="4.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M39.8 57.2C34.1 54.6 28.8 53.4 23.8 53.7M56.2 57.2C61.9 54.6 67.2 53.4 72.2 53.7"
           stroke="var(--lumni-mark-antler, currentColor)"
-          strokeWidth="4.2"
+          strokeWidth="3.8"
           strokeLinecap="round"
         />
       </svg>

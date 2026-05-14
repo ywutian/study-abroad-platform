@@ -4,15 +4,7 @@ import { useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { AgentType } from '@study-abroad/shared';
-import {
-  BarChart3,
-  TrendingUp,
-  School,
-  Target,
-  Lightbulb,
-  GraduationCap,
-  Sparkles,
-} from 'lucide-react';
+import { BarChart3, TrendingUp, School, Target, Lightbulb, GraduationCap } from 'lucide-react';
 import { getSchoolName, formatAcceptanceRate } from '@/lib/utils';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import type { PredictionResult, SchoolSearchItem } from './types';
@@ -201,7 +193,7 @@ export function AiContextActions({ results, selectedSchools }: AiContextActionsP
   return (
     <div className="mt-6 rounded-lg border bg-muted/30 p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="h-4 w-4 text-primary" />
+        <Lightbulb className="h-4 w-4 text-primary" />
         <span className="text-sm font-medium">{t('prediction.aiAssistantTitle')}</span>
       </div>
       <p className="text-xs text-muted-foreground mb-3">

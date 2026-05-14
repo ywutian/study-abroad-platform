@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { FileText, Sparkles, CheckCircle, Clock, PenLine } from 'lucide-react';
+import { FileText, Lightbulb, CheckCircle, Clock, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/i18n/navigation';
 import { TrustBadge } from '@/components/features/schools/TrustBadge';
@@ -167,7 +167,7 @@ export function SchoolAcademicsTab({
 
           <div className="p-4 bg-muted rounded-lg">
             <h4 className="font-medium mb-2 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
               {t('school.aiSuggestion.title')}
             </h4>
             <p className="text-sm text-muted-foreground">
@@ -329,7 +329,7 @@ export function SchoolEssaysTab({ school, essayPrompts }: SchoolEssaysTabProps) 
                   {essay.aiTips && (
                     <div className="bg-warning/10 rounded-lg p-3 border border-amber-500/20">
                       <div className="flex items-start gap-2">
-                        <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                        <Lightbulb className="h-4 w-4 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">
                             {t('school.essays.aiTips')}

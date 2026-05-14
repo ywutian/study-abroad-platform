@@ -19,7 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { MessageCircle, Sparkles, Lightbulb, HelpCircle, Zap } from 'lucide-react';
+import { MessageCircle, Lightbulb, HelpCircle, Zap } from 'lucide-react';
 import { AgentChat } from './agent-chat';
 import type { AgentActionPayload } from './types';
 
@@ -141,7 +141,7 @@ export function AiAssistantPanel({
   // 内联触发器
   const inlineTrigger = children || (
     <Button variant="outline" className="gap-2">
-      <Sparkles className="h-4 w-4" />
+      <Lightbulb className="h-4 w-4" />
       {t('assistant')}
     </Button>
   );
@@ -153,7 +153,7 @@ export function AiAssistantPanel({
         <div className="px-4 py-3 border-b bg-muted/30">
           <div className="flex items-start gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
             </div>
             <div className="space-y-1">
               {displayTitle && <h4 className="text-sm font-semibold">{displayTitle}</h4>}
@@ -241,7 +241,7 @@ export const createEssayContextActions = (
 ): ContextAction[] => [
   {
     id: 'review',
-    icon: <Sparkles className="h-3.5 w-3.5" />,
+    icon: <Lightbulb className="h-3.5 w-3.5" />,
     label: t('essayActions.review'),
     message: t('essayActions.reviewPrompt'),
     description: t('essayActions.reviewDesc'),
@@ -267,7 +267,7 @@ export const createAssessmentContextActions = (
 ): ContextAction[] => [
   {
     id: 'interpret',
-    icon: <Sparkles className="h-3.5 w-3.5" />,
+    icon: <Lightbulb className="h-3.5 w-3.5" />,
     label: t('assessmentActions.interpret'),
     message: t('assessmentActions.interpretPrompt'),
     description: t('assessmentActions.interpretDesc'),
@@ -293,7 +293,7 @@ export const createForumContextActions = (
 ): ContextAction[] => [
   {
     id: 'summarize',
-    icon: <Sparkles className="h-3.5 w-3.5" />,
+    icon: <Lightbulb className="h-3.5 w-3.5" />,
     label: t('forumActions.summarize'),
     message: t('forumActions.summarizePrompt'),
     description: t('forumActions.summarizeDesc'),
@@ -312,7 +312,7 @@ export const createSwipeContextActions = (
 ): ContextAction[] => [
   {
     id: 'explain',
-    icon: <Sparkles className="h-3.5 w-3.5" />,
+    icon: <Lightbulb className="h-3.5 w-3.5" />,
     label: t('swipeActions.explain'),
     message: t('swipeActions.explainPrompt'),
     description: t('swipeActions.explainDesc'),

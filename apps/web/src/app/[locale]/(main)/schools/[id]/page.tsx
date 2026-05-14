@@ -32,7 +32,7 @@ import {
   TrendingUp,
   ArrowLeft,
   Trophy,
-  Sparkles,
+  Lightbulb,
   BarChart3,
   School,
   ExternalLink,
@@ -304,7 +304,7 @@ export default function SchoolDetailPage() {
       {isLoggedIn && aiActions.length > 0 && (
         <div className="mb-6 rounded-lg border bg-muted/30 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Lightbulb className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium">{t('school.ai.title')}</span>
             <span className="text-xs text-muted-foreground">{t('school.ai.description')}</span>
           </div>
@@ -333,7 +333,7 @@ export default function SchoolDetailPage() {
       {!isLoggedIn && (
         <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Lightbulb className="h-4 w-4 text-primary" />
             <span className="text-sm text-muted-foreground">{t('school.ai.loginHint')}</span>
           </div>
           <Button size="sm" variant="default" onClick={() => router.push('/login')}>

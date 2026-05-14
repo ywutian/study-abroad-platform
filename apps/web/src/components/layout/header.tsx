@@ -21,10 +21,10 @@ import {
   MessageSquare,
   MessagesSquare,
   PenTool,
-  Rocket,
+  Compass,
   Settings,
   Shield,
-  Sparkles,
+  Lightbulb,
   TrendingUp,
   Trophy,
   User,
@@ -496,7 +496,7 @@ export function Header() {
     {
       href: '/uncommon-app',
       label: t('nav.uncommonApp'),
-      icon: Rocket,
+      icon: Compass,
       description: t('nav.descriptions.uncommonApp'),
     },
   ];
@@ -549,7 +549,7 @@ export function Header() {
       icon: ClipboardList,
       description: t('nav.descriptions.assessment'),
     },
-    { href: '/ai', label: t('nav.ai'), icon: Sparkles, description: t('nav.descriptions.ai') },
+    { href: '/ai', label: t('nav.ai'), icon: Lightbulb, description: t('nav.descriptions.ai') },
   ];
 
   const isActive = (href: string) => {

@@ -21,7 +21,12 @@ import {
   Users,
   Clock,
   BadgeCheck,
+  CircleHelp,
+  FileText,
+  Medal,
+  Target,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { Post, ForumPostTag } from '@/types/forum';
@@ -33,13 +38,13 @@ import { zhCN, enUS } from 'date-fns/locale';
 // 标签配置
 const TAG_VARIANTS: Record<
   ForumPostTag,
-  { variant: 'warning' | 'info' | 'purple' | 'success' | 'secondary'; icon: string }
+  { variant: 'warning' | 'info' | 'purple' | 'success' | 'secondary'; icon: LucideIcon }
 > = {
-  COMPETITION: { variant: 'warning', icon: '🏆' },
-  ACTIVITY: { variant: 'info', icon: '🎯' },
-  QUESTION: { variant: 'purple', icon: '❓' },
-  SHARING: { variant: 'success', icon: '📝' },
-  OTHER: { variant: 'secondary', icon: '📌' },
+  COMPETITION: { variant: 'warning', icon: Medal },
+  ACTIVITY: { variant: 'info', icon: Target },
+  QUESTION: { variant: 'purple', icon: CircleHelp },
+  SHARING: { variant: 'success', icon: FileText },
+  OTHER: { variant: 'secondary', icon: Pin },
 };
 
 interface PostCardProps {
@@ -61,6 +66,7 @@ export function PostCard({ post, index, onLike, onReport, onClick }: PostCardPro
     num >= 1000 ? format.number(num, 'compact') : num.toString();
 
   const tagConfig = post.postTag ? TAG_VARIANTS[post.postTag] : null;
+  const TagIcon = tagConfig?.icon;
 
   return (
     <motion.div
@@ -88,8 +94,9 @@ export function PostCard({ post, index, onLike, onReport, onClick }: PostCardPro
                 </Badge>
               )}
               {tagConfig && (
-                <Badge variant={tagConfig.variant}>
-                  {tagConfig.icon} {t(`tag${post.postTag}`)}
+                <Badge variant={tagConfig.variant} className="gap-1">
+                  {TagIcon && <TagIcon className="h-3 w-3" />}
+                  {t(`tag${post.postTag}`)}
                 </Badge>
               )}
               {post.isTeamPost && post.teamStatus === 'RECRUITING' && (

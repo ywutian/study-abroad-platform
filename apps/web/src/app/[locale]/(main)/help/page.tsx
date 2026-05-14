@@ -15,9 +15,8 @@ import {
   ExternalLink,
   Lightbulb,
   Shield,
-  Rocket,
+  Compass,
   Settings,
-  Sparkles,
 } from 'lucide-react';
 
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -66,8 +65,8 @@ const categories = ['all', 'gettingStarted', 'aiFeatures', 'featureUsage', 'priv
 
 const categoryConfig: Record<string, { icon: typeof HelpCircle; color: string }> = {
   all: { icon: HelpCircle, color: 'blue' },
-  gettingStarted: { icon: Rocket, color: 'emerald' },
-  aiFeatures: { icon: Sparkles, color: 'violet' },
+  gettingStarted: { icon: Compass, color: 'emerald' },
+  aiFeatures: { icon: Lightbulb, color: 'violet' },
   featureUsage: { icon: Settings, color: 'amber' },
   privacySecurity: { icon: Shield, color: 'rose' },
 };
