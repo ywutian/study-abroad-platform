@@ -5782,9 +5782,9 @@
       "studentOrgs": "Student Organizations"
     },
     "campusLifeOfficial": {
-      "title": "Official Campus-Life Data",
-      "description": "Verified official or federal campus-life fields only",
-      "empty": "No verified official campus-life data is available yet."
+      "title": "Campus Life Snapshot",
+      "description": "Traceable campus-life and cost-of-living signals from sourced records",
+      "empty": "No traceable campus-life data is available yet."
     },
     "officialData": {
       "title": "Official Data",

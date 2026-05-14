@@ -5761,9 +5761,9 @@
       "studentOrgs": "学生社团数量"
     },
     "campusLifeOfficial": {
-      "title": "官方校园生活数据",
-      "description": "仅展示已验证的官方/联邦校园生活字段",
-      "empty": "目前暂无已验证的官方校园生活数据。"
+      "title": "校园生活快照",
+      "description": "展示有来源记录的校园生活与生活成本信息",
+      "empty": "目前暂无可追溯的校园生活数据。"
     },
     "officialData": {
       "title": "官方数据",
