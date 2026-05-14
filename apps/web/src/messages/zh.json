@@ -3730,7 +3730,10 @@
       "safetyIndex": "安全指数",
       "happinessIndex": "幸福指数",
       "foodIndex": "美食指数",
-      "moreIsBetter": "图标越多越好",
+      "safetyShort": "安全",
+      "lifeShort": "校园",
+      "foodShort": "餐饮",
+      "moreIsBetter": "字母评级来自有来源支撑的校园生活数据",
       "noData": "暂无数据",
       "estimated": "暂定",
       "estimatedHint": "在有来源支撑的校园生活评分补齐前，先用暂定值展示。"

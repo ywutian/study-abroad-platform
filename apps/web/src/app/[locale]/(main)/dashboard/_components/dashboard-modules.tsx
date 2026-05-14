@@ -9,7 +9,7 @@ import {
   TrendingUp,
   BookOpen,
   PenTool,
-  Sparkles,
+  Lightbulb,
   MessageCircle,
   ArrowRight,
   FileText,
@@ -62,7 +62,7 @@ const mainModules = [
   {
     id: 'ai-assistant',
     href: '/ai',
-    icon: Sparkles,
+    icon: Lightbulb,
     titleKey: 'dashboard.modules.aiAssistant',
     descKey: 'dashboard.modules.aiAssistantDesc',
   },

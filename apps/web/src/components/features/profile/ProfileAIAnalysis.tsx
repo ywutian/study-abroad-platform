@@ -5,12 +5,12 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
-  Brain,
+  ClipboardCheck,
   CheckCircle2,
   Clock3,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
+  Lightbulb,
   Target,
 } from 'lucide-react';
 import type {
@@ -105,7 +105,7 @@ export function ProfileAIAnalysis({
       <Card className={cn(className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-primary" />
+            <ClipboardCheck className="h-5 w-5 text-primary" />
             {t('title')}
           </CardTitle>
           <CardDescription>{t('loading.description')}</CardDescription>
@@ -132,7 +132,7 @@ export function ProfileAIAnalysis({
       <Card className={cn(className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-destructive" />
+            <ClipboardCheck className="h-5 w-5 text-destructive" />
             {t('title')}
           </CardTitle>
           <CardDescription>{t('error.description')}</CardDescription>
@@ -163,7 +163,7 @@ export function ProfileAIAnalysis({
       <Card className={cn(className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-primary" />
+            <ClipboardCheck className="h-5 w-5 text-primary" />
             {t('title')}
           </CardTitle>
         </CardHeader>
@@ -187,7 +187,7 @@ export function ProfileAIAnalysis({
       <Card className={cn(className)}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-primary" />
+            <ClipboardCheck className="h-5 w-5 text-primary" />
             {t('title')}
           </CardTitle>
         </CardHeader>
@@ -226,9 +226,9 @@ export function ProfileAIAnalysis({
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Brain className="h-5 w-5 text-primary" />
+              <ClipboardCheck className="h-5 w-5 text-primary" />
               {t('title')}
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
             </CardTitle>
             <CardDescription>{t('subtitle')}</CardDescription>
           </div>
@@ -450,7 +450,7 @@ export function ProfileAIAnalysis({
 
         {resolved.meta.runId ? (
           <section className="space-y-3" data-testid="analysis-section-feedback">
-            <SectionHeading icon={Sparkles} title={t('feedback.title')} />
+            <SectionHeading icon={Lightbulb} title={t('feedback.title')} />
             <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-muted/20 p-4">
               <Button
                 type="button"

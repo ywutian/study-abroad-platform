@@ -99,7 +99,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
             <div className="flex items-center gap-2">
-              <span className="text-lg">🤖</span>
+              <MessageCircle className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">{t('assistant')}</span>
               <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium text-muted-foreground">
                 ⌘K

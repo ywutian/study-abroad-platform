@@ -12,7 +12,7 @@ import {
   Lock,
   Play,
   ShieldCheck,
-  Sparkles,
+  Lightbulb,
   Target,
   TrendingUp,
   School,
@@ -104,10 +104,10 @@ export function HeroSection() {
             className="relative z-10"
           >
             <div className="landing-eyebrow-pill">
-              <Sparkles className="h-3.5 w-3.5 text-[var(--lumni-gold-ink)]" />
+              <Lightbulb className="h-3.5 w-3.5 text-[var(--lumni-gold-ink)]" />
               <span>{denseCopy ? denseCopy.eyebrow : home.hero.eyebrow}</span>
               {denseCopy && (
-                <span className="ml-1 inline-flex items-center rounded-full bg-[color:var(--ds-foreground)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--landing-bg)]">
+                <span className="ml-1 inline-flex items-center rounded-full bg-[color:var(--ds-foreground)] px-2 py-0.5 text-2xs font-semibold text-[color:var(--landing-bg)]">
                   {denseCopy.eyebrowVersion}
                 </span>
               )}
@@ -117,10 +117,7 @@ export function HeroSection() {
               <h1 className="mt-6 max-w-4xl text-display-hero font-semibold leading-[1.06] text-[var(--landing-fg)]">
                 <span className="block text-balance">
                   {denseCopy.headline.lead}{' '}
-                  <em
-                    className="italic text-[var(--landing-fg)]"
-                    style={{ fontWeight: 400 }}
-                  >
+                  <em className="italic text-[var(--landing-fg)]" style={{ fontWeight: 400 }}>
                     {denseCopy.headline.italic}
                   </em>{' '}
                   {denseCopy.headline.suffix}
@@ -1079,7 +1076,7 @@ function LovableAuraHero({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_25%,rgba(88,134,255,0.34),transparent_28%),radial-gradient(circle_at_70%_42%,rgba(255,80,166,0.26),transparent_30%),radial-gradient(circle_at_60%_92%,rgba(255,144,64,0.30),transparent_34%)]" />
         <div className="relative min-h-[520px] rounded-[1.6rem] border border-white/60 bg-white/70 p-6 backdrop-blur-2xl">
           <div className="mx-auto flex max-w-[430px] items-center gap-3 rounded-[1.25rem] border border-black/10 bg-white px-4 py-3 shadow-lg">
-            <Sparkles className="h-4 w-4 text-[#6574ff]" />
+            <Lightbulb className="h-4 w-4 text-[#6574ff]" />
             <span className="text-sm text-[var(--landing-muted)]">{copy.workflowLine}</span>
           </div>
           <h2 className="mx-auto mt-6 max-w-[440px] text-center text-4xl font-semibold tracking-tight text-[#151515]">
@@ -1501,7 +1498,7 @@ function DenseEssayPane({
       <div className="flex flex-col gap-2">
         <div className="rounded-lg bg-gradient-to-b from-[color:var(--landing-surface)] to-[color:var(--landing-surface-muted)] p-3 ring-1 ring-inset ring-[color:var(--landing-border)]">
           <div className="mb-1.5 flex items-center gap-1.5">
-            <Sparkles className="h-2.5 w-2.5 text-[color:var(--ds-warning)]" aria-hidden />
+            <Lightbulb className="h-2.5 w-2.5 text-[color:var(--ds-warning)]" aria-hidden />
             <span className="text-2xs font-semibold uppercase tracking-[0.04em] text-[var(--lumni-gold-ink)]">
               {copy.essay.coachLabel}
             </span>
@@ -1707,7 +1704,7 @@ function CenteredMarkHero({ reduced }: { reduced: boolean }) {
       <div className="mb-9 text-center">
         <div className="landing-eyebrow-pill inline-flex">
           <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-b from-[color:var(--ds-warning)]/35 to-[color:var(--ds-warning)] px-2 py-0.5 text-2xs font-semibold text-[var(--landing-fg)]">
-            <Sparkles className="h-2.5 w-2.5" aria-hidden /> {copy.eyebrowBadge}
+            <Lightbulb className="h-2.5 w-2.5" aria-hidden /> {copy.eyebrowBadge}
           </span>
           <span className="text-xs text-[var(--landing-muted)]">{copy.eyebrow}</span>
           <ArrowRight className="h-3 w-3 text-[var(--landing-muted)]" aria-hidden />
@@ -1868,11 +1865,7 @@ function BundleDeerMoonSvg({ reduced }: { reduced: boolean }) {
       <defs>
         <radialGradient id="lumniMoonGrad" cx="42%" cy="38%" r="60%">
           <stop offset="0%" stopColor="var(--lumni-moon, #ddb85a)" />
-          <stop
-            offset="55%"
-            stopColor="var(--lumni-moon, #ddb85a)"
-            stopOpacity="0.85"
-          />
+          <stop offset="55%" stopColor="var(--lumni-moon, #ddb85a)" stopOpacity="0.85" />
           <stop
             offset="100%"
             stopColor="var(--lumni-moon-2, color-mix(in oklab, var(--lumni-moon, #ddb85a) 60%, var(--landing-fg)))"
@@ -1962,12 +1955,7 @@ function BundleDeerMoonSvg({ reduced }: { reduced: boolean }) {
         <path d="M -34,-44 C -48,-46 -58,-54 -62,-66 C -54,-62 -46,-56 -38,-50 Z" />
         <path d="M 34,-44 C 48,-46 58,-54 62,-66 C 54,-62 46,-56 38,-50 Z" />
 
-        <g
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          stroke="url(#lumniDeerGrad)"
-          fill="none"
-        >
+        <g strokeLinecap="round" strokeLinejoin="round" stroke="url(#lumniDeerGrad)" fill="none">
           <path
             d="M -28,-44 C -34,-58 -42,-72 -52,-94 C -58,-106 -62,-122 -60,-140"
             strokeWidth="6"
@@ -1979,16 +1967,8 @@ function BundleDeerMoonSvg({ reduced }: { reduced: boolean }) {
           <path d="M -60,-146 C -66,-160 -70,-176 -66,-194" strokeWidth="5" />
           <path d="M -60,-146 C -52,-162 -44,-174 -34,-184" strokeWidth="4.5" />
         </g>
-        <g
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          stroke="url(#lumniDeerGrad)"
-          fill="none"
-        >
-          <path
-            d="M 28,-44 C 34,-58 42,-72 52,-94 C 58,-106 62,-122 60,-140"
-            strokeWidth="6"
-          />
+        <g strokeLinecap="round" strokeLinejoin="round" stroke="url(#lumniDeerGrad)" fill="none">
+          <path d="M 28,-44 C 34,-58 42,-72 52,-94 C 58,-106 62,-122 60,-140" strokeWidth="6" />
           <path d="M 34,-72 C 46,-78 56,-86 64,-98" strokeWidth="5" />
           <path d="M 44,-90 C 56,-94 68,-100 78,-112" strokeWidth="5" />
           <path d="M 54,-110 C 66,-114 80,-116 92,-122" strokeWidth="5" />
@@ -2019,11 +1999,7 @@ function BundleDeerMoonSvg({ reduced }: { reduced: boolean }) {
   );
 }
 
-function BundleFloatingChips({
-  chips,
-}: {
-  chips?: CenteredMarkCopy['floatingChips'];
-}) {
+function BundleFloatingChips({ chips }: { chips?: CenteredMarkCopy['floatingChips'] }) {
   if (!chips) return null;
   const items = [
     chips.match && {
@@ -2039,9 +2015,7 @@ function BundleFloatingChips({
       pos: { top: '52%', left: '-8%' } as React.CSSProperties,
       rotate: -4,
       iconBg: 'var(--landing-fg)',
-      icon: (
-        <Check className="h-3.5 w-3.5 text-[color:var(--lumni-gold-ink,var(--ds-warning))]" />
-      ),
+      icon: <Check className="h-3.5 w-3.5 text-[color:var(--lumni-gold-ink,var(--ds-warning))]" />,
       title: chips.essay.status,
       sub: chips.essay.school,
     },
@@ -2080,9 +2054,7 @@ function BundleFloatingChips({
             <div className="truncate text-xs font-semibold tracking-tight text-[var(--landing-fg)]">
               {it.title}
             </div>
-            <div className="mt-0.5 truncate text-[11px] text-[var(--landing-muted)]">
-              {it.sub}
-            </div>
+            <div className="mt-0.5 truncate text-2xs text-[var(--landing-muted)]">{it.sub}</div>
           </div>
         </div>
       ))}

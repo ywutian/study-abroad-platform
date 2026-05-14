@@ -1,9 +1,8 @@
 import {
-  Rocket,
   Target,
-  Shield,
+  ShieldCheck,
   BarChart3,
-  Brain,
+  ClipboardCheck,
   BookOpen,
   TrendingUp,
   TrendingDown,
@@ -16,7 +15,7 @@ import type { TierType, ConfidenceLevel } from './types';
 
 export const TIER_CONFIG = {
   reach: {
-    icon: Rocket,
+    icon: TrendingUp,
     bar: 'bg-destructive',
     bg: 'bg-rose-500/10',
     border: 'border-rose-500/30',
@@ -34,7 +33,7 @@ export const TIER_CONFIG = {
     barColor: 'bg-blue-500',
   },
   safety: {
-    icon: Shield,
+    icon: ShieldCheck,
     bar: 'bg-success',
     bg: 'bg-emerald-500/10',
     border: 'border-emerald-500/30',
@@ -65,7 +64,7 @@ export const ENGINE_CONFIG = {
     bgColor: 'bg-blue-500/10',
   },
   ai: {
-    icon: Brain,
+    icon: ClipboardCheck,
     color: 'purple' as const,
     barColor: 'bg-violet-500',
     textColor: 'text-violet-500',

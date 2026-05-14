@@ -244,6 +244,7 @@ function ConversationItem({
   t,
 }: ConversationItemProps) {
   const agentInfo = conversation.agentType ? AGENT_INFO[conversation.agentType as AgentType] : null;
+  const AgentIcon = agentInfo?.icon ?? MessageCircle;
   const agentName = agentInfo ? getLocalizedName(agentInfo.nameZh, agentInfo.name, locale) : null;
 
   const displayTitle =
@@ -269,7 +270,7 @@ function ConversationItem({
           agentInfo ? 'bg-primary/10' : 'bg-primary/10'
         )}
       >
-        <span className="text-base">{agentInfo?.icon || '🤖'}</span>
+        <AgentIcon className={cn('h-4 w-4', agentInfo?.color ?? 'text-primary')} />
       </div>
 
       {/* Content */}

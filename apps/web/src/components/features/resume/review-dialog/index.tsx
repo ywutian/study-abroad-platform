@@ -4,7 +4,7 @@
 import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -114,7 +114,7 @@ export function ReviewDialog({
         <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Lightbulb className="h-5 w-5 text-primary" />
               {t('title')}
             </DialogTitle>
             <div className="flex items-center justify-between">
@@ -138,7 +138,7 @@ export function ReviewDialog({
               <TabsTrigger value="sections">
                 {t('tabs.sectionFeedback')}
                 {totalIssues > 0 && (
-                  <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
+                  <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs text-primary-foreground">
                     {totalIssues}
                   </span>
                 )}
@@ -146,7 +146,7 @@ export function ReviewDialog({
               <TabsTrigger value="gaps">
                 {t('tabs.contentGaps')}
                 {result.contentGaps.length > 0 && (
-                  <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted-foreground/20 px-1 text-[10px]">
+                  <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted-foreground/20 px-1 text-2xs">
                     {result.contentGaps.length}
                   </span>
                 )}
@@ -182,7 +182,7 @@ export function ReviewDialog({
       <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Lightbulb className="h-5 w-5 text-primary" />
             {t('title')}
           </DialogTitle>
           <div className="flex items-center justify-between">

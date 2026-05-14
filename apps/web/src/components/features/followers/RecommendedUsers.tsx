@@ -15,7 +15,7 @@ import { chatRoutes } from '@study-abroad/shared';
 
 import {
   UserPlus,
-  Sparkles,
+  Lightbulb,
   BadgeCheck,
   GraduationCap,
   Users,
@@ -103,7 +103,7 @@ export function RecommendedUsers({ className }: RecommendedUsersProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
             </div>
             {t('followers.recommended.title')}
           </CardTitle>

@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   Trophy,
   Star,
-  Sparkles,
+  Lightbulb,
   PartyPopper,
   Medal,
   Flame,
@@ -47,7 +47,7 @@ const milestoneConfigs: Record<MilestoneType, MilestoneConfig> = {
     messageKey: 'firstPrediction.message',
   },
   first_essay: {
-    icon: Sparkles,
+    icon: Lightbulb,
     gradient: 'bg-primary',
     titleKey: 'firstEssay.title',
     messageKey: 'firstEssay.message',
@@ -216,7 +216,7 @@ export function MilestoneCelebration({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <Sparkles className="h-6 w-6 text-amber-400" />
+                  <Lightbulb className="h-6 w-6 text-amber-400" />
                 </motion.div>
                 <motion.div
                   className="absolute right-10 top-16"
@@ -263,9 +263,10 @@ export function MilestoneCelebration({
                 >
                   <Button
                     onClick={onClose}
-                    className={cn('mt-6 px-8 bg-gradient-to-r text-white', config.gradient)}
+                    className={cn('mt-6 gap-2 px-8 bg-gradient-to-r text-white', config.gradient)}
                   >
-                    {t('continue')} ✨
+                    <CheckCircle2 className="h-4 w-4" />
+                    {t('continue')}
                   </Button>
                 </motion.div>
               </div>

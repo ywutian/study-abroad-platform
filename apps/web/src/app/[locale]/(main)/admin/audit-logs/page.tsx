@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout';
-import { ScrollText, Bot } from 'lucide-react';
+import { ScrollText, MessageCircle } from 'lucide-react';
 import { AdminAuditTab } from './_components/admin-audit-tab';
 import { AgentAuditTab } from './_components/agent-audit-tab';
 
@@ -23,7 +23,7 @@ export default function AdminAuditLogsPage() {
         <TabsList>
           <TabsTrigger value="admin">{t('auditLogs.adminTab')}</TabsTrigger>
           <TabsTrigger value="agent">
-            <Bot className="h-3.5 w-3.5 mr-1.5" />
+            <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
             {t('auditLogs.agentTab')}
           </TabsTrigger>
         </TabsList>

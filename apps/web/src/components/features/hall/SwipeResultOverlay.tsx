@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, XCircle, Flame, Sparkles } from 'lucide-react';
+import { CheckCircle2, XCircle, Flame, Lightbulb } from 'lucide-react';
 
 interface SwipeResultData {
   isCorrect: boolean;
@@ -76,7 +76,7 @@ export function SwipeResultOverlay({ result, className }: SwipeResultOverlayProp
                 transition={{ delay: 0.25 }}
                 className="text-sm sm:text-base font-semibold flex items-center justify-center gap-1"
               >
-                <Sparkles className="h-4 w-4" />
+                <Lightbulb className="h-4 w-4" />
                 {t('points', { points: result.pointsEarned })}
               </motion.p>
             )}

@@ -23,7 +23,7 @@ import {
   Palette,
   Settings,
   Shield,
-  Sparkles,
+  Lightbulb,
   Sun,
   Trash2,
   User,
@@ -323,13 +323,13 @@ export default function SettingsPage() {
                 <h3 className="text-xl font-bold">{user.email?.split('@')[0]}</h3>
                 {user.role === 'SUPER_ADMIN' && (
                   <Badge variant="purple">
-                    <Sparkles className="h-3 w-3 mr-1" />
+                    <Lightbulb className="h-3 w-3 mr-1" />
                     {t('common.superAdmin')}
                   </Badge>
                 )}
                 {user.role === 'ADMIN' && (
                   <Badge variant="purple">
-                    <Sparkles className="h-3 w-3 mr-1" />
+                    <Lightbulb className="h-3 w-3 mr-1" />
                     {t('common.administrator')}
                   </Badge>
                 )}

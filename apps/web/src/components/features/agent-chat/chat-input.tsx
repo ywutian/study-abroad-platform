@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Square, Sparkles, Paperclip, Mic } from 'lucide-react';
+import { Send, Square, Lightbulb, Paperclip, Mic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { transitions } from '@/lib/motion';
 import { pushAgentChatDebug } from './debug';
@@ -245,7 +245,7 @@ export function ChatInput({
                       : 'bg-muted text-muted-foreground'
                   )}
                 >
-                  {hasContent ? <Send className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+                  {hasContent ? <Send className="h-4 w-4" /> : <Lightbulb className="h-4 w-4" />}
                 </Button>
               </motion.div>
             )}

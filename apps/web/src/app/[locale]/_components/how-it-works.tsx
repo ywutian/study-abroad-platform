@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Bot, CalendarRange, FileText, Target } from 'lucide-react';
+import { MessageCircle, CalendarRange, FileText, Target } from 'lucide-react';
 import { AdmissionTierBadge, StatusDot } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
 import { cn } from '@/lib/utils';
@@ -169,7 +169,7 @@ function DashboardVisual({ reduced }: { reduced: boolean }) {
           <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/55 px-5 py-5">
             <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--landing-border)] bg-[color:var(--landing-surface)] px-3 py-2 text-2xs uppercase tracking-[0.18em] text-[var(--landing-muted)]">
               <StatusDot status="ai" />
-              <Bot className="h-3.5 w-3.5 text-primary" />
+              <MessageCircle className="h-3.5 w-3.5 text-primary" />
               {copy.assistantBadge}
             </div>
             <div className="mt-4 text-sm leading-7 text-[var(--landing-fg)]">{copy.tip}</div>

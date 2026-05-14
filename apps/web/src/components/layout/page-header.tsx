@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { IconFrame, type IconTone } from '@/components/ui/icon-frame';
 import { cn } from '@/lib/utils';
 
 export type PageHeaderColor = 'blue' | 'violet' | 'amber' | 'emerald' | 'rose' | 'slate' | 'indigo';
@@ -161,6 +162,13 @@ function resolveVariant(variant?: PageHeaderVariant, color?: PageHeaderColor): P
   return 'tool';
 }
 
+function resolveIconTone(tone: PageHeaderTone): IconTone {
+  if (tone === 'ai' || tone === 'default') return 'default';
+  if (tone === 'target') return 'match';
+  if (tone === 'likely') return 'safety';
+  return tone;
+}
+
 export function PageHeader({
   title,
   description,
@@ -185,15 +193,12 @@ export function PageHeader({
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               {Icon ? (
-                <div
-                  className={cn(
-                    'flex h-11 w-11 items-center justify-center rounded-[var(--theme-radius-card)] border shadow-[var(--theme-card-shadow)]',
-                    accent.iconBg,
-                    accent.icon
-                  )}
-                >
-                  <Icon className="h-6 w-6" />
-                </div>
+                <IconFrame
+                  icon={Icon}
+                  size="lg"
+                  tone={resolveIconTone(resolvedTone)}
+                  className={cn(accent.iconBg, accent.icon)}
+                />
               ) : null}
               <div>
                 <h1 className="text-title tracking-tight">{title}</h1>

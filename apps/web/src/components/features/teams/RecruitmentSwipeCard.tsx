@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { motion, useMotionValue, useTransform, type PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Clock3, Globe, MapPin, Wifi, Sparkles } from 'lucide-react';
+import { Clock3, Globe, MapPin, Wifi, Lightbulb } from 'lucide-react';
 import type { TeamRecruitmentCardFrontDto } from '@study-abroad/shared';
 import { getRecruitmentContextLabel, getRecruitmentContextMeta } from './team-recruitment-utils';
 import { CardQualityPill, TrustBadge } from './TrustBadge';
@@ -183,7 +183,7 @@ export const RecruitmentSwipeCard = forwardRef<HTMLDivElement, RecruitmentSwipeC
                   variant="outline"
                   className="gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400"
                 >
-                  <Sparkles className="h-3 w-3" />
+                  <Lightbulb className="h-3 w-3" />
                   {card.highlightTitle}
                 </Badge>
               </div>

@@ -14,7 +14,7 @@ import {
   RotateCcw,
   ChevronDown,
   ChevronUp,
-  Sparkles,
+  Lightbulb,
   TrendingUp,
   Shield,
   Smile,
@@ -530,7 +530,7 @@ export function AdvancedSchoolFilter({
 
       <FilterSection
         title={t('sections.special')}
-        icon={Sparkles}
+        icon={Lightbulb}
         expanded={expandedSections.includes('special')}
         onToggle={() => toggleSection('special')}
       >

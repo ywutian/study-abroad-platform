@@ -11,8 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import {
   ArrowRight,
   Award,
-  Brain,
-  Sparkles,
+  ClipboardCheck,
+  Lightbulb,
   GraduationCap,
   BarChart,
   TrendingUp,
@@ -93,7 +93,7 @@ function getReadinessSignals(
       impact: t('profile.readiness.recommendationImpact'),
       complete: Boolean(profile?.targetMajor || profile?.intendedMajor),
       tab: 'basic',
-      icon: Sparkles,
+      icon: Lightbulb,
     },
   ];
 }
@@ -116,7 +116,7 @@ export function ProfileActionBar({
       : nextMissing
         ? t('profile.actionBar.nextStep', { signal: nextMissing.label })
         : t('profile.readiness.allSet');
-  const PrimaryIcon = nextMissing?.icon ?? Brain;
+  const PrimaryIcon = nextMissing?.icon ?? ClipboardCheck;
 
   return (
     <Card className="mb-5 overflow-hidden border-primary/20 bg-primary/5">
@@ -197,7 +197,7 @@ export function ProfileActionBar({
               <>
                 <Button asChild size="sm" className="gap-1.5">
                   <Link href="/uncommon-app">
-                    <Brain className="h-4 w-4" />
+                    <ClipboardCheck className="h-4 w-4" />
                     {t('profile.nextSteps.applicationHub')}
                   </Link>
                 </Button>
@@ -321,7 +321,7 @@ function ApplicationStrategyEntryCard({ analysis }: { analysis: AIAnalysisResult
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] bg-primary/10 text-primary">
-              <Brain className="h-5 w-5" />
+              <ClipboardCheck className="h-5 w-5" />
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">

@@ -81,9 +81,7 @@ export function RankingResults({ ranking, isLoading, onCalculate }: RankingResul
                         )}
                       >
                         {school.rank <= 3 ? (
-                          <span className="text-lg">
-                            {school.rank === 1 ? '🥇' : school.rank === 2 ? '🥈' : '🥉'}
-                          </span>
+                          <Medal className="h-5 w-5" />
                         ) : (
                           <span>#{school.rank}</span>
                         )}

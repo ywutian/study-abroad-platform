@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, GraduationCap, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { FileText, GraduationCap, Plus, Lightbulb, Trash2 } from 'lucide-react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,7 +87,7 @@ export function StepSchoolLists({
                             <span className="text-sm">{getSchoolName(item.school, locale)}</span>
                             {item.isAIRecommended && (
                               <Badge variant="secondary" className="text-xs">
-                                <Sparkles className="h-3 w-3 mr-1" />
+                                <Lightbulb className="h-3 w-3 mr-1" />
                                 AI
                               </Badge>
                             )}

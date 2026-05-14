@@ -14,6 +14,7 @@ export * from './dialog';
 export * from './dropdown-menu';
 export * from './form';
 export * from './input';
+export * from './icon-frame';
 export * from './label';
 export * from './popover';
 export * from './progress';

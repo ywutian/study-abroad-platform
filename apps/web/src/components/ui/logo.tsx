@@ -18,10 +18,7 @@ export function Logo({ className, showText = true, size = 'md' }: LogoProps) {
 
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      <LumniMark
-        className={cn('border-2', sizes[size].container)}
-        iconClassName={sizes[size].icon}
-      />
+      <LumniMark className={cn(sizes[size].container)} iconClassName={sizes[size].icon} />
       {showText && (
         <span className={cn('font-bold text-foreground hidden sm:inline', sizes[size].text)}>
           Lumni

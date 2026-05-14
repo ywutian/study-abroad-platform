@@ -13,7 +13,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { BookOpen, Plus, Pencil, Trash2, GripVertical, Sparkles, Loader2, Eye } from 'lucide-react';
+import {
+  BookOpen,
+  Plus,
+  Pencil,
+  Trash2,
+  GripVertical,
+  Lightbulb,
+  Loader2,
+  Eye,
+} from 'lucide-react';
 import { ACTIVITY_CATEGORY_KEYS, TIER_BADGE_CONFIG } from './constants';
 import { ActivitiesCommonAppPreview } from './activities-common-app-preview';
 import type { Activity } from './types';
@@ -95,7 +104,7 @@ export function ActivitiesTab({
               {aiSortPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Sparkles className="h-4 w-4" />
+                <Lightbulb className="h-4 w-4" />
               )}
               {t('profile.aiSort')}
             </Button>
@@ -127,7 +136,7 @@ export function ActivitiesTab({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Lightbulb className="h-5 w-5 text-primary" />
               {t('profile.aiSortPreview')}
             </DialogTitle>
           </DialogHeader>

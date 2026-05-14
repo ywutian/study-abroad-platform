@@ -49,7 +49,7 @@ import {
   Eye,
   Check,
   X,
-  Sparkles,
+  Lightbulb,
   Globe,
 } from 'lucide-react';
 
@@ -526,7 +526,7 @@ export function EssayPromptManager() {
               {detailPrompt.aiTips && (
                 <div className="space-y-2">
                   <h4 className="font-medium flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <Lightbulb className="h-4 w-4 text-amber-500" />
                     {t('aiWritingTips')}
                   </h4>
                   <p className="text-sm bg-amber-500/10 p-3 rounded-lg">{detailPrompt.aiTips}</p>

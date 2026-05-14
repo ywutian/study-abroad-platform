@@ -48,7 +48,6 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
         {includeModules.academics && (
           <View style={styles.section}>
             <View style={styles.sectionTitle}>
-              <Text style={styles.sectionIcon}>📊</Text>
               <Text>{t.academics}</Text>
             </View>
 
@@ -94,7 +93,6 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
         {includeModules.activities && data.activities.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionTitle}>
-              <Text style={styles.sectionIcon}>🎯</Text>
               <Text>{t.activities}</Text>
             </View>
 
@@ -139,7 +137,6 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
         {includeModules.awards && data.awards.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionTitle}>
-              <Text style={styles.sectionIcon}>🏆</Text>
               <Text>{t.awards}</Text>
             </View>
 
@@ -166,7 +163,6 @@ export function BasicTemplate({ data, options }: BasicTemplateProps) {
         {includeModules.targetSchools && data.targetSchools && data.targetSchools.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionTitle}>
-              <Text style={styles.sectionIcon}>🎓</Text>
               <Text>{t.targetSchools}</Text>
             </View>
             <Text style={{ lineHeight: 1.6 }}>{data.targetSchools.join('、')}</Text>

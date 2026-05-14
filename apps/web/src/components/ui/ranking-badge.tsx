@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -47,52 +46,46 @@ export function RankingBadge({
   );
 
   const badgeClassName = cn(
-    'shrink-0 gap-0.5 text-xs',
+    'min-h-10 min-w-10 shrink-0 gap-0.5 text-xs sm:min-h-8 sm:min-w-8',
     variant === 'amber' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
     className
   );
 
   if (displayRankings.length > 0) {
     return (
-      <TooltipProvider>
+      <>
         {displayRankings.slice(0, maxBadges).map((r) => {
           const sourceLabel = getRankingSourceLabel(r.source);
           const isFallback = r.confidence === 'fallback';
           const listLabel = isFallback
             ? t('rankingFallbackShort')
             : t(`rankingList.${getRankingListLabelKey(r.list)}` as any);
+          const tooltipText = isFallback
+            ? t('rankingTooltipFallback', { source: sourceLabel, year: r.year })
+            : t('rankingTooltip', { source: sourceLabel, year: r.year });
 
           return (
-            <Tooltip key={`${r.source}-${r.list}`}>
-              <TooltipTrigger asChild>
-                <Badge
-                  variant="outline"
-                  className={badgeClassName}
-                  aria-label={
-                    isFallback
-                      ? t('rankingAriaFallback', { source: sourceLabel, rank: r.rank })
-                      : t('rankingAria', {
-                          source: sourceLabel,
-                          list: listLabel,
-                          rank: r.rank,
-                        })
-                  }
-                >
-                  {variant === 'amber' && <Trophy className="h-3 w-3" />}
-                  {sourceLabel} {listLabel} #{r.rank}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {isFallback
-                    ? t('rankingTooltipFallback', { source: sourceLabel, year: r.year })
-                    : t('rankingTooltip', { source: sourceLabel, year: r.year })}
-                </p>
-              </TooltipContent>
-            </Tooltip>
+            <Badge
+              key={`${r.source}-${r.list}`}
+              variant="outline"
+              className={badgeClassName}
+              title={tooltipText}
+              aria-label={
+                isFallback
+                  ? t('rankingAriaFallback', { source: sourceLabel, rank: r.rank })
+                  : t('rankingAria', {
+                      source: sourceLabel,
+                      list: listLabel,
+                      rank: r.rank,
+                    })
+              }
+            >
+              {variant === 'amber' && <Trophy className="h-3 w-3" />}
+              {sourceLabel} {listLabel} #{r.rank}
+            </Badge>
           );
         })}
-      </TooltipProvider>
+      </>
     );
   }
 

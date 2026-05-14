@@ -4,7 +4,7 @@ import { useEffect, Suspense } from 'react';
 import { Link, useRouter } from '@/lib/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Sparkles, TrendingUp, Users, Globe, Star } from 'lucide-react';
+import { Lightbulb, TrendingUp, Users, Globe, Star } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { FadeInView } from '@/components/ui/motion';
 import { LumniMark } from '@/components/ui/lumni-mark';
@@ -46,7 +46,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const { user } = useAuthStore();
 
   const features = [
-    { icon: Sparkles, key: 'ai' },
+    { icon: Lightbulb, key: 'ai' },
     { icon: TrendingUp, key: 'accuracy' },
     { icon: Users, key: 'cases' },
     { icon: Globe, key: 'schools' },
@@ -82,7 +82,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* 主标题 */}
           <div className="space-y-5">
             <div className="inline-flex items-center gap-2 rounded-[var(--theme-radius-badge)] border border-border bg-[color:var(--theme-card-bg)] px-4 py-2 shadow-[var(--theme-button-shadow)]">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Lightbulb className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 {t('auth.layout.subtitle')}
               </span>

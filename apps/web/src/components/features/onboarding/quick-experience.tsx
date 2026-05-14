@@ -14,9 +14,9 @@ import {
   GraduationCap,
   Loader2,
   Plus,
-  Rocket,
+  Compass,
   Search,
-  Sparkles,
+  Lightbulb,
   Target,
   Trash2,
   X,
@@ -313,7 +313,7 @@ export function QuickExperience() {
               <DialogHeader>
                 <div className="mb-2 flex items-center gap-2">
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Rocket className="h-5 w-5" />
+                    <Compass className="h-5 w-5" />
                   </span>
                   <DialogTitle>{t('wizardTitle')}</DialogTitle>
                 </div>
@@ -770,7 +770,7 @@ export function QuickExperience() {
                     ))}
                     {selectedSchools.length === 0 && (
                       <div className="rounded-lg border border-dashed p-8 text-center">
-                        <Sparkles className="mx-auto mb-3 h-6 w-6 text-primary" />
+                        <Lightbulb className="mx-auto mb-3 h-6 w-6 text-primary" />
                         <p className="text-sm text-muted-foreground">{t('schoolEmpty')}</p>
                       </div>
                     )}
@@ -807,7 +807,7 @@ export function QuickExperience() {
                   {submitMutation.isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <Rocket className="mr-2 h-4 w-4" />
+                    <Compass className="mr-2 h-4 w-4" />
                   )}
                   {t('saveAndPredict')}
                 </Button>

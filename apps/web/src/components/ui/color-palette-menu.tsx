@@ -40,7 +40,7 @@ import {
   RotateCcw,
   Search,
   SlidersHorizontal,
-  Sparkles,
+  Lightbulb,
   Star,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -309,7 +309,6 @@ function SegmentControl<T extends string>({
   );
 }
 
-
 export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
   const t = useTranslations('ui.colorPalette');
   const locale = useLocale();
@@ -369,7 +368,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
 
   const groups = useMemo(
     () => [
-      { id: 'featured' as const, label: t('featured'), icon: Sparkles },
+      { id: 'featured' as const, label: t('featured'), icon: Lightbulb },
       { id: 'recent' as const, label: t('recent'), icon: Clock3 },
       { id: 'favorites' as const, label: t('favorites'), icon: Star },
       { id: 'more' as const, label: t('more'), icon: Palette },
@@ -848,7 +847,7 @@ export function ColorPaletteMenu({ className }: ColorPaletteMenuProps) {
 
             <section className="mt-5 grid gap-3">
               <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5" />
+                <Lightbulb className="h-3.5 w-3.5" />
                 {t('presetTitle')}
               </div>
               <div className="grid grid-cols-2 gap-2">

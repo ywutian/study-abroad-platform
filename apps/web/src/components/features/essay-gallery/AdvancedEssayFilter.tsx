@@ -12,7 +12,7 @@ import {
   RotateCcw,
   ChevronDown,
   ChevronUp,
-  Sparkles,
+  Lightbulb,
   GraduationCap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -361,7 +361,7 @@ export function AdvancedEssayFilter({
           {/* 其他条件 */}
           <FilterSection
             title={t('filter.otherConditions')}
-            icon={Sparkles}
+            icon={Lightbulb}
             expanded={expandedSections.includes('other')}
             onToggle={() => toggleSection('other')}
           >

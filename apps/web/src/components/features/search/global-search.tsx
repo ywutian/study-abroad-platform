@@ -11,7 +11,7 @@ import {
   FileText,
   ArrowRight,
   Clock,
-  Sparkles,
+  Lightbulb,
   X,
   Command,
   Loader2,
@@ -41,7 +41,7 @@ const typeIcons: Record<SearchResultType, React.ElementType> = {
   school: School,
   case: FileText,
   article: FileText,
-  ai: Sparkles,
+  ai: Lightbulb,
   page: ArrowRight,
 };
 

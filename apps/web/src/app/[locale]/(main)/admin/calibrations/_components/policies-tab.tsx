@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { BadgeCheck, BarChart3, GitBranch, RotateCcw, Rocket } from 'lucide-react';
+import { BadgeCheck, BarChart3, GitBranch, RotateCcw, Compass } from 'lucide-react';
 
 import { adminRoutes } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api';
@@ -312,7 +312,7 @@ export function PoliciesTab() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Rocket className="h-4 w-4" />
+                <Compass className="h-4 w-4" />
                 {t('releaseControls')}
               </CardTitle>
             </CardHeader>

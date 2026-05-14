@@ -3746,7 +3746,10 @@
       "safetyIndex": "Safety Index",
       "happinessIndex": "Happiness Index",
       "foodIndex": "Food Index",
-      "moreIsBetter": "More icons = better",
+      "safetyShort": "Safety",
+      "lifeShort": "Campus",
+      "foodShort": "Dining",
+      "moreIsBetter": "Letter grade comes from source-backed campus-life data",
       "noData": "No Data",
       "estimated": "Estimated",
       "estimatedHint": "Shown as a temporary estimate until source-backed campus-life ratings are available."

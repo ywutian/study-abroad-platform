@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import {
   Save,
   Play,
-  Sparkles,
+  Lightbulb,
   Trophy,
   Percent,
   DollarSign,
@@ -132,7 +132,7 @@ export function WeightConfigPanel({
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
-              <Sparkles className="h-5 w-5" />
+              <Lightbulb className="h-5 w-5" />
             </div>
             <div>
               <CardTitle className="text-lg">{t('ranking.weights')}</CardTitle>

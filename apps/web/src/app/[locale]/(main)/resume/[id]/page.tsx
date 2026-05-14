@@ -24,7 +24,7 @@ import {
   Plus,
   RotateCcw,
   Save,
-  Sparkles,
+  Lightbulb,
   Target,
   Trash2,
 } from 'lucide-react';
@@ -759,7 +759,7 @@ export default function ResumeEditPage() {
             {t('workbench.tabs.preview')}
           </TabsTrigger>
           <TabsTrigger value="ai">
-            <Sparkles className="h-4 w-4" />
+            <Lightbulb className="h-4 w-4" />
             AI
           </TabsTrigger>
           <TabsTrigger value="style">
@@ -897,7 +897,7 @@ export default function ResumeEditPage() {
             {aiReviewMutation.isPending ? (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              <Lightbulb className="mr-1.5 h-3.5 w-3.5" />
             )}
             {t('workbench.actions.aiReview')}
           </Button>
@@ -1424,7 +1424,7 @@ function WorkbenchSectionCard({
               {optimizing ? (
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                <Lightbulb className="mr-1.5 h-3.5 w-3.5" />
               )}
               {t('workbench.actions.optimizeBullets')}
             </Button>
@@ -1478,7 +1478,7 @@ function AiAssistantPanel({
             {reviewPending ? (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              <Lightbulb className="mr-1.5 h-3.5 w-3.5" />
             )}
             {t('workbench.actions.runReview')}
           </Button>
@@ -1519,7 +1519,7 @@ function AiAssistantPanel({
               className="flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-60"
             >
               <span>{getSectionTypeLabel(t, section.type, section.title)}</span>
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <Lightbulb className="h-3.5 w-3.5 text-primary" />
             </button>
           ))}
         </div>

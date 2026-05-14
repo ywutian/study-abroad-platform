@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { BarChart, Trophy, Briefcase, Sparkles } from 'lucide-react';
+import { BarChart, Trophy, Briefcase, Lightbulb } from 'lucide-react';
 
 // Types
 interface TestScore {
@@ -390,7 +390,7 @@ export function ReviewModuleCard({
             {t('moduleReview.back')}
           </Button>
           <Button onClick={handleSubmit} className="flex-1 gap-2">
-            <Sparkles className="h-4 w-4" />
+            <Lightbulb className="h-4 w-4" />
             {t('moduleReview.submitScore')}
           </Button>
         </div>

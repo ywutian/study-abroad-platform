@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Compass, ChevronRight } from 'lucide-react';
+import { ClipboardCheck, Compass, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HOLLAND_ICONS, HOLLAND_COLORS } from './assessment-constants';
 
@@ -33,7 +33,7 @@ export function AssessmentIntro({ onStartTest }: AssessmentIntroProps) {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500 dark:bg-violet-600 text-white">
-                  <Brain className="h-6 w-6" />
+                  <ClipboardCheck className="h-6 w-6" />
                 </div>
                 <div>
                   <CardTitle className="text-xl">{t('mbti.title')}</CardTitle>

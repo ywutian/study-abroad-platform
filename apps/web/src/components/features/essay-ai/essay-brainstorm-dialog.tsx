@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Lightbulb, Sparkles, ChevronRight, Copy, Check } from 'lucide-react';
+import { Loader2, Lightbulb, ChevronRight, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { AI_TIMEOUTS } from '@/lib/constants';
@@ -165,7 +165,7 @@ export const EssayBrainstormDialog: React.FC<EssayBrainstormDialogProps> = ({
               <Card className="bg-primary/10 border-primary/20">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Lightbulb className="h-4 w-4 text-primary" />
                     {t('brainstorm.overallAdvice')}
                   </CardTitle>
                 </CardHeader>

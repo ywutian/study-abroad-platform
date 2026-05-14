@@ -31,7 +31,7 @@ import {
   Target,
   Eye,
   EyeOff,
-  Sparkles,
+  Lightbulb,
 } from 'lucide-react';
 
 import type { ResumeData, ResumeExportOptions } from './styles/pdf-styles';
@@ -53,7 +53,7 @@ const TEMPLATE_OPTIONS = [
     id: 'professional' as const,
     labelKey: 'resume.templates.professional',
     descKey: 'resume.templates.professionalDesc',
-    icon: Sparkles,
+    icon: Lightbulb,
   },
 ];
 

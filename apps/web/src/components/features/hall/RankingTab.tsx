@@ -32,7 +32,7 @@ import { toast } from 'sonner';
 import { cn, getSchoolName } from '@/lib/utils';
 import {
   Trophy,
-  Sparkles,
+  Lightbulb,
   Target,
   TrendingUp,
   ChevronUp,
@@ -40,7 +40,7 @@ import {
   Minus,
   Loader2,
   GraduationCap,
-  Brain,
+  ClipboardCheck,
   CheckCircle,
   AlertTriangle,
   Shield,
@@ -562,7 +562,7 @@ const RankingCard = memo(function RankingCard({
           className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-4 space-y-3"
         >
           <div className="flex items-center gap-2 text-sm font-medium text-primary">
-            <Brain className="h-4 w-4" />
+            <ClipboardCheck className="h-4 w-4" />
             {t('hall.ranking.aiAnalysis')}
           </div>
           <p className="text-sm">{analysis.analysis}</p>
@@ -598,7 +598,7 @@ const RankingCard = memo(function RankingCard({
           {analysisLoading ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <Sparkles className="h-3.5 w-3.5" />
+            <Lightbulb className="h-3.5 w-3.5" />
           )}
           {t('hall.ranking.getAiAnalysis')}
         </Button>

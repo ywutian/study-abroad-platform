@@ -1,7 +1,7 @@
 import {
   MessageSquare,
   Trophy,
-  Sparkles,
+  Lightbulb,
   BookOpen,
   HelpCircle,
   FolderOpen,
@@ -119,7 +119,7 @@ export const getCategoryIcon = (category: Category): React.ReactNode => {
   if (nameLC.includes('team') || nameLC.includes('组队'))
     return createElement(Trophy, { className: 'h-4 w-4' });
   if (nameLC.includes('activity') || nameLC.includes('活动'))
-    return createElement(Sparkles, { className: 'h-4 w-4' });
+    return createElement(Lightbulb, { className: 'h-4 w-4' });
   if (nameLC.includes('experience') || nameLC.includes('经验'))
     return createElement(BookOpen, { className: 'h-4 w-4' });
   if (nameLC.includes('question') || nameLC.includes('问答') || nameLC.includes('q&a'))

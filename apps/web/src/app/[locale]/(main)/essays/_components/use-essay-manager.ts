@@ -210,7 +210,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
   });
 
   // Handlers
-  const getWordCount = (text: string) => text.split(/\s+/).filter(Boolean).length;
+  const getWordCount = (text?: string | null) => (text ?? '').split(/\s+/).filter(Boolean).length;
 
   const handleCreate = () => {
     essayForm.reset({ title: '', prompt: '', content: '' });

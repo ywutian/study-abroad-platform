@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { ArrowUpRight, BarChart3, Clock3, FileText, Shield, Sparkles, Users } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Clock3, FileText, Shield, Lightbulb, Users } from 'lucide-react';
 import { AdmissionTierBadge, StatusDot } from '@/components/features/landing';
 import { PageContainer } from '@/components/layout/page-container';
 import { Link } from '@/lib/i18n/navigation';
@@ -58,7 +58,7 @@ const featureSpans = [
   'lg:col-span-2',
   'lg:col-span-6',
 ] as const;
-const featureIcons = [BarChart3, FileText, Clock3, Sparkles, Users, Shield] as const;
+const featureIcons = [BarChart3, FileText, Clock3, Lightbulb, Users, Shield] as const;
 
 export function BentoFeatures() {
   const home = useHomeContent();
@@ -223,7 +223,7 @@ function EssayVisual() {
     <div className="rounded-xl border border-[color:var(--landing-border)] bg-[color:var(--landing-surface-muted)]/65 p-4">
       <div className="flex items-center justify-between text-2xs uppercase tracking-[0.18em] text-[var(--landing-subtle)]">
         <span>{copy.kicker}</span>
-        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        <Lightbulb className="h-3.5 w-3.5 text-primary" />
       </div>
       <div className="mt-4 space-y-2 text-sm leading-7 text-[var(--landing-fg)]">
         <div>{copy.lines[0]}</div>

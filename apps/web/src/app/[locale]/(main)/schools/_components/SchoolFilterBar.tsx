@@ -125,7 +125,7 @@ export function SchoolFilterBar({
           <button
             type="button"
             onClick={onResetAll}
-            className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:text-blue-300"
+            className="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950/30 dark:hover:text-blue-300"
             disabled={activeFilterCount === 0}
           >
             {t('resetAll')}
@@ -195,8 +195,8 @@ export function SchoolFilterBar({
                     onClick={() => onActivePresetChange(key)}
                     className={
                       activePreset === key
-                        ? 'h-7 bg-blue-600 text-xs text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
-                        : 'h-7 text-xs'
+                        ? 'h-8 bg-blue-600 text-xs text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                        : 'h-8 text-xs'
                     }
                   >
                     {t(`weightControls.presets.${key}` as Parameters<typeof t>[0])}

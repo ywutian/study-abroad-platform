@@ -17,7 +17,7 @@ import {
   Calendar,
   PenTool,
   Globe,
-  Bot,
+  MessageCircle,
   ShieldCheck,
   CreditCard,
 } from 'lucide-react';
@@ -144,7 +144,7 @@ export function AdminStatsCards({ stats, isAdmin = true, permissions = [] }: Adm
     },
     has('ai:config') && {
       href: '/admin/ai-operations',
-      icon: Bot,
+      icon: MessageCircle,
       iconBg: 'bg-cyan-500/10',
       iconColor: 'text-cyan-500',
       title: t('sidebar.aiAgent'),

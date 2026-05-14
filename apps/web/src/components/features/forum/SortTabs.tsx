@@ -1,7 +1,7 @@
 'use client';
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Flame, MessageCircle, Sparkles } from 'lucide-react';
+import { Clock, Flame, MessageCircle, Lightbulb } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { PostSortBy } from '@/types/forum';
 
@@ -9,7 +9,7 @@ const SORT_OPTIONS: { value: PostSortBy; labelKey: string; icon: typeof Clock }[
   { value: 'latest', labelKey: 'sortLatest', icon: Clock },
   { value: 'popular', labelKey: 'sortPopular', icon: Flame },
   { value: 'comments', labelKey: 'sortComments', icon: MessageCircle },
-  { value: 'recommended', labelKey: 'sortRecommended', icon: Sparkles },
+  { value: 'recommended', labelKey: 'sortRecommended', icon: Lightbulb },
 ];
 
 interface SortTabsProps {

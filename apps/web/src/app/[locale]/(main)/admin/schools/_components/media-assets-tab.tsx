@@ -135,7 +135,7 @@ export function MediaAssetsTab() {
   });
 
   const coverage = coverageQuery.data;
-  const assets = assetsQuery.data ?? [];
+  const assets = Array.isArray(assetsQuery.data) ? assetsQuery.data : [];
   const isMutating =
     discoverMutation.isPending ||
     approveMutation.isPending ||
@@ -152,7 +152,7 @@ export function MediaAssetsTab() {
             <CardDescription>{t('coverage.approvedCoversDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
-            {coverage?.campusCover.approvedPrimary ?? 0}/{coverage?.totalSchools ?? 0}
+            {coverage?.campusCover?.approvedPrimary ?? 0}/{coverage?.totalSchools ?? 0}
           </CardContent>
         </Card>
         <Card>
@@ -161,7 +161,7 @@ export function MediaAssetsTab() {
             <CardDescription>{t('coverage.pendingReviewDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
-            {coverage?.campusCover.pendingReview ?? 0}
+            {coverage?.campusCover?.pendingReview ?? 0}
           </CardContent>
         </Card>
         <Card>
@@ -170,7 +170,7 @@ export function MediaAssetsTab() {
             <CardDescription>{t('coverage.candidatesDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
-            {coverage?.campusCover.candidate ?? 0}
+            {coverage?.campusCover?.candidate ?? 0}
           </CardContent>
         </Card>
         <Card>
@@ -179,7 +179,7 @@ export function MediaAssetsTab() {
             <CardDescription>{t('coverage.missingCoversDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
-            {coverage?.campusCover.missingPrimary ?? 0}
+            {coverage?.campusCover?.missingPrimary ?? 0}
           </CardContent>
         </Card>
       </div>

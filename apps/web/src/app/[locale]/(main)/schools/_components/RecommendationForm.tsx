@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Shield, Smile, Sparkles, Utensils } from 'lucide-react';
+import { Shield, Smile, Lightbulb, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,7 +56,7 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Lightbulb className="h-5 w-5 text-primary" />
             {t('formTitle')}
           </CardTitle>
         </CardHeader>
@@ -133,7 +133,7 @@ export function RecommendationForm({ onGenerate, preflight }: RecommendationForm
               />
             </div>
             <Button type="submit" disabled={!canSubmit} className="w-full">
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Lightbulb className="mr-2 h-4 w-4" />
               {t('generate')}
             </Button>
             {!canSubmit && preflight && (

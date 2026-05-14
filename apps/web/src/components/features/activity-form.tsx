@@ -36,7 +36,7 @@ import {
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { profileRoutes } from '@study-abroad/shared';
-import { Save, Loader2, Sparkles, HelpCircle } from 'lucide-react';
+import { Save, Loader2, Lightbulb, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { createActivitySchema, type ActivityFormValues } from '@/lib/validations/profile';
 
@@ -377,7 +377,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
                                 variant="outline"
                                 className={`ml-2 shrink-0 text-xs ${tierCfg.className}`}
                               >
-                                <Sparkles className="mr-1 h-3 w-3" />T{tmpl.tier}
+                                <Lightbulb className="mr-1 h-3 w-3" />T{tmpl.tier}
                               </Badge>
                             </button>
                           );
@@ -391,7 +391,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
                         variant="outline"
                         className={`text-xs ${TIER_CONFIG[selectedTemplate.tier]?.className}`}
                       >
-                        <Sparkles className="mr-1 h-3 w-3" />
+                        <Lightbulb className="mr-1 h-3 w-3" />
                         Tier {selectedTemplate.tier} — {TIER_CONFIG[selectedTemplate.tier]?.label}
                       </Badge>
                       <span>{t('linkedToTemplate')}</span>
@@ -539,7 +539,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
                   {refineMutation.isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <Sparkles className="h-3.5 w-3.5" />
+                    <Lightbulb className="h-3.5 w-3.5" />
                   )}
                   {t('form.aiRefineDesc')}
                 </Button>
@@ -559,7 +559,7 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
                 {generateCommonAppMutation.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Lightbulb className="h-3.5 w-3.5" />
                 )}
                 {t('form.aiGenerate')}
               </Button>

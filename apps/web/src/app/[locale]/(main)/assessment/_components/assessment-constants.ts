@@ -1,4 +1,4 @@
-import { Wrench, Brain, Palette, Users, Briefcase, LineChart } from 'lucide-react';
+import { Wrench, ClipboardCheck, Palette, Users, Briefcase, LineChart } from 'lucide-react';
 
 // MBTI dimension display names
 export const DIMENSION_NAMES: Record<string, string> = {
@@ -15,7 +15,7 @@ export const SECONDS_PER_QUESTION = 8;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const HOLLAND_ICONS: Record<string, any> = {
   R: Wrench,
-  I: Brain,
+  I: ClipboardCheck,
   A: Palette,
   S: Users,
   E: Briefcase,
