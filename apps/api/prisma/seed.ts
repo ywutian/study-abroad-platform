@@ -16,6 +16,7 @@ import { seedDeadlines20262027 } from './seed-deadlines-2026-2027';
 import { seedEdEaRates } from './seed-ed-ea-rates';
 import { seedGlobalEvents20262027 } from './seed-global-events-2026-2027';
 import { seedGpaDistributions } from './seed-gpa-distributions';
+import { seedLacGpaTerminal } from './seed-lac-gpa-terminal';
 import { seedIntlAcceptanceRates } from './seed-intl-acceptance-rates';
 import { seedIntlSchools } from './seed-intl-schools';
 import { seedTeamData } from './seed-teams';
@@ -2096,6 +2097,17 @@ export async function main() {
     `  ✅ GPA distributions: ${gpaDists.updated} rows seeded` +
       (gpaDists.notFound.length > 0
         ? `, ${gpaDists.notFound.length} schools not yet in DB`
+        : ''),
+  );
+
+  // ========== LAC GPA "intentionally not reported" markers ==========
+  // 7 elite LACs deliberately suppress CDS Section C11 — see
+  // seed-lac-gpa-terminal.ts header for the policy explanation.
+  const lacGpa = await seedLacGpaTerminal(prisma);
+  console.log(
+    `  ✅ LAC GPA terminal markers: ${lacGpa.updated} school(s)` +
+      (lacGpa.notFound.length > 0
+        ? `, ${lacGpa.notFound.length} schools not in DB`
         : ''),
   );
 

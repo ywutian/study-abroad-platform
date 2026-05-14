@@ -9,6 +9,7 @@ import { SchoolLogoService } from './school-logo.service';
 import { SchoolMediaService } from './school-media.service';
 import { SchoolScraperScheduler } from './school-scraper.scheduler';
 import { DataSyncScheduler } from './data-sync.scheduler';
+import { DeadlineRefreshScheduler } from './deadline-refresh.scheduler';
 import { SchoolProvenanceScheduler } from './school-provenance.scheduler';
 import { SchoolWriteService } from './school-write.service';
 import { HighSchoolService } from './high-school.service';
@@ -38,6 +39,7 @@ import { SchoolListModule } from '../school-list/school-list.module';
     SchoolWriteService,
     SchoolScraperScheduler,
     DataSyncScheduler,
+    DeadlineRefreshScheduler,
     SchoolProvenanceScheduler,
     HighSchoolService,
     HsCalibrationScheduler,
