@@ -266,6 +266,109 @@ const E2E_MESSAGES = [
   },
 ];
 
+const E2E_FORUM_CATEGORIES = [
+  {
+    id: 'e2e-forum-category-application',
+    name: 'Application Experience',
+    nameZh: '申请经验',
+    description: 'Admissions planning and school list discussions',
+    descriptionZh: '申请规划和选校讨论',
+    postCount: 18,
+  },
+  {
+    id: 'e2e-forum-category-essay',
+    name: 'Essay Discussion',
+    nameZh: '文书讨论',
+    description: 'Essay ideas, drafts, and review questions',
+    descriptionZh: '文书灵感、草稿和修改问题',
+    postCount: 12,
+  },
+];
+
+const E2E_FORUM_COMMUNITIES = [
+  {
+    id: 'e2e-community-apply',
+    slug: 'apply',
+    name: 'Apply',
+    description: 'Application strategy, timelines, and school list feedback.',
+    postCount: 128,
+    followerCount: 4200,
+    isOfficial: true,
+    isFollowing: true,
+    createdAt: new Date('2026-04-01T12:00:00Z').toISOString(),
+  },
+  {
+    id: 'e2e-community-essays',
+    slug: 'essays',
+    name: 'Essays',
+    description: 'Brainstorming, structure, and revision support for application essays.',
+    postCount: 84,
+    followerCount: 1800,
+    isOfficial: true,
+    isFollowing: false,
+    createdAt: new Date('2026-04-02T12:00:00Z').toISOString(),
+  },
+  {
+    id: 'e2e-community-campus',
+    slug: 'campus-life',
+    name: 'CampusLife',
+    description: 'Student life, housing, and fit conversations.',
+    postCount: 51,
+    followerCount: 900,
+    isOfficial: false,
+    isFollowing: false,
+    createdAt: new Date('2026-04-03T12:00:00Z').toISOString(),
+  },
+  {
+    id: 'e2e-community-cs',
+    slug: 'cs-majors',
+    name: 'CSMajors',
+    description: 'CS program selection, portfolios, and activities.',
+    postCount: 112,
+    followerCount: 3100,
+    isOfficial: false,
+    isFollowing: false,
+    createdAt: new Date('2026-04-04T12:00:00Z').toISOString(),
+  },
+];
+
+const E2E_FORUM_POSTS = Array.from({ length: 8 }, (_, index) => {
+  const community = E2E_FORUM_COMMUNITIES[index % E2E_FORUM_COMMUNITIES.length];
+  const category = E2E_FORUM_CATEGORIES[index % E2E_FORUM_CATEGORIES.length];
+  return {
+    id: `e2e-forum-post-${index + 1}`,
+    title: [
+      'How do I decide whether ED2 is worth the risk?',
+      'Can someone review this UC activity framing?',
+      'What makes a waitlist update letter useful?',
+      'Should I retake TOEFL after 105?',
+    ][index % 4],
+    content:
+      'I am comparing options and would love concrete advice from people who have recently been through the same application stage.',
+    categoryId: category.id,
+    category,
+    communityId: community.id,
+    community,
+    author: {
+      id: `e2e-forum-author-${index + 1}`,
+      name: ['Amy', 'Mina', 'Chris', 'Yuki'][index % 4],
+      avatar: '',
+      isVerified: index % 3 === 0,
+    },
+    images: [],
+    isTeamPost: false,
+    tags: ['application', 'planning'],
+    viewCount: 1200 + index * 137,
+    likeCount: 18 + index * 6,
+    commentCount: 4 + index * 3,
+    isPinned: index === 0,
+    isLocked: false,
+    createdAt: new Date(`2026-04-${10 + index}T12:00:00Z`).toISOString(),
+    updatedAt: new Date(`2026-04-${10 + index}T12:00:00Z`).toISOString(),
+    isLiked: false,
+  };
+});
+
 const E2E_NOTIFICATIONS = [
   {
     id: 'e2e-notification',
@@ -2974,6 +3077,24 @@ function apiData(path: string, role: FullUiRole, method: string) {
         items: genericListFor(path).items,
         total: genericListFor(path).total,
         health: 'OK',
+      }),
+    };
+  }
+
+  if (path === '/forums/categories') {
+    return { data: responseData(E2E_FORUM_CATEGORIES) };
+  }
+
+  if (path === '/forums/communities') {
+    return { data: responseData(E2E_FORUM_COMMUNITIES) };
+  }
+
+  if (path === '/forums/posts') {
+    return {
+      data: responseData({
+        posts: E2E_FORUM_POSTS,
+        total: E2E_FORUM_POSTS.length,
+        hasMore: false,
       }),
     };
   }

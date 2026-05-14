@@ -8,7 +8,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <div className="app-shell-bg pointer-events-none fixed inset-0 -z-10" />
       <Header />
       <PageTransitionWrapper className="flex-1">
-        <main className="py-6 sm:py-8 pb-20 md:pb-8 overflow-x-hidden">
+        <main className="py-6 sm:py-8 pb-20 md:pb-8 overflow-x-clip">
           <ErrorBoundary level="page">{children}</ErrorBoundary>
         </main>
       </PageTransitionWrapper>
