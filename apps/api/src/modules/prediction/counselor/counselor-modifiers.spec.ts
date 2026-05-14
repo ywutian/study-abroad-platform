@@ -2,6 +2,7 @@ import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import {
   athleteMultiplier,
   gpaBandMultiplier,
+  intlMultiplier,
   legacyHookMultiplier,
   profileContextMultiplier,
   roundMultiplier,
@@ -202,6 +203,68 @@ describe('counselor modifiers launch guards', () => {
     });
   });
 
+  // 2026-05: `needBlindInternational` defaults to `false` in the DB even when
+  // we haven't reviewed a school. Treat verified-true as the only
+  // "definitely-need-blind" branch; everything else uses a midpoint between
+  // need-blind and need-aware. See docs/PREDICTION_ACCURACY_STRATEGY.md.
+  describe('intlMultiplier — need-blind verification semantics', () => {
+    const intlProfile: ProfileInput = {
+      gpa: 3.85,
+      gpaScale: 4,
+      testScores: [],
+      activities: [],
+      awards: [],
+      isInternational: true,
+    };
+
+    it('uses verified need-blind branch when needBlindInternational === true', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.05,
+        needBlindInternational: true,
+      } as SchoolInput & { needBlindInternational?: boolean });
+
+      expect(result.multiplier).toBeCloseTo(0.5, 3);
+      expect(result.label).toContain('need-blind');
+    });
+
+    it('uses unverified-midpoint at elite schools when needBlind is false', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.05,
+        needBlindInternational: false,
+      } as SchoolInput & { needBlindInternational?: boolean });
+
+      // midpoint between 0.50 (need-blind) and 0.45 (need-aware) = 0.48
+      expect(result.multiplier).toBeCloseTo(0.48, 3);
+      expect(result.label).toContain('unverified');
+    });
+
+    it('uses unverified-midpoint at highly-selective schools', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.15,
+        needBlindInternational: false,
+      } as SchoolInput & { needBlindInternational?: boolean });
+
+      // midpoint between 0.80 (need-blind) and 0.75 (need-aware) ~ 0.78
+      expect(result.multiplier).toBeCloseTo(0.78, 3);
+      expect(result.label).toContain('unverified');
+    });
+
+    it('uses unverified-midpoint at moderately-selective schools', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.3,
+        needBlindInternational: false,
+      } as SchoolInput & { needBlindInternational?: boolean });
+
+      // midpoint between 0.85 (need-blind) and 0.70 (need-aware) ~ 0.78
+      expect(result.multiplier).toBeCloseTo(0.78, 3);
+      expect(result.label).toContain('unverified');
+    });
+  });
+
   describe('accuracy-first profile context multiplier', () => {
     it('keeps missing profile signals neutral and records gaps', () => {
       const result = profileContextMultiplier(baseProfile(), baseSchool());
@@ -341,6 +404,29 @@ describe('counselor modifiers launch guards', () => {
 
       expect(domestic.components.englishReadiness.multiplier).toBe(1);
       expect(international.components.englishReadiness.multiplier).toBe(0.96);
+    });
+
+    it('applies a small penalty when international applicant has no English score', () => {
+      // 2026-05: missing TOEFL/IELTS for an international applicant now gets
+      // 0.92× (was 1.0). Domestic applicants still get neutral.
+      const internationalMissing = profileContextMultiplier(
+        baseProfile({
+          isInternational: true,
+          // intentionally no englishProficiency
+        }),
+        baseSchool(),
+      );
+      const domesticMissing = profileContextMultiplier(
+        baseProfile({
+          isInternational: false,
+        }),
+        baseSchool(),
+      );
+
+      expect(internationalMissing.components.englishReadiness.multiplier).toBe(
+        0.92,
+      );
+      expect(domesticMissing.components.englishReadiness.multiplier).toBe(1);
     });
 
     it('clamps combined profile context to the accuracy-first range', () => {
