@@ -28,14 +28,20 @@ export function TimelineTabs({
 
   if (activeTab === 'personal') return null;
 
+  const isArchive = activeTab === 'archive';
+
   return (
     <>
       {/* School timelines list */}
       {sortedTimelines.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('schoolTimelines.title')}</CardTitle>
-            <CardDescription>{t('schoolTimelines.description')}</CardDescription>
+            <CardTitle className="text-base">
+              {t(isArchive ? 'schoolTimelines.archiveTitle' : 'schoolTimelines.title')}
+            </CardTitle>
+            <CardDescription>
+              {t(isArchive ? 'schoolTimelines.archiveDescription' : 'schoolTimelines.description')}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {sortedTimelines.map((tl) => (

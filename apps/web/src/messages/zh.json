@@ -6298,7 +6298,8 @@
       "waitlisted": "候补名单",
       "withdrawn": "已撤回",
       "completed": "已完成",
-      "cancelled": "已取消"
+      "cancelled": "已取消",
+      "overdue": "已过期"
     },
     "overview": {
       "totalSchools": "目标学校",
@@ -6358,6 +6359,8 @@
     "schoolTimelines": {
       "title": "学校时间线",
       "description": "按报名截止日排序的申请进度",
+      "archiveTitle": "归档学校申请",
+      "archiveDescription": "已结束、已撤回或过期未完成的学校申请",
       "deadline": "报名截止日",
       "tasks": "任务",
       "loadingTasks": "加载任务中...",

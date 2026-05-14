@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { PersonalEventResponse, TimelineResponse } from '@/types/timeline';
-import { buildTimelineBoardModel, daysUntilDate, resolveTimelineTab } from './timeline-view-model';
+import {
+  buildTimelineBoardModel,
+  daysUntilDate,
+  getArchivedDisplayStatus,
+  resolveTimelineTab,
+} from './timeline-view-model';
 
 const now = new Date('2026-05-14T12:00:00.000Z');
 
@@ -126,5 +131,12 @@ describe('timeline view model', () => {
     ]);
     expect(model.metrics.due7).toBe(2);
     expect(model.metrics.due30).toBe(3);
+  });
+
+  it('uses overdue as the archive display status for unfinished expired items', () => {
+    expect(getArchivedDisplayStatus('NOT_STARTED', -119)).toBe('OVERDUE');
+    expect(getArchivedDisplayStatus('IN_PROGRESS', -1)).toBe('OVERDUE');
+    expect(getArchivedDisplayStatus('SUBMITTED', -1)).toBe('SUBMITTED');
+    expect(getArchivedDisplayStatus('COMPLETED', -1)).toBe('COMPLETED');
   });
 });
