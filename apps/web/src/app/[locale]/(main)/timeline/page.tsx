@@ -9,24 +9,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   AlertTriangle,
+  Archive,
   Calendar,
+  CalendarClock,
   GraduationCap,
-  Info,
   ListChecks,
   Loader2,
   Plus,
-  ShieldCheck,
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
-import { EnterpriseStatusStrip, PageContainer, PageHeader } from '@/components/layout';
+import { PageContainer, PageHeader } from '@/components/layout';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPersonalEventSchema, type PersonalEventFormData } from '@/lib/validations/timeline';
 import type {
   TimelineResponse,
-  TimelineOverview as TimelineOverviewType,
   GlobalEvent,
   TimelineDetail,
   PersonalEventResponse,
@@ -34,12 +33,12 @@ import type {
   TabType,
 } from '@/types/timeline';
 
-import { TimelineOverview } from './_components/timeline-overview';
 import { TimelineTabs } from './_components/timeline-tabs';
-import { PersonalEventsSection } from './_components/personal-events-section';
+import { PersonalEventItem, PersonalEventsSection } from './_components/personal-events-section';
 import { GlobalEventsSection } from './_components/generate-timeline-dialog';
 import { CreateEventDialog } from './_components/create-event-dialog';
 import { DeleteConfirmationDialog } from './_components/delete-confirmation-dialog';
+import { TimelineItem } from './_components/timeline-item';
 import {
   formatDate as formatDateHelper,
   getDaysUntil,
@@ -50,6 +49,7 @@ import {
   getCategoryLabel as getCategoryLabelHelper,
   getCategoryColor,
 } from './_components/timeline.helpers';
+import { buildTimelineBoardModel, resolveTimelineTab } from './_components/timeline-view-model';
 
 function listFromResponse<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[];
@@ -62,81 +62,23 @@ function listFromResponse<T>(value: unknown): T[] {
   return [];
 }
 
-function overviewFromResponse(
-  value: unknown,
-  timelines: TimelineResponse[],
-  personalEvents: PersonalEventResponse[]
-): TimelineOverviewType | null {
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    const record = value as Partial<TimelineOverviewType>;
-    if (
-      typeof record.totalSchools === 'number' ||
-      typeof record.totalPersonalEvents === 'number' ||
-      Array.isArray(record.upcomingDeadlines)
-    ) {
-      return {
-        totalSchools: record.totalSchools ?? timelines.length,
-        submitted: record.submitted ?? timelines.filter((tl) => tl.status === 'SUBMITTED').length,
-        inProgress:
-          record.inProgress ??
-          timelines.filter((tl) => tl.status !== 'SUBMITTED' && tl.status !== 'NOT_STARTED').length,
-        notStarted:
-          record.notStarted ?? timelines.filter((tl) => tl.status === 'NOT_STARTED').length,
-        upcomingDeadlines: Array.isArray(record.upcomingDeadlines)
-          ? record.upcomingDeadlines
-          : timelines,
-        overdueTasks: Array.isArray(record.overdueTasks) ? record.overdueTasks : [],
-        totalPersonalEvents: record.totalPersonalEvents ?? personalEvents.length,
-        personalInProgress:
-          record.personalInProgress ??
-          personalEvents.filter((event) => event.status !== 'COMPLETED').length,
-        personalCompleted:
-          record.personalCompleted ??
-          personalEvents.filter((event) => event.status === 'COMPLETED').length,
-        upcomingPersonalEvents: Array.isArray(record.upcomingPersonalEvents)
-          ? record.upcomingPersonalEvents
-          : personalEvents,
-      };
-    }
-  }
-
-  if (!timelines.length && !personalEvents.length) return null;
-  return {
-    totalSchools: timelines.length,
-    submitted: timelines.filter((tl) => tl.status === 'SUBMITTED').length,
-    inProgress: timelines.filter((tl) => tl.status !== 'SUBMITTED' && tl.status !== 'NOT_STARTED')
-      .length,
-    notStarted: timelines.filter((tl) => tl.status === 'NOT_STARTED').length,
-    upcomingDeadlines: timelines,
-    overdueTasks: [],
-    totalPersonalEvents: personalEvents.length,
-    personalInProgress: personalEvents.filter((event) => event.status !== 'COMPLETED').length,
-    personalCompleted: personalEvents.filter((event) => event.status === 'COMPLETED').length,
-    upcomingPersonalEvents: personalEvents,
-  };
-}
-
 // ============ Page Component ============
 
 export default function TimelinePage() {
   const t = useTranslations('timeline');
-  const statusT = useTranslations('enterpriseStatus');
   const format = useFormatter();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
-  const VALID_TABS: TabType[] = ['all', 'school', 'personal'];
-  const initialTab = VALID_TABS.includes(searchParams.get('tab') as TabType)
-    ? (searchParams.get('tab') as TabType)
-    : 'all';
+  const initialTab = resolveTimelineTab(searchParams.get('tab'));
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
   const handleTabChange = useCallback(
     (tab: TabType) => {
       setActiveTab(tab);
       const params = new URLSearchParams(searchParams.toString());
-      if (tab === 'all') params.delete('tab');
+      if (tab === 'todo') params.delete('tab');
       else params.set('tab', tab);
       const qs = params.toString();
       router.replace(`/timeline${qs ? `?${qs}` : ''}`, { scroll: false });
@@ -163,11 +105,6 @@ export default function TimelinePage() {
   });
 
   // ============ Queries ============
-
-  const { data: overviewRaw, isLoading: overviewLoading } = useQuery<unknown>({
-    queryKey: ['timeline-overview'],
-    queryFn: () => apiClient.get(`${API_ROUTES.TIMELINES}/overview`),
-  });
 
   const { data: timelinesRaw, isLoading: timelinesLoading } = useQuery<unknown>({
     queryKey: ['timelines'],
@@ -205,10 +142,6 @@ export default function TimelinePage() {
         school: { id: string; name: string; nameZh?: string };
       }>(schoolListItemsRaw),
     [schoolListItemsRaw]
-  );
-  const overview = useMemo(
-    () => overviewFromResponse(overviewRaw, timelines, personalEvents),
-    [overviewRaw, timelines, personalEvents]
   );
 
   const generateTimelineMutation = useMutation({
@@ -303,21 +236,14 @@ export default function TimelinePage() {
 
   // ============ Helpers ============
 
-  const isLoading = overviewLoading || timelinesLoading || personalLoading;
+  const isLoading = timelinesLoading || personalLoading;
   const hasTimelines = timelines.length > 0;
   const hasPersonalEvents = personalEvents.length > 0;
   const hasAny = hasTimelines || hasPersonalEvents;
-  const deadlineRiskCount = useMemo(() => {
-    const schoolRisk = timelines.filter((item) => {
-      const days = getDaysUntil(item.deadline);
-      return days !== null && days >= 0 && days <= 30;
-    }).length;
-    const personalRisk = personalEvents.filter((item) => {
-      const days = getDaysUntil(item.deadline ?? item.eventDate);
-      return days !== null && days >= 0 && days <= 30;
-    }).length;
-    return schoolRisk + personalRisk;
-  }, [timelines, personalEvents]);
+  const board = useMemo(
+    () => buildTimelineBoardModel(timelines, personalEvents),
+    [timelines, personalEvents]
+  );
 
   const schoolsWithoutTimeline = useMemo(() => {
     const timelineSchoolIds = new Set(timelines.map((tl) => tl.schoolId));
@@ -335,39 +261,64 @@ export default function TimelinePage() {
     [t]
   );
 
-  // Sorted data
-  const sortedTimelines = useMemo(() => {
-    return [...timelines].sort((a, b) => {
-      if (a.status === 'SUBMITTED' && b.status !== 'SUBMITTED') return 1;
-      if (a.status !== 'SUBMITTED' && b.status === 'SUBMITTED') return -1;
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    });
-  }, [timelines]);
-
-  const sortedPersonalEvents = useMemo(() => {
-    return [...personalEvents].sort((a, b) => {
-      if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1;
-      if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1;
-      const aDate = a.deadline || a.eventDate || a.createdAt;
-      const bDate = b.deadline || b.eventDate || b.createdAt;
-      return new Date(aDate).getTime() - new Date(bDate).getTime();
-    });
-  }, [personalEvents]);
+  const actionableTimelineMap = useMemo(
+    () => new Map(board.actionableTimelines.map((item) => [item.id, item])),
+    [board.actionableTimelines]
+  );
+  const actionablePersonalEventMap = useMemo(
+    () => new Map(board.actionablePersonalEvents.map((item) => [item.id, item])),
+    [board.actionablePersonalEvents]
+  );
 
   const upcomingGlobalEvents = useMemo(() => {
-    const now = new Date();
     const subscribedIds = new Set(personalEvents.map((e) => e.globalEventId).filter(Boolean));
     return globalEvents
       .filter((e) => {
-        const eventDate = new Date(e.eventDate);
-        const days = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return days >= -7 && days <= 90;
+        const days = getDaysUntil(e.eventDate);
+        return days !== null && days >= 0 && days <= 90;
       })
       .map((e) => ({ ...e, subscribed: subscribedIds.has(e.id) }))
       .slice(0, 12);
   }, [globalEvents, personalEvents]);
+
+  const actionMetrics = [
+    {
+      key: 'dueWindow',
+      icon: CalendarClock,
+      label: t('actionBoard.dueWindow'),
+      value: `${board.metrics.due7}/${board.metrics.due30}`,
+      description: t('actionBoard.dueWindowDesc'),
+      tone:
+        board.metrics.due7 > 0 ? 'text-orange-700 dark:text-orange-300' : 'text-muted-foreground',
+    },
+    {
+      key: 'overdue',
+      icon: AlertTriangle,
+      label: t('actionBoard.overdue'),
+      value: String(board.metrics.overdue),
+      description: t('actionBoard.overdueDesc'),
+      tone: board.metrics.overdue > 0 ? 'text-destructive' : 'text-muted-foreground',
+    },
+    {
+      key: 'pendingSchools',
+      icon: GraduationCap,
+      label: t('actionBoard.pendingSchools'),
+      value: String(schoolsWithoutTimeline.length),
+      description: t('actionBoard.pendingSchoolsDesc'),
+      tone:
+        schoolsWithoutTimeline.length > 0
+          ? 'text-blue-700 dark:text-blue-300'
+          : 'text-muted-foreground',
+    },
+    {
+      key: 'incompleteTasks',
+      icon: ListChecks,
+      label: t('actionBoard.incompleteTasks'),
+      value: String(board.metrics.incompleteTasks),
+      description: t('actionBoard.incompleteTasksDesc'),
+      tone: board.metrics.incompleteTasks > 0 ? 'text-foreground' : 'text-muted-foreground',
+    },
+  ];
 
   // ============ Render ============
 
@@ -409,50 +360,25 @@ export default function TimelinePage() {
         }
       />
 
-      <EnterpriseStatusStrip
-        title={statusT('timeline.title')}
-        description={statusT('timeline.description')}
-        items={[
-          {
-            tone: schoolsWithoutTimeline.length > 0 ? 'attention' : 'ready',
-            label: statusT('timeline.coverage'),
-            value:
-              schoolsWithoutTimeline.length > 0
-                ? String(schoolsWithoutTimeline.length)
-                : statusT('states.ready'),
-            description: statusT('timeline.coverageDesc'),
-            icon: GraduationCap,
-          },
-          {
-            tone: deadlineRiskCount > 0 ? 'attention' : 'ready',
-            label: statusT('timeline.risk'),
-            value: deadlineRiskCount > 0 ? String(deadlineRiskCount) : statusT('states.ready'),
-            description: statusT('timeline.riskDesc'),
-            icon: AlertTriangle,
-          },
-          {
-            tone: hasAny ? 'ready' : 'blocked',
-            label: statusT('timeline.tasks'),
-            value: hasAny ? statusT('states.ready') : statusT('states.blocked'),
-            description: statusT('timeline.tasksDesc'),
-            icon: ListChecks,
-          },
-          {
-            tone: upcomingGlobalEvents.length > 0 ? 'verified' : 'attention',
-            label: statusT('timeline.sync'),
-            value:
-              upcomingGlobalEvents.length > 0
-                ? statusT('states.verified')
-                : statusT('states.nextAction'),
-            description: statusT('timeline.syncDesc'),
-            icon: ShieldCheck,
-          },
-        ]}
-      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {actionMetrics.map(({ key, icon: Icon, label, value, description, tone }) => (
+          <Card key={key}>
+            <CardContent className="flex items-start gap-3 p-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
+                <Icon className={`h-4 w-4 ${tone}`} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="mt-1 text-2xl font-semibold leading-none">{value}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-      {/* Tab navigation */}
       <div className="flex w-fit gap-1 rounded-[var(--theme-radius-button)] border bg-[color:var(--theme-control-bg)] p-1 shadow-[var(--theme-button-shadow)]">
-        {(['all', 'school', 'personal'] as TabType[]).map((tab) => (
+        {(['todo', 'school', 'personal', 'archive'] as TabType[]).map((tab) => (
           <button
             key={tab}
             type="button"
@@ -468,11 +394,8 @@ export default function TimelinePage() {
         ))}
       </div>
 
-      {/* Overview stats */}
-      {hasAny && overview && <TimelineOverview overview={overview} />}
-
       {/* Empty state */}
-      {!hasAny && (
+      {!hasAny && activeTab === 'todo' && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <GraduationCap className="h-12 w-12 text-muted-foreground/50 mb-4" />
@@ -496,8 +419,239 @@ export default function TimelinePage() {
         </Card>
       )}
 
-      {/* Global events (subscribable) */}
-      {(activeTab === 'all' || activeTab === 'personal') && (
+      {activeTab === 'todo' && hasAny && (
+        <>
+          {board.todoItems.length > 0 ? (
+            <Card>
+              <CardContent className="space-y-3 p-4">
+                <div className="pb-1">
+                  <h2 className="text-base font-semibold">{t('todo.title')}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('todo.description')}</p>
+                </div>
+                {board.todoItems.map((item) => {
+                  if (item.kind === 'school') {
+                    const timeline = actionableTimelineMap.get(item.id);
+                    if (!timeline) return null;
+                    return (
+                      <TimelineItem
+                        key={`school-${item.id}`}
+                        timeline={timeline}
+                        isExpanded={expandedTimeline === timeline.id}
+                        onToggleExpand={() =>
+                          setExpandedTimeline(expandedTimeline === timeline.id ? null : timeline.id)
+                        }
+                        timelineDetail={timelineDetail}
+                        timelineDetailLoading={timelineDetailLoading}
+                        toggleTaskMutation={toggleTaskMutation}
+                        formatDate={formatDate}
+                        getDaysUntil={getDaysUntil}
+                        formatDaysUntil={formatDaysUntil}
+                        getRoundBadge={getRoundBadge}
+                        getStatusBadge={getStatusBadge}
+                        setDeleteTarget={setDeleteTarget}
+                      />
+                    );
+                  }
+
+                  const event = actionablePersonalEventMap.get(item.id);
+                  if (!event) return null;
+                  return (
+                    <PersonalEventItem
+                      key={`personal-${item.id}`}
+                      event={event}
+                      expandedPersonalEvent={expandedPersonalEvent}
+                      setExpandedPersonalEvent={setExpandedPersonalEvent}
+                      personalEventDetail={personalEventDetail}
+                      personalEventDetailLoading={personalEventDetailLoading}
+                      togglePersonalTaskMutation={togglePersonalTaskMutation}
+                      setDeleteTarget={setDeleteTarget}
+                      formatDate={formatDate}
+                      getDaysUntil={getDaysUntil}
+                      formatDaysUntil={formatDaysUntil}
+                      getStatusBadge={getStatusBadge}
+                      getRoundBadge={getRoundBadge}
+                      getCategoryIcon={getCategoryIcon}
+                      getCategoryLabel={getCategoryLabel}
+                      getCategoryColor={getCategoryColor}
+                    />
+                  );
+                })}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                <ListChecks className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <h3 className="text-base font-semibold">{t('todo.emptyTitle')}</h3>
+                <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                  {t('todo.emptyDescription')}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {schoolsWithoutTimeline.length > 0 && (
+            <TimelineTabs
+              activeTab={activeTab}
+              sortedTimelines={[]}
+              expandedTimeline={expandedTimeline}
+              setExpandedTimeline={setExpandedTimeline}
+              timelineDetail={timelineDetail}
+              timelineDetailLoading={timelineDetailLoading}
+              toggleTaskMutation={toggleTaskMutation}
+              setDeleteTarget={setDeleteTarget}
+              schoolsWithoutTimeline={schoolsWithoutTimeline}
+              generateTimelineMutation={generateTimelineMutation}
+              formatDate={formatDate}
+              getDaysUntil={getDaysUntil}
+              formatDaysUntil={formatDaysUntil}
+              getStatusBadge={getStatusBadge}
+              getRoundBadge={getRoundBadge}
+              getCategoryIcon={getCategoryIcon}
+              getCategoryLabel={getCategoryLabel}
+              getCategoryColor={getCategoryColor}
+            />
+          )}
+        </>
+      )}
+
+      {activeTab === 'school' && (
+        <>
+          {board.actionableTimelines.length > 0 || schoolsWithoutTimeline.length > 0 ? (
+            <TimelineTabs
+              activeTab={activeTab}
+              sortedTimelines={board.actionableTimelines}
+              expandedTimeline={expandedTimeline}
+              setExpandedTimeline={setExpandedTimeline}
+              timelineDetail={timelineDetail}
+              timelineDetailLoading={timelineDetailLoading}
+              toggleTaskMutation={toggleTaskMutation}
+              setDeleteTarget={setDeleteTarget}
+              schoolsWithoutTimeline={schoolsWithoutTimeline}
+              generateTimelineMutation={generateTimelineMutation}
+              formatDate={formatDate}
+              getDaysUntil={getDaysUntil}
+              formatDaysUntil={formatDaysUntil}
+              getStatusBadge={getStatusBadge}
+              getRoundBadge={getRoundBadge}
+              getCategoryIcon={getCategoryIcon}
+              getCategoryLabel={getCategoryLabel}
+              getCategoryColor={getCategoryColor}
+            />
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                <GraduationCap className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <h3 className="text-base font-semibold">{t('schoolTimelines.emptyTitle')}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t('schoolTimelines.emptyDescription')}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
+      {activeTab === 'personal' && (
+        <>
+          {board.actionablePersonalEvents.length > 0 ? (
+            <PersonalEventsSection
+              sortedPersonalEvents={board.actionablePersonalEvents}
+              expandedPersonalEvent={expandedPersonalEvent}
+              setExpandedPersonalEvent={setExpandedPersonalEvent}
+              personalEventDetail={personalEventDetail}
+              personalEventDetailLoading={personalEventDetailLoading}
+              togglePersonalTaskMutation={togglePersonalTaskMutation}
+              setDeleteTarget={setDeleteTarget}
+              formatDate={formatDate}
+              getDaysUntil={getDaysUntil}
+              formatDaysUntil={formatDaysUntil}
+              getStatusBadge={getStatusBadge}
+              getRoundBadge={getRoundBadge}
+              getCategoryIcon={getCategoryIcon}
+              getCategoryLabel={getCategoryLabel}
+              getCategoryColor={getCategoryColor}
+            />
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                <Calendar className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <h3 className="text-base font-semibold">{t('personalEvents.emptyTitle')}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t('personalEvents.emptyDescription')}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          <GlobalEventsSection
+            upcomingGlobalEvents={upcomingGlobalEvents}
+            subscribeGlobalEventMutation={subscribeGlobalEventMutation}
+            formatDate={formatDate}
+            getDaysUntil={getDaysUntil}
+            formatDaysUntil={formatDaysUntil}
+            getCategoryIcon={getCategoryIcon}
+          />
+        </>
+      )}
+
+      {activeTab === 'archive' && (
+        <>
+          {board.archivedTimelines.length === 0 && board.archivedPersonalEvents.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+                <Archive className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <h3 className="text-base font-semibold">{t('archive.emptyTitle')}</h3>
+                <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                  {t('archive.emptyDescription')}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <TimelineTabs
+                activeTab={activeTab}
+                sortedTimelines={board.archivedTimelines}
+                expandedTimeline={expandedTimeline}
+                setExpandedTimeline={setExpandedTimeline}
+                timelineDetail={timelineDetail}
+                timelineDetailLoading={timelineDetailLoading}
+                toggleTaskMutation={toggleTaskMutation}
+                setDeleteTarget={setDeleteTarget}
+                schoolsWithoutTimeline={[]}
+                generateTimelineMutation={generateTimelineMutation}
+                formatDate={formatDate}
+                getDaysUntil={getDaysUntil}
+                formatDaysUntil={formatDaysUntil}
+                getStatusBadge={getStatusBadge}
+                getRoundBadge={getRoundBadge}
+                getCategoryIcon={getCategoryIcon}
+                getCategoryLabel={getCategoryLabel}
+                getCategoryColor={getCategoryColor}
+              />
+              <PersonalEventsSection
+                sortedPersonalEvents={board.archivedPersonalEvents}
+                expandedPersonalEvent={expandedPersonalEvent}
+                setExpandedPersonalEvent={setExpandedPersonalEvent}
+                personalEventDetail={personalEventDetail}
+                personalEventDetailLoading={personalEventDetailLoading}
+                togglePersonalTaskMutation={togglePersonalTaskMutation}
+                setDeleteTarget={setDeleteTarget}
+                formatDate={formatDate}
+                getDaysUntil={getDaysUntil}
+                formatDaysUntil={formatDaysUntil}
+                getStatusBadge={getStatusBadge}
+                getRoundBadge={getRoundBadge}
+                getCategoryIcon={getCategoryIcon}
+                getCategoryLabel={getCategoryLabel}
+                getCategoryColor={getCategoryColor}
+              />
+            </>
+          )}
+        </>
+      )}
+
+      {!hasAny && upcomingGlobalEvents.length > 0 && (
         <GlobalEventsSection
           upcomingGlobalEvents={upcomingGlobalEvents}
           subscribeGlobalEventMutation={subscribeGlobalEventMutation}
@@ -508,7 +662,6 @@ export default function TimelinePage() {
         />
       )}
 
-      {/* Create personal event dialog */}
       <CreateEventDialog
         open={showCreateEvent}
         onOpenChange={setShowCreateEvent}
@@ -516,59 +669,6 @@ export default function TimelinePage() {
         createPersonalEventMutation={createPersonalEventMutation}
         getCategoryLabel={getCategoryLabel}
       />
-
-      {/* Personal events list */}
-      {(activeTab === 'all' || activeTab === 'personal') && hasPersonalEvents && (
-        <PersonalEventsSection
-          sortedPersonalEvents={sortedPersonalEvents}
-          expandedPersonalEvent={expandedPersonalEvent}
-          setExpandedPersonalEvent={setExpandedPersonalEvent}
-          personalEventDetail={personalEventDetail}
-          personalEventDetailLoading={personalEventDetailLoading}
-          togglePersonalTaskMutation={togglePersonalTaskMutation}
-          setDeleteTarget={setDeleteTarget}
-          formatDate={formatDate}
-          getDaysUntil={getDaysUntil}
-          formatDaysUntil={formatDaysUntil}
-          getStatusBadge={getStatusBadge}
-          getRoundBadge={getRoundBadge}
-          getCategoryIcon={getCategoryIcon}
-          getCategoryLabel={getCategoryLabel}
-          getCategoryColor={getCategoryColor}
-        />
-      )}
-
-      {/* School timelines + pending schools */}
-      {(activeTab === 'all' || activeTab === 'school') && hasTimelines && (
-        <TimelineTabs
-          activeTab={activeTab}
-          sortedTimelines={sortedTimelines}
-          expandedTimeline={expandedTimeline}
-          setExpandedTimeline={setExpandedTimeline}
-          timelineDetail={timelineDetail}
-          timelineDetailLoading={timelineDetailLoading}
-          toggleTaskMutation={toggleTaskMutation}
-          setDeleteTarget={setDeleteTarget}
-          schoolsWithoutTimeline={schoolsWithoutTimeline}
-          generateTimelineMutation={generateTimelineMutation}
-          formatDate={formatDate}
-          getDaysUntil={getDaysUntil}
-          formatDaysUntil={formatDaysUntil}
-          getStatusBadge={getStatusBadge}
-          getRoundBadge={getRoundBadge}
-          getCategoryIcon={getCategoryIcon}
-          getCategoryLabel={getCategoryLabel}
-          getCategoryColor={getCategoryColor}
-        />
-      )}
-
-      {/* Dynamic calculation note */}
-      {hasAny && (
-        <div className="flex items-start gap-2 rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] p-3 text-sm">
-          <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-          <span className="text-muted-foreground">{t('dynamicNote')}</span>
-        </div>
-      )}
 
       {/* Delete confirmation dialog */}
       <DeleteConfirmationDialog

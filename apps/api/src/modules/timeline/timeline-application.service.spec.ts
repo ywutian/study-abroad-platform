@@ -64,6 +64,7 @@ describe('TimelineApplicationService', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -125,6 +126,124 @@ describe('TimelineApplicationService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].schoolId).toBe('school-1');
+    });
+  });
+
+  describe('generateTimelines', () => {
+    it('rolls expired structured school deadlines to the next application season', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.school.findUnique.mockResolvedValue({
+        id: 'school-1',
+        name: 'Princeton University',
+        nameZh: '普林斯顿大学',
+        metadata: null,
+        deadlines: [
+          {
+            id: 'dl-rd',
+            round: 'RD',
+            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+            financialAidDeadline: null,
+            essayPrompts: null,
+            essayCount: null,
+            interviewRequired: false,
+            year: 2026,
+          },
+        ],
+      });
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
+      mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          ...mockTimeline,
+          id: 'tl-rolled',
+          schoolId: data.schoolId,
+          schoolName: data.schoolName,
+          round: data.round,
+          deadline: data.deadline,
+          tasks: [],
+        }),
+      );
+
+      const result = await service.generateTimelines('user-1', {
+        schoolIds: ['school-1'],
+      });
+
+      expect(result.created).toHaveLength(1);
+      expect(
+        mockPrisma.applicationTimeline.create.mock.calls[0][0].data.deadline,
+      ).toEqual(new Date('2027-01-01T00:00:00Z'));
+      expect(result.created[0].deadline).toEqual(
+        new Date('2027-01-01T00:00:00Z'),
+      );
+    });
+  });
+
+  describe('getGlobalEvents', () => {
+    it('returns future events and rolls recurring events without an explicit year', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.globalEvent.findMany.mockResolvedValue([
+        {
+          id: 'old-non-recurring',
+          title: 'Old One-Off',
+          category: 'OTHER',
+          eventDate: new Date('2026-03-01T00:00:00Z'),
+          registrationDeadline: null,
+          lateDeadline: null,
+          resultDate: null,
+          year: 2026,
+          isRecurring: false,
+          isActive: true,
+        },
+        {
+          id: 'old-recurring',
+          title: 'Recurring Competition',
+          category: 'COMPETITION',
+          eventDate: new Date('2026-04-01T00:00:00Z'),
+          registrationDeadline: new Date('2026-03-01T00:00:00Z'),
+          lateDeadline: null,
+          resultDate: null,
+          year: 2026,
+          isRecurring: true,
+          isActive: true,
+        },
+        {
+          id: 'future',
+          title: 'Future Test',
+          category: 'TEST',
+          eventDate: new Date('2026-06-01T00:00:00Z'),
+          registrationDeadline: null,
+          lateDeadline: null,
+          resultDate: null,
+          year: 2026,
+          isRecurring: false,
+          isActive: true,
+        },
+      ]);
+
+      const result = await service.getGlobalEvents();
+
+      expect(mockPrisma.globalEvent.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
+        orderBy: { eventDate: 'asc' },
+      });
+      expect(result.map((event) => event.id)).toEqual([
+        'future',
+        'old-recurring',
+      ]);
+      expect(result[1].eventDate).toEqual(new Date('2027-04-01T00:00:00Z'));
+      expect(result[1].registrationDeadline).toEqual(
+        new Date('2027-03-01T00:00:00Z'),
+      );
+    });
+
+    it('preserves explicit year filtering', async () => {
+      mockPrisma.globalEvent.findMany.mockResolvedValue([]);
+
+      await service.getGlobalEvents(2026);
+
+      expect(mockPrisma.globalEvent.findMany).toHaveBeenCalledWith({
+        where: { isActive: true, year: 2026 },
+        orderBy: { eventDate: 'asc' },
+      });
     });
   });
 

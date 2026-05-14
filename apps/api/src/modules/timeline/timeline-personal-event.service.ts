@@ -15,6 +15,7 @@ import {
   CreatePersonalTaskDto,
   PersonalTaskResponseDto,
 } from './dto';
+import { withEffectiveRecurringGlobalEvent } from './timeline-date.util';
 
 @Injectable()
 export class TimelinePersonalEventService {
@@ -129,17 +130,22 @@ export class TimelinePersonalEventService {
     const tasks =
       this.PERSONAL_TASK_TEMPLATES[category] ||
       this.PERSONAL_TASK_TEMPLATES.OTHER;
+    const effectiveGlobalEvent = withEffectiveRecurringGlobalEvent(globalEvent);
 
     const event = await this.prisma.personalEvent.create({
       data: {
         userId,
         globalEventId: dto.globalEventId,
-        title: globalEvent.titleZh || globalEvent.title,
+        title: effectiveGlobalEvent.titleZh || effectiveGlobalEvent.title,
         category,
-        deadline: globalEvent.registrationDeadline || globalEvent.eventDate,
-        eventDate: globalEvent.eventDate,
-        description: globalEvent.descriptionZh || globalEvent.description,
-        url: globalEvent.url,
+        deadline:
+          effectiveGlobalEvent.registrationDeadline ||
+          effectiveGlobalEvent.eventDate,
+        eventDate: effectiveGlobalEvent.eventDate,
+        description:
+          effectiveGlobalEvent.descriptionZh ||
+          effectiveGlobalEvent.description,
+        url: effectiveGlobalEvent.url,
         tasks: {
           create: tasks.map((title, index) => ({
             title,

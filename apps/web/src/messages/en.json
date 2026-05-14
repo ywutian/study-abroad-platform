@@ -6269,7 +6269,7 @@
   },
   "timeline": {
     "title": "Application Timeline",
-    "description": "Track your application deadlines, competitions, activities, and key dates",
+    "description": "Focus on next actions, deadline risk, and task progress",
     "dynamicNote": "Timelines are auto-generated from your school list and subscribed events. Deadline data sourced from school websites and admin configurations.",
     "addSchool": "Add School",
     "daysLeft": "{days} days left",
@@ -6284,9 +6284,31 @@
     "cancel": "Cancel",
     "deleteTimeline": "Delete Timeline",
     "tabs": {
-      "all": "All",
+      "todo": "To Do",
+      "all": "To Do",
       "school": "School Apps",
-      "personal": "Personal Events"
+      "personal": "Personal Events",
+      "archive": "Archive"
+    },
+    "actionBoard": {
+      "dueWindow": "Due in 7/30 days",
+      "dueWindowDesc": "Prioritize the nearest window",
+      "overdue": "Overdue unfinished",
+      "overdueDesc": "Moved to archive for handling",
+      "pendingSchools": "School timelines needed",
+      "pendingSchoolsDesc": "Complete from your school list",
+      "incompleteTasks": "Open tasks",
+      "incompleteTasksDesc": "Across actionable items"
+    },
+    "todo": {
+      "title": "Next Actions",
+      "description": "Only unfinished, uncancelled items with an effective date today or in the future are shown here.",
+      "emptyTitle": "No To-Dos Right Now",
+      "emptyDescription": "There are no future deadlines needing action. Overdue items stay available in Archive."
+    },
+    "archive": {
+      "emptyTitle": "Archive is Empty",
+      "emptyDescription": "Completed, cancelled, or overdue unfinished items appear here instead of crowding the default view."
     },
     "statuses": {
       "notStarted": "Not Started",
@@ -6313,8 +6335,8 @@
       "action": "Find Schools"
     },
     "globalEvents": {
-      "title": "Global Events",
-      "description": "Tests, competitions, summer programs, financial aid — subscribe to add to your timeline",
+      "title": "Recommended Events",
+      "description": "Future tests, competitions, summer programs, and financial aid dates you can subscribe to",
       "regBy": "Register by",
       "subscribe": "Subscribe",
       "subscribed": "Subscribed"
@@ -6331,6 +6353,8 @@
       "deadline": "Registration Deadline",
       "eventDate": "Competition Date",
       "fromGlobal": "Subscribed",
+      "emptyTitle": "No Personal Events",
+      "emptyDescription": "Create a competition, test, summer program, or material-prep item, or subscribe from the recommendations below.",
       "categories": {
         "COMPETITION": "Competition",
         "TEST": "Standardized Test",
@@ -6361,7 +6385,9 @@
       "noTasks": "No tasks yet",
       "pendingSchools": "Schools Awaiting Timeline",
       "pendingSchoolsDesc": "These schools are in your list but don't have a timeline yet",
-      "generateTimeline": "Generate Timeline"
+      "generateTimeline": "Generate Timeline",
+      "emptyTitle": "No School Application To-Dos",
+      "emptyDescription": "Add schools to generate application timelines. Old-cycle overdue items will stay in Archive."
     },
     "generateSuccess": "Timeline generated successfully",
     "taskTypes": {
