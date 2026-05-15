@@ -25,7 +25,7 @@ export default function SchoolsPage() {
   const defaultTab = searchParams.get('tab') === 'recommend' ? 'recommend' : 'browse';
 
   return (
-    <PageContainer maxWidth="7xl">
+    <PageContainer maxWidth="fluid">
       <Breadcrumb className="mb-2">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -102,7 +102,7 @@ export default function SchoolsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="browse" className="mt-0">
+        <TabsContent value="browse" className="mt-0 min-w-0">
           <BrowseTab />
         </TabsContent>
 

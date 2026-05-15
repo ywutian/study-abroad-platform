@@ -505,8 +505,8 @@ export function BrowseTab() {
   }, []);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
-      <aside className="lg:sticky lg:top-24 lg:self-start">
+    <div className="grid w-full min-w-0 gap-6 overflow-x-clip lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] xl:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+      <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <SchoolFilterBar
           search={search}
           onSearchChange={setSearch}
@@ -534,7 +534,7 @@ export function BrowseTab() {
         />
       </aside>
 
-      <section className="min-w-0 space-y-4">
+      <section className="min-w-0 max-w-full space-y-4 overflow-x-clip">
         <SchoolToolbar
           total={total}
           page={page}

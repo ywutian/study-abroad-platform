@@ -11,6 +11,9 @@ import { SchoolCard } from './SchoolCard';
 import { type School } from './schools-types';
 import { SchoolPagination } from './SchoolPagination';
 
+const GRID_CLASS_NAME =
+  'grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-4';
+
 interface SchoolGridProps {
   schools: School[];
   total: number;
@@ -62,9 +65,9 @@ export function SchoolGrid({
   return (
     <>
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={GRID_CLASS_NAME}>
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse overflow-hidden p-0">
+            <Card key={i} className="min-w-0 animate-pulse overflow-hidden p-0">
               <div className={density === 'compact' ? 'h-32 bg-muted/60' : 'h-40 bg-muted/60'} />
               <CardContent className="space-y-3 px-4 pb-4 pt-3">
                 <Skeleton className="-mt-9 h-12 w-12 rounded-lg" />
@@ -90,14 +93,14 @@ export function SchoolGrid({
           </CardContent>
         </Card>
       ) : schools.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={GRID_CLASS_NAME}>
           {schools.map((school, index) => (
             <motion.div
               key={school.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3) }}
-              className="h-full"
+              className="h-full min-w-0"
             >
               <SchoolCard
                 school={school}
