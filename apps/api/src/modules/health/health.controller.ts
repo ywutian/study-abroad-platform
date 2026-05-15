@@ -7,7 +7,10 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { SkipThrottle } from '../../common/decorators/throttle.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RedisService } from '../../common/redis/redis.service';
+import {
+  RedisService,
+  type RedisRuntimeState,
+} from '../../common/redis/redis.service';
 import {
   ArchitectureValidatorService,
   type AiSecurityStatus,
@@ -53,6 +56,15 @@ interface DetailedHealthStatus extends HealthStatus {
     services: Record<string, boolean>;
   };
   embeddingConsistency: EmbeddingConsistency;
+  /**
+   * Per-endpoint Redis state. Lets operators see at a glance:
+   *   - how many Redis URLs are configured
+   *   - which one is currently active
+   *   - which ones tripped a circuit (and why / for how long)
+   *
+   * Absent when no Redis is configured.
+   */
+  redisRuntime?: RedisRuntimeState;
 }
 
 @ApiTags('Health')
@@ -110,6 +122,8 @@ export class HealthController {
         }
       : { status: 'unknown' as AiSecurityStatus, services: {} };
 
+    const redisRuntime = this.redisService?.getRuntimeState();
+
     return {
       ...basicHealth,
       env: process.env.NODE_ENV || 'development',
@@ -125,6 +139,7 @@ export class HealthController {
       aiSecurity: aiSecurityInfo,
       embeddingConsistency:
         this.architectureValidator?.embeddingConsistency ?? 'missing',
+      ...(redisRuntime && redisRuntime.configured ? { redisRuntime } : {}),
     };
   }
 
