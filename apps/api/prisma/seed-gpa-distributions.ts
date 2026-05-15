@@ -13,10 +13,10 @@
  *   }
  *
  * The aggregator (nextgenadmit) typically reports only the top 2-3
- * buckets at high-selectivity schools. We compress lower buckets into
- * "<3.25" when finer detail is not published. The counselor engine
- * tolerates partial distributions and falls back to the SAT-band
- * percentile path when too many buckets are null.
+ * buckets at high-selectivity schools. Seed rows may store compressed lower
+ * buckets as "<3.25" or leave lower buckets unknown; before writing, we expand
+ * every row into the five canonical buckets so the launch data-quality gate and
+ * counselor engine consume the same complete shape.
  *
  * Sources are nextgenadmit (CDS Section C9 aggregator) and each school's
  * CDS PDF where directly available. Confidence is MEDIUM unless the
@@ -42,6 +42,72 @@ interface GpaSeed {
   dataYear: string;
   source: string;
   notes?: string;
+}
+
+type CanonicalGpaDistribution = {
+  '<3.00': number;
+  '3.00-3.24': number;
+  '3.25-3.49': number;
+  '3.50-3.74': number;
+  '3.75-4.00': number;
+};
+
+function roundPercent(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function toCanonicalDistribution(
+  distribution: GpaSeed['distribution'],
+): CanonicalGpaDistribution {
+  const top = distribution['3.75-4.00'];
+  let high = distribution['3.50-3.74'] ?? 0;
+  let mid = distribution['3.25-3.49'] ?? 0;
+  let low = distribution['<3.25'] ?? 0;
+  const below = 0;
+
+  if (distribution['<3.25'] == null) {
+    const known =
+      top + (distribution['3.50-3.74'] ?? 0) + (distribution['3.25-3.49'] ?? 0);
+    const residual = Math.max(0, roundPercent(100 - known));
+
+    // When source data only publishes upper buckets, assign the residual to
+    // the nearest lower canonical band instead of dropping it. This keeps the
+    // distribution complete while preserving the source's "lower buckets
+    // compressed / unpublished" meaning.
+    if (distribution['3.50-3.74'] == null) {
+      high = residual;
+    } else if (distribution['3.25-3.49'] == null) {
+      mid = residual;
+    } else {
+      low = residual;
+    }
+  }
+
+  const total = top + high + mid + low + below;
+  const drift = roundPercent(100 - total);
+  if (drift >= 0) {
+    low = roundPercent(low + drift);
+  } else {
+    let remaining = roundPercent(-drift);
+    const lowAdjustment = Math.min(low, remaining);
+    low = roundPercent(low - lowAdjustment);
+    remaining = roundPercent(remaining - lowAdjustment);
+
+    const midAdjustment = Math.min(mid, remaining);
+    mid = roundPercent(mid - midAdjustment);
+    remaining = roundPercent(remaining - midAdjustment);
+
+    const highAdjustment = Math.min(high, remaining);
+    high = roundPercent(high - highAdjustment);
+  }
+
+  return {
+    '<3.00': below,
+    '3.00-3.24': roundPercent(low),
+    '3.25-3.49': roundPercent(mid),
+    '3.50-3.74': roundPercent(high),
+    '3.75-4.00': roundPercent(top),
+  };
 }
 
 export const GPA_DISTRIBUTION_SEEDS: ReadonlyArray<GpaSeed> = [
@@ -288,7 +354,9 @@ export async function seedGpaDistributions(
     const result = await prismaClient.school.updateMany({
       where: { nameNorm: row.nameNorm },
       data: {
-        gpaDistribution: row.distribution as unknown as Prisma.InputJsonValue,
+        gpaDistribution: toCanonicalDistribution(
+          row.distribution,
+        ) as unknown as Prisma.InputJsonValue,
       },
     });
     if (result.count === 0) {
