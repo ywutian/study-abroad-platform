@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { EmojiPicker } from './EmojiPicker';
 import { cn } from '@/lib/utils';
 import { Send, Paperclip, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
@@ -16,6 +18,8 @@ interface MessageInputProps {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  draftKey?: string;
+  maxLength?: number;
 }
 
 export function MessageInput({
@@ -25,19 +29,53 @@ export function MessageInput({
   disabled,
   placeholder = '',
   className,
+  draftKey,
+  maxLength = 10000,
 }: MessageInputProps) {
   const tAria = useTranslations('common.aria');
+  const t = useTranslations('chat');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachmentPreviews = useMemo(
+    () =>
+      attachments.map((file) => ({
+        file,
+        url: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+      })),
+    [attachments]
+  );
+
+  useEffect(() => {
+    return () => {
+      attachmentPreviews.forEach((preview) => {
+        if (preview.url) URL.revokeObjectURL(preview.url);
+      });
+    };
+  }, [attachmentPreviews]);
+
+  useEffect(() => {
+    if (!draftKey || typeof window === 'undefined') return;
+    setMessage(window.localStorage.getItem(draftKey) ?? '');
+    setAttachments([]);
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftKey || typeof window === 'undefined') return;
+    if (message) {
+      window.localStorage.setItem(draftKey, message);
+    } else {
+      window.localStorage.removeItem(draftKey);
+    }
+  }, [draftKey, message]);
 
   // 处理输入变化 + 正在输入状态
   const handleChange = useCallback(
     (value: string) => {
-      setMessage(value);
+      setMessage(value.slice(0, maxLength));
 
       // 发送正在输入状态
       if (onTyping) {
@@ -52,7 +90,7 @@ export function MessageInput({
         }, 2000);
       }
     },
-    [onTyping]
+    [maxLength, onTyping]
   );
 
   // 发送消息
@@ -76,6 +114,9 @@ export function MessageInput({
 
       setMessage('');
       setAttachments([]);
+      if (draftKey && typeof window !== 'undefined') {
+        window.localStorage.removeItem(draftKey);
+      }
       inputRef.current?.focus();
     } finally {
       setIsSending(false);
@@ -83,7 +124,7 @@ export function MessageInput({
         onTyping(false);
       }
     }
-  }, [message, attachments, isSending, onSend, onFileUpload, onTyping]);
+  }, [message, attachments, isSending, onSend, onFileUpload, onTyping, draftKey]);
 
   // 键盘事件
   const handleKeyDown = useCallback(
@@ -103,10 +144,28 @@ export function MessageInput({
   }, []);
 
   // 文件选择
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setAttachments((prev) => [...prev, ...files].slice(0, 5)); // 最多5个附件
-  }, []);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      const allowed = files.filter((file) => {
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(t('fileTooLarge'));
+          return false;
+        }
+        const isAllowed =
+          file.type.startsWith('image/') ||
+          ['application/pdf', 'application/msword'].includes(file.type) ||
+          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        if (!isAllowed) {
+          toast.error(t('fileTypeUnsupported'));
+        }
+        return isAllowed;
+      });
+      setAttachments((prev) => [...prev, ...allowed].slice(0, 5));
+      e.target.value = '';
+    },
+    [t]
+  );
 
   // 移除附件
   const removeAttachment = useCallback((index: number) => {
@@ -133,19 +192,22 @@ export function MessageInput({
             exit={{ opacity: 0, height: 0 }}
             className="flex gap-2 overflow-x-auto pb-2"
           >
-            {attachments.map((file, index) => (
+            {attachmentPreviews.map(({ file, url }, index) => (
               <motion.div
-                key={index}
+                key={`${file.name}-${file.lastModified}-${index}`}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="relative shrink-0"
               >
-                {file.type.startsWith('image/') ? (
-                  <img
-                    src={URL.createObjectURL(file)}
+                {url ? (
+                  <Image
+                    src={url}
                     alt={file.name}
-                    className="h-16 w-16 rounded-lg object-cover border"
+                    width={64}
+                    height={64}
+                    unoptimized
+                    className="h-16 w-16 rounded-lg border object-cover"
                   />
                 ) : (
                   <div className="h-16 w-16 rounded-lg border bg-muted flex items-center justify-center">
@@ -214,8 +276,14 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled || isSending}
             rows={1}
-            className="min-h-[44px] max-h-[160px] resize-none pr-12 py-2.5"
+            maxLength={maxLength}
+            className="min-h-[44px] max-h-[160px] resize-none pr-16 py-2.5"
           />
+          {message.length > maxLength * 0.8 && (
+            <span className="absolute bottom-1.5 right-11 text-2xs text-muted-foreground">
+              {message.length}/{maxLength}
+            </span>
+          )}
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
             <EmojiPicker onEmojiSelect={handleEmojiSelect} />
           </div>

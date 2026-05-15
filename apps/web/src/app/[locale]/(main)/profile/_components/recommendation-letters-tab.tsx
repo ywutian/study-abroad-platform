@@ -99,11 +99,20 @@ export function RecommendationLettersTab() {
     queryFn: () => apiClient.get(profileRoutes.recommendationLetters()),
   });
 
+  const invalidateProfileDependents = () => {
+    queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+    queryClient.invalidateQueries({ queryKey: ['prediction'] });
+    queryClient.invalidateQueries({ queryKey: ['predictions'] });
+  };
+
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       apiClient.post(profileRoutes.recommendationLetters(), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
+      invalidateProfileDependents();
       toast.success(t('recLetter.toast.created'));
       closeForm();
     },
@@ -113,7 +122,7 @@ export function RecommendationLettersTab() {
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       apiClient.put(profileRoutes.recommendationLetter(id), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
+      invalidateProfileDependents();
       toast.success(t('recLetter.toast.updated'));
       closeForm();
     },
@@ -122,7 +131,7 @@ export function RecommendationLettersTab() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.recommendationLetter(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recommendation-letters'] });
+      invalidateProfileDependents();
       toast.success(t('recLetter.toast.deleted'));
     },
   });
@@ -224,11 +233,11 @@ export function RecommendationLettersTab() {
                         </p>
                       )}
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-11 w-11 sm:h-9 sm:w-9"
                         onClick={() => openEdit(letter)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -236,7 +245,7 @@ export function RecommendationLettersTab() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive"
+                        className="h-11 w-11 text-destructive sm:h-9 sm:w-9"
                         onClick={() => deleteMutation.mutate(letter.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -23,6 +23,14 @@ describe('ChatController', () => {
           provide: ChatService,
           useValue: {
             getConversations: jest.fn().mockResolvedValue([{ id: 'conv-1' }]),
+            getConversationContext: jest
+              .fn()
+              .mockResolvedValue({ id: 'conv-1', participants: [], files: [] }),
+            updateConversationPreferences: jest.fn().mockResolvedValue({
+              isPinned: true,
+              isArchived: false,
+              mutedUntil: null,
+            }),
             getOrCreateConversation: jest
               .fn()
               .mockResolvedValue({ id: 'conv-1' }),
@@ -47,6 +55,21 @@ describe('ChatController', () => {
               .mockResolvedValue({ id: 'msg-2', type: 'IMAGE' }),
             followUser: jest.fn().mockResolvedValue(undefined),
             unfollowUser: jest.fn().mockResolvedValue(undefined),
+            getSocialOverview: jest.fn().mockResolvedValue({
+              counts: { followers: 1, following: 1, mutual: 1, blocked: 0 },
+              recommendations: [],
+            }),
+            getSocialRelations: jest.fn().mockResolvedValue({
+              items: [],
+              total: 0,
+              page: 1,
+              pageSize: 20,
+              totalPages: 0,
+            }),
+            applySocialBulkAction: jest.fn().mockResolvedValue({
+              action: 'follow',
+              results: [{ userId: 'user-2', success: true }],
+            }),
             getFollowers: jest.fn().mockResolvedValue([{ id: 'user-2' }]),
             getFollowing: jest.fn().mockResolvedValue([{ id: 'user-3' }]),
             getRecommendedUsers: jest
@@ -80,10 +103,25 @@ describe('ChatController', () => {
 
   describe('getConversations', () => {
     it('should return conversations for current user', async () => {
-      const result = await controller.getConversations(mockUser);
+      const result = await controller.getConversations(mockUser, {});
 
-      expect(chatService.getConversations).toHaveBeenCalledWith('user-1');
+      expect(chatService.getConversations).toHaveBeenCalledWith('user-1', {});
       expect(result).toEqual([{ id: 'conv-1' }]);
+    });
+  });
+
+  describe('getConversationContext', () => {
+    it('should return workbench context for a conversation', async () => {
+      const result = await controller.getConversationContext(
+        mockUser,
+        'conv-1',
+      );
+
+      expect(chatService.getConversationContext).toHaveBeenCalledWith(
+        'conv-1',
+        'user-1',
+      );
+      expect(result).toEqual({ id: 'conv-1', participants: [], files: [] });
     });
   });
 
@@ -149,6 +187,24 @@ describe('ChatController', () => {
     });
   });
 
+  describe('updateConversationPreferences', () => {
+    it('should update current user conversation preferences', async () => {
+      const dto = { isPinned: true, isArchived: false, mutedUntil: null };
+      const result = await controller.updateConversationPreferences(
+        mockUser,
+        'conv-1',
+        dto,
+      );
+
+      expect(chatService.updateConversationPreferences).toHaveBeenCalledWith(
+        'conv-1',
+        'user-1',
+        dto,
+      );
+      expect(result).toEqual(dto);
+    });
+  });
+
   // ========== Message Operations ==========
 
   describe('deleteMessage', () => {
@@ -196,7 +252,12 @@ describe('ChatController', () => {
         originalname: 'photo.png',
       } as Express.Multer.File;
 
-      const result = await controller.uploadFile(mockUser, 'conv-1', mockFile);
+      const result = await controller.uploadFile(
+        mockUser,
+        'conv-1',
+        {},
+        mockFile,
+      );
 
       expect(chatService.sendMediaMessage).toHaveBeenCalledWith(
         'conv-1',
@@ -205,6 +266,11 @@ describe('ChatController', () => {
           buffer: mockFile.buffer,
           mimetype: 'image/png',
           originalname: 'photo.png',
+        },
+        {
+          content: undefined,
+          clientMessageId: undefined,
+          replyToId: undefined,
         },
       );
       expect(chatGateway.broadcastToConversation).toHaveBeenCalledWith(
@@ -233,6 +299,62 @@ describe('ChatController', () => {
 
       expect(chatService.unfollowUser).toHaveBeenCalledWith('user-1', 'user-2');
       expect(result).toEqual({ success: true });
+    });
+  });
+
+  describe('getSocialOverview', () => {
+    it('should return social overview for current user', async () => {
+      const result = await controller.getSocialOverview(mockUser);
+
+      expect(chatService.getSocialOverview).toHaveBeenCalledWith('user-1');
+      expect(result).toEqual({
+        counts: { followers: 1, following: 1, mutual: 1, blocked: 0 },
+        recommendations: [],
+      });
+    });
+  });
+
+  describe('getSocialRelations', () => {
+    it('should pass relation query through to the service', async () => {
+      const query = {
+        type: 'followers' as const,
+        page: 2,
+        pageSize: 10,
+        search: 'stanford',
+        sort: 'name' as const,
+        relationship: 'mutual' as const,
+        role: 'verified' as const,
+      };
+
+      const result = await controller.getSocialRelations(mockUser, query);
+
+      expect(chatService.getSocialRelations).toHaveBeenCalledWith(
+        'user-1',
+        query,
+      );
+      expect(result).toEqual({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        totalPages: 0,
+      });
+    });
+  });
+
+  describe('socialBulk', () => {
+    it('should apply bulk social actions for the current user', async () => {
+      const dto = { action: 'follow' as const, userIds: ['user-2'] };
+      const result = await controller.socialBulk(mockUser, dto);
+
+      expect(chatService.applySocialBulkAction).toHaveBeenCalledWith(
+        'user-1',
+        dto,
+      );
+      expect(result).toEqual({
+        action: 'follow',
+        results: [{ userId: 'user-2', success: true }],
+      });
     });
   });
 

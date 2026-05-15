@@ -25,10 +25,10 @@ interface DashboardDeadlinesProps {
 export function DashboardDeadlines({ todoList }: DashboardDeadlinesProps) {
   const t = useTranslations();
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="w-5 h-5" />
+    <Card className="rounded-[var(--theme-radius-card)] py-0">
+      <CardHeader className="flex flex-row items-center justify-between px-4 py-4">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Clock className="h-4 w-4" />
           {t('dashboard.upcomingDeadlines')}
         </CardTitle>
         <Link href="/timeline">
@@ -38,7 +38,7 @@ export function DashboardDeadlines({ todoList }: DashboardDeadlinesProps) {
           </Button>
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 pb-4">
         {todoList.length > 0 ? (
           <div className="space-y-3">
             {todoList.map((item) => (
@@ -48,14 +48,16 @@ export function DashboardDeadlines({ todoList }: DashboardDeadlinesProps) {
               >
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
-                    item.type === 'school' ? 'bg-violet-500/10' : 'bg-amber-500/10'
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border',
+                    item.type === 'school'
+                      ? 'border-primary/20 bg-primary/10'
+                      : 'border-warning/20 bg-warning/10'
                   )}
                 >
                   {item.type === 'school' ? (
-                    <GraduationCap className="w-4 h-4 text-violet-500" />
+                    <GraduationCap className="h-4 w-4 text-primary" />
                   ) : (
-                    <Trophy className="w-4 h-4 text-amber-500" />
+                    <Trophy className="h-4 w-4 text-warning" />
                   )}
                 </div>
 
@@ -65,7 +67,7 @@ export function DashboardDeadlines({ todoList }: DashboardDeadlinesProps) {
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-[10px] px-1.5 py-0 shrink-0',
+                        'text-2xs px-1.5 py-0 shrink-0',
                         item.type === 'school'
                           ? 'border-violet-300 text-violet-600 bg-violet-50 dark:border-violet-800 dark:text-violet-400 dark:bg-violet-950/30'
                           : 'border-amber-300 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30'
@@ -111,7 +113,7 @@ export function DashboardDeadlines({ todoList }: DashboardDeadlinesProps) {
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <Clock className="mx-auto mb-2 h-8 w-8 opacity-50" />
             <p>{t('dashboard.noDeadlines')}</p>
             <Link href="/timeline">
               <Button variant="link" className="mt-2">

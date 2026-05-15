@@ -240,21 +240,39 @@ async function waitForSurfaceReady(page: Page, route: FullUiSurfaceRoute) {
 }
 
 async function recoverBlankDocument(page: Page, url: string, route: FullUiSurfaceRoute) {
-  const hasBody = await page
-    .locator('body')
-    .isVisible({ timeout: 5000 })
-    .catch(() => false);
+  const hasRenderableBody = async () => {
+    const bodyState = await page
+      .locator('body')
+      .evaluate((body) => ({
+        visible:
+          window.getComputedStyle(body).display !== 'none' &&
+          window.getComputedStyle(body).visibility !== 'hidden',
+        textLength: (body.innerText ?? '').replace(/\s+/g, ' ').trim().length,
+      }))
+      .catch(() => null);
+
+    return Boolean(bodyState?.visible && bodyState.textLength > 0);
+  };
+
+  const hasBody = await hasRenderableBody();
   if (hasBody) return;
 
-  await page.waitForTimeout(route.role === 'admin' ? 2000 : 1000);
-  const recoveredBody = await page
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await page.waitForTimeout((route.role === 'admin' ? 2000 : 1000) * (attempt + 1));
+    const recoveredBody = await hasRenderableBody();
+    if (recoveredBody) return;
+
+    await gotoSurface(page, url);
+    await waitForSurfaceReady(page, route);
+
+    const recoveredAfterReload = await hasRenderableBody();
+    if (recoveredAfterReload) return;
+  }
+
+  await page
     .locator('body')
     .isVisible({ timeout: 5000 })
     .catch(() => false);
-  if (recoveredBody) return;
-
-  await gotoSurface(page, url);
-  await waitForSurfaceReady(page, route);
 }
 
 async function assertPageIntegrity(page: Page, locale: FullUiLocale, route: FullUiSurfaceRoute) {

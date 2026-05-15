@@ -21,7 +21,6 @@ import {
 } from '@/components/features/schools/school-filters';
 
 export type SchoolViewMode = 'card' | 'list';
-export type SchoolDensity = 'comfortable' | 'compact';
 
 export interface ActiveFilterChip {
   key: string;
@@ -51,8 +50,6 @@ interface SchoolToolbarProps {
   onRankingListChange: (value: SchoolRankingList) => void;
   viewMode: SchoolViewMode;
   onViewModeChange: (mode: SchoolViewMode) => void;
-  density: SchoolDensity;
-  onDensityChange: (density: SchoolDensity) => void;
   search: string;
   onClearSearch: () => void;
   country: string;
@@ -165,8 +162,6 @@ export function SchoolToolbar({
   onRankingListChange,
   viewMode,
   onViewModeChange,
-  density,
-  onDensityChange,
   search,
   onClearSearch,
   country,
@@ -455,33 +450,6 @@ export function SchoolToolbar({
               ))}
             </SelectContent>
           </Select>
-
-          {/* Density (only for card view) */}
-          {viewMode === 'card' && (
-            <div
-              className="flex min-h-11 items-center rounded-md border border-border/70 bg-background p-0.5"
-              role="radiogroup"
-              aria-label={tt('density')}
-            >
-              {(['comfortable', 'compact'] as const).map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  role="radio"
-                  aria-checked={density === d}
-                  onClick={() => onDensityChange(d)}
-                  className={cn(
-                    'h-10 rounded-sm px-3 text-xs font-medium transition-colors',
-                    density === d
-                      ? 'bg-primary/10 text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {tt(d === 'comfortable' ? 'densityComfortable' : 'densityCompact')}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* View toggle */}
           <div

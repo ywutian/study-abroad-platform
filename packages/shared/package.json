@@ -23,6 +23,18 @@
       "require": "./dist/constants/index.js",
       "default": "./dist/constants/index.js"
     },
+    "./design": {
+      "types": "./src/design/index.ts",
+      "import": "./src/design/index.ts",
+      "require": "./dist/design/index.js",
+      "default": "./dist/design/index.js"
+    },
+    "./design/theme-contract": {
+      "types": "./src/design/theme-contract.ts",
+      "import": "./src/design/theme-contract.ts",
+      "require": "./dist/design/theme-contract.js",
+      "default": "./dist/design/theme-contract.js"
+    },
     "./utils": {
       "types": "./src/utils/index.ts",
       "import": "./src/utils/index.ts",

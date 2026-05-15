@@ -9,6 +9,9 @@
     "lint": "eslint src --ext .ts,.tsx",
     "clean": "rimraf dist"
   },
+  "dependencies": {
+    "@study-abroad/shared": "workspace:*"
+  },
   "devDependencies": {
     "@types/chrome": "^0.1.40",
     "@types/node": "^20.19.39",

@@ -31,14 +31,18 @@ describe('DashboardService', () => {
   const mockTimelines = [
     {
       id: 'tl-1',
+      schoolId: 'school-mit',
       round: 'ED',
       deadline: new Date('2025-11-01T00:00:00Z'),
+      schoolName: 'MIT',
       school: { name: 'MIT', nameZh: null },
     },
     {
       id: 'tl-2',
+      schoolId: 'school-stanford',
       round: 'RD',
       deadline: new Date('2025-12-15T00:00:00Z'),
+      schoolName: 'Stanford',
       school: { name: 'Stanford', nameZh: '斯坦福大学' },
     },
   ];
@@ -67,6 +71,21 @@ describe('DashboardService', () => {
     { type: 'DOCUMENT', _count: { type: 1 } },
   ];
 
+  const mockPriorityTasks = [
+    {
+      id: 'task-1',
+      title: 'Submit supplement essay',
+      type: 'ESSAY',
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      timeline: {
+        id: 'tl-1',
+        schoolName: 'MIT',
+        round: 'ED',
+        school: { name: 'MIT', nameZh: null },
+      },
+    },
+  ];
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,7 +105,11 @@ describe('DashboardService', () => {
               findMany: jest.fn(),
               groupBy: jest.fn(),
             },
-            applicationTask: { count: jest.fn(), groupBy: jest.fn() },
+            applicationTask: {
+              count: jest.fn(),
+              groupBy: jest.fn(),
+              findMany: jest.fn(),
+            },
             personalEvent: { findMany: jest.fn() },
             $transaction: jest.fn(),
           },
@@ -123,9 +146,14 @@ describe('DashboardService', () => {
     (prisma.schoolListItem.groupBy as jest.Mock).mockResolvedValue(
       mockSchoolTierGroups,
     );
-    (prisma.applicationTask.count as jest.Mock).mockResolvedValue(3);
+    (prisma.applicationTask.count as jest.Mock).mockImplementation(
+      ({ where }) => (where?.dueDate?.lt ? 1 : 3),
+    );
     (prisma.applicationTask.groupBy as jest.Mock).mockResolvedValue(
       mockPendingTaskTypes,
+    );
+    (prisma.applicationTask.findMany as jest.Mock).mockResolvedValue(
+      mockPriorityTasks,
     );
     (prisma.personalEvent.findMany as jest.Mock).mockResolvedValue([]);
   }
@@ -162,6 +190,25 @@ describe('DashboardService', () => {
 
       expect(result.upcomingDeadlines).toHaveLength(2);
       expect(result.recentActivity).toHaveLength(2);
+      expect(result.workbench.readiness.score).toBeGreaterThan(70);
+      expect(result.workbench.metrics.overdueTasks).toBe(1);
+      expect(result.workbench.priorityQueue).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: 'timeline-task',
+            severity: 'warning',
+          }),
+        ]),
+      );
+      expect(result.workbench.deadlineStream).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'task-1',
+            type: 'task',
+            severity: 'warning',
+          }),
+        ]),
+      );
     });
 
     it('should return defaults when user is not found', async () => {
@@ -417,6 +464,48 @@ describe('DashboardService', () => {
 
       expect(result.upcomingDeadlines).toHaveLength(1);
       expect(result.upcomingDeadlines[0].id).toBe('tl-valid');
+    });
+
+    it('should roll stale school-list deadlines forward to the next annual cycle', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T00:00:00Z'));
+      setupDefaultMocks();
+      (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+        {
+          schoolId: 'school-1',
+          round: 'RD',
+          school: {
+            name: 'MIT',
+            nameZh: null,
+            deadlines: [
+              {
+                id: 'deadline-2026-rd',
+                year: 2026,
+                round: 'RD',
+                applicationDeadline: new Date('2026-01-05T00:00:00.000Z'),
+              },
+            ],
+          },
+        },
+      ]);
+
+      try {
+        const result = await service.getDashboardSummary(userId, 'en');
+        const expectedDeadline = new Date('2027-01-05T00:00:00.000Z');
+
+        expect(result.upcomingDeadlines).toHaveLength(1);
+        expect(result.upcomingDeadlines[0]).toMatchObject({
+          id: 'deadline-2026-rd',
+          schoolName: 'MIT',
+          round: 'RD',
+          deadline: expectedDeadline.toISOString(),
+          daysLeft: Math.ceil(
+            (expectedDeadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+          ),
+        });
+      } finally {
+        jest.useRealTimers();
+      }
     });
 
     it('should return correct follow stats from $transaction', async () => {

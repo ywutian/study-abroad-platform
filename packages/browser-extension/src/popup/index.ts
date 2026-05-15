@@ -3,13 +3,19 @@
  */
 
 import type { UserProfile, Message, MessageResponse } from '../utils/types';
+import { applyI18n, msg } from '../utils/i18n';
+import { injectExtensionThemeVars } from '../utils/theme';
 
 let profile: UserProfile | null = null;
+
+injectExtensionThemeVars();
 
 /**
  * 初始化 Popup
  */
 async function initialize(): Promise<void> {
+  applyI18n();
+
   // 绑定事件
   bindEvents();
 
@@ -70,7 +76,7 @@ function updateProfileDisplay(): void {
 
   if (nameEl) {
     nameEl.textContent =
-      `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || '未设置姓名';
+      `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || msg('unsetName');
   }
 
   if (emailEl) {
@@ -79,9 +85,9 @@ function updateProfileDisplay(): void {
 
   if (statsEl) {
     const stats = [
-      { label: '活动', value: profile.activities?.length || 0 },
-      { label: '荣誉', value: profile.awards?.length || 0 },
-      { label: '文书', value: profile.essays?.length || 0 },
+      { label: msg('statActivities'), value: profile.activities?.length || 0 },
+      { label: msg('statAwards'), value: profile.awards?.length || 0 },
+      { label: msg('statEssays'), value: profile.essays?.length || 0 },
     ];
 
     statsEl.innerHTML = stats
@@ -125,7 +131,7 @@ function showLoading(show: boolean): void {
 function handleLogin(): void {
   // 打开主站登录页面
   chrome.tabs.create({
-    url: 'http://localhost:4100/login?redirect=extension',
+    url: 'https://www.lumniedu.com/login?redirect=extension',
   });
 }
 
@@ -136,23 +142,23 @@ async function handleLogout(): Promise<void> {
   await chrome.storage.local.clear();
   profile = null;
   showLoggedOutView();
-  showStatus('已退出登录', 'info');
+  showStatus(msg('loggedOut'), 'info');
 }
 
 /**
  * 处理同步
  */
 async function handleSync(): Promise<void> {
-  showStatus('正在同步...', 'info');
+  showStatus(msg('syncing'), 'info');
 
   const response = await sendMessage({ type: 'SYNC_PROFILE' });
 
   if (response.success && response.data) {
     profile = response.data;
     updateProfileDisplay();
-    showStatus('同步成功！', 'success');
+    showStatus(msg('syncSuccess'), 'success');
   } else {
-    showStatus('同步失败', 'error');
+    showStatus(msg('syncFailed'), 'error');
   }
 }
 
@@ -163,27 +169,27 @@ async function handleFillCurrentPage(): Promise<void> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (!tab.id) {
-    showStatus('无法获取当前标签页', 'error');
+    showStatus(msg('noActiveTab'), 'error');
     return;
   }
 
   if (!tab.url?.includes('commonapp.org')) {
-    showStatus('请先打开 CommonApp 页面', 'warning');
+    showStatus(msg('openCommonAppFirst'), 'warning');
     return;
   }
 
-  showStatus('正在填充...', 'info');
+  showStatus(msg('filling'), 'info');
 
   try {
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'FILL_ALL' });
 
     if (response?.success) {
-      showStatus(`已填充 ${response.filled || 0} 个字段`, 'success');
+      showStatus(msg('filledCount', response.filled || 0), 'success');
     } else {
-      showStatus('填充失败', 'error');
+      showStatus(msg('fillFailed'), 'error');
     }
   } catch (error) {
-    showStatus('无法连接到页面，请刷新后重试', 'error');
+    showStatus(msg('cannotConnectPage'), 'error');
   }
 }
 

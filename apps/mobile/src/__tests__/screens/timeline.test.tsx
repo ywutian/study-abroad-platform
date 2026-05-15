@@ -3,15 +3,15 @@ import { render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock react-i18next
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, fallback?: string | Record<string, unknown>) => {
-      if (typeof fallback === 'string') return fallback;
-      return key;
-    },
-    i18n: { language: 'en' },
-  }),
-}));
+jest.mock('react-i18next', () => {
+  const { translateForTests } = require('../utils/i18n-test-utils');
+  return {
+    useTranslation: () => ({
+      t: translateForTests,
+      i18n: { language: 'en' },
+    }),
+  };
+});
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -119,8 +119,8 @@ describe('TimelinePage', () => {
     const { getByText } = renderWithProviders(<TimelinePage />);
 
     await waitFor(() => {
-      expect(getByText('No schools yet')).toBeTruthy();
-      expect(getByText('Add schools to track your application progress.')).toBeTruthy();
+      expect(getByText('No timelines yet')).toBeTruthy();
+      expect(getByText('Add your target schools to start tracking')).toBeTruthy();
     });
   });
 

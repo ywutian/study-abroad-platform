@@ -60,6 +60,11 @@ export function useProfileMutations() {
     queryClient.invalidateQueries({ queryKey: ['prediction'] });
     queryClient.invalidateQueries({ queryKey: ['predictions'] });
   };
+  const invalidateProfileDependents = () => {
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    invalidateAnalysisQueries();
+  };
 
   // Form dialog state
   const [scoreFormOpen, setScoreFormOpen] = useState(false);
@@ -82,9 +87,7 @@ export function useProfileMutations() {
   const updateMutation = useMutation({
     mutationFn: (data: ProfileUpdatePayload) => apiClient.put(profileRoutes.me(), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      invalidateProfileDependents();
       toast.success(t('common.success'));
     },
   });
@@ -92,8 +95,7 @@ export function useProfileMutations() {
   const deleteScoreMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.testScore(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.toast.scoreDeleted'));
     },
   });
@@ -101,8 +103,7 @@ export function useProfileMutations() {
   const deleteActivityMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.activity(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.toast.activityDeleted'));
     },
   });
@@ -111,8 +112,7 @@ export function useProfileMutations() {
     mutationFn: (activityIds: string[]) =>
       apiClient.put(`${profileRoutes.activities()}/reorder`, { ids: activityIds }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
     },
   });
 
@@ -134,8 +134,7 @@ export function useProfileMutations() {
   const deleteAwardMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(profileRoutes.award(id)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.toast.awardDeleted'));
     },
   });
@@ -144,10 +143,18 @@ export function useProfileMutations() {
     mutationFn: ({ schoolId, round }: { schoolId: string; round: string }) =>
       apiClient.post(schoolListRoutes.list(), { schoolId, tier: 'TARGET', round }),
     meta: { skipGlobalErrorToast: true },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      invalidateProfileDependents();
+    },
   });
 
   const removeSchoolMutation = useMutation({
     mutationFn: (listItemId: string) => apiClient.delete(schoolListRoutes.byId(listItemId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
+      invalidateProfileDependents();
+    },
   });
 
   const updateRoundMutation = useMutation({
@@ -155,7 +162,7 @@ export function useProfileMutations() {
       apiClient.put(schoolListRoutes.byId(listItemId), { round }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.toast.roundUpdated'));
     },
   });
@@ -171,8 +178,7 @@ export function useProfileMutations() {
       order?: number;
     }) => apiClient.post(`${profileRoutes.me()}/semester-gpas`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.semesterGpaAdded'));
     },
   });
@@ -191,8 +197,7 @@ export function useProfileMutations() {
       order?: number;
     }) => apiClient.put(`${profileRoutes.me()}/semester-gpas/${id}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.semesterGpaUpdated'));
     },
   });
@@ -200,8 +205,7 @@ export function useProfileMutations() {
   const deleteSemesterGpaMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`${profileRoutes.me()}/semester-gpas/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
       toast.success(t('profile.semesterGpaDeleted'));
     },
   });
@@ -275,7 +279,7 @@ export function useProfileMutations() {
 
       // Batch invalidation — single refetch after all mutations
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
-      invalidateAnalysisQueries();
+      invalidateProfileDependents();
 
       // Summary toast with per-school error details
       if (addedCount > 0 && failedCount === 0) {

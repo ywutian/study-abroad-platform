@@ -3,11 +3,13 @@ import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import { SchoolListService } from '../school-list/school-list.service';
 import { ProfileApplicationAnalysisService } from './profile-application-analysis.service';
+import { ProfileReadinessService } from './profile-readiness.service';
 
 describe('ProfileController', () => {
   let controller: ProfileController;
   let profileService: ProfileService;
   let profileApplicationAnalysisService: ProfileApplicationAnalysisService;
+  let profileReadinessService: ProfileReadinessService;
   let schoolListService: SchoolListService;
 
   const mockUser = {
@@ -42,6 +44,19 @@ describe('ProfileController', () => {
     id: 'edu-1',
     school: 'Test High School',
     degree: 'HIGH_SCHOOL',
+  };
+  const mockReadiness = {
+    readinessVersion: 'profile-readiness-v1',
+    overall: {
+      score: 64,
+      status: 'attention',
+      blockers: [],
+      warnings: ['school_list.min_count'],
+      nextActions: [],
+      canRunPrediction: true,
+      canGenerateRecommendation: true,
+      canRunApplicationAnalysis: false,
+    },
   };
 
   beforeEach(async () => {
@@ -129,6 +144,12 @@ describe('ProfileController', () => {
           },
         },
         {
+          provide: ProfileReadinessService,
+          useValue: {
+            getReadiness: jest.fn().mockResolvedValue(mockReadiness),
+          },
+        },
+        {
           provide: SchoolListService,
           useValue: {
             getUserSchoolList: jest.fn().mockResolvedValue([]),
@@ -147,6 +168,9 @@ describe('ProfileController', () => {
       module.get<ProfileApplicationAnalysisService>(
         ProfileApplicationAnalysisService,
       );
+    profileReadinessService = module.get<ProfileReadinessService>(
+      ProfileReadinessService,
+    );
     schoolListService = module.get<SchoolListService>(SchoolListService);
   });
 
@@ -164,6 +188,17 @@ describe('ProfileController', () => {
 
       expect(profileService.findByUserId).toHaveBeenCalledWith('user-1');
       expect(result).toEqual(mockProfile);
+    });
+  });
+
+  describe('getMyProfileReadiness', () => {
+    it('should return the platform readiness for the current user', async () => {
+      const result = await controller.getMyProfileReadiness(mockUser);
+
+      expect(profileReadinessService.getReadiness).toHaveBeenCalledWith(
+        'user-1',
+      );
+      expect(result).toEqual(mockReadiness);
     });
   });
 

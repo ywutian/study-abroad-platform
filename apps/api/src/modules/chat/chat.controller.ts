@@ -29,7 +29,16 @@ import {
   ThrottleRelaxed,
   ThrottleSensitive,
 } from '../../common/decorators/throttle.decorator';
-import { StartConversationDto, CreateReportDto, SendMessageDto } from './dto';
+import {
+  CreateReportDto,
+  ConversationQueryDto,
+  SendMessageDto,
+  SocialBulkDto,
+  SocialRelationsQueryDto,
+  StartConversationDto,
+  UploadMessageDto,
+  UpdateConversationPreferencesDto,
+} from './dto';
 
 @ApiTags('chat')
 @ApiBearerAuth()
@@ -47,8 +56,11 @@ export class ChatController {
 
   @Get('conversations')
   @ApiOperation({ summary: 'Get my conversation list' })
-  async getConversations(@CurrentUser() user: CurrentUserPayload) {
-    return this.chatService.getConversations(user.id);
+  async getConversations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: ConversationQueryDto,
+  ) {
+    return this.chatService.getConversations(user.id, query);
   }
 
   @Get('conversations/:id')
@@ -58,6 +70,15 @@ export class ChatController {
     @Param('id') conversationId: string,
   ) {
     return this.chatService.getConversation(conversationId, user.id);
+  }
+
+  @Get('conversations/:id/context')
+  @ApiOperation({ summary: 'Get conversation workbench context' })
+  async getConversationContext(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') conversationId: string,
+  ) {
+    return this.chatService.getConversationContext(conversationId, user.id);
   }
 
   @Post('conversations')
@@ -102,6 +123,10 @@ export class ChatController {
       conversationId,
       user.id,
       dto.content,
+      {
+        clientMessageId: dto.clientMessageId,
+        replyToId: dto.replyToId,
+      },
     );
 
     this.chatGateway.broadcastToConversation(conversationId, 'newMessage', {
@@ -129,6 +154,20 @@ export class ChatController {
     @Param('id') conversationId: string,
   ) {
     return this.chatService.togglePin(conversationId, user.id);
+  }
+
+  @Patch('conversations/:id/preferences')
+  @ApiOperation({ summary: 'Update current user conversation preferences' })
+  async updateConversationPreferences(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') conversationId: string,
+    @Body() dto: UpdateConversationPreferencesDto,
+  ) {
+    return this.chatService.updateConversationPreferences(
+      conversationId,
+      user.id,
+      dto,
+    );
   }
 
   // ============================================
@@ -179,13 +218,14 @@ export class ChatController {
   async uploadFile(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') conversationId: string,
+    @Body() body: UploadMessageDto,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
           new FileTypeValidator({
             fileType:
-              /^(image\/(jpeg|png|gif|webp)|application\/pdf|audio\/(mpeg|wav|ogg))$/,
+              /^(image\/(jpeg|png|gif|webp)|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|audio\/(mpeg|wav|ogg))$/,
           }),
         ],
       }),
@@ -199,6 +239,11 @@ export class ChatController {
         buffer: file.buffer,
         mimetype: file.mimetype,
         originalname: file.originalname,
+      },
+      {
+        content: body?.content,
+        clientMessageId: body?.clientMessageId,
+        replyToId: body?.replyToId,
       },
     );
 
@@ -233,6 +278,30 @@ export class ChatController {
   ) {
     await this.chatService.unfollowUser(user.id, userId);
     return { success: true };
+  }
+
+  @Get('social/overview')
+  @ApiOperation({ summary: 'Get social relationship overview' })
+  async getSocialOverview(@CurrentUser() user: CurrentUserPayload) {
+    return this.chatService.getSocialOverview(user.id);
+  }
+
+  @Get('social/relations')
+  @ApiOperation({ summary: 'Get paginated social relationships' })
+  async getSocialRelations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: SocialRelationsQueryDto,
+  ) {
+    return this.chatService.getSocialRelations(user.id, query);
+  }
+
+  @Post('social/bulk')
+  @ApiOperation({ summary: 'Apply a bulk social action' })
+  async socialBulk(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: SocialBulkDto,
+  ) {
+    return this.chatService.applySocialBulkAction(user.id, dto);
   }
 
   @Get('followers')

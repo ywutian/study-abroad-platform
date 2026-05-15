@@ -61,6 +61,23 @@ describe('AssessmentController', () => {
             submitAssessment: jest.fn().mockResolvedValue(mockResult),
             getHistory: jest.fn().mockResolvedValue([mockResult]),
             getResult: jest.fn().mockResolvedValue(mockResult),
+            getSummary: jest.fn().mockResolvedValue({
+              latestMbti: mockResult,
+              latestHolland: undefined,
+              drafts: [],
+              historyCount: 1,
+              completedTypes: [AssessmentTypeEnum.MBTI],
+              majorSuggestions: [{ major: 'CS', sources: ['MBTI'] }],
+            }),
+            getDraft: jest.fn().mockResolvedValue(null),
+            saveDraft: jest.fn().mockResolvedValue({
+              id: 'draft-1',
+              type: AssessmentTypeEnum.MBTI,
+              answers: [{ questionId: 'q1', answer: 'I' }],
+              currentQuestionIndex: 0,
+              updatedAt: new Date('2025-01-15'),
+            }),
+            deleteDraft: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -130,6 +147,42 @@ describe('AssessmentController', () => {
 
       expect(assessmentService.getHistory).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockResult]);
+    });
+  });
+
+  describe('summary and drafts', () => {
+    it('should return assessment summary for current user', async () => {
+      const result = await controller.getSummary(mockUser);
+
+      expect(assessmentService.getSummary).toHaveBeenCalledWith('user-1');
+      expect(result.historyCount).toBe(1);
+    });
+
+    it('should get, save, and delete a draft', async () => {
+      await controller.getDraft(mockUser, AssessmentTypeEnum.MBTI);
+      expect(assessmentService.getDraft).toHaveBeenCalledWith(
+        'user-1',
+        AssessmentTypeEnum.MBTI,
+      );
+
+      await controller.saveDraft(mockUser, AssessmentTypeEnum.MBTI, {
+        answers: [{ questionId: 'q1', answer: 'I' }],
+        currentQuestionIndex: 0,
+      });
+      expect(assessmentService.saveDraft).toHaveBeenCalledWith(
+        'user-1',
+        AssessmentTypeEnum.MBTI,
+        {
+          answers: [{ questionId: 'q1', answer: 'I' }],
+          currentQuestionIndex: 0,
+        },
+      );
+
+      await controller.deleteDraft(mockUser, AssessmentTypeEnum.MBTI);
+      expect(assessmentService.deleteDraft).toHaveBeenCalledWith(
+        'user-1',
+        AssessmentTypeEnum.MBTI,
+      );
     });
   });
 

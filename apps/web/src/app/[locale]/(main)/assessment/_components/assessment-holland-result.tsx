@@ -5,17 +5,27 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Briefcase, GraduationCap, RotateCcw } from 'lucide-react';
+import { ArrowRight, Target, Briefcase, GraduationCap, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HOLLAND_ICONS, HOLLAND_COLORS, type HollandResult } from './assessment-constants';
 
 interface AssessmentHollandResultProps {
   result: HollandResult;
   onRetake: () => void;
+  onSetTargetMajor?: (major: string) => void;
+  onStartRecommendation?: () => void;
+  isSettingTargetMajor?: boolean;
 }
 
-export function AssessmentHollandResult({ result, onRetake }: AssessmentHollandResultProps) {
+export function AssessmentHollandResult({
+  result,
+  onRetake,
+  onSetTargetMajor,
+  onStartRecommendation,
+  isSettingTargetMajor,
+}: AssessmentHollandResultProps) {
   const t = useTranslations('assessment');
+  const primaryMajor = result.majors[0];
 
   return (
     <div className="space-y-6">
@@ -86,6 +96,31 @@ export function AssessmentHollandResult({ result, onRetake }: AssessmentHollandR
                 </div>
               );
             })}
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/15">
+        <CardContent className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <h3 className="font-semibold">{t('resultActions.title')}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{t('resultActions.description')}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {primaryMajor ? (
+              <Button
+                onClick={() => onSetTargetMajor?.(primaryMajor)}
+                disabled={isSettingTargetMajor}
+                className="gap-2"
+              >
+                <GraduationCap className="h-4 w-4" />
+                {t('resultActions.setTargetMajor', { major: primaryMajor })}
+              </Button>
+            ) : null}
+            <Button variant="outline" onClick={onStartRecommendation} className="gap-2">
+              {t('resultActions.schoolRecommendation')}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

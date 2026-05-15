@@ -31,9 +31,11 @@ const STREAM_API_URL = env.NEXT_PUBLIC_API_URL;
 interface UseAgentChatOptions {
   conversationId?: string;
   onError?: (error: string) => void;
+  onConversationChange?: (conversationId?: string) => void;
 }
 
 export function useAgentChat(options: UseAgentChatOptions = {}) {
+  const { conversationId: externalConversationId, onConversationChange, onError } = options;
   const t = useTranslations('agentChat');
   const locale = useLocale();
   const { accessToken: token, refreshAccessToken } = useAuth();
@@ -42,10 +44,10 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
   const [currentAgent, setCurrentAgent] = useState<AgentType>(AgentType.ORCHESTRATOR);
   const [activeTools, setActiveTools] = useState<string[]>([]);
   // conversationId state is the single source of truth; ref syncs via useEffect for closures
-  const [conversationId, setConversationId] = useState<string | undefined>(options.conversationId);
+  const [conversationId, setConversationId] = useState<string | undefined>(externalConversationId);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isLoadingRef = useRef(false);
-  const conversationIdRef = useRef<string | undefined>(options.conversationId);
+  const conversationIdRef = useRef<string | undefined>(externalConversationId);
   const invalidateConversations = useInvalidateConversations();
   const optimisticAddConversation = useOptimisticAddConversation();
   const optimisticUpdateConversation = useOptimisticUpdateConversation();
@@ -85,6 +87,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           if (event.conversationId) {
             const isNew = !conversationIdRef.current;
             setConversationId(event.conversationId);
+            onConversationChange?.(event.conversationId);
             // 新对话立即出现在历史列表（乐观更新）
             if (isNew) {
               optimisticAddConversation({
@@ -199,7 +202,12 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
       return { terminal: false };
     },
-    [invalidateConversations, optimisticAddConversation, optimisticUpdateConversation]
+    [
+      invalidateConversations,
+      onConversationChange,
+      optimisticAddConversation,
+      optimisticUpdateConversation,
+    ]
   );
 
   // Use ref for handleStreamEvent so sendMessage closures always call the latest version
@@ -427,7 +435,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
           displayMessage = t('errorProcessing');
         }
 
-        options.onError?.(displayMessage);
+        onError?.(displayMessage);
         pushAgentChatDebug('sendMessage_error', {
           errorMessage: errorMsg,
           displayMessage,
@@ -452,7 +460,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
       }
       return true;
     },
-    [token, options, refreshAccessToken, locale, t, setLoadingState]
+    [token, refreshAccessToken, locale, t, setLoadingState, onError]
   );
 
   /** Abort the in-flight SSE stream and mark all streaming messages as complete. */
@@ -474,6 +482,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     const oldConversationId = conversationIdRef.current;
     setMessages([]);
     setConversationId(undefined);
+    onConversationChange?.(undefined);
 
     if (oldConversationId) {
       try {
@@ -485,7 +494,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
         // Best-effort cleanup; ignore server errors
       }
     }
-  }, [invalidateConversations]);
+  }, [invalidateConversations, onConversationChange]);
 
   /**
    * Load an existing conversation's messages from the server.
@@ -524,13 +533,14 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
         setMessages(loadedMessages);
         setConversationId(targetConversationId);
+        onConversationChange?.(targetConversationId);
       } catch {
-        options.onError?.(t('errorProcessing'));
+        onError?.(t('errorProcessing'));
       } finally {
         setLoadingState(false);
       }
     },
-    [options, t, setLoadingState]
+    [onConversationChange, onError, t, setLoadingState]
   );
 
   /**
@@ -542,7 +552,13 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     setConversationId(undefined);
     setCurrentAgent(AgentType.ORCHESTRATOR);
     setActiveTools([]);
-  }, []);
+    onConversationChange?.(undefined);
+  }, [onConversationChange]);
+
+  useEffect(() => {
+    if (!externalConversationId || externalConversationId === conversationIdRef.current) return;
+    void loadConversation(externalConversationId);
+  }, [externalConversationId, loadConversation]);
 
   return {
     messages,

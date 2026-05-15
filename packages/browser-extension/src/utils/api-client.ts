@@ -5,7 +5,7 @@
 import type { UserProfile, StorageData } from './types';
 
 // 从环境变量或默认值获取 API 地址
-const API_BASE_URL = 'http://localhost:4101/api';
+const API_BASE_URL = 'https://www.lumniedu.com/api/v1';
 
 /**
  * 获取存储的 token
@@ -13,7 +13,8 @@ const API_BASE_URL = 'http://localhost:4101/api';
 export async function getAuthToken(): Promise<string | null> {
   return new Promise((resolve) => {
     chrome.storage.local.get(['token'], (result) => {
-      resolve(result.token || null);
+      const storage = result as Partial<StorageData>;
+      resolve(typeof storage.token === 'string' ? storage.token : null);
     });
   });
 }
@@ -46,11 +47,12 @@ export async function clearAuthToken(): Promise<void> {
 export async function getCachedProfile(): Promise<UserProfile | null> {
   return new Promise((resolve) => {
     chrome.storage.local.get(['profile', 'lastSync'], (result) => {
-      if (result.profile && result.lastSync) {
+      const storage = result as Partial<StorageData>;
+      if (storage.profile && typeof storage.lastSync === 'number') {
         // 缓存有效期 5 分钟
-        const isValid = Date.now() - result.lastSync < 5 * 60 * 1000;
+        const isValid = Date.now() - storage.lastSync < 5 * 60 * 1000;
         if (isValid) {
-          resolve(result.profile);
+          resolve(storage.profile);
           return;
         }
       }
@@ -86,7 +88,7 @@ export async function fetchProfile(): Promise<UserProfile | null> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/profile/me`, {
+    const response = await fetch(`${API_BASE_URL}/profiles/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -121,7 +123,7 @@ export async function checkLoginStatus(): Promise<boolean> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

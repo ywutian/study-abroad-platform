@@ -135,11 +135,24 @@ export class UpdateResumeDto {
 
   @ApiPropertyOptional({
     description: 'Resume status',
-    enum: ['DRAFT', 'ACTIVE', 'ARCHIVED'],
+    enum: ['DRAFT', 'ACTIVE', 'REVIEWED', 'APPROVED', 'EXPORTED', 'ARCHIVED'],
   })
   @IsOptional()
-  @IsEnum(['DRAFT', 'ACTIVE', 'ARCHIVED'] as const)
-  status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+  @IsEnum([
+    'DRAFT',
+    'ACTIVE',
+    'REVIEWED',
+    'APPROVED',
+    'EXPORTED',
+    'ARCHIVED',
+  ] as const)
+  status?:
+    | 'DRAFT'
+    | 'ACTIVE'
+    | 'REVIEWED'
+    | 'APPROVED'
+    | 'EXPORTED'
+    | 'ARCHIVED';
 
   @ApiPropertyOptional({ description: 'Template ID' })
   @IsOptional()
@@ -151,6 +164,34 @@ export class UpdateResumeDto {
   @IsOptional()
   @IsEnum(['en', 'zh'] as const)
   language?: 'en' | 'zh';
+
+  @ApiPropertyOptional({
+    description: 'Resume family',
+    enum: ['STUDY_ABROAD', 'CAREER'],
+  })
+  @IsOptional()
+  @IsEnum(['STUDY_ABROAD', 'CAREER'] as const)
+  family?: 'STUDY_ABROAD' | 'CAREER';
+
+  @ApiPropertyOptional({
+    description: 'Resume variant kind',
+    enum: ['MASTER', 'TAILORED'],
+  })
+  @IsOptional()
+  @IsEnum(['MASTER', 'TAILORED'] as const)
+  variantKind?: 'MASTER' | 'TAILORED';
+
+  @ApiPropertyOptional({ description: 'Target ID' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  targetId?: string;
+
+  @ApiPropertyOptional({ description: 'Base resume ID' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  baseResumeId?: string;
 
   @ApiPropertyOptional({
     description:

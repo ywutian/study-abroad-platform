@@ -235,10 +235,12 @@ const E2E_CONVERSATIONS = [
     id: 'e2e-conversation',
     kind: 'DIRECT',
     title: 'Peer Mentor',
+    createdBySystem: false,
     otherUser: E2E_RECOMMENDED_USERS[0],
     participantCount: 2,
     participantPreview: [E2E_USER, E2E_RECOMMENDED_USERS[0]],
     avatarSummary: [null, null],
+    teamMatchId: null,
     participants: [
       { id: E2E_USER.id, email: E2E_USER.email },
       { id: 'e2e-peer', email: 'peer@example.com' },
@@ -250,6 +252,11 @@ const E2E_CONVERSATIONS = [
       createdAt: new Date('2026-04-20T12:00:00Z').toISOString(),
     },
     unreadCount: 1,
+    isPinned: false,
+    isArchived: false,
+    mutedUntil: null,
+    isMuted: false,
+    createdAt: new Date('2026-04-18T12:00:00Z').toISOString(),
     updatedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
   },
 ];
@@ -263,8 +270,44 @@ const E2E_MESSAGES = [
     createdAt: new Date('2026-04-20T12:00:00Z').toISOString(),
     isDeleted: false,
     isRecalled: false,
+    attachments: [],
+    replyTo: null,
   },
 ];
+
+const E2E_CHAT_CONTEXT = {
+  id: 'e2e-conversation',
+  kind: 'DIRECT',
+  title: 'Peer Mentor',
+  createdBySystem: false,
+  teamMatch: null,
+  currentUserPreferences: {
+    isPinned: false,
+    isArchived: false,
+    mutedUntil: null,
+    lastReadAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+  },
+  participants: [
+    {
+      id: E2E_USER.id,
+      email: E2E_USER.email,
+      role: E2E_USER.role,
+      profile: E2E_USER.profile,
+      lastReadAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+      isPinned: false,
+      isArchived: false,
+      mutedUntil: null,
+    },
+    {
+      ...E2E_RECOMMENDED_USERS[0],
+      lastReadAt: new Date('2026-04-19T12:00:00Z').toISOString(),
+      isPinned: false,
+      isArchived: false,
+      mutedUntil: null,
+    },
+  ],
+  files: [],
+};
 
 const E2E_FORUM_CATEGORIES = [
   {
@@ -969,6 +1012,10 @@ E2E_AI_ANALYSIS.schoolCards = E2E_AI_ANALYSIS.schools;
 const E2E_ASSESSMENT = {
   id: 'e2e-assessment',
   type: 'MBTI',
+  title: 'Jungian Type Personality Test',
+  titleZh: '荣格类型性格测试',
+  description: 'Discover your personality type.',
+  descriptionZh: '发现你的性格类型。',
   questions: [
     {
       id: 'q1',
@@ -981,6 +1028,38 @@ const E2E_ASSESSMENT = {
       ],
     },
   ],
+};
+
+const E2E_ASSESSMENT_RESULT_MBTI = {
+  id: 'e2e-mbti-result',
+  type: 'MBTI',
+  mbtiResult: {
+    type: 'INTJ',
+    scores: { E: 35, I: 65, S: 42, N: 58, T: 68, F: 32, J: 61, P: 39 },
+    title: 'Architect',
+    titleZh: '战略规划者',
+    description: 'Strategic, independent, and systems-oriented.',
+    descriptionZh: '擅长长期规划、独立思考和系统化分析。',
+    strengths: ['Strategic thinking', 'Independent learning'],
+    careers: ['Product strategist', 'Research engineer'],
+    majors: ['Computer Science', 'Data Science', 'Cognitive Science'],
+  },
+  completedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+};
+
+const E2E_ASSESSMENT_RESULT_HOLLAND = {
+  id: 'e2e-holland-result',
+  type: 'HOLLAND',
+  hollandResult: {
+    codes: 'IAS',
+    scores: { R: 9, I: 22, A: 16, S: 14, E: 10, C: 8 },
+    types: ['Investigative', 'Artistic', 'Social'],
+    typesZh: ['研究型', '艺术型', '社会型'],
+    fields: ['Science', 'Design', 'Education'],
+    fieldsZh: ['科学研究', '设计创意', '教育咨询'],
+    majors: ['Computer Science', 'Human-Computer Interaction', 'Psychology'],
+  },
+  completedAt: new Date('2026-04-22T12:00:00Z').toISOString(),
 };
 
 const E2E_SWIPE_CASE = {
@@ -1276,6 +1355,22 @@ function apiData(path: string, role: FullUiRole, method: string) {
       return { data: responseData(E2E_RECOMMENDATION) };
     }
 
+    if (path === '/assessments') {
+      return { data: responseData(E2E_ASSESSMENT_RESULT_MBTI) };
+    }
+
+    if (path.endsWith('/draft') && path.startsWith('/assessments/')) {
+      return {
+        data: responseData({
+          id: 'e2e-draft',
+          type: path.includes('HOLLAND') ? 'HOLLAND' : 'MBTI',
+          answers: [],
+          currentQuestionIndex: 0,
+          updatedAt: new Date('2026-04-20T12:00:00Z').toISOString(),
+        }),
+      };
+    }
+
     if (path === '/halls/swipe/challenge') {
       return { data: responseData(E2E_HALL_CHALLENGE_RESULT) };
     }
@@ -1377,6 +1472,99 @@ function apiData(path: string, role: FullUiRole, method: string) {
             createdAt: new Date('2026-04-28T12:00:00Z').toISOString(),
           },
         ],
+        workbench: {
+          readiness: {
+            score: 86,
+            status: 'attention',
+            items: [
+              {
+                key: 'profile',
+                label: 'Profile',
+                value: '82%',
+                status: 'attention',
+                href: '/profile',
+                description: '2 key signals still need attention',
+              },
+              {
+                key: 'schools',
+                label: 'School list',
+                value: '6',
+                status: 'ready',
+                href: '/schools',
+                description: 'Reach, target, and safety mix is in place',
+              },
+              {
+                key: 'essays',
+                label: 'Essays',
+                value: '14',
+                status: 'ready',
+                href: '/essays',
+                description: 'Essay drafts are ready to continue',
+              },
+              {
+                key: 'timeline',
+                label: 'Timeline',
+                value: '3',
+                status: 'attention',
+                href: '/timeline',
+                description: 'Application milestones are in one planning rhythm',
+              },
+            ],
+          },
+          metrics: {
+            due7: 0,
+            due30: 2,
+            overdueTasks: 0,
+            missingTimelineCount: 1,
+            balancedSchoolList: true,
+          },
+          priorityQueue: [
+            {
+              id: 'task-e2e',
+              kind: 'timeline-task',
+              severity: 'warning',
+              title: 'Finalize Purdue supplement',
+              description: 'Purdue University · Regular Decision · 15 days left',
+              href: '/timeline?task=task-e2e',
+              dueAt: new Date('2026-05-15T12:00:00Z').toISOString(),
+              daysLeft: 15,
+              mutation: {
+                type: 'timeline-task-toggle',
+                endpoint: '/timelines/tasks/task-e2e/toggle',
+              },
+            },
+            {
+              id: 'profile-gaps',
+              kind: 'profile',
+              severity: 'warning',
+              title: 'Complete applicant profile',
+              description: 'Prioritize 2 signals that affect prediction and school strategy.',
+              href: '/profile',
+            },
+          ],
+          deadlineStream: [
+            {
+              id: 'event-rec',
+              type: 'event',
+              title: 'Recommendation letter follow-up',
+              subtitle: 'Recommendation',
+              dueAt: new Date('2026-05-10T12:00:00Z').toISOString(),
+              daysLeft: 10,
+              severity: 'warning',
+              href: '/timeline?tab=personal',
+            },
+            {
+              id: 'deadline-purdue',
+              type: 'school',
+              title: 'Purdue University',
+              subtitle: 'Regular Decision',
+              dueAt: new Date('2026-05-15T12:00:00Z').toISOString(),
+              daysLeft: 15,
+              severity: 'normal',
+              href: '/timeline',
+            },
+          ],
+        },
       }),
     };
   }
@@ -1603,6 +1791,10 @@ function apiData(path: string, role: FullUiRole, method: string) {
     return { data: responseData(E2E_CONVERSATIONS) };
   }
 
+  if (path.startsWith('/chats/conversations/') && path.endsWith('/context')) {
+    return { data: responseData(E2E_CHAT_CONTEXT) };
+  }
+
   if (path.startsWith('/chats/conversations/') && path.endsWith('/messages')) {
     return { data: responseData(E2E_MESSAGES) };
   }
@@ -1727,8 +1919,29 @@ function apiData(path: string, role: FullUiRole, method: string) {
     };
   }
 
+  if (path === '/assessments/summary/me') {
+    return {
+      data: responseData({
+        latestMbti: E2E_ASSESSMENT_RESULT_MBTI,
+        latestHolland: E2E_ASSESSMENT_RESULT_HOLLAND,
+        drafts: [],
+        historyCount: 2,
+        completedTypes: ['MBTI', 'HOLLAND'],
+        majorSuggestions: [
+          { major: 'Computer Science', sources: ['MBTI', 'HOLLAND'] },
+          { major: 'Human-Computer Interaction', sources: ['HOLLAND'] },
+          { major: 'Data Science', sources: ['MBTI'] },
+        ],
+      }),
+    };
+  }
+
+  if (path === '/assessments/MBTI/draft' || path === '/assessments/HOLLAND/draft') {
+    return { data: responseData(null) };
+  }
+
   if (path === '/assessments/history/me' || path === '/assessments/results') {
-    return { data: responseData([]) };
+    return { data: responseData([E2E_ASSESSMENT_RESULT_HOLLAND, E2E_ASSESSMENT_RESULT_MBTI]) };
   }
 
   if (path === '/teams/match-pools') {

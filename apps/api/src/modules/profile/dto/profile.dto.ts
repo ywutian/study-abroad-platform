@@ -11,8 +11,12 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { BudgetTier, EducationSystem, Visibility } from '@prisma/client';
+import {
+  APPLICATION_ROUND_VALUES,
+  normalizeApplicationRound,
+} from '@study-abroad/shared';
 
 const GRADES = [
   'FRESHMAN',
@@ -21,7 +25,15 @@ const GRADES = [
   'SENIOR',
   'GAP_YEAR',
 ] as const;
-const APP_ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD'] as const;
+function nullableNumberTransform({ value }: { value: unknown }) {
+  if (value === null || value === undefined || value === '') return null;
+  return Number(value);
+}
+
+function applicationRoundTransform({ value }: { value: unknown }) {
+  if (typeof value !== 'string') return value;
+  return normalizeApplicationRound(value) ?? value;
+}
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ description: 'Real name' })
@@ -30,13 +42,13 @@ export class UpdateProfileDto {
   @MaxLength(200)
   realName?: string;
 
-  @ApiPropertyOptional({ description: 'GPA', example: 3.85 })
+  @ApiPropertyOptional({ description: 'GPA', example: 3.85, nullable: true })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Type(() => Number)
+  @Transform(nullableNumberTransform)
   @Min(0)
   @Max(100)
-  gpa?: number;
+  gpa?: number | null;
 
   @ApiPropertyOptional({ description: 'GPA scale maximum', example: 4.0 })
   @IsOptional()
@@ -44,6 +56,54 @@ export class UpdateProfileDto {
   @Type(() => Number)
   @IsIn([4.0, 5.0, 6, 45, 100])
   gpaScale?: number;
+
+  @ApiPropertyOptional({
+    description: 'Grade 9 GPA',
+    example: 3.85,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Transform(nullableNumberTransform)
+  @Min(0)
+  @Max(100)
+  gpa9?: number | null;
+
+  @ApiPropertyOptional({
+    description: 'Grade 10 GPA',
+    example: 3.9,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Transform(nullableNumberTransform)
+  @Min(0)
+  @Max(100)
+  gpa10?: number | null;
+
+  @ApiPropertyOptional({
+    description: 'Grade 11 GPA',
+    example: 3.95,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Transform(nullableNumberTransform)
+  @Min(0)
+  @Max(100)
+  gpa11?: number | null;
+
+  @ApiPropertyOptional({
+    description: 'Grade 12 GPA',
+    example: 4.0,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Transform(nullableNumberTransform)
+  @Min(0)
+  @Max(100)
+  gpa12?: number | null;
 
   @ApiPropertyOptional({ description: 'Current school' })
   @IsOptional()
@@ -79,9 +139,13 @@ export class UpdateProfileDto {
   @IsEnum(BudgetTier)
   budgetTier?: BudgetTier;
 
-  @ApiPropertyOptional({ enum: APP_ROUNDS, description: 'Application round' })
+  @ApiPropertyOptional({
+    enum: APPLICATION_ROUND_VALUES,
+    description: 'Application round',
+  })
   @IsOptional()
-  @IsIn(APP_ROUNDS)
+  @Transform(applicationRoundTransform)
+  @IsIn(APPLICATION_ROUND_VALUES)
   applicationRound?: string;
 
   @ApiPropertyOptional({ enum: Visibility, description: 'Visibility' })

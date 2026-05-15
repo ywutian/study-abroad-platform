@@ -30,8 +30,10 @@ import {
   animation,
   shadows,
   useColors,
+  useThemeContract,
   getColors,
   getPaletteColors,
+  getMobileTheme,
   createStyles,
 } from '@/utils/theme';
 
@@ -178,6 +180,26 @@ describe('useColors', () => {
 
     expect(result.current.primary).toBe(getPaletteColors('studio-black-blue', 'light').primary);
     expect(result.current.primary).not.toBe(colors.light.primary);
+  });
+
+  it('uses the shared mobile contract for alternate palettes', () => {
+    const contract = getMobileTheme('framer-violet', 'dark');
+    const paletteColors = getPaletteColors('framer-violet', 'dark');
+
+    expect(paletteColors.primary).toBe(contract.colors.primary);
+    expect(paletteColors.surfaceMuted).toBe(contract.surfaces.surfaceMuted);
+  });
+
+  it('returns the selected shared theme contract', () => {
+    mockState.colorScheme = 'dark';
+    mockState.colorPalette = 'studio-black-blue';
+
+    const { result } = renderHook(() => useThemeContract());
+
+    expect(result.current.id).toBe('studio-black-blue');
+    expect(result.current.mode).toBe('dark');
+    expect(result.current.status.success.bg).toBeTruthy();
+    expect(result.current.charts.chart1).toBe(result.current.colors.primary);
   });
 
   it('returns default palette colors when colorPalette is default', () => {

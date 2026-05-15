@@ -3,6 +3,7 @@ import {
   IsOptional,
   IsIn,
   IsDateString,
+  IsEmail,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -19,7 +20,7 @@ export class CreateRecommendationLetterDto {
 
   @ApiPropertyOptional({ description: 'Recommender email' })
   @IsOptional()
-  @IsString()
+  @IsEmail()
   @MaxLength(200)
   recommenderEmail?: string;
 
@@ -59,7 +60,7 @@ export class UpdateRecommendationLetterDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsEmail()
   @MaxLength(200)
   recommenderEmail?: string;
 

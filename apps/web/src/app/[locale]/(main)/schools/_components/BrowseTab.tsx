@@ -32,7 +32,7 @@ import { SchoolFilterBar } from './SchoolFilterBar';
 import { SchoolGrid } from './SchoolGrid';
 import { SchoolListView } from './SchoolListView';
 import { SchoolPagination } from './SchoolPagination';
-import { SchoolToolbar, type SchoolDensity, type SchoolViewMode } from './SchoolToolbar';
+import { SchoolToolbar, type SchoolViewMode } from './SchoolToolbar';
 import { type School } from './schools-types';
 
 const COUNTRY_LABEL_KEYS: Record<string, string> = {
@@ -47,7 +47,6 @@ const COUNTRY_LABEL_KEYS: Record<string, string> = {
 };
 
 const VIEW_STORAGE_KEY = 'schools.browse.viewMode';
-const DENSITY_STORAGE_KEY = 'schools.browse.density';
 
 interface AvailableCountry {
   code: string;
@@ -203,17 +202,14 @@ export function BrowseTab() {
   const [page, setPage] = useState(initialState.page);
   const [pageSize, setPageSize] = useState<number>(initialState.pageSize);
 
-  // View / density state (localStorage-persisted)
+  // View state (localStorage-persisted)
   const [viewMode, setViewMode] = useState<SchoolViewMode>('card');
-  const [density, setDensity] = useState<SchoolDensity>('comfortable');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const v = window.localStorage.getItem(VIEW_STORAGE_KEY);
       if (v === 'card' || v === 'list') setViewMode(v);
-      const d = window.localStorage.getItem(DENSITY_STORAGE_KEY);
-      if (d === 'comfortable' || d === 'compact') setDensity(d);
     } catch {
       /* ignore */
     }
@@ -224,17 +220,6 @@ export function BrowseTab() {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(VIEW_STORAGE_KEY, mode);
-      } catch {
-        /* ignore */
-      }
-    }
-  }, []);
-
-  const handleDensityChange = useCallback((d: SchoolDensity) => {
-    setDensity(d);
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.setItem(DENSITY_STORAGE_KEY, d);
       } catch {
         /* ignore */
       }
@@ -546,8 +531,6 @@ export function BrowseTab() {
           onRankingListChange={setRankingList}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
-          density={density}
-          onDensityChange={handleDensityChange}
           search={search}
           onClearSearch={() => setSearch('')}
           country={country}
@@ -571,7 +554,6 @@ export function BrowseTab() {
               isAddingToList={addToListMutation.isPending}
               sortBy={sortBy}
               onSortByChange={setSortBy}
-              density={density}
               preferredRankingList={rankingList}
             />
             <SchoolPagination
@@ -603,7 +585,6 @@ export function BrowseTab() {
             totalPages={totalPages}
             onPageChange={handlePageChange}
             onPageSizeChange={setPageSize}
-            density={density}
             preferredRankingList={rankingList}
           />
         )}

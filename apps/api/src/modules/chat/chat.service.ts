@@ -9,7 +9,30 @@ import {
   StorageService,
   StorageFile,
 } from '../../common/storage/storage.service';
-import { Prisma, DataReviewStatus, ConversationKind } from '@prisma/client';
+import {
+  Prisma,
+  DataReviewStatus,
+  ConversationKind,
+  Role,
+} from '@prisma/client';
+import {
+  createPaginatedResponse,
+  type PaginatedResponseDto,
+} from '../../common/dto/pagination.dto';
+import type {
+  RecommendedSocialUser,
+  SocialBulkAction,
+  SocialBulkResponse,
+  SocialOverview,
+  SocialRelationItem,
+  SocialRelationSort,
+  SocialRelationType,
+  SocialRelationship,
+  SocialRelationshipFilter,
+  SocialRoleFilter,
+  SocialUser,
+} from '@study-abroad/shared';
+import type { SocialBulkDto, SocialRelationsQueryDto } from './dto/social.dto';
 
 /** 用户信息的标准 select（复用） */
 const USER_SELECT = {
@@ -29,13 +52,120 @@ const SENDER_SELECT = {
   },
 } as const;
 
-const PARTICIPANT_SELECT = {
-  id: true,
-  userId: true,
-  isPinned: true,
-  lastReadAt: true,
-  user: { select: USER_SELECT },
+type ConversationListFilter =
+  | 'all'
+  | 'unread'
+  | 'pinned'
+  | 'direct'
+  | 'groups'
+  | 'archived';
+
+interface ConversationListOptions {
+  q?: string;
+  filter?: ConversationListFilter;
+  limit?: number;
+  cursor?: string;
+}
+
+interface SendMessageOptions {
+  clientMessageId?: string;
+  replyToId?: string;
+}
+
+interface SendMediaMessageOptions extends SendMessageOptions {
+  content?: string;
+}
+
+const MESSAGE_INCLUDE = {
+  sender: { select: SENDER_SELECT },
+  attachments: true,
+  replyTo: {
+    select: {
+      id: true,
+      content: true,
+      senderId: true,
+      isDeleted: true,
+      isRecalled: true,
+    },
+  },
 } as const;
+
+const SOCIAL_USER_SELECT = {
+  id: true,
+  email: true,
+  role: true,
+  profile: {
+    select: {
+      nickname: true,
+      avatarUrl: true,
+      bio: true,
+      targetMajor: true,
+      grade: true,
+      visibility: true,
+    },
+  },
+  _count: {
+    select: {
+      followers: true,
+      following: true,
+      admissionCases: {
+        where: {
+          reviewStatus: {
+            in: [DataReviewStatus.AUTO_APPROVED, DataReviewStatus.APPROVED],
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.UserSelect;
+
+type SocialPrismaUser = Prisma.UserGetPayload<{
+  select: typeof SOCIAL_USER_SELECT;
+}>;
+
+type SocialFollowRelation = Prisma.FollowGetPayload<{
+  include: {
+    follower: { select: typeof SOCIAL_USER_SELECT };
+    following: { select: typeof SOCIAL_USER_SELECT };
+  };
+}>;
+
+const SOCIAL_RECOMMENDATION_USER_SELECT = {
+  id: true,
+  email: true,
+  role: true,
+  profile: {
+    select: {
+      nickname: true,
+      avatarUrl: true,
+      bio: true,
+      targetMajor: true,
+      grade: true,
+      gpa: true,
+      visibility: true,
+      _count: {
+        select: { testScores: true, activities: true, awards: true },
+      },
+    },
+  },
+  _count: {
+    select: {
+      followers: true,
+      following: true,
+      admissionCases: {
+        where: {
+          reviewStatus: {
+            in: [DataReviewStatus.AUTO_APPROVED, DataReviewStatus.APPROVED],
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.UserSelect;
+
+type SocialRecommendationPrismaUser = Prisma.UserGetPayload<{
+  select: typeof SOCIAL_RECOMMENDATION_USER_SELECT;
+}>;
 
 @Injectable()
 export class ChatService {
@@ -166,13 +296,27 @@ export class ChatService {
   /**
    * 发送消息（含内容过滤）
    */
-  async sendMessage(conversationId: string, senderId: string, content: string) {
+  async sendMessage(
+    conversationId: string,
+    senderId: string,
+    content: string,
+    options: SendMessageOptions = {},
+  ) {
     // 验证参与者
     const participant = await this.prisma.conversationParticipant.findUnique({
       where: { conversationId_userId: { conversationId, userId: senderId } },
     });
     if (!participant) {
       throw new ForbiddenException('Not a participant of this conversation');
+    }
+
+    const normalizedClientMessageId = options.clientMessageId?.trim();
+    if (normalizedClientMessageId) {
+      const existing = await this.prisma.message.findFirst({
+        where: { senderId, clientMessageId: normalizedClientMessageId },
+        include: MESSAGE_INCLUDE,
+      });
+      if (existing) return existing;
     }
 
     // 屏蔽检查
@@ -206,17 +350,27 @@ export class ChatService {
       throw new BadRequestException(filterResult.reason);
     }
 
+    if (options.replyToId) {
+      const replyTarget = await this.prisma.message.findFirst({
+        where: { id: options.replyToId, conversationId },
+        select: { id: true },
+      });
+      if (!replyTarget) {
+        throw new BadRequestException('Reply target not found');
+      }
+    }
+
     // 创建消息
     const message = await this.prisma.message.create({
       data: {
         conversationId,
         senderId,
         content: filterResult.filtered,
+        clientMessageId: normalizedClientMessageId || undefined,
+        replyToId: options.replyToId || undefined,
         isSystem: false,
       },
-      include: {
-        sender: { select: SENDER_SELECT },
-      },
+      include: MESSAGE_INCLUDE,
     });
 
     // 更新会话时间戳
@@ -235,14 +389,36 @@ export class ChatService {
     conversationId: string,
     senderId: string,
     file: StorageFile,
-    content?: string,
+    options: SendMediaMessageOptions | string = {},
   ) {
+    const normalizedOptions =
+      typeof options === 'string' ? { content: options } : options;
+
     // 验证参与者
     const participant = await this.prisma.conversationParticipant.findUnique({
       where: { conversationId_userId: { conversationId, userId: senderId } },
     });
     if (!participant) {
       throw new ForbiddenException('Not a participant of this conversation');
+    }
+
+    const normalizedClientMessageId = normalizedOptions.clientMessageId?.trim();
+    if (normalizedClientMessageId) {
+      const existing = await this.prisma.message.findFirst({
+        where: { senderId, clientMessageId: normalizedClientMessageId },
+        include: MESSAGE_INCLUDE,
+      });
+      if (existing) return existing;
+    }
+
+    if (normalizedOptions.replyToId) {
+      const replyTarget = await this.prisma.message.findFirst({
+        where: { id: normalizedOptions.replyToId, conversationId },
+        select: { id: true },
+      });
+      if (!replyTarget) {
+        throw new BadRequestException('Reply target not found');
+      }
     }
 
     // 上传文件
@@ -260,13 +436,22 @@ export class ChatService {
       data: {
         conversationId,
         senderId,
-        content: content || file.originalname,
+        content: normalizedOptions.content || file.originalname,
+        clientMessageId: normalizedClientMessageId || undefined,
+        replyToId: normalizedOptions.replyToId || undefined,
         mediaUrl: uploadResult.url,
         mediaType,
+        attachments: {
+          create: {
+            url: uploadResult.url,
+            type: mediaType,
+            name: file.originalname,
+            size: file.buffer.length,
+            mimeType: file.mimetype,
+          },
+        },
       },
-      include: {
-        sender: { select: SENDER_SELECT },
-      },
+      include: MESSAGE_INCLUDE,
     });
 
     await this.prisma.conversation.update({
@@ -280,7 +465,10 @@ export class ChatService {
   /**
    * 获取用户的会话列表（含未读数）
    */
-  async getConversations(userId: string) {
+  async getConversations(
+    userId: string,
+    options: ConversationListOptions = {},
+  ) {
     const participations = await this.prisma.conversationParticipant.findMany({
       where: { userId },
       include: {
@@ -292,7 +480,7 @@ export class ChatService {
             messages: {
               orderBy: { createdAt: 'desc' },
               take: 1,
-              include: { sender: { select: SENDER_SELECT } },
+              include: MESSAGE_INCLUDE,
             },
             teamMatch: {
               select: { id: true },
@@ -331,14 +519,66 @@ export class ChatService {
       unreadCounts.map((u) => [u.conversationId, Number(u.count)]),
     );
 
-    return participations.map((p) =>
-      this.serializeConversationSummary(
-        p.conversation,
-        userId,
-        unreadMap.get(p.conversationId) || 0,
-        p.isPinned,
-      ),
-    );
+    const filter = options.filter ?? 'all';
+    const query = options.q?.trim().toLowerCase();
+
+    const summaries = participations
+      .map((p) =>
+        this.serializeConversationSummary(
+          p.conversation,
+          userId,
+          unreadMap.get(p.conversationId) || 0,
+          {
+            isPinned: p.isPinned,
+            isArchived: p.isArchived,
+            mutedUntil: p.mutedUntil,
+          },
+        ),
+      )
+      .filter((conversation) => {
+        if (filter === 'archived') return conversation.isArchived;
+        if (conversation.isArchived) return false;
+        if (filter === 'unread') return conversation.unreadCount > 0;
+        if (filter === 'pinned') return conversation.isPinned;
+        if (filter === 'direct') {
+          return conversation.kind === ConversationKind.DIRECT;
+        }
+        if (filter === 'groups') {
+          return conversation.kind === ConversationKind.MATCH_GROUP;
+        }
+        return true;
+      })
+      .filter((conversation) => {
+        if (!query) return true;
+        const haystack = [
+          conversation.title,
+          conversation.otherUser?.email,
+          conversation.otherUser?.profile?.nickname,
+          conversation.otherUser?.profile?.realName,
+          conversation.lastMessage?.content,
+          ...conversation.participantPreview.map(
+            (participant) =>
+              participant.email ||
+              participant.profile?.nickname ||
+              participant.profile?.realName ||
+              '',
+          ),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        return haystack.includes(query);
+      });
+
+    const cursorIndex = options.cursor
+      ? summaries.findIndex(
+          (conversation) => conversation.id === options.cursor,
+        )
+      : -1;
+    const start = cursorIndex >= 0 ? cursorIndex + 1 : 0;
+    const limit = Math.min(options.limit ?? 50, 100);
+
+    return summaries.slice(start, start + limit);
   }
 
   async getConversation(conversationId: string, userId: string) {
@@ -361,9 +601,7 @@ export class ChatService {
           messages: {
             orderBy: { createdAt: 'desc' },
             take: 50,
-            include: {
-              sender: { select: SENDER_SELECT },
-            },
+            include: MESSAGE_INCLUDE,
           },
           teamMatch: {
             select: { id: true },
@@ -389,7 +627,11 @@ export class ChatService {
       conversation,
       userId,
       Number(unread[0]?.count ?? 0),
-      participant.isPinned,
+      {
+        isPinned: participant.isPinned,
+        isArchived: participant.isArchived,
+        mutedUntil: participant.mutedUntil,
+      },
     );
 
     // Messages were fetched in desc order (for LIMIT), reverse to asc for display
@@ -442,9 +684,7 @@ export class ChatService {
         messages: {
           take: 1,
           orderBy: { createdAt: 'desc' },
-          include: {
-            sender: { select: SENDER_SELECT },
-          },
+          include: MESSAGE_INCLUDE,
         },
         teamMatch: {
           select: { id: true },
@@ -484,10 +724,130 @@ export class ChatService {
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,
+      include: MESSAGE_INCLUDE,
+    });
+  }
+
+  async getConversationContext(conversationId: string, userId: string) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) {
+      throw new ForbiddenException('Not a participant of this conversation');
+    }
+
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
       include: {
-        sender: { select: SENDER_SELECT },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                role: true,
+                profile: {
+                  select: {
+                    nickname: true,
+                    avatarUrl: true,
+                    realName: true,
+                    bio: true,
+                    targetMajor: true,
+                    currentSchool: true,
+                    grade: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        messages: {
+          where: {
+            OR: [{ mediaUrl: { not: null } }, { attachments: { some: {} } }],
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 24,
+          include: {
+            sender: { select: SENDER_SELECT },
+            attachments: true,
+          },
+        },
+        teamMatch: {
+          select: {
+            id: true,
+            matchKind: true,
+            closedAt: true,
+            createdAt: true,
+          },
+        },
       },
     });
+
+    if (!conversation) {
+      throw new BadRequestException('Conversation not found');
+    }
+
+    const files = conversation.messages.flatMap((message) => {
+      const attachments = message.attachments.length
+        ? message.attachments
+        : message.mediaUrl
+          ? [
+              {
+                id: message.id,
+                url: message.mediaUrl,
+                type: message.mediaType || 'file',
+                name: message.content,
+                size: null,
+                mimeType: null,
+                createdAt: message.createdAt,
+              },
+            ]
+          : [];
+
+      return attachments.map((attachment) => ({
+        id: attachment.id,
+        messageId: message.id,
+        url: attachment.url,
+        type: attachment.type,
+        name: attachment.name,
+        size: attachment.size,
+        mimeType: attachment.mimeType,
+        createdAt: attachment.createdAt,
+        sender: message.sender,
+      }));
+    });
+
+    return {
+      id: conversation.id,
+      kind: conversation.kind,
+      title: conversation.title,
+      createdBySystem: conversation.createdBySystem,
+      teamMatch: conversation.teamMatch
+        ? {
+            id: conversation.teamMatch.id,
+            matchKind: conversation.teamMatch.matchKind,
+            status: conversation.teamMatch.closedAt ? 'CLOSED' : 'ACTIVE',
+            createdAt: conversation.teamMatch.createdAt,
+          }
+        : null,
+      currentUserPreferences: {
+        isPinned: participant.isPinned,
+        isArchived: participant.isArchived,
+        mutedUntil: participant.mutedUntil,
+        lastReadAt: participant.lastReadAt,
+      },
+      participants: conversation.participants.map((item) => ({
+        id: item.user.id,
+        email: item.user.email,
+        role: item.user.role,
+        profile: item.user.profile,
+        lastReadAt: item.lastReadAt,
+        isPinned: item.isPinned,
+        isArchived: item.isArchived,
+        mutedUntil: item.mutedUntil,
+      })),
+      files,
+    };
   }
 
   /**
@@ -587,6 +947,47 @@ export class ChatService {
     return { isPinned: updated.isPinned };
   }
 
+  async updateConversationPreferences(
+    conversationId: string,
+    userId: string,
+    preferences: {
+      isPinned?: boolean;
+      isArchived?: boolean;
+      mutedUntil?: string | null;
+    },
+  ) {
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+    });
+    if (!participant) {
+      throw new ForbiddenException('Not a participant of this conversation');
+    }
+
+    const data: Prisma.ConversationParticipantUpdateInput = {};
+    if (typeof preferences.isPinned === 'boolean') {
+      data.isPinned = preferences.isPinned;
+    }
+    if (typeof preferences.isArchived === 'boolean') {
+      data.isArchived = preferences.isArchived;
+    }
+    if (preferences.mutedUntil !== undefined) {
+      data.mutedUntil = preferences.mutedUntil
+        ? new Date(preferences.mutedUntil)
+        : null;
+    }
+
+    const updated = await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data,
+    });
+
+    return {
+      isPinned: updated.isPinned,
+      isArchived: updated.isArchived,
+      mutedUntil: updated.mutedUntil,
+    };
+  }
+
   private serializeConversationSummary(
     conversation: {
       id: string;
@@ -602,14 +1003,18 @@ export class ChatService {
       }>;
       messages: Array<
         Prisma.MessageGetPayload<{
-          include: { sender: { select: typeof SENDER_SELECT } };
+          include: typeof MESSAGE_INCLUDE;
         }>
       >;
       teamMatch?: { id: string } | null;
     },
     currentUserId: string,
     unreadCount: number,
-    isPinned: boolean,
+    preferences: {
+      isPinned: boolean;
+      isArchived?: boolean;
+      mutedUntil?: Date | null;
+    },
   ) {
     const otherParticipants = conversation.participants.filter(
       (participant) => participant.userId !== currentUserId,
@@ -637,6 +1042,7 @@ export class ChatService {
       participantCount: conversation.participants.length,
       participantPreview: otherParticipants.slice(0, 3).map((participant) => ({
         id: participant.user.id,
+        email: participant.user.email,
         role: participant.user.role,
         profile: participant.user.profile,
       })),
@@ -647,7 +1053,12 @@ export class ChatService {
       unreadCount,
       updatedAt: conversation.updatedAt,
       createdAt: conversation.createdAt,
-      isPinned,
+      isPinned: preferences.isPinned,
+      isArchived: preferences.isArchived ?? false,
+      mutedUntil: preferences.mutedUntil ?? null,
+      isMuted:
+        preferences.mutedUntil instanceof Date &&
+        preferences.mutedUntil.getTime() > Date.now(),
       teamMatchId: conversation.teamMatch?.id ?? null,
     };
   }
@@ -838,6 +1249,337 @@ export class ChatService {
     });
   }
 
+  async getSocialOverview(userId: string): Promise<SocialOverview> {
+    const [followers, following, blocked, followingRows] = await Promise.all([
+      this.prisma.follow.count({ where: { followingId: userId } }),
+      this.prisma.follow.count({ where: { followerId: userId } }),
+      this.prisma.block.count({ where: { blockerId: userId } }),
+      this.prisma.follow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+      }),
+    ]);
+
+    const followingIds = followingRows.map((follow) => follow.followingId);
+    const mutual =
+      followingIds.length > 0
+        ? await this.prisma.follow.count({
+            where: { followingId: userId, followerId: { in: followingIds } },
+          })
+        : 0;
+
+    return {
+      counts: { followers, following, mutual, blocked },
+      recommendations: await this.getRecommendedUsers(userId, 4),
+    };
+  }
+
+  async getSocialRelations(
+    userId: string,
+    query: SocialRelationsQueryDto,
+  ): Promise<PaginatedResponseDto<SocialRelationItem>> {
+    const type = query.type ?? 'followers';
+    const page = Math.max(query.page ?? 1, 1);
+    const pageSize = Math.min(Math.max(query.pageSize ?? 20, 1), 100);
+    const skip = (page - 1) * pageSize;
+
+    if (type === 'blocked') {
+      return this.getSocialBlockRelations(userId, query, page, pageSize, skip);
+    }
+
+    return this.getSocialFollowRelations(userId, query, page, pageSize, skip);
+  }
+
+  async applySocialBulkAction(
+    actorId: string,
+    dto: SocialBulkDto,
+  ): Promise<SocialBulkResponse> {
+    const userIds = Array.from(new Set(dto.userIds));
+    const results = await Promise.all(
+      userIds.map(async (userId) => {
+        try {
+          await this.applySingleSocialAction(actorId, userId, dto.action);
+          return { userId, success: true };
+        } catch (error) {
+          return {
+            userId,
+            success: false,
+            error: error instanceof Error ? error.message : 'Operation failed',
+          };
+        }
+      }),
+    );
+
+    return { action: dto.action, results };
+  }
+
+  private async getSocialFollowRelations(
+    userId: string,
+    query: SocialRelationsQueryDto,
+    page: number,
+    pageSize: number,
+    skip: number,
+  ): Promise<PaginatedResponseDto<SocialRelationItem>> {
+    const type = query.type === 'following' ? 'following' : 'followers';
+    const peerField = type === 'followers' ? 'follower' : 'following';
+    const peerIdField = type === 'followers' ? 'followerId' : 'followingId';
+    const reciprocalIds =
+      type === 'followers'
+        ? (
+            await this.prisma.follow.findMany({
+              where: { followerId: userId },
+              select: { followingId: true },
+            })
+          ).map((relation) => relation.followingId)
+        : (
+            await this.prisma.follow.findMany({
+              where: { followingId: userId },
+              select: { followerId: true },
+            })
+          ).map((relation) => relation.followerId);
+
+    const where: Prisma.FollowWhereInput = {
+      ...(type === 'followers'
+        ? { followingId: userId }
+        : { followerId: userId }),
+      [peerField]: this.buildSocialUserWhere(query.search, query.role),
+    };
+
+    this.applyRelationshipFilter(
+      where,
+      peerIdField,
+      reciprocalIds,
+      query.relationship,
+    );
+
+    const [rows, total] = await Promise.all([
+      this.prisma.follow.findMany({
+        where,
+        include: {
+          follower: { select: SOCIAL_USER_SELECT },
+          following: { select: SOCIAL_USER_SELECT },
+        },
+        orderBy: this.getFollowOrderBy(type, query.sort),
+        skip,
+        take: pageSize,
+      }) as Promise<SocialFollowRelation[]>,
+      this.prisma.follow.count({ where }),
+    ]);
+
+    const reciprocalSet = new Set(reciprocalIds);
+    const items = rows.map((relation) => {
+      const user =
+        type === 'followers' ? relation.follower : relation.following;
+      return this.toRelationItem({
+        relationId: relation.id,
+        relationType: type,
+        createdAt: relation.createdAt,
+        user,
+        relationship: reciprocalSet.has(user.id) ? 'mutual' : 'oneWay',
+      });
+    });
+
+    return createPaginatedResponse(items, total, page, pageSize);
+  }
+
+  private async getSocialBlockRelations(
+    userId: string,
+    query: SocialRelationsQueryDto,
+    page: number,
+    pageSize: number,
+    skip: number,
+  ): Promise<PaginatedResponseDto<SocialRelationItem>> {
+    const where: Prisma.BlockWhereInput = {
+      blockerId: userId,
+      blocked: this.buildSocialUserWhere(query.search, query.role),
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.block.findMany({
+        where,
+        include: {
+          blocked: { select: SOCIAL_USER_SELECT },
+        },
+        orderBy: this.getBlockOrderBy(query.sort),
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.block.count({ where }),
+    ]);
+
+    const items = rows.map((relation) =>
+      this.toRelationItem({
+        relationId: relation.id,
+        relationType: 'blocked',
+        createdAt: relation.createdAt,
+        user: relation.blocked,
+        relationship: 'blocked',
+      }),
+    );
+
+    return createPaginatedResponse(items, total, page, pageSize);
+  }
+
+  private buildSocialUserWhere(
+    search?: string,
+    role?: SocialRoleFilter,
+  ): Prisma.UserWhereInput {
+    const and: Prisma.UserWhereInput[] = [{ deletedAt: null }];
+    const normalizedSearch = search?.trim();
+
+    if (normalizedSearch) {
+      and.push({
+        OR: [
+          { email: { contains: normalizedSearch, mode: 'insensitive' } },
+          {
+            profile: {
+              is: {
+                nickname: { contains: normalizedSearch, mode: 'insensitive' },
+              },
+            },
+          },
+          {
+            profile: {
+              is: {
+                targetMajor: {
+                  contains: normalizedSearch,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        ],
+      });
+    }
+
+    if (role === 'verified') {
+      and.push({ role: Role.VERIFIED });
+    } else if (role === 'staff') {
+      and.push({ role: { in: [Role.SUPER_ADMIN, Role.ADMIN, Role.OPERATOR] } });
+    }
+
+    return { AND: and };
+  }
+
+  private applyRelationshipFilter(
+    where: Prisma.FollowWhereInput,
+    peerIdField: 'followerId' | 'followingId',
+    reciprocalIds: string[],
+    relationship?: SocialRelationshipFilter,
+  ) {
+    if (!relationship || relationship === 'all') return;
+
+    where[peerIdField] =
+      relationship === 'mutual'
+        ? { in: reciprocalIds }
+        : { notIn: reciprocalIds };
+  }
+
+  private getFollowOrderBy(
+    type: 'followers' | 'following',
+    sort?: SocialRelationSort,
+  ): Prisma.FollowOrderByWithRelationInput[] {
+    const peerField = type === 'followers' ? 'follower' : 'following';
+    if (sort === 'name') {
+      return [
+        {
+          [peerField]: {
+            profile: { nickname: { sort: 'asc', nulls: 'last' } },
+          },
+        },
+        { [peerField]: { email: 'asc' } },
+      ];
+    }
+    if (sort === 'major') {
+      return [
+        {
+          [peerField]: {
+            profile: { targetMajor: { sort: 'asc', nulls: 'last' } },
+          },
+        },
+        { createdAt: 'desc' },
+      ];
+    }
+    return [{ createdAt: 'desc' }];
+  }
+
+  private getBlockOrderBy(
+    sort?: SocialRelationSort,
+  ): Prisma.BlockOrderByWithRelationInput[] {
+    if (sort === 'name') {
+      return [
+        {
+          blocked: {
+            profile: { nickname: { sort: 'asc', nulls: 'last' } },
+          },
+        },
+        { blocked: { email: 'asc' } },
+      ];
+    }
+    if (sort === 'major') {
+      return [
+        {
+          blocked: {
+            profile: { targetMajor: { sort: 'asc', nulls: 'last' } },
+          },
+        },
+        { createdAt: 'desc' },
+      ];
+    }
+    return [{ createdAt: 'desc' }];
+  }
+
+  private toRelationItem(input: {
+    relationId: string;
+    relationType: SocialRelationType;
+    createdAt: Date;
+    user: SocialPrismaUser;
+    relationship: SocialRelationship;
+  }): SocialRelationItem {
+    return {
+      relationId: input.relationId,
+      relationType: input.relationType,
+      createdAt: input.createdAt,
+      user: this.toSocialUser(input.user),
+      relationship: input.relationship,
+    };
+  }
+
+  private toSocialUser(
+    user: SocialPrismaUser | SocialRecommendationPrismaUser,
+  ): SocialUser {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      profile: user.profile
+        ? {
+            nickname: user.profile.nickname,
+            avatarUrl: user.profile.avatarUrl,
+            bio: user.profile.bio,
+            targetMajor: user.profile.targetMajor,
+            grade: user.profile.grade,
+          }
+        : null,
+      stats: {
+        followers: user._count.followers,
+        following: user._count.following,
+        cases: user._count.admissionCases,
+      },
+    };
+  }
+
+  private async applySingleSocialAction(
+    actorId: string,
+    userId: string,
+    action: SocialBulkAction,
+  ) {
+    if (action === 'follow') return this.followUser(actorId, userId);
+    if (action === 'unfollow') return this.unfollowUser(actorId, userId);
+    if (action === 'block') return this.blockUser(actorId, userId);
+    return this.unblockUser(actorId, userId);
+  }
+
   // ============================================
   // 举报
   // ============================================
@@ -914,7 +1656,7 @@ export class ChatService {
    * @returns Scored and ranked list of recommended user profiles
    */
   async getRecommendedUsers(userId: string, limit = 10) {
-    const [following, blocked] = await Promise.all([
+    const [following, blocked, blockedBy] = await Promise.all([
       this.prisma.follow.findMany({
         where: { followerId: userId },
         select: { followingId: true },
@@ -923,12 +1665,17 @@ export class ChatService {
         where: { blockerId: userId },
         select: { blockedId: true },
       }),
+      this.prisma.block.findMany({
+        where: { blockedId: userId },
+        select: { blockerId: true },
+      }),
     ]);
 
     const excludeIds = [
       userId,
       ...following.map((f) => f.followingId),
       ...blocked.map((b) => b.blockedId),
+      ...blockedBy.map((b) => b.blockerId),
     ];
 
     const currentUserProfile = await this.prisma.profile.findUnique({
@@ -942,87 +1689,61 @@ export class ChatService {
         deletedAt: null,
         profile: { isNot: null },
       },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        profile: {
-          select: {
-            targetMajor: true,
-            grade: true,
-            gpa: true,
-            visibility: true,
-            _count: {
-              select: { testScores: true, activities: true, awards: true },
-            },
-          },
-        },
-        _count: {
-          select: {
-            followers: true,
-            admissionCases: {
-              where: {
-                reviewStatus: {
-                  in: [
-                    DataReviewStatus.AUTO_APPROVED,
-                    DataReviewStatus.APPROVED,
-                  ],
-                },
-              },
-            },
-          },
-        },
-      },
+      select: SOCIAL_RECOMMENDATION_USER_SELECT,
       orderBy: [{ role: 'desc' }, { followers: { _count: 'desc' } }],
       take: limit * 2,
     });
 
-    const scoredUsers = recommendedUsers.map((user) => {
-      let score = 0;
-      if (user.role === 'VERIFIED') score += 50;
-      if (user.role === 'ADMIN') score += 30;
-      if (user._count.admissionCases > 0) score += 30;
+    const scoredUsers: RecommendedSocialUser[] = recommendedUsers.map(
+      (user) => {
+        let score = 0;
+        const reasons: string[] = [];
+        if (user.role === 'VERIFIED') {
+          score += 50;
+          reasons.push('verified');
+        }
+        if (
+          user.role === 'ADMIN' ||
+          user.role === 'SUPER_ADMIN' ||
+          user.role === 'OPERATOR'
+        ) {
+          score += 30;
+          reasons.push('staff');
+        }
+        if (user._count.admissionCases > 0) {
+          score += 30;
+          reasons.push('admissionCases');
+        }
 
-      if (user.profile) {
-        score +=
-          (user.profile._count.testScores > 0 ? 10 : 0) +
-          (user.profile._count.activities > 0 ? 10 : 0) +
-          (user.profile._count.awards > 0 ? 10 : 0) +
-          (user.profile.gpa ? 10 : 0);
-      }
+        if (user.profile) {
+          const profileScore =
+            (user.profile._count.testScores > 0 ? 10 : 0) +
+            (user.profile._count.activities > 0 ? 10 : 0) +
+            (user.profile._count.awards > 0 ? 10 : 0) +
+            (user.profile.gpa ? 10 : 0);
+          score += profileScore;
+          if (profileScore >= 20) reasons.push('profileComplete');
+        }
 
-      if (
-        currentUserProfile?.targetMajor &&
-        user.profile?.targetMajor === currentUserProfile.targetMajor
-      ) {
-        score += 40;
-      }
+        if (
+          currentUserProfile?.targetMajor &&
+          user.profile?.targetMajor === currentUserProfile.targetMajor
+        ) {
+          score += 40;
+          reasons.push('sameMajor');
+        }
 
-      score += Math.min(user._count.followers * 2, 20);
+        score += Math.min(user._count.followers * 2, 20);
+        if (user._count.followers >= 3) reasons.push('popular');
 
-      return {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        profile: user.profile
-          ? {
-              targetMajor: user.profile.targetMajor,
-              grade: user.profile.grade,
-              visibility: user.profile.visibility,
-              completeness: user.profile._count,
-            }
-          : null,
-        stats: {
-          followers: user._count.followers,
-          cases: user._count.admissionCases,
-        },
-        score,
-      };
-    });
+        return {
+          ...this.toSocialUser(user),
+          score,
+          reasons: reasons.slice(0, 3),
+        };
+      },
+    );
 
-    return scoredUsers
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit)
-      .map(({ ...user }) => user);
+    return scoredUsers.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 }

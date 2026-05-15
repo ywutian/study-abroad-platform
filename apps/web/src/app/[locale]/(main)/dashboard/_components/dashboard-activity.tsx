@@ -21,28 +21,30 @@ interface DashboardActivityProps {
 export function DashboardActivity({ activities }: DashboardActivityProps) {
   const t = useTranslations();
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="w-5 h-5" />
+    <Card className="rounded-[var(--theme-radius-card)] py-0">
+      <CardHeader className="px-4 py-4">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Zap className="h-4 w-4" />
           {t('dashboard.recentActivity')}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 pb-4">
         {activities.length > 0 ? (
           <div className="space-y-3">
             {activities.map((activity, idx) => (
               <div key={idx} className="flex items-start gap-3 py-2 border-b last:border-0">
                 <div
                   className={cn(
-                    'w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-                    activity.type === 'earn' ? 'bg-emerald-500/10' : 'bg-amber-500/10'
+                    'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border',
+                    activity.type === 'earn'
+                      ? 'border-success/25 bg-success/10'
+                      : 'border-warning/25 bg-warning/10'
                   )}
                 >
                   {activity.type === 'earn' ? (
-                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    <TrendingUp className="h-4 w-4 text-success" />
                   ) : (
-                    <Zap className="w-4 h-4 text-amber-500" />
+                    <Zap className="h-4 w-4 text-warning" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

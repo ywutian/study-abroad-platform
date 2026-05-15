@@ -23,6 +23,7 @@ import { apiClient } from '@/lib/api/client';
 import { useRouter } from '@/lib/i18n/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { schoolListRoutes, schoolRoutes, profileRoutes } from '@study-abroad/shared';
+import type { ProfileReadinessV1 } from '@study-abroad/shared';
 import { detectInternationalStatus } from '@study-abroad/shared/scoring';
 import { usePredictionDashboard, useRunPrediction } from '@/hooks/use-prediction';
 import {
@@ -121,8 +122,13 @@ export default function PredictionPage() {
   });
 
   const { data: profileData } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', 'me'],
     queryFn: () => apiClient.get<any>(profileRoutes.me()),
+    enabled: canFetchProtectedData,
+  });
+  const { data: readiness } = useQuery({
+    queryKey: ['profile', 'readiness'],
+    queryFn: () => apiClient.get<ProfileReadinessV1>(profileRoutes.readiness()),
     enabled: canFetchProtectedData,
   });
 
@@ -155,6 +161,7 @@ export default function PredictionPage() {
   const firstMissingProfileItem = profileChecklist.find((item) => !item.complete);
   const profileCompleteness =
     responseMetadata.dataCompleteness ??
+    readiness?.profileCompleteness?.score ??
     (profileChecklist.length > 0
       ? Math.round(
           (profileChecklist.filter((item) => item.complete).length / profileChecklist.length) * 100

@@ -32,9 +32,9 @@ export const HistoryItemCard = memo(function HistoryItemCard({
     count: number;
     label: string;
   }> = [
-    { tier: 'reach', count: reachCount, label: t('recommendation.tierReach', 'Reach') },
-    { tier: 'match', count: matchCount, label: t('recommendation.tierMatch', 'Match') },
-    { tier: 'safety', count: safetyCount, label: t('recommendation.tierSafety', 'Safety') },
+    { tier: 'reach', count: reachCount, label: t('recommendation.tierReach') },
+    { tier: 'match', count: matchCount, label: t('recommendation.tierMatch') },
+    { tier: 'safety', count: safetyCount, label: t('recommendation.tierSafety') },
   ];
   const tierSummary = tierSummaryBase.filter((item) => item.count > 0);
 
@@ -47,7 +47,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
               {formatDate(item.createdAt)}
             </Text>
             <Text style={[styles.historySchoolCount, { color: colors.foregroundMuted }]}>
-              {item.recommendations.length} {t('recommendation.schools', 'schools')}
+              {item.recommendations.length} {t('recommendation.schools')}
             </Text>
           </View>
           <View style={styles.historyTierRow}>
@@ -97,13 +97,13 @@ export const HistoryItemCard = memo(function HistoryItemCard({
                     {school.schoolName}
                   </Text>
                   <Text style={[styles.historySchoolScore, { color: colors.foregroundMuted }]}>
-                    {t('recommendation.fitScore', 'Profile Fit')} {school.fitScore}
+                    {t('recommendation.fitScore')} {school.fitScore}
                   </Text>
                 </View>
               ))}
               {item.recommendations.length > 5 && (
                 <Text style={[styles.historyMoreText, { color: colors.foregroundMuted }]}>
-                  +{item.recommendations.length - 5} {t('recommendation.moreSchools', 'more')}
+                  +{item.recommendations.length - 5} {t('recommendation.moreSchools')}
                 </Text>
               )}
             </View>
@@ -114,7 +114,7 @@ export const HistoryItemCard = memo(function HistoryItemCard({
               size="sm"
               style={styles.historyViewButton}
             >
-              {t('recommendation.viewFull', 'View Full Results')}
+              {t('recommendation.viewFull')}
             </AnimatedButton>
           </View>
         )}

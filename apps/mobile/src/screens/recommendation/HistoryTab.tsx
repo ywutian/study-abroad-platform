@@ -34,20 +34,17 @@ export function HistoryTab({ onViewResult, onSwitchToGenerate }: HistoryTabProps
   }, []);
 
   if (historyLoading) {
-    return <Loading text={t('recommendation.loadingHistory', 'Loading history...')} />;
+    return <Loading text={t('recommendation.loadingHistory')} />;
   }
 
   if (!history || history.length === 0) {
     return (
       <EmptyState
         icon="time-outline"
-        title={t('recommendation.noHistory', 'No recommendations yet')}
-        description={t(
-          'recommendation.noHistoryDesc',
-          'Generate your first AI recommendation to get started.'
-        )}
+        title={t('recommendation.noHistory')}
+        description={t('recommendation.noHistoryDesc')}
         action={{
-          label: t('recommendation.goGenerate', 'Generate Now'),
+          label: t('recommendation.goGenerate'),
           onPress: onSwitchToGenerate,
         }}
       />

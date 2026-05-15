@@ -103,6 +103,7 @@ export interface Activity {
   id: string;
   profileId: string;
   name: string;
+  category?: string;
   role: string;
   organization?: string;
   description?: string;
@@ -118,6 +119,7 @@ export interface Award {
   name: string;
   level: string;
   date?: string;
+  year?: number;
   description?: string;
   competitionId?: string;
   competition?: import('@study-abroad/shared/types').Competition;
@@ -128,6 +130,7 @@ export interface Profile {
   userId: string;
   grade?: string;
   schoolType?: SchoolType;
+  currentSchoolType?: string;
   currentSchool?: string;
   targetMajor?: string;
   regionPreference?: string[];

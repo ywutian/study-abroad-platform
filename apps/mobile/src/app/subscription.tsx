@@ -197,11 +197,11 @@ export default function SubscriptionPage() {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.current() });
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.billing() });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success(t('subscription.subscribeSuccess', 'Subscription updated successfully!'));
+      toast.success(t('subscription.subscribeSuccess'));
     },
     onError: (error: Error) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.error(error.message || t('subscription.subscribeFailed', 'Subscription failed'));
+      toast.error(error.message || t('subscription.subscribeFailed'));
     },
   });
 
@@ -211,12 +211,12 @@ export default function SubscriptionPage() {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.current() });
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.billing() });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success(t('subscription.cancelSuccess', 'Subscription cancelled'));
+      toast.success(t('subscription.cancelSuccess'));
       setCancelDialogVisible(false);
     },
     onError: (error: Error) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.error(error.message || t('subscription.cancelFailed', 'Cancellation failed'));
+      toast.error(error.message || t('subscription.cancelFailed'));
     },
   });
 
@@ -274,9 +274,9 @@ export default function SubscriptionPage() {
   const getStatusBadge = () => {
     if (!currentSub) return null;
     if (currentSub.isActive) {
-      return { label: t('subscription.active', 'Active'), variant: 'success' as const };
+      return { label: t('subscription.active'), variant: 'success' as const };
     }
-    return { label: t('subscription.expired', 'Expired'), variant: 'error' as const };
+    return { label: t('subscription.expired'), variant: 'error' as const };
   };
 
   const getBillingStatusVariant = (
@@ -303,8 +303,8 @@ export default function SubscriptionPage() {
   if (plansLoading || subLoading) {
     return (
       <>
-        <Stack.Screen options={{ title: t('subscription.title', 'Subscription') }} />
-        <Loading fullScreen text={t('subscription.loading', 'Loading subscription...')} />
+        <Stack.Screen options={{ title: t('subscription.title') }} />
+        <Loading fullScreen text={t('subscription.loading')} />
       </>
     );
   }
@@ -331,7 +331,7 @@ export default function SubscriptionPage() {
             </View>
             <View style={styles.currentPlanInfo}>
               <Text style={[styles.currentPlanLabel, { color: colors.foregroundMuted }]}>
-                {t('subscription.currentPlan', 'Current Plan')}
+                {t('subscription.currentPlan')}
               </Text>
               <Text style={[styles.currentPlanName, { color: colors.foreground }]}>
                 {currentSub.planDetails.name}
@@ -344,7 +344,7 @@ export default function SubscriptionPage() {
             <View style={styles.expiryRow}>
               <Ionicons name="calendar-outline" size={14} color={colors.foregroundMuted} />
               <Text style={[styles.expiryText, { color: colors.foregroundMuted }]}>
-                {t('subscription.expiresOn', 'Expires on {{date}}', {
+                {t('subscription.expiresOn', {
                   date: formatDate(currentSub.endDate),
                 })}
               </Text>
@@ -355,7 +355,7 @@ export default function SubscriptionPage() {
             <View style={[styles.upgradeBanner, { backgroundColor: colors.primary + '10' }]}>
               <Ionicons name="sparkles" size={16} color={colors.primary} />
               <Text style={[styles.upgradeText, { color: colors.primary }]}>
-                {t('subscription.upgradePrompt', 'Upgrade to unlock AI features and more!')}
+                {t('subscription.upgradePrompt')}
               </Text>
             </View>
           )}
@@ -420,9 +420,7 @@ export default function SubscriptionPage() {
             {(isPro || isPremium) && (
               <View style={styles.planBadgeRow}>
                 <Badge variant={isPro ? 'default' : 'warning'} style={styles.planBadge}>
-                  {isPro
-                    ? t('subscription.popular', 'Popular')
-                    : t('subscription.bestValue', 'Best Value')}
+                  {isPro ? t('subscription.popular') : t('subscription.bestValue')}
                 </Badge>
               </View>
             )}
@@ -437,7 +435,7 @@ export default function SubscriptionPage() {
                 <View style={styles.priceRow}>
                   {isFree ? (
                     <Text style={[styles.planPrice, { color: accentColor }]}>
-                      {t('subscription.free', 'Free')}
+                      {t('subscription.free')}
                     </Text>
                   ) : (
                     <>
@@ -445,7 +443,7 @@ export default function SubscriptionPage() {
                         {formatAmount(price, plan.currency)}
                       </Text>
                       <Text style={[styles.planPeriod, { color: colors.foregroundMuted }]}>
-                        /{t('subscription.month', 'mo')}
+                        /{t('subscription.month')}
                       </Text>
                       {billingPeriod === 'yearly' && price < originalPrice && (
                         <Text style={[styles.planOriginalPrice, { color: colors.foregroundMuted }]}>
@@ -457,7 +455,7 @@ export default function SubscriptionPage() {
                 </View>
                 {billingPeriod === 'yearly' && totalYearly != null && (
                   <Text style={[styles.yearlyTotal, { color: colors.foregroundMuted }]}>
-                    {t('subscription.billedYearly', 'Billed {{amount}}/year', {
+                    {t('subscription.billedYearly', {
                       amount: formatAmount(totalYearly, plan.currency),
                     })}
                   </Text>
@@ -489,11 +487,11 @@ export default function SubscriptionPage() {
                     <Ionicons name="checkmark-circle" size={20} color={colors.foregroundMuted} />
                   }
                 >
-                  {t('subscription.currentPlanLabel', 'Current Plan')}
+                  {t('subscription.currentPlanLabel')}
                 </AnimatedButton>
               ) : isFree && isDowngrade ? (
                 <AnimatedButton variant="outline" size="lg" disabled style={styles.planButton}>
-                  {t('subscription.freePlan', 'Free Plan')}
+                  {t('subscription.freePlan')}
                 </AnimatedButton>
               ) : isUpgrade ? (
                 <AnimatedButton
@@ -504,7 +502,7 @@ export default function SubscriptionPage() {
                   style={[styles.planButton, { backgroundColor: accentColor }]}
                   leftIcon={<Ionicons name="arrow-up-circle-outline" size={20} color="#fff9ef" />}
                 >
-                  {t('subscription.upgrade', 'Upgrade')}
+                  {t('subscription.upgrade')}
                 </AnimatedButton>
               ) : (
                 <AnimatedButton
@@ -514,7 +512,7 @@ export default function SubscriptionPage() {
                   loading={isSubscribing}
                   style={styles.planButton}
                 >
-                  {t('subscription.switchPlan', 'Switch Plan')}
+                  {t('subscription.switchPlan')}
                 </AnimatedButton>
               )}
             </View>
@@ -541,10 +539,10 @@ export default function SubscriptionPage() {
           </View>
           <View>
             <Text style={[styles.billingTitle, { color: colors.foreground }]}>
-              {t('subscription.billingHistory', 'Billing History')}
+              {t('subscription.billingHistory')}
             </Text>
             <Text style={[styles.billingSubtitle, { color: colors.foregroundMuted }]}>
-              {t('subscription.billingHistoryDesc', 'View past transactions')}
+              {t('subscription.billingHistoryDesc')}
             </Text>
           </View>
         </View>
@@ -563,12 +561,12 @@ export default function SubscriptionPage() {
           ]}
         >
           {billingLoading ? (
-            <Loading text={t('subscription.loadingBilling', 'Loading history...')} />
+            <Loading text={t('subscription.loadingBilling')} />
           ) : !billingHistory || billingHistory.length === 0 ? (
             <View style={styles.emptyBilling}>
               <Ionicons name="receipt-outline" size={40} color={colors.foregroundMuted} />
               <Text style={[styles.emptyBillingText, { color: colors.foregroundMuted }]}>
-                {t('subscription.noInvoices', 'No billing history yet')}
+                {t('subscription.noInvoices')}
               </Text>
             </View>
           ) : (
@@ -626,7 +624,7 @@ export default function SubscriptionPage() {
             textStyle={{ color: colors.error }}
             leftIcon={<Ionicons name="close-circle-outline" size={20} color={colors.error} />}
           >
-            {t('subscription.cancelSubscription', 'Cancel Subscription')}
+            {t('subscription.cancelSubscription')}
           </AnimatedButton>
         </View>
       </Animated.View>
@@ -641,7 +639,7 @@ export default function SubscriptionPage() {
     <>
       <Stack.Screen
         options={{
-          title: t('subscription.title', 'Subscription'),
+          title: t('subscription.title'),
           headerLargeTitle: false,
         }}
       />
@@ -664,12 +662,8 @@ export default function SubscriptionPage() {
                 <Ionicons name="card" size={28} color="#fff" />
               </View>
               <View style={styles.heroTextContainer}>
-                <Text style={styles.heroTitle}>
-                  {t('subscription.heroTitle', 'Subscription Plans')}
-                </Text>
-                <Text style={styles.heroSubtitle}>
-                  {t('subscription.heroSubtitle', 'Choose the plan that fits your needs')}
-                </Text>
+                <Text style={styles.heroTitle}>{t('subscription.heroTitle')}</Text>
+                <Text style={styles.heroSubtitle}>{t('subscription.heroSubtitle')}</Text>
               </View>
             </View>
           </LinearGradient>
@@ -686,11 +680,11 @@ export default function SubscriptionPage() {
                 segments={[
                   {
                     key: 'monthly',
-                    label: t('subscription.monthly', 'Monthly'),
+                    label: t('subscription.monthly'),
                   },
                   {
                     key: 'yearly',
-                    label: t('subscription.yearly', 'Yearly'),
+                    label: t('subscription.yearly'),
                   },
                 ]}
                 value={billingPeriod}
@@ -703,7 +697,7 @@ export default function SubscriptionPage() {
                 <View style={[styles.discountBadge, { backgroundColor: colors.success + '15' }]}>
                   <Ionicons name="pricetag" size={12} color={colors.success} />
                   <Text style={[styles.discountText, { color: colors.success }]}>
-                    {t('subscription.yearlyDiscount', 'Save ~17%')}
+                    {t('subscription.yearlyDiscount')}
                   </Text>
                 </View>
               )}
@@ -726,13 +720,10 @@ export default function SubscriptionPage() {
         visible={cancelDialogVisible}
         onClose={() => setCancelDialogVisible(false)}
         onConfirm={handleCancelConfirm}
-        title={t('subscription.cancelConfirmTitle', 'Cancel Subscription?')}
-        message={t(
-          'subscription.cancelConfirmMessage',
-          'You will lose access to premium features. Your subscription will remain active until the end of the current billing period.'
-        )}
-        confirmText={t('subscription.confirmCancel', 'Cancel Subscription')}
-        cancelText={t('subscription.keepPlan', 'Keep Plan')}
+        title={t('subscription.cancelConfirmTitle')}
+        message={t('subscription.cancelConfirmMessage')}
+        confirmText={t('subscription.confirmCancel')}
+        cancelText={t('subscription.keepPlan')}
         variant="destructive"
         loading={cancelMutation.isPending}
         icon="warning"

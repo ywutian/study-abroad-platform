@@ -123,7 +123,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
   };
 
   const stateOptions = [
-    { value: '', label: t('findCollege.filters.allStates', 'All States') },
+    { value: '', label: t('findCollege.filters.allStates') },
     ...US_STATES.map((s) => ({ value: s, label: s })),
   ];
 
@@ -147,21 +147,21 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
     <Modal
       visible={visible}
       onClose={onClose}
-      title={t('findCollege.filters.title', 'Filters')}
+      title={t('findCollege.filters.title')}
       footer={
         <>
           <AnimatedButton variant="outline" onPress={handleReset} style={styles.filterActionButton}>
-            {t('findCollege.filters.reset', 'Reset')}
+            {t('findCollege.filters.reset')}
           </AnimatedButton>
           <AnimatedButton onPress={handleApply} style={styles.filterActionButton}>
-            {t('findCollege.filters.apply', 'Apply')}
+            {t('findCollege.filters.apply')}
           </AnimatedButton>
         </>
       }
     >
       {/* Rank Range */}
       <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.rankRange', 'US News list rank')}
+        {t('findCollege.filters.rankRange')}
       </Text>
       <View style={styles.rangeRow}>
         <View style={styles.rangeInputWrapper}>
@@ -174,7 +174,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
                 color: colors.foreground,
               },
             ]}
-            placeholder={t('findCollege.filters.min', 'Min')}
+            placeholder={t('findCollege.filters.min')}
             placeholderTextColor={colors.placeholder}
             value={draft.minRank}
             onChangeText={(v) => updateDraft('minRank', v.replace(/[^0-9]/g, ''))}
@@ -193,7 +193,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
                 color: colors.foreground,
               },
             ]}
-            placeholder={t('findCollege.filters.max', 'Max')}
+            placeholder={t('findCollege.filters.max')}
             placeholderTextColor={colors.placeholder}
             value={draft.maxRank}
             onChangeText={(v) => updateDraft('maxRank', v.replace(/[^0-9]/g, ''))}
@@ -205,7 +205,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
 
       {/* Tuition Range */}
       <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.tuitionRange', 'Tuition (USD)')}
+        {t('findCollege.filters.tuitionRange')}
       </Text>
       <View style={styles.rangeRow}>
         <View style={styles.rangeInputWrapper}>
@@ -249,7 +249,7 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
 
       {/* Acceptance Rate Range */}
       <Text style={[styles.filterSectionLabel, { color: colors.foreground }]}>
-        {t('findCollege.filters.acceptanceRate', 'Acceptance Rate (%)')}
+        {t('findCollege.filters.acceptanceRate')}
       </Text>
       <View style={styles.rangeRow}>
         <View style={styles.rangeInputWrapper}>
@@ -293,16 +293,16 @@ function FilterModal({ visible, onClose, filters, onApply, onReset }: FilterModa
 
       {/* State */}
       <Select
-        label={t('findCollege.filters.state', 'State / Region')}
+        label={t('findCollege.filters.state')}
         options={stateOptions}
         value={draft.state}
         onChange={(v) => updateDraft('state', v)}
-        placeholder={t('findCollege.filters.allStates', 'All States')}
+        placeholder={t('findCollege.filters.allStates')}
       />
 
       {/* School Type */}
       <Select
-        label={t('findCollege.filters.type', 'School Type')}
+        label={t('findCollege.filters.type')}
         options={typeOptions}
         value={draft.type}
         onChange={(v) => updateDraft('type', v)}
@@ -358,7 +358,7 @@ export default function FindCollegePage() {
       const max = appliedFilters.maxRank || '200';
       tags.push({
         key: 'rank',
-        label: t('findCollege.tags.rank', 'Rank {{min}}-{{max}}', { min, max }),
+        label: t('findCollege.tags.rank', { min, max }),
       });
     }
 
@@ -371,7 +371,7 @@ export default function FindCollegePage() {
         : '$80k';
       tags.push({
         key: 'tuition',
-        label: t('findCollege.tags.tuition', 'Tuition {{min}}-{{max}}', {
+        label: t('findCollege.tags.tuition', {
           min,
           max,
         }),
@@ -383,7 +383,7 @@ export default function FindCollegePage() {
       const max = appliedFilters.maxAcceptanceRate || '100';
       tags.push({
         key: 'acceptance',
-        label: t('findCollege.tags.acceptance', '{{min}}%-{{max}}% Acceptance', {
+        label: t('findCollege.tags.acceptance', {
           min,
           max,
         }),
@@ -399,8 +399,8 @@ export default function FindCollegePage() {
         key: 'type',
         label:
           appliedFilters.type === 'private'
-            ? t('findCollege.filters.typePrivate', 'Private')
-            : t('findCollege.filters.typePublic', 'Public'),
+            ? t('findCollege.filters.typePrivate')
+            : t('findCollege.filters.typePublic'),
       });
     }
 
@@ -520,10 +520,10 @@ export default function FindCollegePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success(t('findCollege.addedToList', 'Added to your school list'));
+      toast.success(t('findCollege.addedToList'));
     },
     onError: () => {
-      toast.error(t('findCollege.addError', 'Failed to add school to list'));
+      toast.error(t('findCollege.addError'));
     },
   });
 
@@ -533,10 +533,10 @@ export default function FindCollegePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['school-list'] });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.info(t('findCollege.removedFromList', 'Removed from your school list'));
+      toast.info(t('findCollege.removedFromList'));
     },
     onError: () => {
-      toast.error(t('findCollege.removeError', 'Failed to remove school from list'));
+      toast.error(t('findCollege.removeError'));
     },
   });
 
@@ -568,27 +568,27 @@ export default function FindCollegePage() {
   const filterChips = [
     {
       key: 'rank',
-      label: t('findCollege.chips.rank', 'Rank'),
+      label: t('findCollege.chips.rank'),
       icon: 'trophy-outline' as const,
     },
     {
       key: 'tuition',
-      label: t('findCollege.chips.tuition', 'Tuition'),
+      label: t('findCollege.chips.tuition'),
       icon: 'cash-outline' as const,
     },
     {
       key: 'acceptance',
-      label: t('findCollege.chips.acceptance', 'Acceptance'),
+      label: t('findCollege.chips.acceptance'),
       icon: 'stats-chart-outline' as const,
     },
     {
       key: 'state',
-      label: t('findCollege.chips.state', 'State'),
+      label: t('findCollege.chips.state'),
       icon: 'location-outline' as const,
     },
     {
       key: 'type',
-      label: t('findCollege.chips.type', 'Type'),
+      label: t('findCollege.chips.type'),
       icon: 'school-outline' as const,
     },
   ];
@@ -754,12 +754,12 @@ export default function FindCollegePage() {
     return (
       <EmptyState
         icon="search-outline"
-        title={t('findCollege.noResults', 'No schools found')}
-        description={t('findCollege.noResultsDescription', 'Try adjusting your search or filters')}
+        title={t('findCollege.noResults')}
+        description={t('findCollege.noResultsDescription')}
         action={
           activeFilterCount > 0
             ? {
-                label: t('findCollege.clearFilters', 'Clear Filters'),
+                label: t('findCollege.clearFilters'),
                 onPress: handleResetFilters,
               }
             : undefined
@@ -772,7 +772,7 @@ export default function FindCollegePage() {
     <>
       <Stack.Screen
         options={{
-          title: t('findCollege.title', 'Find College'),
+          title: t('findCollege.title'),
         }}
       />
 
@@ -782,7 +782,7 @@ export default function FindCollegePage() {
           <SearchBar
             value={search}
             onChangeText={handleSearchChange}
-            placeholder={t('findCollege.searchPlaceholder', 'Search schools by name...')}
+            placeholder={t('findCollege.searchPlaceholder')}
             style={styles.searchBar}
           />
           <TouchableOpacity
@@ -871,7 +871,7 @@ export default function FindCollegePage() {
         {!isLoading && schools.length > 0 && (
           <View style={styles.resultCountContainer}>
             <Text style={[styles.resultCountText, { color: colors.foregroundMuted }]}>
-              {t('findCollege.resultsCount', '{{count}} schools found', {
+              {t('findCollege.resultsCount', {
                 count: totalResults,
               })}
             </Text>

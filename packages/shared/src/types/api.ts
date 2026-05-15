@@ -125,6 +125,132 @@ export enum ApplicationStatus {
   WITHDRAWN = 'WITHDRAWN',
 }
 
+export type ProfileReadinessStatus = 'blocked' | 'attention' | 'ready';
+export type ProfileReadinessSeverity = 'critical' | 'warning' | 'info' | 'success';
+export type ProfileReadinessGpaSource = 'cumulative' | 'grade_level' | 'semester';
+export type ProfileReadinessTestStrategy =
+  | 'scores_submitted'
+  | 'test_optional_confirmed'
+  | 'unknown';
+export type ProfileReadinessAnalysisState =
+  | 'ready'
+  | 'noTargetSchools'
+  | 'noPredictions'
+  | 'insufficientProfileData'
+  | 'notRun';
+
+export interface ProfileReadinessAction {
+  key: string;
+  href: string;
+  labelKey: string;
+  severity: ProfileReadinessSeverity;
+  targetTab?: string;
+}
+
+export interface ProfileReadinessItem {
+  key: string;
+  labelKey: string;
+  score: number;
+  status: ProfileReadinessStatus;
+  gaps: string[];
+  href: string;
+  targetTab?: string;
+}
+
+export interface ProfileReadinessV1 {
+  readinessVersion: 'profile-readiness-v1';
+  computedAt: string;
+  overall: {
+    score: number;
+    status: ProfileReadinessStatus;
+    blockers: string[];
+    warnings: string[];
+    nextActions: ProfileReadinessAction[];
+    canRunPrediction: boolean;
+    canGenerateRecommendation: boolean;
+    canRunApplicationAnalysis: boolean;
+  };
+  profileCompleteness: {
+    score: number;
+    status: ProfileReadinessStatus;
+    gaps: string[];
+    gpaAnchor?: {
+      value: number;
+      scale: number;
+      source: ProfileReadinessGpaSource;
+    };
+    testStrategy: ProfileReadinessTestStrategy;
+    counts: {
+      testScores: number;
+      activities: number;
+      awards: number;
+    };
+  };
+  workflowReadiness: {
+    score: number;
+    status: ProfileReadinessStatus;
+    items: ProfileReadinessItem[];
+  };
+  schoolList: {
+    count: number;
+    tierCounts: { reach: number; target: number; safety: number };
+    missingRoundCount: number;
+    missingDeadlineCount: number;
+    balanced: boolean;
+  };
+  predictionDataSupport: {
+    previewCount: number;
+    authoritativeCount: number;
+    freshAuthoritativeCount: number;
+    staleCount: number;
+    missingSchoolIds: string[];
+    lastRunAt?: string;
+  };
+  timeline: {
+    coverageCount: number;
+    missingTimelineCount: number;
+    pendingTaskCount: number;
+    overdueTaskCount: number;
+    due7Count: number;
+    due30Count: number;
+  };
+  essays: {
+    count: number;
+    linkedPromptCount: number;
+  };
+  resume: {
+    count: number;
+    latestUpdatedAt?: string;
+    latestQualityScore?: number;
+    openIssueCount: number;
+    evidenceCount: number;
+  };
+  recommendationLetters: {
+    count: number;
+    requested: number;
+    inProgress: number;
+    submitted: number;
+    confirmed: number;
+    overdue: number;
+  };
+  applicationAnalysis: {
+    state: ProfileReadinessAnalysisState;
+    dataQuality?: string;
+    targetSchoolCount: number;
+    schoolsWithPredictions: number;
+    lastRunAt?: string;
+  };
+  sources: {
+    profileUpdatedAt?: string;
+    schoolListUpdatedAt?: string;
+    predictionUpdatedAt?: string;
+    timelineUpdatedAt?: string;
+    resumeUpdatedAt?: string;
+    recommendationLettersUpdatedAt?: string;
+    applicationAnalysisUpdatedAt?: string;
+  };
+}
+
 export enum MemoryType {
   FACT = 'FACT',
   PREFERENCE = 'PREFERENCE',

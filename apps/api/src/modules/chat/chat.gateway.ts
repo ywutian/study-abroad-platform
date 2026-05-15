@@ -26,6 +26,10 @@ interface AuthenticatedSocket extends Socket {
   userId?: string;
 }
 
+interface ChatJwtPayload {
+  sub?: string;
+}
+
 @WebSocketGateway({
   cors: {
     origin: process.env.CORS_ORIGINS?.split(',') || [
@@ -54,16 +58,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      const token =
-        client.handshake.auth.token ||
-        client.handshake.headers.authorization?.split(' ')[1];
+      const authToken =
+        typeof client.handshake.auth.token === 'string'
+          ? client.handshake.auth.token
+          : undefined;
+      const headerToken = client.handshake.headers.authorization?.split(' ')[1];
+      const token = authToken || headerToken;
 
       if (!token) {
         client.disconnect();
         return;
       }
 
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<ChatJwtPayload>(token, {
         secret: this.configService.get('JWT_SECRET'),
       });
 
@@ -133,7 +140,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('sendMessage')
   async handleMessage(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: { conversationId: string; content: string },
+    @MessageBody()
+    data: {
+      conversationId: string;
+      content: string;
+      clientMessageId?: string;
+      replyToId?: string;
+    },
   ) {
     if (!client.userId) return { success: false, error: 'Not authenticated' };
 
@@ -142,6 +155,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data.conversationId,
         client.userId,
         data.content,
+        {
+          clientMessageId: data.clientMessageId,
+          replyToId: data.replyToId,
+        },
       );
 
       // 广播给会话内所有参与者

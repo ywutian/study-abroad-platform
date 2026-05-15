@@ -5,13 +5,6 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ChevronRight } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { TAB_CONFIG, TAB_ICON_ACTIVE_CLASSES } from './constants';
 
 export type TabCompletionStatus = 'complete' | 'missing' | 'partial';
@@ -36,7 +29,6 @@ export function ProfileTabNav({
   tabCompletion,
 }: ProfileTabNavProps) {
   const t = useTranslations();
-  const activeTabConfig = TAB_CONFIG.find((tab) => tab.value === activeTab);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   /** Vertical arrow-key roving focus inside the tablist. */
@@ -138,53 +130,55 @@ export function ProfileTabNav({
           })}
         </nav>
 
-        {/* Mobile selector */}
-        <div className="lg:hidden">
-          <Select value={activeTab} onValueChange={onTabChange}>
-            <SelectTrigger className="h-12" aria-label={t('profile.title')}>
-              <div className="flex items-center gap-3">
-                {activeTabConfig && (
-                  <div
-                    className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg',
-                      TAB_ICON_ACTIVE_CLASSES[activeTabConfig.value] ||
-                        'bg-primary text-primary-foreground'
-                    )}
-                  >
-                    <activeTabConfig.icon className="h-4 w-4" />
-                  </div>
+        {/* Mobile step navigation */}
+        <nav
+          aria-label={t('profile.title')}
+          role="tablist"
+          aria-orientation="horizontal"
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:hidden"
+        >
+          {TAB_CONFIG.map((tab, index) => {
+            const isActive = activeTab === tab.value;
+            const completion = tabCompletion?.[tab.value];
+            return (
+              <button
+                key={tab.value}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`profile-tab-panel-${tab.value}`}
+                id={`profile-tab-${tab.value}`}
+                type="button"
+                onClick={() => onTabChange(tab.value)}
+                onKeyDown={(event) => onTabKeyDown(event, index)}
+                className={cn(
+                  'relative flex min-h-11 shrink-0 items-center gap-2 rounded-[var(--theme-radius-button)] border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  isActive
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'bg-background text-muted-foreground'
                 )}
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {TAB_CONFIG.map((tab) => (
-                <SelectItem key={tab.value} value={tab.value}>
-                  <span className="flex items-center gap-2">
-                    <tab.icon className="h-4 w-4" />
-                    {t(tab.labelKey)}
-                    {tabErrors?.[tab.value] ? (
-                      <span
-                        className="flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-2xs font-medium px-1"
-                        aria-label={t('profile.tabErrorsAria', { count: tabErrors[tab.value] })}
-                      >
-                        {tabErrors[tab.value]}
-                      </span>
-                    ) : tabCompletion?.[tab.value] ? (
-                      <span
-                        className={cn(
-                          'h-2 w-2 rounded-full',
-                          TAB_COMPLETION_CLASSES[tabCompletion[tab.value]]
-                        )}
-                        aria-label={t(`profile.tabStatus.${tabCompletion[tab.value]}`)}
-                      />
-                    ) : null}
+              >
+                <tab.icon className="h-4 w-4" />
+                {t(tab.labelKey)}
+                {tabErrors?.[tab.value] ? (
+                  <span
+                    className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-2xs text-destructive-foreground"
+                    aria-label={t('profile.tabErrorsAria', { count: tabErrors[tab.value] })}
+                  >
+                    {tabErrors[tab.value]}
                   </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+                ) : completion ? (
+                  <span
+                    className={cn('h-2.5 w-2.5 rounded-full', TAB_COMPLETION_CLASSES[completion])}
+                    aria-label={t(`profile.tabStatus.${completion}`)}
+                  />
+                ) : null}
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

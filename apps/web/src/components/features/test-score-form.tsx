@@ -149,6 +149,10 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
     mutationFn: (data: unknown) => apiClient.post(profileRoutes.testScores(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
       toast.success(t('toast.scoreAdded'));
       onOpenChange(false);
     },
@@ -161,6 +165,10 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
     mutationFn: (data: unknown) => apiClient.put(profileRoutes.testScore(editingScore!.id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
       toast.success(t('toast.scoreUpdated'));
       onOpenChange(false);
     },
@@ -206,6 +214,13 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       toast.error(t('validation.scoreRequired'));
       return;
     }
+    if (isSubjectType) {
+      const hasCompleteSubjectEntry = subjectEntries.some((entry) => entry.subject && entry.score);
+      if (!hasCompleteSubjectEntry && !values.score) {
+        toast.error(t('validation.scoreRequired'));
+        return;
+      }
+    }
 
     let subScores: Record<string, number | string> | undefined;
     let totalScore: number;
@@ -247,16 +262,16 @@ export function TestScoreForm({ open, onOpenChange, editingScore }: TestScoreFor
       subScores = {};
       if (values.satReading) subScores.reading = parseInt(values.satReading);
       if (values.satMath) subScores.math = parseInt(values.satMath);
-      totalScore = parseInt(values.score);
+      totalScore = parseInt(values.score || '0');
     } else if (values.type === 'TOEFL') {
       subScores = {};
       if (values.toeflReading) subScores.reading = parseInt(values.toeflReading);
       if (values.toeflListening) subScores.listening = parseInt(values.toeflListening);
       if (values.toeflSpeaking) subScores.speaking = parseInt(values.toeflSpeaking);
       if (values.toeflWriting) subScores.writing = parseInt(values.toeflWriting);
-      totalScore = parseInt(values.score);
+      totalScore = parseInt(values.score || '0');
     } else {
-      totalScore = parseInt(values.score);
+      totalScore = parseInt(values.score || '0');
     }
 
     const data = {

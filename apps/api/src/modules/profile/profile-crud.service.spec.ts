@@ -255,6 +255,25 @@ describe('ProfileCrudService', () => {
 
       expect(result).toEqual(updated);
     });
+
+    it('should clear nullable GPA fields and preserve undefined fields', async () => {
+      const updated = { id: 'profile-1', userId: 'user-1', gpa: null };
+      mockPrisma.profile.update.mockResolvedValue(updated);
+
+      await service.update('user-1', {
+        gpa: null,
+        gpa9: 3.75,
+        gpa10: null,
+      });
+
+      const data = mockPrisma.profile.update.mock.calls[0][0].data;
+      expect(data.gpa).toBeNull();
+      expect(data.gpa9).toBeInstanceOf(Prisma.Decimal);
+      expect(Number(data.gpa9)).toBe(3.75);
+      expect(data.gpa10).toBeNull();
+      expect(data.gpa11).toBeUndefined();
+      expect(data.gpa12).toBeUndefined();
+    });
   });
 
   // ============================================
@@ -288,6 +307,20 @@ describe('ProfileCrudService', () => {
           }),
         }),
       );
+    });
+
+    it('should preserve null clears for cumulative and grade-level GPAs on upsert', async () => {
+      mockPrisma.profile.upsert.mockResolvedValue({ id: 'p-1' });
+
+      await service.upsert('user-1', { gpa: null, gpa12: null, gpa11: 3.9 });
+
+      const call = mockPrisma.profile.upsert.mock.calls[0][0];
+      expect(call.update.gpa).toBeNull();
+      expect(call.update.gpa12).toBeNull();
+      expect(call.update.gpa11).toBeInstanceOf(Prisma.Decimal);
+      expect(call.create.gpa).toBeNull();
+      expect(call.create.gpa12).toBeNull();
+      expect(call.create.gpa11).toBeInstanceOf(Prisma.Decimal);
     });
 
     it('should retry as update when upsert races on unique userId', async () => {

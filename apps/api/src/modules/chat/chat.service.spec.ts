@@ -70,12 +70,14 @@ describe('ChatService', () => {
               upsert: jest.fn(),
               deleteMany: jest.fn(),
               findMany: jest.fn(),
+              count: jest.fn(),
             },
             block: {
               findUnique: jest.fn(),
               upsert: jest.fn(),
               deleteMany: jest.fn(),
               findMany: jest.fn(),
+              count: jest.fn(),
             },
             conversation: {
               findFirst: jest.fn(),
@@ -91,10 +93,12 @@ describe('ChatService', () => {
               findUnique: jest.fn(),
               findFirst: jest.fn(),
               findMany: jest.fn(),
+              deleteMany: jest.fn(),
               update: jest.fn(),
             },
             message: {
               create: jest.fn(),
+              findFirst: jest.fn(),
               findMany: jest.fn(),
               findUnique: jest.fn(),
               update: jest.fn(),
@@ -106,6 +110,10 @@ describe('ChatService', () => {
             },
             user: {
               findUnique: jest.fn().mockResolvedValue({ role: 'VERIFIED' }),
+              findMany: jest.fn(),
+            },
+            profile: {
+              findUnique: jest.fn(),
             },
           },
         },
@@ -331,6 +339,181 @@ describe('ChatService', () => {
 
       expect(prismaService.follow.deleteMany).toHaveBeenCalled();
       expect(result.blockerId).toBe('user-1');
+    });
+  });
+
+  describe('getSocialOverview', () => {
+    it('should return relationship counts and recommendations', async () => {
+      jest.spyOn(service, 'getRecommendedUsers').mockResolvedValue([
+        {
+          id: 'user-4',
+          email: 'mentor@test.com',
+          role: 'VERIFIED',
+          profile: { nickname: 'Mentor' },
+          stats: { followers: 3, following: 1, cases: 2 },
+          score: 90,
+          reasons: ['verified'],
+        },
+      ]);
+      (prismaService.follow.count as jest.Mock)
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(3)
+        .mockResolvedValueOnce(1);
+      (prismaService.block.count as jest.Mock).mockResolvedValue(1);
+      (prismaService.follow.findMany as jest.Mock).mockResolvedValueOnce([
+        { followingId: 'user-2' },
+      ]);
+
+      const result = await service.getSocialOverview('user-1');
+
+      expect(result.counts).toEqual({
+        followers: 2,
+        following: 3,
+        mutual: 1,
+        blocked: 1,
+      });
+      expect(result.recommendations).toHaveLength(1);
+      expect(prismaService.follow.count).toHaveBeenLastCalledWith({
+        where: { followingId: 'user-1', followerId: { in: ['user-2'] } },
+      });
+    });
+  });
+
+  describe('getSocialRelations', () => {
+    it('should return paginated follower relations with search and mutual filter', async () => {
+      const createdAt = new Date('2026-05-15T08:00:00.000Z');
+      const relationUser = {
+        id: 'user-2',
+        email: 'alice@example.com',
+        role: 'VERIFIED',
+        profile: {
+          nickname: 'Alice',
+          avatarUrl: 'https://example.com/avatar.png',
+          bio: 'CS mentor',
+          targetMajor: 'Computer Science',
+          grade: 'SENIOR',
+          visibility: 'PUBLIC',
+        },
+        _count: { followers: 8, following: 2, admissionCases: 3 },
+      };
+
+      (prismaService.follow.findMany as jest.Mock)
+        .mockResolvedValueOnce([{ followingId: 'user-2' }])
+        .mockResolvedValueOnce([
+          {
+            id: 'follow-1',
+            followerId: 'user-2',
+            followingId: 'user-1',
+            createdAt,
+            follower: relationUser,
+            following: {
+              ...relationUser,
+              id: 'user-1',
+              email: 'me@example.com',
+            },
+          },
+        ]);
+      (prismaService.follow.count as jest.Mock).mockResolvedValue(1);
+
+      const result = await service.getSocialRelations('user-1', {
+        type: 'followers',
+        page: 1,
+        pageSize: 20,
+        search: 'alice',
+        relationship: 'mutual',
+        role: 'verified',
+        sort: 'recent',
+      });
+
+      expect(result.total).toBe(1);
+      expect(result.items[0]).toMatchObject({
+        relationId: 'follow-1',
+        relationType: 'followers',
+        relationship: 'mutual',
+        user: {
+          id: 'user-2',
+          profile: {
+            nickname: 'Alice',
+            avatarUrl: 'https://example.com/avatar.png',
+            targetMajor: 'Computer Science',
+          },
+          stats: { followers: 8, following: 2, cases: 3 },
+        },
+      });
+      expect(prismaService.follow.findMany).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          where: expect.objectContaining({
+            followingId: 'user-1',
+            followerId: { in: ['user-2'] },
+          }),
+          skip: 0,
+          take: 20,
+        }),
+      );
+    });
+
+    it('should return blocked relations', async () => {
+      const blockedUser = {
+        id: 'user-3',
+        email: 'blocked@example.com',
+        role: 'USER',
+        profile: {
+          nickname: 'Blocked',
+          avatarUrl: null,
+          bio: null,
+          targetMajor: null,
+          grade: null,
+          visibility: 'PUBLIC',
+        },
+        _count: { followers: 0, following: 0, admissionCases: 0 },
+      };
+      (prismaService.block.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'block-1',
+          blockerId: 'user-1',
+          blockedId: 'user-3',
+          createdAt: new Date('2026-05-15T08:00:00.000Z'),
+          blocked: blockedUser,
+        },
+      ]);
+      (prismaService.block.count as jest.Mock).mockResolvedValue(1);
+
+      const result = await service.getSocialRelations('user-1', {
+        type: 'blocked',
+        page: 1,
+        pageSize: 10,
+      });
+
+      expect(result.items[0]).toMatchObject({
+        relationType: 'blocked',
+        relationship: 'blocked',
+        user: { id: 'user-3' },
+      });
+      expect(prismaService.block.count).toHaveBeenCalledWith({
+        where: expect.objectContaining({ blockerId: 'user-1' }),
+      });
+    });
+  });
+
+  describe('applySocialBulkAction', () => {
+    it('should dedupe ids and return per-user results', async () => {
+      (prismaService.block.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.follow.upsert as jest.Mock).mockResolvedValue({
+        followerId: 'user-1',
+        followingId: 'user-2',
+      });
+
+      const result = await service.applySocialBulkAction('user-1', {
+        action: 'follow',
+        userIds: ['user-2', 'user-2'],
+      });
+
+      expect(result).toEqual({
+        action: 'follow',
+        results: [{ userId: 'user-2', success: true }],
+      });
+      expect(prismaService.follow.upsert).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -11,11 +11,11 @@ import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/
 import type { Profile } from '@/types';
 
 const GRADE_OPTIONS = [
-  { value: '9', label: '9' },
-  { value: '10', label: '10' },
-  { value: '11', label: '11' },
-  { value: '12', label: '12' },
-  { value: 'gap', label: 'Gap Year' },
+  { value: 'FRESHMAN', label: '9' },
+  { value: 'SOPHOMORE', label: '10' },
+  { value: 'JUNIOR', label: '11' },
+  { value: 'SENIOR', label: '12' },
+  { value: 'GAP_YEAR', label: 'Gap Year' },
 ];
 
 const SCHOOL_TYPE_OPTIONS_KEYS = [
@@ -25,10 +25,10 @@ const SCHOOL_TYPE_OPTIONS_KEYS = [
 ];
 
 const BUDGET_OPTIONS_KEYS = [
-  { value: 'UNDER_30K', key: 'under30k' },
-  { value: 'UNDER_50K', key: 'under50k' },
-  { value: 'UNDER_70K', key: 'under70k' },
-  { value: 'ABOVE_70K', key: 'above70k' },
+  { value: 'LOW', key: 'under30k' },
+  { value: 'MEDIUM', key: 'under50k' },
+  { value: 'HIGH', key: 'under70k' },
+  { value: 'UNLIMITED', key: 'above70k' },
 ];
 
 const VISIBILITY_OPTIONS_KEYS = [
@@ -56,7 +56,7 @@ export default function BasicInfoScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', 'me'],
     queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
@@ -72,7 +72,7 @@ export default function BasicInfoScreen() {
   useEffect(() => {
     if (profile) {
       setGrade(profile.grade || '');
-      setSchoolType(profile.schoolType || '');
+      setSchoolType(profile.currentSchoolType || '');
       setCurrentSchool(profile.currentSchool || '');
       setTargetMajor(profile.targetMajor || '');
       setGpa(profile.gpa?.toString() || '');
@@ -86,6 +86,7 @@ export default function BasicInfoScreen() {
     mutationFn: (data: Record<string, unknown>) => apiClient.put<Profile>(profileRoutes.me(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.show({ type: 'success', message: t('profileEdit.saveSuccess') });
     },
     onError: () => {
@@ -96,10 +97,10 @@ export default function BasicInfoScreen() {
   const handleSave = () => {
     saveMutation.mutate({
       grade: grade || undefined,
-      schoolType: schoolType || undefined,
+      currentSchoolType: schoolType || undefined,
       currentSchool: currentSchool || undefined,
       targetMajor: targetMajor || undefined,
-      gpa: gpa ? parseFloat(gpa) : undefined,
+      gpa: gpa ? parseFloat(gpa) : null,
       gpaScale: gpaScale ? parseInt(gpaScale, 10) : undefined,
       budgetTier: budgetTier || undefined,
       visibility,

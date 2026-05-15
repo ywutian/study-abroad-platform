@@ -122,6 +122,10 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     mutationFn: (data: unknown) => apiClient.post(profileRoutes.awards(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
       toast.success(t('toast.awardAdded'));
       onOpenChange(false);
     },
@@ -134,6 +138,10 @@ export function AwardForm({ open, onOpenChange, editingAward }: AwardFormProps) 
     mutationFn: (data: unknown) => apiClient.put(profileRoutes.award(editingAward!.id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
       toast.success(t('toast.awardUpdated'));
       onOpenChange(false);
     },

@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@study-abroad/shared/design/theme-contract": ["../shared/src/design/theme-contract.ts"]
+    },
     "declaration": false,
     "sourceMap": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],

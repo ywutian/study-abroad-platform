@@ -111,7 +111,7 @@ export function createTestScoreSchema(t: (key: string) => string) {
     type: z.enum(TEST_TYPE_VALUES, {
       required_error: t('validation.testTypeRequired'),
     }),
-    score: z.string().min(1, t('validation.scoreRequired')),
+    score: z.string().optional().default(''),
     testDate: z.string().optional(),
     satReading: z.string().optional(),
     satMath: z.string().optional(),

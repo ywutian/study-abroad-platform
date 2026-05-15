@@ -323,10 +323,8 @@ export default function CustomRankingScreen() {
             ) : (
               <EmptyState
                 icon="bar-chart-outline"
-                title={t('ranking.emptyTitle', { defaultValue: 'Click Preview to see results' })}
-                description={t('ranking.emptyDesc', {
-                  defaultValue: 'Adjust weight parameters and click preview',
-                })}
+                title={t('ranking.emptyTitle')}
+                description={t('ranking.emptyDesc')}
               />
             )}
           </View>

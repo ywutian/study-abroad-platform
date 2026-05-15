@@ -21,11 +21,11 @@ export const ReviewItem = memo(function ReviewItem({ item, colors: c, onReact }:
 
   const scoreLabel = (key: string): string => {
     const map: Record<string, string> = {
-      academic: t('hallOfFame.reviews.scores.academic', 'Academic'),
-      test: t('hallOfFame.reviews.scores.test', 'Test'),
-      activity: t('hallOfFame.reviews.scores.activity', 'Activity'),
-      award: t('hallOfFame.reviews.scores.award', 'Award'),
-      overall: t('hallOfFame.reviews.scores.overall', 'Overall'),
+      academic: t('hallOfFame.reviews.scores.academic'),
+      test: t('hallOfFame.reviews.scores.test'),
+      activity: t('hallOfFame.reviews.scores.activity'),
+      award: t('hallOfFame.reviews.scores.award'),
+      overall: t('hallOfFame.reviews.scores.overall'),
     };
     return map[key] || key;
   };
@@ -65,7 +65,7 @@ export const ReviewItem = memo(function ReviewItem({ item, colors: c, onReact }:
         <View style={S.reviewForRow}>
           <Ionicons name="person-outline" size={14} color={c.foregroundMuted} />
           <Text style={[S.reviewForText, { color: c.foregroundMuted }]}>
-            {t('hallOfFame.reviews.reviewFor', 'Review for')}{' '}
+            {t('hallOfFame.reviews.reviewFor')}{' '}
             <Text style={{ color: c.primary, fontWeight: fontWeight.semibold }}>
               {item.profileUser.nickname}
             </Text>
@@ -127,8 +127,7 @@ export const ReviewItem = memo(function ReviewItem({ item, colors: c, onReact }:
                 { color: item.myReaction === 'helpful' ? c.primary : c.foregroundMuted },
               ]}
             >
-              {t('hallOfFame.reviews.helpful', 'Helpful')}{' '}
-              {item.helpfulCount > 0 ? item.helpfulCount : ''}
+              {t('hallOfFame.reviews.helpful')} {item.helpfulCount > 0 ? item.helpfulCount : ''}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -149,7 +148,7 @@ export const ReviewItem = memo(function ReviewItem({ item, colors: c, onReact }:
                 { color: item.myReaction === 'insightful' ? c.info : c.foregroundMuted },
               ]}
             >
-              {t('hallOfFame.reviews.insightful', 'Insightful')}{' '}
+              {t('hallOfFame.reviews.insightful')}{' '}
               {item.insightfulCount > 0 ? item.insightfulCount : ''}
             </Text>
           </TouchableOpacity>

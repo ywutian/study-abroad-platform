@@ -962,60 +962,27 @@
 
   /* 文字渐变 */
   .text-gradient-primary {
-    background: linear-gradient(135deg, var(--ds-primary), var(--ds-info));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--ds-primary);
   }
 
   .text-gradient-animated {
-    background: linear-gradient(
-      90deg,
-      var(--ds-primary),
-      var(--ds-warning),
-      var(--ds-info),
-      var(--ds-primary)
-    );
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradient-shift 6s ease infinite;
+    color: var(--ds-primary);
   }
 
   .dark .text-gradient-animated {
-    background: linear-gradient(
-      90deg,
-      var(--ds-primary),
-      var(--ds-warning),
-      var(--ds-info),
-      var(--ds-primary)
-    );
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--ds-primary);
   }
 
   .text-gradient-success {
-    background: linear-gradient(135deg, var(--ds-success), var(--ds-primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--ds-success);
   }
 
   .text-gradient-warm {
-    background: linear-gradient(135deg, #b85c58, var(--ds-warning));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--ds-warning);
   }
 
   .text-gradient-purple {
-    background: linear-gradient(135deg, #6574ff, #e76f8a);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--ds-info);
   }
 
   /* 背景渐变 */
@@ -1476,7 +1443,7 @@
 
   ::-webkit-scrollbar-thumb {
     background: oklch(0.75 0.015 260);
-    border-radius: 5px;
+    border-radius: var(--theme-radius-badge);
     border: 2px solid transparent;
     background-clip: content-box;
   }
@@ -1524,7 +1491,7 @@
 
   .scrollbar-thumb-border::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 9999px;
+    border-radius: var(--theme-radius-badge);
   }
   .scrollbar-thumb-border::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
@@ -1532,7 +1499,7 @@
 
   .scrollbar-thumb-muted::-webkit-scrollbar-thumb {
     background: var(--muted);
-    border-radius: 9999px;
+    border-radius: var(--theme-radius-badge);
   }
   .scrollbar-thumb-muted::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
@@ -2180,7 +2147,7 @@
     gap: 0.625rem;
     padding: 0.6rem 1rem;
     border: 1px solid var(--landing-border);
-    border-radius: 999px;
+    border-radius: var(--theme-radius-badge);
     background: color-mix(in oklab, var(--landing-surface) 88%, var(--lumni-moon) 12%);
     color: var(--landing-subtle);
     font-size: 0.6875rem;
@@ -2193,7 +2160,7 @@
     align-items: center;
     gap: 0.625rem;
     border: 1px solid color-mix(in oklch, var(--ds-primary) 16%, var(--landing-border));
-    border-radius: 999px;
+    border-radius: var(--theme-radius-badge);
     background: color-mix(in oklab, var(--landing-surface) 94%, var(--ds-primary) 6%);
     padding: 0.5rem 1rem;
     color: var(--landing-fg);
@@ -2217,7 +2184,7 @@
     align-items: center;
     justify-content: center;
     padding: 0.7rem 1rem;
-    border-radius: 999px;
+    border-radius: var(--theme-radius-button);
     color: var(--landing-muted);
     font-size: 0.875rem;
     transition:
@@ -2303,7 +2270,7 @@
     inset: 2rem 1.5rem auto auto;
     width: calc(100% - 2rem);
     height: calc(100% - 4rem);
-    border-radius: 2.25rem;
+    border-radius: var(--theme-radius-card);
     border: 1px solid var(--landing-border);
     background: color-mix(in oklch, var(--landing-surface) 97%, var(--primary) 3%);
     transform: translate3d(0.75rem, 1.25rem, 0);

@@ -40,12 +40,13 @@ import {
   BookOpen,
   Clock,
   Layers,
+  Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-type ResumeType = 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV';
-type ResumeStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+type ResumeType = 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV' | 'FULL_TIME_JOB';
+type ResumeStatus = 'DRAFT' | 'ACTIVE' | 'REVIEWED' | 'APPROVED' | 'EXPORTED' | 'ARCHIVED';
 
 interface ResumeItem {
   id: string;
@@ -64,11 +65,15 @@ const TYPE_ICONS: Record<ResumeType, React.ElementType> = {
   COLLEGE_APPLICATION: GraduationCap,
   INTERNSHIP: Briefcase,
   GRADUATE_CV: BookOpen,
+  FULL_TIME_JOB: Building2,
 };
 
 const STATUS_VARIANTS: Record<ResumeStatus, 'default' | 'secondary' | 'outline'> = {
   DRAFT: 'secondary',
   ACTIVE: 'default',
+  REVIEWED: 'secondary',
+  APPROVED: 'default',
+  EXPORTED: 'outline',
   ARCHIVED: 'outline',
 };
 
@@ -123,7 +128,12 @@ export default function ResumePage() {
     });
   };
 
-  const resumeTypes: ResumeType[] = ['COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV'];
+  const resumeTypes: ResumeType[] = [
+    'COLLEGE_APPLICATION',
+    'GRADUATE_CV',
+    'INTERNSHIP',
+    'FULL_TIME_JOB',
+  ];
 
   return (
     <PageContainer maxWidth="default" className="space-y-6 py-6">

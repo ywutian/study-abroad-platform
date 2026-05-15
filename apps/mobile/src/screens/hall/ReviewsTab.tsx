@@ -57,7 +57,7 @@ export function ReviewsTab() {
     onSuccess: () => {
       toast.show({
         type: 'success',
-        message: t('hallOfFame.reviews.created', 'Review submitted!'),
+        message: t('hallOfFame.reviews.created'),
       });
       queryClient.invalidateQueries({ queryKey: ['hall-reviews'] });
       closeWriteReview();
@@ -136,11 +136,11 @@ export function ReviewsTab() {
   const scoreLabel = useCallback(
     (key: string): string => {
       const map: Record<string, string> = {
-        academic: t('hallOfFame.reviews.scores.academic', 'Academic'),
-        test: t('hallOfFame.reviews.scores.test', 'Test'),
-        activity: t('hallOfFame.reviews.scores.activity', 'Activity'),
-        award: t('hallOfFame.reviews.scores.award', 'Award'),
-        overall: t('hallOfFame.reviews.scores.overall', 'Overall'),
+        academic: t('hallOfFame.reviews.scores.academic'),
+        test: t('hallOfFame.reviews.scores.test'),
+        activity: t('hallOfFame.reviews.scores.activity'),
+        award: t('hallOfFame.reviews.scores.award'),
+        overall: t('hallOfFame.reviews.scores.overall'),
       };
       return map[key] || key;
     },
@@ -152,7 +152,7 @@ export function ReviewsTab() {
     [c, handleReact]
   );
 
-  if (isLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
+  if (isLoading) return <Loading text={t('hallOfFame.loading')} />;
 
   const reviews = reviewsData?.items || [];
 
@@ -161,8 +161,8 @@ export function ReviewsTab() {
       <Animated.View entering={FadeInDown.duration(300)} style={S.reviewControls}>
         <Segment
           segments={[
-            { key: 'popular', label: t('hallOfFame.reviews.popular', 'Popular') },
-            { key: 'mine', label: t('hallOfFame.reviews.mine', 'My Reviews') },
+            { key: 'popular', label: t('hallOfFame.reviews.popular') },
+            { key: 'mine', label: t('hallOfFame.reviews.mine') },
           ]}
           value={reviewMode}
           onChange={(key) => setReviewMode(key as 'popular' | 'mine')}
@@ -173,15 +173,15 @@ export function ReviewsTab() {
           onPress={openWriteReview}
           leftIcon={<Ionicons name="create-outline" size={16} color={c.primaryForeground} />}
         >
-          {t('hallOfFame.reviews.write', 'Write')}
+          {t('hallOfFame.reviews.write')}
         </AnimatedButton>
       </Animated.View>
 
       {reviews.length === 0 ? (
         <EmptyState
           icon="chatbubble-ellipses-outline"
-          title={t('hallOfFame.reviews.empty', 'No reviews yet')}
-          description={t('hallOfFame.reviews.emptyDesc', 'Be the first to write a review!')}
+          title={t('hallOfFame.reviews.empty')}
+          description={t('hallOfFame.reviews.emptyDesc')}
         />
       ) : (
         <FlashList
@@ -198,14 +198,14 @@ export function ReviewsTab() {
       <Modal
         visible={writeReviewVisible}
         onClose={closeWriteReview}
-        title={t('hallOfFame.reviews.writeReview', 'Write a Review')}
+        title={t('hallOfFame.reviews.writeReview')}
         footer={
           <View style={S.modalFooter}>
             <AnimatedButton variant="outline" onPress={closeWriteReview}>
-              {t('hallOfFame.cancel', 'Cancel')}
+              {t('hallOfFame.cancel')}
             </AnimatedButton>
             <AnimatedButton onPress={submitReview} loading={createReviewMutation.isPending}>
-              {t('hallOfFame.reviews.submit', 'Submit')}
+              {t('hallOfFame.reviews.submit')}
             </AnimatedButton>
           </View>
         }
@@ -213,7 +213,7 @@ export function ReviewsTab() {
         <View style={S.modalBody}>
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.reviews.targetUser', 'User ID to Review')}
+              {t('hallOfFame.reviews.targetUser')}
             </Text>
             <TextInput
               style={[
@@ -222,7 +222,7 @@ export function ReviewsTab() {
               ]}
               value={reviewTargetId}
               onChangeText={setReviewTargetId}
-              placeholder={t('hallOfFame.reviews.targetPlaceholder', 'Enter user ID...')}
+              placeholder={t('hallOfFame.reviews.targetPlaceholder')}
               placeholderTextColor={c.placeholder}
             />
           </View>
@@ -243,7 +243,7 @@ export function ReviewsTab() {
 
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.reviews.comment', 'Comment')}
+              {t('hallOfFame.reviews.comment')}
             </Text>
             <TextInput
               style={[
@@ -253,7 +253,7 @@ export function ReviewsTab() {
               ]}
               value={reviewComment}
               onChangeText={setReviewComment}
-              placeholder={t('hallOfFame.reviews.commentPlaceholder', 'Share your thoughts...')}
+              placeholder={t('hallOfFame.reviews.commentPlaceholder')}
               placeholderTextColor={c.placeholder}
               multiline
               numberOfLines={4}
@@ -263,7 +263,7 @@ export function ReviewsTab() {
 
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.reviews.tags', 'Tags (comma-separated)')}
+              {t('hallOfFame.reviews.tags')}
             </Text>
             <TextInput
               style={[
@@ -272,10 +272,7 @@ export function ReviewsTab() {
               ]}
               value={reviewTags}
               onChangeText={setReviewTags}
-              placeholder={t(
-                'hallOfFame.reviews.tagsPlaceholder',
-                'e.g. strong-essays, competitive'
-              )}
+              placeholder={t('hallOfFame.reviews.tagsPlaceholder')}
               placeholderTextColor={c.placeholder}
             />
           </View>

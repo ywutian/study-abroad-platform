@@ -60,7 +60,7 @@ export function ListsTab() {
   const createListMutation = useMutation<HallList, Error, CreateListDto>({
     mutationFn: (dto) => apiClient.post<HallList>(hallRoutes.lists(), dto),
     onSuccess: () => {
-      toast.show({ type: 'success', message: t('hallOfFame.lists.created', 'List created!') });
+      toast.show({ type: 'success', message: t('hallOfFame.lists.created') });
       queryClient.invalidateQueries({ queryKey: ['hall-lists'] });
       closeCreateList();
     },
@@ -92,11 +92,11 @@ export function ListsTab() {
   const categoryLabel = useCallback(
     (cat: string): string => {
       const map: Record<string, string> = {
-        tier: t('hallOfFame.lists.categories.tier', 'Tier'),
-        major: t('hallOfFame.lists.categories.major', 'Major'),
-        location: t('hallOfFame.lists.categories.location', 'Location'),
-        value: t('hallOfFame.lists.categories.value', 'Value'),
-        other: t('hallOfFame.lists.categories.other', 'Other'),
+        tier: t('hallOfFame.lists.categories.tier'),
+        major: t('hallOfFame.lists.categories.major'),
+        location: t('hallOfFame.lists.categories.location'),
+        value: t('hallOfFame.lists.categories.value'),
+        other: t('hallOfFame.lists.categories.other'),
       };
       return map[cat] || cat;
     },
@@ -131,7 +131,7 @@ export function ListsTab() {
     if (!newListTitle.trim()) {
       toast.show({
         type: 'error',
-        message: t('hallOfFame.lists.titleRequired', 'Title is required'),
+        message: t('hallOfFame.lists.titleRequired'),
       });
       return;
     }
@@ -170,31 +170,29 @@ export function ListsTab() {
     [c, openListDetail, handleVote, categoryLabel]
   );
 
-  if (isLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
+  if (isLoading) return <Loading text={t('hallOfFame.loading')} />;
 
   const lists = listsData || [];
 
   return (
     <View style={{ flex: 1 }}>
       <Animated.View entering={FadeInDown.duration(300)} style={S.listControlsRow}>
-        <Text style={[S.sectionTitle, { color: c.foreground }]}>
-          {t('hallOfFame.lists.title', 'Public Lists')}
-        </Text>
+        <Text style={[S.sectionTitle, { color: c.foreground }]}>{t('hallOfFame.lists.title')}</Text>
         <AnimatedButton
           size="sm"
           onPress={openCreateList}
           leftIcon={<Ionicons name="add-outline" size={16} color={c.primaryForeground} />}
         >
-          {t('hallOfFame.lists.create', 'Create')}
+          {t('hallOfFame.lists.create')}
         </AnimatedButton>
       </Animated.View>
 
       {lists.length === 0 ? (
         <EmptyState
           icon="list-outline"
-          title={t('hallOfFame.lists.empty', 'No lists yet')}
-          description={t('hallOfFame.lists.emptyDesc', 'Create the first list!')}
-          action={{ label: t('hallOfFame.lists.create', 'Create'), onPress: openCreateList }}
+          title={t('hallOfFame.lists.empty')}
+          description={t('hallOfFame.lists.emptyDesc')}
+          action={{ label: t('hallOfFame.lists.create'), onPress: openCreateList }}
         />
       ) : (
         <FlashList
@@ -211,14 +209,14 @@ export function ListsTab() {
       <Modal
         visible={createListVisible}
         onClose={closeCreateList}
-        title={t('hallOfFame.lists.createTitle', 'Create a List')}
+        title={t('hallOfFame.lists.createTitle')}
         footer={
           <View style={S.modalFooter}>
             <AnimatedButton variant="outline" onPress={closeCreateList}>
-              {t('hallOfFame.cancel', 'Cancel')}
+              {t('hallOfFame.cancel')}
             </AnimatedButton>
             <AnimatedButton onPress={submitList} loading={createListMutation.isPending}>
-              {t('hallOfFame.lists.submit', 'Create')}
+              {t('hallOfFame.lists.submit')}
             </AnimatedButton>
           </View>
         }
@@ -226,7 +224,7 @@ export function ListsTab() {
         <View style={S.modalBody}>
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.lists.titleLabel', 'Title')}
+              {t('hallOfFame.lists.titleLabel')}
             </Text>
             <TextInput
               style={[
@@ -235,14 +233,14 @@ export function ListsTab() {
               ]}
               value={newListTitle}
               onChangeText={setNewListTitle}
-              placeholder={t('hallOfFame.lists.titlePlaceholder', 'e.g. Top CS Programs')}
+              placeholder={t('hallOfFame.lists.titlePlaceholder')}
               placeholderTextColor={c.placeholder}
             />
           </View>
 
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.lists.descLabel', 'Description')}
+              {t('hallOfFame.lists.descLabel')}
             </Text>
             <TextInput
               style={[
@@ -252,7 +250,7 @@ export function ListsTab() {
               ]}
               value={newListDesc}
               onChangeText={setNewListDesc}
-              placeholder={t('hallOfFame.lists.descPlaceholder', 'Optional description...')}
+              placeholder={t('hallOfFame.lists.descPlaceholder')}
               placeholderTextColor={c.placeholder}
               multiline
               numberOfLines={2}
@@ -262,7 +260,7 @@ export function ListsTab() {
 
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.lists.categoryLabel', 'Category')}
+              {t('hallOfFame.lists.categoryLabel')}
             </Text>
             <View style={S.categoryRow}>
               {LIST_CATEGORIES.map((cat) => {
@@ -289,7 +287,7 @@ export function ListsTab() {
 
           <View style={S.inputGroup}>
             <Text style={[S.inputLabel, { color: c.foreground }]}>
-              {t('hallOfFame.lists.itemsLabel', 'Items (one per line)')}
+              {t('hallOfFame.lists.itemsLabel')}
             </Text>
             <TextInput
               style={[
@@ -299,7 +297,7 @@ export function ListsTab() {
               ]}
               value={newListItems}
               onChangeText={setNewListItems}
-              placeholder={t('hallOfFame.lists.itemsPlaceholder', 'MIT\nStanford\nCMU\n...')}
+              placeholder={t('hallOfFame.lists.itemsPlaceholder')}
               placeholderTextColor={c.placeholder}
               multiline
               numberOfLines={6}
@@ -313,7 +311,7 @@ export function ListsTab() {
       <Modal
         visible={listDetailVisible}
         onClose={closeListDetail}
-        title={listDetail?.title || t('hallOfFame.lists.detail', 'List Detail')}
+        title={listDetail?.title || t('hallOfFame.lists.detail')}
       >
         {listDetailLoading || !listDetail ? (
           <View style={S.detailLoading}>

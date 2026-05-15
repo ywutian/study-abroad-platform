@@ -47,6 +47,7 @@ export const API_ROUTES = {
   TIMELINES: '/timelines',
   NOTIFICATIONS: '/notifications',
   SUBSCRIPTIONS: '/subscriptions',
+  RESUME: '/resume',
   RESUMES: '/resumes',
   VERIFICATIONS: '/verifications',
   VAULTS: '/vaults',
@@ -67,6 +68,7 @@ export const profileRoutes = {
   me: () => `${API_ROUTES.PROFILES}/me`,
   byId: (id: string) => `${API_ROUTES.PROFILES}/${id}`,
   onboarding: () => `${API_ROUTES.PROFILES}/onboarding`,
+  readiness: () => `${API_ROUTES.PROFILES}/me/readiness`,
   aiAnalysis: () => `${API_ROUTES.PROFILES}/me/ai-analysis`,
   aiAnalysisFeedback: () => `${API_ROUTES.PROFILES}/me/ai-analysis/feedback`,
   testScores: () => `${API_ROUTES.PROFILES}/me/test-scores`,
@@ -116,9 +118,11 @@ export const hallRoutes = {
 export const chatRoutes = {
   conversations: () => `${API_ROUTES.CHATS}/conversations`,
   conversation: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}`,
+  conversationContext: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/context`,
   conversationMessages: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/messages`,
   conversationRead: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/read`,
   conversationPin: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/pin`,
+  conversationPreferences: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/preferences`,
   conversationUpload: (id: string) => `${API_ROUTES.CHATS}/conversations/${id}/upload`,
   message: (messageId: string) => `${API_ROUTES.CHATS}/messages/${messageId}`,
   follow: (userId: string) => `${API_ROUTES.CHATS}/follow/${userId}`,
@@ -127,6 +131,9 @@ export const chatRoutes = {
   followers: () => `${API_ROUTES.CHATS}/followers`,
   following: () => `${API_ROUTES.CHATS}/following`,
   blocked: () => `${API_ROUTES.CHATS}/blocked`,
+  socialOverview: () => `${API_ROUTES.CHATS}/social/overview`,
+  socialRelations: () => `${API_ROUTES.CHATS}/social/relations`,
+  socialBulk: () => `${API_ROUTES.CHATS}/social/bulk`,
   unreadCount: () => `${API_ROUTES.CHATS}/unread-count`,
   recommendations: () => `${API_ROUTES.CHATS}/recommendations`,
 };
@@ -149,6 +156,10 @@ export const recommendationRoutes = {
 export const assessmentRoutes = {
   start: (type: string) => `${API_ROUTES.ASSESSMENTS}/${type}`,
   submit: () => API_ROUTES.ASSESSMENTS,
+  history: () => `${API_ROUTES.ASSESSMENTS}/history/me`,
+  result: (id: string) => `${API_ROUTES.ASSESSMENTS}/result/${id}`,
+  summary: () => `${API_ROUTES.ASSESSMENTS}/summary/me`,
+  draft: (type: string) => `${API_ROUTES.ASSESSMENTS}/${type}/draft`,
   results: () => `${API_ROUTES.ASSESSMENTS}/results`,
 };
 
@@ -196,17 +207,35 @@ export const essayAiRoutes = {
 };
 
 export const resumeRoutes = {
+  evidence: () => `${API_ROUTES.RESUME}/evidence`,
+  evidenceById: (id: string) => `${API_ROUTES.RESUME}/evidence/${id}`,
+  targets: () => `${API_ROUTES.RESUME}/targets`,
+  targetById: (id: string) => `${API_ROUTES.RESUME}/targets/${id}`,
   list: () => API_ROUTES.RESUMES,
   byId: (id: string) => `${API_ROUTES.RESUMES}/${id}`,
   duplicate: (id: string) => `${API_ROUTES.RESUMES}/${id}/duplicate`,
+  tailor: (id: string) => `${API_ROUTES.RESUMES}/${id}/tailor`,
   sections: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/sections`,
   section: (resumeId: string, sectionId: string) =>
     `${API_ROUTES.RESUMES}/${resumeId}/sections/${sectionId}`,
   reorderSections: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/sections/reorder`,
   importProfile: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/import-profile`,
+  importProfilePreview: (resumeId: string) =>
+    `${API_ROUTES.RESUMES}/${resumeId}/import-profile/preview`,
+  importProfileApply: (resumeId: string) =>
+    `${API_ROUTES.RESUMES}/${resumeId}/import-profile/apply`,
+  importFilePreview: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/import-file/preview`,
+  importFileApply: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/import-file/apply`,
   snapshots: (resumeId: string) => `${API_ROUTES.RESUMES}/${resumeId}/snapshots`,
   snapshotRestore: (resumeId: string, snapshotId: string) =>
     `${API_ROUTES.RESUMES}/${resumeId}/snapshots/${snapshotId}/restore`,
+  quality: (id: string) => `${API_ROUTES.RESUMES}/${id}/quality`,
+  exports: (id: string) => `${API_ROUTES.RESUMES}/${id}/exports`,
+  comments: (id: string) => `${API_ROUTES.RESUMES}/${id}/comments`,
+  comment: (id: string, commentId: string) => `${API_ROUTES.RESUMES}/${id}/comments/${commentId}`,
+  aiIssues: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/issues`,
+  aiIssueApply: (id: string, issueId: string) =>
+    `${API_ROUTES.RESUMES}/${id}/ai/issues/${issueId}/apply`,
   aiReviewLatest: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/reviews/latest`,
   aiReviewHistory: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/reviews`,
   aiReview: (id: string) => `${API_ROUTES.RESUMES}/${id}/ai/review`,

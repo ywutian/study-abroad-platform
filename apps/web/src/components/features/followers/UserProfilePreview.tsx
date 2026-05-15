@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { apiClient } from '@/lib/api';
@@ -43,6 +43,7 @@ interface UserProfile {
   role: string;
   profile?: {
     nickname?: string;
+    avatarUrl?: string;
     targetMajor?: string;
     grade?: string;
     gpa?: number;
@@ -166,6 +167,7 @@ export function UserProfilePreview({ userId, open, onOpenChange }: UserProfilePr
               <div className="text-center space-y-3">
                 <div className="relative mx-auto w-fit">
                   <Avatar className="h-20 w-20 ring-4 ring-background shadow-lg">
+                    <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-2xl font-bold text-white">
                       {(user.profile?.nickname?.[0] || user.email[0]).toUpperCase()}
                     </AvatarFallback>

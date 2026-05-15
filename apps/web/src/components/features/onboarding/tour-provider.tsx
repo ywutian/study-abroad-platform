@@ -164,9 +164,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
           color: var(--card-foreground);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          box-shadow:
-            0 20px 25px -5px rgb(0 0 0 / 0.1),
-            0 8px 10px -6px rgb(0 0 0 / 0.1);
+          box-shadow: var(--theme-card-shadow);
           max-width: 340px;
         }
 
@@ -202,7 +200,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
         .driver-popover.tour-popover button {
           padding: 0.5rem 1rem;
-          border-radius: calc(var(--radius) - 2px);
+          border-radius: var(--theme-radius-button);
           font-size: 0.875rem;
           font-weight: 500;
           transition: all 0.2s;

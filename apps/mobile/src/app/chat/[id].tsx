@@ -422,7 +422,7 @@ export default function ChatScreen() {
           <View style={[styles.connectionBanner, { backgroundColor: colors.warning }]}>
             <Ionicons name="cloud-offline-outline" size={14} color={colors.warningForeground} />
             <Text style={[styles.connectionText, { color: colors.warningForeground }]}>
-              {t('chat.connecting', 'Connecting...')}
+              {t('chat.connecting')}
             </Text>
           </View>
         )}
@@ -466,8 +466,8 @@ export default function ChatScreen() {
           <View style={[styles.typingContainer, { backgroundColor: colors.background }]}>
             <Text style={[styles.typingText, { color: colors.foregroundMuted }]}>
               {isGroupConversation
-                ? `${conversation?.participantCount || conversation?.participants.length || 0} ${t('chat.typing', 'typing...')}`
-                : t('chat.typing', 'typing...')}
+                ? `${conversation?.participantCount || conversation?.participants.length || 0} ${t('chat.typing')}`
+                : t('chat.typing')}
             </Text>
           </View>
         )}

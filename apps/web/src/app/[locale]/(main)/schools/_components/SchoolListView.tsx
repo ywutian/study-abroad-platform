@@ -17,7 +17,6 @@ interface SchoolListViewProps {
   isAddingToList: boolean;
   sortBy: SchoolSortBy;
   onSortByChange: (s: SchoolSortBy) => void;
-  density: 'comfortable' | 'compact';
   preferredRankingList?: SchoolRankingList;
 }
 
@@ -29,7 +28,6 @@ export function SchoolListView({
   addedSchools,
   onAddToList,
   isAddingToList,
-  density,
   preferredRankingList,
 }: SchoolListViewProps) {
   return (
@@ -39,7 +37,6 @@ export function SchoolListView({
           key={school.id}
           school={school}
           viewMode="list"
-          density={density}
           hasAuth={hasAuth}
           isSelected={isSchoolSelected(school.id)}
           isAdded={addedSchools.has(school.id)}

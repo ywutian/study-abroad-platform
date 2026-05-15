@@ -24,13 +24,13 @@ export function DashboardStats({
 }: DashboardStatsProps) {
   const t = useTranslations();
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {/* Profile Completion */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="rounded-[var(--theme-radius-card)] py-0">
+        <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)]">
+              <User className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">
@@ -46,15 +46,15 @@ export function DashboardStats({
       </Card>
 
       {/* School List Count with Tier Breakdown */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="rounded-[var(--theme-radius-card)] py-0">
+        <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)]">
+              <GraduationCap className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">{t('dashboard.stats.schoolList')}</p>
-              <p className="text-2xl font-bold">{schoolCount}</p>
+              <p className="text-2xl font-semibold tabular-nums">{schoolCount}</p>
               {schoolCount > 0 && (
                 <div className="flex gap-1.5 mt-1 flex-wrap">
                   {schoolTiers.reach > 0 && (
@@ -89,35 +89,35 @@ export function DashboardStats({
       </Card>
 
       {/* Pending Tasks */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="rounded-[var(--theme-radius-card)] py-0">
+        <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
-              <ListChecks className="w-6 h-6 text-warning" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--theme-radius-card)] border border-warning/25 bg-warning/10">
+              <ListChecks className="h-5 w-5 text-warning" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{t('dashboard.stats.pendingTasks')}</p>
-              <p className="text-2xl font-bold">{effectivePending}</p>
+              <p className="text-2xl font-semibold tabular-nums">{effectivePending}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Profile Grade */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="rounded-[var(--theme-radius-card)] py-0">
+        <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div
               className={cn(
-                'w-12 h-12 rounded-full flex items-center justify-center',
+                'flex h-10 w-10 items-center justify-center rounded-[var(--theme-radius-card)] border',
                 grade.bgColor
               )}
             >
-              <TrendingUp className={cn('w-6 h-6', grade.color)} />
+              <TrendingUp className={cn('h-5 w-5', grade.color)} />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{t('dashboard.stats.profileScore')}</p>
-              <p className={cn('text-2xl font-bold', grade.color)}>{grade.grade}</p>
+              <p className={cn('text-2xl font-semibold', grade.color)}>{grade.grade}</p>
             </div>
           </div>
         </CardContent>

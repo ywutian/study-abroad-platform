@@ -69,7 +69,95 @@ export interface DashboardSummary {
     description: string;
     createdAt: string;
   }[];
+
+  // 企业级申请工作台聚合
+  workbench: DashboardWorkbench;
 }
+
+type DashboardDeadlineItem = DashboardSummary['upcomingDeadlines'][number];
+
+type DashboardPriorityKind =
+  | 'profile'
+  | 'school-list'
+  | 'timeline'
+  | 'timeline-task'
+  | 'essay'
+  | 'prediction'
+  | 'deadline';
+
+type DashboardSeverity = 'critical' | 'warning' | 'normal' | 'success';
+
+export interface DashboardWorkbench {
+  readiness: {
+    score: number;
+    status: 'blocked' | 'attention' | 'ready';
+    items: {
+      key: 'profile' | 'schools' | 'essays' | 'timeline';
+      label: string;
+      value: string;
+      status: 'blocked' | 'attention' | 'ready';
+      href: string;
+      description: string;
+    }[];
+  };
+  metrics: {
+    due7: number;
+    due30: number;
+    overdueTasks: number;
+    missingTimelineCount: number;
+    balancedSchoolList: boolean;
+  };
+  priorityQueue: {
+    id: string;
+    kind: DashboardPriorityKind;
+    severity: DashboardSeverity;
+    title: string;
+    description: string;
+    href: string;
+    dueAt?: string | null;
+    daysLeft?: number | null;
+    mutation?: {
+      type: 'timeline-task-toggle';
+      endpoint: string;
+    };
+  }[];
+  deadlineStream: {
+    id: string;
+    type: 'school' | 'event' | 'task';
+    title: string;
+    subtitle: string;
+    dueAt: string;
+    daysLeft: number;
+    severity: DashboardSeverity;
+    href: string;
+  }[];
+}
+
+type DashboardPriorityTaskSource = {
+  id: string;
+  title: string;
+  type: string;
+  dueDate: Date | null;
+  timeline: {
+    id: string;
+    schoolName: string;
+    round: string;
+    school?: { name: string; nameZh: string | null } | null;
+  };
+};
+
+type PointHistorySource = {
+  action: string;
+  points: number;
+  createdAt: Date;
+};
+
+type SchoolDeadlineSource = {
+  id: string;
+  year: number;
+  round: string;
+  applicationDeadline: Date;
+};
 
 @Injectable()
 export class DashboardService {
@@ -95,6 +183,9 @@ export class DashboardService {
       pendingTaskTypes,
       personalEvents,
       schoolListWithDeadlines,
+      priorityTasks,
+      overdueTaskCount,
+      timelineCoverage,
     ] = await Promise.all([
       // 用户信息
       this.prisma.user.findUnique({
@@ -141,10 +232,10 @@ export class DashboardService {
               'WITHDRAWN',
             ],
           },
-          deadline: { gte: new Date() },
+          deadline: { gte: now },
         },
         orderBy: { deadline: 'asc' },
-        take: 5,
+        take: 10,
         include: {
           school: { select: { name: true, nameZh: true } },
         },
@@ -208,12 +299,62 @@ export class DashboardService {
               name: true,
               nameZh: true,
               deadlines: {
-                where: { applicationDeadline: { gte: now } },
-                orderBy: { applicationDeadline: 'asc' },
+                select: {
+                  id: true,
+                  year: true,
+                  round: true,
+                  applicationDeadline: true,
+                },
+                orderBy: [{ applicationDeadline: 'asc' }, { year: 'desc' }],
               },
             },
           },
         },
+      }),
+
+      // 首页优先级队列：最临近的未完成申请任务
+      this.prisma.applicationTask.findMany({
+        where: { timeline: { userId }, completed: false },
+        orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
+        take: 8,
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          dueDate: true,
+          timeline: {
+            select: {
+              id: true,
+              schoolName: true,
+              round: true,
+              school: { select: { name: true, nameZh: true } },
+            },
+          },
+        },
+      }),
+
+      this.prisma.applicationTask.count({
+        where: {
+          timeline: { userId },
+          completed: false,
+          dueDate: { lt: now },
+        },
+      }),
+
+      this.prisma.applicationTimeline.findMany({
+        where: {
+          userId,
+          status: {
+            notIn: [
+              'SUBMITTED',
+              'ACCEPTED',
+              'REJECTED',
+              'WAITLISTED',
+              'WITHDRAWN',
+            ],
+          },
+        },
+        select: { schoolId: true, round: true },
       }),
     ]);
 
@@ -249,28 +390,36 @@ export class DashboardService {
         round: t.round,
         deadline: t.deadline!.toISOString(),
         daysLeft: Math.ceil(
-          (t.deadline!.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+          (t.deadline!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
         ),
       }));
 
     // 补充来自 SchoolDeadline 的截止日期（选校清单中但尚未生成 Timeline 的学校）
     const timelineSchoolRounds = new Set(
-      timelines.map((t) => `${t.schoolId}:${t.round}`),
+      timelines.map((t) => this.schoolRoundKey(t.schoolId, t.round)),
     );
-    const schoolDeadlineItems: typeof timelineDeadlines = [];
+    const schoolDeadlineItems: DashboardDeadlineItem[] = [];
     for (const item of schoolListWithDeadlines) {
       if (!item.school?.deadlines) continue;
-      for (const dl of item.school.deadlines) {
-        if (timelineSchoolRounds.has(`${item.schoolId}:${dl.round}`)) continue;
-        if (item.round && item.round !== dl.round) continue;
+
+      const selectedDeadlines = this.selectUpcomingSchoolDeadlines(
+        item.school.deadlines,
+        item.round,
+        now,
+      );
+
+      for (const { deadline: dl, effectiveDate } of selectedDeadlines) {
+        if (
+          timelineSchoolRounds.has(this.schoolRoundKey(item.schoolId, dl.round))
+        )
+          continue;
         schoolDeadlineItems.push({
           id: dl.id,
           schoolName: getSchoolDisplayName(item.school, locale),
           round: dl.round,
-          deadline: dl.applicationDeadline.toISOString(),
+          deadline: effectiveDate.toISOString(),
           daysLeft: Math.ceil(
-            (dl.applicationDeadline.getTime() - Date.now()) /
-              (1000 * 60 * 60 * 24),
+            (effectiveDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
           ),
         });
       }
@@ -286,7 +435,7 @@ export class DashboardService {
     const upcomingPersonalEvents = personalEvents.map((ev) => {
       const date = ev.deadline ?? ev.eventDate!;
       const daysLeft = Math.ceil(
-        (date.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+        (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       );
       return {
         id: ev.id,
@@ -300,6 +449,23 @@ export class DashboardService {
 
     // 构建最近活动
     const recentActivity = this.buildRecentActivity(pointHistory);
+    const workbench = this.buildWorkbench({
+      locale,
+      completeness,
+      profileGaps,
+      schoolListCount,
+      schoolTiers,
+      essayCount: profile?.essays?.length || 0,
+      predictionsCount,
+      pendingTaskCount,
+      overdueTaskCount,
+      upcomingDeadlines,
+      upcomingPersonalEvents,
+      priorityTasks,
+      timelineCoverage,
+      schoolListWithDeadlines,
+      now,
+    });
 
     return {
       user: {
@@ -333,7 +499,581 @@ export class DashboardService {
       upcomingDeadlines,
       upcomingPersonalEvents,
       recentActivity,
+      workbench,
     };
+  }
+
+  private buildWorkbench({
+    locale,
+    completeness,
+    profileGaps,
+    schoolListCount,
+    schoolTiers,
+    essayCount,
+    predictionsCount,
+    pendingTaskCount,
+    overdueTaskCount,
+    upcomingDeadlines,
+    upcomingPersonalEvents,
+    priorityTasks,
+    timelineCoverage,
+    schoolListWithDeadlines,
+    now,
+  }: {
+    locale: string;
+    completeness: number;
+    profileGaps: string[];
+    schoolListCount: number;
+    schoolTiers: { reach: number; target: number; safety: number };
+    essayCount: number;
+    predictionsCount: number;
+    pendingTaskCount: number;
+    overdueTaskCount: number;
+    upcomingDeadlines: DashboardSummary['upcomingDeadlines'];
+    upcomingPersonalEvents: DashboardSummary['upcomingPersonalEvents'];
+    priorityTasks: DashboardPriorityTaskSource[];
+    timelineCoverage: { schoolId: string; round: string }[];
+    schoolListWithDeadlines: Array<{ schoolId: string; round: string | null }>;
+    now: Date;
+  }): DashboardWorkbench {
+    const balancedSchoolList =
+      schoolTiers.reach > 0 && schoolTiers.target > 0 && schoolTiers.safety > 0;
+    const missingTimelineCount = this.countMissingTimelines(
+      schoolListWithDeadlines,
+      timelineCoverage,
+    );
+    const deadlineStream = this.buildDeadlineStream(
+      upcomingDeadlines,
+      upcomingPersonalEvents,
+      priorityTasks,
+      locale,
+      now,
+    );
+    const due7 = deadlineStream.filter(
+      (item) => item.daysLeft >= 0 && item.daysLeft <= 7,
+    ).length;
+    const due30 = deadlineStream.filter(
+      (item) => item.daysLeft >= 0 && item.daysLeft <= 30,
+    ).length;
+    const readinessScore = Math.min(
+      100,
+      Math.round(
+        completeness * 0.4 +
+          Math.min(schoolListCount / 6, 1) * 25 +
+          (essayCount > 0 ? 15 : 0) +
+          (missingTimelineCount === 0
+            ? 10
+            : Math.max(0, 8 - missingTimelineCount * 2)) +
+          (pendingTaskCount === 0
+            ? 10
+            : Math.max(0, 8 - Math.min(pendingTaskCount, 8))),
+      ),
+    );
+    const priorityQueue = this.buildPriorityQueue({
+      locale,
+      completeness,
+      profileGaps,
+      schoolListCount,
+      balancedSchoolList,
+      essayCount,
+      predictionsCount,
+      missingTimelineCount,
+      priorityTasks,
+      overdueTaskCount,
+      due30,
+      now,
+    });
+
+    return {
+      readiness: {
+        score: readinessScore,
+        status:
+          readinessScore >= 85 &&
+          priorityQueue.every((item) => item.severity !== 'critical')
+            ? 'ready'
+            : readinessScore >= 55
+              ? 'attention'
+              : 'blocked',
+        items: [
+          {
+            key: 'profile',
+            label: this.t(locale, '申请档案', 'Profile'),
+            value: `${completeness}%`,
+            status:
+              completeness >= 75
+                ? 'ready'
+                : completeness >= 40
+                  ? 'attention'
+                  : 'blocked',
+            href: '/profile',
+            description:
+              profileGaps.length > 0
+                ? this.t(
+                    locale,
+                    `还有 ${profileGaps.length} 项关键信号待补齐`,
+                    `${profileGaps.length} key signals still need attention`,
+                  )
+                : this.t(
+                    locale,
+                    '核心申请信号已就绪',
+                    'Core applicant signals are ready',
+                  ),
+          },
+          {
+            key: 'schools',
+            label: this.t(locale, '选校结构', 'School list'),
+            value: String(schoolListCount),
+            status:
+              schoolListCount >= 6 && balancedSchoolList
+                ? 'ready'
+                : schoolListCount > 0
+                  ? 'attention'
+                  : 'blocked',
+            href: '/schools',
+            description: balancedSchoolList
+              ? this.t(
+                  locale,
+                  '冲刺、匹配、保底已形成基础组合',
+                  'Reach, target, and safety mix is in place',
+                )
+              : this.t(
+                  locale,
+                  '建议补齐冲刺、匹配、保底三层',
+                  'Balance reach, target, and safety schools',
+                ),
+          },
+          {
+            key: 'essays',
+            label: this.t(locale, '文书进度', 'Essays'),
+            value: String(essayCount),
+            status: essayCount > 0 ? 'ready' : 'attention',
+            href: '/essays',
+            description:
+              essayCount > 0
+                ? this.t(
+                    locale,
+                    '已有文书草稿可继续推进',
+                    'Essay drafts are ready to continue',
+                  )
+                : this.t(
+                    locale,
+                    '先创建第一篇申请文书',
+                    'Create the first application essay draft',
+                  ),
+          },
+          {
+            key: 'timeline',
+            label: this.t(locale, '时间线闭环', 'Timeline'),
+            value: String(pendingTaskCount),
+            status:
+              missingTimelineCount === 0 && pendingTaskCount === 0
+                ? 'ready'
+                : missingTimelineCount === 0
+                  ? 'attention'
+                  : 'blocked',
+            href: '/timeline',
+            description:
+              missingTimelineCount > 0
+                ? this.t(
+                    locale,
+                    `${missingTimelineCount} 所选校还没有申请时间线`,
+                    `${missingTimelineCount} selected schools still need timelines`,
+                  )
+                : this.t(
+                    locale,
+                    '申请节点已纳入统一节奏',
+                    'Application milestones are in one planning rhythm',
+                  ),
+          },
+        ],
+      },
+      metrics: {
+        due7,
+        due30,
+        overdueTasks: overdueTaskCount,
+        missingTimelineCount,
+        balancedSchoolList,
+      },
+      priorityQueue,
+      deadlineStream,
+    };
+  }
+
+  private countMissingTimelines(
+    schoolListItems: Array<{ schoolId: string; round: string | null }>,
+    timelineCoverage: { schoolId: string; round: string }[],
+  ): number {
+    const coverageByRound = new Set(
+      timelineCoverage.map((item) =>
+        this.schoolRoundKey(item.schoolId, item.round),
+      ),
+    );
+    const coverageBySchool = new Set(
+      timelineCoverage.map((item) => item.schoolId),
+    );
+
+    return schoolListItems.filter((item) => {
+      if (item.round) {
+        return !coverageByRound.has(
+          this.schoolRoundKey(item.schoolId, item.round),
+        );
+      }
+      return !coverageBySchool.has(item.schoolId);
+    }).length;
+  }
+
+  private buildDeadlineStream(
+    deadlines: DashboardSummary['upcomingDeadlines'],
+    personalEvents: DashboardSummary['upcomingPersonalEvents'],
+    priorityTasks: DashboardPriorityTaskSource[],
+    locale: string,
+    now: Date,
+  ): DashboardWorkbench['deadlineStream'] {
+    const taskDeadlines: DashboardWorkbench['deadlineStream'] = [];
+    for (const task of priorityTasks) {
+      if (!task.dueDate) continue;
+      const daysLeft = this.daysLeft(task.dueDate, now);
+      taskDeadlines.push({
+        id: task.id,
+        type: 'task',
+        title: task.title,
+        subtitle: this.t(
+          locale,
+          `${this.getTaskSchoolName(task, locale)} · ${task.timeline.round}`,
+          `${this.getTaskSchoolName(task, locale)} · ${task.timeline.round}`,
+        ),
+        dueAt: task.dueDate.toISOString(),
+        daysLeft,
+        severity: this.severityForDays(daysLeft),
+        href: `/timeline?task=${task.id}`,
+      });
+    }
+
+    const schoolDeadlines: DashboardWorkbench['deadlineStream'] = deadlines.map(
+      (deadline) => ({
+        id: deadline.id,
+        type: 'school',
+        title: deadline.schoolName,
+        subtitle: deadline.round,
+        dueAt: deadline.deadline,
+        daysLeft: deadline.daysLeft,
+        severity: this.severityForDays(deadline.daysLeft),
+        href: '/timeline',
+      }),
+    );
+    const eventDeadlines: DashboardWorkbench['deadlineStream'] = [];
+    for (const event of personalEvents) {
+      const dueAt = event.deadline ?? event.eventDate;
+      if (!dueAt) continue;
+      eventDeadlines.push({
+        id: event.id,
+        type: 'event',
+        title: event.title,
+        subtitle: event.category,
+        dueAt,
+        daysLeft: event.daysLeft,
+        severity: this.severityForDays(event.daysLeft),
+        href: '/timeline?tab=personal',
+      });
+    }
+
+    return [...schoolDeadlines, ...eventDeadlines, ...taskDeadlines]
+      .sort((a, b) => a.daysLeft - b.daysLeft)
+      .slice(0, 8);
+  }
+
+  private buildPriorityQueue({
+    locale,
+    completeness,
+    profileGaps,
+    schoolListCount,
+    balancedSchoolList,
+    essayCount,
+    predictionsCount,
+    missingTimelineCount,
+    priorityTasks,
+    overdueTaskCount,
+    due30,
+    now,
+  }: {
+    locale: string;
+    completeness: number;
+    profileGaps: string[];
+    schoolListCount: number;
+    balancedSchoolList: boolean;
+    essayCount: number;
+    predictionsCount: number;
+    missingTimelineCount: number;
+    priorityTasks: DashboardPriorityTaskSource[];
+    overdueTaskCount: number;
+    due30: number;
+    now: Date;
+  }): DashboardWorkbench['priorityQueue'] {
+    const items: DashboardWorkbench['priorityQueue'] = [];
+
+    if (completeness < 75) {
+      items.push({
+        id: 'profile-gaps',
+        kind: 'profile',
+        severity: completeness < 40 ? 'critical' : 'warning',
+        title: this.t(locale, '补齐申请档案', 'Complete applicant profile'),
+        description:
+          profileGaps.length > 0
+            ? this.t(
+                locale,
+                `优先补齐 ${profileGaps.length} 项会影响预测和选校的信号。`,
+                `Prioritize ${profileGaps.length} signals that affect prediction and school strategy.`,
+              )
+            : this.t(
+                locale,
+                '完善基础信息以提升申请判断质量。',
+                'Improve core information quality.',
+              ),
+        href: '/profile',
+      });
+    }
+
+    if (schoolListCount < 6 || !balancedSchoolList) {
+      items.push({
+        id: 'school-list-balance',
+        kind: 'school-list',
+        severity: schoolListCount === 0 ? 'critical' : 'warning',
+        title: this.t(
+          locale,
+          '建立均衡选校清单',
+          'Build a balanced school list',
+        ),
+        description: this.t(
+          locale,
+          schoolListCount === 0
+            ? '先加入目标学校，再让时间线和预测进入闭环。'
+            : '补齐冲刺、匹配、保底三层，降低申请组合风险。',
+          schoolListCount === 0
+            ? 'Add target schools before timelines and predictions can close the loop.'
+            : 'Balance reach, target, and safety schools to reduce portfolio risk.',
+        ),
+        href: '/schools',
+      });
+    }
+
+    if (missingTimelineCount > 0) {
+      items.push({
+        id: 'missing-timelines',
+        kind: 'timeline',
+        severity: 'warning',
+        title: this.t(
+          locale,
+          '生成缺失申请时间线',
+          'Generate missing timelines',
+        ),
+        description: this.t(
+          locale,
+          `${missingTimelineCount} 所选校尚未生成申请节点，建议先统一排期。`,
+          `${missingTimelineCount} selected schools do not have application milestones yet.`,
+        ),
+        href: '/timeline',
+      });
+    }
+
+    for (const task of priorityTasks) {
+      const daysLeft = task.dueDate ? this.daysLeft(task.dueDate, now) : null;
+      if (daysLeft !== null && daysLeft > 14 && items.length >= 4) continue;
+
+      items.push({
+        id: `task-${task.id}`,
+        kind: 'timeline-task',
+        severity: daysLeft === null ? 'normal' : this.severityForDays(daysLeft),
+        title: task.title,
+        description: this.t(
+          locale,
+          `${this.getTaskSchoolName(task, locale)} · ${task.timeline.round}${daysLeft === null ? '' : ` · ${this.formatDaysLeft(daysLeft, locale)}`}`,
+          `${this.getTaskSchoolName(task, locale)} · ${task.timeline.round}${daysLeft === null ? '' : ` · ${this.formatDaysLeft(daysLeft, locale)}`}`,
+        ),
+        href: `/timeline?task=${task.id}`,
+        dueAt: task.dueDate?.toISOString() ?? null,
+        daysLeft,
+        mutation: {
+          type: 'timeline-task-toggle',
+          endpoint: `/timelines/tasks/${task.id}/toggle`,
+        },
+      });
+    }
+
+    if (essayCount === 0) {
+      items.push({
+        id: 'start-essays',
+        kind: 'essay',
+        severity: schoolListCount > 0 ? 'warning' : 'normal',
+        title: this.t(locale, '开启第一组文书', 'Start the first essay set'),
+        description: this.t(
+          locale,
+          '先建立草稿，后续才能追踪题目、版本和 AI 审阅。',
+          'Create drafts so prompts, revisions, and AI review can be tracked.',
+        ),
+        href: '/essays',
+      });
+    }
+
+    if (predictionsCount === 0 && completeness >= 60 && schoolListCount > 0) {
+      items.push({
+        id: 'run-prediction',
+        kind: 'prediction',
+        severity: 'normal',
+        title: this.t(locale, '复盘录取概率', 'Review admission probabilities'),
+        description: this.t(
+          locale,
+          '用最新档案和选校清单重新校准冲刺、匹配和保底判断。',
+          'Recalibrate reach, target, and safety calls with the latest profile and list.',
+        ),
+        href: '/prediction',
+      });
+    }
+
+    if (items.length === 0) {
+      items.push({
+        id: 'route-ready',
+        kind: 'deadline',
+        severity: 'success',
+        title: this.t(
+          locale,
+          '申请路线已进入稳定推进',
+          'Application route is ready',
+        ),
+        description: this.t(
+          locale,
+          due30 > 0 || overdueTaskCount > 0
+            ? '继续处理近期截止事项，保持提交节奏。'
+            : '当前没有阻塞项，可以进入预测复盘或文书深化。',
+          due30 > 0 || overdueTaskCount > 0
+            ? 'Keep clearing near-term due items to maintain submission rhythm.'
+            : 'No blocking items. Move into prediction review or deeper essay work.',
+        ),
+        href: due30 > 0 || overdueTaskCount > 0 ? '/timeline' : '/prediction',
+      });
+    }
+
+    return items.slice(0, 6);
+  }
+
+  private getTaskSchoolName(
+    task: DashboardPriorityTaskSource,
+    locale: string,
+  ): string {
+    if (task.timeline.school) {
+      return getSchoolDisplayName(task.timeline.school, locale);
+    }
+    return task.timeline.schoolName;
+  }
+
+  private daysLeft(date: Date, now: Date): number {
+    return Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  private severityForDays(daysLeft: number | null): DashboardSeverity {
+    if (daysLeft === null) return 'normal';
+    if (daysLeft <= 3) return 'critical';
+    if (daysLeft <= 14) return 'warning';
+    return 'normal';
+  }
+
+  private formatDaysLeft(daysLeft: number, locale: string): string {
+    if (daysLeft < 0) {
+      return this.t(
+        locale,
+        `已逾期 ${Math.abs(daysLeft)} 天`,
+        `${Math.abs(daysLeft)} days overdue`,
+      );
+    }
+    if (daysLeft === 0) return this.t(locale, '今天截止', 'due today');
+    return this.t(locale, `${daysLeft} 天后截止`, `${daysLeft} days left`);
+  }
+
+  private t(locale: string, zh: string, en: string): string {
+    return locale.toLowerCase().startsWith('zh') ? zh : en;
+  }
+
+  private schoolRoundKey(schoolId: string, round: string): string {
+    return `${schoolId}:${this.normalizeRound(round)}`;
+  }
+
+  private normalizeRound(round: string): string {
+    return round.trim().toUpperCase();
+  }
+
+  private selectUpcomingSchoolDeadlines(
+    deadlines: SchoolDeadlineSource[],
+    preferredRound: string | null,
+    now: Date,
+  ): Array<{ deadline: SchoolDeadlineSource; effectiveDate: Date }> {
+    const preferredRoundKey = preferredRound
+      ? this.normalizeRound(preferredRound)
+      : null;
+    const groupedByRound = new Map<string, SchoolDeadlineSource[]>();
+
+    for (const deadline of deadlines) {
+      const roundKey = this.normalizeRound(deadline.round);
+      if (preferredRoundKey && roundKey !== preferredRoundKey) continue;
+      groupedByRound.set(roundKey, [
+        ...(groupedByRound.get(roundKey) ?? []),
+        deadline,
+      ]);
+    }
+
+    return Array.from(groupedByRound.values())
+      .map((roundDeadlines) => {
+        const selected = this.selectBestDeadlineForRound(roundDeadlines, now);
+        if (!selected) return null;
+
+        const effectiveDate =
+          selected.applicationDeadline.getTime() >= now.getTime()
+            ? selected.applicationDeadline
+            : this.rollAnnualDeadlineForward(selected.applicationDeadline, now);
+
+        return { deadline: selected, effectiveDate };
+      })
+      .filter(
+        (
+          item,
+        ): item is { deadline: SchoolDeadlineSource; effectiveDate: Date } =>
+          item !== null,
+      );
+  }
+
+  private selectBestDeadlineForRound(
+    deadlines: SchoolDeadlineSource[],
+    now: Date,
+  ): SchoolDeadlineSource | null {
+    if (deadlines.length === 0) return null;
+
+    const futureDeadlines = deadlines
+      .filter(
+        (deadline) => deadline.applicationDeadline.getTime() >= now.getTime(),
+      )
+      .sort(
+        (a, b) =>
+          a.applicationDeadline.getTime() - b.applicationDeadline.getTime(),
+      );
+
+    if (futureDeadlines.length > 0) {
+      return futureDeadlines[0];
+    }
+
+    return [...deadlines].sort(
+      (a, b) =>
+        b.year - a.year ||
+        b.applicationDeadline.getTime() - a.applicationDeadline.getTime(),
+    )[0];
+  }
+
+  private rollAnnualDeadlineForward(deadline: Date, now: Date): Date {
+    const nextDeadline = new Date(deadline);
+    nextDeadline.setUTCFullYear(now.getUTCFullYear());
+
+    if (nextDeadline.getTime() < now.getTime()) {
+      nextDeadline.setUTCFullYear(now.getUTCFullYear() + 1);
+    }
+
+    return nextDeadline;
   }
 
   private calculateProfileCompleteness(
@@ -418,7 +1158,7 @@ export class DashboardService {
   }
 
   private buildRecentActivity(
-    pointHistory: any[],
+    pointHistory: PointHistorySource[],
   ): DashboardSummary['recentActivity'] {
     const actionDescriptions: Record<string, { title: string; desc: string }> =
       {

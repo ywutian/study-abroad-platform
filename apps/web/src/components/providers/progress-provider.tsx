@@ -16,7 +16,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       {children}
       <ProgressBar
         height="3px"
-        color="oklch(0.58 0.22 255)"
+        color="var(--ds-primary)"
         options={{
           showSpinner: false,
           trickleSpeed: 100,
@@ -30,19 +30,19 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         #nprogress .bar {
           background: linear-gradient(
             90deg,
-            oklch(0.58 0.22 255),
-            oklch(0.65 0.2 240),
-            oklch(0.58 0.22 255)
+            var(--ds-primary),
+            color-mix(in oklab, var(--ds-primary) 72%, var(--ds-info) 28%),
+            var(--ds-primary)
           ) !important;
           box-shadow:
-            0 0 8px oklch(0.58 0.22 255 / 60%),
-            0 0 16px oklch(0.58 0.22 255 / 25%) !important;
-          border-radius: 0 2px 2px 0;
+            0 0 8px color-mix(in oklab, var(--ds-primary) 60%, transparent),
+            0 0 16px color-mix(in oklab, var(--ds-primary) 25%, transparent) !important;
+          border-radius: var(--theme-radius-badge);
         }
         #nprogress .peg {
           box-shadow:
-            0 0 10px oklch(0.58 0.22 255 / 80%),
-            0 0 24px oklch(0.58 0.22 255 / 40%) !important;
+            0 0 10px color-mix(in oklab, var(--ds-primary) 80%, transparent),
+            0 0 24px color-mix(in oklab, var(--ds-primary) 40%, transparent) !important;
         }
       `}</style>
     </>

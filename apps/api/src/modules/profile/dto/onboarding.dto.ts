@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -22,6 +22,10 @@ import {
   SchoolTier,
   TestType,
 } from '@prisma/client';
+import {
+  APPLICATION_ROUND_VALUES,
+  normalizeApplicationRound,
+} from '@study-abroad/shared';
 
 const GRADES = [
   'FRESHMAN',
@@ -30,7 +34,6 @@ const GRADES = [
   'SENIOR',
   'GAP_YEAR',
 ] as const;
-const APP_ROUNDS = ['ED', 'ED2', 'EA', 'REA', 'RD'] as const;
 const ACTIVITY_CATEGORIES = [
   'ACADEMIC',
   'ARTS',
@@ -44,6 +47,11 @@ const ACTIVITY_CATEGORIES = [
   'HOBBY',
   'OTHER',
 ] as const;
+
+function applicationRoundTransform({ value }: { value: unknown }) {
+  if (typeof value !== 'string') return value;
+  return normalizeApplicationRound(value) ?? value;
+}
 const AWARD_LEVELS = [
   'SCHOOL',
   'REGIONAL',
@@ -121,9 +129,10 @@ export class OnboardingProfileDto {
   @MaxLength(200)
   intendedMajor?: string;
 
-  @ApiPropertyOptional({ enum: APP_ROUNDS })
+  @ApiPropertyOptional({ enum: APPLICATION_ROUND_VALUES })
   @IsOptional()
-  @IsIn(APP_ROUNDS)
+  @Transform(applicationRoundTransform)
+  @IsIn(APPLICATION_ROUND_VALUES)
   applicationRound?: string;
 
   @ApiPropertyOptional({ enum: BudgetTier })
@@ -254,9 +263,10 @@ export class OnboardingTargetSchoolDto {
   @MaxLength(200)
   schoolId: string;
 
-  @ApiPropertyOptional({ enum: APP_ROUNDS })
+  @ApiPropertyOptional({ enum: APPLICATION_ROUND_VALUES })
   @IsOptional()
-  @IsIn(APP_ROUNDS)
+  @Transform(applicationRoundTransform)
+  @IsIn(APPLICATION_ROUND_VALUES)
   round?: string;
 
   @ApiPropertyOptional({ enum: SchoolTier, default: SchoolTier.TARGET })

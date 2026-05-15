@@ -174,6 +174,14 @@ export class ProfileCrudService {
     return new Prisma.Decimal(2.5);
   }
 
+  private toNullableDecimal(
+    value: number | null | undefined,
+  ): Prisma.Decimal | null | undefined {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    return new Prisma.Decimal(value);
+  }
+
   /**
    * Create a new profile for the given user.
    *
@@ -207,8 +215,15 @@ export class ProfileCrudService {
       where: { userId },
       data: {
         ...data,
-        gpa: data.gpa ? new Prisma.Decimal(data.gpa) : undefined,
-        gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : undefined,
+        gpa: this.toNullableDecimal(data.gpa),
+        gpaScale:
+          data.gpaScale === undefined
+            ? undefined
+            : new Prisma.Decimal(data.gpaScale),
+        gpa9: this.toNullableDecimal(data.gpa9),
+        gpa10: this.toNullableDecimal(data.gpa10),
+        gpa11: this.toNullableDecimal(data.gpa11),
+        gpa12: this.toNullableDecimal(data.gpa12),
       },
     });
   }
@@ -226,8 +241,15 @@ export class ProfileCrudService {
   async upsert(userId: string, data: UpdateProfileDto): Promise<Profile> {
     const profileData = {
       ...data,
-      gpa: data.gpa ? new Prisma.Decimal(data.gpa) : undefined,
-      gpaScale: data.gpaScale ? new Prisma.Decimal(data.gpaScale) : undefined,
+      gpa: this.toNullableDecimal(data.gpa),
+      gpaScale:
+        data.gpaScale === undefined
+          ? undefined
+          : new Prisma.Decimal(data.gpaScale),
+      gpa9: this.toNullableDecimal(data.gpa9),
+      gpa10: this.toNullableDecimal(data.gpa10),
+      gpa11: this.toNullableDecimal(data.gpa11),
+      gpa12: this.toNullableDecimal(data.gpa12),
     };
 
     let profile: Profile;

@@ -44,6 +44,7 @@ import {
   SubmitApplicationAnalysisFeedbackDto,
 } from './dto';
 import { ProfileApplicationAnalysisService } from './profile-application-analysis.service';
+import { ProfileReadinessService } from './profile-readiness.service';
 
 @ApiTags('profiles')
 @ApiBearerAuth()
@@ -55,6 +56,7 @@ export class ProfileController {
     private readonly profileService: ProfileService,
     private readonly profileApplicationAnalysisService: ProfileApplicationAnalysisService,
     private readonly schoolListService: SchoolListService,
+    private readonly profileReadinessService: ProfileReadinessService,
   ) {}
 
   // ============================================
@@ -71,6 +73,12 @@ export class ProfileController {
   @ApiOperation({ summary: 'Get current user profile completeness' })
   async getMyProfileCompleteness(@CurrentUser() user: CurrentUserPayload) {
     return this.profileService.calculateCompleteness(user.id);
+  }
+
+  @Get('me/readiness')
+  @ApiOperation({ summary: 'Get platform-wide profile readiness' })
+  async getMyProfileReadiness(@CurrentUser() user: CurrentUserPayload) {
+    return this.profileReadinessService.getReadiness(user.id);
   }
 
   @Put('me')
@@ -116,6 +124,7 @@ export class ProfileController {
   }
 
   @Post('me/ai-analysis/feedback')
+  @ThrottleAI()
   @ApiOperation({
     summary:
       'Submit applicant feedback for the main structured application analysis or an experiment exposure',

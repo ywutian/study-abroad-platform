@@ -14,14 +14,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  AlertCircle,
   Check,
   CheckCheck,
   MoreHorizontal,
   Copy,
+  FileText,
   Undo2,
   Trash2,
   Flag,
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import type { Message, Conversation } from './types';
 import { formatMessageTime, renderMessageContent, isWithinRecallWindow } from './utils';
@@ -34,6 +37,7 @@ interface ChatMessageBubbleProps {
   otherReadAt: string | null;
   onDelete: (messageId: string) => void;
   onRecall: (messageId: string) => void;
+  onRetry?: (message: Message) => void;
   onCopy: (content: string) => void;
   onReportMessage: (messageId: string) => void;
 }
@@ -46,6 +50,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
   otherReadAt,
   onDelete,
   onRecall,
+  onRetry,
   onCopy,
   onReportMessage,
 }: ChatMessageBubbleProps) {
@@ -55,6 +60,19 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
 
   const isActionable = !message.isDeleted && !message.isRecalled;
   const isSending = message.status === 'sending';
+  const isFailed = message.status === 'failed';
+  const attachments = useMemo(() => {
+    if (message.attachments?.length) return message.attachments;
+    if (!message.mediaUrl) return [];
+    return [
+      {
+        id: message.id,
+        url: message.mediaUrl,
+        type: message.mediaType || 'file',
+        name: message.content || message.mediaUrl.split('/').pop() || 'attachment',
+      },
+    ];
+  }, [message]);
 
   // Long-press detection for mobile
   const longPressTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -82,11 +100,23 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
 
   const statusIcon = isSending ? (
     <Loader2 className="h-3 w-3 animate-spin" />
+  ) : isFailed ? (
+    <AlertCircle className="h-3 w-3 text-destructive" />
   ) : isRead ? (
     <CheckCheck className="h-3 w-3 text-blue-400" />
   ) : (
     <Check className="h-3 w-3" />
   );
+
+  if (message.isSystem) {
+    return (
+      <div className="flex justify-center px-6">
+        <div className="max-w-[80%] rounded-md border bg-muted/40 px-3 py-2 text-center text-xs text-muted-foreground">
+          {renderMessageContent(message.content)}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -126,6 +156,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
               onCopy={onCopy}
               onRecall={onRecall}
               onDelete={onDelete}
+              onRetry={onRetry}
               onReport={onReportMessage}
               t={t}
             />
@@ -135,14 +166,16 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
         {/* 消息气泡 */}
         <div
           className={cn(
-            'max-w-[70%] md:max-w-[60%] rounded-lg px-4 py-2.5 shadow-sm',
+            'max-w-[78vw] sm:max-w-[70%] md:max-w-[62%] rounded-lg px-4 py-2.5 shadow-sm',
             message.isRecalled
               ? 'bg-muted/30 italic'
               : message.isDeleted
                 ? 'bg-muted/50 italic'
-                : isOwn
-                  ? 'bg-primary text-white rounded-br-md'
-                  : 'bg-muted rounded-bl-md'
+                : isFailed
+                  ? 'border border-destructive/30 bg-destructive/10'
+                  : isOwn
+                    ? 'bg-primary text-white rounded-br-md'
+                    : 'border border-border bg-background text-foreground rounded-bl-md'
           )}
         >
           {message.isRecalled ? (
@@ -153,29 +186,66 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
             <p className="text-sm text-muted-foreground">{t('chat.messageDeleted')}</p>
           ) : (
             <>
-              {message.mediaUrl && message.mediaType === 'image' && (
-                <Image
-                  src={message.mediaUrl}
-                  alt=""
-                  width={400}
-                  height={240}
-                  className="rounded-md max-w-full max-h-60 mb-1 object-contain"
-                  unoptimized
-                />
-              )}
-              {message.mediaUrl && message.mediaType === 'file' && isSafeUrl(message.mediaUrl) && (
-                <a
-                  href={message.mediaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm underline mb-1"
+              {message.replyTo && (
+                <div
+                  className={cn(
+                    'mb-2 border-l-2 px-2 py-1 text-xs',
+                    isOwn
+                      ? 'border-white/45 bg-white/10 text-white/80'
+                      : 'border-primary/40 bg-background/50'
+                  )}
                 >
-                  {message.mediaUrl.split('/').pop()}
-                </a>
+                  {message.replyTo.isDeleted || message.replyTo.isRecalled
+                    ? t('chat.messageUnavailable')
+                    : message.replyTo.content}
+                </div>
+              )}
+              {attachments.length > 0 && (
+                <div className="mb-2 space-y-2">
+                  {attachments.map((attachment) => {
+                    const canOpen = isSafeUrl(attachment.url);
+                    const canPreview = canOpen || attachment.url.startsWith('blob:');
+
+                    if (attachment.type === 'image' && canPreview) {
+                      return (
+                        <Image
+                          key={attachment.id}
+                          src={attachment.url}
+                          alt={attachment.name || ''}
+                          width={420}
+                          height={260}
+                          className="max-h-64 max-w-full rounded-md object-contain"
+                          unoptimized
+                        />
+                      );
+                    }
+
+                    return canOpen ? (
+                      <a
+                        key={attachment.id}
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          'flex items-center gap-2 rounded-md border px-3 py-2 text-sm underline-offset-4 hover:underline',
+                          isOwn ? 'border-white/25 bg-white/10' : 'border-border bg-background/70'
+                        )}
+                      >
+                        <FileText className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{attachment.name}</span>
+                      </a>
+                    ) : null;
+                  })}
+                </div>
               )}
               <p className="text-sm whitespace-pre-wrap break-words">
                 {renderMessageContent(message.content)}
               </p>
+              {isFailed && (
+                <p className="mt-1 text-xs text-destructive">
+                  {message.error || t('chat.sendFailed')}
+                </p>
+              )}
             </>
           )}
 
@@ -186,7 +256,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
                 'text-2xs',
                 message.isDeleted || message.isRecalled
                   ? 'text-muted-foreground'
-                  : isOwn
+                  : isOwn && !isFailed
                     ? 'text-white/70'
                     : 'text-muted-foreground'
               )}
@@ -194,7 +264,9 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
               {formatMessageTime(message.createdAt, locale)}
             </span>
             {isOwn && !message.isDeleted && !message.isRecalled && (
-              <span className="text-white/70">{statusIcon}</span>
+              <span className={cn(isOwn && !isFailed ? 'text-white/70' : 'text-muted-foreground')}>
+                {statusIcon}
+              </span>
             )}
           </div>
         </div>
@@ -210,6 +282,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
               onCopy={onCopy}
               onRecall={onRecall}
               onDelete={onDelete}
+              onRetry={onRetry}
               onReport={onReportMessage}
               t={t}
             />
@@ -229,6 +302,7 @@ export const ChatMessageBubble = memo(function ChatMessageBubble({
                 onCopy={onCopy}
                 onRecall={onRecall}
                 onDelete={onDelete}
+                onRetry={onRetry}
                 onReport={onReportMessage}
                 t={t}
               />
@@ -249,6 +323,7 @@ function MessageActions({
   onCopy,
   onRecall,
   onDelete,
+  onRetry,
   onReport,
   t,
 }: {
@@ -259,6 +334,7 @@ function MessageActions({
   onCopy: (content: string) => void;
   onRecall: (messageId: string) => void;
   onDelete: (messageId: string) => void;
+  onRetry?: (message: Message) => void;
   onReport: (messageId: string) => void;
   t: ReturnType<typeof useTranslations>;
 }) {
@@ -282,6 +358,7 @@ function MessageActions({
           onCopy={onCopy}
           onRecall={onRecall}
           onDelete={onDelete}
+          onRetry={onRetry}
           onReport={onReport}
           t={t}
         />
@@ -297,6 +374,7 @@ function MessageMenuItems({
   onCopy,
   onRecall,
   onDelete,
+  onRetry,
   onReport,
   t,
 }: {
@@ -305,6 +383,7 @@ function MessageMenuItems({
   onCopy: (content: string) => void;
   onRecall: (messageId: string) => void;
   onDelete: (messageId: string) => void;
+  onRetry?: (message: Message) => void;
   onReport: (messageId: string) => void;
   t: ReturnType<typeof useTranslations>;
 }) {
@@ -315,6 +394,13 @@ function MessageMenuItems({
         <Copy className="h-4 w-4" />
         {t('chat.copyMessage')}
       </DropdownMenuItem>
+
+      {message.status === 'failed' && onRetry && (
+        <DropdownMenuItem onClick={() => onRetry(message)} className="gap-2">
+          <RefreshCw className="h-4 w-4" />
+          {t('chat.retrySend')}
+        </DropdownMenuItem>
+      )}
 
       <DropdownMenuSeparator />
 

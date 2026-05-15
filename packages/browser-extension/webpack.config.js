@@ -14,6 +14,12 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
+    alias: {
+      '@study-abroad/shared/design/theme-contract': path.resolve(
+        __dirname,
+        '../shared/src/design/theme-contract.ts'
+      ),
+    },
   },
   module: {
     rules: [

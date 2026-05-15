@@ -22,7 +22,12 @@ import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import type { Profile, Award } from '@/types';
 
-const AWARD_LEVELS = ['school', 'regional', 'national', 'international'];
+const AWARD_LEVELS = [
+  { value: 'SCHOOL', key: 'school' },
+  { value: 'REGIONAL', key: 'regional' },
+  { value: 'NATIONAL', key: 'national' },
+  { value: 'INTERNATIONAL', key: 'international' },
+];
 
 export default function AwardsScreen() {
   const { t } = useTranslation();
@@ -47,15 +52,18 @@ export default function AwardsScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', 'me'],
     queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const saveMutation = useMutation({
-    mutationFn: (updatedAwards: Partial<Award>[]) =>
-      apiClient.put<Profile>(profileRoutes.me(), { awards: updatedAwards }),
+    mutationFn: (award: Record<string, unknown>) =>
+      editingAward
+        ? apiClient.put(profileRoutes.award(editingAward.id), award)
+        : apiClient.post(profileRoutes.awards(), award),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success(t('profileEdit.saveSuccess'));
       closeModal();
     },
@@ -63,10 +71,22 @@ export default function AwardsScreen() {
       toast.error(t('profileEdit.saveFailed'));
     },
   });
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(profileRoutes.award(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success(t('profileEdit.saveSuccess'));
+      setDeleteTarget(null);
+    },
+    onError: () => {
+      toast.error(t('profileEdit.saveFailed'));
+    },
+  });
 
   const levelOptions = AWARD_LEVELS.map((lvl) => ({
-    value: lvl,
-    label: t(`profileEdit.awardLevels.${lvl}`),
+    value: lvl.value,
+    label: t(`profileEdit.awardLevels.${lvl.key}`),
   }));
 
   const resetForm = useCallback(() => {
@@ -91,7 +111,7 @@ export default function AwardsScreen() {
     setEditingAward(award);
     setName(award.name || '');
     setLevel(award.level || '');
-    setDate(award.date || '');
+    setDate(award.year?.toString() || award.date || '');
     setDescription(award.description || '');
     setModalVisible(true);
   }, []);
@@ -106,36 +126,21 @@ export default function AwardsScreen() {
       return;
     }
 
-    const currentAwards = profile?.awards || [];
-    const newAward: Partial<Award> = {
+    const newAward: Record<string, unknown> = {
       name: name.trim(),
       level,
-      date: date || undefined,
+      year: date ? parseInt(date.slice(0, 4), 10) : undefined,
       description: description.trim() || undefined,
     };
 
-    let updatedAwards: Partial<Award>[];
-
-    if (editingAward) {
-      updatedAwards = currentAwards.map((a) =>
-        a.id === editingAward.id ? { ...a, ...newAward } : a
-      );
-    } else {
-      updatedAwards = [...currentAwards, newAward];
-    }
-
-    saveMutation.mutate(updatedAwards);
-  }, [name, level, date, description, editingAward, profile, saveMutation, toast, t]);
+    saveMutation.mutate(newAward);
+  }, [name, level, date, description, saveMutation, toast, t]);
 
   const handleDelete = useCallback(() => {
     if (!deleteTarget) return;
 
-    const currentAwards = profile?.awards || [];
-    const updatedAwards = currentAwards.filter((a) => a.id !== deleteTarget.id);
-
-    saveMutation.mutate(updatedAwards);
-    setDeleteTarget(null);
-  }, [deleteTarget, profile, saveMutation]);
+    deleteMutation.mutate(deleteTarget.id);
+  }, [deleteTarget, deleteMutation]);
 
   const getLevelConfig = (awardLevel: string) => {
     switch (awardLevel?.toLowerCase()) {
@@ -322,7 +327,7 @@ export default function AwardsScreen() {
 
           <Input
             label={t('profileEdit.awardDate')}
-            placeholder="YYYY-MM-DD"
+            placeholder="YYYY"
             value={date}
             onChangeText={setDate}
           />
@@ -347,7 +352,7 @@ export default function AwardsScreen() {
         title={t('profileEdit.deleteConfirmTitle')}
         message={t('profileEdit.deleteAwardConfirm')}
         variant="destructive"
-        loading={saveMutation.isPending}
+        loading={saveMutation.isPending || deleteMutation.isPending}
       />
     </View>
   );

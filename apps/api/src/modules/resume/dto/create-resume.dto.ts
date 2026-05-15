@@ -38,11 +38,44 @@ export class CreateResumeDto {
 
   @ApiPropertyOptional({
     description: 'Resume type',
-    enum: ['COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV'],
+    enum: ['COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV', 'FULL_TIME_JOB'],
   })
   @IsOptional()
-  @IsEnum(['COLLEGE_APPLICATION', 'INTERNSHIP', 'GRADUATE_CV'] as const)
-  type?: 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV';
+  @IsEnum([
+    'COLLEGE_APPLICATION',
+    'INTERNSHIP',
+    'GRADUATE_CV',
+    'FULL_TIME_JOB',
+  ] as const)
+  type?: 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV' | 'FULL_TIME_JOB';
+
+  @ApiPropertyOptional({
+    description: 'Resume family',
+    enum: ['STUDY_ABROAD', 'CAREER'],
+  })
+  @IsOptional()
+  @IsEnum(['STUDY_ABROAD', 'CAREER'] as const)
+  family?: 'STUDY_ABROAD' | 'CAREER';
+
+  @ApiPropertyOptional({
+    description: 'Resume variant kind',
+    enum: ['MASTER', 'TAILORED'],
+  })
+  @IsOptional()
+  @IsEnum(['MASTER', 'TAILORED'] as const)
+  variantKind?: 'MASTER' | 'TAILORED';
+
+  @ApiPropertyOptional({ description: 'Target ID for tailored resume' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  targetId?: string;
+
+  @ApiPropertyOptional({ description: 'Base resume ID for tailored resume' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  baseResumeId?: string;
 
   @ApiPropertyOptional({ description: 'Template ID', example: 'jake-classic' })
   @IsOptional()

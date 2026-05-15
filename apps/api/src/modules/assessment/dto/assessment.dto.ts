@@ -5,6 +5,10 @@ import {
   IsEnum,
   ValidateNested,
   MaxLength,
+  IsOptional,
+  IsInt,
+  Min,
+  Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -38,6 +42,21 @@ export class SubmitAssessmentDto {
   @ValidateNested({ each: true })
   @Type(() => SubmitAnswerDto)
   answers: SubmitAnswerDto[];
+}
+
+export class SaveAssessmentDraftDto {
+  @ApiProperty({ type: [SubmitAnswerDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SubmitAnswerDto)
+  answers: SubmitAnswerDto[];
+
+  @ApiPropertyOptional({ description: 'Zero-based current question index' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(200)
+  currentQuestionIndex?: number;
 }
 
 // ============ Response DTOs ============
@@ -165,6 +184,68 @@ export class AssessmentResultDto {
 
   @ApiProperty()
   completedAt: Date;
+}
+
+export class AssessmentDraftDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ enum: AssessmentTypeEnum })
+  type: AssessmentTypeEnum;
+
+  @ApiProperty({ type: [SubmitAnswerDto] })
+  answers: SubmitAnswerDto[];
+
+  @ApiProperty()
+  currentQuestionIndex: number;
+
+  @ApiPropertyOptional()
+  expiresAt?: Date | null;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+
+export class AssessmentDraftSummaryDto {
+  @ApiProperty({ enum: AssessmentTypeEnum })
+  type: AssessmentTypeEnum;
+
+  @ApiProperty()
+  answerCount: number;
+
+  @ApiProperty()
+  currentQuestionIndex: number;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+
+export class AssessmentMajorSuggestionDto {
+  @ApiProperty()
+  major: string;
+
+  @ApiProperty()
+  sources: string[];
+}
+
+export class AssessmentSummaryDto {
+  @ApiPropertyOptional({ type: AssessmentResultDto })
+  latestMbti?: AssessmentResultDto;
+
+  @ApiPropertyOptional({ type: AssessmentResultDto })
+  latestHolland?: AssessmentResultDto;
+
+  @ApiProperty({ type: [AssessmentDraftSummaryDto] })
+  drafts: AssessmentDraftSummaryDto[];
+
+  @ApiProperty()
+  historyCount: number;
+
+  @ApiProperty({ type: [String] })
+  completedTypes: AssessmentTypeEnum[];
+
+  @ApiProperty({ type: [AssessmentMajorSuggestionDto] })
+  majorSuggestions: AssessmentMajorSuggestionDto[];
 }
 
 export class AssessmentHistoryDto {

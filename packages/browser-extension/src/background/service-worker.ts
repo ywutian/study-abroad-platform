@@ -4,6 +4,7 @@
 
 import { fetchProfile, checkLoginStatus, getCachedProfile } from '../utils/api-client';
 import type { Message, MessageResponse } from '../utils/types';
+import { msg } from '../utils/i18n';
 
 // 监听扩展安装/更新
 chrome.runtime.onInstalled.addListener((details) => {
@@ -92,7 +93,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: 'fill-field',
-    title: 'Fill with Lumni data',
+    title: msg('contextFill'),
     contexts: ['editable'],
     documentUrlPatterns: ['https://apply.commonapp.org/*', 'https://www.commonapp.org/*'],
   });

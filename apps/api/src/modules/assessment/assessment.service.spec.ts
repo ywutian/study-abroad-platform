@@ -179,6 +179,12 @@ describe('AssessmentService', () => {
               findMany: jest.fn(),
               create: jest.fn().mockResolvedValue(mockAssessmentResult),
             },
+            assessmentDraft: {
+              findUnique: jest.fn(),
+              findMany: jest.fn().mockResolvedValue([]),
+              upsert: jest.fn(),
+              delete: jest.fn().mockResolvedValue(undefined),
+            },
           },
         },
         {
@@ -245,6 +251,7 @@ describe('AssessmentService', () => {
 
       expect(result).toBeDefined();
       expect(prisma.assessmentResult.create).toHaveBeenCalled();
+      expect(prisma.assessmentDraft.delete).toHaveBeenCalled();
     });
 
     it('should process Holland answers and return result', async () => {
@@ -260,6 +267,68 @@ describe('AssessmentService', () => {
 
       expect(result).toBeDefined();
       expect(prisma.assessmentResult.create).toHaveBeenCalled();
+    });
+
+    it('should reject incomplete submissions', async () => {
+      await expect(
+        service.submitAssessment('user-1', {
+          type: 'MBTI' as any,
+          answers: [{ questionId: 'mbti-1', answer: '4' }],
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject answers for unknown questions', async () => {
+      await expect(
+        service.submitAssessment('user-1', {
+          type: 'HOLLAND' as any,
+          answers: Array.from({ length: 30 }, (_, i) => ({
+            questionId: i === 0 ? 'bad-question' : `holland-${i + 1}`,
+            answer: '1',
+          })),
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('drafts', () => {
+    it('should save an assessment draft', async () => {
+      const updatedAt = new Date('2026-05-15T12:00:00Z');
+      (prisma.assessmentDraft.upsert as jest.Mock).mockResolvedValue({
+        id: 'draft-1',
+        userId: 'user-1',
+        type: AssessmentType.MBTI,
+        answers: [{ questionId: 'mbti-1', answer: '4' }],
+        currentQuestionIndex: 1,
+        expiresAt: new Date('2026-06-14T12:00:00Z'),
+        updatedAt,
+      });
+
+      const result = await service.saveDraft('user-1', 'MBTI' as any, {
+        answers: [{ questionId: 'mbti-1', answer: '4' }],
+        currentQuestionIndex: 1,
+      });
+
+      expect(result.id).toBe('draft-1');
+      expect(result.answers).toEqual([{ questionId: 'mbti-1', answer: '4' }]);
+      expect(prisma.assessmentDraft.upsert).toHaveBeenCalled();
+    });
+
+    it('should return null and delete expired drafts', async () => {
+      (prisma.assessmentDraft.findUnique as jest.Mock).mockResolvedValue({
+        id: 'draft-1',
+        userId: 'user-1',
+        type: AssessmentType.MBTI,
+        answers: [],
+        currentQuestionIndex: 0,
+        expiresAt: new Date('2020-01-01T00:00:00Z'),
+        updatedAt: new Date(),
+      });
+
+      const result = await service.getDraft('user-1', 'MBTI' as any);
+
+      expect(result).toBeNull();
+      expect(prisma.assessmentDraft.delete).toHaveBeenCalled();
     });
   });
 

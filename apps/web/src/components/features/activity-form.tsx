@@ -241,6 +241,10 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     mutationFn: (data: unknown) => apiClient.post(profileRoutes.activities(), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
       toast.success(t('toast.activityAdded'));
       onOpenChange(false);
     },
@@ -253,6 +257,10 @@ export function ActivityForm({ open, onOpenChange, editingActivity }: ActivityFo
     mutationFn: (data: unknown) => apiClient.put(profileRoutes.activity(editingActivity!.id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-ai-analysis'] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['predictions'] });
       toast.success(t('toast.activityUpdated'));
       onOpenChange(false);
     },

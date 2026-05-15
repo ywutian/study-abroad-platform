@@ -42,7 +42,7 @@ export function RankingTab() {
     [c]
   );
 
-  if (isLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
+  if (isLoading) return <Loading text={t('hallOfFame.loading')} />;
 
   const rankings = rankingData || [];
 
@@ -50,11 +50,8 @@ export function RankingTab() {
     return (
       <EmptyState
         icon="bar-chart-outline"
-        title={t('hallOfFame.ranking.empty', 'No ranking data')}
-        description={t(
-          'hallOfFame.ranking.emptyDesc',
-          'Add target schools to see your competitive ranking.'
-        )}
+        title={t('hallOfFame.ranking.empty')}
+        description={t('hallOfFame.ranking.emptyDesc')}
       />
     );
   }
