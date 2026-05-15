@@ -43,6 +43,7 @@ export interface SchoolListItem {
   id: string;
   schoolId: string;
   tier: 'SAFETY' | 'TARGET' | 'REACH';
+  round?: string;
   school: {
     id: string;
     name: string;
@@ -52,7 +53,23 @@ export interface SchoolListItem {
     acceptanceRate?: number;
   };
   isAIRecommended: boolean;
+  prediction?: {
+    probability?: number;
+    tier?: string;
+    confidence?: string;
+    source?: string;
+    authority?: 'AUTHORITATIVE' | 'PREVIEW';
+    updatedAt?: string | Date;
+  };
   essayPromptCount?: number;
+  deadlines?: Array<{
+    round: string;
+    applicationDeadline: string;
+    financialAidDeadline?: string;
+    interviewRequired?: boolean;
+    interviewDeadline?: string;
+    interviewFormat?: string;
+  }>;
 }
 
 export interface Profile {

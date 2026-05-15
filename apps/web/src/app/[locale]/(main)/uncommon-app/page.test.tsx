@@ -2,13 +2,17 @@ import type React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { profileRoutes, recommendationRoutes, schoolListRoutes } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  profileRoutes,
+  recommendationRoutes,
+  schoolListRoutes,
+} from '@study-abroad/shared';
 import UncommonAppPage from './page';
 import { apiClient } from '@/lib/api';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
-  useLocale: () => 'en',
 }));
 
 vi.mock('@/components/layout', () => ({
@@ -16,34 +20,39 @@ vi.mock('@/components/layout', () => ({
 }));
 
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: () => <div>page-header</div>,
+  PageHeader: ({
+    title,
+    description,
+    actions,
+  }: {
+    title: string;
+    description: string;
+    actions?: React.ReactNode;
+  }) => (
+    <header>
+      <h1>{title}</h1>
+      <p>{description}</p>
+      {actions}
+    </header>
+  ),
 }));
 
 vi.mock('@/components/features/ai-error-boundary', () => ({
   AIErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('./_components/step-profile-grading', () => ({
-  StepProfileGrading: ({ onGradeProfile }: { onGradeProfile: () => void }) => (
-    <button onClick={onGradeProfile}>grade-profile</button>
-  ),
-}));
-
-vi.mock('./_components/step-school-lists', () => ({
-  StepSchoolLists: ({ onDelete }: { onDelete: (id: string) => void }) => (
-    <button onClick={() => onDelete('item-1')}>delete-school</button>
-  ),
-}));
-
-vi.mock('./_components/step-ai-recommendations', () => ({
-  StepAIRecommendations: ({ onGetRecommendations }: { onGetRecommendations: () => void }) => (
-    <button onClick={onGetRecommendations}>generate-recommendations</button>
-  ),
-}));
-
-vi.mock('./_components/step-results', () => ({
-  StepResults: ({ analysis }: { analysis: { summary?: string } | null }) => (
-    <div>{analysis?.summary ?? 'analysis-pending'}</div>
+vi.mock('@/lib/i18n/navigation', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+    children: React.ReactNode;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -62,24 +71,57 @@ vi.mock('sonner', () => ({
   },
 }));
 
+const defaultProfile = {
+  id: 'profile-1',
+  gpa: 3.9,
+  testScores: [{ type: 'SAT', score: 1520 }],
+  activities: [{ id: 'activity-1', name: 'Research' }],
+  awards: [],
+};
+
+const exampleSchool = {
+  id: 'item-1',
+  schoolId: 'school-1',
+  tier: 'TARGET',
+  round: 'RD',
+  school: {
+    id: 'school-1',
+    name: 'Example University',
+  },
+  isAIRecommended: false,
+  essayPromptCount: 2,
+  deadlines: [
+    {
+      round: 'RD',
+      applicationDeadline: '2026-01-01',
+    },
+  ],
+};
+
 describe('UncommonAppPage', () => {
+  let mockSchoolList: unknown[];
+  let mockProfile: Record<string, unknown>;
+  let mockTimelines: unknown[];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSchoolList = [];
+    mockProfile = defaultProfile;
+    mockTimelines = [];
+
     vi.mocked(apiClient.get).mockImplementation((path: string) => {
       if (path === schoolListRoutes.list()) {
-        return Promise.resolve([]);
+        return Promise.resolve(mockSchoolList);
       }
       if (path === profileRoutes.me()) {
-        return Promise.resolve({
-          id: 'profile-1',
-          testScores: [],
-          activities: [],
-          awards: [],
-        });
+        return Promise.resolve(mockProfile);
+      }
+      if (path === API_ROUTES.TIMELINES) {
+        return Promise.resolve(mockTimelines);
       }
       if (path === profileRoutes.aiAnalysis()) {
         return Promise.resolve({
-          summary: 'canonical-analysis',
+          overallVerdict: 'canonical-analysis',
           overallScore: 80,
           tier: 'top30',
           sections: {
@@ -145,10 +187,10 @@ describe('UncommonAppPage', () => {
       </QueryClientProvider>
     );
 
-    return { queryClient, invalidateSpy };
+    return { invalidateSpy };
   }
 
-  it('uses the canonical profile analysis endpoint only after explicit strategy generation', async () => {
+  it('uses the canonical profile analysis endpoint only after explicit counselor advice', async () => {
     renderPage();
 
     await waitFor(() => {
@@ -156,7 +198,10 @@ describe('UncommonAppPage', () => {
     });
     expect(apiClient.get).not.toHaveBeenCalledWith(profileRoutes.aiAnalysis(), expect.anything());
 
-    fireEvent.click(screen.getByText('grade-profile'));
+    const adviceButtons = screen.getAllByRole('button', {
+      name: /workspace\.actions\.generate-advice/,
+    });
+    fireEvent.click(adviceButtons[adviceButtons.length - 1]);
 
     await waitFor(() => {
       expect(apiClient.get).toHaveBeenCalledWith(
@@ -173,10 +218,10 @@ describe('UncommonAppPage', () => {
     });
   });
 
-  it('uses the structured recommendation endpoint instead of the chat agent parser', async () => {
+  it('keeps candidate-school generation as a manual secondary action', async () => {
     renderPage();
 
-    fireEvent.click(screen.getByText('generate-recommendations'));
+    fireEvent.click(screen.getByRole('button', { name: /workspace\.actions\.add-candidates/ }));
 
     await waitFor(() => {
       expect(apiClient.post).toHaveBeenCalledWith(
@@ -190,10 +235,12 @@ describe('UncommonAppPage', () => {
     });
   });
 
-  it('invalidates profile-ai-analysis when a school is removed', async () => {
+  it('invalidates application workspace data when a school is removed', async () => {
+    mockSchoolList = [exampleSchool];
     const { invalidateSpy } = renderPage();
 
-    fireEvent.click(screen.getByText('delete-school'));
+    await screen.findByText('Example University');
+    fireEvent.click(screen.getByLabelText('workspace.schoolBoard.removeSchool'));
 
     await waitFor(() => {
       expect(apiClient.delete).toHaveBeenCalledWith(schoolListRoutes.byId('item-1'));

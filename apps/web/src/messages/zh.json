@@ -35,6 +35,7 @@
     "processing": "处理中...",
     "comingSoon": "即将推出",
     "retry": "重试",
+    "clear": "清除",
     "clearAll": "清除全部",
     "ongoing": "进行中",
     "total": "总数",
@@ -98,7 +99,7 @@
     "rankingTooltip": "{source} {year} 已验证排名",
     "rankingTooltipOverall": "US News 本科主榜是产品默认视图，组合展示 National Universities 与 Liberal Arts Colleges，并非 US News 官方单一总榜。",
     "rankingTooltipFallback": "{source} {year} legacy 回退排名。正式使用前请按所选官方榜单核验。",
-    "rankingFallbackShort": "Legacy",
+    "rankingFallbackShort": "旧版",
     "rankingAria": "{source} {list} 第 {rank} 名",
     "rankingAriaFallback": "{source} legacy 回退排名第 {rank} 名",
     "aria": {
@@ -205,8 +206,8 @@
     "editProfile": "编辑档案",
     "quickAccess": "快速入口",
     "commandCenter": {
-      "label": "申请指挥中心",
-      "secondary": "下一步重点",
+      "label": "申请工作台",
+      "secondary": "申请执行入口",
       "gapCount": "{count} 个档案缺口",
       "actions": {
         "profile": "完善申请档案",
@@ -217,14 +218,48 @@
         "essaysDesc": "创建草稿，让 Lumni 帮你整理题目、修改进度和评审建议。",
         "deadlines": "处理即将截止的任务",
         "deadlinesDesc": "还有 {count} 个截止任务需要在下一次提交窗口前确认。",
-        "review": "复盘你的录取路线",
-        "reviewDesc": "核心设置已经就绪，可以检查预测结果，并用最新信号继续优化路线。"
+        "review": "进入申请工作台",
+        "reviewDesc": "核心设置已经就绪，集中检查校单、文书、材料和截止安排。"
       },
       "signals": {
         "profile": "档案",
         "schools": "学校",
         "essays": "文书",
         "deadlines": "截止"
+      }
+    },
+    "workbench": {
+      "label": "申请作战台",
+      "rhythm": "档案、选校、文书和截止日期统一推进",
+      "emptyTitle": "申请路线处于稳定推进",
+      "emptyDescription": "当前没有明显阻塞项，继续复盘截止日期和预测信号。",
+      "primaryCta": "进入工作区",
+      "score": "准备度",
+      "due7": "7 天内截止",
+      "due30": "30 天内截止",
+      "timelineGaps": "时间线缺口",
+      "readiness": "准备度地图",
+      "priorityQueue": "优先队列",
+      "deadlineStream": "截止流",
+      "balanced": "选校均衡",
+      "needsBalance": "待均衡",
+      "open": "打开",
+      "completeTask": "标记完成",
+      "viewTimeline": "查看时间线",
+      "noDeadlines": "暂无近期截止风险",
+      "deadlineOverdue": "已逾期 {count} 天",
+      "deadlineToday": "今天截止",
+      "deadlineDays": "{count} 天",
+      "status": {
+        "blocked": "阻塞",
+        "attention": "需关注",
+        "ready": "就绪"
+      },
+      "severity": {
+        "critical": "紧急",
+        "warning": "关注",
+        "normal": "正常",
+        "success": "就绪"
       }
     },
     "recentActivity": "最近动态",
@@ -255,6 +290,8 @@
       "safety": "保底"
     },
     "modules": {
+      "uncommonApp": "申请工作台",
+      "uncommonAppDesc": "管理目标学校、文书、材料和截止日期",
       "schools": "学校库",
       "schoolsDesc": "浏览和搜索，找到最适合的学校",
       "prediction": "录取预测",
@@ -420,8 +457,8 @@
         "signalLabel": "Lumni 信号",
         "symbolLabel": "月光路线",
         "workflowLine": "选校 · 文书 · 时间线 · 提交",
-        "profileLabel": "Amy Z. · Senior",
-        "profileMeta": "GPA 3.92 · SAT 1540 · CS",
+        "profileLabel": "Amy Z. · 12 年级",
+        "profileMeta": "GPA 3.92 · SAT 1540 · 计算机科学",
         "termLabel": "2026 秋季 · CS",
         "sections": ["总览", "选校 · 6", "文书 · 14", "时间线", "组队"],
         "title": "录取路线中枢",
@@ -561,7 +598,7 @@
           "promptLabel": "Common App · 文书一 · 487/650",
           "body": "我十二岁时第一次重修外婆的食谱本，那时还读不懂中文。我用放大镜和一本旧字典慢慢翻译，把每一条记录都当作一处微型考古现场……",
           "accentLine": " 厨房成了我最早的翻译实验室",
-          "coachLabel": "Coach",
+          "coachLabel": "顾问",
           "coachNote": "第 4 行细节扎实，可以再压缩一下后半句。",
           "scores": [
             {
@@ -1221,7 +1258,7 @@
       "schools": "浏览和对比全球大学信息",
       "essays": "撰写、编辑和AI评审文书",
       "resume": "25+模板专业简历制作与AI优化",
-      "uncommonApp": "AI驱动的申请综合管理",
+      "uncommonApp": "管理目标学校、文书、材料和截止日期",
       "verifiedRanking": "真实认证录取排行榜",
       "followers": "管理关注与社交关系",
       "forum": "加入讨论，与申请者交流经验",
@@ -1246,6 +1283,63 @@
     "welcome": "欢迎使用 AI 助手",
     "welcomeDesc": "我可以帮您分析档案、推荐学校、评估文书等。有什么可以帮您的？",
     "placeholder": "输入您的问题...",
+    "workspace": {
+      "kicker": "AI 调度台",
+      "title": "留学 AI 工作台",
+      "description": "把对话、工具调用、历史记录和系统状态放在一个高密度界面里。这里负责追问、汇总和调度，不复制已有申请分析中心。",
+      "boundary": "申请分析中心仍是完整报告入口",
+      "openAnalysisCenter": "打开申请分析中心",
+      "conversations": {
+        "title": "对话队列"
+      },
+      "tasks": {
+        "title": "任务入口",
+        "desc": "选择一个任务让 AI 接上当前对话，或直接打开对应工具继续处理。"
+      },
+      "actions": {
+        "askAI": "询问 AI",
+        "openTool": "打开工具",
+        "analysisFollowup": {
+          "title": "解读已有申请分析",
+          "desc": "围绕已有分析做追问、拆解风险和下一步动作。",
+          "message": "请基于我已有的申请分析结果，帮我提炼最重要的风险、机会和下一步行动。不要重新生成完整申请分析报告。"
+        },
+        "schoolShortlist": {
+          "title": "选校清单追问",
+          "desc": "用冲刺、匹配、保底角度梳理目标学校与取舍。",
+          "message": "请帮我检查当前选校思路，重点指出冲刺、匹配、保底比例是否合理，以及下一步应该补哪些学校。"
+        },
+        "essayReview": {
+          "title": "文书策略建议",
+          "desc": "从主题、结构、证据和学校匹配度提出修改方向。",
+          "message": "请帮我规划文书修改策略，重点看主题是否清楚、证据是否具体、是否匹配目标学校。"
+        },
+        "deadlinePlan": {
+          "title": "截止日期整理",
+          "desc": "把申请节点转成时间线和优先级清单。",
+          "message": "请帮我整理目标学校的申请截止日期，并按优先级生成接下来两周的行动清单。"
+        },
+        "resumeReview": {
+          "title": "简历优化方向",
+          "desc": "检查经历呈现、量化证据和申请场景适配。",
+          "message": "请帮我从申请场景出发检查简历优化方向，重点指出经历表达、量化证据和信息取舍。"
+        }
+      },
+      "status": {
+        "title": "运行状态",
+        "ready": "可用",
+        "degraded": "降级",
+        "model": "模型",
+        "rateLimit": "请求窗口",
+        "dailyTokens": "今日 Token 剩余",
+        "conversationWindow": "对话窗口余量",
+        "unknown": "暂无",
+        "boundary": "AI 助手用于追问、解释和调度；正式概率、申请分析和学校事实仍以对应功能页为准。",
+        "refreshContext": "刷新上下文",
+        "contextRefreshSuccess": "上下文已刷新",
+        "contextRefreshError": "上下文刷新失败，请稍后重试"
+      }
+    },
     "quickActions": {
       "title": "快速操作",
       "analyzeProfile": "分析我的档案",
@@ -1372,6 +1466,7 @@
   "profile": {
     "title": "我的档案",
     "description": "创建和管理您的申请档案",
+    "unsavedChanges": "你有尚未保存的档案修改，确定离开这个部分吗？",
     "tabErrorsAria": "{count} 项待修正",
     "completeness": "档案完整度",
     "completenessHint": "完善档案可以获得更准确的预测",
@@ -1386,7 +1481,31 @@
       "primaryActions": "主要操作",
       "fixSignal": "补齐 {signal}",
       "reviewTargets": "复核目标院校",
-      "allSet": "核心画像已就绪，可以进入预测、文书和组合校准。"
+      "allSet": "核心画像已就绪，可以进入预测、文书和组合校准。",
+      "commandSummaryBlocked": "还有 {count} 项关键申请信号需要先补齐，后续流程才更可靠。",
+      "commandSummaryAttention": "学校、预测、时间线、文书、推荐信或简历还有 {count} 个流程缺口。",
+      "status": {
+        "blocked": "需要补齐",
+        "attention": "推进中",
+        "ready": "已就绪"
+      },
+      "item": {
+        "profile": "核心档案",
+        "schoolList": "选校计划",
+        "prediction": "录取预测",
+        "timeline": "时间线"
+      },
+      "action": {
+        "completeProfile": "补齐档案",
+        "addSchools": "添加学校",
+        "balanceSchools": "校准选校",
+        "runPrediction": "运行预测",
+        "syncTimeline": "同步时间线",
+        "startEssays": "开始文书",
+        "addRecommendationLetters": "添加推荐信",
+        "createResume": "创建简历",
+        "openApplicationHub": "进入工作台"
+      }
     },
     "actionBar": {
       "nextStep": "下一步：{signal}",
@@ -1555,7 +1674,7 @@
     },
     "nextSteps": {
       "title": "下一步",
-      "applicationHub": "申请总控台",
+      "applicationHub": "申请工作台",
       "prediction": "录取预测",
       "essays": "我的文书",
       "assessment": "测评",
@@ -1563,9 +1682,9 @@
     },
     "applicationStrategy": {
       "title": "申请策略总览",
-      "description": "进入申请总控台后再生成学校级策略；Profile 页面只展示缓存结果，不会自动调用 AI 分析。",
+      "description": "进入申请工作台后再生成学校级策略；Profile 页面只展示缓存结果，不会自动调用分析。",
       "manualBadge": "手动生成",
-      "open": "打开总控台"
+      "open": "打开工作台"
     },
     "steps": {
       "basic": "基本信息",
@@ -2556,6 +2675,10 @@
     "permissionRequired": "仅认证用户可发起私信",
     "rateLimitExceeded": "消息发送过于频繁，请稍后再试",
     "repeatedContent": "请勿重复发送相同内容",
+    "workbenchDescription": "集中处理私信、匹配群组和共享资料",
+    "verifiedNetwork": "认证网络",
+    "refresh": "刷新会话",
+    "offlineFallback": "当前处于离线状态，消息会在连接恢复后同步。",
     "emojiCategories": {
       "frequent": "常用",
       "smileys": "表情",
@@ -2565,10 +2688,36 @@
     "today": "今天",
     "yesterday": "昨天",
     "newMessages": "有新消息",
+    "unreadCount": "{count} 条未读",
     "messageDeleted": "消息已删除",
     "deleteMessage": "删除",
     "pinConversation": "置顶",
     "unpinConversation": "取消置顶",
+    "muteConversation": "消息免打扰",
+    "unmuteConversation": "取消免打扰",
+    "archiveConversation": "归档对话",
+    "unarchiveConversation": "取消归档",
+    "participants": "{count} 位成员",
+    "contextTitle": "会话资料",
+    "directConversation": "一对一私信",
+    "systemMatched": "系统匹配",
+    "teamMatch": "团队匹配",
+    "muted": "已免打扰",
+    "archived": "已归档",
+    "members": "成员",
+    "member": "成员",
+    "sharedFiles": "共享文件",
+    "noSharedFiles": "暂无共享文件",
+    "messageUnavailable": "原消息不可用",
+    "retrySend": "重新发送",
+    "filters": {
+      "all": "全部",
+      "unread": "未读",
+      "pinned": "置顶",
+      "direct": "私聊",
+      "groups": "群组",
+      "archived": "归档"
+    },
     "blockUser": "拉黑用户",
     "blockConfirm": "确定要拉黑该用户吗？拉黑后将无法互相发送消息。",
     "blockSuccess": "已拉黑该用户",
@@ -2591,6 +2740,8 @@
     "cancel": "取消",
     "copyMessage": "复制",
     "copySuccess": "已复制到剪贴板",
+    "fileTooLarge": "文件过大，请选择小于 10MB 的文件",
+    "fileTypeUnsupported": "暂不支持该文件类型",
     "recallMessage": "撤回",
     "recallSuccess": "消息已撤回",
     "recallTimeExpired": "超过2分钟，无法撤回",
@@ -3141,7 +3292,7 @@
     },
     "colorPalette": {
       "menuLabel": "全站配色",
-      "studioTitle": "Theme Studio",
+      "studioTitle": "主题工作室",
       "studioDesc": "选择一套企业级配色包，控制品牌、CTA、数据强调、字体、圆角、卡片和动效。当前共有 {count} 个主题。",
       "searchPlaceholder": "搜索 {count} 个主题...",
       "featured": "精选",
@@ -3327,7 +3478,7 @@
       "timeline": "时间线",
       "assessment": "测评",
       "aiAssistant": "AI 助手",
-      "uncommonApp": "独特申请",
+      "uncommonApp": "申请工作台",
       "hall": "名人堂",
       "chat": "消息",
       "vault": "文件保险箱",
@@ -3354,7 +3505,7 @@
         "timeline": "时间线,截止日期,日程",
         "assessment": "测评,MBTI,性格",
         "aiAssistant": "AI,助手,智能,聊天",
-        "uncommonApp": "独特,策略,申请",
+        "uncommonApp": "申请,工作台,校单,文书,截止",
         "hall": "名人堂,排名,排行",
         "chat": "消息,聊天,对话",
         "vault": "保险箱,文件,安全",
@@ -3655,12 +3806,12 @@
       "view": "视图",
       "viewCard": "卡片",
       "viewList": "列表",
-      "density": "密度",
-      "densityComfortable": "宽松",
-      "densityCompact": "紧凑",
       "sortLabel": "排序方式",
       "rankingListLabel": "排名榜单",
       "rankingFallbackCount": "{count} 回退",
+      "density": "显示密度",
+      "densityComfortable": "舒适",
+      "densityCompact": "紧凑",
       "resetAll": "全部清除",
       "removeFilter": "移除筛选",
       "rangeReadout": "第 {from}–{to} 条，共 {total} 条",
@@ -3773,9 +3924,9 @@
     "filterOptions": "筛选选项",
     "filterOptionsDesc": "按位置、费用、录取政策和结果缩小学校范围。",
     "niche": {
-      "partyScene": "Party Scene",
-      "campusFood": "Campus Food",
-      "safety": "Safety"
+      "partyScene": "派对氛围",
+      "campusFood": "校园餐饮",
+      "safety": "安全性"
     },
     "schoolType": "学校类型",
     "public": "公立",
@@ -4069,10 +4220,10 @@
     }
   },
   "uncommonApp": {
-    "title": "智能申请",
-    "description": "把选校、预测、文书、材料和 AI 策略收进同一个申请总控台。",
+    "title": "申请工作台",
+    "description": "管理目标学校、文书题目、材料任务和截止日期。",
     "dashboard": {
-      "title": "申请总控台",
+      "title": "申请工作台",
       "profile": "档案准备度",
       "schoolBalance": "冲/匹/保",
       "essayPrompts": "文书题目",
@@ -4132,7 +4283,164 @@
     "getRecommendations": "获取推荐",
     "aiRecommendationsLoaded": "AI 推荐已加载",
     "aiRecommendationsError": "获取推荐失败",
+    "recommendationsLoaded": "候选学校已生成",
+    "recommendationsError": "生成候选学校失败",
     "recommendationsBlocked": "当前档案或积分暂不满足生成推荐条件",
+    "workspace": {
+      "syncSuccess": "申请要求已同步",
+      "syncError": "同步申请要求失败，请稍后重试",
+      "noSchoolsToSync": "请先添加目标学校",
+      "actions": {
+        "complete-profile": "补齐档案",
+        "add-schools": "添加目标学校",
+        "sync-requirements": "同步申请要求",
+        "add-safety": "补保底校",
+        "review-deadlines": "查看时间线",
+        "generate-advice": "生成顾问建议",
+        "add-candidates": "补充候选学校"
+      },
+      "nextAction": {
+        "complete-profile": {
+          "title": "先补齐核心档案",
+          "description": "当前档案 {profileScore}%，补 GPA、成绩、活动或奖项后，申请建议会更可靠。"
+        },
+        "add-schools": {
+          "title": "建立目标校单",
+          "description": "当前 {schoolCount} 所目标学校，先添加 6-12 所候选学校。"
+        },
+        "sync-requirements": {
+          "title": "确认申请要求",
+          "description": "{missingTimelineCount} 所学校缺少时间线，{missingEssayCount} 所学校缺少文书题目。"
+        },
+        "add-safety": {
+          "title": "补充更稳的学校",
+          "description": "当前保底校 {safetyCount} 所，建议补 1-2 所更稳的学校。"
+        },
+        "review-deadlines": {
+          "title": "处理截止风险",
+          "description": "{dueSoonCount} 项 7 天内截止，{overdueCount} 项已过期。"
+        },
+        "generate-advice": {
+          "title": "可以生成申请建议",
+          "description": "档案和校单已具备基础，可以生成校单、文书和截止安排建议。"
+        }
+      },
+      "readiness": {
+        "profile": "档案",
+        "schools": "校单",
+        "essays": "文书",
+        "deadlines": "截止"
+      },
+      "readinessHint": {
+        "profile": "核心资料",
+        "schools": "目标学校",
+        "essays": "学校题目",
+        "deadlines": "近期风险"
+      },
+      "schoolBoard": {
+        "title": "学校申请清单",
+        "description": "每一行是一所学校的一份申请，按紧急程度排序。",
+        "removeSchool": "移除 {school}",
+        "materials": "材料",
+        "tasksRemaining": "{count} 项待办",
+        "needTimeline": "待同步",
+        "essays": "文书",
+        "essayCount": "{count} 题",
+        "noEssayData": "待确认",
+        "estimate": "预测",
+        "noEstimate": "待测算",
+        "deadline": "截止",
+        "deadlineMissing": "待确认",
+        "overdue": "已过期 {days} 天",
+        "dueToday": "今天截止",
+        "dueSoon": "{days} 天内",
+        "dueMonth": "{days} 天内",
+        "dueLater": "{days} 天后",
+        "nextStepLabel": "当前下一步",
+        "nextStep": {
+          "sync-requirements": "确认截止日期、文书题目和材料清单。",
+          "review-deadlines": "先处理即将截止的申请任务。",
+          "write-essays": "进入文书页处理学校题目。",
+          "run-prediction": "运行预测，给校单决策补充参考。",
+          "view-timeline": "查看时间线并继续完成材料。",
+          "complete-profile": "补齐核心申请档案。",
+          "add-schools": "继续添加目标学校。",
+          "add-safety": "补充更稳的保底学校。",
+          "generate-advice": "生成顾问建议。"
+        },
+        "nextStepAction": {
+          "sync-requirements": "同步要求",
+          "review-deadlines": "查看时间线",
+          "write-essays": "查看文书",
+          "run-prediction": "去预测",
+          "view-timeline": "查看时间线",
+          "complete-profile": "补齐档案",
+          "add-schools": "添加学校",
+          "add-safety": "补保底校",
+          "generate-advice": "生成建议"
+        }
+      },
+      "empty": {
+        "add-schools": {
+          "title": "添加目标学校",
+          "description": "先把你正在考虑的学校放进清单。"
+        },
+        "complete-profile": {
+          "title": "补齐档案",
+          "description": "GPA、成绩、活动和奖项会影响后续建议。"
+        },
+        "sync-requirements": {
+          "title": "同步申请要求",
+          "description": "有学校后再拉取截止日期、文书和材料任务。"
+        }
+      },
+      "healthStatus": {
+        "good": "良好",
+        "warning": "需要补齐",
+        "risk": "有风险"
+      },
+      "health": {
+        "title": "申请健康检查",
+        "description": "只看会影响下一步执行的四件事。",
+        "profile": {
+          "title": "档案是否够用",
+          "good": "档案完成度 {profileScore}%，足够支撑当前申请建议。",
+          "warning": "档案完成度 {profileScore}%，建议继续补充成绩、活动或奖项。",
+          "risk": "档案完成度 {profileScore}%，先补齐核心资料。"
+        },
+        "balance": {
+          "title": "校单是否平衡",
+          "good": "当前 {schoolCount} 所学校，冲刺 {reach}、匹配 {target}、保底 {safety}，结构较均衡。",
+          "warning": "当前 {schoolCount} 所学校，建议继续补齐冲刺、匹配和保底分布。",
+          "risk": "当前没有保底学校，建议至少补 1-2 所更稳的选择。"
+        },
+        "essays": {
+          "title": "文书工作量",
+          "good": "已关联 {essayPromptCount} 个文书题目，可以进入写作安排。",
+          "warning": "{missingEssayCount} 所学校的文书题目仍待确认。",
+          "risk": "文书题目尚未同步，先确认申请要求。"
+        },
+        "deadlines": {
+          "title": "截止风险",
+          "good": "近期没有高风险截止事项。",
+          "warning": "{dueSoonCount} 项 7 天内截止，{missingTimelineCount} 所学校缺少时间线。",
+          "risk": "{overdueCount} 项已过期，请先检查时间线。"
+        }
+      },
+      "advisor": {
+        "title": "顾问建议",
+        "description": "在清单、档案和要求齐全后，生成下一步申请安排。",
+        "recommendationsReady": "候选学校已准备好，可以从中补充到目标清单。",
+        "preparing": "正在整理建议...",
+        "listAdvice": "校单建议",
+        "risks": "需要留意",
+        "noAdviceYet": "暂无具体建议。",
+        "noRiskYet": "暂无明显风险。",
+        "candidateCount": "已生成 {count} 所候选学校。",
+        "emptyTitle": "还没有生成顾问建议",
+        "emptyDescription": "不会自动消耗生成次数；准备好后手动生成即可。"
+      }
+    },
     "clickToGetRecommendations": "点击获取 AI 个性化推荐",
     "schoolAgent": "选校 Agent",
     "profileAgent": "档案 Agent",
@@ -4905,16 +5213,21 @@
     "types": {
       "COLLEGE_APPLICATION": "留学申请简历",
       "INTERNSHIP": "实习/求职简历",
-      "GRADUATE_CV": "研究生CV"
+      "GRADUATE_CV": "研究生CV",
+      "FULL_TIME_JOB": "全职求职简历"
     },
     "typeDescriptions": {
       "COLLEGE_APPLICATION": "一页简历，适用于本科/研究生申请",
       "INTERNSHIP": "ATS友好的实习求职简历",
-      "GRADUATE_CV": "学术CV，适用于研究生院申请"
+      "GRADUATE_CV": "学术CV，适用于研究生院申请",
+      "FULL_TIME_JOB": "面向全职岗位的JD匹配简历"
     },
     "status": {
       "DRAFT": "草稿",
       "ACTIVE": "使用中",
+      "REVIEWED": "已评审",
+      "APPROVED": "已批准",
+      "EXPORTED": "已导出",
       "ARCHIVED": "已归档"
     },
     "sections": {
@@ -4986,7 +5299,8 @@
       "typeContextTitles": {
         "COLLEGE_APPLICATION": "申请目标",
         "INTERNSHIP": "岗位目标",
-        "GRADUATE_CV": "学术目标"
+        "GRADUATE_CV": "学术目标",
+        "FULL_TIME_JOB": "全职岗位目标"
       },
       "toasts": {
         "saveResumeFailed": "保存简历设置失败",
@@ -5002,11 +5316,26 @@
         "aiReviewFailed": "AI 评审失败，请重试",
         "optimizeFailed": "要点优化失败，请重试",
         "suggestFailed": "内容建议生成失败，请重试",
+        "importPreviewFailed": "导入预览生成失败，请重试",
         "exportLoading": "正在生成 PDF...",
         "exportedPdf": "PDF 已导出",
+        "exportRecordFailed": "导出记录保存失败",
         "exportFailed": "导出失败，请重试",
         "aiSuggestionApplied": "AI 建议已应用",
-        "exampleBulletsAdded": "示例要点已添加，请按真实经历改写"
+        "aiIssueApplied": "AI 问题已应用",
+        "aiIssueApplyFailed": "AI 问题应用失败，内容可能已经变化",
+        "exampleBulletsAdded": "示例要点已添加，请按真实经历改写",
+        "uploadImportFailed": "上传简历解析失败，请重试",
+        "uploadImported": "已从上传简历导入内容",
+        "uploadImportApplyFailed": "上传简历导入失败，请检查选择后重试",
+        "targetCreated": "目标已创建并关联到当前简历",
+        "targetCreateFailed": "目标创建失败，请补齐信息后重试",
+        "tailoredCreated": "已生成定制简历",
+        "tailorFailed": "定制简历生成失败，请稍后再试",
+        "evidenceCreated": "素材已保存",
+        "evidenceCreateFailed": "素材保存失败，请重试",
+        "commentAdded": "评论已添加",
+        "commentFailed": "评论添加失败，请重试"
       },
       "error": {
         "loadFailed": "简历加载失败",
@@ -5015,6 +5344,8 @@
       "tabs": {
         "edit": "编辑",
         "preview": "预览",
+        "match": "匹配",
+        "exportCheck": "导出检查",
         "style": "外观"
       },
       "actions": {
@@ -5024,14 +5355,20 @@
         "back": "返回",
         "more": "更多",
         "importProfile": "导入档案",
+        "uploadResume": "上传简历",
         "aiReview": "AI 评审",
         "saveVersion": "保存版本",
         "duplicate": "复制简历",
         "markDraft": "改回草稿",
         "markActive": "设为使用中",
+        "setStatus": "设为{status}",
         "versionHistory": "版本历史",
         "noSnapshots": "暂无历史版本",
         "saveTarget": "保存目标",
+        "createTarget": "创建目标",
+        "createTailored": "生成目标版本",
+        "addEvidence": "添加素材",
+        "applyUploadImport": "导入所选内容",
         "runReview": "运行评审",
         "openReview": "查看并应用建议",
         "optimizeBullets": "优化要点",
@@ -5041,6 +5378,7 @@
         "applyRewriteAndSuggestions": "应用改写并添加建议",
         "close": "关闭",
         "addExampleBullets": "添加示例要点",
+        "applyIssue": "应用",
         "confirm": "确认",
         "delete": "删除",
         "import": "导入",
@@ -5048,7 +5386,11 @@
       },
       "sidebar": {
         "completion": "完成度",
-        "hint": "按板块补齐内容，再用 AI 检查缺口和表达。"
+        "hint": "按板块补齐内容，再用 AI 检查缺口和表达。",
+        "evidence": "素材库",
+        "targets": "目标",
+        "gaps": "缺口任务",
+        "noGaps": "无"
       },
       "target": {
         "hint": "AI 评审、要点优化和内容建议都会使用这里的上下文。",
@@ -5067,7 +5409,42 @@
       },
       "section": {
         "hidden": "隐藏",
+        "evidenceRefs": "素材 {count}",
         "aiHint": "AI 建议不会自动写入，确认后才会应用。"
+      },
+      "match": {
+        "title": "目标匹配",
+        "careerDescription": "查看 JD 匹配、ATS 兼容性和岗位相关信号，不承诺通过 ATS。",
+        "studyDescription": "查看学校/项目匹配、学术与活动信号、完整度和真实性风险。",
+        "score": "质量分",
+        "family": "场景",
+        "familyCareer": "求职",
+        "familyStudyAbroad": "留学",
+        "variant": "版本",
+        "master": "主简历",
+        "tailored": "目标简历",
+        "rubric": "评分标准",
+        "activeTarget": "当前目标",
+        "noTarget": "还没有目标。先保存学校、项目、公司或 JD，后续可生成目标版本。",
+        "dimensions": "评分维度",
+        "noQuality": "还没有质量评分，运行 AI 评审或刷新质量检查后会显示。",
+        "evidence": "生涯素材库",
+        "evidenceEmpty": "还没有沉淀素材。导入档案或上传简历后，经历会进入可复用素材库。",
+        "gaps": "缺口任务"
+      },
+      "exportCheck": {
+        "title": "导出检查",
+        "description": "记录模板、页数、文本可提取等信号，避免把导出当成一次性黑盒。",
+        "record": "记录检查",
+        "visibleSections": "可见板块",
+        "contact": "姓名与联系方式",
+        "textExtractable": "文本可提取",
+        "qualityScore": "质量分 ≥ 70",
+        "present": "已填写",
+        "missing": "缺失",
+        "compatible": "兼容",
+        "history": "导出历史",
+        "noHistory": "还没有导出记录。导出 PDF 后会自动记录。"
       },
       "ai": {
         "title": "AI 评审闭环",
@@ -5076,7 +5453,18 @@
         "contentGaps": "内容缺口",
         "reviewedAt": "评审时间",
         "noReview": "还没有评审记录。",
+        "issuesTitle": "可追踪 AI 问题",
+        "issuesDescription": "每条建议都有来源、置信度和内容哈希；内容变化后会阻止错误应用。",
+        "confidence": "置信度 {value}%",
+        "noIssues": "暂无开放 AI 问题。",
         "fillBySection": "按板块补内容"
+      },
+      "comments": {
+        "title": "协作评论",
+        "placeholder": "给顾问或团队留下评论...",
+        "add": "添加评论",
+        "resolved": "已解决",
+        "empty": "暂无评论"
       },
       "dialogs": {
         "addSection": "添加板块",
@@ -5088,9 +5476,21 @@
         "confirmDeleteTitle": "删除「{title}」？",
         "confirmDeleteDescription": "这个板块会从当前简历中移除，操作不可撤销。",
         "confirmImportTitle": "从档案重新导入？",
-        "confirmImportDescription": "匹配到的板块内容会被档案数据覆盖。建议先保存一个版本。",
+        "confirmImportDescription": "系统会先创建快照，再把你确认的档案差异合并写入，避免直接覆盖精修内容。",
+        "importPreviewLoading": "正在生成差异预览...",
+        "importPreviewItems": "将更新 {count} 个板块",
+        "importPreviewEmpty": "没有发现可导入的档案差异。",
         "confirmRestoreTitle": "恢复到 v{version}？",
-        "confirmRestoreDescription": "当前标题、模板、外观和所有板块会替换为该历史版本。"
+        "confirmRestoreDescription": "当前标题、模板、外观和所有板块会替换为该历史版本。",
+        "uploadImportTitle": "导入上传的简历",
+        "uploadSections": "可导入板块",
+        "uploadEvidence": "可沉淀素材",
+        "uploadEvidenceEmpty": "未从上传文件中识别到可沉淀素材。",
+        "uploadImportEmpty": "暂无上传简历预览。",
+        "evidenceTitle": "添加素材",
+        "evidenceKind": "素材类型",
+        "evidenceName": "素材名称",
+        "evidenceDescription": "素材说明"
       }
     },
     "customize": {
@@ -5389,9 +5789,31 @@
     "history": "测评历史",
     "tabs": {
       "intro": "开始",
+      "overview": "总览",
       "mbti": "MBTI",
       "holland": "霍兰德",
+      "insights": "综合洞察",
       "history": "测评历史"
+    },
+    "overview": {
+      "badge": "选专业工作台",
+      "title": "把性格和兴趣转化为专业方向",
+      "description": "完成 MBTI 与霍兰德后，系统会合并两类信号，生成专业短名单、档案写入建议和后续选校入口。",
+      "completed": "已完成",
+      "drafts": "草稿",
+      "majors": "专业建议",
+      "completion": "测评闭环",
+      "historyCount": "{count} 条历史",
+      "noMajors": "完成任一测评后会生成专业建议",
+      "openInsights": "查看综合洞察",
+      "inProgress": "进行中",
+      "savedDraft": "已保存草稿",
+      "draftProgress": "已答 {answered}/{total} 题",
+      "continue": "继续测评",
+      "start": "开始测评",
+      "retake": "重新测评",
+      "restart": "从头开始",
+      "previewFlow": "进入测评"
     },
     "mbti": {
       "title": "MBTI 性格测试",
@@ -5439,6 +5861,10 @@
     },
     "timeRemaining": "预计还需 {minutes} 分钟",
     "keyboardHint": "按 1-5 快速选择，←→ 切换题目",
+    "answeredProgress": "已答 {answered}/{total}",
+    "questionNavigator": "题目导航",
+    "exit": "返回总览",
+    "missingAnswers": "还有未完成的题目，请补齐后再提交",
     "dimensionAnalysis": "维度分析",
     "mbtiDimensions": {
       "EI": {
@@ -5472,6 +5898,49 @@
     "retake": "重新测评",
     "viewResult": "查看结果",
     "completedAt": "完成时间",
+    "draft": {
+      "title": "草稿状态",
+      "idle": "尚未保存",
+      "saving": "保存中",
+      "saved": "已自动保存",
+      "error": "保存失败",
+      "none": "暂无进行中的测评草稿",
+      "restartConfirm": "已有未完成草稿。确定从头开始并清除草稿吗？",
+      "restarted": "已清除旧草稿并从头开始"
+    },
+    "resultActions": {
+      "title": "把结果用于申请规划",
+      "description": "将推荐专业写入档案，后续选校推荐和 AI 分析会优先使用这个方向。",
+      "setTargetMajor": "设为目标专业：{major}",
+      "schoolRecommendation": "进入选校推荐"
+    },
+    "targetMajor": {
+      "apply": "写入目标专业",
+      "current": "当前目标",
+      "saved": "已将 {major} 写入目标专业",
+      "replaceConfirm": "当前目标专业是 {current}。确定替换为 {major} 吗？"
+    },
+    "insights": {
+      "title": "综合测评洞察",
+      "description": "这里会把性格偏好、职业兴趣和推荐专业放在一起，帮助你确定下一步申请方向。",
+      "emptyTitle": "还没有足够的测评信号",
+      "emptyDescription": "先完成 MBTI 或霍兰德，系统会生成可写入档案的专业短名单。",
+      "majorShortlist": "专业短名单",
+      "sources": "来源：{sources}",
+      "nextStepTitle": "下一步：基于方向筛选学校",
+      "nextStepDescription": "目标专业确定后，可以进入学校库的 AI 推荐流程继续收敛选校名单。",
+      "notCompleted": "未完成",
+      "pending": "等待测评结果"
+    },
+    "sidePanel": {
+      "title": "申请闭环",
+      "targetMajor": "当前目标专业",
+      "noTargetMajor": "尚未设置",
+      "noResults": "完成测评后，最新结果会显示在这里"
+    },
+    "historyFilters": {
+      "all": "全部"
+    },
     "aiAssistant": {
       "title": "AI 测评助手",
       "default": "完成测评后，我可以为你提供个性化分析",
@@ -5661,7 +6130,58 @@
       "unfollowSuccess": "已取消关注",
       "blockSuccess": "已屏蔽用户",
       "unblockSuccess": "已取消屏蔽",
-      "messageError": "无法发起私信，请稍后再试"
+      "messageError": "无法发起私信，请稍后再试",
+      "actionError": "操作失败，请稍后再试"
+    },
+    "pagination": {
+      "summary": "第 {page}/{totalPages} 页，共 {total} 位用户"
+    },
+    "sort": {
+      "recent": "最近互动",
+      "name": "姓名",
+      "major": "目标专业"
+    },
+    "relationship": {
+      "all": "全部关系",
+      "mutual": "互相关注",
+      "oneWay": "单向关注"
+    },
+    "role": {
+      "all": "全部身份",
+      "verified": "认证用户",
+      "staff": "平台团队"
+    },
+    "bulk": {
+      "partial": "已完成 {success} 项，{failed} 项失败",
+      "selectedUsers": "选中的用户",
+      "selectPage": "选择本页用户",
+      "selected": "已选择 {count} 位用户",
+      "selectUser": "选择 {name}",
+      "toast": {
+        "follow": "已关注用户",
+        "unfollow": "已取消关注",
+        "block": "已屏蔽用户",
+        "unblock": "已取消屏蔽"
+      }
+    },
+    "confirm": {
+      "confirm": "确认操作",
+      "follow": {
+        "title": "关注用户",
+        "description": "确定要关注 {name} 吗？"
+      },
+      "unfollow": {
+        "title": "取消关注",
+        "description": "确定要取消关注 {name} 等 {count} 位用户吗？"
+      },
+      "block": {
+        "title": "屏蔽用户",
+        "description": "确定要屏蔽 {name} 等 {count} 位用户吗？屏蔽后将无法互相发送消息。"
+      },
+      "unblock": {
+        "title": "取消屏蔽",
+        "description": "确定要取消屏蔽 {name} 等 {count} 位用户吗？"
+      }
     },
     "dialogs": {
       "unfollowTitle": "取消关注",
@@ -5674,13 +6194,34 @@
     "actions": {
       "follow": "关注",
       "unfollow": "取消关注",
+      "block": "屏蔽",
+      "unblock": "取消屏蔽",
       "sendMessage": "发消息"
+    },
+    "row": {
+      "followers": "{count} 粉丝",
+      "cases": "{count} 案例",
+      "since": "{date} 关注"
     },
     "activities": "{count} 活动",
     "follow": "关注",
     "recommended": {
       "title": "推荐用户",
-      "description": "你可能感兴趣的用户"
+      "description": "你可能感兴趣的用户",
+      "empty": "暂无新的推荐用户",
+      "reasons": {
+        "verified": "认证用户",
+        "staff": "平台团队",
+        "admissionCases": "有录取案例",
+        "profileComplete": "档案完整",
+        "sameMajor": "同目标专业",
+        "popular": "社区活跃"
+      }
+    },
+    "safety": {
+      "title": "关系安全",
+      "description": "当前已屏蔽 {count} 位用户。你可以随时复查屏蔽列表并恢复联系。",
+      "reviewBlocked": "查看屏蔽列表"
     }
   },
   "school": {
@@ -7470,7 +8011,7 @@
           "time": "时间",
           "kind": "类型",
           "op": "操作",
-          "key": "Key",
+          "key": "键",
           "message": "消息"
         }
       }

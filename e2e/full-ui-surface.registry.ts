@@ -283,6 +283,12 @@ export const FULL_UI_SURFACE_ROUTES: FullUiSurfaceRoute[] = [
     role: 'admin',
   },
   { name: 'Admin schools', pattern: '/admin/schools', path: '/admin/schools', role: 'admin' },
+  {
+    name: 'Admin school data health',
+    pattern: '/admin/schools/data-health',
+    path: '/admin/schools/data-health',
+    role: 'admin',
+  },
   { name: 'Admin settings', pattern: '/admin/settings', path: '/admin/settings', role: 'admin' },
   { name: 'Admin team', pattern: '/admin/team', path: '/admin/team', role: 'admin' },
   {

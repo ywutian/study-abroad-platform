@@ -9,6 +9,7 @@ import {
   TrendingUp,
   BookOpen,
   PenTool,
+  ClipboardList,
   Lightbulb,
   MessageCircle,
   ArrowRight,
@@ -17,6 +18,13 @@ import {
 } from 'lucide-react';
 
 const mainModules = [
+  {
+    id: 'uncommon-app',
+    href: '/uncommon-app',
+    icon: ClipboardList,
+    titleKey: 'dashboard.modules.uncommonApp',
+    descKey: 'dashboard.modules.uncommonAppDesc',
+  },
   {
     id: 'schools',
     href: '/schools',
@@ -80,12 +88,12 @@ export function DashboardModules() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-body-lg font-semibold">{t('dashboard.quickAccess')}</h2>
+        <h2 className="text-base font-semibold">{t('dashboard.quickAccess')}</h2>
         <span className="text-xs text-muted-foreground">
           {t('dashboard.commandCenter.secondary')}
         </span>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {mainModules.map((module, index) => {
           const Icon = module.icon;
           return (
@@ -96,22 +104,22 @@ export function DashboardModules() {
               transition={{ delay: 0.3 + index * 0.05 }}
             >
               <Link href={module.href}>
-                <Card className="group h-full cursor-pointer transition-all duration-200 hover:border-primary/30 hover:shadow-[var(--theme-card-hover-shadow)]">
-                  <CardContent className="p-4">
+                <Card className="group h-full cursor-pointer rounded-[var(--theme-radius-card)] py-0 transition-all duration-200 hover:border-primary/30 hover:shadow-[var(--theme-card-hover-shadow)]">
+                  <CardContent className="p-3.5">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--theme-radius-button)] bg-primary/10 text-primary">
-                        <Icon className="h-5 w-5" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border bg-[color:var(--theme-control-bg)] text-primary">
+                        <Icon className="h-4 w-4" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold group-hover:text-primary transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-semibold transition-colors group-hover:text-primary">
                           {t(module.titleKey)}
                         </h3>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
                           {t(module.descKey)}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-3 flex items-center justify-end text-sm text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="mt-3 flex items-center justify-end text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
                       <span>{t('common.enter')}</span>
                       <ArrowRight className="w-4 h-4 ml-1" />
                     </div>
