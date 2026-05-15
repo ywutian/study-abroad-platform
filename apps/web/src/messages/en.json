@@ -226,7 +226,13 @@
         "schools": "Schools",
         "essays": "Essays",
         "deadlines": "Deadlines"
-      }
+      },
+      "onboarding": {
+        "title": "Welcome to Lumni",
+        "description": "Start by completing your profile — Lumni will then calibrate your predictions and recommend schools tailored to you.",
+        "cta": "Complete profile"
+      },
+      "contributionHint": "Each item below contributes a slice to your readiness score (sum = total)."
     },
     "workbench": {
       "label": "Application workbench",

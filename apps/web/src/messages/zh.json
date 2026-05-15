@@ -226,7 +226,13 @@
         "schools": "学校",
         "essays": "文书",
         "deadlines": "截止"
-      }
+      },
+      "onboarding": {
+        "title": "欢迎来到 Lumni",
+        "description": "先完善你的档案，Lumni 会基于此校准录取预测、并按你的画像推荐选校。",
+        "cta": "完善档案"
+      },
+      "contributionHint": "下方每一项都为整体就绪度贡献一部分分数（相加 = 总分）。"
     },
     "workbench": {
       "label": "申请作战台",

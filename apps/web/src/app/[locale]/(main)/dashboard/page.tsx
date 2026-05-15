@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, CalendarClock, LayoutDashboard } from 'lucide-react';
 import { profileRoutes, userRoutes } from '@study-abroad/shared';
@@ -17,20 +17,14 @@ import { Link } from '@/lib/i18n/navigation';
 
 import { DashboardActivity } from './_components/dashboard-activity';
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
-import { DashboardDeadlines } from './_components/dashboard-deadlines';
-import { DashboardModules } from './_components/dashboard-modules';
-import { DashboardStats } from './_components/dashboard-stats';
 import {
-  buildTodoList,
   createFallbackWorkbench,
-  getProfileGrade,
   type DashboardData,
   type DashboardPriorityItem,
 } from './_components/dashboard-workbench-model';
 
 export default function DashboardPage() {
   const t = useTranslations();
-  const locale = useLocale();
   const queryClient = useQueryClient();
   const [isHydrated, setIsHydrated] = useState(false);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
@@ -91,13 +85,11 @@ export default function DashboardPage() {
   const schoolTiers = stableDashboard?.profile.schoolTiers ?? { reach: 0, target: 0, safety: 0 };
   const pendingTotal = stableDashboard?.pendingTasks.total ?? 0;
   const profileGaps = stableDashboard?.pendingTasks.profileGaps ?? [];
-  const grade = getProfileGrade(completeness);
   const effectivePending = pendingTotal > 0 ? pendingTotal : profileGaps.length;
   const displayName = isHydrated
     ? dashboard?.user.nickname || dashboard?.user.email?.split('@')[0] || t('dashboard.user')
     : t('dashboard.user');
 
-  const todoList = useMemo(() => buildTodoList(stableDashboard, locale), [stableDashboard, locale]);
   const workbench = useMemo(
     () =>
       stableDashboard?.workbench ??
@@ -161,6 +153,9 @@ export default function DashboardPage() {
             workbench={workbench}
             completingTaskId={completingTaskId}
             onCompleteTask={(item) => toggleTimelineTask.mutate(item)}
+            completeness={completeness}
+            schoolTiers={schoolTiers}
+            schoolCount={schoolCount}
           />
         </motion.div>
 
@@ -169,30 +164,6 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <DashboardStats
-            completeness={completeness}
-            schoolCount={schoolCount}
-            schoolTiers={schoolTiers}
-            effectivePending={effectivePending}
-            grade={grade}
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <DashboardModules />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]"
-        >
-          <DashboardDeadlines todoList={todoList} />
           <DashboardActivity activities={stableDashboard?.recentActivity ?? []} />
         </motion.div>
       </div>
