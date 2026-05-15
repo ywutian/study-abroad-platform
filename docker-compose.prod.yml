@@ -70,11 +70,10 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
-      # 邮件
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
+      # 邮件 (Resend 交易邮件)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@lumniedu.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Lumni}
       # 学校数据 API
       COLLEGE_SCORECARD_API_KEY: ${COLLEGE_SCORECARD_API_KEY:-}
       # Sentry 监控

@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +16,7 @@ import { Button, Input, Checkbox } from '@/components/ui';
 import { useAuthStore } from '@/stores';
 import { useToast } from '@/components/ui/Toast';
 import { useColors, spacing, fontSize, fontWeight } from '@/utils/theme';
+import { isPasswordCompliant } from '@study-abroad/shared';
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
@@ -48,8 +48,8 @@ export default function RegisterScreen() {
 
     if (!password) {
       newErrors.password = t('auth.errors.passwordRequired');
-    } else if (password.length < 8) {
-      newErrors.password = t('auth.errors.passwordTooShort');
+    } else if (!isPasswordCompliant(password)) {
+      newErrors.password = t('auth.errors.passwordStrength');
     }
 
     if (password !== confirmPassword) {
@@ -128,6 +128,7 @@ export default function RegisterScreen() {
               if (errors.password) setErrors({ ...errors, password: undefined });
             }}
             error={errors.password}
+            hint={!errors.password ? t('auth.register.passwordHelp') : undefined}
             secureTextEntry
             autoComplete="new-password"
             leftIcon={

@@ -125,10 +125,10 @@ JWT_SECRET="your-secret-key-min-32-chars"
 JWT_EXPIRES_IN="15m"
 JWT_REFRESH_EXPIRES_IN="7d"
 
-# 邮件服务 (可选)
-SMTP_HOST="smtp.example.com"
-SMTP_USER="your-email"
-SMTP_PASS="your-password"
+# 邮件服务 (可选，Resend)
+RESEND_API_KEY="re_xxx"
+EMAIL_FROM="noreply@lumniedu.com"
+EMAIL_FROM_NAME="Lumni"
 
 # AI 服务 (可选)
 OPENAI_API_KEY="sk-xxx"

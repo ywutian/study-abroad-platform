@@ -151,6 +151,9 @@ export const MAX_PAGE_SIZE = 100;
 // 订阅计划
 export * from './subscription';
 
+// 密码策略
+export * from './password';
+
 // 推荐功能
 export * from './recommendation';
 

@@ -28,7 +28,13 @@ import {
   fontWeight,
   borderRadius,
 } from '@/utils/theme';
-import { API_ROUTES, userRoutes } from '@study-abroad/shared';
+import {
+  API_ROUTES,
+  authRoutes,
+  getPasswordPolicyChecks,
+  isPasswordCompliant,
+  userRoutes,
+} from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
 import { BIOMETRIC_ENABLED_KEY } from '@/screens/settings/SettingsScreen';
@@ -37,15 +43,18 @@ type StrengthLevel = 'weak' | 'fair' | 'good' | 'strong';
 
 function evaluatePasswordStrength(pw: string): { level: StrengthLevel; score: number } {
   if (!pw) return { level: 'weak', score: 0 };
-  let s = 0;
-  if (pw.length >= 8) s++;
-  if (pw.length >= 12) s++;
-  if (/[A-Z]/.test(pw)) s++;
-  if (/[0-9]/.test(pw)) s++;
-  if (/[^A-Za-z0-9]/.test(pw)) s++;
-  const capped = Math.min(s, 4);
-  const levels: StrengthLevel[] = ['weak', 'fair', 'good', 'strong'];
-  return { level: levels[Math.min(capped, 3)], score: capped };
+  const passedCount = getPasswordPolicyChecks(pw).filter((check) => check.passed).length;
+
+  if (isPasswordCompliant(pw)) {
+    return { level: 'strong', score: 4 };
+  }
+  if (passedCount >= 5) {
+    return { level: 'good', score: 3 };
+  }
+  if (passedCount >= 3) {
+    return { level: 'fair', score: 2 };
+  }
+  return { level: 'weak', score: 1 };
 }
 
 export default function SecurityScreen() {
@@ -63,7 +72,7 @@ export default function SecurityScreen() {
 
   const changePasswordMutation = useMutation({
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
-      apiClient.put(`${userRoutes.me()}/password`, data),
+      apiClient.post(authRoutes.changePassword(), data),
     onSuccess: () => {
       toast.success(t('security.passwordChanged'));
       setCurrentPassword('');
@@ -79,16 +88,8 @@ export default function SecurityScreen() {
       toast.error(t('security.currentPasswordRequired'));
       return;
     }
-    if (newPassword.length < 8) {
-      toast.error(t('security.passwordTooShort'));
-      return;
-    }
-    if (!/[A-Z]/.test(newPassword)) {
-      toast.error(t('security.passwordNeedsUppercase'));
-      return;
-    }
-    if (!/[0-9]/.test(newPassword)) {
-      toast.error(t('security.passwordNeedsNumber'));
+    if (!isPasswordCompliant(newPassword)) {
+      toast.error(t('security.passwordTooWeak'));
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -285,6 +286,7 @@ export default function SecurityScreen() {
                   !currentPassword ||
                   !newPassword ||
                   !confirmPassword ||
+                  !isPasswordCompliant(newPassword) ||
                   newPassword !== confirmPassword
                 }
                 style={styles.btn}

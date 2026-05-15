@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
-import { profileRoutes } from '@study-abroad/shared';
+import { PASSWORD_POLICY, isPasswordCompliant, profileRoutes } from '@study-abroad/shared';
 import { ApiError } from '@/lib/api/api-error';
 import { setAuthFromLogin } from '@/stores/auth';
 import { cn } from '@/lib/utils';
@@ -28,11 +28,19 @@ const createRegisterSchema = (t: ReturnType<typeof useTranslations>) =>
       email: z.string().email({ message: t('validation.invalidEmail') }),
       password: z
         .string()
-        .min(8, { message: t('validation.passwordMin') })
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
+        .min(PASSWORD_POLICY.minLength, { message: t('validation.passwordMin') })
+        .max(PASSWORD_POLICY.maxLength, {
+          message: t('validation.passwordMax', { max: PASSWORD_POLICY.maxLength }),
+        })
+        .refine(isPasswordCompliant, {
           message: t('validation.passwordStrength'),
         }),
-      confirmPassword: z.string().min(8, { message: t('validation.passwordMin') }),
+      confirmPassword: z
+        .string()
+        .min(PASSWORD_POLICY.minLength, { message: t('validation.passwordMin') })
+        .max(PASSWORD_POLICY.maxLength, {
+          message: t('validation.passwordMax', { max: PASSWORD_POLICY.maxLength }),
+        }),
       agreeTerms: z
         .boolean()
         .refine((val) => val === true, { message: t('validation.agreeRequired') }),

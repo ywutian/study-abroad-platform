@@ -208,10 +208,9 @@ git commit -m "docs: update API reference"
 | `OPENAI_MODEL`           | 否   | 默认 AI 模型                 | `gpt-4o-mini`                                                |
 | `PORT`                   | 否   | API 服务端口                 | `4101`                                                       |
 | `NODE_ENV`               | 否   | 运行环境                     | `development`                                                |
-| `SMTP_HOST`              | 否   | SMTP 邮件服务器              | `smtp.example.com`                                           |
-| `SMTP_PORT`              | 否   | SMTP 端口                    | `587`                                                        |
-| `SMTP_USER`              | 否   | SMTP 用户名                  | —                                                            |
-| `SMTP_PASS`              | 否   | SMTP 密码                    | —                                                            |
+| `RESEND_API_KEY`         | 否   | Resend 交易邮件 API Key      | `re_...`                                                     |
+| `EMAIL_FROM`             | 否   | 邮件发信地址                 | `noreply@lumniedu.com`                                       |
+| `EMAIL_FROM_NAME`        | 否   | 邮件发信名称                 | `Lumni`                                                      |
 | `FRONTEND_URL`           | 否   | 前端地址（邮件链接用）       | `http://localhost:4100`                                      |
 | `THROTTLE_TTL`           | 否   | 速率限制窗口（秒）           | `60`                                                         |
 | `THROTTLE_LIMIT`         | 否   | 速率限制最大请求数           | `100`                                                        |

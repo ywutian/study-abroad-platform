@@ -51,15 +51,18 @@ OPENAI_MODEL=gpt-4o-mini
 COLLEGE_SCORECARD_API_KEY=your_scorecard_api_key
 
 # ============================================
-# 邮件服务 [Zod 验证: 可选]
-# 注意：Zod 验证使用 EMAIL_* 变量名，但 email.service.ts 实际读取 SMTP_* 变量
-# 建议同时配置两套变量名，确保兼容
+# 邮件服务 [Zod 验证: 可选，Resend 交易邮件]
+# 生产环境先在 Resend 验证 lumniedu.com，再使用 noreply@lumniedu.com 发信。
+# 不要用 onboarding@resend.dev 给真实用户发送生产邮件。
 # ============================================
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=your_email_user
-SMTP_PASS=your_email_password
-EMAIL_FROM=noreply@your-domain.com
+RESEND_API_KEY=re_your_resend_api_key
+EMAIL_FROM=noreply@lumniedu.com
+EMAIL_FROM_NAME=Lumni
+# Legacy SMTP_* variables are not used by EmailService.
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_USER=your_email_user
+# SMTP_PASS=your_email_password
 
 # ============================================
 # 文件存储 [Zod 验证: 默认 local]
@@ -204,15 +207,18 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=gpt-4o-mini
 
 # ============================================
-# 邮件服务 [Zod 验证: 可选]
-# 注意：Zod 验证使用 EMAIL_* 变量名，但 email.service.ts 实际读取 SMTP_* 变量
-# 建议同时配置两套变量名，确保兼容
+# 邮件服务 [Zod 验证: 可选，Resend 交易邮件]
+# 生产环境先在 Resend 验证 lumniedu.com，再使用 noreply@lumniedu.com 发信。
+# 不要用 onboarding@resend.dev 给真实用户发送生产邮件。
 # ============================================
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=your-email@example.com
-SMTP_PASS=your-email-password
-EMAIL_FROM=noreply@your-domain.com
+RESEND_API_KEY=re_your_resend_api_key
+EMAIL_FROM=noreply@lumniedu.com
+EMAIL_FROM_NAME=Lumni
+# Legacy SMTP_* variables are not used by EmailService.
+# SMTP_HOST=smtp.example.com
+# SMTP_PORT=587
+# SMTP_USER=your-email@example.com
+# SMTP_PASS=your-email-password
 
 # ============================================
 # 文件存储 [Zod 验证]

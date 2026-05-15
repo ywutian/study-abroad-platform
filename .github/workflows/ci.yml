@@ -998,7 +998,7 @@ jobs:
             --vpc-connector=projects/${{ secrets.GCP_PROJECT_ID }}/locations/$REGION/connectors/study-abroad-connector \
             --vpc-egress=private-ranges-only \
             --add-cloudsql-instances=${{ secrets.GCP_CLOUDSQL_INSTANCE }} \
-            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=gpt-4o-mini" \
+            --set-env-vars="^|^NODE_ENV=production|FRONTEND_URL=https://www.lumniedu.com|CORS_ORIGINS=https://study-abroad-platform-web.vercel.app,https://www.lumniedu.com,https://lumniedu.com|OPENAI_MODEL=gpt-4o-mini|EMAIL_FROM=noreply@lumniedu.com|EMAIL_FROM_NAME=Lumni" \
             --set-secrets="DATABASE_URL=database-url-proxy:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest,VAULT_ENCRYPTION_KEY=vault-encryption-key:latest,OPENAI_API_KEY=openai-api-key:latest,REDIS_URL=redis-url:latest,RESEND_API_KEY=resend-api-key:latest,TAVILY_API_KEY=tavily-api-key:latest" \
             --timeout=300 \
             --no-traffic \

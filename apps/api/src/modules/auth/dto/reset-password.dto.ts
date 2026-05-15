@@ -7,6 +7,10 @@ import {
   Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  PASSWORD_POLICY,
+  PASSWORD_POLICY_MESSAGE_ZH,
+} from '@study-abroad/shared';
 
 export class RequestPasswordResetDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -21,14 +25,13 @@ export class ResetPasswordDto {
   @MaxLength(500)
   token: string;
 
-  @ApiProperty({ example: 'NewPassword123!' })
+  @ApiProperty({ example: 'NewPassword123@' })
   @IsString()
-  @MinLength(8, { message: '密码至少8位' })
-  @MaxLength(32, { message: '密码最多32位' })
-  @Matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    { message: '密码必须包含大小写字母、数字和特殊字符' },
-  )
+  @MinLength(PASSWORD_POLICY.minLength, { message: '密码至少8位' })
+  @MaxLength(PASSWORD_POLICY.maxLength, { message: '密码最多32位' })
+  @Matches(PASSWORD_POLICY.requiredPattern, {
+    message: PASSWORD_POLICY_MESSAGE_ZH,
+  })
   newPassword: string;
 }
 
@@ -39,13 +42,12 @@ export class ChangePasswordDto {
   @MaxLength(128)
   currentPassword: string;
 
-  @ApiProperty({ example: 'NewPassword123!' })
+  @ApiProperty({ example: 'NewPassword123@' })
   @IsString()
-  @MinLength(8, { message: '密码至少8位' })
-  @MaxLength(32, { message: '密码最多32位' })
-  @Matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    { message: '密码必须包含大小写字母、数字和特殊字符' },
-  )
+  @MinLength(PASSWORD_POLICY.minLength, { message: '密码至少8位' })
+  @MaxLength(PASSWORD_POLICY.maxLength, { message: '密码最多32位' })
+  @Matches(PASSWORD_POLICY.requiredPattern, {
+    message: PASSWORD_POLICY_MESSAGE_ZH,
+  })
   newPassword: string;
 }
