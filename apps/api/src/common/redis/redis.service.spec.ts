@@ -195,6 +195,71 @@ describe('RedisService resilience', () => {
     expect(service.getRuntimeState().nextReconnectAt).toBeNull();
   });
 
+  // ─────────────────────────────────────────────────────────────────────
+  // 2026-05: with multiple Redis URLs configured, a single endpoint's
+  // quota exhaustion must NOT mark the whole subsystem as degraded. The
+  // RuntimeState surface exposes per-endpoint detail so operators can
+  // see which provider is healthy.
+  // ─────────────────────────────────────────────────────────────────────
+
+  it('reports circuitOpen=false on the subsystem when at least one endpoint stays healthy', async () => {
+    const service = createService({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 });
+    attachClient(
+      service,
+      {
+        get: jest
+          .fn()
+          .mockRejectedValue(new Error('ERR max requests limit exceeded')),
+      },
+      3,
+    );
+    // Pretend the failover-target connect succeeds, so the subsystem
+    // remains healthy on a different endpoint.
+    (service as any).connect = jest.fn().mockImplementation(async () => {
+      (service as any).activeEndpointIndex = 1;
+      (service as any).client = { disconnect: jest.fn(), quit: jest.fn() };
+      (service as any).isConnected = true;
+    });
+
+    await expect(service.get('schools:list')).resolves.toBeNull();
+
+    const runtime = service.getRuntimeState();
+    expect(runtime.endpointCount).toBe(3);
+    // Subsystem-wide circuit is NOT open — at least 2 endpoints still available.
+    expect(runtime.circuitOpen).toBe(false);
+    expect(runtime.availableEndpointCount).toBe(2);
+    expect(runtime.activeEndpoint).toBe('url:2');
+    // Per-endpoint detail tells operators exactly which one tripped.
+    expect(runtime.endpoints).toHaveLength(3);
+    expect(runtime.endpoints[0]).toMatchObject({
+      label: 'url:1',
+      active: false,
+      circuitOpen: true,
+      circuitReason: 'quota_exceeded',
+    });
+    expect(runtime.endpoints[1]).toMatchObject({
+      label: 'url:2',
+      active: true,
+      circuitOpen: false,
+    });
+  });
+
+  it('reports subsystem circuitOpen=true only when every endpoint tripped', async () => {
+    const service = createService({ REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000 });
+    attachClient(service, {
+      get: jest
+        .fn()
+        .mockRejectedValue(new Error('ERR max requests limit exceeded')),
+    });
+
+    await service.get('key');
+
+    const runtime = service.getRuntimeState();
+    // Single-endpoint config: when it trips, the whole subsystem is down.
+    expect(runtime.circuitOpen).toBe(true);
+    expect(runtime.endpoints[0].circuitOpen).toBe(true);
+  });
+
   it('uses short circuit cooldowns for transient connection errors', async () => {
     const service = createService({
       REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: 60000,

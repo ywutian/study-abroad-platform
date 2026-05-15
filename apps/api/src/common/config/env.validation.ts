@@ -35,8 +35,14 @@ const envSchema = z.object({
   REDIS_URLS: z.string().optional(),
   REDIS_CACHE_URLS: z.string().optional(),
   REDIS_STATE_URLS: z.string().optional(),
-  REDIS_HOST: z.string().default('localhost'),
-  REDIS_PORT: z.coerce.number().int().default(6379),
+  // 2026-05: REDIS_HOST used to default to 'localhost', which made
+  // RedisService always try to connect even when no Redis was configured —
+  // production logs filled with "connection refused" because the
+  // `if (!redisHost) return [];` short-circuit was unreachable. Now both
+  // host and port are fully optional; in-memory fallback engages when
+  // neither URL nor HOST are set.
+  REDIS_HOST: z.string().optional(),
+  REDIS_PORT: z.coerce.number().int().optional(),
   REDIS_PASSWORD: z.string().optional(),
   REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().default(1000),
   REDIS_CIRCUIT_BREAKER_COOLDOWN_MS: z.coerce

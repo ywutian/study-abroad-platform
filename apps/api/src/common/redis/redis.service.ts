@@ -23,6 +23,18 @@ interface RedisEndpointSpec {
   password?: string;
 }
 
+export interface RedisEndpointState {
+  /** Display label, e.g. `url:1` or `redis-1.upstash.io:6379`. */
+  label: string;
+  /** Whether the endpoint is currently the one carrying traffic. */
+  active: boolean;
+  /** Whether this endpoint's circuit is open (it's NOT being tried). */
+  circuitOpen: boolean;
+  circuitOpenUntil: string | null;
+  circuitReason: RedisErrorKind | null;
+  circuitMessage: string | null;
+}
+
 export interface RedisRuntimeState {
   configured: boolean;
   connected: boolean;
@@ -33,6 +45,8 @@ export interface RedisRuntimeState {
   circuitMessage: string | null;
   endpointCount: number;
   availableEndpointCount: number;
+  /** Per-endpoint detail so operators can see which Redis is in use. */
+  endpoints: RedisEndpointState[];
   lastErrorAt: string | null;
   lastErrorKind: RedisErrorKind | null;
   lastErrorMessage: string | null;
@@ -291,7 +305,14 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       this.rememberError(err);
       this.logger.warn(`Redis error (${spec.label}): ${message}`);
       if (this.shouldOpenCircuit(kind)) {
-        void this.openCircuit(kind, message, spec);
+        // 2026-05: don't wait for the 60s reconnect timer. If we have other
+        // endpoints configured, trigger an immediate failover so quota /
+        // auth / connection errors on endpoint N transparently fall over to
+        // endpoint N+1.
+        void (async () => {
+          await this.openCircuit(kind, message, spec);
+          await this.tryFailoverFrom(spec);
+        })();
       } else {
         this.isConnected = false;
         this.scheduleReconnectIfNeeded();
@@ -480,15 +501,36 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const { kind, message } = categorizeError(error);
     this.rememberError(error);
     if (this.shouldOpenCircuit(kind)) {
-      await this.openCircuit(kind, message);
-      const nextIndex =
-        this.endpointSpecs.length > 1 && this.activeEndpointIndex >= 0
-          ? (this.activeEndpointIndex + 1) % this.endpointSpecs.length
-          : 0;
-      await this.connect(nextIndex);
-      this.scheduleReconnectIfNeeded();
+      const failingSpec = this.endpointSpecs[this.activeEndpointIndex];
+      await this.openCircuit(kind, message, failingSpec);
+      await this.tryFailoverFrom(failingSpec);
     }
     this.logger.warn(`Redis ${op} degraded for ${key}: ${message}`);
+  }
+
+  /**
+   * Walk forward in `endpointSpecs` past the failing endpoint and try to
+   * connect to the next endpoint whose circuit is open. This is the heart of
+   * the multi-Redis failover: when one provider exhausts quota or rate-limits,
+   * traffic shifts to the next URL in REDIS_URLS without waiting for the
+   * background reconnect timer.
+   *
+   * Safe to call when there's only one endpoint: it will no-op (connect()
+   * skips circuit-open endpoints).
+   */
+  private async tryFailoverFrom(
+    failingSpec: RedisEndpointSpec | undefined,
+  ): Promise<void> {
+    const total = this.endpointSpecs.length;
+    if (total === 0) return;
+
+    const failingIndex = failingSpec
+      ? this.endpointSpecs.findIndex((s) => s.label === failingSpec.label)
+      : this.activeEndpointIndex;
+    const startIndex = failingIndex >= 0 ? (failingIndex + 1) % total : 0;
+
+    await this.connect(startIndex);
+    this.scheduleReconnectIfNeeded();
   }
 
   private clearReconnectTimer() {
@@ -738,7 +780,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   getRuntimeState(): RedisRuntimeState {
     const circuit = this.activeCircuit();
-    const circuitOpen = this.allEndpointsCircuitOpen() || !!circuit;
+    // 2026-05: `circuitOpen` is now true ONLY when *every* configured
+    // endpoint has tripped. A single endpoint's quota exhaustion no longer
+    // makes the whole Redis subsystem look degraded as long as at least one
+    // other endpoint is healthy.
+    const allOpen = this.allEndpointsCircuitOpen();
+    const circuitOpen = allOpen;
     const firstCircuit =
       circuit ??
       Array.from(this.endpointCircuits.values()).find(
@@ -758,6 +805,19 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       circuitMessage: circuitOpen ? (firstCircuit?.message ?? null) : null,
       endpointCount: this.endpointSpecs.length,
       availableEndpointCount: this.availableEndpointCount(),
+      endpoints: this.endpointSpecs.map((spec, index) => {
+        const entry = this.endpointCircuits.get(spec.label);
+        const open = entry != null && entry.openUntil > Date.now();
+        return {
+          label: spec.label,
+          active: index === this.activeEndpointIndex,
+          circuitOpen: open,
+          circuitOpenUntil:
+            open && entry ? new Date(entry.openUntil).toISOString() : null,
+          circuitReason: open && entry ? entry.reason : null,
+          circuitMessage: open && entry ? entry.message : null,
+        };
+      }),
       lastErrorAt: this.lastErrorAt
         ? new Date(this.lastErrorAt).toISOString()
         : null,
