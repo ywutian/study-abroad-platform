@@ -53,7 +53,7 @@ export function SchoolSelectorCard({
   );
 
   return (
-    <Card className={cn('mb-6', compact && 'gap-4 py-4', className)}>
+    <Card className={cn('mb-6 overflow-visible', compact && 'gap-4 py-4', className)}>
       <CardHeader className={cn(compact && 'px-4')}>
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2">
