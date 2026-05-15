@@ -347,8 +347,8 @@ export function SchoolCard({
       size={viewMode === 'grid' ? 'sm' : 'default'}
       asChild
       className={cn(
-        'gap-1.5 font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300',
-        viewMode === 'grid' ? 'h-8 flex-1 px-2 text-xs' : 'flex-1 px-3 sm:flex-none'
+        'min-w-0 gap-1.5 font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300',
+        viewMode === 'grid' ? 'h-8 flex-1 shrink px-2 text-xs' : 'flex-1 px-3 sm:flex-none'
       )}
       onClick={(e) => e.stopPropagation()}
     >
@@ -364,8 +364,8 @@ export function SchoolCard({
       disabled
       title={t('visitSiteUnavailable')}
       className={cn(
-        'gap-1.5 font-medium text-muted-foreground',
-        viewMode === 'grid' ? 'h-8 flex-1 px-2 text-xs' : 'flex-1 px-3 sm:flex-none'
+        'min-w-0 gap-1.5 font-medium text-muted-foreground',
+        viewMode === 'grid' ? 'h-8 flex-1 shrink px-2 text-xs' : 'flex-1 px-3 sm:flex-none'
       )}
     >
       <ExternalLink className={viewMode === 'grid' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
@@ -379,8 +379,8 @@ export function SchoolCard({
       size={viewMode === 'grid' ? 'sm' : 'default'}
       asChild
       className={cn(
-        'gap-1 bg-blue-600 font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
-        viewMode === 'grid' ? 'h-8 flex-1 text-xs' : 'flex-1 sm:flex-none'
+        'min-w-0 gap-1 bg-blue-600 font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+        viewMode === 'grid' ? 'h-8 flex-1 shrink text-xs' : 'flex-1 sm:flex-none'
       )}
       onClick={(e) => e.stopPropagation()}
     >
@@ -395,8 +395,8 @@ export function SchoolCard({
       size={viewMode === 'grid' ? 'sm' : 'default'}
       disabled
       className={cn(
-        'font-medium',
-        viewMode === 'grid' ? 'h-8 flex-1 text-xs' : 'flex-1 sm:flex-none'
+        'min-w-0 font-medium',
+        viewMode === 'grid' ? 'h-8 flex-1 shrink text-xs' : 'flex-1 sm:flex-none'
       )}
     >
       <Check className={cn('mr-1', viewMode === 'grid' ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
@@ -410,8 +410,8 @@ export function SchoolCard({
           size={viewMode === 'grid' ? 'sm' : 'default'}
           disabled={isAddingToList}
           className={cn(
-            'gap-1 bg-blue-600 font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
-            viewMode === 'grid' ? 'h-8 flex-1 text-xs' : 'flex-1 sm:flex-none'
+            'min-w-0 gap-1 bg-blue-600 font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+            viewMode === 'grid' ? 'h-8 flex-1 shrink text-xs' : 'flex-1 sm:flex-none'
           )}
           onClick={(e) => e.stopPropagation()}
         >
@@ -446,7 +446,7 @@ export function SchoolCard({
     return (
       <Card
         className={cn(
-          'group relative flex h-full flex-col overflow-hidden p-0 transition-all duration-200',
+          'group relative flex h-full min-w-0 flex-col overflow-hidden p-0 transition-all duration-200',
           'hover:border-blue-500/45 hover:shadow-md dark:hover:border-blue-400/45',
           isSelected && 'border-blue-500/45 ring-2 ring-blue-500/25 dark:border-blue-400/45'
         )}
@@ -479,16 +479,16 @@ export function SchoolCard({
           />
         </Link>
 
-        <div className="flex flex-1 flex-col px-4 pb-4">
-          <Link href={detailHref} className="mb-2 block">
+        <div className="flex min-w-0 flex-1 flex-col px-4 pb-4">
+          <Link href={detailHref} className="mb-2 block min-w-0">
             <h3 className="mb-1 line-clamp-1 text-base font-bold leading-tight text-foreground transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
               {schoolName}
             </h3>
             {subName && (
               <p className="mb-2 line-clamp-1 text-xs text-muted-foreground">{subName}</p>
             )}
-            <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
+            <div className="mb-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span className="flex min-w-0 items-center gap-1">
                 <MapPin className="h-3 w-3 shrink-0" />
                 <span className="truncate">{locationParts || tc('notAvailable')}</span>
               </span>
@@ -505,6 +505,7 @@ export function SchoolCard({
                 usNewsRank={school.usNewsRank}
                 variant="amber"
                 preferredRankingList={preferredRankingList}
+                className="max-w-full shrink truncate"
               />
               {school.hasEarlyDecision && (
                 <Badge variant="outline" className="text-2xs">
@@ -518,18 +519,18 @@ export function SchoolCard({
                 lifeGrade={campusGrades.lifeGrade}
                 foodGrade={campusGrades.foodGrade}
                 size="sm"
-                className="mt-2 gap-2"
+                className="mt-2 flex-wrap gap-2"
               />
             )}
           </Link>
 
-          <div className="mt-auto flex flex-col gap-3 border-t border-border/60 pt-3 text-xs">
-            <div className="flex items-center justify-between gap-2">
+          <div className="mt-auto flex min-w-0 flex-col gap-3 border-t border-border/60 pt-3 text-xs">
+            <div className="grid min-w-0 grid-cols-3 gap-2">
               {acceptanceMetric}
               {studentsMetric}
               {trustMetric}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               {visitButton}
               {addButton}
             </div>
@@ -542,7 +543,7 @@ export function SchoolCard({
   return (
     <Card
       className={cn(
-        'group relative flex flex-col overflow-hidden p-0 transition-all duration-200 sm:flex-row',
+        'group relative flex min-w-0 flex-col overflow-hidden p-0 transition-all duration-200 sm:flex-row',
         'hover:border-blue-500/45 hover:shadow-md dark:hover:border-blue-400/45',
         isSelected && 'border-blue-500/45 ring-2 ring-blue-500/25 dark:border-blue-400/45'
       )}
@@ -575,9 +576,9 @@ export function SchoolCard({
         {fitScorePill && <div className="absolute right-3 top-3 z-10">{fitScorePill}</div>}
       </div>
 
-      <div className={cn('flex flex-1 flex-col', isCompact ? 'p-4' : 'p-5')}>
-        <Link href={detailHref} className={cn('block', isCompact ? 'mb-2' : 'mb-3')}>
-          <div className="mb-1 flex flex-wrap items-center gap-2">
+      <div className={cn('flex min-w-0 flex-1 flex-col', isCompact ? 'p-4' : 'p-5')}>
+        <Link href={detailHref} className={cn('block min-w-0', isCompact ? 'mb-2' : 'mb-3')}>
+          <div className="mb-1 flex min-w-0 flex-wrap items-center gap-2">
             <h3
               className={cn(
                 'line-clamp-1 font-bold leading-tight text-foreground transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400',
@@ -591,13 +592,14 @@ export function SchoolCard({
               usNewsRank={school.usNewsRank}
               variant="amber"
               preferredRankingList={preferredRankingList}
+              className="max-w-full shrink truncate"
             />
           </div>
           {subName && (
             <p className="mb-1.5 line-clamp-1 text-sm text-muted-foreground">{subName}</p>
           )}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <span className="flex min-w-0 items-center gap-1">
               <MapPin className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{locationParts || tc('notAvailable')}</span>
             </span>
@@ -639,7 +641,7 @@ export function SchoolCard({
           />
         )}
 
-        <div className="mt-auto flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="mt-auto flex min-w-0 flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="flex flex-1 flex-wrap items-center gap-x-6 gap-y-2 text-sm">
             <div className="flex items-center gap-1.5">
               <Award className="h-3.5 w-3.5 text-muted-foreground" />
