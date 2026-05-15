@@ -35,6 +35,7 @@
     "processing": "Processing...",
     "comingSoon": "Coming Soon",
     "retry": "Retry",
+    "clear": "Clear",
     "clearAll": "Clear All",
     "ongoing": "Ongoing",
     "total": "Total",
@@ -205,8 +206,8 @@
     "editProfile": "Edit Profile",
     "quickAccess": "Quick Access",
     "commandCenter": {
-      "label": "Application Command Center",
-      "secondary": "Next best actions",
+      "label": "Application Workspace",
+      "secondary": "Application execution hub",
       "gapCount": "{count} profile gaps",
       "actions": {
         "profile": "Complete your applicant profile",
@@ -217,14 +218,48 @@
         "essaysDesc": "Create drafts and let Lumni organize prompts, revisions, and review notes.",
         "deadlines": "Clear upcoming application tasks",
         "deadlinesDesc": "{count} deadline tasks need attention before your next submission window.",
-        "review": "Review your admissions route",
-        "reviewDesc": "Your core setup is ready. Check predictions and refine the route with fresh signals."
+        "review": "Open application workspace",
+        "reviewDesc": "Your core setup is ready. Review schools, essays, requirements, and deadlines in one place."
       },
       "signals": {
         "profile": "Profile",
         "schools": "Schools",
         "essays": "Essays",
         "deadlines": "Deadlines"
+      }
+    },
+    "workbench": {
+      "label": "Application workbench",
+      "rhythm": "Profile, schools, essays, and deadlines in one operating view",
+      "emptyTitle": "Your application route is stable",
+      "emptyDescription": "No blocking item is visible right now. Keep reviewing deadlines and prediction signals.",
+      "primaryCta": "Open workspace",
+      "score": "Readiness",
+      "due7": "Due in 7 days",
+      "due30": "Due in 30 days",
+      "timelineGaps": "Timeline gaps",
+      "readiness": "Readiness map",
+      "priorityQueue": "Priority queue",
+      "deadlineStream": "Deadline stream",
+      "balanced": "Balanced list",
+      "needsBalance": "Needs balance",
+      "open": "Open",
+      "completeTask": "Mark done",
+      "viewTimeline": "View timeline",
+      "noDeadlines": "No upcoming deadline risk",
+      "deadlineOverdue": "{count, plural, one {# day overdue} other {# days overdue}}",
+      "deadlineToday": "Due today",
+      "deadlineDays": "{count, plural, one {# day} other {# days}}",
+      "status": {
+        "blocked": "Blocked",
+        "attention": "Needs attention",
+        "ready": "Ready"
+      },
+      "severity": {
+        "critical": "Critical",
+        "warning": "Watch",
+        "normal": "Normal",
+        "success": "Ready"
       }
     },
     "recentActivity": "Recent Activity",
@@ -255,6 +290,8 @@
       "safety": "Safety"
     },
     "modules": {
+      "uncommonApp": "Application Workspace",
+      "uncommonAppDesc": "Manage target schools, essays, requirements, and deadlines",
       "schools": "School Library",
       "schoolsDesc": "Browse and find your perfect fit",
       "prediction": "Admission Prediction",
@@ -1213,7 +1250,7 @@
     "schools": "Schools",
     "essays": "My Essays",
     "resume": "Resume Builder",
-    "uncommonApp": "Application Hub",
+    "uncommonApp": "Application Workspace",
     "verifiedRanking": "Verified Ranking",
     "followers": "Connections",
     "help": "Help Center",
@@ -1237,7 +1274,7 @@
       "schools": "Browse and compare universities worldwide",
       "essays": "Write, edit and AI-review your essays",
       "resume": "Build professional resumes with 25+ templates",
-      "uncommonApp": "AI-powered application management",
+      "uncommonApp": "Manage schools, essays, requirements, and deadlines",
       "verifiedRanking": "Real verified admission results",
       "followers": "Manage followers and connections",
       "forum": "Join discussions with fellow applicants",
@@ -1262,6 +1299,63 @@
     "welcome": "Welcome to AI Assistant",
     "welcomeDesc": "I can help you analyze your profile, recommend schools, evaluate essays, and more. How can I help you?",
     "placeholder": "Type your question...",
+    "workspace": {
+      "kicker": "AI Command Desk",
+      "title": "Study Abroad AI Workspace",
+      "description": "A dense workspace for conversations, tool activity, history, and system status. It handles follow-ups, summaries, and routing without duplicating the existing application analysis center.",
+      "boundary": "The application analysis center remains the full-report source",
+      "openAnalysisCenter": "Open analysis center",
+      "conversations": {
+        "title": "Conversation Queue"
+      },
+      "tasks": {
+        "title": "Task Entrypoints",
+        "desc": "Pick a task to let AI continue in the current chat, or open the source tool for deeper work."
+      },
+      "actions": {
+        "askAI": "Ask AI",
+        "openTool": "Open Tool",
+        "analysisFollowup": {
+          "title": "Interpret Existing Analysis",
+          "desc": "Ask follow-ups about the existing analysis, risks, and next actions.",
+          "message": "Based on my existing application analysis, summarize the most important risks, opportunities, and next actions. Do not regenerate the full application analysis report."
+        },
+        "schoolShortlist": {
+          "title": "School List Follow-up",
+          "desc": "Review target schools through reach, match, and safety tradeoffs.",
+          "message": "Please review my current school list strategy, focusing on whether the reach, match, and safety balance is reasonable and which schools I should add next."
+        },
+        "essayReview": {
+          "title": "Essay Strategy",
+          "desc": "Turn theme, structure, evidence, and school fit into concrete edits.",
+          "message": "Help me plan an essay revision strategy, focusing on whether the theme is clear, the evidence is specific, and the draft fits my target schools."
+        },
+        "deadlinePlan": {
+          "title": "Deadline Planning",
+          "desc": "Convert application dates into a timeline and priority list.",
+          "message": "Help me organize application deadlines for my target schools and turn them into a prioritized two-week action list."
+        },
+        "resumeReview": {
+          "title": "Resume Optimization",
+          "desc": "Review experience framing, quantified evidence, and application fit.",
+          "message": "Review my resume optimization direction for college applications, focusing on experience framing, quantified evidence, and what to include or cut."
+        }
+      },
+      "status": {
+        "title": "Runtime Status",
+        "ready": "Ready",
+        "degraded": "Degraded",
+        "model": "Model",
+        "rateLimit": "Request Window",
+        "dailyTokens": "Daily Tokens Left",
+        "conversationWindow": "Conversation Window",
+        "unknown": "N/A",
+        "boundary": "The AI assistant is for follow-ups, explanations, and routing. Official probabilities, application analysis, and school facts still live in their dedicated pages.",
+        "refreshContext": "Refresh Context",
+        "contextRefreshSuccess": "Context refreshed",
+        "contextRefreshError": "Could not refresh context. Please try again later."
+      }
+    },
     "quickActions": {
       "title": "Quick Actions",
       "analyzeProfile": "Analyze My Profile",
@@ -1388,6 +1482,7 @@
   "profile": {
     "title": "My Profile",
     "description": "Create and manage your application profile",
+    "unsavedChanges": "You have unsaved profile changes. Leave this section?",
     "tabErrorsAria": "{count, plural, one {# unresolved field} other {# unresolved fields}}",
     "basicInfo": "Basic Info",
     "basicInfoDesc": "Fill in your basic information",
@@ -1551,7 +1646,31 @@
       "primaryActions": "Primary Actions",
       "fixSignal": "Complete {signal}",
       "reviewTargets": "Review target schools",
-      "allSet": "Core profile signals are ready for predictions, essays, and portfolio calibration."
+      "allSet": "Core profile signals are ready for predictions, essays, and portfolio calibration.",
+      "commandSummaryBlocked": "{count} critical applicant signals need attention before the rest of the workflow is reliable.",
+      "commandSummaryAttention": "{count} workflow gaps remain across schools, predictions, timeline, essays, recommendations, or resume.",
+      "status": {
+        "blocked": "Needs input",
+        "attention": "In progress",
+        "ready": "Ready"
+      },
+      "item": {
+        "profile": "Core Profile",
+        "schoolList": "School Plan",
+        "prediction": "Prediction",
+        "timeline": "Timeline"
+      },
+      "action": {
+        "completeProfile": "Complete profile",
+        "addSchools": "Add schools",
+        "balanceSchools": "Balance list",
+        "runPrediction": "Run prediction",
+        "syncTimeline": "Sync timeline",
+        "startEssays": "Start essays",
+        "addRecommendationLetters": "Add rec letters",
+        "createResume": "Create resume",
+        "openApplicationHub": "Open workspace"
+      }
     },
     "quickStart": {
       "title": "Quick Start",
@@ -1571,7 +1690,7 @@
     },
     "nextSteps": {
       "title": "Next Steps",
-      "applicationHub": "Application Hub",
+      "applicationHub": "Application Workspace",
       "prediction": "Admission Prediction",
       "essays": "My Essays",
       "assessment": "Assessment",
@@ -1579,9 +1698,9 @@
     },
     "applicationStrategy": {
       "title": "Application Strategy",
-      "description": "Open the application hub to generate school-aware strategy. The Profile page only shows cached results and never starts AI analysis automatically.",
+      "description": "Open the application workspace to generate school-aware strategy. The Profile page only shows cached results and never starts analysis automatically.",
       "manualBadge": "Manual",
-      "open": "Open hub"
+      "open": "Open workspace"
     },
     "steps": {
       "basic": "Basic Info",
@@ -2572,6 +2691,10 @@
     "permissionRequired": "Only verified users can initiate conversations",
     "rateLimitExceeded": "Too many messages, please slow down",
     "repeatedContent": "Please don't send repeated messages",
+    "workbenchDescription": "Manage direct messages, matched groups, and shared files in one place",
+    "verifiedNetwork": "Verified network",
+    "refresh": "Refresh chat",
+    "offlineFallback": "You are offline. Messages will sync when the connection returns.",
     "emojiCategories": {
       "frequent": "Frequent",
       "smileys": "Smileys",
@@ -2581,10 +2704,36 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "newMessages": "New messages",
+    "unreadCount": "{count} unread",
     "messageDeleted": "Message deleted",
     "deleteMessage": "Delete",
     "pinConversation": "Pin",
     "unpinConversation": "Unpin",
+    "muteConversation": "Mute conversation",
+    "unmuteConversation": "Unmute conversation",
+    "archiveConversation": "Archive conversation",
+    "unarchiveConversation": "Unarchive conversation",
+    "participants": "{count, plural, one {# participant} other {# participants}}",
+    "contextTitle": "Conversation details",
+    "directConversation": "Direct message",
+    "systemMatched": "System matched",
+    "teamMatch": "Team match",
+    "muted": "Muted",
+    "archived": "Archived",
+    "members": "Members",
+    "member": "Member",
+    "sharedFiles": "Shared files",
+    "noSharedFiles": "No shared files yet",
+    "messageUnavailable": "Original message unavailable",
+    "retrySend": "Retry send",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "pinned": "Pinned",
+      "direct": "Direct",
+      "groups": "Groups",
+      "archived": "Archived"
+    },
     "blockUser": "Block user",
     "blockConfirm": "Are you sure you want to block this user? You won't be able to message each other.",
     "blockSuccess": "User blocked",
@@ -2607,6 +2756,8 @@
     "cancel": "Cancel",
     "copyMessage": "Copy",
     "copySuccess": "Copied to clipboard",
+    "fileTooLarge": "File too large. Please select a file under 10MB",
+    "fileTypeUnsupported": "This file type is not supported yet",
     "recallMessage": "Recall",
     "recallSuccess": "Message recalled",
     "recallTimeExpired": "Recall window expired (2 min)",
@@ -3343,7 +3494,7 @@
       "timeline": "Timeline",
       "assessment": "Assessment",
       "aiAssistant": "AI Assistant",
-      "uncommonApp": "Uncommon App",
+      "uncommonApp": "Application Workspace",
       "hall": "Hall of Fame",
       "chat": "Chat",
       "vault": "Vault",
@@ -3370,7 +3521,7 @@
         "timeline": "timeline,deadlines,schedule",
         "assessment": "assessment,mbti,personality",
         "aiAssistant": "AI,assistant,smart,chat",
-        "uncommonApp": "uncommon,strategy,unique",
+        "uncommonApp": "application,workspace,school list,essays,deadlines",
         "hall": "hall,fame,ranking,leaderboard",
         "chat": "chat,message,conversation",
         "vault": "vault,documents,secure",
@@ -3671,12 +3822,12 @@
       "view": "View",
       "viewCard": "Cards",
       "viewList": "List",
-      "density": "Density",
-      "densityComfortable": "Comfortable",
-      "densityCompact": "Compact",
       "sortLabel": "Sort by",
       "rankingListLabel": "Ranking list",
       "rankingFallbackCount": "{count} fallback",
+      "density": "Density",
+      "densityComfortable": "Comfortable",
+      "densityCompact": "Compact",
       "resetAll": "Reset all",
       "removeFilter": "Remove filter",
       "rangeReadout": "Showing {from}–{to} of {total}",
@@ -4085,10 +4236,10 @@
     }
   },
   "uncommonApp": {
-    "title": "Uncommon App",
-    "description": "Bring school lists, predictions, essays, requirements, and AI strategy into one application command center.",
+    "title": "Application Workspace",
+    "description": "Manage target schools, essays, requirements, and deadlines in one workspace.",
     "dashboard": {
-      "title": "Application Command Center",
+      "title": "Application Workspace",
       "profile": "Profile readiness",
       "schoolBalance": "Reach/match/safety",
       "essayPrompts": "Essay prompts",
@@ -4148,7 +4299,164 @@
     "getRecommendations": "Get Recommendations",
     "aiRecommendationsLoaded": "AI recommendations loaded",
     "aiRecommendationsError": "Failed to get recommendations",
+    "recommendationsLoaded": "Candidate schools generated",
+    "recommendationsError": "Failed to generate candidate schools",
     "recommendationsBlocked": "Your profile or point balance is not ready for recommendations yet",
+    "workspace": {
+      "syncSuccess": "Application requirements synced",
+      "syncError": "Could not sync requirements. Please try again.",
+      "noSchoolsToSync": "Add target schools first",
+      "actions": {
+        "complete-profile": "Complete profile",
+        "add-schools": "Add target schools",
+        "sync-requirements": "Sync requirements",
+        "add-safety": "Add safety schools",
+        "review-deadlines": "View timeline",
+        "generate-advice": "Generate counselor advice",
+        "add-candidates": "Find candidate schools"
+      },
+      "nextAction": {
+        "complete-profile": {
+          "title": "Complete the core profile first",
+          "description": "Your profile is {profileScore}% complete. Add GPA, scores, activities, or awards so advice can be more reliable."
+        },
+        "add-schools": {
+          "title": "Build a target school list",
+          "description": "You currently have {schoolCount} target schools. Start with 6-12 schools."
+        },
+        "sync-requirements": {
+          "title": "Confirm application requirements",
+          "description": "{missingTimelineCount} schools need timelines and {missingEssayCount} schools need essay prompts confirmed."
+        },
+        "add-safety": {
+          "title": "Add steadier options",
+          "description": "You currently have {safetyCount} safety schools. Add 1-2 steadier options."
+        },
+        "review-deadlines": {
+          "title": "Handle deadline risk",
+          "description": "{dueSoonCount} items are due within 7 days and {overdueCount} items are overdue."
+        },
+        "generate-advice": {
+          "title": "Ready for counselor advice",
+          "description": "Your profile and school list are ready for school-list, essay, and deadline advice."
+        }
+      },
+      "readiness": {
+        "profile": "Profile",
+        "schools": "Schools",
+        "essays": "Essays",
+        "deadlines": "Deadlines"
+      },
+      "readinessHint": {
+        "profile": "Core evidence",
+        "schools": "Target list",
+        "essays": "School prompts",
+        "deadlines": "Near-term risk"
+      },
+      "schoolBoard": {
+        "title": "School Application List",
+        "description": "Each row is one school application, sorted by urgency.",
+        "removeSchool": "Remove {school}",
+        "materials": "Materials",
+        "tasksRemaining": "{count} tasks left",
+        "needTimeline": "Needs sync",
+        "essays": "Essays",
+        "essayCount": "{count} prompts",
+        "noEssayData": "Needs review",
+        "estimate": "Estimate",
+        "noEstimate": "Not run",
+        "deadline": "Deadline",
+        "deadlineMissing": "Needs date",
+        "overdue": "{days} days overdue",
+        "dueToday": "Due today",
+        "dueSoon": "In {days} days",
+        "dueMonth": "In {days} days",
+        "dueLater": "{days} days out",
+        "nextStepLabel": "Next step",
+        "nextStep": {
+          "sync-requirements": "Confirm deadlines, essay prompts, and materials.",
+          "review-deadlines": "Handle the soonest deadline tasks first.",
+          "write-essays": "Open essays for this school's prompts.",
+          "run-prediction": "Run prediction to support school-list decisions.",
+          "view-timeline": "Open timeline and keep completing materials.",
+          "complete-profile": "Complete the core application profile.",
+          "add-schools": "Keep adding target schools.",
+          "add-safety": "Add steadier safety options.",
+          "generate-advice": "Generate counselor advice."
+        },
+        "nextStepAction": {
+          "sync-requirements": "Sync requirements",
+          "review-deadlines": "View timeline",
+          "write-essays": "View essays",
+          "run-prediction": "Open prediction",
+          "view-timeline": "View timeline",
+          "complete-profile": "Complete profile",
+          "add-schools": "Add school",
+          "add-safety": "Add safety",
+          "generate-advice": "Generate advice"
+        }
+      },
+      "empty": {
+        "add-schools": {
+          "title": "Add target schools",
+          "description": "Put the schools you are considering into one list."
+        },
+        "complete-profile": {
+          "title": "Complete profile",
+          "description": "GPA, scores, activities, and awards power later advice."
+        },
+        "sync-requirements": {
+          "title": "Sync requirements",
+          "description": "After schools are added, pull in deadlines, essays, and material tasks."
+        }
+      },
+      "healthStatus": {
+        "good": "Good",
+        "warning": "Needs work",
+        "risk": "At risk"
+      },
+      "health": {
+        "title": "Application Health Check",
+        "description": "Four checks that affect what you should do next.",
+        "profile": {
+          "title": "Is the profile usable?",
+          "good": "Profile is {profileScore}% complete, enough for current planning.",
+          "warning": "Profile is {profileScore}% complete. Add more scores, activities, or awards.",
+          "risk": "Profile is {profileScore}% complete. Complete core fields first."
+        },
+        "balance": {
+          "title": "Is the school list balanced?",
+          "good": "You have {schoolCount} schools: {reach} reach, {target} match, and {safety} safety.",
+          "warning": "You have {schoolCount} schools. Round out reach, match, and safety coverage.",
+          "risk": "No safety schools yet. Add at least 1-2 steadier options."
+        },
+        "essays": {
+          "title": "Essay workload",
+          "good": "{essayPromptCount} prompts are linked and ready for planning.",
+          "warning": "{missingEssayCount} schools still need essay prompts confirmed.",
+          "risk": "Essay prompts are not synced yet. Confirm requirements first."
+        },
+        "deadlines": {
+          "title": "Deadline risk",
+          "good": "No high-risk deadlines in the near term.",
+          "warning": "{dueSoonCount} items are due within 7 days and {missingTimelineCount} schools need timelines.",
+          "risk": "{overdueCount} items are overdue. Check the timeline first."
+        }
+      },
+      "advisor": {
+        "title": "Counselor Advice",
+        "description": "Generate next-step planning once the list, profile, and requirements are ready.",
+        "recommendationsReady": "Candidate schools are ready to review and add to your list.",
+        "preparing": "Organizing advice...",
+        "listAdvice": "School-list advice",
+        "risks": "Watch-outs",
+        "noAdviceYet": "No specific advice yet.",
+        "noRiskYet": "No clear risk yet.",
+        "candidateCount": "{count} candidate schools generated.",
+        "emptyTitle": "No counselor advice yet",
+        "emptyDescription": "Generation is manual, so opening this page will not spend a request."
+      }
+    },
     "clickToGetRecommendations": "Click to get personalized AI recommendations",
     "schoolAgent": "School Agent",
     "profileAgent": "Profile Agent",
@@ -4926,16 +5234,21 @@
     "types": {
       "COLLEGE_APPLICATION": "College Application",
       "INTERNSHIP": "Internship / Job",
-      "GRADUATE_CV": "Graduate CV"
+      "GRADUATE_CV": "Graduate CV",
+      "FULL_TIME_JOB": "Full-time Job Resume"
     },
     "typeDescriptions": {
       "COLLEGE_APPLICATION": "One-page resume for college admissions",
       "INTERNSHIP": "ATS-friendly resume for internships and jobs",
-      "GRADUATE_CV": "Academic CV for graduate school applications"
+      "GRADUATE_CV": "Academic CV for graduate school applications",
+      "FULL_TIME_JOB": "JD-matched resume for full-time roles"
     },
     "status": {
       "DRAFT": "Draft",
       "ACTIVE": "Active",
+      "REVIEWED": "Reviewed",
+      "APPROVED": "Approved",
+      "EXPORTED": "Exported",
       "ARCHIVED": "Archived"
     },
     "sections": {
@@ -5007,7 +5320,8 @@
       "typeContextTitles": {
         "COLLEGE_APPLICATION": "Application Target",
         "INTERNSHIP": "Role Target",
-        "GRADUATE_CV": "Academic Target"
+        "GRADUATE_CV": "Academic Target",
+        "FULL_TIME_JOB": "Full-time Role Target"
       },
       "toasts": {
         "saveResumeFailed": "Failed to save resume settings",
@@ -5023,11 +5337,26 @@
         "aiReviewFailed": "AI review failed, please try again",
         "optimizeFailed": "Bullet optimization failed, please try again",
         "suggestFailed": "Content suggestions failed, please try again",
+        "importPreviewFailed": "Failed to build import preview, please try again",
         "exportLoading": "Generating PDF...",
         "exportedPdf": "PDF exported",
+        "exportRecordFailed": "Failed to save export record",
         "exportFailed": "Export failed, please try again",
         "aiSuggestionApplied": "AI suggestions applied",
-        "exampleBulletsAdded": "Example bullets added. Rewrite them with your real experience."
+        "aiIssueApplied": "AI issue applied",
+        "aiIssueApplyFailed": "Failed to apply AI issue; the content may have changed",
+        "exampleBulletsAdded": "Example bullets added. Rewrite them with your real experience.",
+        "uploadImportFailed": "Failed to parse the uploaded resume. Please try again.",
+        "uploadImported": "Uploaded resume content imported",
+        "uploadImportApplyFailed": "Failed to import the uploaded resume. Check your selections and try again.",
+        "targetCreated": "Target created and linked to this resume",
+        "targetCreateFailed": "Failed to create target. Complete the details and try again.",
+        "tailoredCreated": "Tailored resume created",
+        "tailorFailed": "Failed to create tailored resume. Please try again later.",
+        "evidenceCreated": "Evidence saved",
+        "evidenceCreateFailed": "Failed to save evidence. Please try again.",
+        "commentAdded": "Comment added",
+        "commentFailed": "Failed to add comment. Please try again."
       },
       "error": {
         "loadFailed": "Failed to load resume",
@@ -5036,6 +5365,8 @@
       "tabs": {
         "edit": "Edit",
         "preview": "Preview",
+        "match": "Match",
+        "exportCheck": "Export Check",
         "style": "Style"
       },
       "actions": {
@@ -5045,14 +5376,20 @@
         "back": "Back",
         "more": "More",
         "importProfile": "Import profile",
+        "uploadResume": "Upload resume",
         "aiReview": "AI Review",
         "saveVersion": "Save version",
         "duplicate": "Duplicate resume",
         "markDraft": "Move back to draft",
         "markActive": "Set active",
+        "setStatus": "Set to {status}",
         "versionHistory": "Version history",
         "noSnapshots": "No saved versions",
         "saveTarget": "Save target",
+        "createTarget": "Create target",
+        "createTailored": "Create tailored version",
+        "addEvidence": "Add evidence",
+        "applyUploadImport": "Import selected content",
         "runReview": "Run review",
         "openReview": "Review and apply suggestions",
         "optimizeBullets": "Optimize bullets",
@@ -5062,6 +5399,7 @@
         "applyRewriteAndSuggestions": "Apply rewrites and add suggestions",
         "close": "Close",
         "addExampleBullets": "Add example bullets",
+        "applyIssue": "Apply",
         "confirm": "Confirm",
         "delete": "Delete",
         "import": "Import",
@@ -5069,7 +5407,11 @@
       },
       "sidebar": {
         "completion": "Completion",
-        "hint": "Complete each section, then use AI to check gaps and expression."
+        "hint": "Complete each section, then use AI to check gaps and expression.",
+        "evidence": "Evidence",
+        "targets": "Targets",
+        "gaps": "Gap tasks",
+        "noGaps": "None"
       },
       "target": {
         "hint": "AI review, bullet optimization, and content suggestions all use this context.",
@@ -5088,7 +5430,42 @@
       },
       "section": {
         "hidden": "Hidden",
+        "evidenceRefs": "{count} evidence",
         "aiHint": "AI suggestions are not written automatically. You choose what to apply."
+      },
+      "match": {
+        "title": "Target match",
+        "careerDescription": "Review JD fit, ATS compatibility signals, and role relevance without promising ATS passage.",
+        "studyDescription": "Review school/program fit, academic and activity signals, completeness, impact, and authenticity risk.",
+        "score": "Quality",
+        "family": "Scenario",
+        "familyCareer": "Career",
+        "familyStudyAbroad": "Study abroad",
+        "variant": "Version",
+        "master": "Master",
+        "tailored": "Tailored",
+        "rubric": "Rubric",
+        "activeTarget": "Active target",
+        "noTarget": "No target yet. Save a school, program, company, or JD to create precise tailored versions.",
+        "dimensions": "Rubric dimensions",
+        "noQuality": "No quality score yet. Run AI review or refresh quality checks to populate this panel.",
+        "evidence": "Career evidence library",
+        "evidenceEmpty": "No reusable evidence yet. Profile imports or resume uploads can feed the library.",
+        "gaps": "Gap tasks"
+      },
+      "exportCheck": {
+        "title": "Export check",
+        "description": "Track template, page, and text extraction signals so exports are governed, not one-off files.",
+        "record": "Record check",
+        "visibleSections": "Visible sections",
+        "contact": "Name and contact",
+        "textExtractable": "Text extractable",
+        "qualityScore": "Quality score ≥ 70",
+        "present": "Present",
+        "missing": "Missing",
+        "compatible": "Compatible",
+        "history": "Export history",
+        "noHistory": "No export records yet. Exporting a PDF records one automatically."
       },
       "ai": {
         "title": "AI review loop",
@@ -5097,7 +5474,18 @@
         "contentGaps": "Content gaps",
         "reviewedAt": "Reviewed",
         "noReview": "No review yet.",
+        "issuesTitle": "Tracked AI issues",
+        "issuesDescription": "Each suggestion keeps source, confidence, and content hash so stale edits are blocked.",
+        "confidence": "{value}% confidence",
+        "noIssues": "No open AI issues.",
         "fillBySection": "Add content by section"
+      },
+      "comments": {
+        "title": "Collaboration comments",
+        "placeholder": "Leave a note for your advisor or team...",
+        "add": "Add comment",
+        "resolved": "Resolved",
+        "empty": "No comments yet"
       },
       "dialogs": {
         "addSection": "Add section",
@@ -5109,9 +5497,21 @@
         "confirmDeleteTitle": "Delete \"{title}\"?",
         "confirmDeleteDescription": "This section will be removed from the current resume. This cannot be undone.",
         "confirmImportTitle": "Re-import from profile?",
-        "confirmImportDescription": "Matched sections will be overwritten by profile data. Save a version first if needed.",
+        "confirmImportDescription": "The system creates a snapshot first, then merges the confirmed profile differences so polished content is not blindly overwritten.",
+        "importPreviewLoading": "Building import diff preview...",
+        "importPreviewItems": "{count} sections will be updated",
+        "importPreviewEmpty": "No profile differences are available to import.",
         "confirmRestoreTitle": "Restore to v{version}?",
-        "confirmRestoreDescription": "The current title, template, styling, and all sections will be replaced by that version."
+        "confirmRestoreDescription": "The current title, template, styling, and all sections will be replaced by that version.",
+        "uploadImportTitle": "Import uploaded resume",
+        "uploadSections": "Importable sections",
+        "uploadEvidence": "Reusable evidence",
+        "uploadEvidenceEmpty": "No reusable evidence was found in the uploaded file.",
+        "uploadImportEmpty": "No uploaded resume preview yet.",
+        "evidenceTitle": "Add evidence",
+        "evidenceKind": "Evidence type",
+        "evidenceName": "Evidence name",
+        "evidenceDescription": "Evidence description"
       }
     },
     "customize": {
@@ -5410,9 +5810,31 @@
     "history": "Test History",
     "tabs": {
       "intro": "Start",
+      "overview": "Overview",
       "mbti": "MBTI",
       "holland": "Holland",
+      "insights": "Insights",
       "history": "Test History"
+    },
+    "overview": {
+      "badge": "Major planning workbench",
+      "title": "Turn personality and interests into major direction",
+      "description": "After MBTI and Holland are complete, Lumni combines both signals into a major shortlist, profile updates, and school recommendation next steps.",
+      "completed": "Completed",
+      "drafts": "Drafts",
+      "majors": "Major ideas",
+      "completion": "Assessment loop",
+      "historyCount": "{count} records",
+      "noMajors": "Complete an assessment to generate major suggestions",
+      "openInsights": "Open insights",
+      "inProgress": "In progress",
+      "savedDraft": "Saved draft",
+      "draftProgress": "{answered}/{total} answered",
+      "continue": "Continue",
+      "start": "Start",
+      "retake": "Retake",
+      "restart": "Restart",
+      "previewFlow": "Enter assessment"
     },
     "mbti": {
       "title": "MBTI Personality Test",
@@ -5460,6 +5882,10 @@
     },
     "timeRemaining": "About {minutes} min remaining",
     "keyboardHint": "Press 1-5 to select, ←→ to switch questions",
+    "answeredProgress": "{answered}/{total} answered",
+    "questionNavigator": "Question map",
+    "exit": "Back to overview",
+    "missingAnswers": "Some questions are still unanswered. Complete them before submitting.",
     "dimensionAnalysis": "Dimension Analysis",
     "mbtiDimensions": {
       "EI": {
@@ -5493,6 +5919,49 @@
     "retake": "Retake Assessment",
     "viewResult": "View Results",
     "completedAt": "Completed At",
+    "draft": {
+      "title": "Draft status",
+      "idle": "Not saved yet",
+      "saving": "Saving",
+      "saved": "Auto-saved",
+      "error": "Save failed",
+      "none": "No active assessment drafts",
+      "restartConfirm": "You have an unfinished draft. Restart and clear it?",
+      "restarted": "Cleared the old draft and restarted"
+    },
+    "resultActions": {
+      "title": "Use this result for application planning",
+      "description": "Write the recommended major to your profile so school recommendations and AI analysis can use it.",
+      "setTargetMajor": "Set target major: {major}",
+      "schoolRecommendation": "Open school recommendations"
+    },
+    "targetMajor": {
+      "apply": "Use as target major",
+      "current": "Current target",
+      "saved": "{major} was saved as your target major",
+      "replaceConfirm": "Your current target major is {current}. Replace it with {major}?"
+    },
+    "insights": {
+      "title": "Combined assessment insights",
+      "description": "This view combines personality preference, career interests, and major suggestions into one next-step plan.",
+      "emptyTitle": "Not enough assessment signals yet",
+      "emptyDescription": "Complete MBTI or Holland first to generate a profile-ready major shortlist.",
+      "majorShortlist": "Major shortlist",
+      "sources": "Sources: {sources}",
+      "nextStepTitle": "Next: filter schools by direction",
+      "nextStepDescription": "Once a target major is set, continue into AI school recommendations to narrow the school list.",
+      "notCompleted": "Not completed",
+      "pending": "Waiting for assessment results"
+    },
+    "sidePanel": {
+      "title": "Application loop",
+      "targetMajor": "Current target major",
+      "noTargetMajor": "Not set",
+      "noResults": "Your latest results will appear here after completion"
+    },
+    "historyFilters": {
+      "all": "All"
+    },
     "aiAssistant": {
       "title": "AI Assessment Assistant",
       "default": "Complete the assessment for personalized analysis",
@@ -5682,7 +6151,58 @@
       "unfollowSuccess": "Unfollowed successfully",
       "blockSuccess": "User blocked",
       "unblockSuccess": "User unblocked",
-      "messageError": "Unable to start conversation, please try again later"
+      "messageError": "Unable to start conversation, please try again later",
+      "actionError": "Action failed. Please try again later."
+    },
+    "pagination": {
+      "summary": "Page {page}/{totalPages} · {total} users"
+    },
+    "sort": {
+      "recent": "Recent",
+      "name": "Name",
+      "major": "Target major"
+    },
+    "relationship": {
+      "all": "All relationships",
+      "mutual": "Mutual",
+      "oneWay": "One-way"
+    },
+    "role": {
+      "all": "All roles",
+      "verified": "Verified",
+      "staff": "Platform team"
+    },
+    "bulk": {
+      "partial": "{success} completed, {failed} failed",
+      "selectedUsers": "selected users",
+      "selectPage": "Select this page",
+      "selected": "{count, plural, one {# user selected} other {# users selected}}",
+      "selectUser": "Select {name}",
+      "toast": {
+        "follow": "Users followed",
+        "unfollow": "Users unfollowed",
+        "block": "Users blocked",
+        "unblock": "Users unblocked"
+      }
+    },
+    "confirm": {
+      "confirm": "Confirm",
+      "follow": {
+        "title": "Follow user",
+        "description": "Follow {name}?"
+      },
+      "unfollow": {
+        "title": "Unfollow",
+        "description": "Unfollow {name} and {count, plural, one {# user} other {# users}}?"
+      },
+      "block": {
+        "title": "Block user",
+        "description": "Block {name} and {count, plural, one {# user} other {# users}}? You will no longer be able to message each other."
+      },
+      "unblock": {
+        "title": "Unblock user",
+        "description": "Unblock {name} and {count, plural, one {# user} other {# users}}?"
+      }
     },
     "dialogs": {
       "unfollowTitle": "Unfollow",
@@ -5695,13 +6215,34 @@
     "actions": {
       "follow": "Follow",
       "unfollow": "Unfollow",
+      "block": "Block",
+      "unblock": "Unblock",
       "sendMessage": "Message"
+    },
+    "row": {
+      "followers": "{count, plural, one {# follower} other {# followers}}",
+      "cases": "{count, plural, one {# case} other {# cases}}",
+      "since": "Since {date}"
     },
     "activities": "{count} activities",
     "follow": "Follow",
     "recommended": {
       "title": "Recommended Users",
-      "description": "Users you might be interested in"
+      "description": "Users you might be interested in",
+      "empty": "No new recommendations right now",
+      "reasons": {
+        "verified": "Verified",
+        "staff": "Platform team",
+        "admissionCases": "Admissions cases",
+        "profileComplete": "Complete profile",
+        "sameMajor": "Same target major",
+        "popular": "Popular"
+      }
+    },
+    "safety": {
+      "title": "Relationship safety",
+      "description": "You currently have {count, plural, one {# blocked user} other {# blocked users}}. You can review the blocked list and restore access anytime.",
+      "reviewBlocked": "Review blocked users"
     }
   },
   "school": {
