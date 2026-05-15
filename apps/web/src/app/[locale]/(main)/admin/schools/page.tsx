@@ -53,7 +53,7 @@ interface School {
   acceptsCommonApp?: boolean;
   acceptsCoalition?: boolean;
   feeWaiverAvailable?: boolean;
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
   avgSalary?: number;
   salary6YrPostGrad?: number;
   website?: string;

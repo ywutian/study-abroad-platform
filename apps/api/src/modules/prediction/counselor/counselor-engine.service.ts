@@ -133,7 +133,7 @@ export class CounselorEngineService {
       acceptanceRate?: number | null;
       state?: string | null;
       isPrivate?: boolean | null;
-      needBlindInternational?: boolean;
+      needBlindInternational?: boolean | null;
       intlAcceptanceRate?: number | null;
       oosAcceptanceRate?: number | null;
       institutionType?: string | null;

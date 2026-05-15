@@ -2,6 +2,7 @@ import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import {
   athleteMultiplier,
   gpaBandMultiplier,
+  intlMultiplier,
   legacyHookMultiplier,
   profileContextMultiplier,
   roundMultiplier,
@@ -202,6 +203,99 @@ describe('counselor modifiers launch guards', () => {
     });
   });
 
+  // 2026-05: `needBlindInternational` defaults to `false` in the DB even when
+  // we haven't reviewed a school. Treat verified-true as the only
+  // "definitely-need-blind" branch; everything else uses a midpoint between
+  // need-blind and need-aware. See docs/PREDICTION_ACCURACY_STRATEGY.md.
+  describe('intlMultiplier — need-blind verification semantics', () => {
+    const intlProfile: ProfileInput = {
+      gpa: 3.85,
+      gpaScale: 4,
+      testScores: [],
+      activities: [],
+      awards: [],
+      isInternational: true,
+    };
+
+    it('uses verified need-blind branch when needBlindInternational === true', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.05,
+        needBlindInternational: true,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.5, 3);
+      expect(result.label).toContain('need-blind');
+    });
+
+    it('uses verified need-aware branch when needBlindInternational === false at elite schools', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.05,
+        needBlindInternational: false,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.45, 3);
+      expect(result.label).toContain('need-aware');
+      expect(result.label).not.toContain('unverified');
+    });
+
+    it('uses unverified midpoint at elite schools when status is null', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.05,
+        needBlindInternational: null,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.48, 3);
+      expect(result.label).toContain('unverified');
+    });
+
+    it('uses verified need-aware branch at highly-selective schools', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.15,
+        needBlindInternational: false,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.75, 3);
+      expect(result.label).toContain('need-aware');
+    });
+
+    it('uses unverified midpoint at highly-selective schools when status is null', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.15,
+        needBlindInternational: null,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.78, 3);
+      expect(result.label).toContain('unverified');
+    });
+
+    it('uses verified need-aware branch at moderately-selective schools', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.3,
+        needBlindInternational: false,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.7, 3);
+      expect(result.label).toContain('need-aware');
+    });
+
+    it('uses unverified midpoint at moderately-selective schools when status is null', () => {
+      const result = intlMultiplier(intlProfile, {
+        ...baseSchool(),
+        acceptanceRate: 0.3,
+        needBlindInternational: null,
+      });
+
+      expect(result.multiplier).toBeCloseTo(0.78, 3);
+      expect(result.label).toContain('unverified');
+    });
+  });
+
   describe('accuracy-first profile context multiplier', () => {
     it('keeps missing profile signals neutral and records gaps', () => {
       const result = profileContextMultiplier(baseProfile(), baseSchool());
@@ -341,6 +435,56 @@ describe('counselor modifiers launch guards', () => {
 
       expect(domestic.components.englishReadiness.multiplier).toBe(1);
       expect(international.components.englishReadiness.multiplier).toBe(0.96);
+    });
+
+    it('applies a tiny penalty when international applicant has no English score', () => {
+      // 2026-05: missing TOEFL/IELTS for an international applicant now gets
+      // 0.98× (was 1.0). Domestic applicants still get neutral.
+      const internationalMissing = profileContextMultiplier(
+        baseProfile({
+          isInternational: true,
+          // intentionally no englishProficiency
+        }),
+        baseSchool(),
+      );
+      const domesticMissing = profileContextMultiplier(
+        baseProfile({
+          isInternational: false,
+        }),
+        baseSchool(),
+      );
+
+      expect(internationalMissing.components.englishReadiness.multiplier).toBe(
+        0.98,
+      );
+      expect(domesticMissing.components.englishReadiness.multiplier).toBe(1);
+    });
+
+    it('distinguishes verified need-aware from unreviewed financial-aid context', () => {
+      const profile = baseProfile({
+        isInternational: true,
+        needsFinancialAid: true,
+      });
+
+      const verifiedNeedAware = profileContextMultiplier(
+        profile,
+        baseSchool({ acceptanceRate: 0.15, needBlindInternational: false }),
+      );
+      const unreviewed = profileContextMultiplier(
+        profile,
+        baseSchool({ acceptanceRate: 0.15, needBlindInternational: null }),
+      );
+
+      expect(verifiedNeedAware.components.financialAidContext.multiplier).toBe(
+        0.95,
+      );
+      expect(unreviewed.components.financialAidContext.multiplier).toBe(0.975);
+      expect(
+        verifiedNeedAware.components.financialAidContext.evidence,
+      ).toContain('verified need-aware');
+      expect(unreviewed.components.financialAidContext.evidence).toContain(
+        'unreviewed',
+      );
     });
 
     it('clamps combined profile context to the accuracy-first range', () => {

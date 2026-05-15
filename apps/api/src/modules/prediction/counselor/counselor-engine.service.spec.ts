@@ -62,7 +62,7 @@ describe('CounselorEngineService', () => {
         acceptanceRate: number;
         state: string;
         isPrivate: boolean;
-        needBlindInternational: boolean;
+        needBlindInternational: boolean | null;
       }
     > = {},
   ) =>

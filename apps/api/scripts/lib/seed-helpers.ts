@@ -62,7 +62,7 @@ export interface SeedSchoolData {
   description?: string;
   descriptionZh?: string;
   aliases?: string[];
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
   intlStudentPct?: number;
   intlAcceptanceRate?: number;
   /** External data source IDs */

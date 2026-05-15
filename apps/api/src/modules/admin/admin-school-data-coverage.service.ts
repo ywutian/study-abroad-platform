@@ -132,7 +132,7 @@ interface SchoolForCoverage {
   act75: number | null;
   testOptional: boolean | null;
   testingPolicy: string;
-  needBlindInternational: boolean;
+  needBlindInternational: boolean | null;
   roomAndBoard: number | null;
   studentOrgsCount: number | null;
   countriesRepresented: number | null;
@@ -241,6 +241,9 @@ export class AdminSchoolDataCoverageService {
         schoolNameZh: school.nameZh,
         country: school.country,
         state: school.state,
+        // Exposed so downstream consumers (data-health dashboard) can
+        // distinguish "private — OOS not applicable" from a real data gap.
+        isPrivate: school.isPrivate,
         usNewsRank: school.usNewsRank,
         scorecardId: school.scorecardId,
         ipedsId: school.ipedsId,
@@ -379,6 +382,9 @@ export class AdminSchoolDataCoverageService {
       };
 
       if (canFill('intlAcceptanceRate', school.intlAcceptanceRate)) {
+        // For the heuristic derivation a null status (unreviewed) is treated
+        // the same as need-aware (the safer fallback). Explicit need-blind
+        // schools (true) lift the cap on the heuristic — see deriveIntlRate.
         updates.intlAcceptanceRate = this.deriveIntlRate(
           overall,
           school.needBlindInternational,
@@ -869,17 +875,24 @@ export class AdminSchoolDataCoverageService {
     return n > 1 ? n : n * 100;
   }
 
-  private deriveIntlRate(overallPercent: number, needBlind: boolean): number {
+  private deriveIntlRate(
+    overallPercent: number,
+    needBlind: boolean | null,
+  ): number {
     const multiplier =
       overallPercent >= 40
         ? 0.95
         : overallPercent >= 20
           ? needBlind
             ? 0.85
-            : 0.7
+            : needBlind === false
+              ? 0.7
+              : 0.78
           : needBlind
             ? 0.7
-            : 0.4;
+            : needBlind === false
+              ? 0.4
+              : 0.55;
     return Math.max(
       0.1,
       Math.min(98, Math.round(overallPercent * multiplier * 100) / 100),

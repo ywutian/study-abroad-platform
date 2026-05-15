@@ -1,7 +1,7 @@
 {
   "$schema": "Manual classifications for verify-counselor-data-quality manualReview entries.",
   "version": 1,
-  "lastUpdated": "2026-05-09",
+  "lastUpdated": "2026-05-14",
   "lastReviewedBy": "launch-gate",
   "valid_classifications": [
     "REAL_OUTLIER_TOP_SCHOOL_FLAT_EA",
@@ -46,6 +46,14 @@
       "reason": "round_rate_ratio_above_cap",
       "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
       "notes": "Barnard ED 27% vs overall 7%. Real per CDS C21."
+    },
+    {
+      "schoolId": "cmp6bmnna00088e8b3cp7xc4w",
+      "schoolName": "Brown University",
+      "round": "ED",
+      "reason": "round_rate_ratio_above_cap",
+      "classification": "REAL_OUTLIER_ELITE_ED_BIG_BOOST",
+      "notes": "Brown ED 17.9% vs overall 5.1%. Ratio is only slightly above the 3.5x launch-review threshold and is consistent with Ivy ED patterns."
     },
     {
       "schoolId": "cmnwr8irx002vz0ti8qpx4iws",
@@ -102,6 +110,14 @@
       "reason": "round_rate_below_overall",
       "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
       "notes": "GSU EA 31% vs overall 67%. Likely reflects Honors College EA rather than rolling RD. Verify next CDS cycle."
+    },
+    {
+      "schoolId": "cmp6bmnpy000w8e8bs85boxpa",
+      "schoolName": "Georgia Institute of Technology",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+      "notes": "Georgia Tech EA 16% vs overall 17.1%. Real near-flat early pool; public flagship EA splits by residency and remains highly competitive."
     },
     {
       "schoolId": "cmnwr8ivb004ez0tiduer8l0n",
@@ -198,6 +214,14 @@
       "reason": "round_rate_below_overall",
       "classification": "REAL_OUTLIER_NICHE_ROUND_NEAR_AR",
       "notes": "UCF EA 40% vs overall 45%. Real flat at mid-selective public."
+    },
+    {
+      "schoolId": "cmp6bmnp6000p8e8bpbrgrk48",
+      "schoolName": "University of Virginia",
+      "round": "EA",
+      "reason": "round_rate_below_overall",
+      "classification": "REAL_OUTLIER_PUBLIC_HONORS_OR_NICHE",
+      "notes": "UVA EA 16.1% vs overall 18.6%. Real near-flat competitive public EA pool; ED remains the binding boost while EA is not treated as a counselor boost."
     },
     {
       "schoolId": "cmnwr8iud003yz0tinuqfaa54",

@@ -4,6 +4,8 @@
 > Served architecture: counselor-primary
 > Current rule version: `counselor-cold-start-v1.7-launch`
 
+> **Strategy note (2026-05-14):** This file describes the **mechanics** of the served system. The **strategy** for what to invest in and what to deliberately _not_ do (no platform-user sample calibration; full-applicant-pool data only) lives in [PREDICTION_ACCURACY_STRATEGY.md](PREDICTION_ACCURACY_STRATEGY.md), with the underlying decision recorded in [ADR-0020](adr/0020-prediction-no-sample-calibration.md). Read those first when planning improvements.
+
 ## Current Contract
 
 The launch prediction system serves probabilities from the deterministic counselor engine only. Legacy fusion, ML, and distillation services may remain in the repository for historical analysis or fallback, but they are not the served probability path for counselor-primary responses.

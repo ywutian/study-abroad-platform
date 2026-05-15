@@ -7422,7 +7422,8 @@
         "management": "Management",
         "ai": "AI System",
         "system": "System"
-      }
+      },
+      "dataHealth": "Data Health"
     },
     "cacheHealth": {
       "title": "Cache Health",
@@ -7830,7 +7831,12 @@
         "commonApp": "Common App",
         "coalitionApp": "Coalition App",
         "feeWaiver": "Fee Waiver",
-        "needBlindIntl": "Need Blind (Intl)"
+        "needBlindIntl": "Need Blind (Intl)",
+        "needBlindIntlOptions": {
+          "unreviewed": "Unreviewed",
+          "needBlind": "Verified need-blind",
+          "needAware": "Verified need-aware"
+        }
       },
       "dataQuality": {
         "loadFailedTitle": "Failed to load data quality report",
@@ -10394,6 +10400,47 @@
       "deleteAriaLabel": "Delete {name}",
       "emptyTitle": "No Activity Templates",
       "emptyDescription": "Click Create to add a new activity template"
+    },
+    "dataHealth": {
+      "title": "School Data Health",
+      "description": "Priority-ranked list of schools whose public data should be filled or refreshed next, so the prediction system can rely on full-pool measurements instead of heuristics.",
+      "refresh": "Refresh",
+      "totalSchoolsConsidered": "Schools considered",
+      "rowsReturned": "In action list",
+      "focusLabel": "Focus",
+      "focus": {
+        "all": "All critical fields",
+        "intl": "International (intl admit rate + need-blind)",
+        "rounds": "Rounds (overall + OOS rate)",
+        "academic": "Academic (SAT, acceptance, test-optional)"
+      },
+      "table": {
+        "rank": "Rank",
+        "school": "School",
+        "gaps": "Gap fields",
+        "importance": "Importance",
+        "score": "Priority"
+      },
+      "gapBucket": {
+        "missing": "missing",
+        "heuristic": "heuristic",
+        "stale": "stale"
+      },
+      "totalsHeader": "Across considered schools",
+      "totals": {
+        "missing": "Missing",
+        "heuristic": "Heuristic",
+        "stale": "Stale",
+        "terminal": "Terminal",
+        "official": "Official"
+      },
+      "actions": {
+        "edit": "Edit school"
+      },
+      "noGaps": "No gaps on this focus axis. ",
+      "rankBadgeUnranked": "Unranked",
+      "loading": "Loading data health...",
+      "error": "Failed to load data health."
     }
   },
   "essayAdmin": {

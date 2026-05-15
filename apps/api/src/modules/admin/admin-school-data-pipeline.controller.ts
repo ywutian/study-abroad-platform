@@ -10,6 +10,10 @@ import {
 } from '../../common/decorators/throttle.decorator';
 import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.service';
 import {
+  AdminSchoolDataHealthService,
+  type DataHealthFocus,
+} from './admin-school-data-health.service';
+import {
   CdsDiscoverDto,
   CdsExtractDto,
   HeuristicFillDto,
@@ -23,7 +27,10 @@ import {
 @Controller('admin/schools')
 @Roles(Role.OPERATOR)
 export class AdminSchoolDataPipelineController {
-  constructor(private readonly coverage: AdminSchoolDataCoverageService) {}
+  constructor(
+    private readonly coverage: AdminSchoolDataCoverageService,
+    private readonly health: AdminSchoolDataHealthService,
+  ) {}
 
   @Get('data-coverage')
   @ThrottleRelaxed()
@@ -35,6 +42,26 @@ export class AdminSchoolDataPipelineController {
   async getDataCoverage(@Query() query: SchoolDataCoverageQueryDto) {
     return this.coverage.getCoverage({
       includeAllCountries: query.includeAllCountries,
+    });
+  }
+
+  @Get('data-health')
+  @ThrottleRelaxed()
+  @RequirePermission(Permission.DATA_HEALTH)
+  @ApiOperation({
+    summary:
+      'Priority-ranked list of schools whose data should be filled or refreshed next. ' +
+      'Optional `focus` narrows the gap calculation to a subset of fields (intl, rounds, academic).',
+  })
+  async getDataHealth(
+    @Query('focus') focus?: DataHealthFocus,
+    @Query('limit') limit?: string,
+    @Query('includeUnranked') includeUnranked?: string,
+  ) {
+    return this.health.getHealthDashboard({
+      focus,
+      limit: limit ? Number(limit) : undefined,
+      includeUnranked: includeUnranked === 'true',
     });
   }
 

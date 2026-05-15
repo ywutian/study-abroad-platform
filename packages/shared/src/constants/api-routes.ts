@@ -487,6 +487,7 @@ export const adminRoutes = {
   dataSyncJobs: () => `${API_ROUTES.ADMIN}/data-sync/jobs`,
   dataSyncTrigger: () => `${API_ROUTES.ADMIN}/data-sync/trigger`,
   schoolsDataCoverage: () => `${API_ROUTES.ADMIN}/schools/data-coverage`,
+  schoolsDataHealth: () => `${API_ROUTES.ADMIN}/schools/data-health`,
   schoolsSyncIpedsAdmissions: () => `${API_ROUTES.ADMIN}/schools/sync/ipeds-admissions`,
   schoolsImportIpedsCsv: () => `${API_ROUTES.ADMIN}/schools/import/ipeds-csv`,
   schoolsCdsDiscover: () => `${API_ROUTES.ADMIN}/schools/cds/discover`,

@@ -217,7 +217,7 @@ export class PredictionHookModifiersService {
   computeHookShifts(
     profile: ProfileInput,
     school: SchoolInput & {
-      needBlindInternational?: boolean;
+      needBlindInternational?: boolean | null;
       considersLegacy?: boolean;
     },
   ): HookShift[] {
@@ -251,21 +251,25 @@ export class PredictionHookModifiersService {
     }
 
     // --- Need-aware penalty (international students only) ---
-    if (
-      profile.needsFinancialAid &&
-      profile.isInternational &&
-      !school.needBlindInternational
-    ) {
-      // Distinguish partial vs. full need-aware based on school's needBlind status
-      // If the school is not need-blind for internationals and the student needs aid,
-      // apply full penalty. Partial penalty would apply for schools that are
-      // "need-aware but generous" (future: load from school metadata).
-      shifts.push({
-        hookType: 'NEED_AWARE_FULL',
-        logOddsShift: HOOK_COEFFICIENTS.NEED_AWARE_FULL,
-        source:
-          'Need-aware admissions penalty for international students requiring aid, OR≈0.37x',
-      });
+    // 2026-05: `needBlindInternational` is tri-state. Verified need-aware
+    // (`false`) gets the full penalty; unreviewed (`null`/missing) gets a
+    // partial hedge so unknown data is not silently treated as verified.
+    if (profile.needsFinancialAid && profile.isInternational) {
+      if (school.needBlindInternational == null) {
+        shifts.push({
+          hookType: 'NEED_AWARE_PARTIAL',
+          logOddsShift: HOOK_COEFFICIENTS.NEED_AWARE_PARTIAL,
+          source:
+            'Unreviewed international need-blind status for aid-seeking applicant, partial need-aware hedge OR≈0.6x',
+        });
+      } else if (school.needBlindInternational === false) {
+        shifts.push({
+          hookType: 'NEED_AWARE_FULL',
+          logOddsShift: HOOK_COEFFICIENTS.NEED_AWARE_FULL,
+          source:
+            'Need-aware admissions penalty for international students requiring aid, OR≈0.37x',
+        });
+      }
     }
 
     // --- ED/EA round bonus ---

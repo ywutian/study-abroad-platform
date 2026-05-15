@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -211,38 +212,42 @@ export class BulkUpdateSchoolRateRowDto {
   percentNeedMet?: number;
 
   @ApiProperty({
-    description: 'Average financial aid package in USD.',
+    description:
+      'Average financial aid package in USD. Min 5000 to reject year-shaped corruption ' +
+      '(e.g. 2024 / 2026) that historically leaked into this column.',
     required: false,
-    minimum: 0,
+    minimum: 5000,
     maximum: 200000,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(5000) // 2026-05: reject year-shaped values; see scripts/cleanup-amount-corruption.ts
   @Max(200000)
   averageAidPackage?: number;
 
   @ApiProperty({
-    description: 'Average annual net price in USD.',
+    description:
+      'Average annual net price in USD. Min 3000 to reject year-shaped corruption.',
     required: false,
-    minimum: 0,
+    minimum: 3000,
     maximum: 200000,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(3000)
   @Max(200000)
   averageNetPrice?: number;
 
   @ApiProperty({
-    description: 'Annual room and board cost in USD.',
+    description:
+      'Annual room and board cost in USD. Min 3000 to reject year-shaped corruption.',
     required: false,
-    minimum: 0,
+    minimum: 3000,
     maximum: 100000,
   })
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(3000)
   @Max(100000)
   roomAndBoard?: number;
 
@@ -260,12 +265,16 @@ export class BulkUpdateSchoolRateRowDto {
 
   @ApiProperty({
     description:
-      'Whether the school is need-blind for international applicants.',
+      'Need-blind-for-international status. `true` = verified need-blind, ' +
+      '`false` = verified need-aware, `null` = clear status / mark as unreviewed. ' +
+      'Omit the property entirely to leave the current value unchanged.',
     required: false,
+    nullable: true,
   })
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsBoolean()
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
 
   @ApiProperty({
     description: 'SAT 25th percentile total score.',

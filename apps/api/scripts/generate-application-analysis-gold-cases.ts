@@ -20,7 +20,7 @@ type SchoolDef = {
   satAvg: number;
   testingPolicy: 'BLIND' | 'OPTIONAL' | 'REQUIRED' | 'UNKNOWN';
   testOptional: boolean;
-  needBlindInternational: boolean;
+  needBlindInternational: boolean | null;
   intlAcceptanceRate: number | null;
   deadline: string;
 };

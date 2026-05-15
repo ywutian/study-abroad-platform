@@ -295,7 +295,7 @@ async function main() {
       acceptanceRate?: number | null;
       state?: string | null;
       isPrivate?: boolean | null;
-      needBlindInternational?: boolean;
+      needBlindInternational?: boolean | null;
       intlAcceptanceRate?: number | null;
     } = {
       id: school.id,
@@ -312,7 +312,7 @@ async function main() {
       act75: school.act75 ?? undefined,
       isPrivate: school.isPrivate,
       state: school.state ?? undefined,
-      needBlindInternational: school.needBlindInternational ?? false,
+      needBlindInternational: school.needBlindInternational ?? null,
       intlAcceptanceRate: school.intlAcceptanceRate
         ? Number(school.intlAcceptanceRate)
         : undefined,

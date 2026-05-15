@@ -1112,7 +1112,20 @@ model School {
   institutionType InstitutionType?
 
   // International student info
-  needBlindInternational Boolean  @default(false)
+  //
+  // needBlindInternational tri-state via nullable Boolean:
+  //   true  = explicitly verified need-blind for international applicants
+  //           (e.g. HYPSM, Amherst, Dartmouth — seeded via seed-intl-schools.ts)
+  //   false = explicitly verified need-aware for international applicants
+  //           (must be set by an admin reviewer with a cited source)
+  //   null  = not yet reviewed; prediction code treats as "unknown" and uses a
+  //           midpoint between need-blind and need-aware penalty regimes.
+  //
+  // Prior to 2026-05 this was `Boolean @default(false)`, which conflated
+  // "verified need-aware" with "never reviewed" and systematically
+  // under-predicted intl admissions at unreviewed schools.
+  // See ADR-0020 and docs/PREDICTION_ACCURACY_STRATEGY.md.
+  needBlindInternational Boolean?
   intlStudentPct         Decimal? @db.Decimal(5, 2)
   intlAcceptanceRate     Decimal? @db.Decimal(5, 2)
   oosAcceptanceRate      Decimal? @db.Decimal(5, 2) // Out-of-state freshman admit rate %

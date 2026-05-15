@@ -162,7 +162,7 @@ export default function ProfilePage() {
             scorecardId?: string;
             hasEarlyDecision?: boolean;
             transferAcceptanceRate?: number;
-            needBlindInternational?: boolean;
+            needBlindInternational?: boolean | null;
             percentNeedMet?: number;
             averageAidPackage?: number;
             averageNetPrice?: number;

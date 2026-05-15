@@ -7401,7 +7401,8 @@
         "management": "管理",
         "ai": "AI 系统",
         "system": "系统"
-      }
+      },
+      "dataHealth": "数据健康度"
     },
     "cacheHealth": {
       "title": "缓存健康",
@@ -7809,7 +7810,12 @@
         "commonApp": "Common App",
         "coalitionApp": "Coalition App",
         "feeWaiver": "申请费减免",
-        "needBlindIntl": "国际生 Need Blind"
+        "needBlindIntl": "国际生 Need Blind",
+        "needBlindIntlOptions": {
+          "unreviewed": "未审核",
+          "needBlind": "确认 Need-Blind",
+          "needAware": "确认 Need-Aware"
+        }
       },
       "dataQuality": {
         "loadFailedTitle": "数据质量报告加载失败",
@@ -10373,6 +10379,47 @@
       "deleteAriaLabel": "删除 {name}",
       "emptyTitle": "暂无活动模板",
       "emptyDescription": "点击「创建」添加新的活动模板"
+    },
+    "dataHealth": {
+      "title": "学校数据健康度",
+      "description": "按优先级排序的待补全/刷新数据学校清单，让预测系统基于全池公开数据而不是启发式。",
+      "refresh": "刷新",
+      "totalSchoolsConsidered": "纳入统计",
+      "rowsReturned": "待处理",
+      "focusLabel": "关注维度",
+      "focus": {
+        "all": "全部关键字段",
+        "intl": "国际生(intl 录取率 + need-blind)",
+        "rounds": "轮次(总体 + 州外录取率)",
+        "academic": "学术(SAT, 录取率, test-optional)"
+      },
+      "table": {
+        "rank": "排名",
+        "school": "学校",
+        "gaps": "缺失字段",
+        "importance": "重要度",
+        "score": "优先级"
+      },
+      "gapBucket": {
+        "missing": "缺失",
+        "heuristic": "推导",
+        "stale": "过期"
+      },
+      "totalsHeader": "全部学校字段状态",
+      "totals": {
+        "missing": "缺失",
+        "heuristic": "推导",
+        "stale": "过期",
+        "terminal": "终态",
+        "official": "官方"
+      },
+      "actions": {
+        "edit": "编辑学校"
+      },
+      "noGaps": "该维度下无缺失。",
+      "rankBadgeUnranked": "未排名",
+      "loading": "正在加载数据健康度...",
+      "error": "加载数据健康度失败。"
     }
   },
   "essayAdmin": {

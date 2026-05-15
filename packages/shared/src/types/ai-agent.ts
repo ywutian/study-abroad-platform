@@ -26,7 +26,7 @@ export interface AgentChatPredictionSchoolMeta {
   acceptanceRate?: number;
   intlAcceptanceRate?: number;
   intlStudentPct?: number;
-  needBlindInternational?: boolean;
+  needBlindInternational?: boolean | null;
   graduationRate?: number;
   satAvg?: number;
   sat25?: number;

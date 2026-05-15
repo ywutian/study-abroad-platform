@@ -993,7 +993,7 @@ function normalizeRate(raw: number | null | undefined): number | null {
 export function intlMultiplier(
   profile: ProfileInput,
   school: SchoolInput & {
-    needBlindInternational?: boolean;
+    needBlindInternational?: boolean | null;
     intlAcceptanceRate?: number | null;
     acceptanceRate?: number | null;
   },
@@ -1030,8 +1030,19 @@ export function intlMultiplier(
     };
   }
 
+  // 2026-05: `needBlindInternational` is `Boolean?` (tri-state).
+  //   true  → verified need-blind (HYPSM, Amherst, Dartmouth, Bowdoin, Brown,
+  //           Notre Dame, W&L — see seed-intl-schools.ts).
+  //   false → verified need-aware (Stanford, Columbia, Cornell, Penn etc.).
+  //   null  → unreviewed.
+  // We keep all three states distinct in the fallback path:
+  //   true        -> verified need-blind multiplier
+  //   false       -> verified need-aware multiplier
+  //   null/absent -> unreviewed midpoint between the two
+  // Verified need-aware schools that publish CDS-based intlAcceptanceRate hit
+  // the data-driven path earlier and bypass this fallback entirely.
   if (overallRate != null && overallRate >= 0.2) {
-    if (school.needBlindInternational) {
+    if (school.needBlindInternational === true) {
       return {
         multiplier: 0.85,
         label: 'International (need-blind, moderately selective)',
@@ -1040,11 +1051,21 @@ export function intlMultiplier(
         impact: 'negative',
       };
     }
+    if (school.needBlindInternational === false) {
+      return {
+        multiplier: 0.7,
+        label: 'International (need-aware, moderately selective)',
+        evidence:
+          'International pool sees a stronger ~0.70x penalty at this verified need-aware moderately-selective school.',
+        impact: 'negative',
+      };
+    }
     return {
-      multiplier: 0.7,
-      label: 'International (need-aware, moderately selective)',
+      multiplier: 0.78,
+      label:
+        'International (moderately selective; need-blind status unverified)',
       evidence:
-        'International applicants face ~0.7× the domestic admit rate at need-aware moderately-selective schools',
+        'Need-blind-for-intl status unverified for this school; using a midpoint ~0.78× between need-blind (0.85×) and need-aware (0.70×) at moderately-selective schools.',
       impact: 'negative',
     };
   }
@@ -1053,7 +1074,7 @@ export function intlMultiplier(
   // Schools like Georgetown, Emory, Tufts, WashU — meaningful intl penalty
   // but not as severe as the HYPSM/Cornell/Northwestern tier.
   if (overallRate != null && overallRate >= 0.1) {
-    if (school.needBlindInternational) {
+    if (school.needBlindInternational === true) {
       return {
         multiplier: 0.8,
         label: 'International (need-blind, highly selective)',
@@ -1062,11 +1083,20 @@ export function intlMultiplier(
         impact: 'negative',
       };
     }
+    if (school.needBlindInternational === false) {
+      return {
+        multiplier: 0.75,
+        label: 'International (need-aware, highly selective)',
+        evidence:
+          'International pool sees a ~0.75x penalty at this verified need-aware highly-selective school.',
+        impact: 'negative',
+      };
+    }
     return {
-      multiplier: 0.75,
-      label: 'International (need-aware, highly selective)',
+      multiplier: 0.78,
+      label: 'International (highly selective; need-blind status unverified)',
       evidence:
-        'International applicants face ~0.75× the domestic admit rate at need-aware highly-selective schools (10-20% admit rate)',
+        'Need-blind-for-intl status unverified for this school; using a midpoint ~0.78× between need-blind (0.80×) and need-aware (0.75×) at highly-selective schools.',
       impact: 'negative',
     };
   }
@@ -1077,7 +1107,7 @@ export function intlMultiplier(
   //               Princeton 2.11%/4.62%=0.46 → 0.50 midpoint
   //   need-aware: Cornell 0.41×, Northwestern 0.68×, Columbia 0.64×
   //               → 0.45 conservative midpoint
-  if (school.needBlindInternational) {
+  if (school.needBlindInternational === true) {
     return {
       multiplier: 0.5,
       label: 'International (need-blind, elite school)',
@@ -1086,11 +1116,20 @@ export function intlMultiplier(
       impact: 'negative',
     };
   }
+  if (school.needBlindInternational === false) {
+    return {
+      multiplier: 0.45,
+      label: 'International (need-aware, elite school)',
+      evidence:
+        'International pool sees ~0.45x the domestic admit rate at verified need-aware elite schools (calibrated from Cornell 0.41x, Northwestern 0.68x, Columbia 0.64x).',
+      impact: 'negative',
+    };
+  }
   return {
-    multiplier: 0.45,
-    label: 'International (need-aware, elite school)',
+    multiplier: 0.48,
+    label: 'International (elite school; need-blind status unverified)',
     evidence:
-      'International applicants face ~0.45× the domestic admit rate at need-aware elite schools (<10% admit rate); calibrated from Cornell/Northwestern/Columbia CDS data',
+      'Need-blind-for-intl status unverified for this school; using a midpoint ~0.48× between need-blind (0.50×) and need-aware (0.45×) at elite schools (<10% admit rate).',
     impact: 'negative',
   };
 }
@@ -1338,10 +1377,16 @@ function englishReadinessComponent(profile: ProfileInput): ModifierResult {
   }
   const english = profile.englishProficiency;
   if (!english) {
+    // 2026-05: international applicant with no English score gets a small
+    // conservative penalty rather than neutral. Prior behavior treated missing
+    // as "neutral / unknown", which let very-low-English profiles slip through
+    // with no down-adjustment. We keep the penalty tiny (0.98×): absence of a
+    // score is an incomplete-readiness signal, not evidence of weak English, and
+    // the launch gate caps profile-signal sensitivity tightly.
     return makeComponent(
-      1.0,
+      0.98,
       'English readiness',
-      'No TOEFL/IELTS/Duolingo score was provided; no probability adjustment applied.',
+      'No TOEFL/IELTS/Duolingo score provided; applying a tiny conservative adjustment for international applicants.',
     );
   }
   if (english.normalized >= 0.93) {
@@ -1383,19 +1428,31 @@ function financialAidContextComponent(
       'No international need-aware financial-aid signal applies.',
     );
   }
-  if (school.needBlindInternational) {
+  if (school.needBlindInternational === true) {
     return makeComponent(
       1.0,
       'Financial aid context',
       'This school is need-blind for international applicants; no aid penalty applied.',
     );
   }
+  // 2026-05: the column is tri-state. Verified need-aware schools receive the
+  // full context penalty; unreviewed schools receive a half-strength hedge.
   const overallRate = normalizeRate(school.acceptanceRate);
-  const multiplier = overallRate != null && overallRate < 0.4 ? 0.95 : 0.98;
+  const isVerifiedNeedAware = school.needBlindInternational === false;
+  const multiplier =
+    overallRate != null && overallRate < 0.4
+      ? isVerifiedNeedAware
+        ? 0.95
+        : 0.975
+      : isVerifiedNeedAware
+        ? 0.98
+        : 0.99;
   return makeComponent(
     multiplier,
     'Financial aid context',
-    'International applicant needs financial aid at a need-aware school; applying a small conservative context adjustment.',
+    isVerifiedNeedAware
+      ? 'International applicant needs financial aid at a verified need-aware school; applying the full context adjustment.'
+      : 'International applicant needs financial aid, but need-blind status is unreviewed; applying a half-strength context hedge.',
   );
 }
 
