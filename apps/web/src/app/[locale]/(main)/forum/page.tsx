@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
@@ -29,6 +29,8 @@ export default function ForumPage() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [autoLoadPaused, setAutoLoadPaused] = useState(false);
   const [activeFeed, setActiveFeed] = useState<ForumFeed>('popular');
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [sortBy, setSortBy] = useState<ForumSort>('popular');
@@ -41,6 +43,8 @@ export default function ForumPage() {
     null
   );
   const [mobileCommunitiesOpen, setMobileCommunitiesOpen] = useState(false);
+  const feedRequestIdRef = useRef(0);
+  const loadingMoreRef = useRef(false);
 
   const selectedCommunityId = selectedCommunity?.id || null;
 
@@ -78,7 +82,18 @@ export default function ForumPage() {
 
   const fetchPosts = useCallback(
     async (nextPage = 1, append = false) => {
-      setLoading(true);
+      if (append && loadingMoreRef.current) return;
+
+      if (append) {
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+      } else {
+        feedRequestIdRef.current += 1;
+        setAutoLoadPaused(false);
+        setLoading(true);
+      }
+
+      const requestId = feedRequestIdRef.current;
       try {
         const limit = 10;
         const params = new URLSearchParams({
@@ -93,15 +108,31 @@ export default function ForumPage() {
         const res = await api.get<{ posts: Post[]; total: number; hasMore: boolean }>(
           `/forums/posts?${params.toString()}`
         );
+        if (requestId !== feedRequestIdRef.current) return;
+
         const nextPosts = res?.posts || [];
-        setPosts((current) => (append ? [...current, ...nextPosts] : nextPosts));
+        setPosts((current) => {
+          if (!append) return nextPosts;
+          const existingIds = new Set(current.map((post) => post.id));
+          return [...current, ...nextPosts.filter((post) => !existingIds.has(post.id))];
+        });
         setHasMore(Boolean(res?.hasMore));
         setPage(nextPage);
       } catch {
-        setPosts([]);
-        setHasMore(false);
+        if (requestId !== feedRequestIdRef.current) return;
+        if (!append) {
+          setPosts([]);
+          setHasMore(false);
+        } else {
+          setAutoLoadPaused(true);
+        }
       } finally {
-        setLoading(false);
+        if (append) {
+          loadingMoreRef.current = false;
+          setLoadingMore(false);
+        } else if (requestId === feedRequestIdRef.current) {
+          setLoading(false);
+        }
       }
     },
     [activeFeed, searchQuery, selectedCommunityId, sortBy]
@@ -181,6 +212,12 @@ export default function ForumPage() {
     setShowCreateDialog(true);
   };
 
+  const handleLoadMore = useCallback(() => {
+    if (loading || loadingMore || !hasMore) return;
+    setAutoLoadPaused(false);
+    fetchPosts(page + 1, true);
+  }, [fetchPosts, hasMore, loading, loadingMore, page]);
+
   const formatNumber = (num: number) => (num >= 1000 ? format.number(num, 'compact') : String(num));
 
   const sidebar = (
@@ -233,6 +270,8 @@ export default function ForumPage() {
           <PostList
             posts={posts}
             loading={loading}
+            loadingMore={loadingMore}
+            autoLoadMore={!autoLoadPaused}
             hasMore={hasMore}
             sortBy={sortBy}
             onSortChange={setSortBy}
@@ -243,7 +282,7 @@ export default function ForumPage() {
             activeFeed={activeFeed}
             onClearCommunity={() => setSelectedCommunity(null)}
             onClearSearch={() => setSearchQuery('')}
-            onLoadMore={() => fetchPosts(page + 1, true)}
+            onLoadMore={handleLoadMore}
             onViewPost={setSelectedPost}
             onLike={handleLike}
             onReport={setReportTarget}

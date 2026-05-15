@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import {
   Eye,
@@ -25,6 +26,8 @@ import { stripMarkdown } from './forum-types';
 interface PostListProps {
   posts: Post[];
   loading: boolean;
+  loadingMore: boolean;
+  autoLoadMore: boolean;
   hasMore: boolean;
   sortBy: 'latest' | 'popular' | 'comments' | 'recommended';
   onSortChange: (sort: 'latest' | 'popular' | 'comments' | 'recommended') => void;
@@ -46,6 +49,8 @@ interface PostListProps {
 export function PostList({
   posts,
   loading,
+  loadingMore,
+  autoLoadMore,
   hasMore,
   sortBy,
   onSortChange,
@@ -65,6 +70,7 @@ export function PostList({
 }: PostListProps) {
   const t = useTranslations('forum');
   const format = useFormatter();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -91,6 +97,31 @@ export function PostList({
     { key: 'comments' as const, label: t('sortComments') },
     { key: 'recommended' as const, label: t('sortRecommended') },
   ];
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (
+      !sentinel ||
+      !autoLoadMore ||
+      !hasMore ||
+      posts.length === 0 ||
+      typeof IntersectionObserver === 'undefined'
+    ) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !loading && !loadingMore) {
+          onLoadMore();
+        }
+      },
+      { root: null, rootMargin: '600px 0px 600px', threshold: 0 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [autoLoadMore, hasMore, loading, loadingMore, onLoadMore, posts.length]);
 
   return (
     <div className="space-y-4">
@@ -199,11 +230,23 @@ export function PostList({
       </AnimatePresence>
 
       {hasMore && posts.length > 0 && (
-        <div className="pt-2 text-center">
-          <Button variant="outline" onClick={onLoadMore} disabled={loading} className="min-w-48">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {t('loadMore')}
-          </Button>
+        <div ref={loadMoreRef} className="pt-2 text-center" aria-live="polite">
+          {loadingMore ? (
+            <div className="inline-flex min-h-9 items-center gap-2 rounded-md border bg-card px-4 py-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              {t('loading')}
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={onLoadMore}
+              disabled={loading}
+              className="min-w-48"
+              aria-label={t('loadMore')}
+            >
+              {t('loadMore')}
+            </Button>
+          )}
         </div>
       )}
     </div>
