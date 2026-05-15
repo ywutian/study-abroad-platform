@@ -88,9 +88,11 @@ JWT_REFRESH_SECRET=你的Refresh密钥
 FRONTEND_URL=https://你的前端域名
 NEXT_PUBLIC_API_URL=https://api.你的域名
 
-# 可选：OpenAI、SMTP、Sentry 等
+# 可选：OpenAI、Resend、Sentry 等
 # OPENAI_API_KEY=...
-# SMTP_HOST=...
+# RESEND_API_KEY=...
+# EMAIL_FROM=noreply@lumniedu.com
+# EMAIL_FROM_NAME=Lumni
 # SENTRY_DSN=...
 ```
 

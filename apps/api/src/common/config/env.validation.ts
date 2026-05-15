@@ -71,7 +71,7 @@ const envSchema = z.object({
   // --- CORS ---
   CORS_ORIGINS: z.string().optional(),
 
-  // --- Email (Optional) ---
+  // --- Email (Optional — Resend primary, SMTP legacy compatibility) ---
   RESEND_API_KEY: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().optional(),

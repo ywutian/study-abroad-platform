@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { PasswordStrength, isPasswordValid } from '@/components/ui/password-strength';
 import { apiClient } from '@/lib/api';
 import { authRoutes } from '@study-abroad/shared';
 
@@ -55,6 +56,10 @@ export default function SecurityPage() {
     }
     if (newPassword.length < 8) {
       toast.error(t('passwordTooShort'));
+      return;
+    }
+    if (!isPasswordValid(newPassword)) {
+      toast.error(t('passwordTooWeak'));
       return;
     }
     changePasswordMutation.mutate({ currentPassword, newPassword });
@@ -141,6 +146,7 @@ export default function SecurityPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">{t('passwordRequirements')}</p>
+                <PasswordStrength password={newPassword} />
               </div>
 
               <div className="space-y-2">
@@ -164,6 +170,7 @@ export default function SecurityPage() {
                   !currentPassword ||
                   !newPassword ||
                   !confirmPassword ||
+                  !isPasswordValid(newPassword) ||
                   changePasswordMutation.isPending
                 }
                 className="gap-2 bg-primary hover:opacity-90 text-primary-foreground"

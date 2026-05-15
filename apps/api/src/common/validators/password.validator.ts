@@ -3,6 +3,10 @@ import {
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
+import {
+  PASSWORD_POLICY,
+  getUnsupportedPasswordChars,
+} from '@study-abroad/shared';
 
 export interface PasswordStrengthOptions {
   minLength?: number;
@@ -14,12 +18,12 @@ export interface PasswordStrengthOptions {
 }
 
 const defaultOptions: PasswordStrengthOptions = {
-  minLength: 8,
-  maxLength: 128,
+  minLength: PASSWORD_POLICY.minLength,
+  maxLength: PASSWORD_POLICY.maxLength,
   requireUppercase: true,
   requireLowercase: true,
   requireNumbers: true,
-  requireSpecialChars: false, // 可选，对用户更友好
+  requireSpecialChars: true,
 };
 
 /**
@@ -63,11 +67,16 @@ export function IsStrongPassword(
             errors.push('包含数字');
           }
 
-          if (
-            opts.requireSpecialChars &&
-            !/[!@#$%^&*(),.?":{}|<>]/.test(value)
-          ) {
-            errors.push('包含特殊字符');
+          if (opts.requireSpecialChars && !/[@$!%*#?&]/.test(value)) {
+            errors.push(
+              `包含可用特殊字符 (${PASSWORD_POLICY.allowedSpecialChars})`,
+            );
+          }
+
+          if (getUnsupportedPasswordChars(value).length > 0) {
+            errors.push(
+              `只使用英文字母、数字或 ${PASSWORD_POLICY.allowedSpecialChars}`,
+            );
           }
 
           // 检查常见弱密码
@@ -92,6 +101,10 @@ export function IsStrongPassword(
             errors.push(`至少 ${opts.minLength} 个字符`);
           }
 
+          if (opts.maxLength && value && value.length > opts.maxLength) {
+            errors.push(`最多 ${opts.maxLength} 个字符`);
+          }
+
           if (opts.requireUppercase && !/[A-Z]/.test(value || '')) {
             errors.push('包含大写字母');
           }
@@ -104,11 +117,16 @@ export function IsStrongPassword(
             errors.push('包含数字');
           }
 
-          if (
-            opts.requireSpecialChars &&
-            !/[!@#$%^&*(),.?":{}|<>]/.test(value || '')
-          ) {
-            errors.push('包含特殊字符');
+          if (opts.requireSpecialChars && !/[@$!%*#?&]/.test(value || '')) {
+            errors.push(
+              `包含可用特殊字符 (${PASSWORD_POLICY.allowedSpecialChars})`,
+            );
+          }
+
+          if (value && getUnsupportedPasswordChars(value).length > 0) {
+            errors.push(
+              `只使用英文字母、数字或 ${PASSWORD_POLICY.allowedSpecialChars}`,
+            );
           }
 
           return `密码强度不足，需要：${errors.join('、')}`;
@@ -158,10 +176,17 @@ export function calculatePasswordStrength(password: string): {
   }
 
   // 特殊字符 (15 分)
-  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+  if (/[@$!%*#?&]/.test(password)) {
     score += 15;
   } else {
-    feedback.push('添加特殊字符会更安全');
+    feedback.push(`添加可用特殊字符 (${PASSWORD_POLICY.allowedSpecialChars})`);
+  }
+
+  if (getUnsupportedPasswordChars(password).length > 0) {
+    score -= 15;
+    feedback.push(
+      `只使用英文字母、数字或 ${PASSWORD_POLICY.allowedSpecialChars}`,
+    );
   }
 
   // 字符多样性 (15 分)

@@ -8,21 +8,24 @@ import {
   IsOptional,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { SUPPORTED_LOCALES } from '@study-abroad/shared';
+import {
+  PASSWORD_POLICY,
+  PASSWORD_POLICY_MESSAGE_ZH,
+  SUPPORTED_LOCALES,
+} from '@study-abroad/shared';
 
 export class RegisterDto {
   @ApiProperty({ example: 'user@example.com' })
   @IsEmail({}, { message: '请输入有效的邮箱地址' })
   email: string;
 
-  @ApiProperty({ example: 'Password123!' })
+  @ApiProperty({ example: 'Password123@' })
   @IsString()
-  @MinLength(8, { message: '密码至少8位' })
-  @MaxLength(32, { message: '密码最多32位' })
-  @Matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    { message: '密码必须包含大小写字母、数字和特殊字符' },
-  )
+  @MinLength(PASSWORD_POLICY.minLength, { message: '密码至少8位' })
+  @MaxLength(PASSWORD_POLICY.maxLength, { message: '密码最多32位' })
+  @Matches(PASSWORD_POLICY.requiredPattern, {
+    message: PASSWORD_POLICY_MESSAGE_ZH,
+  })
   password: string;
 
   @ApiPropertyOptional({
@@ -72,14 +75,13 @@ export class RegisterWithInviteDto {
   @IsEmail({}, { message: '请输入有效的邮箱地址' })
   email: string;
 
-  @ApiProperty({ example: 'Password123!' })
+  @ApiProperty({ example: 'Password123@' })
   @IsString()
-  @MinLength(8, { message: '密码至少8位' })
-  @MaxLength(32, { message: '密码最多32位' })
-  @Matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    { message: '密码必须包含大小写字母、数字和特殊字符' },
-  )
+  @MinLength(PASSWORD_POLICY.minLength, { message: '密码至少8位' })
+  @MaxLength(PASSWORD_POLICY.maxLength, { message: '密码最多32位' })
+  @Matches(PASSWORD_POLICY.requiredPattern, {
+    message: PASSWORD_POLICY_MESSAGE_ZH,
+  })
   password: string;
 
   @ApiProperty({ description: 'Operator invite token' })

@@ -11,12 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PasswordStrength, isPasswordValid } from '@/components/ui/password-strength';
+import { PasswordStrength } from '@/components/ui/password-strength';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
 import { ApiError } from '@/lib/api/api-error';
 import { setAuthFromLogin } from '@/stores/auth';
 import { Loader2, Shield, AlertCircle, Lock } from 'lucide-react';
+import { PASSWORD_POLICY, isPasswordCompliant } from '@study-abroad/shared';
 
 const createSchema = (t: ReturnType<typeof useTranslations>) =>
   z
@@ -24,11 +25,19 @@ const createSchema = (t: ReturnType<typeof useTranslations>) =>
       email: z.string().email({ message: t('validation.invalidEmail') }),
       password: z
         .string()
-        .min(8, { message: t('validation.passwordMin') })
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
+        .min(PASSWORD_POLICY.minLength, { message: t('validation.passwordMin') })
+        .max(PASSWORD_POLICY.maxLength, {
+          message: t('validation.passwordMax', { max: PASSWORD_POLICY.maxLength }),
+        })
+        .refine(isPasswordCompliant, {
           message: t('validation.passwordStrength'),
         }),
-      confirmPassword: z.string().min(8, { message: t('validation.passwordMin') }),
+      confirmPassword: z
+        .string()
+        .min(PASSWORD_POLICY.minLength, { message: t('validation.passwordMin') })
+        .max(PASSWORD_POLICY.maxLength, {
+          message: t('validation.passwordMax', { max: PASSWORD_POLICY.maxLength }),
+        }),
       agreeTerms: z
         .boolean()
         .refine((val) => val === true, { message: t('validation.agreeRequired') }),
