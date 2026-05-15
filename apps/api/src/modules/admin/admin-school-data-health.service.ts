@@ -195,10 +195,7 @@ export class AdminSchoolDataHealthService {
         // ── Special-case: oosAcceptanceRate at private schools is N/A ──
         // Private universities don't have an in-state vs OOS distinction,
         // so a missing value isn't a data gap. Skip the row entirely.
-        if (
-          fieldName === 'oosAcceptanceRate' &&
-          isOosNotApplicable(item as { isPrivate?: boolean })
-        ) {
+        if (fieldName === 'oosAcceptanceRate' && isOosNotApplicable(item)) {
           if (total) total.terminal++;
           continue;
         }

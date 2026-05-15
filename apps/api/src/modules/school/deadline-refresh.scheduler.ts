@@ -344,7 +344,7 @@ export class DeadlineRefreshScheduler {
           currentDate: currentISO,
           extractedDate: newISO,
           context: extraction.context,
-        } as Prisma.InputJsonValue,
+        },
       },
     });
   }

@@ -50,7 +50,7 @@ describe('DeadlineRefreshScheduler', () => {
       ok: true,
       status: 200,
       text: async () => html,
-    }) as unknown as typeof global.fetch;
+    });
   };
 
   // ───────────────────────────────────────────────────────────────────
@@ -206,9 +206,7 @@ describe('DeadlineRefreshScheduler', () => {
   it('swallows fetch errors and continues without writing', async () => {
     global.fetch = jest
       .fn()
-      .mockRejectedValue(
-        new Error('network unreachable'),
-      ) as unknown as typeof global.fetch;
+      .mockRejectedValue(new Error('network unreachable'));
 
     prisma.schoolDeadline.findMany.mockResolvedValue([
       {
@@ -233,7 +231,7 @@ describe('DeadlineRefreshScheduler', () => {
   it('does nothing when there are no tentative deadlines', async () => {
     prisma.schoolDeadline.findMany.mockResolvedValue([]);
     const fetchSpy = jest.fn();
-    global.fetch = fetchSpy as unknown as typeof global.fetch;
+    global.fetch = fetchSpy;
 
     await scheduler.refreshTentativeDeadlines();
 

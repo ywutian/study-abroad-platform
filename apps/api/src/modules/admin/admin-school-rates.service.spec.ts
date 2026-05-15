@@ -588,7 +588,7 @@ describe('AdminSchoolRatesService', () => {
         {
           schoolId: 'ucd-id',
           // explicit null → "mark as unreviewed"
-          needBlindInternational: null as unknown as boolean,
+          needBlindInternational: null,
           source: 'admin-review:2026-05:reset-to-unreviewed',
         },
       ],

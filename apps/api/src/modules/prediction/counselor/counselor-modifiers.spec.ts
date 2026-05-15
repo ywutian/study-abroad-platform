@@ -222,7 +222,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.05,
         needBlindInternational: true,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.5, 3);
       expect(result.label).toContain('need-blind');
@@ -233,7 +233,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.05,
         needBlindInternational: false,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.45, 3);
       expect(result.label).toContain('need-aware');
@@ -245,7 +245,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.05,
         needBlindInternational: null,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.48, 3);
       expect(result.label).toContain('unverified');
@@ -256,7 +256,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.15,
         needBlindInternational: false,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.75, 3);
       expect(result.label).toContain('need-aware');
@@ -267,7 +267,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.15,
         needBlindInternational: null,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.78, 3);
       expect(result.label).toContain('unverified');
@@ -278,7 +278,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.3,
         needBlindInternational: false,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.7, 3);
       expect(result.label).toContain('need-aware');
@@ -289,7 +289,7 @@ describe('counselor modifiers launch guards', () => {
         ...baseSchool(),
         acceptanceRate: 0.3,
         needBlindInternational: null,
-      } as SchoolInput & { needBlindInternational?: boolean | null });
+      });
 
       expect(result.multiplier).toBeCloseTo(0.78, 3);
       expect(result.label).toContain('unverified');
@@ -437,9 +437,9 @@ describe('counselor modifiers launch guards', () => {
       expect(international.components.englishReadiness.multiplier).toBe(0.96);
     });
 
-    it('applies a small penalty when international applicant has no English score', () => {
+    it('applies a tiny penalty when international applicant has no English score', () => {
       // 2026-05: missing TOEFL/IELTS for an international applicant now gets
-      // 0.92× (was 1.0). Domestic applicants still get neutral.
+      // 0.98× (was 1.0). Domestic applicants still get neutral.
       const internationalMissing = profileContextMultiplier(
         baseProfile({
           isInternational: true,
@@ -455,7 +455,7 @@ describe('counselor modifiers launch guards', () => {
       );
 
       expect(internationalMissing.components.englishReadiness.multiplier).toBe(
-        0.92,
+        0.98,
       );
       expect(domesticMissing.components.englishReadiness.multiplier).toBe(1);
     });

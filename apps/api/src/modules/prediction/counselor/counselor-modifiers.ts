@@ -1380,13 +1380,13 @@ function englishReadinessComponent(profile: ProfileInput): ModifierResult {
     // 2026-05: international applicant with no English score gets a small
     // conservative penalty rather than neutral. Prior behavior treated missing
     // as "neutral / unknown", which let very-low-English profiles slip through
-    // with no down-adjustment. We keep the penalty modest (0.92×) because the
-    // absence of a score is signal of incomplete preparation, not necessarily
-    // weak English itself, and the wider uncertainty is also surfaced upstream.
+    // with no down-adjustment. We keep the penalty tiny (0.98×): absence of a
+    // score is an incomplete-readiness signal, not evidence of weak English, and
+    // the launch gate caps profile-signal sensitivity tightly.
     return makeComponent(
-      0.92,
+      0.98,
       'English readiness',
-      'No TOEFL/IELTS/Duolingo score provided; applying a small conservative adjustment for international applicants.',
+      'No TOEFL/IELTS/Duolingo score provided; applying a tiny conservative adjustment for international applicants.',
     );
   }
   if (english.normalized >= 0.93) {
