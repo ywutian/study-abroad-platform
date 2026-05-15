@@ -150,7 +150,7 @@ export function PointsOverview({ compact = false, className }: PointsOverviewPro
           >
             <div className="absolute inset-0 bg-warning/20 blur-xl rounded-full" />
             <div className="relative">
-              <span className="text-5xl font-bold bg-gradient-to-br bg-warning bg-clip-text text-transparent">
+              <span className="text-5xl font-bold text-warning">
                 {format.number(points, 'standard')}
               </span>
             </div>

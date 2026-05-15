@@ -41,6 +41,36 @@ describe('ResumeService', () => {
       findFirst: jest.fn(),
       findMany: jest.fn(),
     },
+    resumeAIIssue: {
+      createMany: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    resumeEvidence: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      createMany: jest.fn(),
+      delete: jest.fn(),
+    },
+    resumeTarget: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      delete: jest.fn(),
+    },
+    resumeExport: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+    },
+    resumeComment: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
 
@@ -70,6 +100,9 @@ describe('ResumeService', () => {
     }).compile();
 
     service = module.get<ResumeService>(ResumeService);
+    mockPrisma.$transaction.mockImplementation(async (arg: any) =>
+      Array.isArray(arg) ? Promise.all(arg) : arg(mockPrisma),
+    );
   });
 
   afterEach(() => {
@@ -284,6 +317,357 @@ describe('ResumeService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             title: 'Original (Copy)',
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('resume 2.0 foundations', () => {
+    it('should list reusable evidence for the current user', async () => {
+      mockPrisma.resumeEvidence.findMany.mockResolvedValue([
+        { id: 'ev-1', userId: 'user-1', title: 'Research paper' },
+      ]);
+
+      const result = await service.listEvidence('user-1');
+
+      expect(result).toHaveLength(1);
+      expect(mockPrisma.resumeEvidence.findMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        orderBy: { updatedAt: 'desc' },
+      });
+    });
+
+    it('should create a structured target', async () => {
+      mockPrisma.resumeTarget.create.mockResolvedValue({
+        id: 'target-1',
+        title: 'Data Analyst',
+      });
+
+      const result = await service.createTarget('user-1', {
+        type: 'FULL_TIME_JOB',
+        title: 'Data Analyst',
+        company: 'Fintech Co',
+        role: 'Analyst',
+        keywords: ['SQL', 'dashboarding'],
+      });
+
+      expect(result.id).toBe('target-1');
+      expect(mockPrisma.resumeTarget.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            userId: 'user-1',
+            type: 'FULL_TIME_JOB',
+            company: 'Fintech Co',
+            role: 'Analyst',
+            keywords: ['SQL', 'dashboarding'],
+          }),
+        }),
+      );
+    });
+
+    it('should create a tailored resume variant from visible base sections', async () => {
+      const base = {
+        id: 'base-1',
+        userId: 'user-1',
+        title: 'Master Resume',
+        type: 'INTERNSHIP',
+        templateId: 'ats-safe',
+        language: 'en',
+        settings: {},
+        targetContext: { targetRole: 'Analyst Intern' },
+        sections: [
+          {
+            id: 's1',
+            type: 'HEADER',
+            title: 'Header',
+            content: { name: 'Jane' },
+            isVisible: true,
+            order: 0,
+          },
+          {
+            id: 's2',
+            type: 'CUSTOM',
+            title: 'Hidden',
+            content: {},
+            isVisible: false,
+            order: 1,
+          },
+        ],
+      };
+      const target = {
+        id: 'target-1',
+        title: 'Full-time Analyst',
+        company: 'Fintech Co',
+        role: 'Data Analyst',
+        jobDescription: 'SQL dashboards',
+        keywords: ['SQL'],
+      };
+      const tailored = { ...base, id: 'tailored-1', type: 'FULL_TIME_JOB' };
+      mockPrisma.resume.findUnique.mockResolvedValue(base);
+      mockAuth.verifyOwnership.mockReturnValue(base);
+      mockPrisma.resumeTarget.findFirst.mockResolvedValue(target);
+      mockPrisma.resume.create.mockResolvedValue(tailored);
+
+      const result = await service.tailorResume('user-1', 'base-1', {
+        targetId: 'target-1',
+        type: 'FULL_TIME_JOB',
+      });
+
+      expect(result.id).toBe('tailored-1');
+      expect(mockPrisma.resume.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            baseResumeId: 'base-1',
+            targetId: 'target-1',
+            variantKind: 'TAILORED',
+            family: 'CAREER',
+            type: 'FULL_TIME_JOB',
+            targetContext: expect.objectContaining({
+              targetRole: 'Data Analyst',
+              company: 'Fintech Co',
+              jobDescription: 'SQL dashboards',
+              keywords: ['SQL'],
+            }),
+            sections: expect.objectContaining({
+              create: expect.arrayContaining([
+                expect.objectContaining({ type: 'HEADER', isVisible: true }),
+              ]),
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('should preview an uploaded text resume into sections and evidence', async () => {
+      const resume = {
+        id: 'r1',
+        userId: 'user-1',
+        title: 'Master Resume',
+        version: 1,
+        type: 'FULL_TIME_JOB',
+        templateId: 'ats-safe',
+        language: 'en',
+        settings: {},
+        targetContext: {},
+        sections: [
+          {
+            id: 'header-1',
+            type: 'HEADER',
+            title: 'Contact',
+            content: {},
+            isVisible: true,
+            order: 0,
+          },
+          {
+            id: 'work-1',
+            type: 'WORK_EXPERIENCE',
+            title: 'Work Experience',
+            content: { items: [] },
+            isVisible: true,
+            order: 1,
+          },
+        ],
+      };
+      mockPrisma.resume.findUnique.mockResolvedValue(resume);
+      mockAuth.verifyOwnership.mockReturnValue(resume);
+
+      const file = {
+        originalname: 'resume.txt',
+        mimetype: 'text/plain',
+        size: 240,
+        buffer: Buffer.from(
+          [
+            'Jane Doe',
+            'jane@example.com | +1 555 0100',
+            'WORK EXPERIENCE',
+            'Data Analyst Intern',
+            '- Built SQL dashboards used by 30 operators',
+            'SKILLS',
+            'SQL, Python, Tableau',
+          ].join('\n'),
+        ),
+      } as Express.Multer.File;
+
+      const preview = await service.previewResumeUploadImport(
+        'user-1',
+        'r1',
+        file,
+      );
+
+      expect(preview.sourceFileName).toBe('resume.txt');
+      expect(preview.sections).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            sectionId: 'header-1',
+            sectionType: 'HEADER',
+            changeType: 'replace',
+          }),
+          expect.objectContaining({
+            sectionId: 'work-1',
+            sectionType: 'WORK_EXPERIENCE',
+            changeType: 'replace',
+          }),
+          expect.objectContaining({
+            sectionType: 'SKILLS',
+            changeType: 'create',
+          }),
+        ]),
+      );
+      expect(preview.evidence).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: 'WORK_EXPERIENCE',
+            title: 'Data Analyst Intern',
+          }),
+          expect.objectContaining({
+            kind: 'SKILL',
+            title: 'Imported skills',
+          }),
+        ]),
+      );
+    });
+
+    it('should apply selected uploaded sections and evidence with a snapshot', async () => {
+      const resume = {
+        id: 'r1',
+        userId: 'user-1',
+        title: 'Master Resume',
+        version: 2,
+        type: 'FULL_TIME_JOB',
+        templateId: 'ats-safe',
+        language: 'en',
+        settings: {},
+        targetContext: {},
+        sections: [
+          {
+            id: 'header-1',
+            type: 'HEADER',
+            title: 'Contact',
+            content: {},
+            isVisible: true,
+            order: 0,
+          },
+        ],
+      };
+      mockPrisma.resume.findUnique.mockResolvedValue(resume);
+      mockAuth.verifyOwnership.mockReturnValue(resume);
+      mockPrisma.resumeSnapshot.create.mockResolvedValue({ id: 'snap-1' });
+      mockPrisma.resumeSection.aggregate.mockResolvedValue({
+        _max: { order: 0 },
+      });
+      mockPrisma.resumeSection.update.mockResolvedValue({});
+      mockPrisma.resumeSection.create.mockResolvedValue({});
+      mockPrisma.resumeEvidence.createMany.mockResolvedValue({ count: 1 });
+      mockPrisma.resume.update.mockResolvedValue({});
+
+      await service.applyResumeUploadImport('user-1', 'r1', {
+        sections: [
+          {
+            sectionId: 'header-1',
+            sectionType: 'HEADER',
+            title: 'Contact',
+            content: { name: 'Jane Doe', email: 'jane@example.com' },
+          },
+          {
+            sectionType: 'SKILLS',
+            title: 'Skills',
+            content: { categories: [{ name: 'Skills', items: ['SQL'] }] },
+          },
+        ],
+        evidence: [
+          {
+            kind: 'SKILL',
+            title: 'Imported skills',
+            skills: ['SQL'],
+            tags: ['resume-import'],
+            content: { categories: [] },
+          },
+        ],
+      });
+
+      expect(mockPrisma.resumeSnapshot.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            description: 'Before uploaded resume import',
+          }),
+        }),
+      );
+      expect(mockPrisma.resumeSection.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'header-1' },
+          data: expect.objectContaining({ title: 'Contact' }),
+        }),
+      );
+      expect(mockPrisma.resumeSection.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            resumeId: 'r1',
+            type: 'SKILLS',
+            order: 1,
+          }),
+        }),
+      );
+      expect(mockPrisma.resumeEvidence.createMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: [
+            expect.objectContaining({
+              userId: 'user-1',
+              kind: 'SKILL',
+              source: 'RESUME_IMPORT',
+            }),
+          ],
+        }),
+      );
+    });
+
+    it('should manage collaboration comments for a resume', async () => {
+      const resume = {
+        id: 'r1',
+        userId: 'user-1',
+        sections: [{ id: 's1' }],
+      };
+      const comment = {
+        id: 'comment-1',
+        resumeId: 'r1',
+        sectionId: 's1',
+        authorId: 'user-1',
+        role: 'STUDENT',
+        body: 'Please review this bullet',
+        status: 'OPEN',
+      };
+      mockPrisma.resume.findUnique.mockResolvedValue(resume);
+      mockAuth.verifyOwnership.mockReturnValue(resume);
+      mockPrisma.resumeComment.findMany.mockResolvedValue([comment]);
+      mockPrisma.resumeComment.create.mockResolvedValue(comment);
+      mockPrisma.resumeComment.findUnique.mockResolvedValue(comment);
+      mockPrisma.resumeComment.update.mockResolvedValue({
+        ...comment,
+        status: 'RESOLVED',
+      });
+
+      await expect(service.listComments('user-1', 'r1')).resolves.toHaveLength(
+        1,
+      );
+      await expect(
+        service.createComment('user-1', 'r1', {
+          sectionId: 's1',
+          body: 'Please review this bullet',
+        }),
+      ).resolves.toEqual(comment);
+      await expect(
+        service.updateComment('user-1', 'r1', 'comment-1', {
+          status: 'RESOLVED',
+        }),
+      ).resolves.toEqual(expect.objectContaining({ status: 'RESOLVED' }));
+
+      expect(mockPrisma.resumeComment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            resumeId: 'r1',
+            sectionId: 's1',
+            authorId: 'user-1',
+            body: 'Please review this bullet',
           }),
         }),
       );

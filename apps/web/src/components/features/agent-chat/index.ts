@@ -12,6 +12,7 @@ export { AGENT_INFO, QUICK_ACTION_KEYS } from './types';
 export * from './use-agent-chat';
 export * from './use-chat-history';
 export * from './agent-chat';
+export * from './agent-workspace';
 export { ChatMessage as ChatMessageComponent } from './chat-message';
 export * from './chat-input';
 export * from './conversation-list';

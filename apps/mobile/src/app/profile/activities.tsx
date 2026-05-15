@@ -22,13 +22,13 @@ import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/
 import type { Profile, Activity } from '@/types';
 
 const ACTIVITY_CATEGORIES = [
-  'academic',
-  'sports',
-  'arts',
-  'community',
-  'leadership',
-  'work',
-  'other',
+  { value: 'ACADEMIC', key: 'academic' },
+  { value: 'ATHLETICS', key: 'sports' },
+  { value: 'ARTS', key: 'arts' },
+  { value: 'COMMUNITY_SERVICE', key: 'community' },
+  { value: 'LEADERSHIP', key: 'leadership' },
+  { value: 'WORK', key: 'work' },
+  { value: 'OTHER', key: 'other' },
 ];
 
 export default function ActivitiesScreen() {
@@ -57,15 +57,18 @@ export default function ActivitiesScreen() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', 'me'],
     queryFn: () => apiClient.get<Profile>(profileRoutes.me()),
   });
 
   const saveMutation = useMutation({
-    mutationFn: (updatedActivities: Partial<Activity>[]) =>
-      apiClient.put<Profile>(profileRoutes.me(), { activities: updatedActivities }),
+    mutationFn: (activity: Partial<Activity> & { category: string }) =>
+      editingActivity
+        ? apiClient.put(profileRoutes.activity(editingActivity.id), activity)
+        : apiClient.post(profileRoutes.activities(), activity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       toast.success(t('profileEdit.saveSuccess'));
       closeModal();
     },
@@ -73,10 +76,22 @@ export default function ActivitiesScreen() {
       toast.error(t('profileEdit.saveFailed'));
     },
   });
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient.delete(profileRoutes.activity(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success(t('profileEdit.saveSuccess'));
+      setDeleteTarget(null);
+    },
+    onError: () => {
+      toast.error(t('profileEdit.saveFailed'));
+    },
+  });
 
   const categoryOptions = ACTIVITY_CATEGORIES.map((cat) => ({
-    value: cat,
-    label: t(`profileEdit.activityCategories.${cat}`),
+    value: cat.value,
+    label: t(`profileEdit.activityCategories.${cat.key}`),
   }));
 
   const resetForm = useCallback(() => {
@@ -106,9 +121,7 @@ export default function ActivitiesScreen() {
     setRole(activity.role || '');
     setOrganization(activity.organization || '');
     setDescription(activity.description || '');
-    // The Activity type doesn't have a category field, but we use role as a proxy
-    // or we store category in the role field for now
-    setCategory('');
+    setCategory(activity.category || 'OTHER');
     setHoursPerWeek(activity.hoursPerWeek?.toString() || '');
     setWeeksPerYear(activity.weeksPerYear?.toString() || '');
     setModalVisible(true);
@@ -120,27 +133,17 @@ export default function ActivitiesScreen() {
       return;
     }
 
-    const currentActivities = profile?.activities || [];
-    const newActivity: Partial<Activity> = {
+    const newActivity: Partial<Activity> & { category: string } = {
       name: name.trim(),
-      role: role.trim() || undefined,
+      category: category || 'OTHER',
+      role: role.trim() || 'Member',
       organization: organization.trim() || undefined,
       description: description.trim() || undefined,
       hoursPerWeek: hoursPerWeek ? Number(hoursPerWeek) : undefined,
       weeksPerYear: weeksPerYear ? Number(weeksPerYear) : undefined,
     };
 
-    let updatedActivities: Partial<Activity>[];
-
-    if (editingActivity) {
-      updatedActivities = currentActivities.map((a) =>
-        a.id === editingActivity.id ? { ...a, ...newActivity } : a
-      );
-    } else {
-      updatedActivities = [...currentActivities, newActivity];
-    }
-
-    saveMutation.mutate(updatedActivities);
+    saveMutation.mutate(newActivity);
   }, [
     name,
     role,
@@ -149,7 +152,6 @@ export default function ActivitiesScreen() {
     hoursPerWeek,
     weeksPerYear,
     editingActivity,
-    profile,
     saveMutation,
     toast,
     t,
@@ -158,12 +160,8 @@ export default function ActivitiesScreen() {
   const handleDelete = useCallback(() => {
     if (!deleteTarget) return;
 
-    const currentActivities = profile?.activities || [];
-    const updatedActivities = currentActivities.filter((a) => a.id !== deleteTarget.id);
-
-    saveMutation.mutate(updatedActivities);
-    setDeleteTarget(null);
-  }, [deleteTarget, profile, saveMutation]);
+    deleteMutation.mutate(deleteTarget.id);
+  }, [deleteTarget, deleteMutation]);
 
   const getCategoryIcon = (activityRole: string): keyof typeof Ionicons.glyphMap => {
     const lower = activityRole?.toLowerCase() || '';
@@ -344,6 +342,14 @@ export default function ActivitiesScreen() {
             onChangeText={setRole}
           />
 
+          <Select
+            label={t('profileEdit.category')}
+            placeholder={t('profileEdit.category')}
+            options={categoryOptions}
+            value={category}
+            onChange={setCategory}
+          />
+
           <Input
             label={t('profileEdit.organization')}
             placeholder={t('profileEdit.enterOrganization')}
@@ -392,7 +398,7 @@ export default function ActivitiesScreen() {
         title={t('profileEdit.deleteConfirmTitle')}
         message={t('profileEdit.deleteActivityConfirm')}
         variant="destructive"
-        loading={saveMutation.isPending}
+        loading={saveMutation.isPending || deleteMutation.isPending}
       />
     </View>
   );

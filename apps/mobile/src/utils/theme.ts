@@ -12,9 +12,8 @@ import {
   elevation as sharedElevation,
   fontSize as sharedFontSize,
   fontWeight as sharedFontWeight,
-  getThemeColors,
   getThemeAppearance,
-  getThemeSemanticSurfaces,
+  getMobileThemeContract,
   lineHeight as sharedLineHeight,
   opacity as sharedOpacity,
   parseColorPalette,
@@ -26,21 +25,22 @@ import {
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useThemeStore } from '@/stores/theme';
 
-type SharedColorRow = { [K in keyof typeof sharedColors.light]: string };
-type SharedSurfaceRow = { [K in keyof typeof semanticSurfaces.light]: string };
+type MobileThemeContract = ReturnType<typeof getMobileThemeContract>;
+type SharedColorRow = MobileThemeContract['colors'];
+type SharedSurfaceRow = MobileThemeContract['surfaces'];
 
 function withMobileExtras(base: SharedColorRow, surfaces: SharedSurfaceRow, mode: ColorScheme) {
   const dark = mode === 'dark';
   return {
     ...base,
-    successForeground: dark ? '#191510' : '#fff7ea',
-    warningForeground: dark ? '#191510' : '#1d1813',
-    errorForeground: dark ? '#191510' : '#fff7ea',
-    infoForeground: dark ? '#191510' : '#fff7ea',
+    successForeground: base.primaryForeground,
+    warningForeground: dark ? base.primaryForeground : base.foreground,
+    errorForeground: base.primaryForeground,
+    infoForeground: base.primaryForeground,
     shadow: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.08)',
-    onGradient: '#fff7ea',
-    onGradientMuted: 'rgba(255, 255, 255, 0.8)',
-    onGradientOverlay: 'rgba(255, 255, 255, 0.2)',
+    onGradient: base.primaryForeground,
+    onGradientMuted: withOpacity(base.primaryForeground, 0.8),
+    onGradientOverlay: withOpacity(base.primaryForeground, 0.2),
     surfaceMuted: surfaces.surfaceMuted,
     surfaceSubtle: surfaces.surfaceSubtle,
     infoSurface: surfaces.infoSurface,
@@ -61,11 +61,8 @@ export function getPaletteColors(
     return mode === 'dark' ? colors.dark : colors.light;
   }
 
-  return withMobileExtras(
-    getThemeColors(nextPalette, mode),
-    getThemeSemanticSurfaces(nextPalette, mode),
-    mode
-  );
+  const contract = getMobileThemeContract({ palette: nextPalette, mode });
+  return withMobileExtras(contract.colors, contract.surfaces, mode);
 }
 
 export const statusColors = admissionStatus;
@@ -102,6 +99,19 @@ export function useThemeAppearance() {
   const colorPalette = useThemeStore((state) => state.colorPalette);
   const mode = colorScheme === 'dark' ? 'dark' : 'light';
   return getThemeAppearance(colorPalette, mode);
+}
+
+export function getMobileTheme(
+  palette: ColorPalette = DEFAULT_COLOR_PALETTE,
+  mode: ColorScheme = 'light'
+) {
+  return getMobileThemeContract({ palette: parseColorPalette(palette), mode });
+}
+
+export function useThemeContract() {
+  const colorScheme = useThemeStore((state) => state.colorScheme);
+  const colorPalette = useThemeStore((state) => state.colorPalette);
+  return getMobileTheme(colorPalette, colorScheme === 'dark' ? 'dark' : 'light');
 }
 
 export function getColors(isDark?: boolean, palette: ColorPalette = DEFAULT_COLOR_PALETTE) {

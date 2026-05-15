@@ -295,6 +295,9 @@ enum VaultItemType {
 enum ResumeStatus {
   DRAFT
   ACTIVE
+  REVIEWED
+  APPROVED
+  EXPORTED
   ARCHIVED
 }
 
@@ -302,6 +305,82 @@ enum ResumeType {
   COLLEGE_APPLICATION
   INTERNSHIP
   GRADUATE_CV
+  FULL_TIME_JOB
+}
+
+enum ResumeFamily {
+  STUDY_ABROAD
+  CAREER
+}
+
+enum ResumeVariantKind {
+  MASTER
+  TAILORED
+}
+
+enum ResumeTargetType {
+  COLLEGE_APPLICATION
+  GRADUATE_PROGRAM
+  INTERNSHIP
+  FULL_TIME_JOB
+}
+
+enum ResumeTargetStatus {
+  DRAFT
+  ACTIVE
+  SUBMITTED
+  ARCHIVED
+}
+
+enum ResumeEvidenceKind {
+  EDUCATION
+  TEST_SCORE
+  RESEARCH
+  WORK_EXPERIENCE
+  PROJECT
+  ACTIVITY
+  COMMUNITY_SERVICE
+  AWARD
+  SKILL
+  PUBLICATION
+  TEACHING
+  CERTIFICATION
+  CUSTOM
+}
+
+enum ResumeEvidenceSource {
+  PROFILE
+  RESUME_IMPORT
+  MANUAL
+  AI_GENERATED
+}
+
+enum ResumePrivacyLevel {
+  PRIVATE
+  COUNSELOR_VISIBLE
+  PUBLIC_SHAREABLE
+}
+
+enum ResumeAIIssueStatus {
+  OPEN
+  ACCEPTED
+  DISMISSED
+  APPLIED
+  STALE
+}
+
+enum ResumeExportFormat {
+  PDF
+  DOCX
+  TXT
+  JSON
+}
+
+enum ResumeExportStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum ResumeSectionType {
@@ -478,6 +557,7 @@ model User {
 
   // Assessment (测评)
   assessmentResults AssessmentResult[]
+  assessmentDrafts  AssessmentDraft[]
 
   // Recommendation Letters (推荐信)
   recommendationLetters RecommendationLetter[]
@@ -501,7 +581,10 @@ model User {
   personalEvents       PersonalEvent[]
 
   // Resume
-  resumes Resume[]
+  resumes        Resume[]
+  resumeEvidence ResumeEvidence[]
+  resumeTargets  ResumeTarget[]
+  resumeComments ResumeComment[]
 
   // Verification
   verificationRequests VerificationRequest[]
@@ -2533,20 +2616,28 @@ model ConversationParticipant {
 
   lastReadAt DateTime?
   isPinned   Boolean   @default(false)
+  isArchived Boolean   @default(false)
+  mutedUntil DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([conversationId, userId])
   @@index([userId])
+  @@index([userId, isArchived, isPinned])
 }
 
 model Message {
-  id             String       @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId       String
-  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  id              String              @id @default(cuid())
+  conversationId  String
+  conversation    Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User                @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  clientMessageId String?
+  replyToId       String?
+  replyTo         Message?            @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies         Message[]           @relation("MessageReplies")
+  attachments     MessageAttachment[]
 
   content    String    @db.Text
   isSystem   Boolean   @default(false)
@@ -2559,9 +2650,28 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([senderId, clientMessageId])
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+  @@index([conversationId, createdAt])
+  @@index([replyToId])
+}
+
+model MessageAttachment {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  url      String
+  type     String
+  name     String
+  size     Int?
+  mimeType String?
+
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
 }
 
 // ============================================
@@ -3806,6 +3916,23 @@ model AssessmentResult {
   @@index([assessmentId])
 }
 
+model AssessmentDraft {
+  id                   String         @id @default(cuid())
+  userId               String
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                 AssessmentType
+  answers              Json
+  currentQuestionIndex Int            @default(0)
+  expiresAt            DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
 enum RecommenderRole {
   TEACHER
   COUNSELOR
@@ -3967,42 +4094,61 @@ model Resume {
   id                        String                         @id @default(cuid())
   userId                    String
   user                      User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetId                  String?
+  target                    ResumeTarget?                  @relation(fields: [targetId], references: [id], onDelete: SetNull)
+  baseResumeId              String?
+  baseResume                Resume?                        @relation("ResumeVariants", fields: [baseResumeId], references: [id], onDelete: SetNull)
+  variants                  Resume[]                       @relation("ResumeVariants")
   title                     String                         @default("My Resume")
   status                    ResumeStatus                   @default(DRAFT)
   type                      ResumeType                     @default(COLLEGE_APPLICATION)
+  family                    ResumeFamily                   @default(STUDY_ABROAD)
+  variantKind               ResumeVariantKind              @default(MASTER)
   templateId                String                         @default("jake-classic")
   language                  String                         @default("en")
   settings                  Json                           @default("{}")
   targetContext             Json                           @default("{}")
+  qualitySummary            Json                           @default("{}")
   sections                  ResumeSection[]
   snapshots                 ResumeSnapshot[]
   aiReviews                 ResumeAIReview[]
+  aiIssues                  ResumeAIIssue[]
+  exports                   ResumeExport[]
+  comments                  ResumeComment[]
   teamApplications          TeamApplication[]              @relation("TeamApplicationResume")
   recruitmentMemberProfiles TeamRecruitmentMemberProfile[] @relation("RecruitmentSelectedResume")
   version                   Int                            @default(1)
   lastImportedAt            DateTime?
+  lastReviewAt              DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([userId, updatedAt(sort: Desc)])
+  @@index([userId, family])
+  @@index([targetId])
+  @@index([baseResumeId])
 }
 
 model ResumeSection {
-  id        String            @id @default(cuid())
-  resumeId  String
-  resume    Resume            @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  type      ResumeSectionType
-  title     String
-  content   Json
-  isVisible Boolean           @default(true)
-  order     Int               @default(0)
+  id                   String            @id @default(cuid())
+  resumeId             String
+  resume               Resume            @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  type                 ResumeSectionType
+  title                String
+  content              Json
+  contentSchemaVersion Int               @default(1)
+  contentHash          String?
+  evidenceRefs         Json              @default("[]")
+  isVisible            Boolean           @default(true)
+  order                Int               @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([resumeId])
+  @@index([contentHash])
 }
 
 model ResumeSnapshot {
@@ -4020,19 +4166,156 @@ model ResumeSnapshot {
 }
 
 model ResumeAIReview {
-  id           String @id @default(cuid())
-  resumeId     String
-  resume       Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
-  type         String
-  input        Json
-  output       Json
-  overallScore Int?
-  tokenUsed    Int    @default(0)
+  id            String          @id @default(cuid())
+  resumeId      String
+  resume        Resume          @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  type          String
+  input         Json
+  output        Json
+  overallScore  Int?
+  tokenUsed     Int             @default(0)
+  rubricVersion String          @default("resume-v2")
+  modelName     String?
+  resumeVersion Int?
+  issues        ResumeAIIssue[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([resumeId])
+}
+
+model ResumeEvidence {
+  id           String               @id @default(cuid())
+  userId       String
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         ResumeEvidenceKind
+  source       ResumeEvidenceSource @default(MANUAL)
+  title        String
+  organization String?
+  role         String?
+  description  String?
+  startDate    String?
+  endDate      String?
+  isCurrent    Boolean              @default(false)
+  tags         Json                 @default("[]")
+  skills       Json                 @default("[]")
+  metrics      Json                 @default("{}")
+  proofLinks   Json                 @default("[]")
+  content      Json                 @default("{}")
+  confidence   Float?
+  privacyLevel ResumePrivacyLevel   @default(PRIVATE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, kind])
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model ResumeTarget {
+  id               String             @id @default(cuid())
+  userId           String
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             ResumeTargetType
+  status           ResumeTargetStatus @default(DRAFT)
+  title            String
+  school           String?
+  program          String?
+  major            String?
+  applicationRound String?
+  advisorName      String?
+  researchArea     String?
+  labName          String?
+  company          String?
+  role             String?
+  jobDescription   String?
+  deadline         DateTime?
+  keywords         Json               @default("[]")
+  requirements     Json               @default("{}")
+  metadata         Json               @default("{}")
+  resumes          Resume[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, type])
+  @@index([userId, status])
+}
+
+model ResumeAIIssue {
+  id              String              @id @default(cuid())
+  resumeId        String
+  resume          Resume              @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  reviewId        String?
+  review          ResumeAIReview?     @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  sectionId       String?
+  type            String
+  severity        String              @default("medium")
+  status          ResumeAIIssueStatus @default(OPEN)
+  title           String
+  original        String?
+  suggestion      String?
+  reason          String?
+  patch           Json                @default("{}")
+  confidence      Float?
+  source          String              @default("AI")
+  baseContentHash String?
+  appliedAt       DateTime?
+  dismissedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resumeId])
+  @@index([reviewId])
+  @@index([resumeId, status])
+}
+
+model ResumeExport {
+  id              String             @id @default(cuid())
+  resumeId        String
+  resume          Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  format          ResumeExportFormat @default(PDF)
+  status          ResumeExportStatus @default(QUEUED)
+  templateId      String
+  pageSize        String?
+  pageCount       Int?
+  textExtractable Boolean?
+  artifactUrl     String?
+  metadata        Json               @default("{}")
+  errorMessage    String?
+  completedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resumeId])
+  @@index([resumeId, createdAt(sort: Desc)])
+}
+
+model ResumeComment {
+  id        String  @id @default(cuid())
+  resumeId  String
+  resume    Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  sectionId String?
+  itemId    String?
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  role      String  @default("STUDENT")
+  body      String
+  status    String  @default("OPEN")
+
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([resumeId])
+  @@index([resumeId, sectionId])
+  @@index([authorId])
+  @@index([resumeId, status])
 }
 
 // ============================================

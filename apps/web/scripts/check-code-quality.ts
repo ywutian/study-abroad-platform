@@ -185,8 +185,8 @@ const TEXT_GRADIENT_PATTERNS = [
 
 const UI_SERIF_PATTERNS = [/font-serif\b/, /--font-serif\b/, /--font-heading\b/];
 const ARBITRARY_RADIUS_PATTERNS = [
-  /rounded-\[(?!var\()[^\]]+\]/,
-  /border-radius:\s*(?!var\()[^;]+;/,
+  /rounded-\[(?!(?:var\(|inherit\]))[^\]]+\]/,
+  /border-radius:(?!\s*var\()\s*[^;]+;/,
 ];
 // no-decorative-rotate — DS v2.1 §装饰规则禁止非必要装饰性旋转。
 // Matches `transform: rotate(Xdeg)` for small decorative tilts (1-44deg or -44 to -1deg).

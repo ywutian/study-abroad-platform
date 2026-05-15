@@ -6,8 +6,16 @@ import {
   Delete,
   Body,
   Param,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiConsumes,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ThrottleAI } from '../../common/decorators/throttle.decorator';
 import { ResumeService } from './resume.service';
@@ -24,6 +32,15 @@ import {
   AiSuggestContentDto,
   CreateSnapshotDto,
 } from './dto/resume-ai.dto';
+import {
+  ApplyProfileImportDto,
+  ApplyResumeUploadImportDto,
+  ApplyResumeAIIssueDto,
+  CreateResumeCommentDto,
+  CreateResumeExportDto,
+  TailorResumeDto,
+  UpdateResumeCommentDto,
+} from './dto/resume-v2.dto';
 
 @ApiTags('resumes')
 @ApiBearerAuth()
@@ -74,6 +91,19 @@ export class ResumeController {
   @ApiOperation({ summary: 'Duplicate a resume' })
   duplicate(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.resumeService.duplicate(user.id, id);
+  }
+
+  @Post(':id/tailor')
+  @ThrottleAI()
+  @ApiOperation({
+    summary: 'Create a tailored resume variant from a base resume',
+  })
+  tailor(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() dto: TailorResumeDto,
+  ) {
+    return this.resumeService.tailorResume(user.id, id, dto);
   }
 
   // ============================================
@@ -130,6 +160,53 @@ export class ResumeController {
   @ApiOperation({ summary: 'Import data from user profile' })
   importProfile(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.resumeService.importFromProfile(user.id, id);
+  }
+
+  @Post(':id/import-profile/preview')
+  @ApiOperation({ summary: 'Preview profile import changes before applying' })
+  previewProfileImport(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+  ) {
+    return this.resumeService.previewProfileImport(user.id, id);
+  }
+
+  @Post(':id/import-profile/apply')
+  @ApiOperation({
+    summary: 'Apply selected profile import changes with a checkpoint',
+  })
+  applyProfileImport(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() dto: ApplyProfileImportDto,
+  ) {
+    return this.resumeService.applyProfileImport(user.id, id, dto);
+  }
+
+  @Post(':id/import-file/preview')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Parse uploaded PDF/DOCX resume into import preview',
+  })
+  previewFileImport(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.resumeService.previewResumeUploadImport(user.id, id, file);
+  }
+
+  @Post(':id/import-file/apply')
+  @ApiOperation({
+    summary: 'Apply confirmed uploaded resume sections and evidence',
+  })
+  applyFileImport(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() dto: ApplyResumeUploadImportDto,
+  ) {
+    return this.resumeService.applyResumeUploadImport(user.id, id, dto);
   }
 
   // ============================================
@@ -235,5 +312,74 @@ export class ResumeController {
       dto.targetMajor,
       dto.targetContext as Record<string, unknown> | undefined,
     );
+  }
+
+  @Get(':id/ai/issues')
+  @ApiOperation({ summary: 'List tracked AI issues for a resume' })
+  listAiIssues(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.resumeService.listAiIssues(user.id, id);
+  }
+
+  @Post(':id/ai/issues/:issueId/apply')
+  @ThrottleAI()
+  @ApiOperation({ summary: 'Apply a tracked AI issue patch' })
+  applyAiIssue(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Param('issueId') issueId: string,
+    @Body() dto: ApplyResumeAIIssueDto,
+  ) {
+    return this.resumeService.applyAiIssue(user.id, id, issueId, dto);
+  }
+
+  @Get(':id/quality')
+  @ApiOperation({ summary: 'Get rubric-based resume quality summary' })
+  getQuality(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.resumeService.getQualitySummary(user.id, id);
+  }
+
+  @Get(':id/exports')
+  @ApiOperation({ summary: 'List resume export history' })
+  listExports(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.resumeService.listExports(user.id, id);
+  }
+
+  @Post(':id/exports')
+  @ApiOperation({
+    summary: 'Create an export record for resume artifact tracking',
+  })
+  createExport(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() dto: CreateResumeExportDto,
+  ) {
+    return this.resumeService.createExportRecord(user.id, id, dto);
+  }
+
+  @Get(':id/comments')
+  @ApiOperation({ summary: 'List resume comments' })
+  listComments(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.resumeService.listComments(user.id, id);
+  }
+
+  @Post(':id/comments')
+  @ApiOperation({ summary: 'Create a resume comment' })
+  createComment(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Body() dto: CreateResumeCommentDto,
+  ) {
+    return this.resumeService.createComment(user.id, id, dto);
+  }
+
+  @Put(':id/comments/:commentId')
+  @ApiOperation({ summary: 'Update or resolve a resume comment' })
+  updateComment(
+    @CurrentUser() user: { id: string },
+    @Param('id') id: string,
+    @Param('commentId') commentId: string,
+    @Body() dto: UpdateResumeCommentDto,
+  ) {
+    return this.resumeService.updateComment(user.id, id, commentId, dto);
   }
 }

@@ -81,6 +81,39 @@ export interface AssessmentResult {
   completedAt: string;
 }
 
+export interface AssessmentDraft {
+  id: string;
+  type: 'MBTI' | 'HOLLAND';
+  answers: { questionId: string; answer: string }[];
+  currentQuestionIndex: number;
+  expiresAt?: string | null;
+  updatedAt: string;
+}
+
+export interface AssessmentDraftSummary {
+  type: 'MBTI' | 'HOLLAND';
+  answerCount: number;
+  currentQuestionIndex: number;
+  updatedAt: string;
+}
+
+export interface AssessmentMajorSuggestion {
+  major: string;
+  sources: string[];
+}
+
+export interface AssessmentSummary {
+  latestMbti?: AssessmentResult;
+  latestHolland?: AssessmentResult;
+  drafts: AssessmentDraftSummary[];
+  historyCount: number;
+  completedTypes: string[];
+  majorSuggestions: AssessmentMajorSuggestion[];
+}
+
+export type AssessmentTab = 'overview' | 'mbti' | 'holland' | 'insights' | 'history';
+export type AssessmentKind = 'mbti' | 'holland';
+
 export const isLikertQuestion = (options: Question['options']) => {
   return options.length === 5 && typeof options[0]?.value === 'number';
 };

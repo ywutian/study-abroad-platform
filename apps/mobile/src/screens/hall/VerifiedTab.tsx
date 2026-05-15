@@ -47,10 +47,10 @@ export function VerifiedTab() {
   const filterLabel = useCallback(
     (filter: RankingFilter): string => {
       const map: Record<RankingFilter, string> = {
-        all: t('hallOfFame.verified.filters.all', 'All'),
-        admitted: t('hallOfFame.verified.filters.admitted', 'Admitted'),
-        top20: t('hallOfFame.verified.filters.top20', 'Top 20'),
-        ivy: t('hallOfFame.verified.filters.ivy', 'Ivy'),
+        all: t('hallOfFame.verified.filters.all'),
+        admitted: t('hallOfFame.verified.filters.admitted'),
+        top20: t('hallOfFame.verified.filters.top20'),
+        ivy: t('hallOfFame.verified.filters.ivy'),
       };
       return map[filter];
     },
@@ -62,7 +62,7 @@ export function VerifiedTab() {
     [c]
   );
 
-  if (isLoading) return <Loading text={t('hallOfFame.loading', 'Loading...')} />;
+  if (isLoading) return <Loading text={t('hallOfFame.loading')} />;
 
   const users = verifiedData?.items || [];
   const stats = verifiedData?.stats;
@@ -78,21 +78,21 @@ export function VerifiedTab() {
           <View style={S.vStatItem}>
             <Text style={[S.vStatValue, { color: c.primary }]}>{stats.totalVerified}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.stats.total', 'Verified')}
+              {t('hallOfFame.verified.stats.total')}
             </Text>
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
             <Text style={[S.vStatValue, { color: c.success }]}>{stats.admittedCount}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.stats.admitted', 'Admitted')}
+              {t('hallOfFame.verified.stats.admitted')}
             </Text>
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
             <Text style={[S.vStatValue, { color: c.info }]}>{stats.avgGpa.toFixed(2)}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.stats.avgGpa', 'Avg GPA')}
+              {t('hallOfFame.verified.stats.avgGpa')}
             </Text>
           </View>
         </Animated.View>
@@ -124,10 +124,7 @@ export function VerifiedTab() {
       </ScrollView>
 
       {users.length === 0 ? (
-        <EmptyState
-          icon="shield-checkmark-outline"
-          title={t('hallOfFame.verified.empty', 'No verified users')}
-        />
+        <EmptyState icon="shield-checkmark-outline" title={t('hallOfFame.verified.empty')} />
       ) : (
         <FlashList
           data={users}

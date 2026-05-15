@@ -14,11 +14,21 @@ interface Message {
   senderId: string;
   conversationId: string;
   createdAt: string;
+  clientMessageId?: string;
+  replyToId?: string;
   isDeleted?: boolean;
   isRecalled?: boolean;
   recalledAt?: string;
   mediaUrl?: string;
   mediaType?: string;
+  attachments?: Array<{
+    id: string;
+    url: string;
+    type: string;
+    name: string;
+    size?: number | null;
+    mimeType?: string | null;
+  }>;
   sender?: {
     id: string;
     email: string;
@@ -114,11 +124,31 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
           if (!old?.pages) return old;
           const lastPage = old.pages[0] || [];
           // 防重复
-          if (lastPage.some((m) => m.id === data.message.id)) return old;
+          if (
+            lastPage.some(
+              (m) =>
+                m.id === data.message.id ||
+                (data.message.clientMessageId && m.clientMessageId === data.message.clientMessageId)
+            )
+          ) {
+            return {
+              ...old,
+              pages: [
+                lastPage.map((m) =>
+                  m.id === data.message.id ||
+                  (data.message.clientMessageId &&
+                    m.clientMessageId === data.message.clientMessageId)
+                    ? { ...data.message, status: 'sent' }
+                    : m
+                ),
+                ...old.pages.slice(1),
+              ],
+            };
+          }
           // 新消息添加到第一页开头（第一页是最新的，DESC 排序）
           return {
             ...old,
-            pages: [[data.message, ...lastPage], ...old.pages.slice(1)],
+            pages: [[{ ...data.message, status: 'sent' }, ...lastPage], ...old.pages.slice(1)],
           };
         }
       );
@@ -242,7 +272,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
     });
 
     socket.on('connect_error', () => {
-      toast.error(t('socketError'));
+      setIsConnected(false);
     });
 
     const typingTimeouts = typingTimeoutRef.current;
@@ -255,7 +285,11 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
 
   // 发送消息
   const sendMessage = useCallback(
-    async (conversationId: string, content: string): Promise<Message | null> => {
+    async (
+      conversationId: string,
+      content: string,
+      options: { clientMessageId?: string; replyToId?: string } = {}
+    ): Promise<Message | null> => {
       if (!socketRef.current?.connected) {
         toast.error(t('socketDisconnected'));
         return null;
@@ -264,7 +298,7 @@ export function useChatSocket(options: UseChatSocketOptions = {}) {
       return new Promise((resolve) => {
         socketRef.current?.emit(
           'sendMessage',
-          { conversationId, content },
+          { conversationId, content, ...options },
           (response: { success: boolean; message?: Message; error?: string }) => {
             if (response.success && response.message) {
               resolve(response.message);

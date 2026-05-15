@@ -18,6 +18,7 @@ import {
   getHeroVisualDefinition,
   getThemeColors,
   getThemeStyleMeta,
+  webThemeCssVarsByPalette,
   normalizeThemeAppearanceOverrides,
   parseColorPalette,
   parseHeroVisualId,
@@ -66,6 +67,23 @@ export const ENTERPRISE_THEME_REQUIRED_CSS_VARS = [
   '--theme-radius-card',
   '--theme-card-shadow',
   '--theme-hero-panel',
+  '--ds-status-reach',
+  '--ds-status-reach-bg',
+  '--ds-status-reach-fg',
+  '--ds-status-target',
+  '--ds-status-target-bg',
+  '--ds-status-target-fg',
+  '--ds-status-safety',
+  '--ds-status-safety-bg',
+  '--ds-status-safety-fg',
+  '--ds-status-likely',
+  '--ds-status-likely-bg',
+  '--ds-status-likely-fg',
+  '--color-chart-1',
+  '--color-chart-2',
+  '--color-chart-3',
+  '--color-chart-4',
+  '--color-chart-5',
 ] as const;
 
 type CertifyInput = {
@@ -104,6 +122,7 @@ function certifyMode(
 ) {
   const colors = getThemeColors(palette, mode);
   const style = getThemeStyleMeta(palette, appearanceOverrides);
+  const generatedVars = webThemeCssVarsByPalette[palette][mode];
   const issues: EnterpriseThemeIssue[] = [];
   const requiredContrastPairs = {
     'foreground/background': getContrastRatio(colors.foreground, colors.background),
@@ -145,7 +164,12 @@ function certifyMode(
     }
   }
 
-  const requiredTokenMisses: string[] = [];
+  const requiredTokenMisses = ENTERPRISE_THEME_REQUIRED_CSS_VARS.filter((token) => {
+    if (token.startsWith('--color-chart-')) {
+      return false;
+    }
+    return !(token in generatedVars);
+  });
 
   for (const token of requiredTokenMisses) {
     issues.push(

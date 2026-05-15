@@ -23,9 +23,12 @@ import { getLocalizedName } from '@/lib/i18n/locale-utils';
 interface AgentChatProps {
   className?: string;
   conversationId?: string;
+  resetSignal?: number;
+  layoutMode?: 'standard' | 'workspace' | 'floating' | 'panel';
   showHeader?: boolean;
   showQuickActions?: boolean;
   compact?: boolean;
+  onConversationChange?: (conversationId?: string) => void;
   /** Action injected from outside (e.g. FloatingChat bridge or local AI panel) */
   pendingAction?: AgentActionPayload | null;
   /** Callback to clear pendingAction after it's been sent */
@@ -123,9 +126,12 @@ function useSmartScroll(deps: unknown[]) {
 export function AgentChat({
   className,
   conversationId,
+  resetSignal,
+  layoutMode = 'standard',
   showHeader = true,
   showQuickActions = true,
   compact: _compact = false,
+  onConversationChange,
   pendingAction,
   onPendingActionConsumed,
 }: AgentChatProps) {
@@ -144,10 +150,12 @@ export function AgentChat({
     startNewConversation,
   } = useAgentChat({
     conversationId,
+    onConversationChange,
     onError: (errorMessage) => toast.error(errorMessage),
   });
 
   const [showHistory, setShowHistory] = useState(false);
+  const isWorkspace = layoutMode === 'workspace';
 
   // Stable refs to avoid stale closures in event handlers
   const isLoadingRef = useRef(isLoading);
@@ -156,6 +164,7 @@ export function AgentChat({
   sendMessageRef.current = sendMessage;
   const pendingActionQueueRef = useRef<AgentActionPayload[]>([]);
   const lastConsumedActionRef = useRef<string | null>(null);
+  const lastResetSignalRef = useRef(resetSignal);
 
   const agentInfo = AGENT_INFO[currentAgent];
   const AgentIcon = agentInfo.icon;
@@ -191,6 +200,12 @@ export function AgentChat({
     onPendingActionConsumed?.();
   }, [pendingAction, onPendingActionConsumed]);
 
+  useEffect(() => {
+    if (resetSignal === undefined || lastResetSignalRef.current === resetSignal) return;
+    lastResetSignalRef.current = resetSignal;
+    startNewConversation();
+  }, [resetSignal, startNewConversation]);
+
   // 空状态动画变体
   const emptyStateVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -211,13 +226,22 @@ export function AgentChat({
   };
 
   return (
-    <div className={cn('flex flex-col h-full bg-background', className)}>
+    <div
+      className={cn(
+        'flex h-full flex-col',
+        isWorkspace ? 'bg-[color:var(--theme-card-bg)]' : 'bg-background',
+        className
+      )}
+    >
       {/* Header */}
       {showHeader && (
         <motion.div
           initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur"
+          className={cn(
+            'flex items-center justify-between border-b bg-background/95 backdrop-blur',
+            isWorkspace ? 'px-5 py-3' : 'px-4 py-3'
+          )}
         >
           <div className="flex items-center gap-3">
             {/* Agent Avatar */}
@@ -305,7 +329,7 @@ export function AgentChat({
           ref={containerRef}
           className="h-full overflow-y-auto scroll-smooth scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
         >
-          <div className="p-4 min-h-full">
+          <div className={cn('min-h-full', isWorkspace ? 'p-5 lg:p-6' : 'p-4')}>
             <AnimatePresence mode="popLayout">
               {messages.length === 0 ? (
                 <motion.div
@@ -314,7 +338,10 @@ export function AgentChat({
                   initial="hidden"
                   animate="visible"
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
+                  className={cn(
+                    'flex h-full flex-col items-center justify-center text-center',
+                    isWorkspace ? 'min-h-[460px]' : 'min-h-[400px]'
+                  )}
                 >
                   {/* Animated Logo */}
                   <motion.div variants={itemVariants} className="relative mb-6">

@@ -43,7 +43,7 @@ export function BasicInfoTab({ control }: BasicInfoTabProps) {
                 <FormLabel className="text-sm font-medium">{t('profile.fields.grade')}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-11">
+                    <SelectTrigger className="h-11" aria-label={t('profile.fields.grade')}>
                       <SelectValue placeholder={t('profile.placeholders.selectGrade')} />
                     </SelectTrigger>
                   </FormControl>
@@ -106,7 +106,7 @@ export function BasicInfoTab({ control }: BasicInfoTabProps) {
               <FormLabel className="text-sm font-medium">{t('profile.fields.budget')}</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="h-11">
+                  <SelectTrigger className="h-11" aria-label={t('profile.fields.budget')}>
                     <SelectValue placeholder={t('profile.placeholders.selectBudget')} />
                   </SelectTrigger>
                 </FormControl>

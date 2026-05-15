@@ -13,6 +13,9 @@ import {
   AssessmentDto,
   AssessmentResultDto,
   SubmitAssessmentDto,
+  SaveAssessmentDraftDto,
+  AssessmentDraftDto,
+  AssessmentSummaryDto,
   MbtiResultDto,
   HollandResultDto,
 } from './dto';
@@ -26,8 +29,34 @@ import { HOLLAND_QUESTIONS, HOLLAND_TYPE_INFO } from './data/holland-questions';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 function toInputJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value));
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
+
+function parseStoredResult(value: Prisma.JsonValue): unknown {
+  if (typeof value !== 'string') return value;
+  return JSON.parse(value) as unknown;
+}
+
+type SupportedAssessmentType =
+  | AssessmentTypeEnum.MBTI
+  | AssessmentTypeEnum.HOLLAND;
+
+type CalculatedAssessmentResult = MbtiResultDto | HollandResultDto;
+
+type AssessmentResultRecord = Prisma.AssessmentResultGetPayload<
+  Record<string, never>
+>;
+
+type AssessmentResultWithAssessment = Prisma.AssessmentResultGetPayload<{
+  include: { assessment: true };
+}>;
+
+const SUPPORTED_ASSESSMENT_TYPES: SupportedAssessmentType[] = [
+  AssessmentTypeEnum.MBTI,
+  AssessmentTypeEnum.HOLLAND,
+];
+
+const DRAFT_TTL_DAYS = 30;
 
 /**
  * Service for personality and career interest assessments.
@@ -66,6 +95,8 @@ export class AssessmentService {
    */
   // eslint-disable-next-line @typescript-eslint/require-await
   async getAssessment(type: AssessmentTypeEnum): Promise<AssessmentDto> {
+    this.assertSupportedType(type);
+
     let questions;
     let title: string;
     let titleZh: string;
@@ -92,8 +123,6 @@ export class AssessmentService {
         description = 'Find careers and majors that match your interests';
         descriptionZh = '找到与你兴趣匹配的职业和专业';
         break;
-      default:
-        throw new BadRequestException('Unsupported assessment type');
     }
 
     // 随机打乱题目顺序
@@ -141,7 +170,10 @@ export class AssessmentService {
     userId: string,
     dto: SubmitAssessmentDto,
   ): Promise<AssessmentResultDto> {
-    let result: any;
+    this.assertSupportedType(dto.type);
+    this.validateAnswers(dto.type, dto.answers, { requireComplete: true });
+
+    let result: CalculatedAssessmentResult;
 
     switch (dto.type) {
       case AssessmentTypeEnum.MBTI:
@@ -150,8 +182,6 @@ export class AssessmentService {
       case AssessmentTypeEnum.HOLLAND:
         result = this.calculateHollandResult(dto.answers);
         break;
-      default:
-        throw new BadRequestException('Unsupported assessment type');
     }
 
     // 查找或创建 Assessment 记录
@@ -188,19 +218,30 @@ export class AssessmentService {
         userId,
         assessmentId: assessment.id,
         answers: toInputJson(dto.answers),
-        result: result as object,
-        majorRecommendations: result.majors
-          ? result.majors.map((m: string) => ({
-              major: m,
-              score: 0,
-              reasons: [],
-            }))
-          : null,
+        result: toInputJson(result),
+        majorRecommendations: toInputJson(
+          result.majors.map((major) => ({
+            major,
+            score: 0,
+            reasons: [],
+          })),
+        ),
       },
     });
 
     // 记录到记忆系统
     await this.saveAssessmentToMemory(userId, dto.type, result);
+
+    await this.prisma.assessmentDraft
+      .delete({
+        where: {
+          userId_type: {
+            userId,
+            type: dto.type,
+          },
+        },
+      })
+      .catch(() => undefined);
 
     return this.formatResult(dto.type, savedResult);
   }
@@ -307,7 +348,7 @@ export class AssessmentService {
    */
   private async recordViewHistoryToMemory(
     userId: string,
-    results: any[],
+    results: AssessmentResultWithAssessment[],
   ): Promise<void> {
     if (!this.memoryManager || results.length === 0) return;
 
@@ -344,21 +385,20 @@ export class AssessmentService {
   private async recordViewResultToMemory(
     userId: string,
     type: AssessmentTypeEnum,
-    result: any,
+    result: AssessmentResultWithAssessment,
   ): Promise<void> {
     if (!this.memoryManager) return;
 
     try {
-      const parsedResult =
-        typeof result.result === 'string'
-          ? JSON.parse(result.result)
-          : result.result;
+      const parsedResult = parseStoredResult(result.result);
 
       let content: string;
       if (type === AssessmentTypeEnum.MBTI) {
-        content = `用户查看了 MBTI 测评结果 ${parsedResult.type}`;
+        const mbti = parsedResult as MbtiResultDto;
+        content = `用户查看了 MBTI 测评结果 ${mbti.type}`;
       } else {
-        content = `用户查看了霍兰德测评结果 ${parsedResult.codes}`;
+        const holland = parsedResult as HollandResultDto;
+        content = `用户查看了霍兰德测评结果 ${holland.codes}`;
       }
 
       await this.memoryManager.remember(userId, {
@@ -453,7 +493,260 @@ export class AssessmentService {
     );
   }
 
+  async getDraft(
+    userId: string,
+    type: AssessmentTypeEnum,
+  ): Promise<AssessmentDraftDto | null> {
+    this.assertSupportedType(type);
+
+    const draft = await this.prisma.assessmentDraft.findUnique({
+      where: {
+        userId_type: {
+          userId,
+          type,
+        },
+      },
+    });
+
+    if (!draft) return null;
+    if (draft.expiresAt && draft.expiresAt.getTime() < Date.now()) {
+      await this.deleteDraft(userId, type);
+      return null;
+    }
+
+    return this.formatDraft(draft);
+  }
+
+  async saveDraft(
+    userId: string,
+    type: AssessmentTypeEnum,
+    dto: SaveAssessmentDraftDto,
+  ): Promise<AssessmentDraftDto> {
+    this.assertSupportedType(type);
+    this.validateAnswers(type, dto.answers, { requireComplete: false });
+
+    const assessment = await this.getAssessment(type);
+    const maxQuestionIndex = Math.max(assessment.questions.length - 1, 0);
+    const currentQuestionIndex = Math.min(
+      dto.currentQuestionIndex ?? 0,
+      maxQuestionIndex,
+    );
+    const expiresAt = new Date(
+      Date.now() + DRAFT_TTL_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    const draft = await this.prisma.assessmentDraft.upsert({
+      where: {
+        userId_type: {
+          userId,
+          type,
+        },
+      },
+      create: {
+        userId,
+        type,
+        answers: toInputJson(dto.answers),
+        currentQuestionIndex,
+        expiresAt,
+      },
+      update: {
+        answers: toInputJson(dto.answers),
+        currentQuestionIndex,
+        expiresAt,
+      },
+    });
+
+    return this.formatDraft(draft);
+  }
+
+  async deleteDraft(userId: string, type: AssessmentTypeEnum): Promise<void> {
+    this.assertSupportedType(type);
+
+    await this.prisma.assessmentDraft
+      .delete({
+        where: {
+          userId_type: {
+            userId,
+            type,
+          },
+        },
+      })
+      .catch(() => undefined);
+  }
+
+  async getSummary(userId: string): Promise<AssessmentSummaryDto> {
+    const [results, drafts] = await Promise.all([
+      this.prisma.assessmentResult.findMany({
+        where: { userId },
+        include: { assessment: true },
+        orderBy: { completedAt: 'desc' },
+      }),
+      this.prisma.assessmentDraft.findMany({
+        where: {
+          userId,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+        orderBy: { updatedAt: 'desc' },
+      }),
+    ]);
+
+    const formattedResults = results.map((r) =>
+      this.formatResult(r.assessment.type as AssessmentTypeEnum, r),
+    );
+    const latestMbti = formattedResults.find(
+      (r) => r.type === AssessmentTypeEnum.MBTI,
+    );
+    const latestHolland = formattedResults.find(
+      (r) => r.type === AssessmentTypeEnum.HOLLAND,
+    );
+
+    return {
+      latestMbti,
+      latestHolland,
+      drafts: drafts.map((draft) => {
+        const answers = this.parseAnswers(draft.answers);
+        return {
+          type: draft.type as AssessmentTypeEnum,
+          answerCount: answers.length,
+          currentQuestionIndex: draft.currentQuestionIndex,
+          updatedAt: draft.updatedAt,
+        };
+      }),
+      historyCount: results.length,
+      completedTypes: [
+        ...new Set(formattedResults.map((result) => result.type)),
+      ] as AssessmentTypeEnum[],
+      majorSuggestions: this.buildMajorSuggestions(latestMbti, latestHolland),
+    };
+  }
+
   // ============ Private Methods ============
+
+  private assertSupportedType(
+    type: AssessmentTypeEnum,
+  ): asserts type is SupportedAssessmentType {
+    if (!SUPPORTED_ASSESSMENT_TYPES.includes(type as SupportedAssessmentType)) {
+      throw new BadRequestException('Unsupported assessment type');
+    }
+  }
+
+  private getQuestionDefinitions(type: SupportedAssessmentType) {
+    return type === AssessmentTypeEnum.MBTI
+      ? MBTI_QUESTIONS
+      : HOLLAND_QUESTIONS;
+  }
+
+  private getQuestionOptions(
+    type: SupportedAssessmentType,
+    question:
+      | (typeof MBTI_QUESTIONS)[number]
+      | (typeof HOLLAND_QUESTIONS)[number],
+  ) {
+    return type === AssessmentTypeEnum.MBTI
+      ? LIKERT_OPTIONS
+      : (question as (typeof HOLLAND_QUESTIONS)[number]).options;
+  }
+
+  private validateAnswers(
+    type: SupportedAssessmentType,
+    answers: { questionId: string; answer: string }[],
+    options: { requireComplete: boolean },
+  ): void {
+    const questionDefinitions = this.getQuestionDefinitions(type);
+    const questionMap = new Map(questionDefinitions.map((q) => [q.id, q]));
+    const seen = new Set<string>();
+
+    for (const answer of answers) {
+      const question = questionMap.get(answer.questionId);
+      if (!question) {
+        throw new BadRequestException(`Unknown question: ${answer.questionId}`);
+      }
+      if (seen.has(answer.questionId)) {
+        throw new BadRequestException(
+          `Duplicate answer for question: ${answer.questionId}`,
+        );
+      }
+      seen.add(answer.questionId);
+
+      const validValues = this.getQuestionOptions(type, question).map((o) =>
+        String(o.value),
+      );
+      if (!validValues.includes(String(answer.answer))) {
+        throw new BadRequestException(
+          `Invalid answer for question: ${answer.questionId}`,
+        );
+      }
+    }
+
+    if (options.requireComplete && seen.size !== questionDefinitions.length) {
+      throw new BadRequestException(
+        `Incomplete assessment: expected ${questionDefinitions.length} answers, received ${seen.size}`,
+      );
+    }
+  }
+
+  private parseAnswers(
+    value: unknown,
+  ): { questionId: string; answer: string }[] {
+    if (!Array.isArray(value)) return [];
+    return value
+      .filter((item) => item && typeof item === 'object')
+      .map((item: any) => ({
+        questionId: String(item.questionId ?? ''),
+        answer: String(item.answer ?? ''),
+      }))
+      .filter((item) => item.questionId && item.answer);
+  }
+
+  private formatDraft(draft: {
+    id: string;
+    type: AssessmentType;
+    answers: unknown;
+    currentQuestionIndex: number;
+    expiresAt: Date | null;
+    updatedAt: Date;
+  }): AssessmentDraftDto {
+    return {
+      id: draft.id,
+      type: draft.type as AssessmentTypeEnum,
+      answers: this.parseAnswers(draft.answers),
+      currentQuestionIndex: draft.currentQuestionIndex,
+      expiresAt: draft.expiresAt,
+      updatedAt: draft.updatedAt,
+    };
+  }
+
+  private buildMajorSuggestions(
+    latestMbti?: AssessmentResultDto,
+    latestHolland?: AssessmentResultDto,
+  ): AssessmentSummaryDto['majorSuggestions'] {
+    const suggestions = new Map<string, Set<string>>();
+
+    const addMajors = (majors: string[] | undefined, source: string) => {
+      for (const major of majors ?? []) {
+        const normalized = major.trim();
+        if (!normalized) continue;
+        if (!suggestions.has(normalized)) {
+          suggestions.set(normalized, new Set());
+        }
+        suggestions.get(normalized)?.add(source);
+      }
+    };
+
+    addMajors(latestMbti?.mbtiResult?.majors, 'MBTI');
+    addMajors(latestHolland?.hollandResult?.majors, 'HOLLAND');
+
+    return [...suggestions.entries()]
+      .sort((a, b) => {
+        const sourceDelta = b[1].size - a[1].size;
+        return sourceDelta || a[0].localeCompare(b[0]);
+      })
+      .slice(0, 12)
+      .map(([major, sources]) => ({
+        major,
+        sources: [...sources],
+      }));
+  }
 
   /**
    * Calculate the MBTI personality type from raw answers using a 5-point Likert scale.
@@ -633,7 +926,7 @@ export class AssessmentService {
    */
   private formatResult(
     type: AssessmentTypeEnum,
-    result: any,
+    result: AssessmentResultRecord,
   ): AssessmentResultDto {
     const baseResult: AssessmentResultDto = {
       id: result.id,
@@ -641,10 +934,7 @@ export class AssessmentService {
       completedAt: result.completedAt,
     };
 
-    const parsedResult =
-      typeof result.result === 'string'
-        ? JSON.parse(result.result)
-        : result.result;
+    const parsedResult = parseStoredResult(result.result);
 
     if (type === AssessmentTypeEnum.MBTI) {
       baseResult.mbtiResult = parsedResult as MbtiResultDto;

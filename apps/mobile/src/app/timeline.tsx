@@ -287,7 +287,7 @@ export default function TimelinePage() {
       invalidateTl();
       setTaskModal({ visible: false, timelineId: null });
       setNewTaskTitle('');
-      toast.success(t('timeline.taskAdded', 'Task added'));
+      toast.success(t('timeline.taskAdded'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -295,7 +295,7 @@ export default function TimelinePage() {
     mutationFn: (id) => apiClient.delete(`${API_ROUTES.TIMELINES}/${id}`),
     onSuccess: () => {
       invalidateTl();
-      toast.success(t('timeline.deleted', 'Deleted'));
+      toast.success(t('timeline.deleted'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -309,7 +309,7 @@ export default function TimelinePage() {
       qc.invalidateQueries({ queryKey: keys.personal });
       setEventModal(false);
       setEventForm({ title: '', category: '', notes: '' });
-      toast.success(t('timeline.eventAdded', 'Event added'));
+      toast.success(t('timeline.eventAdded'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -317,7 +317,7 @@ export default function TimelinePage() {
     mutationFn: (id) => apiClient.delete(`${API_ROUTES.TIMELINES}/personal-events/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.personal });
-      toast.success(t('timeline.deleted', 'Deleted'));
+      toast.success(t('timeline.deleted'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -327,7 +327,7 @@ export default function TimelinePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.personal });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success(t('timeline.subscribed', 'Added to your events'));
+      toast.success(t('timeline.subscribed'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -403,10 +403,10 @@ export default function TimelinePage() {
           <CardContent>
             <View style={s.headerRow}>
               {[
-                { v: total, l: t('timeline.overview.totalSchools', 'Total'), c: colors.foreground },
-                { v: sub, l: t('timeline.overview.submitted', 'Submitted'), c: colors.primary },
-                { v: prog, l: t('timeline.overview.inProgress', 'In Progress'), c: colors.info },
-                { v: upcoming, l: t('timeline.overview.upcoming', 'Upcoming'), c: colors.warning },
+                { v: total, l: t('timeline.overview.totalSchools'), c: colors.foreground },
+                { v: sub, l: t('timeline.overview.submitted'), c: colors.primary },
+                { v: prog, l: t('timeline.overview.inProgress'), c: colors.info },
+                { v: upcoming, l: t('timeline.overview.upcoming'), c: colors.warning },
               ].map((s) => (
                 <View key={s.l} style={styles.headerStat}>
                   <Text style={[styles.headerStatVal, { color: s.c }]}>{s.v}</Text>
@@ -488,9 +488,7 @@ export default function TimelinePage() {
                       },
                     ]}
                   >
-                    {overdue
-                      ? t('timeline.overdue', 'Overdue')
-                      : t('timeline.daysLeft', '{{count}} days left', { count: days })}
+                    {overdue ? t('timeline.overdue') : t('timeline.daysLeft', { count: days })}
                   </Text>
                 )}
               </View>
@@ -536,7 +534,7 @@ export default function TimelinePage() {
                     }}
                     leftIcon={<Ionicons name="trash-outline" size={16} color={colors.error} />}
                   >
-                    <Text style={{ color: colors.error }}>{t('timeline.delete', 'Delete')}</Text>
+                    <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
                   </AnimatedButton>
                 </View>
               </View>
@@ -548,16 +546,13 @@ export default function TimelinePage() {
   };
 
   const renderSchools = () => {
-    if (tlLoading) return <Loading text={t('timeline.loading', 'Loading...')} />;
+    if (tlLoading) return <Loading text={t('timeline.loading')} />;
     if (!sorted.length)
       return (
         <EmptyState
           icon="school-outline"
-          title={t('timeline.empty.noSchools', 'No schools yet')}
-          description={t(
-            'timeline.empty.noSchoolsDesc',
-            'Add schools to track your application progress.'
-          )}
+          title={t('timeline.empty.noSchools')}
+          description={t('timeline.empty.noSchoolsDesc')}
         />
       );
     return <>{sorted.map((x, i) => renderSchoolCard(x, i))}</>;
@@ -566,12 +561,12 @@ export default function TimelinePage() {
   // ── Render: Events Tab ──
 
   const renderEvents = () => {
-    if (peLoading || geLoading) return <Loading text={t('timeline.loading', 'Loading...')} />;
+    if (peLoading || geLoading) return <Loading text={t('timeline.loading')} />;
     return (
       <>
         <View style={s.sectionHdr}>
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>
-            {t('timeline.events.personal', 'My Events')}
+            {t('timeline.events.personal')}
           </Text>
           <AnimatedButton
             variant="ghost"
@@ -579,17 +574,14 @@ export default function TimelinePage() {
             onPress={() => setEventModal(true)}
             leftIcon={<Ionicons name="add" size={18} color={colors.primary} />}
           >
-            {t('timeline.addEvent', 'Add')}
+            {t('timeline.addEvent')}
           </AnimatedButton>
         </View>
         {!personalEvents?.length ? (
           <EmptyState
             icon="calendar-outline"
-            title={t('timeline.empty.noEvents', 'No events yet')}
-            description={t(
-              'timeline.empty.noEventsDesc',
-              'Create events or subscribe to global events.'
-            )}
+            title={t('timeline.empty.noEvents')}
+            description={t('timeline.empty.noEventsDesc')}
             style={{ paddingVertical: spacing.xl }}
           />
         ) : (
@@ -689,9 +681,7 @@ export default function TimelinePage() {
                           }
                           style={{ alignSelf: 'flex-start', marginTop: spacing.sm }}
                         >
-                          <Text style={{ color: colors.error }}>
-                            {t('timeline.delete', 'Delete')}
-                          </Text>
+                          <Text style={{ color: colors.error }}>{t('timeline.delete')}</Text>
                         </AnimatedButton>
                       </View>
                     )}
@@ -704,7 +694,7 @@ export default function TimelinePage() {
 
         <View style={[s.sectionHdr, { marginTop: spacing.xl }]}>
           <Text style={[s.sectionTitle, { color: colors.foreground }]}>
-            {t('timeline.events.global', 'Global Events')}
+            {t('timeline.events.global')}
           </Text>
         </View>
         {!sortedGlobal.length ? (
@@ -717,7 +707,7 @@ export default function TimelinePage() {
               color: colors.foregroundMuted,
             }}
           >
-            {t('timeline.events.noGlobal', 'No upcoming global events.')}
+            {t('timeline.events.noGlobal')}
           </Text>
         ) : (
           <AnimatedCard>
@@ -775,9 +765,7 @@ export default function TimelinePage() {
                         }}
                       >
                         {ge.category}
-                        {d !== null && d >= 0
-                          ? ` - ${t('timeline.daysLeft', '{{count}} days left', { count: d })}`
-                          : ''}
+                        {d !== null && d >= 0 ? ` - ${t('timeline.daysLeft', { count: d })}` : ''}
                       </Text>
                     </View>
                     <AnimatedButton
@@ -786,7 +774,7 @@ export default function TimelinePage() {
                       onPress={() => subscribe.mutate(ge.id)}
                       disabled={subscribe.isPending}
                     >
-                      {t('timeline.events.subscribe', 'Add')}
+                      {t('timeline.events.subscribe')}
                     </AnimatedButton>
                   </View>
                 );
@@ -801,30 +789,30 @@ export default function TimelinePage() {
   // ── Render: Overview Tab ──
 
   const renderOverview = () => {
-    if (ovLoading) return <Loading text={t('timeline.loading', 'Loading...')} />;
+    if (ovLoading) return <Loading text={t('timeline.loading')} />;
     if (!overview)
-      return <EmptyState icon="analytics-outline" title={t('timeline.empty.noData', 'No data')} />;
+      return <EmptyState icon="analytics-outline" title={t('timeline.empty.noData')} />;
     const stats = [
       {
-        l: t('timeline.overview.totalSchools', 'Total'),
+        l: t('timeline.overview.totalSchools'),
         v: overview.totalSchools,
         c: colors.foreground,
         i: 'school-outline' as const,
       },
       {
-        l: t('timeline.overview.submitted', 'Submitted'),
+        l: t('timeline.overview.submitted'),
         v: overview.submitted,
         c: colors.primary,
         i: 'checkmark-circle-outline' as const,
       },
       {
-        l: t('timeline.overview.inProgress', 'In Progress'),
+        l: t('timeline.overview.inProgress'),
         v: overview.inProgress,
         c: colors.info,
         i: 'reload-outline' as const,
       },
       {
-        l: t('timeline.overview.notStarted', 'Not Started'),
+        l: t('timeline.overview.notStarted'),
         v: overview.notStarted,
         c: colors.foregroundMuted,
         i: 'ellipsis-horizontal-outline' as const,
@@ -865,7 +853,7 @@ export default function TimelinePage() {
         {overview.upcomingDeadlines.length > 0 && (
           <Animated.View entering={FadeInUp.delay(300).springify()}>
             <Text style={[s.sectionTitle, { color: colors.foreground, marginBottom: spacing.md }]}>
-              {t('timeline.overview.upcomingDeadlines', 'Upcoming Deadlines')}
+              {t('timeline.overview.upcomingDeadlines')}
             </Text>
             {overview.upcomingDeadlines.slice(0, 5).map((item) => {
               const d = getDaysLeft(item.deadline);
@@ -908,7 +896,7 @@ export default function TimelinePage() {
                   </View>
                   {d !== null && (
                     <Badge variant={d < 0 ? 'error' : d <= 7 ? 'warning' : 'secondary'}>
-                      {d < 0 ? t('timeline.overdue', 'Overdue') : `${d}d`}
+                      {d < 0 ? t('timeline.overdue') : `${d}d`}
                     </Badge>
                   )}
                 </View>
@@ -922,7 +910,7 @@ export default function TimelinePage() {
             style={{ marginTop: spacing.xl }}
           >
             <Text style={[s.sectionTitle, { color: colors.error, marginBottom: spacing.md }]}>
-              {t('timeline.overview.overdueTasks', 'Overdue Tasks')}
+              {t('timeline.overview.overdueTasks')}
             </Text>
             {overview.overdueTasks.map((tk) => (
               <View
@@ -956,7 +944,7 @@ export default function TimelinePage() {
                   </Text>
                   {tk.dueDate && (
                     <Text style={{ fontSize: fontSize.xs, color: colors.error, marginTop: 2 }}>
-                      {t('timeline.overdue', 'Overdue')} - {fmtDate(tk.dueDate)}
+                      {t('timeline.overdue')} - {fmtDate(tk.dueDate)}
                     </Text>
                   )}
                 </View>
@@ -972,7 +960,7 @@ export default function TimelinePage() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t('timeline.title', 'Timeline') }} />
+      <Stack.Screen options={{ title: t('timeline.title') }} />
       <ScrollView
         style={[s.container, { backgroundColor: colors.background }]}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing['3xl'] }}
@@ -983,9 +971,9 @@ export default function TimelinePage() {
         <View style={s.tabs}>
           <Segment
             segments={[
-              { key: 'schools', label: t('timeline.tabs.schools', 'Schools') },
-              { key: 'events', label: t('timeline.tabs.events', 'Events') },
-              { key: 'overview', label: t('timeline.tabs.overview', 'Overview') },
+              { key: 'schools', label: t('timeline.tabs.schools') },
+              { key: 'events', label: t('timeline.tabs.events') },
+              { key: 'overview', label: t('timeline.tabs.overview') },
             ]}
             value={activeTab}
             onChange={(k) => {
@@ -1004,7 +992,7 @@ export default function TimelinePage() {
       <Modal
         visible={taskModal.visible}
         onClose={() => setTaskModal({ visible: false, timelineId: null })}
-        title={t('timeline.addTask', 'Add Task')}
+        title={t('timeline.addTask')}
         footer={
           <AnimatedButton
             onPress={() => {
@@ -1014,13 +1002,13 @@ export default function TimelinePage() {
             disabled={!newTaskTitle.trim() || addTask.isPending}
             loading={addTask.isPending}
           >
-            {t('timeline.save', 'Save')}
+            {t('timeline.save')}
           </AnimatedButton>
         }
       >
         <Input
-          label={t('timeline.taskTitle', 'Task Title')}
-          placeholder={t('timeline.taskTitlePlaceholder', 'Enter task title...')}
+          label={t('timeline.taskTitle')}
+          placeholder={t('timeline.taskTitlePlaceholder')}
           value={newTaskTitle}
           onChangeText={setNewTaskTitle}
           autoFocus
@@ -1030,7 +1018,7 @@ export default function TimelinePage() {
       <Modal
         visible={eventModal}
         onClose={() => setEventModal(false)}
-        title={t('timeline.addEvent', 'Add Event')}
+        title={t('timeline.addEvent')}
         footer={
           <AnimatedButton
             onPress={() => {
@@ -1044,26 +1032,26 @@ export default function TimelinePage() {
             disabled={!eventForm.title.trim() || addEvent.isPending}
             loading={addEvent.isPending}
           >
-            {t('timeline.save', 'Save')}
+            {t('timeline.save')}
           </AnimatedButton>
         }
       >
         <Input
-          label={t('timeline.eventTitle', 'Title')}
-          placeholder={t('timeline.eventTitlePlaceholder', 'Enter event title...')}
+          label={t('timeline.eventTitle')}
+          placeholder={t('timeline.eventTitlePlaceholder')}
           value={eventForm.title}
           onChangeText={(v) => setEventForm((p) => ({ ...p, title: v }))}
           autoFocus
         />
         <Input
-          label={t('timeline.eventCategory', 'Category')}
-          placeholder={t('timeline.eventCategoryPlaceholder', 'e.g. SAT, Competition...')}
+          label={t('timeline.eventCategory')}
+          placeholder={t('timeline.eventCategoryPlaceholder')}
           value={eventForm.category}
           onChangeText={(v) => setEventForm((p) => ({ ...p, category: v }))}
         />
         <Input
-          label={t('timeline.eventNotes', 'Notes')}
-          placeholder={t('timeline.eventNotesPlaceholder', 'Optional notes...')}
+          label={t('timeline.eventNotes')}
+          placeholder={t('timeline.eventNotesPlaceholder')}
           value={eventForm.notes}
           onChangeText={(v) => setEventForm((p) => ({ ...p, notes: v }))}
           multiline
@@ -1075,8 +1063,8 @@ export default function TimelinePage() {
         visible={!!deleteDialog}
         onClose={() => setDeleteDialog(null)}
         onConfirm={confirmDelete}
-        title={t('timeline.deleteConfirmTitle', 'Delete')}
-        message={t('timeline.deleteConfirmMessage', 'Are you sure? This cannot be undone.')}
+        title={t('timeline.deleteConfirmTitle')}
+        message={t('timeline.deleteConfirmMessage')}
         variant="destructive"
         loading={deleteTl.isPending || deleteEvt.isPending}
       />
@@ -1147,7 +1135,7 @@ function InlineTaskList({
             paddingVertical: spacing.sm,
           }}
         >
-          {t('timeline.noTasks', 'No tasks yet')}
+          {t('timeline.noTasks')}
         </Text>
       )}
       <AnimatedButton
@@ -1157,7 +1145,7 @@ function InlineTaskList({
         leftIcon={<Ionicons name="add-circle-outline" size={16} color={colors.primary} />}
         style={{ alignSelf: 'flex-start', marginTop: spacing.xs }}
       >
-        {t('timeline.addTask', 'Add Task')}
+        {t('timeline.addTask')}
       </AnimatedButton>
     </View>
   );

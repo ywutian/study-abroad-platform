@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Newsreader, Inter } from 'next/font/google';
-import { getThemeCssText } from '@study-abroad/shared';
+import { getThemeCssText, getWebThemeBootstrapScript } from '@study-abroad/shared';
 
 const newsreader = Newsreader({
   subsets: ['latin'],
@@ -82,6 +82,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       className={`${GeistSans.variable} ${GeistMono.variable} ${newsreader.variable} ${inter.variable}`}
     >
       <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: getWebThemeBootstrapScript() }} />
         <style nonce={nonce} dangerouslySetInnerHTML={{ __html: getThemeCssText() }} />
         {shouldRenderStructuredData ? (
           <>

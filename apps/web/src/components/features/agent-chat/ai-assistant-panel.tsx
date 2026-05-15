@@ -203,6 +203,7 @@ export function AiAssistantPanel({
         <AgentChat
           showHeader={false}
           showQuickActions={contextActions.length === 0}
+          layoutMode="panel"
           pendingAction={pendingAction}
           onPendingActionConsumed={() => setPendingAction(null)}
         />

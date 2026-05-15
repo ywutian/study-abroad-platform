@@ -477,8 +477,6 @@ export default function CaseDetailPage() {
   );
 }
 
-// ── 信息项小组件 ──────────────────────────────────────────────────────────────
-
 function InfoItem({
   icon: Icon,
   label,

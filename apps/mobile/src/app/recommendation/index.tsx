@@ -87,7 +87,7 @@ export default function RecommendationPage() {
     <>
       <Stack.Screen
         options={{
-          title: t('recommendation.title', 'AI Recommendation'),
+          title: t('recommendation.title'),
           headerLargeTitle: false,
         }}
       />
@@ -110,15 +110,8 @@ export default function RecommendationPage() {
                 <Ionicons name="school" size={28} color={colors.onGradient} />
               </View>
               <View style={styles.heroTextContainer}>
-                <Text style={styles.heroTitle}>
-                  {t('recommendation.heroTitle', 'Smart School Selection')}
-                </Text>
-                <Text style={styles.heroSubtitle}>
-                  {t(
-                    'recommendation.heroSubtitle',
-                    'AI-powered recommendations tailored to your profile'
-                  )}
-                </Text>
+                <Text style={styles.heroTitle}>{t('recommendation.heroTitle')}</Text>
+                <Text style={styles.heroSubtitle}>{t('recommendation.heroSubtitle')}</Text>
               </View>
             </View>
           </LinearGradient>
@@ -128,8 +121,8 @@ export default function RecommendationPage() {
         <View style={styles.tabContainer}>
           <Segment
             segments={[
-              { key: 'generate', label: t('recommendation.tabGenerate', 'Generate') },
-              { key: 'history', label: t('recommendation.tabHistory', 'History') },
+              { key: 'generate', label: t('recommendation.tabGenerate') },
+              { key: 'history', label: t('recommendation.tabHistory') },
             ]}
             value={activeTab}
             onChange={(key) => {

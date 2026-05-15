@@ -184,7 +184,7 @@ export default function AssessmentPage() {
       setResult(data);
       setViewState('result');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success(t('assessment.result.title', 'Assessment Complete'));
+      toast.success(t('assessment.result.title'));
     },
     onError: (err) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -273,9 +273,7 @@ export default function AssessmentPage() {
   // ── Render: Selection ──────────────────────────────────
   const renderSelection = () => (
     <Animated.View entering={FadeInDown.duration(400).springify()}>
-      <Text style={[S.title, { color: colors.foreground }]}>
-        {t('assessment.selectType', 'Choose an Assessment')}
-      </Text>
+      <Text style={[S.title, { color: colors.foreground }]}>{t('assessment.selectType')}</Text>
       {[AssessmentTypeEnum.MBTI, AssessmentTypeEnum.HOLLAND, AssessmentTypeEnum.MAJOR_MATCH].map(
         (type, idx) => {
           const c = TYPE_COLORS[type];
@@ -306,7 +304,7 @@ export default function AssessmentPage() {
                       size="sm"
                       style={{ backgroundColor: c }}
                     >
-                      {t('assessment.start', 'Start')}
+                      {t('assessment.start')}
                     </AnimatedButton>
                   </View>
                 </CardContent>
@@ -325,14 +323,14 @@ export default function AssessmentPage() {
         style={S.fullBtn}
         leftIcon={<Ionicons name="time-outline" size={20} color={colors.foreground} />}
       >
-        {t('assessment.history.title', 'View History')}
+        {t('assessment.history.title')}
       </AnimatedButton>
     </Animated.View>
   );
 
   // ── Render: Quiz ───────────────────────────────────────
   const renderQuiz = () => {
-    if (quizLoading || !assessment) return <Loading text={t('assessment.loading', 'Loading...')} />;
+    if (quizLoading || !assessment) return <Loading text={t('assessment.loading')} />;
     const qs = assessment.questions;
     const q = qs[currentIndex];
     if (!q) return null;
@@ -348,7 +346,7 @@ export default function AssessmentPage() {
             <Ionicons name="close" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={[S.progText, { color: colors.foregroundMuted }]}>
-            {t('assessment.questionOf', '{{current}} / {{total}}', {
+            {t('assessment.questionOf', {
               current: currentIndex + 1,
               total: qs.length,
             })}
@@ -421,7 +419,7 @@ export default function AssessmentPage() {
             disabled={currentIndex === 0}
             leftIcon={<Ionicons name="chevron-back" size={18} color={colors.foreground} />}
           >
-            {t('assessment.previous', 'Back')}
+            {t('assessment.previous')}
           </AnimatedButton>
           {isLast && allDone ? (
             <AnimatedButton
@@ -429,9 +427,7 @@ export default function AssessmentPage() {
               loading={submitMut.isPending}
               style={{ backgroundColor: tc }}
             >
-              {submitMut.isPending
-                ? t('assessment.submitting', 'Submitting...')
-                : t('assessment.submit', 'Submit')}
+              {submitMut.isPending ? t('assessment.submitting') : t('assessment.submit')}
             </AnimatedButton>
           ) : (
             <AnimatedButton
@@ -441,7 +437,7 @@ export default function AssessmentPage() {
                 <Ionicons name="chevron-forward" size={18} color={colors.primaryForeground} />
               }
             >
-              {t('assessment.next', 'Next')}
+              {t('assessment.next')}
             </AnimatedButton>
           )}
         </View>
@@ -468,7 +464,7 @@ export default function AssessmentPage() {
         </View>
         <View style={S.sec}>
           <Text style={[S.secLabel, { color: colors.foreground }]}>
-            {t('assessment.result.dimensions', 'Dimensions')}
+            {t('assessment.result.dimensions')}
           </Text>
           {MBTI_DIMS.map(([l, r], i) => {
             const ls = m.scores[l] || 0,
@@ -522,7 +518,7 @@ export default function AssessmentPage() {
         {m.strengths.length > 0 && (
           <View style={S.sec}>
             <Text style={[S.secLabel, { color: colors.foreground }]}>
-              {t('assessment.result.strengths', 'Strengths')}
+              {t('assessment.result.strengths')}
             </Text>
             {m.strengths.map((s, i) => (
               <View key={i} style={S.listRow}>
@@ -532,10 +528,8 @@ export default function AssessmentPage() {
             ))}
           </View>
         )}
-        {m.careers.length > 0 &&
-          renderChips(t('assessment.result.careers', 'Careers'), m.careers, tc)}
-        {m.majors.length > 0 &&
-          renderChips(t('assessment.result.majors', 'Majors'), m.majors, colors.info)}
+        {m.careers.length > 0 && renderChips(t('assessment.result.careers'), m.careers, tc)}
+        {m.majors.length > 0 && renderChips(t('assessment.result.majors'), m.majors, colors.info)}
       </Animated.View>
     );
   };
@@ -563,7 +557,7 @@ export default function AssessmentPage() {
         </View>
         <View style={S.sec}>
           <Text style={[S.secLabel, { color: colors.foreground }]}>
-            {t('assessment.result.dimensions', 'Score Profile')}
+            {t('assessment.result.dimensions')}
           </Text>
           {HOLLAND_KEYS.map((k, i) => {
             const sc = h.scores[k] || 0,
@@ -590,9 +584,9 @@ export default function AssessmentPage() {
           })}
         </View>
         {h.fields.length > 0 &&
-          renderChips(t('assessment.result.fields', 'Fields'), isZh ? h.fieldsZh : h.fields, tc)}
+          renderChips(t('assessment.result.fields'), isZh ? h.fieldsZh : h.fields, tc)}
         {h.majors.length > 0 &&
-          renderChips(t('assessment.result.recommendedMajors', 'Majors'), h.majors, colors.info)}
+          renderChips(t('assessment.result.recommendedMajors'), h.majors, colors.info)}
       </Animated.View>
     );
   };
@@ -621,7 +615,7 @@ export default function AssessmentPage() {
             <Ionicons name="arrow-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={[S.rHeaderTitle, { color: colors.foreground }]}>
-            {t('assessment.result.title', 'Your Result')}
+            {t('assessment.result.title')}
           </Text>
           <View style={{ width: 32 }} />
         </View>
@@ -631,7 +625,7 @@ export default function AssessmentPage() {
           <View style={[S.hero, { backgroundColor: TYPE_COLORS[result.type] + '10' }]}>
             <Ionicons name={TYPE_ICONS[result.type]} size={48} color={TYPE_COLORS[result.type]} />
             <Text style={[S.heroTitle, { color: colors.foreground, marginTop: spacing.md }]}>
-              {t('assessment.result.title', 'Assessment Complete')}
+              {t('assessment.result.title')}
             </Text>
           </View>
         )}
@@ -643,10 +637,10 @@ export default function AssessmentPage() {
             style={S.fullBtn}
             leftIcon={<Ionicons name="refresh-outline" size={20} color={colors.foreground} />}
           >
-            {t('assessment.retake', 'Retake Assessment')}
+            {t('assessment.retake')}
           </AnimatedButton>
           <AnimatedButton onPress={goBack} variant="ghost" size="lg" style={S.fullBtn}>
-            {t('assessment.selectType', 'Choose Another')}
+            {t('assessment.selectType')}
           </AnimatedButton>
         </View>
       </View>
@@ -655,14 +649,14 @@ export default function AssessmentPage() {
 
   // ── Render: History ────────────────────────────────────
   const renderHistory = () => {
-    if (histLoading) return <Loading text={t('assessment.history.loading', 'Loading...')} />;
+    if (histLoading) return <Loading text={t('assessment.history.loading')} />;
     if (!history || history.length === 0) {
       return (
         <EmptyState
           icon="time-outline"
-          title={t('assessment.history.empty', 'No assessments yet')}
-          description={t('assessment.history.emptyDesc', 'Complete an assessment to see it here.')}
-          action={{ label: t('assessment.start', 'Start'), onPress: goBack }}
+          title={t('assessment.history.empty')}
+          description={t('assessment.history.emptyDesc')}
+          action={{ label: t('assessment.start'), onPress: goBack }}
         />
       );
     }
@@ -673,7 +667,7 @@ export default function AssessmentPage() {
             <Ionicons name="arrow-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text style={[S.title, { color: colors.foreground }]}>
-            {t('assessment.history.title', 'History')}
+            {t('assessment.history.title')}
           </Text>
           <View style={{ width: 32 }} />
         </View>
@@ -718,7 +712,7 @@ export default function AssessmentPage() {
   // ── Main Render ────────────────────────────────────────
   return (
     <>
-      <Stack.Screen options={{ title: t('assessment.title', 'Assessment') }} />
+      <Stack.Screen options={{ title: t('assessment.title') }} />
       <ScrollView
         style={[S.container, { backgroundColor: colors.background }]}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing['3xl'] }}

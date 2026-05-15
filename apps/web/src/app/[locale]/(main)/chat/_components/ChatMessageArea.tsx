@@ -34,6 +34,7 @@ interface ChatMessageAreaProps {
   onScroll: () => void;
   onDeleteMessage: (id: string) => void;
   onRecallMessage: (id: string) => void;
+  onRetryMessage?: (message: Message) => void;
   onCopyMessage: (content: string) => void;
   onReportMessage: (id: string) => void;
 }
@@ -54,6 +55,7 @@ export function ChatMessageArea({
   onScroll,
   onDeleteMessage,
   onRecallMessage,
+  onRetryMessage,
   onCopyMessage,
   onReportMessage,
 }: ChatMessageAreaProps) {
@@ -106,7 +108,7 @@ export function ChatMessageArea({
       onScroll={onScroll}
       role="log"
       aria-label={t('chat.title')}
-      className="flex-1 min-h-0 overflow-y-auto p-4 relative"
+      className="flex-1 min-h-0 overflow-y-auto px-4 py-5 relative"
     >
       <div className="space-y-3">
         {/* 加载更多 spinner */}
@@ -142,6 +144,7 @@ export function ChatMessageArea({
                 otherReadAt={otherReadAt}
                 onDelete={onDeleteMessage}
                 onRecall={onRecallMessage}
+                onRetry={onRetryMessage}
                 onCopy={onCopyMessage}
                 onReportMessage={onReportMessage}
               />

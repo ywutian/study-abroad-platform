@@ -1,57 +1,152 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import {
-  useQuery,
   useInfiniteQuery,
-  useQueryClient,
   useMutation,
+  useQuery,
+  useQueryClient,
   type InfiniteData,
 } from '@tanstack/react-query';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { apiClient } from '@/lib/api';
-import { PageContainer } from '@/components/layout';
-import { MessageInput } from '@/components/features';
-import { useChatSocket } from '@/hooks/use-chat-socket';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { chatRoutes } from '@study-abroad/shared';
-import { MessageSquare, Wifi, WifiOff } from 'lucide-react';
+import { AlertCircle, MessageSquare, RefreshCw, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
+
+import { PageContainer } from '@/components/layout';
+import { MessageInput } from '@/components/features';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { apiClient } from '@/lib/api';
+import { cn } from '@/lib/utils';
+import { useChatSocket } from '@/hooks/use-chat-socket';
 import { useAuthStore } from '@/stores';
 
-import type { Message, Conversation, ReportTarget } from './_components/types';
+import type {
+  ChatContext,
+  Conversation,
+  ConversationFilter,
+  Message,
+  ReportTarget,
+} from './_components/types';
+import { BlockDialog } from './_components/BlockDialog';
+import { ChatContextPanel } from './_components/ChatContextPanel';
 import { ChatConversationList } from './_components/ChatConversationList';
 import { ChatHeader } from './_components/ChatHeader';
 import { ChatMessageArea } from './_components/ChatMessageArea';
 import { ReportDialog } from './_components/ReportDialog';
-import { BlockDialog } from './_components/BlockDialog';
 import { useChatScroll } from './_components/use-chat-scroll';
-import { getConversationTitle } from './_components/utils';
+
+const CONVERSATION_LIMIT = 80;
+
+type AuthUserWithProfile = {
+  profile?: {
+    nickname?: string | null;
+    avatarUrl?: string | null;
+    realName?: string | null;
+  } | null;
+};
+
+function createClientMessageId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `msg-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function isMuted(conversation?: Conversation | null) {
+  if (!conversation?.mutedUntil) return false;
+  return new Date(conversation.mutedUntil).getTime() > Date.now();
+}
 
 export default function ChatPage() {
   const t = useTranslations();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = currentUser?.id ?? null;
 
-  // ── UI State ──────────────────────────────────────────────
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [showConversations, setShowConversations] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<ConversationFilter>('all');
   const [otherReadAt, setOtherReadAt] = useState<string | null>(null);
 
-  // ── Dialog State ──────────────────────────────────────────
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
 
-  // ── WebSocket ─────────────────────────────────────────────
+  const updateMessageCache = useCallback(
+    (
+      conversationId: string,
+      updater: (
+        old: InfiniteData<Message[], string | undefined> | undefined
+      ) => InfiniteData<Message[], string | undefined> | undefined
+    ) => {
+      queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
+        ['messages', conversationId],
+        updater
+      );
+    },
+    [queryClient]
+  );
+
+  const upsertLocalMessage = useCallback(
+    (conversationId: string, message: Message) => {
+      updateMessageCache(conversationId, (old) => {
+        if (!old?.pages) {
+          return { pages: [[message]], pageParams: [undefined] };
+        }
+        const firstPage = old.pages[0] ?? [];
+        const exists = firstPage.some(
+          (item) =>
+            item.id === message.id ||
+            (message.clientMessageId && item.clientMessageId === message.clientMessageId)
+        );
+        if (exists) {
+          return {
+            ...old,
+            pages: [
+              firstPage.map((item) =>
+                item.id === message.id ||
+                (message.clientMessageId && item.clientMessageId === message.clientMessageId)
+                  ? message
+                  : item
+              ),
+              ...old.pages.slice(1),
+            ],
+          };
+        }
+        return { ...old, pages: [[message, ...firstPage], ...old.pages.slice(1)] };
+      });
+    },
+    [updateMessageCache]
+  );
+
+  const markMessageFailed = useCallback(
+    (conversationId: string, clientMessageId: string, error: string) => {
+      updateMessageCache(conversationId, (old) => {
+        if (!old?.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) =>
+            page.map((message) =>
+              message.clientMessageId === clientMessageId
+                ? { ...message, status: 'failed', error }
+                : message
+            )
+          ),
+        };
+      });
+    },
+    [updateMessageCache]
+  );
+
   const {
     isConnected,
-    sendMessage,
+    sendMessage: socketSendMessage,
     joinConversation,
     markRead,
     sendTyping,
@@ -61,11 +156,15 @@ export default function ChatPage() {
     onNewMessage: (message) => {
       if (message.conversationId === selectedConversation) {
         if (isAtBottomRef.current) {
-          setTimeout(() => scrollToBottom(), 100);
-          queryClient.setQueryData<Conversation[]>(['conversations'], (old) =>
-            old?.map((c) => (c.id === selectedConversation ? { ...c, unreadCount: 0 } : c))
+          setTimeout(() => scrollToBottom(), 80);
+          queryClient.setQueryData<Conversation[]>(['conversations', filter, searchQuery], (old) =>
+            old?.map((conversation) =>
+              conversation.id === selectedConversation
+                ? { ...conversation, unreadCount: 0, lastMessage: message as Message }
+                : conversation
+            )
           );
-          markRead(selectedConversation).then(() => {
+          void markRead(selectedConversation).then(() => {
             queryClient.invalidateQueries({ queryKey: ['conversations'] });
           });
         } else {
@@ -86,37 +185,45 @@ export default function ChatPage() {
     },
   });
 
-  // ── Queries ───────────────────────────────────────────────
   const { data: conversationsData, isLoading } = useQuery({
-    queryKey: ['conversations'],
-    queryFn: () => apiClient.get<Conversation[]>(chatRoutes.conversations()),
+    queryKey: ['conversations', filter, searchQuery],
+    queryFn: () =>
+      apiClient.get<Conversation[]>(chatRoutes.conversations(), {
+        params: {
+          filter,
+          q: searchQuery.trim() || undefined,
+          limit: CONVERSATION_LIMIT,
+        },
+      }),
   });
   const conversations = useMemo(
     () => (Array.isArray(conversationsData) ? conversationsData : []),
     [conversationsData]
   );
 
-  // Auto-select conversation from URL param (e.g. /chat?conversation=xxx)
   const autoSelectedRef = useRef(false);
   const refetchedOnceRef = useRef(false);
   useEffect(() => {
     const conversationId = searchParams.get('conversation');
     if (!conversationId || autoSelectedRef.current || isLoading) return;
 
-    const exists = conversations.some((c) => c.id === conversationId);
+    const exists = conversations.some((conversation) => conversation.id === conversationId);
     if (exists) {
       setSelectedConversation(conversationId);
       setShowConversations(false);
       autoSelectedRef.current = true;
     } else if (!refetchedOnceRef.current) {
-      // Conversation was just created, refetch list once
       refetchedOnceRef.current = true;
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     }
   }, [searchParams, conversations, isLoading, queryClient]);
 
+  const selectedConversationData =
+    conversations.find((conversation) => conversation.id === selectedConversation) ?? null;
+  const selectedUser = selectedConversationData?.otherUser ?? null;
+
   const totalUnread = useMemo(
-    () => conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0),
+    () => conversations.reduce((sum, conversation) => sum + (conversation.unreadCount || 0), 0),
     [conversations]
   );
 
@@ -129,22 +236,79 @@ export default function ChatPage() {
   } = useInfiniteQuery({
     queryKey: ['messages', selectedConversation],
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
-      apiClient.get<Message[]>(
-        `/chats/conversations/${selectedConversation}/messages${pageParam ? `?before=${pageParam}` : ''}`
-      ),
+      apiClient.get<Message[]>(chatRoutes.conversationMessages(selectedConversation || ''), {
+        params: {
+          before: pageParam,
+          limit: 50,
+        },
+      }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage: Message[]) =>
       lastPage.length >= 50 ? lastPage[lastPage.length - 1]?.id : undefined,
     enabled: !!selectedConversation,
   });
 
-  // Fix: single useMemo for sorted messages (prevents reference instability)
+  const { data: contextData, isLoading: contextLoading } = useQuery({
+    queryKey: ['conversation-context', selectedConversation],
+    queryFn: () =>
+      apiClient.get<ChatContext>(chatRoutes.conversationContext(selectedConversation || '')),
+    enabled: !!selectedConversation,
+  });
+
   const sortedMessages = useMemo(() => {
     if (!messagesPages?.pages) return [];
     return messagesPages.pages.flatMap((page) => (Array.isArray(page) ? page : [])).reverse();
   }, [messagesPages?.pages]);
 
-  // ── Mutations ─────────────────────────────────────────────
+  const {
+    messagesEndRef,
+    scrollContainerRef,
+    isAtBottom,
+    isAtBottomRef,
+    hasNewMessage,
+    setHasNewMessage,
+    scrollToBottom,
+    handleScroll,
+  } = useChatScroll({
+    selectedConversation,
+    messagesLoading,
+    sortedMessagesLength: sortedMessages.length,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage: () => {
+      void fetchNextPage();
+    },
+  });
+
+  useEffect(() => {
+    if (!selectedConversation) return;
+    joinConversation(selectedConversation);
+    setOtherReadAt(null);
+    queryClient.setQueryData<Conversation[]>(['conversations', filter, searchQuery], (old) =>
+      old?.map((conversation) =>
+        conversation.id === selectedConversation
+          ? { ...conversation, unreadCount: 0 }
+          : conversation
+      )
+    );
+    queryClient.invalidateQueries({ queryKey: ['unread-count'] });
+    void markRead(selectedConversation).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    });
+  }, [selectedConversation, joinConversation, markRead, queryClient, filter, searchQuery]);
+
+  const preferenceMutation = useMutation({
+    mutationFn: (data: {
+      conversationId: string;
+      preferences: { isPinned?: boolean; isArchived?: boolean; mutedUntil?: string | null };
+    }) =>
+      apiClient.patch(chatRoutes.conversationPreferences(data.conversationId), data.preferences),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation-context', selectedConversation] });
+    },
+  });
+
   const blockMutation = useMutation({
     mutationFn: (userId: string) => apiClient.post(chatRoutes.block(userId)),
     onSuccess: () => {
@@ -169,36 +333,36 @@ export default function ChatPage() {
   const deleteMutation = useMutation({
     mutationFn: (messageId: string) => apiClient.delete(chatRoutes.message(messageId)),
     onSuccess: (_data, messageId) => {
-      queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
-        ['messages', selectedConversation],
-        (old) => {
-          if (!old?.pages) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) =>
-              page.map((m) => (m.id === messageId ? { ...m, isDeleted: true } : m))
-            ),
-          };
-        }
-      );
+      if (!selectedConversation) return;
+      updateMessageCache(selectedConversation, (old) => {
+        if (!old?.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) =>
+            page.map((message) =>
+              message.id === messageId ? { ...message, isDeleted: true } : message
+            )
+          ),
+        };
+      });
     },
   });
 
   const recallMutation = useMutation({
     mutationFn: (messageId: string) => apiClient.patch(`${chatRoutes.message(messageId)}/recall`),
     onSuccess: (_data, messageId) => {
-      queryClient.setQueryData<InfiniteData<Message[], string | undefined>>(
-        ['messages', selectedConversation],
-        (old) => {
-          if (!old?.pages) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) =>
-              page.map((m) => (m.id === messageId ? { ...m, isRecalled: true, content: '' } : m))
-            ),
-          };
-        }
-      );
+      if (!selectedConversation) return;
+      updateMessageCache(selectedConversation, (old) => {
+        if (!old?.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) =>
+            page.map((message) =>
+              message.id === messageId ? { ...message, isRecalled: true, content: '' } : message
+            )
+          ),
+        };
+      });
       toast.success(t('chat.recallSuccess'));
     },
     onError: () => {
@@ -206,59 +370,31 @@ export default function ChatPage() {
     },
   });
 
-  const pinMutation = useMutation({
-    mutationFn: (conversationId: string) =>
-      apiClient.post<{ isPinned: boolean }>(chatRoutes.conversationPin(conversationId)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+  const sortedConversations = useMemo(() => {
+    return [...conversations].sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+  }, [conversations]);
+
+  const typingUserIds = selectedConversation ? getTypingUsers(selectedConversation) : [];
+  const isOtherUserTyping =
+    selectedConversationData?.kind === 'DIRECT'
+      ? typingUserIds.some((id) => id === selectedUser?.id)
+      : typingUserIds.length > 0;
+  const currentConvIsPinned = selectedConversationData?.isPinned ?? false;
+  const currentConvIsArchived = selectedConversationData?.isArchived ?? false;
+  const currentConvIsMuted = isMuted(selectedConversationData);
+
+  const handleSelectConversation = useCallback(
+    (id: string) => {
+      setSelectedConversation(id);
+      setShowConversations(false);
+      setHasNewMessage(false);
     },
-  });
-
-  // ── Scroll Logic (extracted hook) ─────────────────────────
-  const {
-    messagesEndRef,
-    scrollContainerRef,
-    isAtBottom,
-    isAtBottomRef,
-    hasNewMessage,
-    setHasNewMessage,
-    scrollToBottom,
-    handleScroll,
-  } = useChatScroll({
-    selectedConversation,
-    messagesLoading,
-    sortedMessagesLength: sortedMessages.length,
-    hasNextPage: hasNextPage ?? false,
-    isFetchingNextPage,
-    fetchNextPage,
-  });
-
-  // Join conversation + mark as read
-  useEffect(() => {
-    if (selectedConversation) {
-      joinConversation(selectedConversation);
-      setOtherReadAt(null);
-      queryClient.setQueryData<Conversation[]>(['conversations'], (old) =>
-        old?.map((c) => (c.id === selectedConversation ? { ...c, unreadCount: 0 } : c))
-      );
-      queryClient.invalidateQueries({ queryKey: ['unread-count'] });
-      markRead(selectedConversation).then(() => {
-        queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      });
-    }
-  }, [selectedConversation, joinConversation, markRead, queryClient]);
-
-  // ── Derived (needed by handlers) ─────────────────────────────
-  const selectedConversationData =
-    conversations.find((conversation) => conversation.id === selectedConversation) ?? null;
-  const selectedUser = selectedConversationData?.otherUser ?? null;
-
-  // ── Stable Handlers ─────────────────────────────────────────
-  const handleSelectConversation = useCallback((id: string) => {
-    setSelectedConversation(id);
-    setShowConversations(false);
-    setHasNewMessage(false);
-  }, []);
+    [setHasNewMessage]
+  );
 
   const handleBack = useCallback(() => {
     setShowConversations(true);
@@ -266,34 +402,131 @@ export default function ChatPage() {
   }, []);
 
   const handleSendMessage = useCallback(
-    async (content: string) => {
-      if (!selectedConversation) return;
-      await sendMessage(selectedConversation, content);
+    async (content: string, retry?: { clientMessageId?: string; localId?: string }) => {
+      if (!selectedConversation || !currentUserId) return;
+      const clientMessageId = retry?.clientMessageId || createClientMessageId();
+      const currentUserProfile = (currentUser as AuthUserWithProfile | null)?.profile;
+      const optimistic: Message = {
+        id: retry?.localId || `local-${clientMessageId}`,
+        conversationId: selectedConversation,
+        senderId: currentUserId,
+        content,
+        clientMessageId,
+        createdAt: new Date().toISOString(),
+        status: 'sending',
+        sender: {
+          id: currentUserId,
+          email: currentUser?.email,
+          profile: {
+            nickname: currentUserProfile?.nickname ?? undefined,
+            avatarUrl: currentUserProfile?.avatarUrl ?? undefined,
+            realName: currentUserProfile?.realName ?? undefined,
+          },
+        },
+      };
+
+      upsertLocalMessage(selectedConversation, optimistic);
       scrollToBottom();
+
+      try {
+        const message = isConnected
+          ? await socketSendMessage(selectedConversation, content, { clientMessageId })
+          : await apiClient.post<Message>(
+              chatRoutes.conversationMessages(selectedConversation),
+              { content, clientMessageId },
+              { suppressErrorToast: true }
+            );
+
+        if (!message) throw new Error(t('chat.sendFailed'));
+        upsertLocalMessage(selectedConversation, { ...message, status: 'sent' });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      } catch (error) {
+        markMessageFailed(
+          selectedConversation,
+          clientMessageId,
+          error instanceof Error ? error.message : t('chat.sendFailed')
+        );
+      }
     },
-    [selectedConversation, sendMessage, scrollToBottom]
+    [
+      currentUser,
+      currentUserId,
+      isConnected,
+      markMessageFailed,
+      queryClient,
+      scrollToBottom,
+      selectedConversation,
+      socketSendMessage,
+      t,
+      upsertLocalMessage,
+    ]
   );
 
   const handleFileUpload = useCallback(
     async (file: File) => {
-      if (!selectedConversation) return;
+      if (!selectedConversation || !currentUserId) return;
+      const clientMessageId = createClientMessageId();
+      const previewUrl = URL.createObjectURL(file);
+      const optimistic: Message = {
+        id: `local-${clientMessageId}`,
+        conversationId: selectedConversation,
+        senderId: currentUserId,
+        content: file.name,
+        clientMessageId,
+        createdAt: new Date().toISOString(),
+        status: 'sending',
+        attachments: [
+          {
+            id: `local-attachment-${clientMessageId}`,
+            url: previewUrl,
+            type: file.type.startsWith('image/') ? 'image' : 'file',
+            name: file.name,
+            size: file.size,
+            mimeType: file.type,
+          },
+        ],
+      };
+
+      upsertLocalMessage(selectedConversation, optimistic);
+      scrollToBottom();
+
       const formData = new FormData();
       formData.append('file', file);
-      await apiClient.upload(chatRoutes.conversationUpload(selectedConversation), formData);
-      scrollToBottom();
+      formData.append('clientMessageId', clientMessageId);
+      formData.append('content', file.name);
+
+      try {
+        const message = await apiClient.upload<Message>(
+          chatRoutes.conversationUpload(selectedConversation),
+          formData,
+          { suppressErrorToast: true }
+        );
+        URL.revokeObjectURL(previewUrl);
+        upsertLocalMessage(selectedConversation, { ...message, status: 'sent' });
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['conversation-context', selectedConversation] });
+      } catch (error) {
+        markMessageFailed(
+          selectedConversation,
+          clientMessageId,
+          error instanceof Error ? error.message : t('chat.sendFailed')
+        );
+      }
     },
-    [selectedConversation, scrollToBottom]
+    [
+      currentUserId,
+      markMessageFailed,
+      queryClient,
+      scrollToBottom,
+      selectedConversation,
+      t,
+      upsertLocalMessage,
+    ]
   );
 
-  // Throttled typing: at most once per second
-  const lastTypingSent = useRef(0);
   const handleTyping = useCallback(
-    (isTyping: boolean) => {
-      if (!selectedConversation) return;
-      const now = Date.now();
-      if (isTyping && now - lastTypingSent.current < 1000) return;
-      lastTypingSent.current = now;
-      sendTyping(selectedConversation, isTyping);
+    (typing: boolean) => {
+      if (selectedConversation) sendTyping(selectedConversation, typing);
     },
     [selectedConversation, sendTyping]
   );
@@ -306,127 +539,121 @@ export default function ChatPage() {
     [t]
   );
 
-  const handleDeleteMessage = useCallback(
-    (id: string) => deleteMutation.mutate(id),
-    [deleteMutation]
-  );
-  const handleRecallMessage = useCallback(
-    (id: string) => recallMutation.mutate(id),
-    [recallMutation]
-  );
-
   const handleReportMessage = useCallback((messageId: string) => {
     setReportTarget({ targetType: 'MESSAGE', targetId: messageId });
     setReportDialogOpen(true);
   }, []);
 
   const handleReportUser = useCallback(() => {
-    if (selectedUser) {
-      setReportTarget({ targetType: 'USER', targetId: selectedUser.id });
-      setReportDialogOpen(true);
-    }
+    if (!selectedUser) return;
+    setReportTarget({ targetType: 'USER', targetId: selectedUser.id });
+    setReportDialogOpen(true);
   }, [selectedUser]);
 
   const handlePin = useCallback(() => {
-    if (selectedConversation) pinMutation.mutate(selectedConversation);
-  }, [selectedConversation, pinMutation]);
-
-  // ── Derived State ─────────────────────────────────────────
-  // Fix: single useMemo with time-based sorting
-  const sortedConversations = useMemo(() => {
-    const filtered = conversations.filter((conv) => {
-      const name = getConversationTitle(conv).toLowerCase();
-      return name.includes(searchQuery.toLowerCase());
+    if (!selectedConversation) return;
+    preferenceMutation.mutate({
+      conversationId: selectedConversation,
+      preferences: { isPinned: !currentConvIsPinned },
     });
-    return filtered.sort((a, b) => {
-      if (a.isPinned && !b.isPinned) return -1;
-      if (!a.isPinned && b.isPinned) return 1;
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+  }, [currentConvIsPinned, preferenceMutation, selectedConversation]);
+
+  const handleArchive = useCallback(() => {
+    if (!selectedConversation) return;
+    preferenceMutation.mutate({
+      conversationId: selectedConversation,
+      preferences: { isArchived: !currentConvIsArchived },
     });
-  }, [conversations, searchQuery]);
+  }, [currentConvIsArchived, preferenceMutation, selectedConversation]);
 
-  const typingUserIds = selectedConversation ? getTypingUsers(selectedConversation) : [];
-  const isOtherUserTyping =
-    selectedConversationData?.kind === 'DIRECT'
-      ? typingUserIds.some((id) => id === selectedUser?.id)
-      : typingUserIds.length > 0;
-  const currentConvIsPinned =
-    conversations.find((c) => c.id === selectedConversation)?.isPinned ?? false;
+  const handleMute = useCallback(() => {
+    if (!selectedConversation) return;
+    const mutedUntil = currentConvIsMuted
+      ? null
+      : new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
+    preferenceMutation.mutate({
+      conversationId: selectedConversation,
+      preferences: { mutedUntil },
+    });
+  }, [currentConvIsMuted, preferenceMutation, selectedConversation]);
 
-  // ── Render ────────────────────────────────────────────────
   return (
-    <PageContainer maxWidth="6xl" className="lg:flex lg:flex-col lg:h-[calc(100dvh-7.5rem)]">
-      {/* 页面头部 */}
-      <div className="shrink-0 relative mb-6 overflow-hidden rounded-lg bg-primary/5 p-6">
-        <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-primary/15 blur-3xl" />
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-              <MessageSquare className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-title">{t('chat.title')}</h1>
-              <p className="text-muted-foreground">{t('chat.description')}</p>
-            </div>
+    <PageContainer
+      maxWidth="full"
+      className="mx-auto flex w-full max-w-[1760px] flex-col lg:h-[calc(100dvh-6.5rem)]"
+    >
+      <div className="mb-3 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <MessageSquare className="h-5 w-5" />
           </div>
-          <Badge
-            variant={isConnected ? 'default' : 'secondary'}
-            className={cn(
-              'gap-1.5',
-              isConnected
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
-            )}
-          >
-            {isConnected ? (
-              <>
-                <Wifi className="h-3 w-3" />
-                {t('chat.connected')}
-              </>
-            ) : (
-              <>
-                <WifiOff className="h-3 w-3" />
-                {t('chat.connecting')}
-              </>
-            )}
+          <div>
+            <h1 className="text-title">{t('chat.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('chat.workbenchDescription')}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant={isConnected ? 'success' : 'warning'} className="gap-1.5">
+            {isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+            {isConnected ? t('chat.connected') : t('chat.connecting')}
           </Badge>
+          <Badge variant="outline" className="gap-1.5">
+            <ShieldCheck className="h-3 w-3" />
+            {t('chat.verifiedNetwork')}
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['conversations'] });
+              if (selectedConversation) {
+                queryClient.invalidateQueries({ queryKey: ['messages', selectedConversation] });
+              }
+            }}
+          >
+            <RefreshCw className="h-4 w-4" />
+            {t('chat.refresh')}
+          </Button>
         </div>
       </div>
 
-      <div className="grid min-h-[500px] gap-4 lg:grid-cols-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-        {/* 会话列表 */}
+      <div className="grid min-h-[620px] gap-3 lg:grid-cols-[360px_minmax(0,1fr)_320px] lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         <ChatConversationList
           conversations={sortedConversations}
           selectedId={selectedConversation}
           totalUnread={totalUnread}
           searchQuery={searchQuery}
+          filter={filter}
           onSearchChange={setSearchQuery}
+          onFilterChange={setFilter}
           onSelect={handleSelectConversation}
           isLoading={isLoading}
           isUserOnline={isUserOnline}
           showConversations={showConversations}
         />
 
-        {/* 消息区域 */}
         <Card
           className={cn(
-            'flex flex-col lg:col-span-2 overflow-hidden min-h-0 py-0 gap-0',
+            'flex flex-col overflow-hidden min-h-0 py-0 gap-0',
             showConversations && 'hidden lg:flex'
           )}
         >
-          <div className="h-1 bg-gradient-to-r bg-primary shrink-0" />
           {selectedConversation && selectedConversationData ? (
             <>
               <ChatHeader
                 conversation={selectedConversationData}
                 isOnline={
-                  selectedConversationData?.kind === 'DIRECT'
+                  selectedConversationData.kind === 'DIRECT'
                     ? isUserOnline(selectedUser?.id || '')
                     : false
                 }
                 isPinned={currentConvIsPinned}
+                isArchived={currentConvIsArchived}
+                isMuted={currentConvIsMuted}
                 onBack={handleBack}
                 onPin={handlePin}
+                onArchive={handleArchive}
+                onMute={handleMute}
                 onReport={handleReportUser}
                 onBlock={() => setBlockDialogOpen(true)}
               />
@@ -445,19 +672,30 @@ export default function ChatPage() {
                 messagesEndRef={messagesEndRef}
                 onScrollToBottom={scrollToBottom}
                 onScroll={handleScroll}
-                onDeleteMessage={handleDeleteMessage}
-                onRecallMessage={handleRecallMessage}
+                onDeleteMessage={(id) => deleteMutation.mutate(id)}
+                onRecallMessage={(id) => recallMutation.mutate(id)}
+                onRetryMessage={(message) =>
+                  void handleSendMessage(message.content, {
+                    clientMessageId: message.clientMessageId,
+                    localId: message.id,
+                  })
+                }
                 onCopyMessage={handleCopy}
                 onReportMessage={handleReportMessage}
               />
 
-              {/* 输入框 */}
-              <div className="border-t p-4 bg-muted/30 shrink-0">
+              {!isConnected && (
+                <div className="flex items-center gap-2 border-t bg-warning/10 px-4 py-2 text-xs text-warning">
+                  <AlertCircle className="h-4 w-4" />
+                  {t('chat.offlineFallback')}
+                </div>
+              )}
+              <div className="border-t bg-card/95 p-3 shrink-0">
                 <MessageInput
                   onSend={handleSendMessage}
                   onFileUpload={handleFileUpload}
                   onTyping={handleTyping}
-                  disabled={!isConnected}
+                  draftKey={`chat:draft:${selectedConversation}`}
                   placeholder={t('chat.typeMessage')}
                 />
               </div>
@@ -465,20 +703,33 @@ export default function ChatPage() {
           ) : (
             <div className="flex flex-1 items-center justify-center p-8">
               <div className="text-center">
-                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-lg bg-primary/10">
-                  <MessageSquare className="h-10 w-10 text-primary/50" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-md bg-primary/10">
+                  <MessageSquare className="h-8 w-8 text-primary/55" />
                 </div>
                 <h3 className="text-lg font-semibold">{t('chat.selectConversation')}</h3>
-                <p className="mt-2 text-muted-foreground max-w-sm">
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                   {t('chat.selectConversationHint')}
                 </p>
               </div>
             </div>
           )}
         </Card>
+
+        <ChatContextPanel
+          conversation={selectedConversationData}
+          context={contextData}
+          isLoading={contextLoading}
+          isPinned={currentConvIsPinned}
+          isArchived={currentConvIsArchived}
+          isMuted={currentConvIsMuted}
+          onPin={handlePin}
+          onArchive={handleArchive}
+          onMute={handleMute}
+          onReport={handleReportUser}
+          onBlock={() => setBlockDialogOpen(true)}
+        />
       </div>
 
-      {/* Dialogs */}
       <BlockDialog
         open={blockDialogOpen}
         onOpenChange={setBlockDialogOpen}

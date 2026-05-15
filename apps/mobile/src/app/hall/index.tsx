@@ -23,17 +23,17 @@ export default function HallOfFamePage() {
 
   const segments = useMemo(
     () => [
-      { key: 'reviews', label: t('hallOfFame.tabs.reviews', 'Reviews') },
-      { key: 'ranking', label: t('hallOfFame.tabs.ranking', 'Ranking') },
-      { key: 'lists', label: t('hallOfFame.tabs.lists', 'Lists') },
-      { key: 'verified', label: t('hallOfFame.tabs.verified', 'Verified') },
+      { key: 'reviews', label: t('hallOfFame.tabs.reviews') },
+      { key: 'ranking', label: t('hallOfFame.tabs.ranking') },
+      { key: 'lists', label: t('hallOfFame.tabs.lists') },
+      { key: 'verified', label: t('hallOfFame.tabs.verified') },
     ],
     [t]
   );
 
   return (
     <>
-      <Stack.Screen options={{ title: t('hallOfFame.title', 'Hall of Fame') }} />
+      <Stack.Screen options={{ title: t('hallOfFame.title') }} />
 
       <View style={[S.container, { backgroundColor: c.background }]}>
         <View style={S.segmentWrapper}>

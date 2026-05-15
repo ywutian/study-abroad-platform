@@ -1,0 +1,218 @@
+{
+  "extensionName": {
+    "message": "Lumni - CommonApp 自动填充"
+  },
+  "extensionDescription": {
+    "message": "使用 Lumni 档案数据自动填充 Common App 表单。"
+  },
+  "actionTitle": {
+    "message": "Lumni 自动填充"
+  },
+  "popupTitle": {
+    "message": "Lumni - CommonApp 自动填充"
+  },
+  "popupTagline": {
+    "message": "Common App 自动填充助手"
+  },
+  "welcomeTitle": {
+    "message": "欢迎使用"
+  },
+  "welcomeDesc": {
+    "message": "登录您的 Lumni 账号，即可一键填充 Common App 申请表单。"
+  },
+  "featuresTitle": {
+    "message": "功能特点"
+  },
+  "featureAutofillPersonal": {
+    "message": "自动填充个人信息"
+  },
+  "featureSyncScores": {
+    "message": "同步标化成绩"
+  },
+  "featureImportActivities": {
+    "message": "活动与荣誉一键导入"
+  },
+  "featureDataSecurity": {
+    "message": "数据安全加密"
+  },
+  "loginButton": {
+    "message": "登录 Lumni"
+  },
+  "loadingName": {
+    "message": "加载中..."
+  },
+  "fillCurrentPage": {
+    "message": "一键填充当前页面"
+  },
+  "syncProfile": {
+    "message": "同步档案数据"
+  },
+  "logout": {
+    "message": "退出登录"
+  },
+  "helpCenter": {
+    "message": "帮助中心"
+  },
+  "unsetName": {
+    "message": "未设置姓名"
+  },
+  "statActivities": {
+    "message": "活动"
+  },
+  "statAwards": {
+    "message": "荣誉"
+  },
+  "statEssays": {
+    "message": "文书"
+  },
+  "loggedOut": {
+    "message": "已退出登录"
+  },
+  "syncing": {
+    "message": "正在同步..."
+  },
+  "syncSuccess": {
+    "message": "同步成功。"
+  },
+  "syncFailed": {
+    "message": "同步失败"
+  },
+  "noActiveTab": {
+    "message": "无法获取当前标签页"
+  },
+  "openCommonAppFirst": {
+    "message": "请先打开 Common App 页面"
+  },
+  "filling": {
+    "message": "正在填充..."
+  },
+  "filledCount": {
+    "message": "已填充 $1 个字段"
+  },
+  "fillFailed": {
+    "message": "填充失败"
+  },
+  "cannotConnectPage": {
+    "message": "无法连接到页面，请刷新后重试。"
+  },
+  "fillAll": {
+    "message": "一键填充"
+  },
+  "selectFields": {
+    "message": "选择字段"
+  },
+  "syncData": {
+    "message": "同步数据"
+  },
+  "selectFieldsTitle": {
+    "message": "选择要填充的字段"
+  },
+  "back": {
+    "message": "返回"
+  },
+  "fillSelected": {
+    "message": "填充选中字段"
+  },
+  "loadingProfile": {
+    "message": "正在加载档案..."
+  },
+  "profileLoaded": {
+    "message": "档案已加载"
+  },
+  "loginRequired": {
+    "message": "请先登录 Lumni"
+  },
+  "profileMissing": {
+    "message": "未找到档案数据"
+  },
+  "noFillableFields": {
+    "message": "当前页面无可填充字段"
+  },
+  "noFieldsOnPage": {
+    "message": "当前页面没有可填充的字段"
+  },
+  "noData": {
+    "message": "无数据"
+  },
+  "loadProfileFirst": {
+    "message": "请先加载档案"
+  },
+  "fieldFilled": {
+    "message": "已填充字段"
+  },
+  "fieldUnknown": {
+    "message": "无法识别此字段"
+  },
+  "contextFill": {
+    "message": "使用 Lumni 数据填充"
+  },
+  "fieldFirstName": {
+    "message": "名"
+  },
+  "fieldLastName": {
+    "message": "姓"
+  },
+  "fieldMiddleName": {
+    "message": "中间名"
+  },
+  "fieldPreferredName": {
+    "message": "昵称"
+  },
+  "fieldEmail": {
+    "message": "邮箱"
+  },
+  "fieldPhone": {
+    "message": "电话"
+  },
+  "fieldDateOfBirth": {
+    "message": "出生日期"
+  },
+  "fieldAddressStreet": {
+    "message": "街道地址"
+  },
+  "fieldAddressCity": {
+    "message": "城市"
+  },
+  "fieldAddressState": {
+    "message": "州/省"
+  },
+  "fieldAddressZipCode": {
+    "message": "邮编"
+  },
+  "fieldAddressCountry": {
+    "message": "国家"
+  },
+  "fieldEducationCurrentSchool": {
+    "message": "当前学校"
+  },
+  "fieldEducationGraduationYear": {
+    "message": "毕业年份"
+  },
+  "fieldEducationGpa": {
+    "message": "GPA"
+  },
+  "fieldEducationGpaScale": {
+    "message": "GPA 满分"
+  },
+  "fieldEducationClassRank": {
+    "message": "班级排名"
+  },
+  "fieldEducationClassSize": {
+    "message": "班级人数"
+  },
+  "fieldSatTotal": {
+    "message": "SAT 总分"
+  },
+  "fieldSatMath": {
+    "message": "SAT 数学"
+  },
+  "fieldSatReading": {
+    "message": "SAT 阅读"
+  },
+  "fieldActComposite": {
+    "message": "ACT 综合"
+  },
+  "fieldToeflTotal": {
+    "message": "TOEFL 总分"
+  }
+}

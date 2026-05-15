@@ -7,6 +7,11 @@ interface User {
   role: `${Role}`;
   emailVerified: boolean;
   locale: string;
+  profile?: {
+    nickname?: string | null;
+    avatarUrl?: string | null;
+    realName?: string | null;
+  } | null;
 }
 
 interface AuthState {

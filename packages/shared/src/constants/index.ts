@@ -159,6 +159,7 @@ export * from './recommendation';
 
 // API 路由常量
 export * from './api-routes';
+export * from './application-rounds';
 
 // 预测功能常量
 export * from './prediction';

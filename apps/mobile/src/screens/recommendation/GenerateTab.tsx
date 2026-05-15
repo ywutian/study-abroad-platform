@@ -136,15 +136,11 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
       setResult(data);
       setGenerationState('done');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.success(t('recommendation.generateSuccess', 'Recommendations generated!'));
+      toast.success(t('recommendation.generateSuccess'));
     } catch (error: unknown) {
       setGenerationState('idle');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : t('recommendation.generateFailed', 'Generation failed')
-      );
+      toast.error(error instanceof Error ? error.message : t('recommendation.generateFailed'));
     }
   }, [preflight, schoolCount, budget, selectedRegions, selectedMajors, generateMutation, t, toast]);
 
@@ -195,8 +191,8 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             />
             <Text style={[styles.profileBannerTitle, { color: colors.foreground }]}>
               {profileComplete
-                ? t('recommendation.profileComplete', 'Profile Complete')
-                : t('recommendation.profileIncomplete', 'Profile Incomplete')}
+                ? t('recommendation.profileComplete')
+                : t('recommendation.profileIncomplete')}
             </Text>
             <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '15' }]}>
               <Ionicons name="diamond-outline" size={14} color={colors.primary} />
@@ -218,7 +214,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
               )}
               <View style={[styles.summaryChip, { backgroundColor: colors.card }]}>
                 <Text style={[styles.summaryChipLabel, { color: colors.foregroundMuted }]}>
-                  {t('recommendation.tests', 'Tests')}
+                  {t('recommendation.tests')}
                 </Text>
                 <Text style={[styles.summaryChipValue, { color: colors.foreground }]}>
                   {profileSummary.testCount}
@@ -226,7 +222,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
               </View>
               <View style={[styles.summaryChip, { backgroundColor: colors.card }]}>
                 <Text style={[styles.summaryChipLabel, { color: colors.foregroundMuted }]}>
-                  {t('recommendation.activities', 'Activities')}
+                  {t('recommendation.activities')}
                 </Text>
                 <Text style={[styles.summaryChipValue, { color: colors.foreground }]}>
                   {profileSummary.activityCount}
@@ -238,7 +234,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
           {!profileComplete && missingFields.length > 0 && (
             <View style={styles.missingFieldsRow}>
               <Text style={[styles.missingFieldsLabel, { color: colors.warning }]}>
-                {t('recommendation.missingFields', 'Missing:')}
+                {t('recommendation.missingFields')}
               </Text>
               <Text style={[styles.missingFieldsText, { color: colors.foregroundMuted }]}>
                 {missingFields.join(', ')}
@@ -308,24 +304,21 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
     <Animated.View entering={FadeInUp.delay(100).duration(400).springify()}>
       {/* Regions */}
       {renderChipSelector(
-        t('recommendation.preferredRegions', 'Preferred Regions'),
+        t('recommendation.preferredRegions'),
         REGION_OPTIONS,
         selectedRegions,
         (v) => toggleChip(v, selectedRegions, setSelectedRegions)
       )}
 
       {/* Majors */}
-      {renderChipSelector(
-        t('recommendation.preferredMajors', 'Preferred Majors'),
-        MAJOR_OPTIONS,
-        selectedMajors,
-        (v) => toggleChip(v, selectedMajors, setSelectedMajors)
+      {renderChipSelector(t('recommendation.preferredMajors'), MAJOR_OPTIONS, selectedMajors, (v) =>
+        toggleChip(v, selectedMajors, setSelectedMajors)
       )}
 
       {/* Budget */}
       <View style={styles.formSection}>
         <Text style={[styles.formLabel, { color: colors.foreground }]}>
-          {t('recommendation.budget', 'Annual Budget')}
+          {t('recommendation.budget')}
         </Text>
         <View style={styles.budgetRow}>
           {BUDGET_OPTIONS.map((opt) => {
@@ -367,7 +360,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
       <View style={styles.formSection}>
         <View style={styles.sliderHeader}>
           <Text style={[styles.formLabel, { color: colors.foreground }]}>
-            {t('recommendation.schoolCount', 'Number of Schools')}
+            {t('recommendation.schoolCount')}
           </Text>
           <View style={[styles.countBadge, { backgroundColor: colors.primary + '15' }]}>
             <Text style={[styles.countBadgeText, { color: colors.primary }]}>{schoolCount}</Text>
@@ -420,20 +413,20 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
           style={styles.generateButton}
           leftIcon={<Ionicons name="sparkles" size={20} color={colors.primaryForeground} />}
         >
-          {t('recommendation.generate', 'Generate Recommendations')}
+          {t('recommendation.generate')}
         </AnimatedButton>
         <Text style={[styles.pointCostText, { color: colors.foregroundMuted }]}>
           <Ionicons name="diamond-outline" size={12} color={colors.foregroundMuted} />{' '}
-          {t('recommendation.pointCost', '{{cost}} points', { cost: POINT_COST })}
+          {t('recommendation.pointCost', { cost: POINT_COST })}
         </Text>
 
         {preflight && !preflight.canGenerate && (
           <Text style={[styles.cannotGenerateText, { color: colors.error }]}>
             {!preflight.profileComplete
-              ? t('recommendation.completeProfileFirst', 'Complete your profile first')
+              ? t('recommendation.completeProfileFirst')
               : preflight.points < POINT_COST
-                ? t('recommendation.insufficientPoints', 'Insufficient points')
-                : t('recommendation.cannotGenerate', 'Cannot generate at this time')}
+                ? t('recommendation.insufficientPoints')
+                : t('recommendation.cannotGenerate')}
           </Text>
         )}
       </View>
@@ -450,16 +443,16 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
       >
         <Ionicons name="sparkles" size={40} color={colors.primary} style={styles.loadingIcon} />
         <Text style={[styles.loadingTitle, { color: colors.foreground }]}>
-          {t('recommendation.generating', 'AI is analyzing your profile...')}
+          {t('recommendation.generating')}
         </Text>
         <Text style={[styles.loadingSubtitle, { color: colors.foregroundMuted }]}>
           {loadingProgress < 30
-            ? t('recommendation.loadingStep1', 'Reviewing your academic profile...')
+            ? t('recommendation.loadingStep1')
             : loadingProgress < 60
-              ? t('recommendation.loadingStep2', 'Matching with university databases...')
+              ? t('recommendation.loadingStep2')
               : loadingProgress < 85
-                ? t('recommendation.loadingStep3', 'Calculating fit scores...')
-                : t('recommendation.loadingStep4', 'Finalizing recommendations...')}
+                ? t('recommendation.loadingStep3')
+                : t('recommendation.loadingStep4')}
         </Text>
         <View style={styles.loadingProgressContainer}>
           <Progress
@@ -498,9 +491,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
           >
             <View style={styles.summaryHeader}>
               <Ionicons name="sparkles" size={24} color={colors.onGradient} />
-              <Text style={styles.summaryTitle}>
-                {t('recommendation.resultSummary', 'AI Recommendation Summary')}
-              </Text>
+              <Text style={styles.summaryTitle}>{t('recommendation.resultSummary')}</Text>
             </View>
             <Text style={styles.summaryText}>{result.summary}</Text>
             <Text style={styles.summaryHint}>{t('recommendation.strategyDisclaimer')}</Text>
@@ -509,19 +500,17 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             <View style={styles.tierCountsRow}>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.reach.color }]} />
-                <Text style={styles.tierCountLabel}>{t('recommendation.tierReach', 'Reach')}</Text>
+                <Text style={styles.tierCountLabel}>{t('recommendation.tierReach')}</Text>
                 <Text style={styles.tierCountValue}>{reachCount}</Text>
               </View>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.match.color }]} />
-                <Text style={styles.tierCountLabel}>{t('recommendation.tierMatch', 'Match')}</Text>
+                <Text style={styles.tierCountLabel}>{t('recommendation.tierMatch')}</Text>
                 <Text style={styles.tierCountValue}>{matchCount}</Text>
               </View>
               <View style={[styles.tierCount, { backgroundColor: colors.onGradientOverlay }]}>
                 <View style={[styles.tierDot, { backgroundColor: TIER_CONFIG.safety.color }]} />
-                <Text style={styles.tierCountLabel}>
-                  {t('recommendation.tierSafety', 'Safety')}
-                </Text>
+                <Text style={styles.tierCountLabel}>{t('recommendation.tierSafety')}</Text>
                 <Text style={styles.tierCountValue}>{safetyCount}</Text>
               </View>
             </View>
@@ -531,8 +520,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
         {/* School Cards */}
         <View style={styles.schoolListSection}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-            {t('recommendation.recommendedSchools', 'Recommended Schools')} (
-            {result.recommendations.length})
+            {t('recommendation.recommendedSchools')} ({result.recommendations.length})
           </Text>
           {result.recommendations.map((school, index) => (
             <SchoolCard key={`${school.schoolName}-${index}`} school={school} colors={colors} />
@@ -546,7 +534,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             style={styles.analysisSection}
           >
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              {t('recommendation.analysis', 'Profile Analysis')}
+              {t('recommendation.analysis')}
             </Text>
 
             {/* Strengths */}
@@ -556,7 +544,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                   <View style={styles.analysisHeaderRow}>
                     <Ionicons name="trending-up" size={18} color={colors.success} />
                     <Text style={[styles.analysisLabel, { color: colors.success }]}>
-                      {t('recommendation.strengths', 'Strengths')}
+                      {t('recommendation.strengths')}
                     </Text>
                   </View>
                   {result.analysis.strengths.map((item, i) => (
@@ -578,7 +566,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                   <View style={styles.analysisHeaderRow}>
                     <Ionicons name="trending-down" size={18} color={colors.error} />
                     <Text style={[styles.analysisLabel, { color: colors.error }]}>
-                      {t('recommendation.weaknesses', 'Areas to Improve')}
+                      {t('recommendation.weaknesses')}
                     </Text>
                   </View>
                   {result.analysis.weaknesses.map((item, i) => (
@@ -600,7 +588,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
                   <View style={styles.analysisHeaderRow}>
                     <Ionicons name="bulb-outline" size={18} color={colors.info} />
                     <Text style={[styles.analysisLabel, { color: colors.info }]}>
-                      {t('recommendation.improvementTips', 'Tips')}
+                      {t('recommendation.improvementTips')}
                     </Text>
                   </View>
                   {result.analysis.improvementTips.map((item, i) => (
@@ -626,7 +614,7 @@ export function GenerateTab({ externalResult, onExternalResultConsumed }: Genera
             style={styles.resetButton}
             leftIcon={<Ionicons name="refresh-outline" size={20} color={colors.foreground} />}
           >
-            {t('recommendation.generateAgain', 'Generate Again')}
+            {t('recommendation.generateAgain')}
           </AnimatedButton>
         </View>
       </>

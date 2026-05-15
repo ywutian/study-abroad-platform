@@ -1,14 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Lumni - CommonApp Auto-Fill",
-  "name_locales": {
-    "zh_CN": "Lumni - CommonApp 自动填充"
-  },
+  "name": "__MSG_extensionName__",
+  "default_locale": "en",
   "version": "1.0.0",
-  "description": "Automatically fill CommonApp forms with your profile data from Lumni",
-  "description_locales": {
-    "zh_CN": "从 Lumni 自动填充 CommonApp 表单"
-  },
+  "description": "__MSG_extensionDescription__",
   "permissions": ["storage", "activeTab", "tabs"],
   "host_permissions": ["https://apply.commonapp.org/*", "https://www.commonapp.org/*"],
   "background": {
@@ -31,7 +26,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Lumni Auto-Fill"
+    "default_title": "__MSG_actionTitle__"
   },
   "icons": {
     "16": "icons/icon16.png",

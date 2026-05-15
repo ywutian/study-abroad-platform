@@ -36,9 +36,9 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
 
   const getTierLabel = (tier: 'reach' | 'match' | 'safety') => {
     const labels: Record<string, string> = {
-      reach: t('recommendation.tierReach', 'Reach'),
-      match: t('recommendation.tierMatch', 'Match'),
-      safety: t('recommendation.tierSafety', 'Safety'),
+      reach: t('recommendation.tierReach'),
+      match: t('recommendation.tierMatch'),
+      safety: t('recommendation.tierSafety'),
     };
     return labels[tier] || tier;
   };
@@ -92,7 +92,7 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
               style={[styles.fitScoreValue, { color: tierConfig.color }]}
             />
             <Text style={[styles.fitScoreLabel, { color: colors.foregroundMuted }]}>
-              {t('recommendation.fitScore', 'Fit')}
+              {t('recommendation.fitScore')}
             </Text>
           </View>
         </View>
@@ -100,7 +100,7 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
         <View style={styles.probabilitySection}>
           <View style={styles.probabilityHeader}>
             <Text style={[styles.probabilityLabel, { color: colors.foregroundMuted }]}>
-              {t('recommendation.probability', 'Admission Probability')}
+              {t('recommendation.probability')}
             </Text>
             <Text style={[styles.probabilityValue, { color: tierConfig.color }]}>
               {Math.round(school.estimatedProbability)}%
@@ -129,7 +129,7 @@ export const SchoolCard = memo(function SchoolCard({ school, colors }: SchoolCar
               <View style={styles.metaItem}>
                 <Ionicons name="people-outline" size={14} color={colors.foregroundMuted} />
                 <Text style={[styles.metaText, { color: colors.foregroundMuted }]}>
-                  {t('recommendation.acceptRate', 'school-wide acceptance rate')}{' '}
+                  {t('recommendation.acceptRate')}{' '}
                   {formatAcceptanceRate(school.schoolMeta.acceptanceRate)}
                 </Text>
               </View>

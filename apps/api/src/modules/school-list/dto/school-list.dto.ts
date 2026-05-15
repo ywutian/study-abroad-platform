@@ -1,16 +1,27 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { SchoolPublicMedia } from '@study-abroad/shared';
+import {
+  APPLICATION_ROUND_VALUES,
+  normalizeApplicationRound,
+  type SchoolPublicMedia,
+} from '@study-abroad/shared';
+import { Transform } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
   IsOptional,
   IsEnum,
   IsBoolean,
+  IsIn,
   MaxLength,
 } from 'class-validator';
 import { SchoolTier } from '@prisma/client';
 
 export { SchoolTier };
+
+function applicationRoundTransform({ value }: { value: unknown }) {
+  if (typeof value !== 'string') return value;
+  return normalizeApplicationRound(value) ?? value;
+}
 
 export class CreateSchoolListItemDto {
   @ApiProperty({ description: 'School ID to add to list' })
@@ -24,9 +35,10 @@ export class CreateSchoolListItemDto {
   @IsEnum(SchoolTier)
   tier?: SchoolTier;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: APPLICATION_ROUND_VALUES })
   @IsOptional()
-  @IsString()
+  @Transform(applicationRoundTransform)
+  @IsIn(APPLICATION_ROUND_VALUES)
   @MaxLength(200)
   round?: string;
 
@@ -48,9 +60,10 @@ export class UpdateSchoolListItemDto {
   @IsEnum(SchoolTier)
   tier?: SchoolTier;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: APPLICATION_ROUND_VALUES })
   @IsOptional()
-  @IsString()
+  @Transform(applicationRoundTransform)
+  @IsIn(APPLICATION_ROUND_VALUES)
   @MaxLength(200)
   round?: string;
 

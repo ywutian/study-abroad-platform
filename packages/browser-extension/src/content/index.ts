@@ -10,9 +10,13 @@ import {
   COMMONAPP_FIELD_MAPPINGS,
 } from '../utils/field-mapper';
 import type { UserProfile, Message, MessageResponse } from '../utils/types';
+import { msg } from '../utils/i18n';
+import { injectExtensionThemeVars } from '../utils/theme';
 import './styles.css';
 
 let cachedProfile: UserProfile | null = null;
+
+injectExtensionThemeVars('#studyabroad-floating-container');
 
 /**
  * 初始化 content script
@@ -63,30 +67,30 @@ function injectFloatingButton(): void {
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
             <path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H6v-2h8v2zm4-4H6v-2h12v2z"/>
           </svg>
-          一键填充
+          ${msg('fillAll')}
         </button>
         <button id="studyabroad-select-fields" class="studyabroad-btn">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
             <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
           </svg>
-          选择字段
+          ${msg('selectFields')}
         </button>
         <button id="studyabroad-sync" class="studyabroad-btn">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
             <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
           </svg>
-          同步数据
+          ${msg('syncData')}
         </button>
         <div id="studyabroad-status" class="studyabroad-status"></div>
       </div>
       <div id="studyabroad-field-selector" class="studyabroad-field-selector hidden">
         <div class="studyabroad-fields-header">
-          <span>选择要填充的字段</span>
-          <button id="studyabroad-back" class="studyabroad-back">&larr; 返回</button>
+          <span>${msg('selectFieldsTitle')}</span>
+          <button id="studyabroad-back" class="studyabroad-back">&larr; ${msg('back')}</button>
         </div>
         <div id="studyabroad-fields-list" class="studyabroad-fields-list"></div>
         <button id="studyabroad-fill-selected" class="studyabroad-btn studyabroad-btn-primary">
-          填充选中字段
+          ${msg('fillSelected')}
         </button>
       </div>
     </div>
@@ -161,15 +165,15 @@ function bindEvents(): void {
  * 加载用户档案
  */
 async function loadProfile(): Promise<void> {
-  updateStatus('正在加载档案...');
+  updateStatus(msg('loadingProfile'));
 
   const response = await sendMessage({ type: 'GET_PROFILE' });
 
   if (response.success && response.data) {
     cachedProfile = response.data;
-    updateStatus('档案已加载 ✓');
+    updateStatus(`${msg('profileLoaded')} ✓`);
   } else {
-    updateStatus('请先登录平台', 'error');
+    updateStatus(msg('loginRequired'), 'error');
   }
 }
 
@@ -182,18 +186,18 @@ async function handleFillAll(): Promise<{ success: boolean; filled: number; skip
   }
 
   if (!cachedProfile) {
-    updateStatus('未找到档案数据', 'error');
+    updateStatus(msg('profileMissing'), 'error');
     return { success: false, filled: 0, skipped: 0 };
   }
 
-  updateStatus('正在填充...');
+  updateStatus(msg('filling'));
 
   const result = autoFillForm(cachedProfile);
 
   if (result.filled > 0) {
-    updateStatus(`已填充 ${result.filled} 个字段`, 'success');
+    updateStatus(msg('filledCount', result.filled), 'success');
   } else {
-    updateStatus('当前页面无可填充字段', 'warning');
+    updateStatus(msg('noFillableFields'), 'warning');
   }
 
   return { success: true, ...result };
@@ -203,15 +207,15 @@ async function handleFillAll(): Promise<{ success: boolean; filled: number; skip
  * 处理同步
  */
 async function handleSync(): Promise<void> {
-  updateStatus('正在同步...');
+  updateStatus(msg('syncing'));
 
   const response = await sendMessage({ type: 'SYNC_PROFILE' });
 
   if (response.success && response.data) {
     cachedProfile = response.data;
-    updateStatus('同步成功 ✓', 'success');
+    updateStatus(`${msg('syncSuccess')} ✓`, 'success');
   } else {
-    updateStatus('同步失败', 'error');
+    updateStatus(msg('syncFailed'), 'error');
   }
 }
 
@@ -226,7 +230,7 @@ function renderFieldsList(): void {
   const availableFields = fields.filter((f) => f.hasElement);
 
   if (availableFields.length === 0) {
-    container.innerHTML = '<p class="studyabroad-no-fields">当前页面没有可填充的字段</p>';
+    container.innerHTML = `<p class="studyabroad-no-fields">${msg('noFieldsOnPage')}</p>`;
     return;
   }
 
@@ -239,7 +243,7 @@ function renderFieldsList(): void {
         <label class="studyabroad-field-item ${hasValue ? '' : 'disabled'}">
           <input type="checkbox" data-path="${field.profilePath}" ${hasValue ? 'checked' : 'disabled'}>
           <span class="studyabroad-field-name">${getFieldLabel(field.profilePath)}</span>
-          <span class="studyabroad-field-value">${hasValue ? truncate(String(value), 20) : '无数据'}</span>
+          <span class="studyabroad-field-value">${hasValue ? truncate(String(value), 20) : msg('noData')}</span>
         </label>
       `;
     })
@@ -251,7 +255,7 @@ function renderFieldsList(): void {
  */
 function handleFillSelected(): void {
   if (!cachedProfile) {
-    updateStatus('请先加载档案', 'error');
+    updateStatus(msg('loadProfileFirst'), 'error');
     return;
   }
 
@@ -278,7 +282,7 @@ function handleFillSelected(): void {
     });
   });
 
-  updateStatus(`已填充 ${filled} 个字段`, filled > 0 ? 'success' : 'warning');
+  updateStatus(msg('filledCount', filled), filled > 0 ? 'success' : 'warning');
 }
 
 /**
@@ -294,13 +298,13 @@ function fillCurrentFocusedField(): void {
       const value = getNestedValue(cachedProfile, mapping.profilePath);
       if (value !== undefined) {
         fillField(activeElement, value, mapping.type);
-        updateStatus('已填充字段', 'success');
+        updateStatus(msg('fieldFilled'), 'success');
         return;
       }
     }
   }
 
-  updateStatus('无法识别此字段', 'warning');
+  updateStatus(msg('fieldUnknown'), 'warning');
 }
 
 /**
@@ -333,29 +337,29 @@ function updateStatus(
  */
 function getFieldLabel(path: string): string {
   const labels: Record<string, string> = {
-    firstName: '名',
-    lastName: '姓',
-    middleName: '中间名',
-    preferredName: '昵称',
-    email: '邮箱',
-    phone: '电话',
-    dateOfBirth: '出生日期',
-    'address.street': '街道地址',
-    'address.city': '城市',
-    'address.state': '州/省',
-    'address.zipCode': '邮编',
-    'address.country': '国家',
-    'education.currentSchool': '当前学校',
-    'education.graduationYear': '毕业年份',
-    'education.gpa': 'GPA',
-    'education.gpaScale': 'GPA 满分',
-    'education.classRank': '班级排名',
-    'education.classSize': '班级人数',
-    'testScores.SAT.total': 'SAT 总分',
-    'testScores.SAT.math': 'SAT 数学',
-    'testScores.SAT.reading': 'SAT 阅读',
-    'testScores.ACT.composite': 'ACT 综合',
-    'testScores.TOEFL.total': 'TOEFL 总分',
+    firstName: msg('fieldFirstName'),
+    lastName: msg('fieldLastName'),
+    middleName: msg('fieldMiddleName'),
+    preferredName: msg('fieldPreferredName'),
+    email: msg('fieldEmail'),
+    phone: msg('fieldPhone'),
+    dateOfBirth: msg('fieldDateOfBirth'),
+    'address.street': msg('fieldAddressStreet'),
+    'address.city': msg('fieldAddressCity'),
+    'address.state': msg('fieldAddressState'),
+    'address.zipCode': msg('fieldAddressZipCode'),
+    'address.country': msg('fieldAddressCountry'),
+    'education.currentSchool': msg('fieldEducationCurrentSchool'),
+    'education.graduationYear': msg('fieldEducationGraduationYear'),
+    'education.gpa': msg('fieldEducationGpa'),
+    'education.gpaScale': msg('fieldEducationGpaScale'),
+    'education.classRank': msg('fieldEducationClassRank'),
+    'education.classSize': msg('fieldEducationClassSize'),
+    'testScores.SAT.total': msg('fieldSatTotal'),
+    'testScores.SAT.math': msg('fieldSatMath'),
+    'testScores.SAT.reading': msg('fieldSatReading'),
+    'testScores.ACT.composite': msg('fieldActComposite'),
+    'testScores.TOEFL.total': msg('fieldToeflTotal'),
   };
 
   return labels[path] || path.split('.').pop() || path;

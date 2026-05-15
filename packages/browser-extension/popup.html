@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lumni - CommonApp Auto-Fill</title>
+    <title data-i18n="popupTitle"></title>
     <style>
       * {
         margin: 0;
@@ -16,7 +16,12 @@
           -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         width: 320px;
         min-height: 400px;
-        background: linear-gradient(180deg, #f7f1e6 0%, #fff9ef 100%);
+        background: linear-gradient(
+          180deg,
+          var(--lumni-ext-bg, #f7f1e6),
+          var(--lumni-ext-surface, #fff9ef)
+        );
+        color: var(--lumni-ext-fg, #1d1813);
       }
 
       .hidden {
@@ -25,8 +30,8 @@
 
       /* Header */
       .header {
-        background: linear-gradient(135deg, #1d1813 0%, #3a2a18 100%);
-        color: #fff7ea;
+        background: var(--lumni-ext-primary, #1d1813);
+        color: var(--lumni-ext-primary-fg, #fff7ea);
         padding: 20px;
         text-align: center;
       }
@@ -58,8 +63,8 @@
       .spinner {
         width: 32px;
         height: 32px;
-        border: 3px solid #d8c8b2;
-        border-top-color: #1d1813;
+        border: 3px solid var(--lumni-ext-border, #d8c8b2);
+        border-top-color: var(--lumni-ext-primary, #1d1813);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -89,23 +94,24 @@
       .welcome-title {
         font-size: 18px;
         font-weight: 600;
-        color: #1d1813;
+        color: var(--lumni-ext-fg, #1d1813);
         margin-bottom: 8px;
       }
 
       .welcome-desc {
         font-size: 14px;
-        color: #6f665b;
+        color: var(--lumni-ext-muted, #6f665b);
         margin-bottom: 24px;
         line-height: 1.5;
       }
 
       /* Logged In View */
       .profile-card {
-        background: #fff9ef;
-        border-radius: 12px;
+        background: var(--lumni-ext-surface, #fff9ef);
+        border: 1px solid var(--lumni-ext-border, #d8c8b2);
+        border-radius: var(--lumni-ext-radius-card, 12px);
         padding: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--lumni-ext-shadow, 0 1px 3px rgba(0, 0, 0, 0.1));
         margin-bottom: 16px;
       }
 
@@ -120,11 +126,11 @@
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #1d1813 0%, #3a2a18 100%);
+        background: var(--lumni-ext-primary, #1d1813);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff7ea;
+        color: var(--lumni-ext-primary-fg, #fff7ea);
         font-size: 18px;
         font-weight: 600;
       }
@@ -136,19 +142,19 @@
       #user-name {
         font-size: 16px;
         font-weight: 600;
-        color: #1d1813;
+        color: var(--lumni-ext-fg, #1d1813);
       }
 
       #user-email {
         font-size: 13px;
-        color: #6f665b;
+        color: var(--lumni-ext-muted, #6f665b);
       }
 
       #profile-stats {
         display: flex;
         gap: 16px;
         padding-top: 12px;
-        border-top: 1px solid #efe4d2;
+        border-top: 1px solid var(--lumni-ext-border, #efe4d2);
       }
 
       .stat {
@@ -160,12 +166,12 @@
       .stat-value {
         font-size: 18px;
         font-weight: 600;
-        color: #1d1813;
+        color: var(--lumni-ext-fg, #1d1813);
       }
 
       .stat-label {
         font-size: 12px;
-        color: #9a8c79;
+        color: var(--lumni-ext-muted, #9a8c79);
       }
 
       /* Buttons */
@@ -177,7 +183,7 @@
         width: 100%;
         padding: 14px 20px;
         border: none;
-        border-radius: 10px;
+        border-radius: var(--lumni-ext-radius-button, 10px);
         font-size: 14px;
         font-weight: 500;
         cursor: pointer;
@@ -185,8 +191,8 @@
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #1d1813 0%, #3a2a18 100%);
-        color: #fff7ea;
+        background: var(--lumni-ext-primary, #1d1813);
+        color: var(--lumni-ext-primary-fg, #fff7ea);
       }
 
       .btn-primary:hover {
@@ -195,22 +201,26 @@
       }
 
       .btn-secondary {
-        background: #efe4d2;
-        color: #4e4034;
+        background: var(--lumni-ext-surface-muted, #efe4d2);
+        color: var(--lumni-ext-fg, #4e4034);
       }
 
       .btn-secondary:hover {
-        background: #d8c8b2;
+        background: color-mix(
+          in oklab,
+          var(--lumni-ext-primary, #1d1813) 8%,
+          var(--lumni-ext-surface-muted, #d8c8b2)
+        );
       }
 
       .btn-outline {
         background: transparent;
-        border: 1px solid #d8c8b2;
-        color: #6f665b;
+        border: 1px solid var(--lumni-ext-border, #d8c8b2);
+        color: var(--lumni-ext-muted, #6f665b);
       }
 
       .btn-outline:hover {
-        background: #fff4e2;
+        background: var(--lumni-ext-bg-soft, #fff4e2);
       }
 
       .btn-icon {
@@ -227,36 +237,36 @@
       /* Status Message */
       .status {
         padding: 12px 16px;
-        border-radius: 8px;
+        border-radius: var(--lumni-ext-radius-button, 8px);
         font-size: 13px;
         text-align: center;
         margin-top: 16px;
       }
 
       .status-success {
-        background: #ece8d2;
-        color: #555d3c;
+        background: var(--lumni-ext-success-bg, #ece8d2);
+        color: var(--lumni-ext-success-fg, #555d3c);
       }
 
       .status-error {
-        background: #fee2e2;
-        color: #991b1b;
+        background: var(--lumni-ext-error-bg, #fee2e2);
+        color: var(--lumni-ext-error-fg, #991b1b);
       }
 
       .status-warning {
-        background: #fef3c7;
-        color: #92400e;
+        background: var(--lumni-ext-warning-bg, #fef3c7);
+        color: var(--lumni-ext-warning-fg, #92400e);
       }
 
       .status-info {
-        background: #ececff;
-        color: #3f4bcc;
+        background: var(--lumni-ext-info-bg, #ececff);
+        color: var(--lumni-ext-info-fg, #3f4bcc);
       }
 
       /* Footer */
       .footer {
         padding: 16px 20px;
-        border-top: 1px solid #efe4d2;
+        border-top: 1px solid var(--lumni-ext-border, #efe4d2);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -264,12 +274,12 @@
 
       .version {
         font-size: 12px;
-        color: #9a8c79;
+        color: var(--lumni-ext-muted, #9a8c79);
       }
 
       .footer-link {
         font-size: 12px;
-        color: #1d1813;
+        color: var(--lumni-ext-primary, #1d1813);
         text-decoration: none;
       }
 
@@ -281,14 +291,14 @@
       .features {
         margin: 20px 0;
         padding: 16px;
-        background: #fff4e2;
-        border-radius: 12px;
+        background: var(--lumni-ext-bg-soft, #fff4e2);
+        border-radius: var(--lumni-ext-radius-card, 12px);
       }
 
       .feature-title {
         font-size: 13px;
         font-weight: 600;
-        color: #4e4034;
+        color: var(--lumni-ext-fg, #4e4034);
         margin-bottom: 12px;
       }
 
@@ -301,7 +311,7 @@
         align-items: center;
         gap: 8px;
         font-size: 13px;
-        color: #6f665b;
+        color: var(--lumni-ext-muted, #6f665b);
         margin-bottom: 8px;
       }
 
@@ -312,7 +322,7 @@
       .feature-icon {
         width: 16px;
         height: 16px;
-        color: #ddb85a;
+        color: var(--lumni-ext-warning-fg, #ddb85a);
       }
     </style>
   </head>
@@ -320,7 +330,7 @@
     <!-- Header -->
     <header class="header">
       <div class="logo"><span class="logo-emoji">◇</span>Lumni</div>
-      <div class="tagline">CommonApp 自动填充助手</div>
+      <div class="tagline" data-i18n="popupTagline"></div>
     </header>
 
     <!-- Loading -->
@@ -331,11 +341,11 @@
     <!-- Logged Out View -->
     <div id="logged-out-view" class="logged-out-view hidden">
       <div class="welcome-icon">🔐</div>
-      <h2 class="welcome-title">欢迎使用</h2>
-      <p class="welcome-desc">登录您的 Lumni 账号，即可一键填充 CommonApp 申请表单。</p>
+      <h2 class="welcome-title" data-i18n="welcomeTitle"></h2>
+      <p class="welcome-desc" data-i18n="welcomeDesc"></p>
 
       <div class="features">
-        <div class="feature-title">功能特点</div>
+        <div class="feature-title" data-i18n="featuresTitle"></div>
         <ul class="feature-list">
           <li>
             <svg class="feature-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -345,7 +355,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            自动填充个人信息
+            <span data-i18n="featureAutofillPersonal"></span>
           </li>
           <li>
             <svg class="feature-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -355,7 +365,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            同步标化成绩
+            <span data-i18n="featureSyncScores"></span>
           </li>
           <li>
             <svg class="feature-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -365,7 +375,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            活动与荣誉一键导入
+            <span data-i18n="featureImportActivities"></span>
           </li>
           <li>
             <svg class="feature-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -375,7 +385,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            数据安全加密
+            <span data-i18n="featureDataSecurity"></span>
           </li>
         </ul>
       </div>
@@ -389,7 +399,7 @@
             d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
           />
         </svg>
-        登录 Lumni
+        <span data-i18n="loginButton"></span>
       </button>
     </div>
 
@@ -400,7 +410,7 @@
         <div class="profile-header">
           <div class="avatar" id="user-avatar">U</div>
           <div class="profile-info">
-            <div id="user-name">加载中...</div>
+            <div id="user-name" data-i18n="loadingName"></div>
             <div id="user-email"></div>
           </div>
         </div>
@@ -418,7 +428,7 @@
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          一键填充当前页面
+          <span data-i18n="fillCurrentPage"></span>
         </button>
 
         <button id="sync-btn" class="btn btn-secondary">
@@ -430,7 +440,7 @@
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-          同步档案数据
+          <span data-i18n="syncProfile"></span>
         </button>
 
         <button id="logout-btn" class="btn btn-outline">
@@ -442,7 +452,7 @@
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
             />
           </svg>
-          退出登录
+          <span data-i18n="logout"></span>
         </button>
       </div>
 
@@ -453,7 +463,7 @@
     <!-- Footer -->
     <footer class="footer">
       <span class="version">v1.0.0</span>
-      <a href="http://localhost:4100/help" target="_blank" class="footer-link">帮助中心</a>
+      <a href="https://www.lumniedu.com/help" target="_blank" class="footer-link" data-i18n="helpCenter"></a>
     </footer>
 
     <script src="dist/popup.js"></script>

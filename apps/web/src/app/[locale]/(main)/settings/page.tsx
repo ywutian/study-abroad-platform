@@ -9,9 +9,9 @@ import {
 } from '@study-abroad/shared';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import type { ComponentType } from 'react';
 import {
   Bell,
-  ChevronRight,
   Clock,
   CreditCard,
   FileText,
@@ -19,6 +19,7 @@ import {
   Languages,
   Lock,
   LogOut,
+  Monitor,
   Moon,
   Palette,
   Settings,
@@ -39,45 +40,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
 import { useColorPalette } from '@/hooks/use-color-palette';
 import { apiClient } from '@/lib/api';
 import { usePathname, useRouter } from '@/lib/i18n/navigation';
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/auth';
+import { SettingItemRow, type SettingItem } from './_components/setting-item-row';
 
 interface SettingSection {
   id: string;
   title: string;
   description?: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   color: string;
   comingSoon?: boolean;
   items: SettingItem[];
-}
-
-interface SettingItem {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  description?: string;
-  type: 'toggle' | 'select' | 'link' | 'action';
-  value?: boolean | string;
-  options?: { value: string; label: string }[];
-  href?: string;
-  danger?: boolean;
-  onToggle?: (value: boolean) => void;
-  onSelect?: (value: string) => void;
-  onClick?: () => void;
 }
 
 export default function SettingsPage() {
@@ -156,12 +135,17 @@ export default function SettingsPage() {
       items: [
         {
           id: 'theme',
-          icon: mounted && theme === 'dark' ? Moon : Sun,
-          label: t('settings.items.darkMode'),
+          icon: mounted && theme === 'dark' ? Moon : mounted && theme === 'light' ? Sun : Monitor,
+          label: t('settings.theme'),
           description: t('settings.items.darkModeDesc'),
-          type: 'toggle',
-          value: mounted ? theme === 'dark' : false,
-          onToggle: (value) => setTheme(value ? 'dark' : 'light'),
+          type: 'select',
+          value: mounted ? theme || 'system' : 'system',
+          options: [
+            { value: 'system', label: t('ui.theme.system') },
+            { value: 'light', label: t('ui.theme.light') },
+            { value: 'dark', label: t('ui.theme.dark') },
+          ],
+          onSelect: setTheme,
         },
         {
           id: 'colorPalette',
@@ -420,96 +404,4 @@ export default function SettingsPage() {
       />
     </PageContainer>
   );
-}
-
-function SettingItemRow({ item, disabled }: { item: SettingItem; disabled?: boolean }) {
-  const t = useTranslations();
-  const [mounted, setMounted] = useState(false);
-  const Icon = item.icon;
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const content = (
-    <div
-      className={cn(
-        'flex items-center gap-3 rounded-xl p-3 transition-all duration-200',
-        disabled && 'cursor-not-allowed',
-        !disabled &&
-          (item.type === 'link' || item.type === 'action') &&
-          'hover:bg-muted cursor-pointer',
-        item.danger && !disabled && 'text-destructive hover:bg-destructive/5'
-      )}
-      role={disabled ? 'group' : undefined}
-      aria-disabled={disabled || undefined}
-      title={disabled ? t('settings.comingSoonHint') : undefined}
-    >
-      <div
-        className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-lg shrink-0',
-          item.danger ? 'bg-destructive/10' : 'bg-muted'
-        )}
-      >
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm">{item.label}</p>
-        {item.description && (
-          <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-        )}
-      </div>
-
-      {item.type === 'toggle' &&
-        (mounted ? (
-          <Switch
-            checked={item.value as boolean}
-            onCheckedChange={item.onToggle}
-            disabled={disabled}
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="h-6 w-11 shrink-0 rounded-full border border-border bg-muted/70"
-          />
-        ))}
-
-      {item.type === 'select' && (
-        <Select value={item.value as string} onValueChange={item.onSelect} disabled={disabled}>
-          <SelectTrigger aria-label={item.label} className="h-9 w-[12rem] min-w-[10rem] shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="max-h-[420px]">
-            {item.options?.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-
-      {(item.type === 'link' || item.type === 'action') && (
-        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-      )}
-    </div>
-  );
-
-  if (disabled) {
-    return content;
-  }
-
-  if (item.type === 'link' && item.href) {
-    return <Link href={item.href}>{content}</Link>;
-  }
-
-  if (item.type === 'action' && item.onClick) {
-    return (
-      <button onClick={item.onClick} className="w-full text-left">
-        {content}
-      </button>
-    );
-  }
-
-  return content;
 }

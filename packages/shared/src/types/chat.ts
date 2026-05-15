@@ -82,3 +82,55 @@ export interface Block {
   blockedId: string;
   createdAt: string;
 }
+
+export type SocialRelationType = 'followers' | 'following' | 'blocked';
+export type SocialRelationship = 'mutual' | 'oneWay' | 'blocked';
+export type SocialRelationSort = 'recent' | 'name' | 'major';
+export type SocialRelationshipFilter = 'all' | 'mutual' | 'oneWay';
+export type SocialRoleFilter = 'all' | 'verified' | 'staff';
+export type SocialBulkAction = 'follow' | 'unfollow' | 'block' | 'unblock';
+
+export interface SocialUserStats {
+  followers: number;
+  following: number;
+  cases: number;
+}
+
+export interface SocialUser extends ChatUser {
+  profile?: ChatUserProfile | null;
+  stats: SocialUserStats;
+}
+
+export interface SocialRelationItem {
+  relationId: string;
+  relationType: SocialRelationType;
+  createdAt: string | Date;
+  user: SocialUser;
+  relationship: SocialRelationship;
+}
+
+export interface SocialOverview {
+  counts: {
+    followers: number;
+    following: number;
+    mutual: number;
+    blocked: number;
+  };
+  recommendations: RecommendedSocialUser[];
+}
+
+export interface RecommendedSocialUser extends SocialUser {
+  score: number;
+  reasons: string[];
+}
+
+export interface SocialBulkResult {
+  userId: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface SocialBulkResponse {
+  action: SocialBulkAction;
+  results: SocialBulkResult[];
+}

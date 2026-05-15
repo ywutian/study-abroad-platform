@@ -1,0 +1,218 @@
+{
+  "extensionName": {
+    "message": "Lumni - CommonApp Auto-Fill"
+  },
+  "extensionDescription": {
+    "message": "Automatically fill Common App forms with your Lumni profile data."
+  },
+  "actionTitle": {
+    "message": "Lumni Auto-Fill"
+  },
+  "popupTitle": {
+    "message": "Lumni - CommonApp Auto-Fill"
+  },
+  "popupTagline": {
+    "message": "Common App auto-fill assistant"
+  },
+  "welcomeTitle": {
+    "message": "Welcome"
+  },
+  "welcomeDesc": {
+    "message": "Sign in to your Lumni account to fill Common App forms in one click."
+  },
+  "featuresTitle": {
+    "message": "Features"
+  },
+  "featureAutofillPersonal": {
+    "message": "Auto-fill personal information"
+  },
+  "featureSyncScores": {
+    "message": "Sync standardized test scores"
+  },
+  "featureImportActivities": {
+    "message": "Import activities and awards"
+  },
+  "featureDataSecurity": {
+    "message": "Encrypted data handling"
+  },
+  "loginButton": {
+    "message": "Sign in to Lumni"
+  },
+  "loadingName": {
+    "message": "Loading..."
+  },
+  "fillCurrentPage": {
+    "message": "Fill current page"
+  },
+  "syncProfile": {
+    "message": "Sync profile data"
+  },
+  "logout": {
+    "message": "Sign out"
+  },
+  "helpCenter": {
+    "message": "Help Center"
+  },
+  "unsetName": {
+    "message": "Name not set"
+  },
+  "statActivities": {
+    "message": "Activities"
+  },
+  "statAwards": {
+    "message": "Awards"
+  },
+  "statEssays": {
+    "message": "Essays"
+  },
+  "loggedOut": {
+    "message": "Signed out"
+  },
+  "syncing": {
+    "message": "Syncing..."
+  },
+  "syncSuccess": {
+    "message": "Sync complete."
+  },
+  "syncFailed": {
+    "message": "Sync failed"
+  },
+  "noActiveTab": {
+    "message": "Could not access the current tab"
+  },
+  "openCommonAppFirst": {
+    "message": "Open a Common App page first"
+  },
+  "filling": {
+    "message": "Filling..."
+  },
+  "filledCount": {
+    "message": "Filled $1 fields"
+  },
+  "fillFailed": {
+    "message": "Fill failed"
+  },
+  "cannotConnectPage": {
+    "message": "Could not connect to the page. Refresh and try again."
+  },
+  "fillAll": {
+    "message": "Fill all fields"
+  },
+  "selectFields": {
+    "message": "Choose fields"
+  },
+  "syncData": {
+    "message": "Sync data"
+  },
+  "selectFieldsTitle": {
+    "message": "Choose fields to fill"
+  },
+  "back": {
+    "message": "Back"
+  },
+  "fillSelected": {
+    "message": "Fill selected fields"
+  },
+  "loadingProfile": {
+    "message": "Loading profile..."
+  },
+  "profileLoaded": {
+    "message": "Profile loaded"
+  },
+  "loginRequired": {
+    "message": "Sign in to Lumni first"
+  },
+  "profileMissing": {
+    "message": "No profile data found"
+  },
+  "noFillableFields": {
+    "message": "No fillable fields on this page"
+  },
+  "noFieldsOnPage": {
+    "message": "This page has no fillable fields"
+  },
+  "noData": {
+    "message": "No data"
+  },
+  "loadProfileFirst": {
+    "message": "Load your profile first"
+  },
+  "fieldFilled": {
+    "message": "Field filled"
+  },
+  "fieldUnknown": {
+    "message": "Could not identify this field"
+  },
+  "contextFill": {
+    "message": "Fill with Lumni data"
+  },
+  "fieldFirstName": {
+    "message": "First name"
+  },
+  "fieldLastName": {
+    "message": "Last name"
+  },
+  "fieldMiddleName": {
+    "message": "Middle name"
+  },
+  "fieldPreferredName": {
+    "message": "Preferred name"
+  },
+  "fieldEmail": {
+    "message": "Email"
+  },
+  "fieldPhone": {
+    "message": "Phone"
+  },
+  "fieldDateOfBirth": {
+    "message": "Date of birth"
+  },
+  "fieldAddressStreet": {
+    "message": "Street address"
+  },
+  "fieldAddressCity": {
+    "message": "City"
+  },
+  "fieldAddressState": {
+    "message": "State / Province"
+  },
+  "fieldAddressZipCode": {
+    "message": "Postal code"
+  },
+  "fieldAddressCountry": {
+    "message": "Country"
+  },
+  "fieldEducationCurrentSchool": {
+    "message": "Current school"
+  },
+  "fieldEducationGraduationYear": {
+    "message": "Graduation year"
+  },
+  "fieldEducationGpa": {
+    "message": "GPA"
+  },
+  "fieldEducationGpaScale": {
+    "message": "GPA scale"
+  },
+  "fieldEducationClassRank": {
+    "message": "Class rank"
+  },
+  "fieldEducationClassSize": {
+    "message": "Class size"
+  },
+  "fieldSatTotal": {
+    "message": "SAT total"
+  },
+  "fieldSatMath": {
+    "message": "SAT Math"
+  },
+  "fieldSatReading": {
+    "message": "SAT Reading"
+  },
+  "fieldActComposite": {
+    "message": "ACT Composite"
+  },
+  "fieldToeflTotal": {
+    "message": "TOEFL total"
+  }
+}

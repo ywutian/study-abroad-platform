@@ -3,7 +3,12 @@
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import type { AIAnalysisResult } from '@study-abroad/shared';
+import type {
+  AIAnalysisResult,
+  ProfileReadinessAction,
+  ProfileReadinessItem,
+  ProfileReadinessV1,
+} from '@study-abroad/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,6 +35,7 @@ import type { ProfileData } from './types';
 interface ProfileActionBarProps {
   completeness: number;
   profile: ProfileData | undefined;
+  readiness?: ProfileReadinessV1;
   onOpenResumeExport: () => void;
   onSetActiveTab: (tab: string) => void;
 }
@@ -101,6 +107,7 @@ function getReadinessSignals(
 export function ProfileActionBar({
   completeness,
   profile,
+  readiness,
   onOpenResumeExport,
   onSetActiveTab,
 }: ProfileActionBarProps) {
@@ -110,13 +117,25 @@ export function ProfileActionBar({
   const starterActions = readinessSignals
     .filter((item) => ['gpa', 'scores', 'activities'].includes(item.id) && !item.complete)
     .slice(0, 2);
-  const summary =
-    completeness >= 60
-      ? t('profile.actionBar.readyForAnalysis')
-      : nextMissing
-        ? t('profile.actionBar.nextStep', { signal: nextMissing.label })
-        : t('profile.readiness.allSet');
+  const effectiveReadiness =
+    readiness?.overall && readiness.workflowReadiness ? readiness : undefined;
+  const overallReadiness = effectiveReadiness?.overall;
+  const summary = overallReadiness?.blockers?.length
+    ? t('profile.readiness.commandSummaryBlocked', {
+        count: overallReadiness.blockers.length,
+      })
+    : overallReadiness?.warnings?.length
+      ? t('profile.readiness.commandSummaryAttention', {
+          count: overallReadiness.warnings.length,
+        })
+      : completeness >= 60
+        ? t('profile.actionBar.readyForAnalysis')
+        : nextMissing
+          ? t('profile.actionBar.nextStep', { signal: nextMissing.label })
+          : t('profile.readiness.allSet');
   const PrimaryIcon = nextMissing?.icon ?? ClipboardCheck;
+  const score = overallReadiness?.score ?? completeness;
+  const primaryAction = overallReadiness?.nextActions?.[0];
 
   return (
     <Card className="mb-5 overflow-hidden border-primary/20 bg-primary/5">
@@ -129,71 +148,91 @@ export function ProfileActionBar({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{t('profile.readiness.title')}</Badge>
-                <span className="text-xl font-semibold tabular-nums">{completeness}%</span>
+                <span className="text-xl font-semibold tabular-nums">{score}%</span>
               </div>
-              <p className="mt-1 truncate text-sm text-muted-foreground">{summary}</p>
-              <Progress value={completeness} className="mt-2 h-1.5 max-w-md" />
+              <p className="mt-1 text-sm leading-5 text-muted-foreground">{summary}</p>
+              <Progress value={score} className="mt-2 h-1.5 max-w-md" />
             </div>
           </div>
 
           <div className="flex shrink-0 flex-wrap gap-2">
-            {completeness < 30 &&
-              starterActions.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <Button
-                    key={item.id}
-                    type="button"
-                    size="sm"
-                    variant={index === 0 ? 'default' : 'outline'}
-                    onClick={() => onSetActiveTab(item.tab)}
-                    className="gap-1.5"
-                  >
-                    <Icon className="h-4 w-4" />
-                    {t('profile.actionBar.completeSignal', { signal: item.label })}
-                  </Button>
-                );
-              })}
-
-            {completeness < 30 && starterActions.length === 0 && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => onSetActiveTab(nextMissing?.tab ?? 'targets')}
-                className="gap-1.5"
-              >
-                <School className="h-4 w-4" />
-                {t('profile.readiness.reviewTargets')}
-              </Button>
+            {primaryAction && (
+              <ReadinessActionButton
+                action={primaryAction}
+                onSetActiveTab={onSetActiveTab}
+                primary
+              />
             )}
 
-            {completeness >= 30 && completeness < 60 && (
+            {overallReadiness?.nextActions?.slice(1, 3).map((action) => (
+              <ReadinessActionButton
+                key={action.key}
+                action={action}
+                onSetActiveTab={onSetActiveTab}
+              />
+            ))}
+
+            {!effectiveReadiness && (
               <>
-                {nextMissing && (
+                {completeness < 30 &&
+                  starterActions.map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <Button
+                        key={item.id}
+                        type="button"
+                        size="sm"
+                        variant={index === 0 ? 'default' : 'outline'}
+                        onClick={() => onSetActiveTab(item.tab)}
+                        className="gap-1.5"
+                      >
+                        <Icon className="h-4 w-4" />
+                        {t('profile.actionBar.completeSignal', { signal: item.label })}
+                      </Button>
+                    );
+                  })}
+
+                {completeness < 30 && starterActions.length === 0 && (
                   <Button
                     type="button"
                     size="sm"
-                    onClick={() => onSetActiveTab(nextMissing.tab)}
+                    onClick={() => onSetActiveTab(nextMissing?.tab ?? 'targets')}
                     className="gap-1.5"
                   >
-                    <nextMissing.icon className="h-4 w-4" />
-                    {t('profile.actionBar.completeSignal', { signal: nextMissing.label })}
+                    <School className="h-4 w-4" />
+                    {t('profile.readiness.reviewTargets')}
                   </Button>
                 )}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onSetActiveTab('targets')}
-                  className="gap-1.5"
-                >
-                  <School className="h-4 w-4" />
-                  {t('profile.readiness.reviewTargets')}
-                </Button>
+
+                {completeness >= 30 && completeness < 60 && (
+                  <>
+                    {nextMissing && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => onSetActiveTab(nextMissing.tab)}
+                        className="gap-1.5"
+                      >
+                        <nextMissing.icon className="h-4 w-4" />
+                        {t('profile.actionBar.completeSignal', { signal: nextMissing.label })}
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onSetActiveTab('targets')}
+                      className="gap-1.5"
+                    >
+                      <School className="h-4 w-4" />
+                      {t('profile.readiness.reviewTargets')}
+                    </Button>
+                  </>
+                )}
               </>
             )}
 
-            {completeness >= 60 && (
+            {!effectiveReadiness && completeness >= 60 && (
               <>
                 <Button asChild size="sm" className="gap-1.5">
                   <Link href="/uncommon-app">
@@ -220,8 +259,91 @@ export function ProfileActionBar({
             )}
           </div>
         </div>
+
+        {effectiveReadiness && (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {effectiveReadiness.workflowReadiness.items.slice(0, 4).map((item) => (
+              <ReadinessStatusEntry key={item.key} item={item} onSetActiveTab={onSetActiveTab} />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+function ReadinessStatusEntry({
+  item,
+  onSetActiveTab,
+}: {
+  item: ProfileReadinessItem;
+  onSetActiveTab: (tab: string) => void;
+}) {
+  const t = useTranslations();
+  const className =
+    'block min-h-16 rounded-[var(--theme-radius-card)] border bg-background/70 p-3 text-left transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  const content = (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">{t(item.labelKey)}</span>
+        <Badge variant={item.status === 'ready' ? 'secondary' : 'outline'} className="text-2xs">
+          {item.score}%
+        </Badge>
+      </div>
+      <p className="mt-1 text-sm font-semibold">{t(`profile.readiness.status.${item.status}`)}</p>
+    </>
+  );
+
+  if (item.targetTab) {
+    return (
+      <button type="button" onClick={() => onSetActiveTab(item.targetTab!)} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={item.href} className={className}>
+      {content}
+    </Link>
+  );
+}
+
+function ReadinessActionButton({
+  action,
+  onSetActiveTab,
+  primary = false,
+}: {
+  action: ProfileReadinessAction;
+  onSetActiveTab: (tab: string) => void;
+  primary?: boolean;
+}) {
+  const t = useTranslations();
+  const content = (
+    <>
+      <ArrowRight className="h-4 w-4" />
+      {t(action.labelKey)}
+    </>
+  );
+
+  if (action.targetTab) {
+    return (
+      <Button
+        type="button"
+        size="sm"
+        variant={primary ? 'default' : 'outline'}
+        onClick={() => onSetActiveTab(action.targetTab!)}
+        className="gap-1.5"
+      >
+        {content}
+      </Button>
+    );
+  }
+
+  return (
+    <Button asChild size="sm" variant={primary ? 'default' : 'outline'} className="gap-1.5">
+      <Link href={action.href}>{content}</Link>
+    </Button>
   );
 }
 

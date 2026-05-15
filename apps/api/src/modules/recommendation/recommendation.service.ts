@@ -138,15 +138,23 @@ export class RecommendationService {
     const hollandResult = assessmentResults.find(
       (r) => r.assessment.type === 'HOLLAND',
     );
+    const parsedMbtiResult = mbtiResult
+      ? typeof mbtiResult.result === 'string'
+        ? JSON.parse(mbtiResult.result)
+        : (mbtiResult.result as any)
+      : undefined;
+    const parsedHollandResult = hollandResult
+      ? typeof hollandResult.result === 'string'
+        ? JSON.parse(hollandResult.result)
+        : (hollandResult.result as any)
+      : undefined;
     const assessmentData =
       mbtiResult || hollandResult
         ? {
-            mbtiType: (mbtiResult?.result as any)?.mbtiType as
-              | string
-              | undefined,
-            hollandCodes: (hollandResult?.result as any)?.hollandCodes as
-              | string[]
-              | undefined,
+            mbtiType: parsedMbtiResult?.type as string | undefined,
+            hollandCodes: parsedHollandResult?.codes
+              ? [String(parsedHollandResult.codes)]
+              : undefined,
           }
         : undefined;
 

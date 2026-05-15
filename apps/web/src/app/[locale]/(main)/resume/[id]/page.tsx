@@ -5,28 +5,37 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  AlertTriangle,
   ArrowLeft,
   BadgeCheck,
   BookOpen,
   Briefcase,
+  Building2,
+  CheckCircle2,
   ChevronDown,
   Copy,
   Download,
   Eye,
   EyeOff,
+  FileCheck2,
   FileText,
   GraduationCap,
   History,
   LayoutTemplate,
+  Library,
   Loader2,
+  ListChecks,
+  MessageSquare,
   MoreVertical,
   Palette,
   Plus,
   RotateCcw,
   Save,
+  ShieldCheck,
   Lightbulb,
   Target,
   Trash2,
+  Upload,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -37,6 +46,7 @@ import { AI_TIMEOUTS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -70,14 +80,24 @@ import {
   resumeRoutes,
   type BulletOptimizeResult,
   type ContentSuggestionResult,
+  type ResumeAIIssue,
+  type ResumeComment,
+  type ResumeEvidence,
+  type ResumeExport,
+  type ResumeImportPreview,
+  type ResumeQualitySummary,
   type ResumeReviewResult,
   type ResumeReviewResultV1,
   type ResumeSettings,
+  type ResumeTarget,
   type ResumeTargetContext,
+  type ResumeUploadImportPreview,
 } from '@study-abroad/shared';
 
-type ResumeType = 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV';
-type ResumeStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+type ResumeType = 'COLLEGE_APPLICATION' | 'INTERNSHIP' | 'GRADUATE_CV' | 'FULL_TIME_JOB';
+type ResumeStatus = 'DRAFT' | 'ACTIVE' | 'REVIEWED' | 'APPROVED' | 'EXPORTED' | 'ARCHIVED';
+type ResumeFamily = 'STUDY_ABROAD' | 'CAREER';
+type ResumeVariantKind = 'MASTER' | 'TAILORED';
 
 interface ResumeSection {
   [key: string]: unknown;
@@ -86,6 +106,9 @@ interface ResumeSection {
   type: string;
   title: string;
   content: Record<string, unknown>;
+  contentSchemaVersion?: number;
+  contentHash?: string | null;
+  evidenceRefs?: Array<{ evidenceId: string; field?: string; note?: string }>;
   isVisible: boolean;
   order: number;
   createdAt: string;
@@ -98,13 +121,19 @@ interface Resume {
   title: string;
   status: ResumeStatus;
   type: ResumeType;
+  family?: ResumeFamily;
+  variantKind?: ResumeVariantKind;
+  targetId?: string | null;
+  baseResumeId?: string | null;
   templateId: string;
   language: string;
   settings: ResumeSettings;
   targetContext?: ResumeTargetContext;
+  qualitySummary?: ResumeQualitySummary;
   sections: ResumeSection[];
   version: number;
   lastImportedAt: string | null;
+  lastReviewAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -167,11 +196,19 @@ const TYPE_META: Record<
     labelKey: 'types.GRADUATE_CV',
     contextTitleKey: 'workbench.typeContextTitles.GRADUATE_CV',
   },
+  FULL_TIME_JOB: {
+    icon: Building2,
+    labelKey: 'types.FULL_TIME_JOB',
+    contextTitleKey: 'workbench.typeContextTitles.FULL_TIME_JOB',
+  },
 };
 
 const STATUS_LABEL_KEYS: Record<ResumeStatus, string> = {
   DRAFT: 'status.DRAFT',
   ACTIVE: 'status.ACTIVE',
+  REVIEWED: 'status.REVIEWED',
+  APPROVED: 'status.APPROVED',
+  EXPORTED: 'status.EXPORTED',
   ARCHIVED: 'status.ARCHIVED',
 };
 
@@ -319,6 +356,16 @@ function appendExampleBullets(content: Record<string, unknown>, examples: string
   return next;
 }
 
+function toggleSetValue<T>(set: Set<T>, value: T) {
+  const next = new Set(set);
+  if (next.has(value)) {
+    next.delete(value);
+  } else {
+    next.add(value);
+  }
+  return next;
+}
+
 export default function ResumeEditPage() {
   const t = useTranslations('resume');
   const params = useParams();
@@ -327,6 +374,7 @@ export default function ResumeEditPage() {
   const queryClient = useQueryClient();
   const sectionSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const resumeSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -336,6 +384,20 @@ export default function ResumeEditPage() {
   const [pendingSectionIds, setPendingSectionIds] = useState<Set<string>>(new Set());
   const [pendingResumeSave, setPendingResumeSave] = useState(false);
   const [confirmState, setConfirmState] = useState<ConfirmState>(null);
+  const [profileImportSectionIds, setProfileImportSectionIds] = useState<Set<string>>(new Set());
+  const [uploadImportOpen, setUploadImportOpen] = useState(false);
+  const [uploadImportPreview, setUploadImportPreview] = useState<ResumeUploadImportPreview | null>(
+    null
+  );
+  const [uploadSectionIndexes, setUploadSectionIndexes] = useState<Set<number>>(new Set());
+  const [uploadEvidenceIndexes, setUploadEvidenceIndexes] = useState<Set<number>>(new Set());
+  const [evidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
+  const [evidenceDraft, setEvidenceDraft] = useState({
+    kind: 'CUSTOM',
+    title: '',
+    description: '',
+  });
+  const [commentDraft, setCommentDraft] = useState('');
   const [optimizeState, setOptimizeState] = useState<{
     sectionId: string;
     result: BulletOptimizeResult;
@@ -360,9 +422,45 @@ export default function ResumeEditPage() {
     enabled: Boolean(resumeId),
   });
 
+  const { data: aiIssues } = useQuery({
+    queryKey: ['resume', resumeId, 'aiIssues'],
+    queryFn: () => apiClient.get<ResumeAIIssue[]>(resumeRoutes.aiIssues(resumeId)),
+    enabled: Boolean(resumeId),
+  });
+
+  const { data: comments } = useQuery({
+    queryKey: ['resume', resumeId, 'comments'],
+    queryFn: () => apiClient.get<ResumeComment[]>(resumeRoutes.comments(resumeId)),
+    enabled: Boolean(resumeId),
+  });
+
   const { data: snapshots } = useQuery({
     queryKey: ['resume', resumeId, 'snapshots'],
     queryFn: () => apiClient.get<SnapshotRecord[]>(resumeRoutes.snapshots(resumeId)),
+    enabled: Boolean(resumeId),
+  });
+
+  const { data: quality } = useQuery({
+    queryKey: ['resume', resumeId, 'quality'],
+    queryFn: () => apiClient.get<ResumeQualitySummary>(resumeRoutes.quality(resumeId)),
+    enabled: Boolean(resumeId),
+  });
+
+  const { data: targets } = useQuery({
+    queryKey: ['resume', 'targets'],
+    queryFn: () => apiClient.get<ResumeTarget[]>(resumeRoutes.targets()),
+    enabled: Boolean(resumeId),
+  });
+
+  const { data: evidence } = useQuery({
+    queryKey: ['resume', 'evidence'],
+    queryFn: () => apiClient.get<ResumeEvidence[]>(resumeRoutes.evidence()),
+    enabled: Boolean(resumeId),
+  });
+
+  const { data: exports } = useQuery({
+    queryKey: ['resume', resumeId, 'exports'],
+    queryFn: () => apiClient.get<ResumeExport[]>(resumeRoutes.exports(resumeId)),
     enabled: Boolean(resumeId),
   });
 
@@ -374,6 +472,13 @@ export default function ResumeEditPage() {
     // Only initialize local drafts when a different resume is opened.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resume?.id]);
+
+  useEffect(() => {
+    if (uploadImportPreview) {
+      setUploadSectionIndexes(new Set(uploadImportPreview.sections.map((_, index) => index)));
+      setUploadEvidenceIndexes(new Set(uploadImportPreview.evidence.map((_, index) => index)));
+    }
+  }, [uploadImportPreview]);
 
   useEffect(() => {
     const timers = sectionSaveTimers.current;
@@ -409,7 +514,9 @@ export default function ResumeEditPage() {
 
   const updateResumeMutation = useMutation({
     mutationFn: (
-      dto: Partial<Pick<Resume, 'title' | 'status' | 'templateId' | 'settings' | 'targetContext'>>
+      dto: Partial<
+        Pick<Resume, 'title' | 'status' | 'templateId' | 'settings' | 'targetContext' | 'targetId'>
+      >
     ) => apiClient.put<Resume>(resumeRoutes.byId(resumeId), dto),
     onError: () => {
       queryClient.invalidateQueries({ queryKey: ['resume', resumeId] });
@@ -438,6 +545,7 @@ export default function ResumeEditPage() {
         next.delete(variables.sectionId);
         return next;
       });
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'quality'] });
     },
   });
 
@@ -468,10 +576,25 @@ export default function ResumeEditPage() {
     },
   });
 
+  const importProfilePreviewMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post<ResumeImportPreview>(resumeRoutes.importProfilePreview(resumeId)),
+    onSuccess: (preview) => {
+      setProfileImportSectionIds(new Set(preview.sections.map((section) => section.sectionId)));
+    },
+    onError: () => toast.error(t('workbench.toasts.importPreviewFailed')),
+  });
+
   const importProfileMutation = useMutation({
-    mutationFn: () => apiClient.post<Resume>(resumeRoutes.importProfile(resumeId)),
+    mutationFn: () =>
+      apiClient.post<Resume>(resumeRoutes.importProfileApply(resumeId), {
+        sectionIds: Array.from(profileImportSectionIds),
+        snapshotDescription: 'Before profile import',
+      }),
     onSuccess: (data) => {
       queryClient.setQueryData(['resume', resumeId], data);
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'snapshots'] });
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'quality'] });
       toast.success(t('workbench.toasts.profileImported'));
     },
   });
@@ -512,10 +635,188 @@ export default function ResumeEditPage() {
       ),
     onSuccess: (record) => {
       queryClient.setQueryData(['resume', resumeId, 'aiReview', 'latest'], record);
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'quality'] });
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'aiIssues'] });
       setReviewOpen(true);
       toast.success(t('workbench.toasts.aiReviewComplete'));
     },
     onError: () => toast.error(t('workbench.toasts.aiReviewFailed')),
+  });
+
+  const createExportMutation = useMutation({
+    mutationFn: (dto: {
+      format: 'PDF';
+      templateId: string;
+      pageSize?: string;
+      pageCount?: number;
+      textExtractable: boolean;
+      metadata?: Record<string, unknown>;
+    }) => apiClient.post<ResumeExport>(resumeRoutes.exports(resumeId), dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'exports'] });
+    },
+    onError: () => toast.error(t('workbench.toasts.exportRecordFailed')),
+  });
+
+  const applyAiIssueMutation = useMutation({
+    mutationFn: (issue: ResumeAIIssue) =>
+      apiClient.post<Resume>(resumeRoutes.aiIssueApply(resumeId, issue.id), {
+        expectedContentHash: issue.baseContentHash ?? undefined,
+      }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['resume', resumeId], data);
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'aiIssues'] });
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'quality'] });
+      toast.success(t('workbench.toasts.aiIssueApplied'));
+    },
+    onError: () => toast.error(t('workbench.toasts.aiIssueApplyFailed')),
+  });
+
+  const uploadImportPreviewMutation = useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return apiClient.upload<ResumeUploadImportPreview>(
+        resumeRoutes.importFilePreview(resumeId),
+        formData
+      );
+    },
+    onSuccess: (preview) => {
+      setUploadImportPreview(preview);
+      setUploadImportOpen(true);
+    },
+    onError: () => toast.error(t('workbench.toasts.uploadImportFailed')),
+  });
+
+  const applyUploadImportMutation = useMutation({
+    mutationFn: () => {
+      const preview = uploadImportPreview;
+      if (!preview) throw new Error('No upload preview');
+      return apiClient.post<Resume>(resumeRoutes.importFileApply(resumeId), {
+        sections: preview.sections
+          .filter((_, index) => uploadSectionIndexes.has(index))
+          .map((section) => ({
+            sectionId: section.sectionId,
+            sectionType: section.sectionType,
+            title: section.title,
+            content: section.proposedContent,
+            isVisible: true,
+          })),
+        evidence: preview.evidence.filter((_, index) => uploadEvidenceIndexes.has(index)),
+        snapshotDescription: 'Before uploaded resume import',
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['resume', resumeId], data);
+      queryClient.invalidateQueries({ queryKey: ['resume', 'evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'snapshots'] });
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'quality'] });
+      setUploadImportOpen(false);
+      setUploadImportPreview(null);
+      toast.success(t('workbench.toasts.uploadImported'));
+    },
+    onError: () => toast.error(t('workbench.toasts.uploadImportApplyFailed')),
+  });
+
+  const createTargetMutation = useMutation({
+    mutationFn: () => {
+      if (!resume) throw new Error('No resume loaded');
+      const context = sanitizeContext(targetDraft);
+      const career = resume.type === 'INTERNSHIP' || resume.type === 'FULL_TIME_JOB';
+      const type =
+        resume.type === 'GRADUATE_CV'
+          ? 'GRADUATE_PROGRAM'
+          : resume.type === 'FULL_TIME_JOB'
+            ? 'FULL_TIME_JOB'
+            : resume.type === 'INTERNSHIP'
+              ? 'INTERNSHIP'
+              : 'COLLEGE_APPLICATION';
+      const title =
+        (career
+          ? [context.company, context.targetRole].filter(Boolean).join(' · ')
+          : [
+              context.targetSchool ?? context.programName,
+              context.targetMajor ?? context.researchArea,
+            ]
+              .filter(Boolean)
+              .join(' · ')) || resume.title;
+      return apiClient.post<ResumeTarget>(resumeRoutes.targets(), {
+        type,
+        title,
+        status: 'ACTIVE',
+        school: context.targetSchool,
+        program: context.programName,
+        major: context.targetMajor,
+        applicationRound: context.applicationRound,
+        advisorName: context.advisorName,
+        researchArea: context.researchArea,
+        labName: context.labName,
+        company: context.company,
+        role: context.targetRole,
+        jobDescription: context.jobDescription,
+        keywords: context.keywords ?? [],
+      });
+    },
+    onSuccess: (target) => {
+      queryClient.invalidateQueries({ queryKey: ['resume', 'targets'] });
+      updateResumeDraft({ targetId: target.id, targetContext: sanitizeContext(targetDraft) });
+      toast.success(t('workbench.toasts.targetCreated'));
+    },
+    onError: () => toast.error(t('workbench.toasts.targetCreateFailed')),
+  });
+
+  const tailorMutation = useMutation({
+    mutationFn: (target?: ResumeTarget) =>
+      apiClient.post<Resume>(resumeRoutes.tailor(resumeId), {
+        targetId: target?.id,
+        title: target ? `${resume?.title ?? t('untitled')} · ${target.title}` : undefined,
+      }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['resumes'] });
+      router.push(`/resume/${data.id}`);
+      toast.success(t('workbench.toasts.tailoredCreated'));
+    },
+    onError: () => toast.error(t('workbench.toasts.tailorFailed')),
+  });
+
+  const createEvidenceMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post<ResumeEvidence>(resumeRoutes.evidence(), {
+        kind: evidenceDraft.kind,
+        title: evidenceDraft.title,
+        description: evidenceDraft.description,
+        content: { resumeId },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resume', 'evidence'] });
+      setEvidenceDialogOpen(false);
+      setEvidenceDraft({ kind: 'CUSTOM', title: '', description: '' });
+      toast.success(t('workbench.toasts.evidenceCreated'));
+    },
+    onError: () => toast.error(t('workbench.toasts.evidenceCreateFailed')),
+  });
+
+  const createCommentMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post<ResumeComment>(resumeRoutes.comments(resumeId), {
+        body: commentDraft.trim(),
+      }),
+    onSuccess: () => {
+      setCommentDraft('');
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'comments'] });
+      toast.success(t('workbench.toasts.commentAdded'));
+    },
+    onError: () => toast.error(t('workbench.toasts.commentFailed')),
+  });
+
+  const resolveCommentMutation = useMutation({
+    mutationFn: (commentId: string) =>
+      apiClient.put<ResumeComment>(resumeRoutes.comment(resumeId, commentId), {
+        status: 'RESOLVED',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resume', resumeId, 'comments'] });
+    },
   });
 
   const aiOptimizeMutation = useMutation({
@@ -624,11 +925,21 @@ export default function ResumeEditPage() {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      createExportMutation.mutate({
+        format: 'PDF',
+        templateId: resume.templateId,
+        pageSize: resume.settings?.decorations?.pageSize ?? 'LETTER',
+        textExtractable: true,
+        metadata: {
+          source: 'client_pdf_export',
+          visibleSectionCount: visibleSections.length,
+        },
+      });
       toast.success(t('workbench.toasts.exportedPdf'), { id: 'resume-export' });
     } catch {
       toast.error(t('workbench.toasts.exportFailed'), { id: 'resume-export' });
     }
-  }, [resume, t]);
+  }, [createExportMutation, resume, t]);
 
   const confirmAction = useCallback(() => {
     if (!confirmState) return;
@@ -704,6 +1015,8 @@ export default function ResumeEditPage() {
           pending={pendingResumeSave}
           onChange={setTargetDraft}
           onSave={() => updateResumeDraft({ targetContext: sanitizeContext(targetDraft) })}
+          onCreateTarget={() => createTargetMutation.mutate()}
+          creatingTarget={createTargetMutation.isPending}
         />
 
         <SortableList
@@ -758,9 +1071,17 @@ export default function ResumeEditPage() {
             <Eye className="h-4 w-4" />
             {t('workbench.tabs.preview')}
           </TabsTrigger>
+          <TabsTrigger value="match">
+            <ListChecks className="h-4 w-4" />
+            {t('workbench.tabs.match')}
+          </TabsTrigger>
           <TabsTrigger value="ai">
             <Lightbulb className="h-4 w-4" />
             AI
+          </TabsTrigger>
+          <TabsTrigger value="export">
+            <FileCheck2 className="h-4 w-4" />
+            {t('workbench.tabs.exportCheck')}
           </TabsTrigger>
           <TabsTrigger value="style">
             <Palette className="h-4 w-4" />
@@ -781,6 +1102,20 @@ export default function ResumeEditPage() {
         />
       </TabsContent>
 
+      <TabsContent value="match" className="min-h-0">
+        <ScrollArea className="h-full">
+          <TargetMatchPanel
+            resume={resume}
+            quality={quality}
+            targets={targets ?? []}
+            evidence={evidence ?? []}
+            onTailor={(target) => tailorMutation.mutate(target)}
+            tailoring={tailorMutation.isPending}
+            onAddEvidence={() => setEvidenceDialogOpen(true)}
+          />
+        </ScrollArea>
+      </TabsContent>
+
       <TabsContent value="ai" className="min-h-0">
         <ScrollArea className="h-full">
           <AiAssistantPanel
@@ -791,6 +1126,38 @@ export default function ResumeEditPage() {
             sections={resumeSections}
             onSuggest={(sectionType) => aiSuggestMutation.mutate(sectionType)}
             suggesting={aiSuggestMutation.isPending}
+            issues={aiIssues ?? []}
+            applyingIssueId={
+              applyAiIssueMutation.isPending ? applyAiIssueMutation.variables?.id : undefined
+            }
+            onApplyIssue={(issue) => applyAiIssueMutation.mutate(issue)}
+            comments={comments ?? []}
+            commentDraft={commentDraft}
+            onCommentDraftChange={setCommentDraft}
+            onAddComment={() => createCommentMutation.mutate()}
+            addingComment={createCommentMutation.isPending}
+            resolvingCommentId={resolveCommentMutation.variables}
+            onResolveComment={(commentId) => resolveCommentMutation.mutate(commentId)}
+          />
+        </ScrollArea>
+      </TabsContent>
+
+      <TabsContent value="export" className="min-h-0">
+        <ScrollArea className="h-full">
+          <ExportReadinessPanel
+            resume={resume}
+            quality={quality}
+            exports={exports ?? []}
+            onRecord={() =>
+              createExportMutation.mutate({
+                format: 'PDF',
+                templateId: resume.templateId,
+                pageSize: resume.settings?.decorations?.pageSize ?? 'LETTER',
+                textExtractable: true,
+                metadata: { source: 'manual_export_check' },
+              })
+            }
+            recording={createExportMutation.isPending}
           />
         </ScrollArea>
       </TabsContent>
@@ -879,14 +1246,41 @@ export default function ResumeEditPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={uploadInputRef}
+            type="file"
+            accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              if (file) uploadImportPreviewMutation.mutate(file);
+              event.currentTarget.value = '';
+            }}
+          />
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setConfirmState({ type: 'import-profile' })}
-            disabled={importProfileMutation.isPending}
+            onClick={() => {
+              setConfirmState({ type: 'import-profile' });
+              importProfilePreviewMutation.mutate();
+            }}
+            disabled={importProfileMutation.isPending || importProfilePreviewMutation.isPending}
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {t('workbench.actions.importProfile')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => uploadInputRef.current?.click()}
+            disabled={uploadImportPreviewMutation.isPending}
+          >
+            {uploadImportPreviewMutation.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Upload className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('workbench.actions.uploadResume')}
           </Button>
           <Button
             variant="default"
@@ -931,6 +1325,12 @@ export default function ResumeEditPage() {
                   ? t('workbench.actions.markDraft')
                   : t('workbench.actions.markActive')}
               </DropdownMenuItem>
+              {(['REVIEWED', 'APPROVED', 'EXPORTED'] as ResumeStatus[]).map((status) => (
+                <DropdownMenuItem key={status} onClick={() => updateResumeDraft({ status })}>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {t('workbench.actions.setStatus', { status: t(STATUS_LABEL_KEYS[status]) })}
+                </DropdownMenuItem>
+              ))}
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="flex items-center gap-2 text-xs">
                 <History className="h-3.5 w-3.5" />
@@ -964,6 +1364,9 @@ export default function ResumeEditPage() {
           <WorkbenchSidebar
             sections={resumeSections}
             completion={completion}
+            quality={quality}
+            targets={targets ?? []}
+            evidence={evidence ?? []}
             onSelect={(id) =>
               document.getElementById(`section-${id}`)?.scrollIntoView({ block: 'start' })
             }
@@ -974,9 +1377,10 @@ export default function ResumeEditPage() {
       </div>
 
       <Tabs defaultValue="edit" className="min-h-0 flex-1 gap-0 lg:hidden">
-        <TabsList className="mx-3 mt-3 grid w-[calc(100%-1.5rem)] grid-cols-4">
+        <TabsList className="mx-3 mt-3 grid w-[calc(100%-1.5rem)] grid-cols-5">
           <TabsTrigger value="edit">{t('workbench.tabs.edit')}</TabsTrigger>
           <TabsTrigger value="preview">{t('workbench.tabs.preview')}</TabsTrigger>
+          <TabsTrigger value="match">{t('workbench.tabs.match')}</TabsTrigger>
           <TabsTrigger value="ai">AI</TabsTrigger>
           <TabsTrigger value="style">{t('workbench.tabs.style')}</TabsTrigger>
         </TabsList>
@@ -990,6 +1394,19 @@ export default function ResumeEditPage() {
             settings={resume.settings}
           />
         </TabsContent>
+        <TabsContent value="match" className="min-h-0">
+          <ScrollArea className="h-full">
+            <TargetMatchPanel
+              resume={resume}
+              quality={quality}
+              targets={targets ?? []}
+              evidence={evidence ?? []}
+              onTailor={(target) => tailorMutation.mutate(target)}
+              tailoring={tailorMutation.isPending}
+              onAddEvidence={() => setEvidenceDialogOpen(true)}
+            />
+          </ScrollArea>
+        </TabsContent>
         <TabsContent value="ai" className="min-h-0">
           <ScrollArea className="h-full">
             <AiAssistantPanel
@@ -1000,6 +1417,18 @@ export default function ResumeEditPage() {
               sections={resumeSections}
               onSuggest={(sectionType) => aiSuggestMutation.mutate(sectionType)}
               suggesting={aiSuggestMutation.isPending}
+              issues={aiIssues ?? []}
+              applyingIssueId={
+                applyAiIssueMutation.isPending ? applyAiIssueMutation.variables?.id : undefined
+              }
+              onApplyIssue={(issue) => applyAiIssueMutation.mutate(issue)}
+              comments={comments ?? []}
+              commentDraft={commentDraft}
+              onCommentDraftChange={setCommentDraft}
+              onAddComment={() => createCommentMutation.mutate()}
+              addingComment={createCommentMutation.isPending}
+              resolvingCommentId={resolveCommentMutation.variables}
+              onResolveComment={(commentId) => resolveCommentMutation.mutate(commentId)}
             />
           </ScrollArea>
         </TabsContent>
@@ -1101,12 +1530,44 @@ export default function ResumeEditPage() {
         }}
       />
 
+      <UploadImportDialog
+        open={uploadImportOpen}
+        onOpenChange={setUploadImportOpen}
+        preview={uploadImportPreview}
+        selectedSections={uploadSectionIndexes}
+        selectedEvidence={uploadEvidenceIndexes}
+        onToggleSection={(index) =>
+          setUploadSectionIndexes((current) => toggleSetValue(current, index))
+        }
+        onToggleEvidence={(index) =>
+          setUploadEvidenceIndexes((current) => toggleSetValue(current, index))
+        }
+        onApply={() => applyUploadImportMutation.mutate()}
+        loading={applyUploadImportMutation.isPending}
+      />
+
+      <EvidenceDialog
+        open={evidenceDialogOpen}
+        onOpenChange={setEvidenceDialogOpen}
+        draft={evidenceDraft}
+        onChange={setEvidenceDraft}
+        onSubmit={() => createEvidenceMutation.mutate()}
+        loading={createEvidenceMutation.isPending}
+      />
+
       <ConfirmActionDialog
         state={confirmState}
         loading={
           deleteSectionMutation.isPending ||
           importProfileMutation.isPending ||
+          importProfilePreviewMutation.isPending ||
           restoreSnapshotMutation.isPending
+        }
+        importPreview={importProfilePreviewMutation.data}
+        importPreviewLoading={importProfilePreviewMutation.isPending}
+        selectedImportSectionIds={profileImportSectionIds}
+        onToggleImportSection={(sectionId) =>
+          setProfileImportSectionIds((current) => toggleSetValue(current, sectionId))
         }
         onCancel={() => setConfirmState(null)}
         onConfirm={confirmAction}
@@ -1118,13 +1579,20 @@ export default function ResumeEditPage() {
 function WorkbenchSidebar({
   sections,
   completion,
+  quality,
+  targets,
+  evidence,
   onSelect,
 }: {
   sections: ResumeSection[];
   completion: number;
+  quality?: ResumeQualitySummary;
+  targets: ResumeTarget[];
+  evidence: ResumeEvidence[];
   onSelect: (id: string) => void;
 }) {
   const t = useTranslations('resume');
+  const openGapCount = quality?.gaps?.length ?? 0;
 
   return (
     <div className="flex h-full flex-col">
@@ -1135,6 +1603,24 @@ function WorkbenchSidebar({
         </div>
         <Progress value={completion} className="h-2" />
         <p className="text-xs text-muted-foreground">{t('workbench.sidebar.hint')}</p>
+      </div>
+      <div className="space-y-2 border-b p-3">
+        <SidebarStat
+          icon={Library}
+          label={t('workbench.sidebar.evidence')}
+          value={String(evidence.length)}
+        />
+        <SidebarStat
+          icon={Target}
+          label={t('workbench.sidebar.targets')}
+          value={String(targets.length)}
+        />
+        <SidebarStat
+          icon={ListChecks}
+          label={t('workbench.sidebar.gaps')}
+          value={openGapCount ? String(openGapCount) : t('workbench.sidebar.noGaps')}
+          tone={openGapCount ? 'warning' : 'success'}
+        />
       </div>
       <ScrollArea className="min-h-0 flex-1">
         <nav className="space-y-1 p-2">
@@ -1166,18 +1652,52 @@ function WorkbenchSidebar({
   );
 }
 
+function SidebarStat({
+  icon: Icon,
+  label,
+  value,
+  tone = 'default',
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  tone?: 'default' | 'success' | 'warning';
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-md border bg-background px-2.5 py-2">
+      <div className="flex min-w-0 items-center gap-2">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <span className="truncate text-xs text-muted-foreground">{label}</span>
+      </div>
+      <span
+        className={cn(
+          'text-xs font-semibold',
+          tone === 'success' && 'text-emerald-600',
+          tone === 'warning' && 'text-amber-600'
+        )}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
 function TargetContextPanel({
   type,
   value,
   pending,
   onChange,
   onSave,
+  onCreateTarget,
+  creatingTarget,
 }: {
   type: ResumeType;
   value: ResumeTargetContext;
   pending: boolean;
   onChange: (value: ResumeTargetContext) => void;
   onSave: () => void;
+  onCreateTarget: () => void;
+  creatingTarget: boolean;
 }) {
   const t = useTranslations('resume');
   const meta = TYPE_META[type];
@@ -1196,14 +1716,24 @@ function TargetContextPanel({
             <p className="text-xs text-muted-foreground">{t('workbench.target.hint')}</p>
           </div>
         </div>
-        <Button size="sm" variant="outline" onClick={onSave} disabled={pending}>
-          {pending ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Save className="mr-1.5 h-3.5 w-3.5" />
-          )}
-          {t('workbench.actions.saveTarget')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={onSave} disabled={pending}>
+            {pending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('workbench.actions.saveTarget')}
+          </Button>
+          <Button size="sm" variant="outline" onClick={onCreateTarget} disabled={creatingTarget}>
+            {creatingTarget ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Target className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('workbench.actions.createTarget')}
+          </Button>
+        </div>
       </div>
 
       {type === 'COLLEGE_APPLICATION' && (
@@ -1230,7 +1760,7 @@ function TargetContextPanel({
         </div>
       )}
 
-      {type === 'INTERNSHIP' && (
+      {(type === 'INTERNSHIP' || type === 'FULL_TIME_JOB') && (
         <div className="grid gap-2">
           <div className="grid gap-2 sm:grid-cols-2">
             <Field label={t('workbench.target.targetRole')}>
@@ -1386,6 +1916,13 @@ function WorkbenchSectionCard({
                 {!section.isVisible && (
                   <Badge variant="outline">{t('workbench.section.hidden')}</Badge>
                 )}
+                {Boolean(section.evidenceRefs?.length) && (
+                  <Badge variant="secondary">
+                    {t('workbench.section.evidenceRefs', {
+                      count: section.evidenceRefs?.length ?? 0,
+                    })}
+                  </Badge>
+                )}
               </div>
               {summaries.length > 0 && (
                 <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -1453,6 +1990,16 @@ function AiAssistantPanel({
   sections,
   onSuggest,
   suggesting,
+  issues,
+  applyingIssueId,
+  onApplyIssue,
+  comments,
+  commentDraft,
+  onCommentDraftChange,
+  onAddComment,
+  addingComment,
+  resolvingCommentId,
+  onResolveComment,
 }: {
   review?: ReviewRecord | null;
   reviewPending: boolean;
@@ -1461,10 +2008,21 @@ function AiAssistantPanel({
   sections: ResumeSection[];
   onSuggest: (sectionType: string) => void;
   suggesting: boolean;
+  issues: ResumeAIIssue[];
+  applyingIssueId?: string;
+  onApplyIssue: (issue: ResumeAIIssue) => void;
+  comments: ResumeComment[];
+  commentDraft: string;
+  onCommentDraftChange: (value: string) => void;
+  onAddComment: () => void;
+  addingComment: boolean;
+  resolvingCommentId?: string;
+  onResolveComment: (commentId: string) => void;
 }) {
   const t = useTranslations('resume');
   const output = review?.output as ResumeReviewResult | undefined;
   const gaps = 'contentGaps' in (output ?? {}) ? (output?.contentGaps ?? []) : [];
+  const openIssues = issues.filter((issue) => issue.status === 'OPEN');
 
   return (
     <div className="space-y-4 p-4">
@@ -1508,6 +2066,59 @@ function AiAssistantPanel({
       </section>
 
       <section className="rounded-md border bg-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold">{t('workbench.ai.issuesTitle')}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('workbench.ai.issuesDescription')}
+            </p>
+          </div>
+          <Badge variant="secondary">{openIssues.length}</Badge>
+        </div>
+        {openIssues.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {openIssues.slice(0, 6).map((issue) => (
+              <div key={issue.id} className="space-y-2 rounded-md border p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{issue.title}</p>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                      {issue.reason || issue.suggestion || issue.type}
+                    </p>
+                  </div>
+                  <Badge variant="outline">{issue.severity}</Badge>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    {issue.confidence
+                      ? t('workbench.ai.confidence', {
+                          value: Math.round(issue.confidence * 100),
+                        })
+                      : issue.source}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!issue.original || !issue.suggestion || applyingIssueId === issue.id}
+                    onClick={() => onApplyIssue(issue)}
+                  >
+                    {applyingIssueId === issue.id && (
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    )}
+                    {t('workbench.actions.applyIssue')}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+            {t('workbench.ai.noIssues')}
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-md border bg-card p-4">
         <h3 className="text-sm font-semibold">{t('workbench.ai.fillBySection')}</h3>
         <div className="mt-3 space-y-2">
           {sections.map((section) => (
@@ -1523,6 +2134,399 @@ function AiAssistantPanel({
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="rounded-md border bg-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">{t('workbench.comments.title')}</h3>
+          </div>
+          <Badge variant="secondary">
+            {comments.filter((item) => item.status === 'OPEN').length}
+          </Badge>
+        </div>
+        <div className="mt-3 space-y-2">
+          <Textarea
+            value={commentDraft}
+            onChange={(event) => onCommentDraftChange(event.target.value)}
+            placeholder={t('workbench.comments.placeholder')}
+            className="min-h-20 text-sm"
+          />
+          <Button
+            size="sm"
+            className="w-full"
+            disabled={!commentDraft.trim() || addingComment}
+            onClick={onAddComment}
+          >
+            {addingComment ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('workbench.comments.add')}
+          </Button>
+        </div>
+        <div className="mt-3 space-y-2">
+          {comments.slice(0, 6).map((comment) => (
+            <div key={comment.id} className="rounded-md border px-3 py-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm">{comment.body}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {[comment.role, comment.author?.email].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                {comment.status === 'OPEN' ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onResolveComment(comment.id)}
+                    disabled={resolvingCommentId === comment.id}
+                  >
+                    {resolvingCommentId === comment.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                ) : (
+                  <Badge variant="outline">{t('workbench.comments.resolved')}</Badge>
+                )}
+              </div>
+            </div>
+          ))}
+          {comments.length === 0 && (
+            <p className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+              {t('workbench.comments.empty')}
+            </p>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TargetMatchPanel({
+  resume,
+  quality,
+  targets,
+  evidence,
+  onTailor,
+  tailoring,
+  onAddEvidence,
+}: {
+  resume: Resume;
+  quality?: ResumeQualitySummary;
+  targets: ResumeTarget[];
+  evidence: ResumeEvidence[];
+  onTailor: (target?: ResumeTarget) => void;
+  tailoring: boolean;
+  onAddEvidence: () => void;
+}) {
+  const t = useTranslations('resume');
+  const family: ResumeFamily =
+    resume.family ??
+    (resume.type === 'INTERNSHIP' || resume.type === 'FULL_TIME_JOB' ? 'CAREER' : 'STUDY_ABROAD');
+  const activeTarget =
+    targets.find((target) => target.id === resume.targetId) ??
+    targets.find((target) => target.status === 'ACTIVE') ??
+    targets[0];
+  const targetDetails = activeTarget
+    ? [
+        activeTarget.school,
+        activeTarget.program,
+        activeTarget.major,
+        activeTarget.company,
+        activeTarget.role,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
+  const keywords = activeTarget?.keywords?.length
+    ? activeTarget.keywords
+    : (resume.targetContext?.keywords ?? []);
+
+  return (
+    <div className="space-y-4 p-4">
+      <section className="rounded-md border bg-card p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold">{t('workbench.match.title')}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {family === 'CAREER'
+                ? t('workbench.match.careerDescription')
+                : t('workbench.match.studyDescription')}
+            </p>
+          </div>
+          <div className="rounded-md border bg-muted/30 px-3 py-2 text-center">
+            <p className="text-xs text-muted-foreground">{t('workbench.match.score')}</p>
+            <p className="text-xl font-semibold">{quality?.score ?? '—'}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <Metric
+            label={t('workbench.match.family')}
+            value={
+              family === 'CAREER'
+                ? t('workbench.match.familyCareer')
+                : t('workbench.match.familyStudyAbroad')
+            }
+          />
+          <Metric
+            label={t('workbench.match.variant')}
+            value={
+              resume.variantKind === 'TAILORED'
+                ? t('workbench.match.tailored')
+                : t('workbench.match.master')
+            }
+          />
+          <Metric label={t('workbench.match.rubric')} value={quality?.rubricVersion ?? '—'} />
+        </div>
+      </section>
+
+      <section className="rounded-md border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <Target className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">{t('workbench.match.activeTarget')}</h3>
+        </div>
+        {activeTarget ? (
+          <div className="mt-3 space-y-3">
+            <div>
+              <p className="text-sm font-medium">{activeTarget.title}</p>
+              {targetDetails && (
+                <p className="mt-1 text-xs text-muted-foreground">{targetDetails}</p>
+              )}
+            </div>
+            {keywords.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {keywords.slice(0, 10).map((keyword) => (
+                  <Badge key={keyword} variant="secondary">
+                    {keyword}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => onTailor(activeTarget)}
+              disabled={tailoring}
+            >
+              {tailoring ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {t('workbench.actions.createTailored')}
+            </Button>
+          </div>
+        ) : (
+          <p className="mt-3 rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+            {t('workbench.match.noTarget')}
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-md border bg-card p-4">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">{t('workbench.match.dimensions')}</h3>
+        </div>
+        <div className="mt-3 space-y-2">
+          {(quality?.dimensions ?? []).map((dimension) => (
+            <div key={dimension.key} className="rounded-md border p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <span className="text-sm font-medium">{dimension.label}</span>
+                <Badge
+                  variant={dimension.status === 'green' ? 'default' : 'outline'}
+                  className={cn(
+                    dimension.status === 'red' && 'border-destructive text-destructive'
+                  )}
+                >
+                  {dimension.score}
+                </Badge>
+              </div>
+              <Progress value={dimension.score} className="h-2" />
+              {dimension.checks.length > 0 && (
+                <p className="mt-2 text-xs text-muted-foreground">{dimension.checks.join(' · ')}</p>
+              )}
+            </div>
+          ))}
+          {(!quality?.dimensions || quality.dimensions.length === 0) && (
+            <p className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+              {t('workbench.match.noQuality')}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-md border bg-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Library className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">{t('workbench.match.evidence')}</h3>
+          </div>
+          <Button size="sm" variant="outline" onClick={onAddEvidence}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            {t('workbench.actions.addEvidence')}
+          </Button>
+        </div>
+        {evidence.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {evidence.slice(0, 5).map((item) => (
+              <div key={item.id} className="rounded-md border px-3 py-2">
+                <p className="truncate text-sm font-medium">{item.title}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {[item.kind, item.organization, item.role].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+            {t('workbench.match.evidenceEmpty')}
+          </p>
+        )}
+      </section>
+
+      {Boolean(quality?.gaps?.length) && (
+        <section className="rounded-md border bg-card p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <h3 className="text-sm font-semibold">{t('workbench.match.gaps')}</h3>
+          </div>
+          <div className="mt-3 space-y-2">
+            {quality?.gaps.map((gap) => (
+              <div
+                key={gap.key}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
+                <span className="text-sm">{gap.label}</span>
+                <Badge variant="outline">{gap.severity}</Badge>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function ExportReadinessPanel({
+  resume,
+  quality,
+  exports,
+  onRecord,
+  recording,
+}: {
+  resume: Resume;
+  quality?: ResumeQualitySummary;
+  exports: ResumeExport[];
+  onRecord: () => void;
+  recording: boolean;
+}) {
+  const t = useTranslations('resume');
+  const visibleSections = resume.sections.filter((section) => section.isVisible);
+  const header = visibleSections.find((section) => section.type === 'HEADER');
+  const headerContent = (header?.content ?? {}) as Record<string, unknown>;
+  const checks = [
+    {
+      key: 'sections',
+      label: t('workbench.exportCheck.visibleSections'),
+      passed: visibleSections.length > 0,
+      value: String(visibleSections.length),
+    },
+    {
+      key: 'contact',
+      label: t('workbench.exportCheck.contact'),
+      passed: Boolean(headerContent.name && (headerContent.email || headerContent.phone)),
+      value: headerContent.name
+        ? t('workbench.exportCheck.present')
+        : t('workbench.exportCheck.missing'),
+    },
+    {
+      key: 'text',
+      label: t('workbench.exportCheck.textExtractable'),
+      passed: true,
+      value: t('workbench.exportCheck.compatible'),
+    },
+    {
+      key: 'quality',
+      label: t('workbench.exportCheck.qualityScore'),
+      passed: (quality?.score ?? 0) >= 70,
+      value: quality?.score ? String(quality.score) : '—',
+    },
+  ];
+
+  return (
+    <div className="space-y-4 p-4">
+      <section className="rounded-md border bg-card p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold">{t('workbench.exportCheck.title')}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('workbench.exportCheck.description')}
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={onRecord} disabled={recording}>
+            {recording ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileCheck2 className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('workbench.exportCheck.record')}
+          </Button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {checks.map((check) => (
+            <div
+              key={check.key}
+              className="flex items-center justify-between rounded-md border px-3 py-2"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className={cn(
+                    'h-2 w-2 shrink-0 rounded-full',
+                    check.passed ? 'bg-emerald-500' : 'bg-amber-500'
+                  )}
+                />
+                <span className="truncate text-sm">{check.label}</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{check.value}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-md border bg-card p-4">
+        <h3 className="text-sm font-semibold">{t('workbench.exportCheck.history')}</h3>
+        {exports.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {exports.slice(0, 6).map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-md border px-3 py-2"
+              >
+                <div>
+                  <p className="text-sm font-medium">{item.format}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(item.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <Badge variant={item.status === 'COMPLETED' ? 'default' : 'outline'}>
+                  {item.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+            {t('workbench.exportCheck.noHistory')}
+          </p>
+        )}
       </section>
     </div>
   );
@@ -1658,14 +2662,178 @@ function ContentSuggestionDialog({
   );
 }
 
+function UploadImportDialog({
+  open,
+  onOpenChange,
+  preview,
+  selectedSections,
+  selectedEvidence,
+  onToggleSection,
+  onToggleEvidence,
+  onApply,
+  loading,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  preview: ResumeUploadImportPreview | null;
+  selectedSections: Set<number>;
+  selectedEvidence: Set<number>;
+  onToggleSection: (index: number) => void;
+  onToggleEvidence: (index: number) => void;
+  onApply: () => void;
+  loading: boolean;
+}) {
+  const t = useTranslations('resume');
+  const selectedCount = selectedSections.size + selectedEvidence.size;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{t('workbench.dialogs.uploadImportTitle')}</DialogTitle>
+        </DialogHeader>
+        {preview ? (
+          <div className="space-y-4">
+            <div className="rounded-md border bg-muted/30 p-3">
+              <p className="text-sm font-medium">{preview.sourceFileName}</p>
+              <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
+                {preview.rawTextPreview}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{t('workbench.dialogs.uploadSections')}</p>
+              {preview.sections.map((section, index) => (
+                <label
+                  key={`${section.sectionType}-${index}`}
+                  className="flex items-center gap-3 rounded-md border px-3 py-2"
+                >
+                  <Checkbox
+                    checked={selectedSections.has(index)}
+                    onCheckedChange={() => onToggleSection(index)}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-sm">{section.title}</span>
+                  <Badge variant="outline">
+                    {section.changeType} · {section.itemCount}
+                  </Badge>
+                </label>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{t('workbench.dialogs.uploadEvidence')}</p>
+              {preview.evidence.slice(0, 12).map((item, index) => (
+                <label
+                  key={`${item.kind}-${item.title}-${index}`}
+                  className="flex items-center gap-3 rounded-md border px-3 py-2"
+                >
+                  <Checkbox
+                    checked={selectedEvidence.has(index)}
+                    onCheckedChange={() => onToggleEvidence(index)}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-sm">{item.title}</span>
+                  <Badge variant="secondary">{item.kind}</Badge>
+                </label>
+              ))}
+              {preview.evidence.length === 0 && (
+                <p className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                  {t('workbench.dialogs.uploadEvidenceEmpty')}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {t('workbench.dialogs.uploadImportEmpty')}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            {t('workbench.actions.cancel')}
+          </Button>
+          <Button onClick={onApply} disabled={!preview || selectedCount === 0 || loading}>
+            {loading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+            {t('workbench.actions.applyUploadImport')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EvidenceDialog({
+  open,
+  onOpenChange,
+  draft,
+  onChange,
+  onSubmit,
+  loading,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  draft: { kind: string; title: string; description: string };
+  onChange: (draft: { kind: string; title: string; description: string }) => void;
+  onSubmit: () => void;
+  loading: boolean;
+}) {
+  const t = useTranslations('resume');
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('workbench.dialogs.evidenceTitle')}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Field label={t('workbench.dialogs.evidenceKind')}>
+            <Input
+              value={draft.kind}
+              onChange={(event) => onChange({ ...draft, kind: event.target.value.toUpperCase() })}
+              placeholder="PROJECT"
+            />
+          </Field>
+          <Field label={t('workbench.dialogs.evidenceName')}>
+            <Input
+              value={draft.title}
+              onChange={(event) => onChange({ ...draft, title: event.target.value })}
+            />
+          </Field>
+          <Field label={t('workbench.dialogs.evidenceDescription')}>
+            <Textarea
+              value={draft.description}
+              onChange={(event) => onChange({ ...draft, description: event.target.value })}
+              className="min-h-24"
+            />
+          </Field>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            {t('workbench.actions.cancel')}
+          </Button>
+          <Button onClick={onSubmit} disabled={!draft.title.trim() || loading}>
+            {loading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+            {t('workbench.actions.addEvidence')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ConfirmActionDialog({
   state,
   loading,
+  importPreview,
+  importPreviewLoading,
+  selectedImportSectionIds,
+  onToggleImportSection,
   onCancel,
   onConfirm,
 }: {
   state: ConfirmState;
   loading: boolean;
+  importPreview?: ResumeImportPreview;
+  importPreviewLoading?: boolean;
+  selectedImportSectionIds: Set<string>;
+  onToggleImportSection: (sectionId: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -1694,6 +2862,43 @@ function ConfirmActionDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">{description}</p>
+        {state?.type === 'import-profile' && (
+          <div className="rounded-md border bg-muted/30 p-3">
+            {importPreviewLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t('workbench.dialogs.importPreviewLoading')}
+              </div>
+            ) : importPreview?.sections.length ? (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  {t('workbench.dialogs.importPreviewItems', {
+                    count: importPreview.sections.length,
+                  })}
+                </p>
+                <div className="max-h-40 space-y-1 overflow-y-auto">
+                  {importPreview.sections.map((section) => (
+                    <label
+                      key={section.sectionId}
+                      className="flex items-center gap-2 rounded border bg-background px-2 py-1.5"
+                    >
+                      <Checkbox
+                        checked={selectedImportSectionIds.has(section.sectionId)}
+                        onCheckedChange={() => onToggleImportSection(section.sectionId)}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-xs">{section.title}</span>
+                      <Badge variant="outline">{section.itemCount}</Badge>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t('workbench.dialogs.importPreviewEmpty')}
+              </p>
+            )}
+          </div>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={onCancel} disabled={loading}>
             {t('workbench.actions.cancel')}

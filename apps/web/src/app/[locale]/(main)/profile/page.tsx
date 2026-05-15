@@ -10,15 +10,18 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { apiClient } from '@/lib/api';
 import { profileRoutes, schoolListRoutes, userRoutes } from '@study-abroad/shared';
+import type { ProfileReadinessV1 } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import { SchoolSelector } from '@/components/features';
-import { Download, FileText, Save, User } from 'lucide-react';
+import { Download, Save, User } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { createProfileSchema, type ProfileFormValues } from '@/lib/validations/profile';
 import { FIELD_TO_TAB } from './_components/constants';
+import { useSearchParams } from 'next/navigation';
 
 const TestScoreForm = dynamic(
   () => import('@/components/features').then((m) => ({ default: m.TestScoreForm })),
@@ -86,6 +89,17 @@ const PROFILE_DEFAULT_VALUES: ProfileFormValues = {
 
 /** Tabs that are backed by the global react-hook-form (i.e., the page-level Save/Cancel applies). */
 const FORM_BACKED_TABS = new Set(['basic', 'demographics', 'gpa', 'privacy']);
+const PROFILE_TABS = new Set([
+  'basic',
+  'demographics',
+  'scores',
+  'gpa',
+  'activities',
+  'awards',
+  'targets',
+  'recLetters',
+  'privacy',
+]);
 
 /** Map server profile shape to react-hook-form values. Used by both initial load and Cancel/reset. */
 function mapProfileToFormValues(profile: ProfileData | undefined): ProfileFormValues {
@@ -124,6 +138,7 @@ export default function ProfilePage() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [previousCompleteness, setPreviousCompleteness] = useState<number | null>(null);
   const hasAutoSelectedInitialTab = useRef(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -136,9 +151,13 @@ export default function ProfilePage() {
     mode: 'onBlur',
     defaultValues: PROFILE_DEFAULT_VALUES,
   });
+  const { confirmLeave } = useUnsavedChanges(
+    form.formState.isDirty && FORM_BACKED_TABS.has(activeTab),
+    { message: t('profile.unsavedChanges') }
+  );
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', 'me'],
     queryFn: () => apiClient.get<ProfileData>(profileRoutes.me()),
     enabled: isInitialized && !!accessToken,
   });
@@ -259,12 +278,17 @@ export default function ProfilePage() {
       ),
     enabled: isInitialized && !!accessToken,
   });
+  const { data: readiness } = useQuery({
+    queryKey: ['profile', 'readiness'],
+    queryFn: () => apiClient.get<ProfileReadinessV1>(profileRoutes.readiness()),
+    enabled: isInitialized && !!accessToken,
+  });
   const calculateCompleteness = useCallback(() => {
     if (!isHydrated) {
       return 0;
     }
-    return dashboardData?.profile?.completeness ?? 0;
-  }, [dashboardData?.profile?.completeness, isHydrated]);
+    return readiness?.overall?.score ?? dashboardData?.profile?.completeness ?? 0;
+  }, [dashboardData?.profile?.completeness, isHydrated, readiness?.overall?.score]);
 
   const m = useProfileMutations();
 
@@ -275,6 +299,14 @@ export default function ProfilePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && PROFILE_TABS.has(tab)) {
+      setActiveTab(tab);
+      hasAutoSelectedInitialTab.current = true;
+    }
+  }, [searchParams]);
 
   // Track completeness changes for milestone celebration
   const currentCompleteness = calculateCompleteness();
@@ -344,6 +376,18 @@ export default function ProfilePage() {
   };
 
   const completeness = currentCompleteness;
+  const handleTabChange = useCallback(
+    (tab: string) => {
+      if (tab === activeTab) return;
+      const changeTab = () => setActiveTab(tab);
+      if (form.formState.isDirty && FORM_BACKED_TABS.has(activeTab)) {
+        confirmLeave(changeTab);
+      } else {
+        changeTab();
+      }
+    },
+    [activeTab, confirmLeave, form.formState.isDirty]
+  );
 
   if (isLoading) {
     return (
@@ -363,15 +407,6 @@ export default function ProfilePage() {
         actions={
           completeness >= 30 ? (
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => m.setResumeExportOpen(true)}
-              >
-                <FileText className="h-4 w-4" />
-                {t('profile.exportResume')}
-              </Button>
               <DataExportDialog
                 trigger={
                   <Button variant="outline" size="sm" className="gap-2">
@@ -388,14 +423,15 @@ export default function ProfilePage() {
       <ProfileActionBar
         completeness={completeness}
         profile={profile}
+        readiness={readiness}
         onOpenResumeExport={() => m.setResumeExportOpen(true)}
-        onSetActiveTab={setActiveTab}
+        onSetActiveTab={handleTabChange}
       />
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <ProfileTabNav
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           tabErrors={tabErrors}
           tabCompletion={tabCompletion}
         />
@@ -491,7 +527,7 @@ export default function ProfilePage() {
             </AnimatePresence>
 
             {FORM_BACKED_TABS.has(activeTab) && (
-              <div className="mt-6 flex justify-end gap-3 pb-[max(env(safe-area-inset-bottom),1rem)] lg:pb-0">
+              <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 mt-6 flex justify-end gap-3 rounded-[var(--theme-radius-card)] border bg-background/95 p-3 shadow-lg backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
                 <Button
                   variant="outline"
                   className="px-6"

@@ -8,6 +8,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Maximize2, MessageCircle, Minimize2, Minus, X } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -26,6 +27,7 @@ interface FloatingChatProps {
 export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const t = useTranslations('agentChat');
   const tCommon = useTranslations('common');
+  const pathname = usePathname();
 
   // 企业级 Hydration 安全方案：使用 useSyncExternalStore
   const isHydrated = useHydrated();
@@ -36,6 +38,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const pendingAction = useFloatingChatBridgeStore((state) => state.queue[0] || null);
   const consumePendingAction = useFloatingChatBridgeStore((state) => state.consumeFirst);
+  const isAssistantWorkspace = pathname === '/ai' || /^\/[^/]+\/ai\/?$/.test(pathname ?? '');
 
   // Stable refs for event handlers — avoids stale closures and re-registration
   const isOpenRef = useRef(isOpen);
@@ -72,7 +75,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   }, []); // Stable — uses refs for isOpen check
 
   // SSR 时不渲染（避免 createPortal 和 framer-motion 导致 hydration mismatch）
-  if (!isHydrated) return null;
+  if (!isHydrated || isAssistantWorkspace) return null;
 
   const chatWindow = (
     <AnimatePresence>
@@ -83,14 +86,20 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
             opacity: 1,
             scale: 1,
             y: 0,
-            width: isFullscreen ? '100vw' : isMinimized ? 320 : 420,
-            height: isFullscreen ? '100vh' : isMinimized ? 56 : 600,
+            width: isFullscreen
+              ? '100vw'
+              : isMinimized
+                ? 'min(320px, calc(100vw - 24px))'
+                : 'min(420px, calc(100vw - 24px))',
+            height: isFullscreen ? '100vh' : isMinimized ? 56 : 'min(600px, calc(100vh - 96px))',
           }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className={cn(
             'fixed z-50 overflow-hidden bg-background border shadow-2xl',
-            isFullscreen ? 'inset-0 rounded-none' : 'bottom-24 right-6 rounded-lg'
+            isFullscreen
+              ? 'inset-0 rounded-none'
+              : 'bottom-[calc(5rem+env(safe-area-inset-bottom))] right-3 rounded-lg sm:bottom-24 sm:right-6'
           )}
           style={{
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -148,6 +157,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
               <AgentChat
                 showHeader={true}
                 showQuickActions={true}
+                layoutMode="floating"
                 compact={!isFullscreen}
                 pendingAction={pendingAction}
                 onPendingActionConsumed={consumePendingAction}
@@ -166,7 +176,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0 }}
-          className="fixed bottom-6 right-6 z-50"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom)+0.75rem)] right-4 z-50 sm:bottom-6 sm:right-6"
         >
           <Button
             aria-label={t('title')}

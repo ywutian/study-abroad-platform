@@ -3,15 +3,15 @@ import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock react-i18next
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, fallback?: string | Record<string, unknown>) => {
-      if (typeof fallback === 'string') return fallback;
-      return key;
-    },
-    i18n: { language: 'en' },
-  }),
-}));
+jest.mock('react-i18next', () => {
+  const { translateForTests } = require('../utils/i18n-test-utils');
+  return {
+    useTranslation: () => ({
+      t: translateForTests,
+      i18n: { language: 'en' },
+    }),
+  };
+});
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
@@ -107,16 +107,15 @@ describe('AssessmentPage', () => {
     const { getByText } = renderWithProviders(<AssessmentPage />);
 
     expect(getByText('Choose an Assessment')).toBeTruthy();
-    // The t() mock returns the fallback (second arg), which is the enum value itself
-    expect(getByText('MBTI')).toBeTruthy();
-    expect(getByText('HOLLAND')).toBeTruthy();
-    expect(getByText('MAJOR_MATCH')).toBeTruthy();
+    expect(getByText('MBTI Personality')).toBeTruthy();
+    expect(getByText('Career Interest')).toBeTruthy();
+    expect(getByText('Major Match')).toBeTruthy();
   });
 
   it('shows View History button in selection view', () => {
     const { getByText } = renderWithProviders(<AssessmentPage />);
 
-    expect(getByText('View History')).toBeTruthy();
+    expect(getByText('Assessment History')).toBeTruthy();
   });
 
   it('shows loading state when quiz is loading after type selection', async () => {
@@ -125,8 +124,7 @@ describe('AssessmentPage', () => {
 
     const { getByText, getAllByText } = renderWithProviders(<AssessmentPage />);
 
-    // Press the first "Start" button (MBTI)
-    const startButtons = getAllByText('Start');
+    const startButtons = getAllByText('Start Assessment');
     fireEvent.press(startButtons[0]);
 
     await waitFor(() => {
@@ -173,8 +171,7 @@ describe('AssessmentPage', () => {
 
     const { getByText, getAllByText } = renderWithProviders(<AssessmentPage />);
 
-    // Press "Start" for MBTI
-    const startButtons = getAllByText('Start');
+    const startButtons = getAllByText('Start Assessment');
     fireEvent.press(startButtons[0]);
 
     await waitFor(() => {

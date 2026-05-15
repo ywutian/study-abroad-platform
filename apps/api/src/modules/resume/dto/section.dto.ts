@@ -7,6 +7,8 @@ import {
   IsObject,
   IsArray,
   MaxLength,
+  IsInt,
+  Min,
 } from 'class-validator';
 
 const SECTION_TYPES = [
@@ -41,6 +43,17 @@ export class CreateSectionDto {
   @IsOptional()
   @IsObject()
   content?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ description: 'Section content schema version' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  contentSchemaVersion?: number;
+
+  @ApiPropertyOptional({ description: 'Evidence references for this section' })
+  @IsOptional()
+  @IsArray()
+  evidenceRefs?: Array<Record<string, unknown>>;
 }
 
 export class UpdateSectionDto {
@@ -54,6 +67,17 @@ export class UpdateSectionDto {
   @IsOptional()
   @IsObject()
   content?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ description: 'Section content schema version' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  contentSchemaVersion?: number;
+
+  @ApiPropertyOptional({ description: 'Evidence references for this section' })
+  @IsOptional()
+  @IsArray()
+  evidenceRefs?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ description: 'Section visibility' })
   @IsOptional()
