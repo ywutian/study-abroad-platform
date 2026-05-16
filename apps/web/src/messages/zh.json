@@ -292,13 +292,7 @@
         "assessment": "测评",
         "assessmentDesc": "MBTI、霍兰德和更多",
         "aiLab": "AI 实验室",
-        "aiLabDesc": "实验性 AI 功能",
-        "vault": "保险箱",
-        "vaultDesc": "加密文档存储",
-        "referral": "邀请奖励",
-        "referralDesc": "邀请好友，赚取积分",
-        "notifications": "通知",
-        "notificationsDesc": "所有提醒和更新"
+        "aiLabDesc": "实验性 AI 功能"
       },
       "stats": {
         "followers": "粉丝",

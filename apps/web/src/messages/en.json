@@ -292,13 +292,7 @@
         "assessment": "Assessment",
         "assessmentDesc": "MBTI, Holland, and more",
         "aiLab": "AI Lab",
-        "aiLabDesc": "Experimental AI features",
-        "vault": "Vault",
-        "vaultDesc": "Encrypted document storage",
-        "referral": "Referral",
-        "referralDesc": "Invite friends, earn points",
-        "notifications": "Notifications",
-        "notificationsDesc": "All your alerts and updates"
+        "aiLabDesc": "Experimental AI features"
       },
       "stats": {
         "followers": "Followers",

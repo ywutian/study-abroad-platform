@@ -9,11 +9,9 @@ import {
   Compass,
   FileText,
   Lightbulb,
-  Link2,
   type LucideIcon,
   MessageCircle,
   MessageSquare,
-  Sparkles,
   Trophy,
   UserPlus,
   Users,
@@ -247,9 +245,3 @@ function HubColumn({ title, links }: { title: string; links: HubLink[] }) {
     </div>
   );
 }
-
-// `Link2` and `Sparkles` imports kept for future hub link additions
-// (e.g. Vault, Referral). Using the named imports keeps tree-shaking
-// honest if we wire those columns in next.
-void Link2;
-void Sparkles;
