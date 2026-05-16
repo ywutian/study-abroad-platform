@@ -100,13 +100,24 @@ export const DASHBOARD_EVENTS = {
   // Quick Ask AI — the dashboard's primary AI surface
   quickAskSubmitted: 'dashboard_quick_ask_submitted',
   quickAskSuggestionClicked: 'dashboard_quick_ask_suggestion_clicked',
+  // 2026-05 Gap C closure: tracks discoverability of the full
+  // /ai workspace via the QuickAsk "Open full AI workspace" link.
+  quickAskWorkspaceLinkClicked: 'dashboard_quick_ask_workspace_link_clicked',
   // Quick Add School — the popover that adds schools without leaving dashboard
   quickAddSchoolOpened: 'dashboard_quick_add_school_opened',
   quickAddSchoolAdded: 'dashboard_quick_add_school_added',
   // EssayCoach + DecisionPanel — Phase 2c/2a surfaces
   essayCoachCtaClicked: 'dashboard_essay_coach_cta_clicked',
   decisionPanelImpression: 'dashboard_decision_panel_impression',
+  // 2026-05 Gap A closure: outcome-label CTA on PipelineStrip decision
+  // rows. Activates funnel F6 (data-flywheel adoption) — measures the
+  // fraction of decided rows that flow into prediction calibration.
+  outcomeLabelCtaClicked: 'dashboard_outcome_label_cta_clicked',
   // Hub — workspace navigation
   hubLinkClicked: 'dashboard_hub_link_clicked',
   hubStatClicked: 'dashboard_hub_stat_clicked',
+  // 2026-05 Gap D closure: first-visit tour engagement. Activates
+  // funnel F7 (tour outcome → D7 retention correlation).
+  tourCompleted: 'dashboard_tour_completed',
+  tourSkipped: 'dashboard_tour_skipped',
 } as const;

@@ -164,6 +164,12 @@ export function DashboardQuickAsk() {
       <div className="mt-1 flex justify-end">
         <Link
           href="/ai"
+          onClick={() =>
+            // 2026-05 Gap C closure: differentiate users who discover
+            // the full /ai workspace via this affordance from those who
+            // land directly. Single-purpose event — no PII, no props.
+            trackEvent(DASHBOARD_EVENTS.quickAskWorkspaceLinkClicked)
+          }
           className={cn(
             'inline-flex items-center gap-1 text-2xs text-muted-foreground',
             'transition-colors hover:text-primary hover:underline'
