@@ -8,7 +8,7 @@ export interface DashboardWorkbench {
     score: number;
     status: DashboardReadinessStatus;
     items: {
-      key: 'profile' | 'schools' | 'essays' | 'timeline';
+      key: 'profile' | 'schools' | 'essays' | 'timeline' | 'prediction';
       label: string;
       /**
        * Free-text value still used as fallback when contribution* is absent.
@@ -152,10 +152,14 @@ export function createFallbackWorkbench(
     schools: string;
     essays: string;
     timeline: string;
+    prediction: string;
     profileDesc: string;
     schoolsDesc: string;
     essaysDesc: string;
     timelineDesc: string;
+    predictionItemDescReady: string;
+    predictionItemDescPending: string;
+    predictionItemDescBlocked: string;
     profileAction: string;
     schoolAction: string;
     essayAction: string;
@@ -167,6 +171,7 @@ export function createFallbackWorkbench(
   const completeness = dashboard?.profile.completeness ?? 0;
   const schoolCount = dashboard?.profile.targetSchoolCount ?? 0;
   const essayCount = dashboard?.profile.essayCount ?? 0;
+  const predictionsCount = dashboard?.stats.predictions ?? 0;
   const pending = dashboard?.pendingTasks.total ?? dashboard?.pendingTasks.profileGaps.length ?? 0;
   const due30 =
     (dashboard?.upcomingDeadlines ?? []).filter((item) => item.daysLeft <= 30).length +
@@ -178,19 +183,29 @@ export function createFallbackWorkbench(
     dashboard.profile.schoolTiers.safety > 0
   );
   // ── Readiness contribution scores (per-item breakdown of total score) ──
-  // Profile up to 45 pts (45% of total)
-  // Schools up to 25 pts (25% of total, scaled by min(schoolCount/6, 1))
+  // Profile up to 40 pts (40% of total)
+  // Schools up to 20 pts (20% of total, scaled by min(schoolCount/6, 1))
   // Essays up to 15 pts (binary: has at least 1 essay)
-  // Timeline up to 15 pts (15 when no pending, scales down with pending count)
-  // The four contributions sum to the Readiness total — users can audit it.
-  const profileContribution = Math.round(completeness * 0.45);
-  const schoolsContribution = Math.round(Math.min(schoolCount / 6, 1) * 25);
+  // Timeline up to 10 pts (10 when no pending, scales down with pending count)
+  // Prediction up to 15 pts (binary: has run prediction at least once)
+  // The five contributions sum to the Readiness total — users can audit it.
+  const profileContribution = Math.round(completeness * 0.4);
+  const schoolsContribution = Math.round(Math.min(schoolCount / 6, 1) * 20);
   const essaysContribution = essayCount > 0 ? 15 : 0;
-  const timelineContribution = pending === 0 ? 15 : Math.max(0, 12 - Math.min(pending, 12));
+  const timelineContribution = pending === 0 ? 10 : Math.max(0, 8 - Math.min(pending, 8));
+  const predictionContribution = predictionsCount > 0 ? 15 : 0;
   const score = Math.min(
     100,
-    profileContribution + schoolsContribution + essaysContribution + timelineContribution
+    profileContribution +
+      schoolsContribution +
+      essaysContribution +
+      timelineContribution +
+      predictionContribution
   );
+  // Prediction is only actionable once the user has at least one school AND
+  // a passable profile. If those preconditions aren't met, the row should
+  // signal "blocked by upstream signals" rather than "go run prediction".
+  const predictionEligible = schoolCount > 0 && completeness >= 40;
   const priorityQueue: DashboardPriorityItem[] = [];
 
   if (completeness < 75) {
@@ -248,9 +263,9 @@ export function createFallbackWorkbench(
         {
           key: 'profile',
           label: copy.profile,
-          value: `${profileContribution}/45`,
+          value: `${profileContribution}/40`,
           contributionScore: profileContribution,
-          contributionDenom: 45,
+          contributionDenom: 40,
           status: completeness >= 75 ? 'ready' : completeness >= 40 ? 'attention' : 'blocked',
           href: '/profile',
           description: copy.profileDesc,
@@ -258,9 +273,9 @@ export function createFallbackWorkbench(
         {
           key: 'schools',
           label: copy.schools,
-          value: `${schoolsContribution}/25`,
+          value: `${schoolsContribution}/20`,
           contributionScore: schoolsContribution,
-          contributionDenom: 25,
+          contributionDenom: 20,
           status:
             schoolCount >= 6 && balancedSchoolList
               ? 'ready'
@@ -283,12 +298,27 @@ export function createFallbackWorkbench(
         {
           key: 'timeline',
           label: copy.timeline,
-          value: `${timelineContribution}/15`,
+          value: `${timelineContribution}/10`,
           contributionScore: timelineContribution,
-          contributionDenom: 15,
+          contributionDenom: 10,
           status: pending === 0 ? 'ready' : 'attention',
           href: '/timeline',
           description: copy.timelineDesc,
+        },
+        {
+          key: 'prediction',
+          label: copy.prediction,
+          value: `${predictionContribution}/15`,
+          contributionScore: predictionContribution,
+          contributionDenom: 15,
+          status: predictionsCount > 0 ? 'ready' : predictionEligible ? 'attention' : 'blocked',
+          href: '/prediction',
+          description:
+            predictionsCount > 0
+              ? copy.predictionItemDescReady
+              : predictionEligible
+                ? copy.predictionItemDescPending
+                : copy.predictionItemDescBlocked,
         },
       ],
     },
