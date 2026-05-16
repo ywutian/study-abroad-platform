@@ -188,11 +188,25 @@ export function isSystemUserEmail(email: string | null | undefined): boolean {
 
 /**
  * Mask an email so it can't be used as a PII vector when shown to
- * OTHER chat participants. Strategy: keep the first character of the
- * local part + first character of the domain label + TLD.
- *   oliviawu@demo.studyabroad.com → o***@d***.com
- * Returns null when there's no useful information left after masking
- * (e.g. very short emails) — caller should then fall back to "成员".
+ * OTHER chat participants.
+ *
+ * Strategy (revised 2026-05 after first version was too aggressive —
+ * users complained the masked names looked "truncated and useless"):
+ *
+ *   Keep the FULL local part visible (it's effectively a username and
+ *   the user already typed it as their public-ish handle). Mask the
+ *   DOMAIN, which is the privacy-sensitive bit — corporate domains
+ *   leak employer; school domains leak affiliation.
+ *
+ *     oliviawu@demo.studyabroad.com → oliviawu@***.com
+ *     student42@stanford.edu        → student42@***.edu
+ *
+ * The frontend's `getDisplayName` falls back to the email LOCAL PART
+ * (text before `@`) when no nickname/realName is set — so chat members
+ * appear as `oliviawu` rather than the unidentifiable `o***`.
+ *
+ * Returns null when the input has no `@` or no TLD — caller falls back
+ * to "成员".
  */
 export function maskEmailForPeer(
   email: string | null | undefined,
@@ -204,9 +218,8 @@ export function maskEmailForPeer(
   const domain = email.slice(at + 1);
   const lastDot = domain.lastIndexOf('.');
   if (lastDot <= 0) return null;
-  const domainLabel = domain.slice(0, lastDot);
   const tld = domain.slice(lastDot);
-  return `${local[0]}***@${domainLabel[0]}***${tld}`;
+  return `${local}@***${tld}`;
 }
 
 @Injectable()
