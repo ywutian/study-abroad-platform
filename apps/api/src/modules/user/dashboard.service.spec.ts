@@ -114,6 +114,14 @@ describe('DashboardService', () => {
             // 2026-05 Phase 2c: dashboard now also queries
             // EssayAIResult for the <DashboardEssayCoach /> surface.
             essayAIResult: { findFirst: jest.fn() },
+            // 2026-05 Phase 2b: dashboard now also queries 4 new
+            // sources for the Hub `signals` field (assessment results,
+            // recommendation count, verification status, raw chat
+            // unread SQL).
+            assessmentResult: { findMany: jest.fn() },
+            schoolRecommendation: { count: jest.fn() },
+            verificationRequest: { findFirst: jest.fn() },
+            $queryRaw: jest.fn(),
             $transaction: jest.fn(),
           },
         },
@@ -179,6 +187,11 @@ describe('DashboardService', () => {
     // 2026-05 Phase 2c: default to "no AI feedback yet" so dashboard
     // empty-state assertions still pass.
     (prisma.essayAIResult.findFirst as jest.Mock).mockResolvedValue(null);
+    // 2026-05 Phase 2b: default to "no signals data yet"
+    (prisma.assessmentResult.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.schoolRecommendation.count as jest.Mock).mockResolvedValue(0);
+    (prisma.verificationRequest.findFirst as jest.Mock).mockResolvedValue(null);
+    (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ count: 0n }]);
   }
 
   /**
@@ -768,6 +781,83 @@ describe('DashboardService', () => {
         suggestion: null,
         createdAt: ts.toISOString(),
       });
+    });
+
+    // 2026-05 Phase 2b: signals default to "nothing yet" state for
+    // brand-new users so the Hub can render conservative empty tiles.
+    it('Phase 2b: signals default to empty state for new users', async () => {
+      setupDefaultMocks();
+      const result = await service.getDashboardSummary(userId);
+      expect(result.signals).toEqual({
+        assessment: { mbti: null, holland: null, completedAt: null },
+        recommendationCount: 0,
+        verificationStatus: 'unverified',
+        chatUnread: 0,
+      });
+    });
+
+    // 2026-05 Phase 2b: when the user has completed MBTI + Holland,
+    // signals.assessment surfaces both codes for the Hub.
+    it('Phase 2b: signals.assessment surfaces latest MBTI + Holland codes', async () => {
+      setupDefaultMocks();
+      const completedAt = new Date('2026-05-10T12:00:00Z');
+      (prisma.assessmentResult.findMany as jest.Mock).mockResolvedValue([
+        {
+          result: { code: 'INTJ', confidence: 0.92 },
+          completedAt,
+          assessment: { type: 'MBTI' },
+        },
+        {
+          result: { code: 'RIA' },
+          completedAt,
+          assessment: { type: 'HOLLAND' },
+        },
+      ]);
+
+      const result = await service.getDashboardSummary(userId);
+      expect(result.signals?.assessment).toEqual({
+        mbti: 'INTJ',
+        holland: 'RIA',
+        completedAt: completedAt.toISOString(),
+      });
+    });
+
+    // 2026-05 Phase 2b: verification status maps Prisma enum to
+    // user-facing tristate (unverified/pending/verified).
+    it('Phase 2b: verification status maps APPROVED → verified', async () => {
+      setupDefaultMocks();
+      (prisma.verificationRequest.findFirst as jest.Mock).mockResolvedValue({
+        status: 'APPROVED',
+      });
+      const result = await service.getDashboardSummary(userId);
+      expect(result.signals?.verificationStatus).toBe('verified');
+    });
+
+    it('Phase 2b: verification status maps PENDING → pending', async () => {
+      setupDefaultMocks();
+      (prisma.verificationRequest.findFirst as jest.Mock).mockResolvedValue({
+        status: 'PENDING',
+      });
+      const result = await service.getDashboardSummary(userId);
+      expect(result.signals?.verificationStatus).toBe('pending');
+    });
+
+    it('Phase 2b: verification status maps REJECTED → unverified', async () => {
+      setupDefaultMocks();
+      (prisma.verificationRequest.findFirst as jest.Mock).mockResolvedValue({
+        status: 'REJECTED',
+      });
+      const result = await service.getDashboardSummary(userId);
+      expect(result.signals?.verificationStatus).toBe('unverified');
+    });
+
+    // 2026-05 Phase 2b: chat unread comes from raw SQL — verify the
+    // bigint count returned by Prisma is coerced to a JS number.
+    it('Phase 2b: chatUnread coerces Prisma BigInt count to number', async () => {
+      setupDefaultMocks();
+      (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ count: 7n }]);
+      const result = await service.getDashboardSummary(userId);
+      expect(result.signals?.chatUnread).toBe(7);
     });
 
     // 2026-05 Phase 1 Bug 4: validate timeline vacuous-truth defense.

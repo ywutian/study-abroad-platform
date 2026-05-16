@@ -300,7 +300,16 @@
         "following": "关注",
         "cases": "我的案例",
         "predictions": "预测次数",
-        "points": "积分"
+        "points": "积分",
+        "assessment": "测评",
+        "recommendations": "推荐次数",
+        "verification": "认证",
+        "chatUnread": "未读消息",
+        "verificationStatus": {
+          "unverified": "未认证",
+          "pending": "审核中",
+          "verified": "已认证"
+        }
       }
     },
     "workbench": {
