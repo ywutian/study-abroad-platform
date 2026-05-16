@@ -42,6 +42,16 @@ const API_VERSION = '/api/v1';
 
 interface RequestConfig extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
+  /**
+   * Number of automatic retries on transient failures (network errors,
+   * 502/503/504, or AbortError due to timeout). Default 2 for GET
+   * requests (3 total attempts), 0 for POST/PUT/PATCH/DELETE.
+   *
+   * 2026-05 Phase 5 #42: previously default was 1 for all methods,
+   * which silently retried non-idempotent mutations on transient errors
+   * — a real correctness risk (duplicate writes). Now non-idempotent
+   * methods must explicitly opt in by passing `retries: N`.
+   */
   retries?: number;
   timeout?: number;
   signal?: AbortSignal;
@@ -49,6 +59,49 @@ interface RequestConfig extends RequestInit {
   directApi?: boolean;
   skipApiVersion?: boolean;
   suppressErrorToast?: boolean;
+}
+
+// 2026-05 Phase 5 #42: retry policy.
+// - Exponential backoff with jitter: 200ms × 2^i ± 25%
+// - Max delay capped at 4s so total retry budget stays under ~8s
+// - HTTP statuses considered transient (worth retrying)
+const RETRY_BASE_DELAY_MS = 200;
+const RETRY_MAX_DELAY_MS = 4000;
+const TRANSIENT_HTTP_STATUSES = new Set([502, 503, 504]);
+const IDEMPOTENT_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+function computeBackoffDelay(attempt: number): number {
+  const base = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, RETRY_MAX_DELAY_MS);
+  // ±25% jitter — prevents thundering herd when many clients retry in sync
+  const jitter = base * 0.25 * (Math.random() * 2 - 1);
+  return Math.max(0, Math.round(base + jitter));
+}
+
+interface RetryableError {
+  retryable: true;
+  reason: 'network' | 'timeout' | 'http-5xx';
+}
+
+interface NonRetryableError {
+  retryable: false;
+}
+
+type ErrorClassification = RetryableError | NonRetryableError;
+
+function classifyError(error: unknown): ErrorClassification {
+  // TypeError 'Failed to fetch' = network down / DNS / CORS — retryable
+  if (error instanceof TypeError && /fetch|network/i.test(error.message)) {
+    return { retryable: true, reason: 'network' };
+  }
+  // Our timeout path throws a plain Error after AbortError — retryable
+  if (error instanceof Error && /timed out/i.test(error.message)) {
+    return { retryable: true, reason: 'timeout' };
+  }
+  // 502/503/504 surface as ApiError with statusCode — retryable
+  if (error instanceof ApiError && TRANSIENT_HTTP_STATUSES.has(error.statusCode)) {
+    return { retryable: true, reason: 'http-5xx' };
+  }
+  return { retryable: false };
 }
 
 /**
@@ -97,7 +150,10 @@ class ApiClient {
   private async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
     const {
       params,
-      retries = 1,
+      // 2026-05 Phase 5 #42: idempotency-aware default. GET/HEAD/OPTIONS
+      // default to 2 retries; mutating methods default to 0 unless the
+      // caller explicitly opts in (e.g. a known-idempotent PUT).
+      retries: explicitRetries,
       timeout = 15000,
       signal,
       skipAuth: explicitSkipAuth,
@@ -106,6 +162,8 @@ class ApiClient {
       suppressErrorToast = false,
       ...init
     } = config;
+    const method = (init.method || 'GET').toUpperCase();
+    const retries = explicitRetries ?? (IDEMPOTENT_METHODS.has(method) ? 2 : 0);
     // 自动为认证端点跳过 Token 逻辑（防御性编程，即使调用者忘记传 skipAuth 也不会出错）
     const skipAuth = explicitSkipAuth || this.isAuthEndpoint(endpoint);
 
@@ -224,20 +282,28 @@ class ApiClient {
       }
     };
 
-    // 网络错误重试逻辑
-    for (let i = 0; i <= retries; i++) {
+    // 2026-05 Phase 5 #42: transient-failure retry loop.
+    // Retries are exponential-backoff (200ms × 2^i ± 25% jitter, capped
+    // at 4s). Only network errors, timeouts, and 502/503/504 are
+    // retried. Idempotency is enforced by the caller via the explicit
+    // `retries` knob (GET/HEAD/OPTIONS default 2; mutations default 0).
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         return await makeRequest();
       } catch (error: unknown) {
-        if (i < retries && error instanceof Error && error.message.includes('fetch')) {
-          await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
+        lastError = error;
+        const classification = classifyError(error);
+        if (attempt < retries && classification.retryable) {
+          await new Promise((resolve) => setTimeout(resolve, computeBackoffDelay(attempt)));
           continue;
         }
         throw error;
       }
     }
 
-    throw new Error('Max retries exceeded');
+    // Unreachable in practice — for-loop always throws or returns.
+    throw lastError ?? new Error('Max retries exceeded');
   }
 
   private redirectToLogin(): void {
