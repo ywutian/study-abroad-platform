@@ -13,9 +13,11 @@
 
 `apps/web/src/app/[locale]/(main)/`: about, admin, ai, assessment, cases, chat, dashboard, essays, followers, forum, hall, help, notifications, prediction, privacy, profile, ranking, referral, resume, schools, settings, teams, terms, timeline, uncommon-app, vault
 
-## 27 Feature Component Directories
+## 26 Feature Component Directories
 
-`apps/web/src/components/features/`: admin, agent-chat (17 files), chat, dashboard, essay-ai, essay-gallery, export, feedback, followers, forum, hall (16 files), help, landing, notifications, onboarding, peer-review, points, prediction (20 files), profile, recommendation, report, resume, schools (10 files), search, submit-case, teams, verification
+`apps/web/src/components/features/`: admin, agent-chat (21 files), chat, essay-ai, essay-gallery, export, feedback, followers, forum, hall (17 files), help, landing, notifications, onboarding, peer-review, points, prediction (30 files), profile, recommendation, report, resume, schools (14 files), search, submit-case, teams, verification
+
+Note: dashboard page-local components live in `apps/web/src/app/[locale]/(main)/dashboard/_components/` (not the shared `features/` tree). The old shared `features/dashboard/` was removed in PR #173 alongside the dashboard rebuild — see PRs #169-#175.
 
 Key features have BRIEF.md files with purpose, components, and patterns.
 
