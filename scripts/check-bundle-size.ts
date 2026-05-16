@@ -126,11 +126,21 @@ function main(): void {
 
   const manifest = loadManifest();
   if (!manifest) {
-    console.error(
-      `❌ No app-build-manifest.json found at ${MANIFEST_PATH}\n` +
-        `   Run \`pnpm --filter web build\` first.`
+    // 2026-05 hotfix: missing manifest is informational, not fatal.
+    // In CI the `Build Web` step may be a turbo-cache HIT, in which
+    // case Next.js doesn't regenerate `.next/app-build-manifest.json`
+    // — the build succeeds but the manifest file isn't on disk.
+    // Failing here would block PRs that touch nothing relevant to
+    // the web bundle. The right behavior is to SKIP the check (a
+    // cached build is by definition not a regression candidate).
+    //
+    // When the manifest IS present (normal case), the check runs in
+    // full and either passes or fails on the diff vs baseline.
+    console.log(
+      `ℹ️  No app-build-manifest.json at ${path.relative(ROOT, MANIFEST_PATH)}\n` +
+        `   Skipping bundle-size check (cached build or web build was skipped).`
     );
-    process.exit(1);
+    return;
   }
 
   const current = computeRouteSizes(manifest);
