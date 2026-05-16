@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  type DashboardEssayCoach,
   type DashboardPriorityKind,
   type DashboardSeverity,
   type DashboardSummary,
@@ -79,6 +80,7 @@ export class DashboardService {
       timelineCoverage,
       pipelineGroups,
       recentDecisionRows,
+      latestEssayAiResult,
     ] = await Promise.all([
       // 用户信息
       this.prisma.user.findUnique({
@@ -293,6 +295,21 @@ export class DashboardService {
           status: true,
           updatedAt: true,
           school: { select: { name: true, nameZh: true } },
+        },
+      }),
+
+      // 2026-05 Phase 2c: Latest essay AI feedback across all user essays.
+      // Used by the dashboard <DashboardEssayCoach /> surface to give
+      // users a 1-click path from the dashboard back into continued essay
+      // work. Returns null when the user has no essays / no AI runs.
+      this.prisma.essayAIResult.findFirst({
+        where: { essay: { profile: { userId } } },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          type: true,
+          suggestions: true,
+          createdAt: true,
+          essay: { select: { id: true, title: true } },
         },
       }),
     ]);
@@ -522,6 +539,50 @@ export class DashboardService {
       upcomingPersonalEvents,
       recentActivity,
       workbench,
+      // 2026-05 Phase 2c: latest AI essay feedback for the
+      // <DashboardEssayCoach /> card. Null when user has no AI runs.
+      essayCoach: this.buildEssayCoach(latestEssayAiResult),
+    };
+  }
+
+  /**
+   * Phase 2c: Reduce the raw EssayAIResult row into the dashboard's
+   * lightweight `DashboardEssayCoach` shape. Picks the first
+   * actionable suggestion from `suggestions` JSON for review-type
+   * results; polish results get a null suggestion and the UI falls
+   * back to a generic "continue polishing" prompt.
+   */
+  private buildEssayCoach(
+    row: {
+      type: string;
+      suggestions: unknown;
+      createdAt: Date;
+      essay: { id: string; title: string };
+    } | null,
+  ): DashboardEssayCoach | null {
+    if (!row) return null;
+
+    let suggestion: string | null = null;
+    if (Array.isArray(row.suggestions) && row.suggestions.length > 0) {
+      const first = row.suggestions[0];
+      if (typeof first === 'string' && first.trim()) {
+        suggestion = first.trim();
+      } else if (
+        first &&
+        typeof first === 'object' &&
+        'text' in first &&
+        typeof (first as { text: unknown }).text === 'string'
+      ) {
+        suggestion = (first as { text: string }).text.trim() || null;
+      }
+    }
+
+    return {
+      essayId: row.essay.id,
+      essayTitle: row.essay.title,
+      type: row.type,
+      suggestion,
+      createdAt: row.createdAt.toISOString(),
     };
   }
 

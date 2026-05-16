@@ -19,6 +19,7 @@ import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 
 import { DashboardActivity } from './_components/dashboard-activity';
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardEssayCoach } from './_components/dashboard-essay-coach';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import { DashboardWorkspaceHub } from './_components/dashboard-workspace-hub';
 import {
@@ -199,6 +200,21 @@ export default function DashboardPage() {
             predictionsCount={predictionsCount}
             casesCount={casesCount}
           />
+        </motion.div>
+
+        {/*
+          2026-05 Phase 2c: Latest essay AI feedback inline. Renders only
+          when there's at least one AI run (data === null otherwise).
+          Brings AI Layer 3 (essay feedback) into the dashboard as a
+          1-click path back to continued essay work — matches Cialfo's
+          best practice in the 22-product competitor research.
+        */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04 }}
+        >
+          <DashboardEssayCoach data={stableDashboard?.essayCoach} />
         </motion.div>
 
         {/*

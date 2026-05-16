@@ -191,6 +191,36 @@ export interface DashboardSummary {
     createdAt: string;
   }>;
   workbench: DashboardWorkbench;
+  /**
+   * 2026-05 Phase 2c: Latest AI essay feedback (optional). Null when
+   * the user has no essays or no AI runs yet. See DashboardEssayCoach.
+   */
+  essayCoach?: DashboardEssayCoach | null;
+}
+
+/**
+ * 2026-05 Phase 2c: Most recent AI feedback across all user essays.
+ * Powers the dashboard `<DashboardEssayCoach />` surface — a 1-click
+ * path from the dashboard into continued essay work.
+ *
+ * Null when the user has no essays or no AI results yet (the
+ * component renders nothing in that case).
+ */
+export interface DashboardEssayCoach {
+  /** The essay this feedback belongs to. */
+  essayId: string;
+  /** Essay title for the card heading. */
+  essayTitle: string;
+  /** 'review' = analysis with suggestions; 'polish' = rewrite. */
+  type: 'review' | 'polish' | string;
+  /**
+   * One actionable suggestion to display inline. Null when the result
+   * type doesn't have suggestions (e.g. polish), in which case the UI
+   * falls back to a generic "continue polishing" prompt.
+   */
+  suggestion: string | null;
+  /** ISO timestamp of when this AI feedback was generated. */
+  createdAt: string;
 }
 
 /**
