@@ -617,7 +617,21 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="grid min-h-[620px] gap-3 lg:grid-cols-[360px_minmax(0,1fr)_320px] lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+      {/*
+        2026-05 chat layout fix: previous template was
+          lg:grid-cols-[360px_minmax(0,1fr)_320px]
+        Fixed-pixel left/right columns can't shrink. At viewport widths
+        just past the lg breakpoint (1024-1280px), the 3-col layout
+        exceeded the container width — and the parent (main) has
+        `overflow-x-clip` which silently clipped the right panel. Users
+        saw text like "暂无共享文件" cut mid-character.
+
+        Fix: use minmax() on both fixed cols so they can shrink down to
+        sensible minimums before overflow forces the clip. Middle col
+        stays minmax(0,1fr) (already correctly shrinkable). At xl+ all
+        cols hit their max and the layout matches the original design.
+      */}
+      <div className="grid min-h-[620px] gap-3 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)_minmax(260px,320px)] lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         <ChatConversationList
           conversations={sortedConversations}
           selectedId={selectedConversation}
