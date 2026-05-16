@@ -5,6 +5,7 @@
 // for backward compatibility with consumers that import from this file
 // (CommandCenter, PipelineStrip, page.tsx, tests).
 export type {
+  DashboardData,
   DashboardDeadlineItem,
   DashboardPipeline,
   DashboardPriorityItem,
@@ -13,67 +14,15 @@ export type {
   DashboardReadinessStatus,
   DashboardRecentDecision,
   DashboardSeverity,
+  DashboardSummary,
   DashboardWorkbench,
 } from '@study-abroad/shared';
 
-import type { DashboardPriorityItem, DashboardWorkbench } from '@study-abroad/shared';
-
-export interface DashboardData {
-  user: {
-    email: string;
-    role: string;
-    points: number;
-    createdAt: string;
-    nickname?: string;
-  };
-  profile: {
-    completeness: number;
-    hasTestScores: boolean;
-    hasActivities: boolean;
-    hasAwards: boolean;
-    hasEducation?: boolean;
-    targetSchoolCount: number;
-    essayCount: number;
-    schoolTiers: {
-      reach: number;
-      target: number;
-      safety: number;
-    };
-  };
-  stats: {
-    followers: number;
-    following: number;
-    cases: number;
-    predictions: number;
-  };
-  pendingTasks: {
-    total: number;
-    byType: { type: string; count: number }[];
-    profileGaps: string[];
-  };
-  upcomingDeadlines: {
-    id: string;
-    schoolName: string;
-    round: string;
-    deadline: string;
-    daysLeft: number;
-  }[];
-  upcomingPersonalEvents?: {
-    id: string;
-    title: string;
-    category: string;
-    deadline: string | null;
-    eventDate: string | null;
-    daysLeft: number;
-  }[];
-  recentActivity: {
-    type: string;
-    title: string;
-    description: string;
-    createdAt: string;
-  }[];
-  workbench?: DashboardWorkbench;
-}
+import type {
+  DashboardData,
+  DashboardPriorityItem,
+  DashboardWorkbench,
+} from '@study-abroad/shared';
 
 export function getProfileGrade(completeness: number): {
   grade: string;

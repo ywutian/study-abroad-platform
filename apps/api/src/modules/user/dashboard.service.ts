@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   type DashboardPriorityKind,
   type DashboardSeverity,
+  type DashboardSummary,
   type DashboardWorkbench,
 } from '@study-abroad/shared';
 
@@ -10,80 +11,10 @@ import { getSchoolDisplayName } from '../../common/utils/locale.util';
 
 // 2026-05: Re-export so consumers (e.g. user.controller.ts type imports)
 // don't break. The interfaces live in @study-abroad/shared so API + Web
-// can never silently drift on the dashboard contract.
-export type { DashboardWorkbench };
-
-export interface DashboardSummary {
-  // 用户基本信息
-  user: {
-    email: string;
-    role: string;
-    points: number;
-    createdAt: string;
-    nickname?: string;
-  };
-
-  // 档案信息
-  profile: {
-    completeness: number;
-    hasTestScores: boolean;
-    hasActivities: boolean;
-    hasAwards: boolean;
-    hasEducation: boolean;
-    targetSchoolCount: number;
-    essayCount: number;
-    schoolTiers: {
-      reach: number;
-      target: number;
-      safety: number;
-    };
-  };
-
-  // 统计数据
-  stats: {
-    followers: number;
-    following: number;
-    cases: number;
-    predictions: number;
-  };
-
-  // 待办任务
-  pendingTasks: {
-    total: number;
-    byType: { type: string; count: number }[];
-    profileGaps: string[];
-  };
-
-  // 即将截止的申请
-  upcomingDeadlines: {
-    id: string;
-    schoolName: string;
-    round: string;
-    deadline: string;
-    daysLeft: number;
-  }[];
-
-  // 即将到期的个人事件（比赛/考试等）
-  upcomingPersonalEvents: {
-    id: string;
-    title: string;
-    category: string;
-    deadline: string | null;
-    eventDate: string | null;
-    daysLeft: number;
-  }[];
-
-  // 最近活动
-  recentActivity: {
-    type: string;
-    title: string;
-    description: string;
-    createdAt: string;
-  }[];
-
-  // 企业级申请工作台聚合
-  workbench: DashboardWorkbench;
-}
+// can never silently drift on the dashboard contract — see PR #178 for
+// the workbench types and the follow-up that brought DashboardSummary
+// over too.
+export type { DashboardSummary, DashboardWorkbench };
 
 type DashboardDeadlineItem = DashboardSummary['upcomingDeadlines'][number];
 
