@@ -26,9 +26,10 @@ import { DashboardPipelineStrip } from './dashboard-pipeline-strip';
 import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
 import {
   getProfileGrade,
+  toneFromReadinessStatus,
+  toneFromSeverity,
   type DashboardPriorityItem,
-  type DashboardReadinessStatus,
-  type DashboardSeverity,
+  type DashboardTone,
   type DashboardWorkbench,
 } from './dashboard-workbench-model';
 
@@ -57,8 +58,19 @@ interface DashboardCommandCenterProps {
   casesCount?: number;
 }
 
-const severityMeta: Record<
-  DashboardSeverity,
+/**
+ * 2026-05 Phase 2.5c: Unified tone meta — single source of truth for the
+ * 4-color visual vocabulary (critical / warning / neutral / success).
+ *
+ * Previously this file maintained two parallel maps (`severityMeta` with
+ * 4 fields and `statusMeta` with 1) that drifted on every visual tweak:
+ * the same `border-destructive/25 bg-destructive/5` string was duplicated
+ * in 4 places. Now severity AND readiness status both project through
+ * `toneFromSeverity()` / `toneFromReadinessStatus()` to a single
+ * `DashboardTone`, and consumers look up exactly one meta entry.
+ */
+const toneMeta: Record<
+  DashboardTone,
   {
     badge: 'destructive' | 'warning' | 'outline' | 'success';
     dot: string;
@@ -78,7 +90,7 @@ const severityMeta: Record<
     text: 'text-warning',
     border: 'border-warning/25 bg-warning/5',
   },
-  normal: {
+  neutral: {
     badge: 'outline',
     dot: 'bg-muted-foreground',
     text: 'text-muted-foreground',
@@ -90,12 +102,6 @@ const severityMeta: Record<
     text: 'text-success',
     border: 'border-success/25 bg-success/5',
   },
-};
-
-const statusMeta: Record<DashboardReadinessStatus, { className: string }> = {
-  blocked: { className: 'border-destructive/25 bg-destructive/5' },
-  attention: { className: 'border-warning/25 bg-warning/5' },
-  ready: { className: 'border-success/25 bg-success/5' },
 };
 
 function PriorityKindIcon({
@@ -136,7 +142,7 @@ export function DashboardCommandCenter({
   const tCenter = useTranslations('dashboard.commandCenter');
   const tStats = useTranslations('dashboard.stats');
   const topAction = workbench.priorityQueue[0];
-  const topSeverity = topAction ? severityMeta[topAction.severity] : severityMeta.normal;
+  const topSeverity = toneMeta[topAction ? toneFromSeverity(topAction.severity) : 'neutral'];
   const grade = getProfileGrade(completeness);
   // 2026-05: when a brand-new user has zero profile data AND zero schools,
   // showing "0%" everywhere is demoralizing. Switch the hero region to a
@@ -266,7 +272,7 @@ export function DashboardCommandCenter({
               */}
               <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                 {workbench.readiness.items.map((item) => {
-                  const meta = statusMeta[item.status];
+                  const meta = toneMeta[toneFromReadinessStatus(item.status)];
                   // 2026-05: When the prediction row is in the "attention"
                   // state (eligible to run but hasn't been run yet), route
                   // the click straight into auto-run mode so a single click
@@ -283,7 +289,7 @@ export function DashboardCommandCenter({
                       href={href}
                       className={cn(
                         'block rounded-[var(--theme-radius-card)] border p-3 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]',
-                        meta.className
+                        meta.border
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -402,7 +408,7 @@ export function DashboardCommandCenter({
                 whole picture and gives them a clear path to the rest.
               */}
               {workbench.priorityQueue.slice(1).map((item) => {
-                const meta = severityMeta[item.severity];
+                const meta = toneMeta[toneFromSeverity(item.severity)];
                 const isCompleting =
                   completingTaskId === item.id ||
                   completingTaskId === item.id.replace(/^task-/, '');
@@ -480,7 +486,7 @@ export function DashboardCommandCenter({
               {workbench.deadlineStream.length > 0 ? (
                 <div className="space-y-2">
                   {workbench.deadlineStream.slice(0, 5).map((item) => {
-                    const meta = severityMeta[item.severity];
+                    const meta = toneMeta[toneFromSeverity(item.severity)];
                     return (
                       <Link
                         key={`${item.type}-${item.id}`}
