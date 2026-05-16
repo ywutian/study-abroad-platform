@@ -49,6 +49,19 @@ export interface DashboardWorkbench {
     rejected: number;
     waitlisted: number;
     withdrawn: number;
+    /**
+     * Per-school decision rows (top 5 by updatedAt desc) for inline
+     * rendering below the count pills. Empty array when no schools are
+     * past IN_PROGRESS.
+     */
+    recentDecisions: Array<{
+      id: string;
+      schoolId: string;
+      schoolName: string;
+      round: string;
+      status: 'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'WAITLISTED' | 'WITHDRAWN';
+      decidedAt: string;
+    }>;
   };
 }
 

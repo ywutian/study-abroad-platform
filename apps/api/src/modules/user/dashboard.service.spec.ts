@@ -135,9 +135,14 @@ describe('DashboardService', () => {
     (prisma.$transaction as jest.Mock).mockResolvedValue([5, 3]);
     (prisma.admissionCase.count as jest.Mock).mockResolvedValue(7);
     (prisma.predictionResult.count as jest.Mock).mockResolvedValue(4);
-    (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue(
-      mockTimelines,
-    );
+    // applicationTimeline.findMany is called twice: once for upcoming
+    // deadlines (status notIn [...decided]) and once for recent decisions
+    // (status in [...decided]). Discriminate by where.status shape so
+    // tests don't accidentally feed deadline rows to the decisions query.
+    mockApplicationTimelineFindMany({
+      upcomingDeadlines: mockTimelines,
+      recentDecisions: [],
+    });
     // Default: no schools past IN_PROGRESS, so PipelineStrip stays hidden.
     (prisma.applicationTimeline.groupBy as jest.Mock).mockResolvedValue([]);
     (prisma.pointHistory.findMany as jest.Mock).mockResolvedValue(
@@ -158,6 +163,26 @@ describe('DashboardService', () => {
       mockPriorityTasks,
     );
     (prisma.personalEvent.findMany as jest.Mock).mockResolvedValue([]);
+  }
+
+  /**
+   * Helper: mock the two distinct applicationTimeline.findMany call
+   * sites correctly. Without this, tests that override findMany would
+   * accidentally feed upcoming-deadline rows to the recent-decisions
+   * query (or vice versa), causing nonsensical mapper output.
+   */
+  function mockApplicationTimelineFindMany(rows: {
+    upcomingDeadlines: unknown[];
+    recentDecisions: unknown[];
+  }) {
+    (prisma.applicationTimeline.findMany as jest.Mock).mockImplementation(
+      (args: { where?: { status?: { notIn?: unknown; in?: unknown } } }) => {
+        if (args?.where?.status && 'in' in args.where.status) {
+          return Promise.resolve(rows.recentDecisions);
+        }
+        return Promise.resolve(rows.upcomingDeadlines);
+      },
+    );
   }
 
   describe('getDashboardSummary', () => {
@@ -367,14 +392,17 @@ describe('DashboardService', () => {
     it('should format upcomingDeadlines correctly with daysLeft', async () => {
       setupDefaultMocks();
       const futureDate = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000); // 10 days ahead
-      (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue([
-        {
-          id: 'tl-10',
-          round: 'EA',
-          deadline: futureDate,
-          school: { name: 'Harvard', nameZh: '哈佛大学' },
-        },
-      ]);
+      mockApplicationTimelineFindMany({
+        upcomingDeadlines: [
+          {
+            id: 'tl-10',
+            round: 'EA',
+            deadline: futureDate,
+            school: { name: 'Harvard', nameZh: '哈佛大学' },
+          },
+        ],
+        recentDecisions: [],
+      });
 
       const result = await service.getDashboardSummary(userId);
 
@@ -391,14 +419,17 @@ describe('DashboardService', () => {
     it('should use English name when nameZh is null', async () => {
       setupDefaultMocks();
       const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
-      (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue([
-        {
-          id: 'tl-20',
-          round: 'RD',
-          deadline: futureDate,
-          school: { name: 'MIT', nameZh: null },
-        },
-      ]);
+      mockApplicationTimelineFindMany({
+        upcomingDeadlines: [
+          {
+            id: 'tl-20',
+            round: 'RD',
+            deadline: futureDate,
+            school: { name: 'MIT', nameZh: null },
+          },
+        ],
+        recentDecisions: [],
+      });
 
       const result = await service.getDashboardSummary(userId);
 
@@ -438,7 +469,10 @@ describe('DashboardService', () => {
 
     it('should handle empty timelines gracefully', async () => {
       setupDefaultMocks();
-      (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue([]);
+      mockApplicationTimelineFindMany({
+        upcomingDeadlines: [],
+        recentDecisions: [],
+      });
 
       const result = await service.getDashboardSummary(userId);
 
@@ -447,20 +481,23 @@ describe('DashboardService', () => {
 
     it('should filter out timelines with null deadlines', async () => {
       setupDefaultMocks();
-      (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue([
-        {
-          id: 'tl-null',
-          round: 'ED',
-          deadline: null,
-          school: { name: 'Caltech', nameZh: null },
-        },
-        {
-          id: 'tl-valid',
-          round: 'RD',
-          deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          school: { name: 'Yale', nameZh: '耶鲁大学' },
-        },
-      ]);
+      mockApplicationTimelineFindMany({
+        upcomingDeadlines: [
+          {
+            id: 'tl-null',
+            round: 'ED',
+            deadline: null,
+            school: { name: 'Caltech', nameZh: null },
+          },
+          {
+            id: 'tl-valid',
+            round: 'RD',
+            deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            school: { name: 'Yale', nameZh: '耶鲁大学' },
+          },
+        ],
+        recentDecisions: [],
+      });
 
       const result = await service.getDashboardSummary(userId);
 
@@ -471,7 +508,10 @@ describe('DashboardService', () => {
     it('should roll stale school-list deadlines forward to the next annual cycle', async () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-05-14T00:00:00Z'));
       setupDefaultMocks();
-      (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue([]);
+      mockApplicationTimelineFindMany({
+        upcomingDeadlines: [],
+        recentDecisions: [],
+      });
       (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
         {
           schoolId: 'school-1',
@@ -570,6 +610,7 @@ describe('DashboardService', () => {
         rejected: 0,
         waitlisted: 1,
         withdrawn: 0,
+        recentDecisions: [],
       });
     });
 
@@ -584,7 +625,58 @@ describe('DashboardService', () => {
         rejected: 0,
         waitlisted: 0,
         withdrawn: 0,
+        recentDecisions: [],
       });
+    });
+
+    // 2026-05: PipelineStrip surfaces per-school decision rows so users
+    // see WHICH schools they've heard back from, not just opaque counts.
+    it('maps recentDecisions with school name + round + status + decidedAt', async () => {
+      setupDefaultMocks();
+      const decidedAt = new Date('2026-05-10T14:30:00Z');
+      mockApplicationTimelineFindMany({
+        upcomingDeadlines: [],
+        recentDecisions: [
+          {
+            id: 'decision-1',
+            schoolId: 'sch-stanford',
+            schoolName: 'Stanford University',
+            round: 'EA',
+            status: 'ACCEPTED',
+            updatedAt: decidedAt,
+            school: { name: 'Stanford University', nameZh: '斯坦福大学' },
+          },
+          {
+            id: 'decision-2',
+            schoolId: 'sch-mit',
+            schoolName: 'MIT',
+            round: 'EA',
+            status: 'WAITLISTED',
+            updatedAt: decidedAt,
+            school: { name: 'MIT', nameZh: null },
+          },
+        ],
+      });
+
+      const result = await service.getDashboardSummary(userId);
+      expect(result.workbench.pipeline?.recentDecisions).toEqual([
+        {
+          id: 'decision-1',
+          schoolId: 'sch-stanford',
+          schoolName: '斯坦福大学', // zh locale default
+          round: 'EA',
+          status: 'ACCEPTED',
+          decidedAt: decidedAt.toISOString(),
+        },
+        {
+          id: 'decision-2',
+          schoolId: 'sch-mit',
+          schoolName: 'MIT',
+          round: 'EA',
+          status: 'WAITLISTED',
+          decidedAt: decidedAt.toISOString(),
+        },
+      ]);
     });
   });
 });
