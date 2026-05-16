@@ -5,3 +5,6 @@ node_modules
 /generated/prisma
 scripts/cds-data/*-ledger-*.json
 scripts/cds-data/*-worklist-*.json
+
+# Prediction closure pipeline — regenerable artifacts
+scripts/closure-reports/

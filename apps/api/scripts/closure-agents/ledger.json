@@ -1,0 +1,1594 @@
+{
+  "startedAt": "2026-05-16T12:30:00Z",
+  "processedSchools": {
+    "cmn1htkn60002vqf2r731l78m": {
+      "name": "Harvard University",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T12:50:00Z",
+      "batchId": "phase1",
+      "notes": "eaAR deferred to Agent C"
+    },
+    "cmn1htkmy0000vqf2src2zcb5": {
+      "name": "Princeton University",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:25:44.803Z",
+      "batchId": "phase2",
+      "notes": "parallel subagent run"
+    },
+    "cmn1htkn30001vqf2nozenmj6": {
+      "name": "Massachusetts Institute of Technology",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:25:44.807Z",
+      "batchId": "phase2",
+      "notes": "parallel subagent run"
+    },
+    "cmn1htkn80003vqf29zl0f9lr": {
+      "name": "Stanford University",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:25:44.808Z",
+      "batchId": "phase2",
+      "notes": "parallel subagent run"
+    },
+    "cmnwr8iwg0050z0tiyrfhaavh": {
+      "name": "cmnwr8iwg0050z0tiyrfhaavh",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:28:34.588Z",
+      "batchId": "phase3-batch1",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iwe004zz0tilegv5ian": {
+      "name": "cmnwr8iwe004zz0tilegv5ian",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:29:07.806Z",
+      "batchId": "phase3-batch1",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iup0042z0tieqofvyfn": {
+      "name": "cmnwr8iup0042z0tieqofvyfn",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:30:57.619Z",
+      "batchId": "phase3-batch1",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iur0043z0tie8ndrb65": {
+      "name": "cmnwr8iur0043z0tie8ndrb65",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:35:32.338Z",
+      "batchId": "phase3-batch2",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iwl0052z0ti9adsxk6l": {
+      "name": "cmnwr8iwl0052z0ti9adsxk6l",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:36:34.685Z",
+      "batchId": "phase3-batch2",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iwi0051z0tidfdrzv7w": {
+      "name": "cmnwr8iwi0051z0tidfdrzv7w",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:37:08.533Z",
+      "batchId": "phase3-batch2",
+      "notes": "auto-closure"
+    },
+    "cmnwr8ivx004qz0ti7xo8qk4m": {
+      "name": "cmnwr8ivx004qz0ti7xo8qk4m",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:41:22.306Z",
+      "batchId": "phase3-batch3",
+      "notes": "reclassified ART_DESIGN tier4"
+    },
+    "cmnwr8iut0044z0tie7749l79": {
+      "name": "cmnwr8iut0044z0tie7749l79",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:41:22.846Z",
+      "batchId": "phase3-batch3",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iuv0045z0tiq1lprcv8": {
+      "name": "cmnwr8iuv0045z0tiq1lprcv8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:42:56.509Z",
+      "batchId": "phase3-batch3",
+      "notes": "auto-closure"
+    },
+    "cmn1htkna0004vqf2erll9srp": {
+      "name": "cmn1htkna0004vqf2erll9srp",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:47:18.561Z",
+      "batchId": "phase3-batch4",
+      "notes": "auto-closure"
+    },
+    "cmnwr8is1002xz0ti23uxhu2j": {
+      "name": "cmnwr8is1002xz0ti23uxhu2j",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:47:30.189Z",
+      "batchId": "phase3-batch4",
+      "notes": "auto-closure FIRST PUBLIC"
+    },
+    "cmnwr8iux0046z0tilggqkjw6": {
+      "name": "cmnwr8iux0046z0tilggqkjw6",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:48:18.833Z",
+      "batchId": "phase3-batch4",
+      "notes": "auto-closure"
+    },
+    "cmnwr8iuy0047z0tijtdlowua": {
+      "name": "cmnwr8iuy0047z0tijtdlowua",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:51:54.347Z",
+      "batchId": "phase3-batch5",
+      "notes": "auto"
+    },
+    "cmn1htkne0006vqf2quzi0v6h": {
+      "name": "cmn1htkne0006vqf2quzi0v6h",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:53:25.116Z",
+      "batchId": "phase3-batch5",
+      "notes": "auto"
+    },
+    "cmn1htknc0005vqf2l2az4cd2": {
+      "name": "cmn1htknc0005vqf2l2az4cd2",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:55:39.232Z",
+      "batchId": "phase3-batch5",
+      "notes": "auto"
+    },
+    "cmn1htkng0007vqf224oeyvgq": {
+      "name": "cmn1htkng0007vqf224oeyvgq",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T13:59:34.161Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmn1htknm000avqf2g8h3sbdp": {
+      "name": "cmn1htknm000avqf2g8h3sbdp",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:01:02.648Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmnwr8iv00048z0tityzi3zx8": {
+      "name": "cmnwr8iv00048z0tityzi3zx8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:01:23.599Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmnwr8iv5004bz0ti94b7ow5h": {
+      "name": "cmnwr8iv5004bz0ti94b7ow5h",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:02:38.882Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmn1htknh0008vqf2i053h8rm": {
+      "name": "cmn1htknh0008vqf2i053h8rm",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:03:01.573Z",
+      "batchId": "phase3-batch6",
+      "notes": "Brown — CDS 2024-25 Tableau-only (PDF deprecated); used corroborated dashboard values"
+    },
+    "cmnwr8iv20049z0ti4tahvum5": {
+      "name": "cmnwr8iv20049z0ti4tahvum5",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:03:45.650Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmnwr8iv7004cz0tiy7lyda2g": {
+      "name": "cmnwr8iv7004cz0tiy7lyda2g",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:03:46.184Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmnwr8iv4004az0tioxjsp148": {
+      "name": "cmnwr8iv4004az0tioxjsp148",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:04:41.253Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmn1htknl0009vqf255v6mh7y": {
+      "name": "cmn1htknl0009vqf255v6mh7y",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:07:22.699Z",
+      "batchId": "phase3-batch6",
+      "notes": "auto"
+    },
+    "cmnwr8iv9004dz0tirpo4zq16": {
+      "name": "cmnwr8iv9004dz0tirpo4zq16",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:16:36.469Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmnwr8ivb004ez0tiduer8l0n": {
+      "name": "cmnwr8ivb004ez0tiduer8l0n",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:18:02.668Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmn1htkno000bvqf209819ok4": {
+      "name": "cmn1htkno000bvqf209819ok4",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:18:08.700Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmn1htknq000cvqf2sogobdg1": {
+      "name": "cmn1htknq000cvqf2sogobdg1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:18:09.087Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmn1htkns000dvqf2a150rn2s": {
+      "name": "cmn1htkns000dvqf2a150rn2s",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:18:09.460Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmnwr8ivd004fz0tiwbcr93y2": {
+      "name": "cmnwr8ivd004fz0tiwbcr93y2",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:19:10.978Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmnwr8ive004gz0tihs1kxbek": {
+      "name": "cmnwr8ive004gz0tihs1kxbek",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:20:51.453Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmn1htknv000evqf29yjvrstt": {
+      "name": "cmn1htknv000evqf29yjvrstt",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:20:58.908Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmn1htkny000fvqf2jlmz8ej1": {
+      "name": "cmn1htkny000fvqf2jlmz8ej1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:21:00.945Z",
+      "batchId": "phase3-batch7",
+      "notes": "auto"
+    },
+    "cmnwr8ivg004hz0ti8c1ggiw8": {
+      "name": "cmnwr8ivg004hz0ti8c1ggiw8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:27:49.221Z",
+      "batchId": "phase3-batch8",
+      "notes": "auto"
+    },
+    "cmn1htko0000gvqf2pmjc1xi9": {
+      "name": "cmn1htko0000gvqf2pmjc1xi9",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:27:49.580Z",
+      "batchId": "phase3-batch8",
+      "notes": "auto"
+    },
+    "cmnwr8ivi004iz0tinveg964v": {
+      "name": "cmnwr8ivi004iz0tinveg964v",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:27:49.937Z",
+      "batchId": "phase3-batch8",
+      "notes": "auto"
+    },
+    "cmnwr8ivl004kz0tiv0vgf6c6": {
+      "name": "cmnwr8ivl004kz0tiv0vgf6c6",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:30:28.409Z",
+      "batchId": "phase3-batch8",
+      "notes": "auto"
+    },
+    "cmnwr8ivm004lz0tio6m2uic4": {
+      "name": "cmnwr8ivm004lz0tio6m2uic4",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:30:34.991Z",
+      "batchId": "phase3-batch8",
+      "notes": "auto"
+    },
+    "cmn1htko7000jvqf22r0n55p2": {
+      "name": "cmn1htko7000jvqf22r0n55p2",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:30:36.957Z",
+      "batchId": "phase3-batch8",
+      "notes": "auto"
+    },
+    "cmnwr8ivj004jz0tij2m7ox54": {
+      "name": "Colby College",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:32:00.000Z",
+      "batchId": "phase3-batch8",
+      "notes": "No public CDS for 2024-25 (Colby IR archive ends 2015-16). Used College Profile (afa.colby.edu) + Class-of-2028 press release as OFFICIAL_FACT_SHEET / OFFICIAL_PRESS_RELEASE. AR 6.64→7.09 (IPEDS 19187 apps / 1360 admits). sat25/75 1460/1570→1470/1530. intlAR/edAR/eaAR set UNAVAILABLE — prior URLs pointed to colbycc.edu (Colby Community College, KS — fabricated source) and were cleared."
+    },
+    "cmn1htko2000hvqf2r5gxwf84": {
+      "name": "Dartmouth College",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:32:00.000Z",
+      "batchId": "phase3-batch8",
+      "notes": "CDS 2024-25 OMITS Section C9 entirely (last test-optional cohort) → sat25/sat75 UNAVAILABLE/OFFICIAL_BLANK_SECTION. C1 residency admits row blank (only enrolled split) → intlAR UNAVAILABLE. AR 5.4→5.40 (refresh). Single ED plan (no ED II): edAR 19.18 (matches DB)."
+    },
+    "cmn1htko5000ivqf28d3x9557": {
+      "name": "Vanderbilt University",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:32:00.000Z",
+      "batchId": "phase3-batch8",
+      "notes": "Vanderbilt CDS is .xlsx (not PDF). Handled via curl + openpyxl. Full 7 fields populated. AR corrected 5.09→5.86 (CDS C1 Total). sat25 1490→1510. ED I + ED II combined in single C21 row → edAR 15.38."
+    },
+    "cmn1htkoa000kvqf2oqm36hw5": {
+      "name": "cmn1htkoa000kvqf2oqm36hw5",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:41:36.141Z",
+      "batchId": "phase3-batch9",
+      "notes": "auto"
+    },
+    "cmn1htkoc000lvqf2s5pgbhxx": {
+      "name": "cmn1htkoc000lvqf2s5pgbhxx",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:42:39.988Z",
+      "batchId": "phase3-batch9",
+      "notes": "auto"
+    },
+    "cmn1htkoe000mvqf2odaszvmk": {
+      "name": "cmn1htkoe000mvqf2odaszvmk",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:43:46.122Z",
+      "batchId": "phase3-batch9",
+      "notes": "auto"
+    },
+    "cmn1htkoo000qvqf2jgkrffw1": {
+      "name": "Washington University in St. Louis",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:50:00.000Z",
+      "batchId": "phase3-batch9",
+      "notes": "WashU CDS 2024-25 (washu.edu/.../2024-2025-WashU-CDS.pdf). Private → oosAR UNAVAILABLE/TERMINAL (CDS reports 13.13% but not actionable). AR=12.06 (LEGACY→OFFICIAL, value matched). sat25 1490→1500 (+10 from heuristic), sat75 1560→1570 (+10). intlAR=6.80, edAR=25.26 (ED I + ED II combined, 4817 apps / 1217 admits). eaAR NOT_OFFERED (C22 No). hasED=true."
+    },
+    "cmn1htkor000rvqf282ibd6kz": {
+      "name": "University of California, Davis",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:50:00.000Z",
+      "batchId": "phase3-batch9",
+      "notes": "UCD CDS 2024-25 (aggiedata.ucdavis.edu/.../CDS_UCD.pdf). Public UC. Test-blind → sat25/75 cleared UNAVAILABLE/OFFICIAL_BLANK. Unlike UCLA, UCD fills C1 residency table: AR 42.1→41.83 (residency Total 98869/41353; gender Total 96769 yields 42.73 but residency more complete). intlAR 51.5→50.68 (9569/18880, prior was from UCOP legreport). oosAR 57.7→57.32 (7038/12279, public UC → OFFICIAL not TERMINAL). edAR/eaAR NOT_OFFERED (UC system). hasED=false."
+    },
+    "cmn1htkou000svqf2356l4yfj": {
+      "name": "University of California, San Diego",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:50:00.000Z",
+      "batchId": "phase3-batch9",
+      "notes": "UCSD CDS 2024-25 (ir.ucsd.edu/stats/undergrad/CDS_UCSD_2024-20252.pdf). Public UC. Test-blind → sat25/75 cleared UNAVAILABLE/OFFICIAL_BLANK. UCSD fills C1 residency: AR 26.8→26.77 (134455/35989, gender & residency Totals match). intlAR 22.2→22.44 (drift fix: prior column 22.2 vs provenance 22.4, CDS gives 22.44 = 4896/21821). oosAR 33.6→33.49 (8109/24216, public UC → OFFICIAL). edAR/eaAR NOT_OFFERED (UC system). hasED=false."
+    },
+    "cmn1htkoh000nvqf2uj3pjgxw": {
+      "name": "cmn1htkoh000nvqf2uj3pjgxw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:58:07.890Z",
+      "batchId": "phase3-batch9",
+      "notes": "auto"
+    },
+    "cmn1htkoj000ovqf226pta7or": {
+      "name": "cmn1htkoj000ovqf226pta7or",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:58:13.650Z",
+      "batchId": "phase3-batch9",
+      "notes": "auto"
+    },
+    "cmn1htkom000pvqf2se90bue1": {
+      "name": "cmn1htkom000pvqf2se90bue1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T14:58:18.910Z",
+      "batchId": "phase3-batch9",
+      "notes": "auto"
+    },
+    "cmn1htkow000tvqf2qc5n3qhd": {
+      "name": "cmn1htkow000tvqf2qc5n3qhd",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:01:50.995Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkp4000wvqf2ah317ku6": {
+      "name": "cmn1htkp4000wvqf2ah317ku6",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:02:28.992Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkpb000zvqf2645ltfg6": {
+      "name": "cmn1htkpb000zvqf2645ltfg6",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:02:47.763Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkoz000uvqf2rnozc3fe": {
+      "name": "cmn1htkoz000uvqf2rnozc3fe",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:04:16.173Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkp6000xvqf2rhj774d8": {
+      "name": "cmn1htkp6000xvqf2rhj774d8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:04:30.088Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkpe0010vqf2xzzjz779": {
+      "name": "cmn1htkpe0010vqf2xzzjz779",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:05:53.467Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkp9000yvqf29pcl812t": {
+      "name": "cmn1htkp9000yvqf29pcl812t",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:06:30.647Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkp1000vvqf2iogfyk82": {
+      "name": "cmn1htkp1000vvqf2iogfyk82",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:08:54.656Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkpi0011vqf28xmv4but": {
+      "name": "cmn1htkpi0011vqf28xmv4but",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:12:10.282Z",
+      "batchId": "phase3-batch10",
+      "notes": "auto"
+    },
+    "cmn1htkpl0012vqf28whnvaoj": {
+      "name": "cmn1htkpl0012vqf28whnvaoj",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:15:45.252Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkpu0015vqf2kumhyv3t": {
+      "name": "cmn1htkpu0015vqf2kumhyv3t",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:16:30.968Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkpo0013vqf2byqbw5mb": {
+      "name": "cmn1htkpo0013vqf2byqbw5mb",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:18:03.779Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkpw0016vqf20t0lflxm": {
+      "name": "cmn1htkpw0016vqf20t0lflxm",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:18:21.695Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkpr0014vqf2w1o1nsyd": {
+      "name": "cmn1htkpr0014vqf2w1o1nsyd",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:19:49.086Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkq00017vqf245v5dk2j": {
+      "name": "cmn1htkq00017vqf245v5dk2j",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:20:01.969Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkq30018vqf2xt2csyoe": {
+      "name": "cmn1htkq30018vqf2xt2csyoe",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:23:36.709Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkq60019vqf2lmijsj2s": {
+      "name": "cmn1htkq60019vqf2lmijsj2s",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:24:57.475Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmn1htkq9001avqf25ziy94gn": {
+      "name": "cmn1htkq9001avqf25ziy94gn",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:26:05.497Z",
+      "batchId": "phase3-batch11",
+      "notes": "auto"
+    },
+    "cmnwr8ima0008z0ti358pkae1": {
+      "name": "cmnwr8ima0008z0ti358pkae1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:29:27.059Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmnwr8ilz0002z0tiwrsmrdi7": {
+      "name": "cmnwr8ilz0002z0tiwrsmrdi7",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:30:37.583Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmnwr8ilt0000z0ticnudxg0y": {
+      "name": "cmnwr8ilt0000z0ticnudxg0y",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:31:09.845Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmnwr8im30004z0tip77mx1gm": {
+      "name": "cmnwr8im30004z0tip77mx1gm",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:32:15.116Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmn1htkqc001bvqf22zfkx827": {
+      "name": "cmn1htkqc001bvqf22zfkx827",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:32:40.669Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmnwr8iun0041z0tin8tw3f6b": {
+      "name": "cmnwr8iun0041z0tin8tw3f6b",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:33:10.988Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmn1htkqf001cvqf2vdqpa1he": {
+      "name": "cmn1htkqf001cvqf2vdqpa1he",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:33:46.282Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmnwr8im70006z0ti47aaywzj": {
+      "name": "cmnwr8im70006z0ti47aaywzj",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:34:26.969Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmn1htkqj001dvqf2n8mczcpn": {
+      "name": "cmn1htkqj001dvqf2n8mczcpn",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:34:58.288Z",
+      "batchId": "phase3-batch12",
+      "notes": "auto"
+    },
+    "cmnwr8ilx0001z0tilru6b1th": {
+      "name": "cmnwr8ilx0001z0tilru6b1th",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:38:39.088Z",
+      "batchId": "phase3-batch13",
+      "notes": "auto"
+    },
+    "cmnwr8imn000fz0ti5zassqtj": {
+      "name": "cmnwr8imn000fz0ti5zassqtj",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:39:10.559Z",
+      "batchId": "phase3-batch13",
+      "notes": "auto"
+    },
+    "cmnwr8im10003z0ti20a5qdxq": {
+      "name": "cmnwr8im10003z0ti20a5qdxq",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:40:31.146Z",
+      "batchId": "phase3-batch13",
+      "notes": "auto"
+    },
+    "cmnwr8itq003pz0tirhvysbdj": {
+      "name": "cmnwr8itq003pz0tirhvysbdj",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:41:12.294Z",
+      "batchId": "phase3-batch13",
+      "notes": "duplicate row marked REJECTED (canonical: cmnwr8ima0008z0ti358pkae1)"
+    },
+    "cmnwr8im50005z0ti3z02fhjs": {
+      "name": "cmnwr8im50005z0ti3z02fhjs",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:41:23.198Z",
+      "batchId": "phase3-batch13",
+      "notes": "auto"
+    },
+    "cmnwr8img000bz0tiktbc3agu": {
+      "name": "cmnwr8img000bz0tiktbc3agu",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:42:12.593Z",
+      "batchId": "phase3-batch13",
+      "notes": "auto"
+    },
+    "cmnwr8imj000dz0tif3r9fq0l": {
+      "name": "cmnwr8imj000dz0tif3r9fq0l",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:42:29.894Z",
+      "batchId": "phase3-batch13",
+      "notes": "UConn CDS 2024-25 closure: AR=52.39 sat25=1220 sat75=1420 ED/EA=NOT_OFFERED intlAR/oosAR=NOT_PUBLISHED (CDS C1 has no residency breakdown)"
+    },
+    "cmnwr8imc0009z0tie59yu85k": {
+      "name": "cmnwr8imc0009z0tie59yu85k",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:43:49.712Z",
+      "batchId": "phase3-batch13",
+      "notes": "VT CDS 2024-25 closure: AR=54.99 sat25=1280 sat75=1450 intlAR=66.04 oosAR=59.06 (residency table present) ED=NOT_OFFERED EA=NOT_PUBLISHED (form lacks EA counts)"
+    },
+    "cmnwr8imi000cz0tifntjkili": {
+      "name": "cmnwr8imi000cz0tifntjkili",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:47:40.985Z",
+      "batchId": "phase3-batch13",
+      "notes": "auto"
+    },
+    "cmnwr8imv000kz0ti6chk6fxq": {
+      "name": "cmnwr8imv000kz0ti6chk6fxq",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:54:30.126Z",
+      "batchId": "phase3-batch14",
+      "notes": "MSU CDS 2024-25: AR=84.79 (CORRECTION UP +3.49pp from stale 81.3), sat25=1100 sat75=1310, intlAR=88.10, oosAR=84.37 (PUBLIC, OFFICIAL), edAR=NOT_OFFERED (CDS C21 No, hasED corrected true->false), eaAR=OFFERED_NO_COUNTS (CDS C22 Yes but no counts). 7/7 closed."
+    },
+    "cmnwr8itr003qz0tihoo9onta": {
+      "name": "cmnwr8itr003qz0tihoo9onta",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:54:40.755Z",
+      "batchId": "phase3-batch14",
+      "notes": "duplicate row marked REJECTED"
+    },
+    "cmnwr8inf000uz0tic8a7s8is": {
+      "name": "cmnwr8inf000uz0tic8a7s8is",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:54:52.767Z",
+      "batchId": "phase3-batch14",
+      "notes": "RPI CDS 2025-26: AR=67.25 (CORRECTION UP +11.15pp from stale 56.1), sat25=1380 sat75=1500 (+40/+20), intlAR=56.24, oosAR=TERMINAL (private), edAR=69.09 (CDS C21 reports Fall 2024 219/317), eaAR=OFFERED_NO_COUNTS (CDS C22 Yes but no counts). 7/7 closed."
+    },
+    "cmnwr8im90007z0ti2n04hf3n": {
+      "name": "cmnwr8im90007z0ti2n04hf3n",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:55:05.345Z",
+      "batchId": "phase3-batch14",
+      "notes": "auto"
+    },
+    "cmnwr8imx000lz0tiez2ik9eg": {
+      "name": "cmnwr8imx000lz0tiez2ik9eg",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:55:14.905Z",
+      "batchId": "phase3-batch14",
+      "notes": "auto"
+    },
+    "cmnwr8iml000ez0ti01wzdugn": {
+      "name": "cmnwr8iml000ez0ti01wzdugn",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:55:16.458Z",
+      "batchId": "phase3-batch14",
+      "notes": "auto"
+    },
+    "cmnwr8in5000pz0tiefcdnmfi": {
+      "name": "cmnwr8in5000pz0tiefcdnmfi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:57:39.704Z",
+      "batchId": "phase3-batch14",
+      "notes": "auto"
+    },
+    "cmnwr8in9000rz0ti2orsdpwi": {
+      "name": "cmnwr8in9000rz0ti2orsdpwi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:57:48.719Z",
+      "batchId": "phase3-batch14",
+      "notes": "auto"
+    },
+    "cmnwr8iqv002cz0ti57kn9m2m": {
+      "name": "cmnwr8iqv002cz0ti57kn9m2m",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T15:57:55.253Z",
+      "batchId": "phase3-batch14",
+      "notes": "auto"
+    },
+    "cmnwr8ims000iz0timfd6oan8": {
+      "name": "cmnwr8ims000iz0timfd6oan8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:01:57.387Z",
+      "batchId": "phase3-batch15",
+      "notes": "auto"
+    },
+    "cmnwr8ity003tz0tie2nazej1": {
+      "name": "cmnwr8ity003tz0tie2nazej1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:03:26.401Z",
+      "batchId": "phase3-batch15",
+      "notes": "auto"
+    },
+    "cmnwr8itw003sz0ti2fueoy2e": {
+      "name": "cmnwr8itw003sz0ti2fueoy2e",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:05:36.936Z",
+      "batchId": "phase3-batch15",
+      "notes": "auto"
+    },
+    "cmnwr8in0000mz0tiria7qm89": {
+      "name": "cmnwr8in0000mz0tiria7qm89",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:06:13.274Z",
+      "batchId": "phase3-batch15",
+      "notes": "University of Iowa — CDS 2024-25 closure: 5 fields OFFICIAL (AR 83.62, sat25 1140, sat75 1313, intlAR 44.32, oosAR 85.30) + 2 UNAVAILABLE (edAR/eaAR NOT_OFFERED per C21/C22 No)"
+    },
+    "cmnwr8itt003rz0tizqmu1u5h": {
+      "name": "cmnwr8itt003rz0tizqmu1u5h",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:06:23.978Z",
+      "batchId": "phase3-batch15",
+      "notes": "Yeshiva University — CDS 2023-24 closure (latest published XLSX from YU OIR): 4 fields OFFICIAL (AR 63.75, sat25 1330, sat75 1470, edAR 100.0 per C21 129/129) + 3 UNAVAILABLE (intlAR OFFICIAL_BLANK_SECTION per blank C1 residency, oosAR TERMINAL private school, eaAR OFFICIAL_BLANK_SECTION NOT_OFFERED per C22 blank); replaced unreliable Wilf catalog TAVILY_ENRICHMENT values"
+    },
+    "cmnwr8in2000nz0tikk636e8p": {
+      "name": "cmnwr8in2000nz0tikk636e8p",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:06:27.850Z",
+      "batchId": "phase3-batch15",
+      "notes": "duplicate row marked REJECTED (Duplicate DB row of Binghamton University cmnwr8iqv002cz0ti57kn9m2m — canonical SUNY Binghamton already closed in phase3-batch14)"
+    },
+    "cmnwr8in3000oz0tih36u19xf": {
+      "name": "cmnwr8in3000oz0tih36u19xf",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:08:40.758Z",
+      "batchId": "phase3-batch15",
+      "notes": "auto"
+    },
+    "cmnwr8in7000qz0ti04kcrc1l": {
+      "name": "cmnwr8in7000qz0ti04kcrc1l",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:11:31.884Z",
+      "batchId": "phase3-batch15",
+      "notes": "auto"
+    },
+    "cmnwr8ing000vz0tizgajtqeo": {
+      "name": "cmnwr8ing000vz0tizgajtqeo",
+      "status": "PARTIAL",
+      "processedAt": "2026-05-16T16:14:23.246Z",
+      "batchId": "phase3-batch15",
+      "notes": "CDS PDF auth-walled (data.colorado.edu SharePoint); hasED corrected; ED/EA structural confirmed; numeric values preserved as LEGACY_DB pending CDS access"
+    },
+    "cmnwr8io00017z0ti5bju2vo7": {
+      "name": "cmnwr8io00017z0ti5bju2vo7",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:18:40.330Z",
+      "batchId": "phase3-batch16",
+      "notes": "auto"
+    },
+    "cmnwr8imu000jz0ti03zavqgf": {
+      "name": "cmnwr8imu000jz0ti03zavqgf",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:20:48.281Z",
+      "batchId": "phase3-batch16",
+      "notes": "auto"
+    },
+    "cmnwr8imr000hz0tik9lqym4i": {
+      "name": "cmnwr8imr000hz0tik9lqym4i",
+      "status": "PARTIAL",
+      "processedAt": "2026-05-16T16:21:41.910Z",
+      "batchId": "phase3-batch16",
+      "notes": "6/7 OFFICIAL (AR/SAT25/SAT75/edAR upgraded; oosAR UNAVAIL-TERMINAL; eaAR UNAVAIL-BLANK_SECTION). intlAR=41.4 kept LEGACY — CDS PDF gated behind Fordham CAS."
+    },
+    "cmnwr8inl000yz0ti6wsiqcrv": {
+      "name": "cmnwr8inl000yz0ti6wsiqcrv",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:22:08.111Z",
+      "batchId": "phase3-batch16",
+      "notes": "auto"
+    },
+    "cmnwr8io20018z0tizk1tsitd": {
+      "name": "cmnwr8io20018z0tizk1tsitd",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:23:15.937Z",
+      "batchId": "phase3-batch16",
+      "notes": "auto"
+    },
+    "cmnwr8inp0010z0tivwogzepz": {
+      "name": "cmnwr8inp0010z0tivwogzepz",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:23:29.317Z",
+      "batchId": "phase3-batch16",
+      "notes": "auto"
+    },
+    "cmnwr8ins0012z0ti4o8njwhn": {
+      "name": "cmnwr8ins0012z0ti4o8njwhn",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:24:48.876Z",
+      "batchId": "phase3-batch16",
+      "notes": "auto"
+    },
+    "cmnwr8iuk0040z0ti7p8v604n": {
+      "name": "cmnwr8iuk0040z0ti7p8v604n",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:26:39.282Z",
+      "batchId": "phase3-batch16",
+      "notes": "7/7 closed via CDS 2025-26 OCR. AR 76.15->79.62, SAT 1190/1380->1230/1383, intlAR 51.71 confirmed; oosAR TERMINAL; edAR NOT_OFFERED + hasED corrected to false; eaAR BLANK_SECTION (EA offered, counts undisclosed)."
+    },
+    "cmnwr8ind000tz0timgwcy8hj": {
+      "name": "cmnwr8ind000tz0timgwcy8hj",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:28:57.256Z",
+      "batchId": "phase3-batch16",
+      "notes": "7/7 closed via CDS 2024-25 PDF. AR=45.08, SAT 1230/1390->1280/1400, intlAR=6.20, edAR=44.11; oosAR TERMINAL; eaAR BLANK_SECTION (EA offered but counts not in 2024-25 form)."
+    },
+    "cmnwr8ink000xz0tivm4enckb": {
+      "name": "cmnwr8ink000xz0tivm4enckb",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:32:53.546Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8ime000az0ti9ts1sd20": {
+      "name": "cmnwr8ime000az0ti9ts1sd20",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:34:37.037Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8inq0011z0tims8lt244": {
+      "name": "cmnwr8inq0011z0tims8lt244",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:34:43.973Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8iud003yz0tinuqfaa54": {
+      "name": "cmnwr8iud003yz0tinuqfaa54",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:35:05.792Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8iuf003zz0ti12pe3iq1": {
+      "name": "cmnwr8iuf003zz0ti12pe3iq1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:36:19.596Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8io40019z0ti0z11pe98": {
+      "name": "cmnwr8io40019z0ti0z11pe98",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:36:29.600Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8iu3003vz0tig0fa53lf": {
+      "name": "cmnwr8iu3003vz0tig0fa53lf",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:36:48.375Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8iu0003uz0ti43l07p17": {
+      "name": "cmnwr8iu0003uz0ti43l07p17",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:37:30.318Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8inb000sz0ti3r4uwfjt": {
+      "name": "cmnwr8inb000sz0ti3r4uwfjt",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:38:58.823Z",
+      "batchId": "phase3-batch17",
+      "notes": "auto"
+    },
+    "cmnwr8ini000wz0ti57rv9m9o": {
+      "name": "cmnwr8ini000wz0ti57rv9m9o",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:43:23.008Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8inv0014z0ti6jqhq1ga": {
+      "name": "cmnwr8inv0014z0ti6jqhq1ga",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:46:27.925Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8io5001az0tibgs1vu54": {
+      "name": "cmnwr8io5001az0tibgs1vu54",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:48:12.971Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8iob001dz0ti3go71xpz": {
+      "name": "cmnwr8iob001dz0ti3go71xpz",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:49:13.593Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8iu6003wz0tio3oagiri": {
+      "name": "cmnwr8iu6003wz0tio3oagiri",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:49:36.443Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8io7001bz0tihu5wo9mh": {
+      "name": "cmnwr8io7001bz0tihu5wo9mh",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:49:55.891Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8inn000zz0tihkfqe5yc": {
+      "name": "cmnwr8inn000zz0tihkfqe5yc",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:50:51.577Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8iua003xz0tio2zj4a4z": {
+      "name": "cmnwr8iua003xz0tio2zj4a4z",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:52:36.118Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8imp000gz0tibbuqx67l": {
+      "name": "cmnwr8imp000gz0tibbuqx67l",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:53:18.445Z",
+      "batchId": "phase3-batch18",
+      "notes": "auto"
+    },
+    "cmnwr8iol001gz0ticdgvwjkf": {
+      "name": "cmnwr8iol001gz0ticdgvwjkf",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T16:57:13.146Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8ioo001hz0tim3isqwz9": {
+      "name": "cmnwr8ioo001hz0tim3isqwz9",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:00:51.814Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8iou001jz0tig866z8pb": {
+      "name": "cmnwr8iou001jz0tig866z8pb",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:02:29.285Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8ioy001kz0ti85qspr1l": {
+      "name": "cmnwr8ioy001kz0ti85qspr1l",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:05:06.589Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8io8001cz0tivir7q6ki": {
+      "name": "cmnwr8io8001cz0tivir7q6ki",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:05:15.630Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8ioe001ez0tii04p5pvd": {
+      "name": "cmnwr8ioe001ez0tii04p5pvd",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:05:19.148Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8ior001iz0tibsba6d2o": {
+      "name": "cmnwr8ior001iz0tibsba6d2o",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:05:24.936Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8ioi001fz0tivlt104p7": {
+      "name": "cmnwr8ioi001fz0tivlt104p7",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:05:26.585Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8int0013z0tiqysdv07w": {
+      "name": "cmnwr8int0013z0tiqysdv07w",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:05:27.758Z",
+      "batchId": "phase3-batch19",
+      "notes": "auto"
+    },
+    "cmnwr8inx0015z0tix5dndhpi": {
+      "name": "cmnwr8inx0015z0tix5dndhpi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:12:37.880Z",
+      "batchId": "phase3-batch20",
+      "notes": "auto"
+    },
+    "cmnwr8ipa001oz0tionb7y3gm": {
+      "name": "cmnwr8ipa001oz0tionb7y3gm",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:12:48.216Z",
+      "batchId": "phase3-batch20",
+      "notes": "auto"
+    },
+    "cmnwr8ip1001lz0ti51lr5gad": {
+      "name": "cmnwr8ip1001lz0ti51lr5gad",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:12:56.791Z",
+      "batchId": "phase3-batch20",
+      "notes": "auto"
+    },
+    "cmnwr8ipc001pz0tiz0bgth66": {
+      "name": "cmnwr8ipc001pz0tiz0bgth66",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:14:09.677Z",
+      "batchId": "phase3-batch20",
+      "notes": "auto"
+    },
+    "cmnwr8ipj001rz0tipapk15or": {
+      "name": "cmnwr8ipj001rz0tipapk15or",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:14:16.410Z",
+      "batchId": "phase3-batch20",
+      "notes": "auto"
+    },
+    "cmnwr8ipf001qz0ti3d3001d9": {
+      "name": "cmnwr8ipf001qz0ti3d3001d9",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T17:14:32.357Z",
+      "batchId": "phase3-batch20",
+      "notes": "auto"
+    },
+    "cmnwr8ip7001nz0ti6qy76djw": {
+      "name": "cmnwr8ip7001nz0ti6qy76djw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:35:34.122Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ipr001tz0ti8x7z840u": {
+      "name": "cmnwr8ipr001tz0ti8x7z840u",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:35:39.867Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ipv001vz0tiqnippgu6": {
+      "name": "cmnwr8ipv001vz0tiqnippgu6",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:35:56.305Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ipx001wz0timhlbfii2": {
+      "name": "cmnwr8ipx001wz0timhlbfii2",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:36:39.827Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ipm001sz0tixvcr2p30": {
+      "name": "cmnwr8ipm001sz0tixvcr2p30",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:37:13.035Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ip3001mz0til7q2dopw": {
+      "name": "cmnwr8ip3001mz0til7q2dopw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:37:24.735Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ipz001xz0ti9f4tlagk": {
+      "name": "cmnwr8ipz001xz0ti9f4tlagk",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:37:43.276Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8ipt001uz0tivghae5e1": {
+      "name": "cmnwr8ipt001uz0tivghae5e1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:38:22.859Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8iwx0059z0tilcfiwj80": {
+      "name": "cmnwr8iwx0059z0tilcfiwj80",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:39:41.002Z",
+      "batchId": "phase3-batch21",
+      "notes": "auto"
+    },
+    "cmnwr8iq1001yz0ti1jb6g7hi": {
+      "name": "cmnwr8iq1001yz0ti1jb6g7hi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:45:54.637Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iq40020z0tif8l8dxxu": {
+      "name": "cmnwr8iq40020z0tif8l8dxxu",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:47:22.933Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iq2001zz0tiix4lbz86": {
+      "name": "cmnwr8iq2001zz0tiix4lbz86",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:48:35.180Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iny0016z0tiikip2622": {
+      "name": "cmnwr8iny0016z0tiikip2622",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:51:33.979Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iq70021z0titshta238": {
+      "name": "cmnwr8iq70021z0titshta238",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:51:34.336Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iqa0022z0ti9ad68xp2": {
+      "name": "cmnwr8iqa0022z0ti9ad68xp2",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:51:34.689Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iqc0023z0ti60klqjhy": {
+      "name": "cmnwr8iqc0023z0ti60klqjhy",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:56:02.423Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iqf0024z0tiy29w0e1z": {
+      "name": "cmnwr8iqf0024z0tiy29w0e1z",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:56:07.837Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iqh0025z0ti7z1ynz4s": {
+      "name": "cmnwr8iqh0025z0ti7z1ynz4s",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T18:56:08.837Z",
+      "batchId": "phase3-batch22",
+      "notes": "auto"
+    },
+    "cmnwr8iqm0028z0ti63txqxzg": {
+      "name": "cmnwr8iqm0028z0ti63txqxzg",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:04:26.540Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqr002az0ti1une85dx": {
+      "name": "cmnwr8iqr002az0ti1une85dx",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:05:40.984Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqk0027z0ti3qm7r15o": {
+      "name": "cmnwr8iqk0027z0ti3qm7r15o",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:06:33.653Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqx002dz0tigsxpge66": {
+      "name": "cmnwr8iqx002dz0tigsxpge66",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:07:20.674Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqy002ez0tizit8vwvw": {
+      "name": "cmnwr8iqy002ez0tizit8vwvw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:07:21.041Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqt002bz0ti5efot7m8": {
+      "name": "cmnwr8iqt002bz0ti5efot7m8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:07:21.262Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8ir0002fz0tiuxlv8v32": {
+      "name": "cmnwr8ir0002fz0tiuxlv8v32",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:07:21.412Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqi0026z0tin3vtpw1p": {
+      "name": "cmnwr8iqi0026z0tin3vtpw1p",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:07:48.440Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8iqp0029z0ti2wbplonv": {
+      "name": "cmnwr8iqp0029z0ti2wbplonv",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:09:00.440Z",
+      "batchId": "phase3-batch23",
+      "notes": "auto"
+    },
+    "cmnwr8ir4002hz0tibdz0myoo": {
+      "name": "cmnwr8ir4002hz0tibdz0myoo",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:17:22.121Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8ir2002gz0tih2v6dubi": {
+      "name": "cmnwr8ir2002gz0tih2v6dubi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:17:27.612Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8ir7002iz0ti11f0voua": {
+      "name": "cmnwr8ir7002iz0ti11f0voua",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:17:32.943Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8ira002jz0tib0nkhdsx": {
+      "name": "cmnwr8ira002jz0tib0nkhdsx",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:17:35.538Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8irh002mz0tik8qulubb": {
+      "name": "cmnwr8irh002mz0tik8qulubb",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:17:40.503Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8irj002nz0tief4railh": {
+      "name": "cmnwr8irj002nz0tief4railh",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:17:40.855Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8ird002kz0tifunyipf1": {
+      "name": "cmnwr8ird002kz0tifunyipf1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:21:04.356Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8irf002lz0titpd5mufz": {
+      "name": "cmnwr8irf002lz0titpd5mufz",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:21:09.558Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8irl002oz0tiyc5w37jx": {
+      "name": "cmnwr8irl002oz0tiyc5w37jx",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:21:09.928Z",
+      "batchId": "phase3-batch24",
+      "notes": "auto"
+    },
+    "cmnwr8irx002vz0ti8qpx4iws": {
+      "name": "cmnwr8irx002vz0ti8qpx4iws",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:28:25.836Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8iry002wz0tiljzfdqu7": {
+      "name": "cmnwr8iry002wz0tiljzfdqu7",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:28:31.569Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8is3002yz0ti9qk8f21x": {
+      "name": "cmnwr8is3002yz0ti9qk8f21x",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:28:33.610Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8irn002pz0tihyw561a7": {
+      "name": "cmnwr8irn002pz0tihyw561a7",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:29:42.145Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8irt002tz0tiua8akwdq": {
+      "name": "cmnwr8irt002tz0tiua8akwdq",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:29:44.125Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8iro002qz0tiayclu6c9": {
+      "name": "cmnwr8iro002qz0tiayclu6c9",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:29:45.403Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8irs002sz0ti22brcgol": {
+      "name": "cmnwr8irs002sz0ti22brcgol",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:31:04.321Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8irq002rz0ti2ejl7chb": {
+      "name": "cmnwr8irq002rz0ti2ejl7chb",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:31:10.368Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8irv002uz0tic1bpn6g4": {
+      "name": "cmnwr8irv002uz0tic1bpn6g4",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:31:16.482Z",
+      "batchId": "phase3-batch25",
+      "notes": "auto"
+    },
+    "cmnwr8is80031z0tizosa0sa8": {
+      "name": "cmnwr8is80031z0tizosa0sa8",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:41:14.658Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8isa0032z0tiytg48wsw": {
+      "name": "cmnwr8isa0032z0tiytg48wsw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:41:15.019Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8ish0036z0tiy3l6tt76": {
+      "name": "cmnwr8ish0036z0tiy3l6tt76",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:41:15.407Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8is4002zz0ti7l7rukwt": {
+      "name": "cmnwr8is4002zz0ti7l7rukwt",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:41:28.629Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8is60030z0timvbtgjwa": {
+      "name": "cmnwr8is60030z0timvbtgjwa",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:41:30.752Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8isc0033z0tibp1hnmdi": {
+      "name": "cmnwr8isc0033z0tibp1hnmdi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:41:32.381Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8isf0035z0tixudqprxr": {
+      "name": "cmnwr8isf0035z0tixudqprxr",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:42:23.420Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8ise0034z0tiwz772kaw": {
+      "name": "cmnwr8ise0034z0tiwz772kaw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:42:28.061Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8isn0039z0tik49prelk": {
+      "name": "cmnwr8isn0039z0tik49prelk",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:42:29.440Z",
+      "batchId": "phase3-batch26",
+      "notes": "auto"
+    },
+    "cmnwr8isr003bz0ti1h6j1c5s": {
+      "name": "cmnwr8isr003bz0ti1h6j1c5s",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:48:44.559Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8iss003cz0tia71q9qy1": {
+      "name": "cmnwr8iss003cz0tia71q9qy1",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:50:03.161Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8isv003ez0timrhbjznd": {
+      "name": "cmnwr8isv003ez0timrhbjznd",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:51:14.734Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8isj0037z0tihc4cw8ue": {
+      "name": "cmnwr8isj0037z0tihc4cw8ue",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:52:51.250Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8iso003az0tilgsdacqo": {
+      "name": "cmnwr8iso003az0tilgsdacqo",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:52:56.902Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8isl0038z0ti3vw64w98": {
+      "name": "cmnwr8isl0038z0ti3vw64w98",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:52:57.257Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8isu003dz0tijwn1m0s0": {
+      "name": "cmnwr8isu003dz0tijwn1m0s0",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:54:20.967Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8isz003fz0tisq77swxo": {
+      "name": "cmnwr8isz003fz0tisq77swxo",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:54:25.813Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8it2003gz0tixy0e9ok2": {
+      "name": "cmnwr8it2003gz0tixy0e9ok2",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T19:54:27.228Z",
+      "batchId": "phase3-batch27",
+      "notes": "auto"
+    },
+    "cmnwr8iti003lz0ti0z9hwm3s": {
+      "name": "cmnwr8iti003lz0ti0z9hwm3s",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:02:03.840Z",
+      "batchId": "phase3-batch28",
+      "notes": "auto"
+    },
+    "cmnwr8ito003oz0tiyojti719": {
+      "name": "cmnwr8ito003oz0tiyojti719",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:02:07.669Z",
+      "batchId": "phase3-batch28",
+      "notes": "auto"
+    },
+    "cmnwr8iwn0053z0tiokrlwt8f": {
+      "name": "cmnwr8iwn0053z0tiokrlwt8f",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:02:09.414Z",
+      "batchId": "phase3-batch28",
+      "notes": "auto"
+    },
+    "cmnwr8it5003hz0tie38swawv": {
+      "name": "cmnwr8it5003hz0tie38swawv",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:02:32.655Z",
+      "batchId": "phase3-batch28",
+      "notes": "auto"
+    },
+    "cmnwr8ita003iz0ti7ezibmu3": {
+      "name": "cmnwr8ita003iz0ti7ezibmu3",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:02:40.270Z",
+      "batchId": "phase3-batch28",
+      "notes": "auto"
+    },
+    "cmnwr8ite003jz0tijg7j0avf": {
+      "name": "cmnwr8ite003jz0tijg7j0avf",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:02:42.077Z",
+      "batchId": "phase3-batch28",
+      "notes": "auto"
+    },
+    "cmnwr8itk003mz0tirfyu068c": {
+      "name": "cmnwr8itk003mz0tirfyu068c",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:05:58.955Z",
+      "batchId": "phase3-batch28",
+      "notes": "CMU CDS 2024-25: AR 89.82 (19732/21969); SAT 970/1200; intl/oos UNAVAIL (CDS C1 residency blank); ED/EA NOT_OFFERED (C21/C22 No); hasED false."
+    },
+    "cmnwr8itg003kz0tikwvhzllw": {
+      "name": "cmnwr8itg003kz0tikwvhzllw",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:05:59.309Z",
+      "batchId": "phase3-batch28",
+      "notes": "ODU CDS 2024-25: AR 90.36 (13645/15100); SAT 1120/1270; intlAR 93.87 (245/261); oosAR 81.14 (3055/3765); ED/EA NOT_OFFERED (rolling); hasED false."
+    },
+    "cmnwr8itm003nz0tiqazikwxi": {
+      "name": "cmnwr8itm003nz0tiqazikwxi",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:05:59.656Z",
+      "batchId": "phase3-batch28",
+      "notes": "IUPUI dissolved 2024-07-01 (split to IU Indianapolis + Purdue Indianapolis). All 7 fields UNAVAILABLE; prior provenance URLs (clastify, owl.purdue Writing Lab annual report) were fabrications. Suggest archiving school record."
+    },
+    "cmnwr8iwp0054z0tic1mh49ba": {
+      "name": "cmnwr8iwp0054z0tic1mh49ba",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:12:46.103Z",
+      "batchId": "phase3-batch29-FINAL",
+      "notes": "auto"
+    },
+    "cmnwr8iws0056z0tial92bfrt": {
+      "name": "cmnwr8iws0056z0tial92bfrt",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:13:48.354Z",
+      "batchId": "phase3-batch29-FINAL",
+      "notes": "auto"
+    },
+    "cmnwr8iwq0055z0tivbkk0qbk": {
+      "name": "cmnwr8iwq0055z0tivbkk0qbk",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:14:52.673Z",
+      "batchId": "phase3-batch29-FINAL",
+      "notes": "auto"
+    },
+    "cmnwr8iwt0057z0ti6f0z2hsc": {
+      "name": "cmnwr8iwt0057z0ti6f0z2hsc",
+      "status": "PROCESSED",
+      "processedAt": "2026-05-16T20:15:53.276Z",
+      "batchId": "phase3-batch29-FINAL",
+      "notes": "auto"
+    }
+  }
+}
