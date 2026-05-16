@@ -38,7 +38,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '..');
-const MANIFEST_PATH = path.resolve(ROOT, 'apps/web/.next/app-build-manifest.json');
+const NEXT_DIR = path.resolve(ROOT, 'apps/web/.next');
+// Next 15 + Webpack:  apps/web/.next/app-build-manifest.json (route → [chunks])
+// Next 16 + Turbopack: per-route apps/web/.next/server/app/**/build-manifest.json
+// Try the legacy path first; fall back to scanning the per-route manifests.
+const LEGACY_MANIFEST_PATH = path.resolve(NEXT_DIR, 'app-build-manifest.json');
+const SERVER_APP_DIR = path.resolve(NEXT_DIR, 'server/app');
 const BASELINE_PATH = path.resolve(ROOT, 'apps/web/.bundle-baseline.json');
 
 const DEFAULT_THRESHOLD_PCT = 5;
@@ -68,13 +73,72 @@ function parseArgs(): { seed: boolean; threshold: number } {
   return { seed, threshold };
 }
 
+/**
+ * Load the route → chunks map. Two strategies depending on Next version:
+ *
+ * 1. **Legacy (Next 15 + Webpack)**: a single `app-build-manifest.json`
+ *    at .next/ root with `{ pages: { route: chunks[] } }`. Returned
+ *    as-is.
+ *
+ * 2. **Turbopack (Next 16+)**: per-route `server/app/<route>/build-
+ *    manifest.json` files. Walk the tree, read each one's
+ *    `rootMainFiles + polyfillFiles + lowPriorityFiles` (the always-
+ *    loaded chunks), and emit a synthetic AppBuildManifest with the
+ *    URL-style route as key.
+ *
+ * Returns null only when NEITHER strategy finds any data (genuine
+ * empty build, or build did not run).
+ */
 function loadManifest(): AppBuildManifest | null {
-  if (!fs.existsSync(MANIFEST_PATH)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
-  } catch {
-    return null;
+  if (fs.existsSync(LEGACY_MANIFEST_PATH)) {
+    try {
+      return JSON.parse(fs.readFileSync(LEGACY_MANIFEST_PATH, 'utf8'));
+    } catch {
+      /* fall through to Turbopack scan */
+    }
   }
+
+  if (!fs.existsSync(SERVER_APP_DIR)) return null;
+
+  const pages: Record<string, string[]> = {};
+  const stack: string[] = [SERVER_APP_DIR];
+  while (stack.length > 0) {
+    const dir = stack.pop()!;
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(full);
+      } else if (entry.name === 'build-manifest.json') {
+        try {
+          const data = JSON.parse(fs.readFileSync(full, 'utf8')) as {
+            rootMainFiles?: string[];
+            polyfillFiles?: string[];
+            lowPriorityFiles?: string[];
+          };
+          const chunks = [
+            ...(data.rootMainFiles ?? []),
+            ...(data.polyfillFiles ?? []),
+            ...(data.lowPriorityFiles ?? []),
+          ];
+          // Derive route key from path: .next/server/app/<route>/build-manifest.json
+          // → '<route>'. Replace `(group)` segments with empty so groups don't
+          // bloat the key; otherwise keep the path as-is for readability.
+          const routeKey = path.relative(SERVER_APP_DIR, path.dirname(full)).replace(/\\/g, '/');
+          pages['/' + (routeKey || '_root')] = chunks;
+        } catch {
+          /* skip malformed manifest */
+        }
+      }
+    }
+  }
+
+  return Object.keys(pages).length > 0 ? { pages } : null;
 }
 
 function fileSize(rel: string): number {
@@ -126,19 +190,18 @@ function main(): void {
 
   const manifest = loadManifest();
   if (!manifest) {
-    // 2026-05 hotfix: missing manifest is informational, not fatal.
-    // In CI the `Build Web` step may be a turbo-cache HIT, in which
-    // case Next.js doesn't regenerate `.next/app-build-manifest.json`
-    // — the build succeeds but the manifest file isn't on disk.
-    // Failing here would block PRs that touch nothing relevant to
-    // the web bundle. The right behavior is to SKIP the check (a
-    // cached build is by definition not a regression candidate).
-    //
-    // When the manifest IS present (normal case), the check runs in
-    // full and either passes or fails on the diff vs baseline.
+    // Missing manifest is informational, not fatal.
+    // Causes (any of):
+    //  - turbo-cache HIT on Build Web (Next doesn't re-emit `.next/*`)
+    //  - web build step skipped (e.g., PR touched only API)
+    //  - .next/ deleted between build and check
+    // Failing here would block PRs that touch nothing relevant to the
+    // web bundle. The right behavior is to SKIP the check (a cached
+    // build is by definition not a regression candidate).
     console.log(
-      `ℹ️  No app-build-manifest.json at ${path.relative(ROOT, MANIFEST_PATH)}\n` +
-        `   Skipping bundle-size check (cached build or web build was skipped).`
+      `ℹ️  No build manifest found at ${path.relative(ROOT, LEGACY_MANIFEST_PATH)}\n` +
+        `   or under ${path.relative(ROOT, SERVER_APP_DIR)}/\n` +
+        `   Skipping bundle-size check (cached build or web build skipped).`
     );
     return;
   }

@@ -44,16 +44,20 @@ The check is fast (just file-system reads + arithmetic) — no extra build time.
 
 ## What counts toward a route's size
 
-`app-build-manifest.json` lists each route's chunks. We sum the **file sizes of every chunk file** the route references, including shared chunks. This means:
+The script supports **two Next.js manifest layouts**:
 
-- A new dependency used by one route bloats only that route's number
-- A new dependency added to a shared chunk (e.g., layout) bloats every route's number — exactly right, because every user downloads it
+1. **Next 15 + Webpack** (legacy): one `app-build-manifest.json` at `.next/` root with `{ pages: { route: chunks[] } }`. Each route's size = sum of all chunk files it references.
+2. **Next 16 + Turbopack** (current): per-route `server/app/<route>/build-manifest.json` files. The script walks the tree and reads each route's `rootMainFiles + polyfillFiles + lowPriorityFiles` — the **always-loaded shared chunks**.
+
+Under Turbopack, all routes share the same root chunk set, so every route's size in the baseline reads as the same number (the shared bundle's total). This is still a meaningful gate: **a change to any shared chunk's total size triggers the check on every route at once**, which is exactly what we want for "the shared bundle just grew 8% — find out why".
+
+What this layout doesn't catch (Turbopack): a route-specific dependency added via dynamic import that only loads on click. For per-route marginal cost, run `ANALYZE=true pnpm --filter web build` interactively.
 
 The script does **not** account for gzip / brotli compression. Compressed sizes are typically ~30% of raw — the 5% threshold thus tolerates ~1.5% of the wire weight, which is generous for noise tolerance.
 
 ## When to add the gate
 
-The baseline file is **empty by default** (seeded `{}`) so the check runs in informational mode (prints top-10 route sizes, never fails). After the first seeded baseline lands, the check becomes a fail-on-regression gate.
+After the first seeded baseline lands in `main` (PR that seeds it commits the file), the check becomes a fail-on-regression gate on every subsequent PR's CI Build job. If a baseline is missing (deleted, never seeded, or new repo clone), the check runs in informational mode (prints top-10 route sizes, never fails) so the first PR doesn't get blocked.
 
 ## Related
 
