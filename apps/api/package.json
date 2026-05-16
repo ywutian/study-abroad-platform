@@ -33,6 +33,7 @@
     "db:seed:prediction-closure:build": "tsx prisma/seeds/build-prediction-closure-payload.ts",
     "db:verify:seed": "tsx scripts/verify-seed.ts",
     "predict:check-closure": "tsx scripts/check-closure.ts",
+    "predict:progress-report": "tsx scripts/closure-agents/progress-report.ts",
     "verify:school-facts": "ts-node --transpile-only scripts/verify-school-facts.ts",
     "gold:generate": "ts-node --transpile-only scripts/generate-application-analysis-gold-cases.ts",
     "gold:fixtures": "ts-node --transpile-only scripts/export-analysis-render-fixtures.ts",
