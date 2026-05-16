@@ -352,6 +352,15 @@
       "addFailed": "添加失败，请重试。",
       "clear": "清空搜索"
     },
+    "essayCoach": {
+      "title": "最新文书 AI 反馈",
+      "subtitle": "{type} · {date}",
+      "typeReview": "审阅",
+      "typePolish": "润色",
+      "fallbackSuggestion": "继续打磨——上一次 AI 反馈还可以复盘改进。",
+      "cta": "继续",
+      "ctaAriaLabel": "继续编辑文书：{essayTitle}"
+    },
     "pipelineStrip": {
       "title": "申请进度",
       "viewAll": "查看全部 →",

@@ -352,6 +352,15 @@
       "addFailed": "Could not add school. Please try again.",
       "clear": "Clear search"
     },
+    "essayCoach": {
+      "title": "Latest essay AI feedback",
+      "subtitle": "{type} · {date}",
+      "typeReview": "Review",
+      "typePolish": "Polish",
+      "fallbackSuggestion": "Continue polishing — your last AI run is ready to revisit.",
+      "cta": "Continue",
+      "ctaAriaLabel": "Continue working on essay: {essayTitle}"
+    },
     "pipelineStrip": {
       "title": "Application pipeline",
       "viewAll": "View all →",

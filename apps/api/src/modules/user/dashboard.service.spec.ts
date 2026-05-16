@@ -111,6 +111,9 @@ describe('DashboardService', () => {
               findMany: jest.fn(),
             },
             personalEvent: { findMany: jest.fn() },
+            // 2026-05 Phase 2c: dashboard now also queries
+            // EssayAIResult for the <DashboardEssayCoach /> surface.
+            essayAIResult: { findFirst: jest.fn() },
             $transaction: jest.fn(),
           },
         },
@@ -173,6 +176,9 @@ describe('DashboardService', () => {
       mockPriorityTasks,
     );
     (prisma.personalEvent.findMany as jest.Mock).mockResolvedValue([]);
+    // 2026-05 Phase 2c: default to "no AI feedback yet" so dashboard
+    // empty-state assertions still pass.
+    (prisma.essayAIResult.findFirst as jest.Mock).mockResolvedValue(null);
   }
 
   /**
@@ -706,6 +712,62 @@ describe('DashboardService', () => {
       const result = await service.getDashboardSummary(userId);
       // ✓ valid count = 0 (no schools in current list → no valid predictions)
       expect(result.stats.predictions).toBe(0);
+    });
+
+    // 2026-05 Phase 2c: essayCoach defaults to null when there are no
+    // AI runs yet, and renders nothing on the dashboard.
+    it('Phase 2c: essayCoach is null when the user has no AI runs', async () => {
+      setupDefaultMocks();
+      const result = await service.getDashboardSummary(userId);
+      expect(result.essayCoach).toBeNull();
+    });
+
+    // 2026-05 Phase 2c: essayCoach picks the latest AI result and
+    // extracts the first suggestion (review type).
+    it('Phase 2c: essayCoach maps review result with first suggestion', async () => {
+      setupDefaultMocks();
+      const ts = new Date('2026-05-10T14:30:00Z');
+      (prisma.essayAIResult.findFirst as jest.Mock).mockResolvedValue({
+        type: 'review',
+        suggestions: [
+          'Strengthen the second paragraph with a concrete example.',
+          'Tighten the conclusion.',
+        ],
+        createdAt: ts,
+        essay: { id: 'essay-stanford-why', title: 'Stanford Why Major' },
+      });
+
+      const result = await service.getDashboardSummary(userId);
+      expect(result.essayCoach).toEqual({
+        essayId: 'essay-stanford-why',
+        essayTitle: 'Stanford Why Major',
+        type: 'review',
+        suggestion: 'Strengthen the second paragraph with a concrete example.',
+        createdAt: ts.toISOString(),
+      });
+    });
+
+    // 2026-05 Phase 2c: polish-type results have no suggestions JSON
+    // (Polish stores `changes`, not suggestions). The UI falls back to
+    // a generic prompt in that case.
+    it('Phase 2c: essayCoach polish result has null suggestion', async () => {
+      setupDefaultMocks();
+      const ts = new Date('2026-05-12T10:00:00Z');
+      (prisma.essayAIResult.findFirst as jest.Mock).mockResolvedValue({
+        type: 'polish',
+        suggestions: null,
+        createdAt: ts,
+        essay: { id: 'essay-mit-cs', title: 'MIT CS Activity' },
+      });
+
+      const result = await service.getDashboardSummary(userId);
+      expect(result.essayCoach).toEqual({
+        essayId: 'essay-mit-cs',
+        essayTitle: 'MIT CS Activity',
+        type: 'polish',
+        suggestion: null,
+        createdAt: ts.toISOString(),
+      });
     });
 
     // 2026-05 Phase 1 Bug 4: validate timeline vacuous-truth defense.
