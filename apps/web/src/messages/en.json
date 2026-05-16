@@ -352,6 +352,19 @@
       "addFailed": "Could not add school. Please try again.",
       "clear": "Clear search"
     },
+    "decisionPanel": {
+      "title": "Application decisions",
+      "viewAll": "View all →",
+      "celebrate": "🎉 {count} {count, plural, one {acceptance} other {acceptances}}",
+      "status": {
+        "accepted": "Accepted",
+        "waitlisted": "Waitlisted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn"
+      },
+      "rowAriaLabel": "{school} {round}: {status}",
+      "waitlistHint": "{count} {count, plural, one {school} other {schools}} on waitlist — consider sending a Letter of Continued Interest."
+    },
     "essayCoach": {
       "title": "Latest essay AI feedback",
       "subtitle": "{type} · {date}",

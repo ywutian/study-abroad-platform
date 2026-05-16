@@ -352,6 +352,19 @@
       "addFailed": "添加失败，请重试。",
       "clear": "清空搜索"
     },
+    "decisionPanel": {
+      "title": "申请决定",
+      "viewAll": "查看全部 →",
+      "celebrate": "🎉 已收到 {count} 份录取",
+      "status": {
+        "accepted": "已录取",
+        "waitlisted": "Waitlist",
+        "rejected": "未录取",
+        "withdrawn": "已撤回"
+      },
+      "rowAriaLabel": "{school} {round}：{status}",
+      "waitlistHint": "{count} 所学校在 Waitlist——考虑发送 Letter of Continued Interest。"
+    },
     "essayCoach": {
       "title": "最新文书 AI 反馈",
       "subtitle": "{type} · {date}",

@@ -110,13 +110,50 @@ gap.
 
 **Test**: covered by existing dashboard.service.spec.ts.
 
+### I6: `decisionPanel.shown ⟹ pipeline.accepted + waitlisted + rejected + withdrawn > 0`
+
+**Business reason**: the Decision Hub surface is meant for **Stage G**
+(decision phase) users. Showing it to a brand-new user with no
+applications submitted (or to a submitted-but-not-decided user) is
+mistargeted UX and adds noise to the dashboard.
+
+**Enforced at**: `apps/web/.../dashboard/_components/dashboard-decision-panel.tsx`
+in the early return: `if (decisionsTotal === 0) return null;`.
+Same gate as PipelineStrip's `hasMaterial` check (intentionally
+parallel — the two surfaces stay in lockstep).
+
+**Violation symptom**: empty Decision Hub card on a new account, or
+the card showing for a user with only SUBMITTED schools (no decisions
+yet).
+
+**Test**: `dashboard-decision-panel.test.tsx` (Phase 2a) — "renders
+nothing when only NOT_STARTED / IN_PROGRESS / SUBMITTED" case.
+
+### I7: `essayCoach.shown ⟹ user has at least 1 EssayAIResult`
+
+**Business reason**: the Essay Coach card surfaces the user's latest
+AI feedback. Without any AI runs, there's nothing to show.
+
+**Enforced at**:
+
+- Backend: `apps/api/src/modules/user/dashboard.service.ts`
+  `buildEssayCoach` returns `null` when the `essayAIResult.findFirst`
+  query has no row.
+- Frontend: `dashboard-essay-coach.tsx` returns null when
+  `data == null`.
+
+**Violation symptom**: card flashes empty content for users with no
+AI runs.
+
+**Test**: `dashboard-essay-coach.test.tsx` (Phase 2c) — "renders
+nothing when data is undefined/null" cases.
+
 ## Future Invariants (Phase 2+)
 
 These are stubbed for the upcoming phases:
 
-- **I6 (Phase 2a)**: `decisionPanel.shown ⟹ pipeline.accepted + waitlisted + rejected > 0`
-- **I7 (Phase 2c)**: `essayCoach.shown ⟹ essayCount > 0`
 - **I8 (Phase 2b)**: `assessment signal shown ⟹ user has at least 1 AssessmentResult`
+- **I9 (Phase 6 #44)**: `committedSchool.shown ⟹ user has at least 1 EnrollmentChoice`
 
 Each phase PR adds the invariant here in the same PR as the
 implementation, plus a `*.spec.ts` test.
