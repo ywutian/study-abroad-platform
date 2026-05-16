@@ -795,3 +795,55 @@ describe('ChatService', () => {
     });
   });
 });
+
+// 2026-05 chat PII fix: standalone tests for the privacy helpers.
+// Each helper is a pure function, so they live outside the
+// describe(ChatService) block to keep the Prisma-mocked test scope tight.
+import { isSystemUserEmail, maskEmailForPeer } from './chat.service';
+
+describe('isSystemUserEmail (chat PII fix)', () => {
+  it('flags @studyabroad.internal as a system account', () => {
+    expect(isSystemUserEmail('system@studyabroad.internal')).toBe(true);
+    expect(isSystemUserEmail('crawler@studyabroad.internal')).toBe(true);
+  });
+
+  it('matches case-insensitively', () => {
+    expect(isSystemUserEmail('System@StudyAbroad.Internal')).toBe(true);
+  });
+
+  it('does NOT flag real user emails', () => {
+    expect(isSystemUserEmail('user@example.com')).toBe(false);
+    expect(isSystemUserEmail('oliviawu@demo.studyabroad.com')).toBe(false);
+    expect(isSystemUserEmail('admin@example.com')).toBe(false);
+  });
+
+  it('handles null / empty / malformed input', () => {
+    expect(isSystemUserEmail(null)).toBe(false);
+    expect(isSystemUserEmail(undefined)).toBe(false);
+    expect(isSystemUserEmail('')).toBe(false);
+  });
+});
+
+describe('maskEmailForPeer (chat PII fix)', () => {
+  it('masks a typical email to first-letter + domain shape', () => {
+    expect(maskEmailForPeer('oliviawu@demo.studyabroad.com')).toBe(
+      'o***@d***.com',
+    );
+    expect(maskEmailForPeer('alice@example.com')).toBe('a***@e***.com');
+  });
+
+  it('preserves the TLD intact (so the peer still knows it is a real address)', () => {
+    expect(maskEmailForPeer('foo@bar.io')).toBe('f***@b***.io');
+    expect(maskEmailForPeer('jane@gmail.com')).toBe('j***@g***.com');
+  });
+
+  it('returns null for invalid / unmaskable inputs', () => {
+    expect(maskEmailForPeer('')).toBeNull();
+    expect(maskEmailForPeer(null)).toBeNull();
+    expect(maskEmailForPeer(undefined)).toBeNull();
+    expect(maskEmailForPeer('no-at-sign')).toBeNull();
+    expect(maskEmailForPeer('@bad-prefix.com')).toBeNull();
+    expect(maskEmailForPeer('bad-suffix@')).toBeNull();
+    expect(maskEmailForPeer('no-tld@example')).toBeNull();
+  });
+});

@@ -6,10 +6,26 @@ import { formatDistanceToNow, isToday, isYesterday, isSameDay, format } from 'da
 import { zhCN, enUS } from 'date-fns/locale';
 import type { Conversation, Message } from './types';
 
+/**
+ * 2026-05 chat PII fix: never render a peer's raw email in the UI.
+ * Backend already masks peer emails to `o***@d***.com`, but defense-in-
+ * depth — if the API ever sends a real email through, the frontend
+ * fallback here also strips it to the local-part only.
+ */
+function emailLocalPart(email: string | undefined | null): string | null {
+  if (!email) return null;
+  const at = email.indexOf('@');
+  if (at <= 0) return null;
+  // If the local part is already masked by the backend (`o***`), use it
+  // as-is. Otherwise return only the username portion before `@`.
+  return email.slice(0, at);
+}
+
 /** 获取用户显示名 */
 export function getDisplayName(user?: Conversation['otherUser'] | null): string {
   if (!user) return '?';
-  return user.profile?.nickname || user.profile?.realName || user.email || '?';
+  const fallback = emailLocalPart(user.email);
+  return user.profile?.nickname || user.profile?.realName || fallback || '?';
 }
 
 export function getConversationTitle(conversation: Conversation): string {
@@ -17,7 +33,10 @@ export function getConversationTitle(conversation: Conversation): string {
     return (
       conversation.title ||
       conversation.participantPreview
-        .map((user) => user.profile?.nickname || user.profile?.realName || user.email || '?')
+        .map(
+          (user) =>
+            user.profile?.nickname || user.profile?.realName || emailLocalPart(user.email) || '?'
+        )
         .join(', ') ||
       'Group chat'
     );
