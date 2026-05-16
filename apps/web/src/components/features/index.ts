@@ -24,8 +24,10 @@ export { MilestoneCelebration } from './milestone-celebration';
 export { OnboardingGuide } from './onboarding-guide';
 export { CreateListDialog } from './create-list-dialog';
 
-// Dashboard components
-export * from './dashboard';
+// Dashboard page now uses page-local _components instead of a shared
+// features/dashboard barrel. Removed 2026-05 alongside the rebuild that
+// merged DashboardStats / DeadlineReminder / RecentActivity into the new
+// CommandCenter / WorkspaceHub / Activity components.
 
 // Chat components
 export * from './chat';
