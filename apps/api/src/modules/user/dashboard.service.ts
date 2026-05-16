@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 import {
   type DashboardEssayCoach,
   type DashboardPriorityKind,
@@ -11,6 +12,42 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import { calculateProfileCompleteness } from '../profile/profile-completeness.util';
+
+/**
+ * 2026-05 Phase 1.5 #15: Per-query resilience wrapper.
+ *
+ * Wraps a single Prisma query so that a transient failure (DB blip,
+ * Redis hiccup, runtime regression) for ONE sub-query doesn't 500 the
+ * entire dashboard. Each failure is captured to Sentry with a
+ * `dashboard.failed_source` tag so on-call can pinpoint the broken
+ * query in 1 click, and the call returns a sensible fallback value.
+ *
+ * Before this helper, the dashboard's 23-query Promise.all rejected on
+ * any failure → AllExceptionsFilter → HTTP 500 → user sees a blank
+ * page with no actionable error.
+ *
+ * Net effect: graceful degradation. A user with 1 broken query sees a
+ * dashboard with a single empty section instead of a 500.
+ */
+const dashboardLogger = new Logger('DashboardService');
+function safe<T>(
+  // Accept both Promise<T> and thenable-but-not-Promise values.
+  // Test mocks sometimes return plain values via `jest.fn().mockReturnValue(...)`
+  // rather than `mockResolvedValue(...)`. `Promise.resolve()` normalizes both.
+  promise: Promise<T> | T,
+  source: string,
+  fallback: T,
+): Promise<T> {
+  return Promise.resolve(promise).catch((err: unknown) => {
+    dashboardLogger.error(`Dashboard sub-query "${source}" failed`, err);
+    Sentry.withScope((scope) => {
+      scope.setTag('dashboard.failed_source', source);
+      scope.setExtra('dashboard.source', source);
+      Sentry.captureException(err);
+    });
+    return fallback;
+  });
+}
 
 // 2026-05: Re-export so consumers (e.g. user.controller.ts type imports)
 // don't break. The interfaces live in @study-abroad/shared so API + Web
@@ -88,32 +125,53 @@ export class DashboardService {
       latestVerificationRow,
       chatUnreadRows,
     ] = await Promise.all([
+      // 2026-05 Phase 1.5 #15: every sub-query is wrapped in `safe(...)`
+      // so a single transient failure doesn't 500 the whole dashboard.
+      // Each failure logs to Sentry with a `dashboard.failed_source`
+      // tag identifying the broken query.
+
       // 用户信息
-      this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { email: true, role: true, points: true, createdAt: true },
-      }),
+      safe(
+        this.prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, role: true, points: true, createdAt: true },
+        }),
+        'user',
+        null,
+      ),
 
       // 档案信息
-      this.prisma.profile.findUnique({
-        where: { userId },
-        include: {
-          testScores: { select: { id: true } },
-          activities: { select: { id: true } },
-          awards: { select: { id: true } },
-          education: { select: { id: true } },
-          essays: { select: { id: true } },
-        },
-      }),
+      safe(
+        this.prisma.profile.findUnique({
+          where: { userId },
+          include: {
+            testScores: { select: { id: true } },
+            activities: { select: { id: true } },
+            awards: { select: { id: true } },
+            education: { select: { id: true } },
+            essays: { select: { id: true } },
+          },
+        }),
+        'profile',
+        null,
+      ),
 
       // 关注统计
-      this.prisma.$transaction([
-        this.prisma.follow.count({ where: { followingId: userId } }),
-        this.prisma.follow.count({ where: { followerId: userId } }),
-      ]),
+      safe(
+        this.prisma.$transaction([
+          this.prisma.follow.count({ where: { followingId: userId } }),
+          this.prisma.follow.count({ where: { followerId: userId } }),
+        ]),
+        'follow-stats',
+        [0, 0] as [number, number],
+      ),
 
       // 案例数
-      this.prisma.admissionCase.count({ where: { userId } }),
+      safe(
+        this.prisma.admissionCase.count({ where: { userId } }),
+        'cases-count',
+        0,
+      ),
 
       // 预测数 — 2026-05 Phase 1 Bug 3: count ALL predictions for this
       // user's profile here. The orphan-filtering (only counting predictions
@@ -123,234 +181,310 @@ export class DashboardService {
       // schoolId scalar exists). This resolves the "105 predictions + 0
       // schools" production contradiction without a DB write or schema
       // change. See docs/architecture/dashboard-invariants.md.
-      this.prisma.predictionResult.count({
-        where: { profile: { userId } },
-      }),
+      safe(
+        this.prisma.predictionResult.count({
+          where: { profile: { userId } },
+        }),
+        'predictions-count',
+        0,
+      ),
 
       // 时间线（即将截止）
-      this.prisma.applicationTimeline.findMany({
-        where: {
-          userId,
-          status: {
-            notIn: [
-              'SUBMITTED',
-              'ACCEPTED',
-              'REJECTED',
-              'WAITLISTED',
-              'WITHDRAWN',
-            ],
+      safe(
+        this.prisma.applicationTimeline.findMany({
+          where: {
+            userId,
+            status: {
+              notIn: [
+                'SUBMITTED',
+                'ACCEPTED',
+                'REJECTED',
+                'WAITLISTED',
+                'WITHDRAWN',
+              ],
+            },
+            deadline: { gte: now },
           },
-          deadline: { gte: now },
-        },
-        orderBy: { deadline: 'asc' },
-        take: 10,
-        include: {
-          school: { select: { name: true, nameZh: true } },
-        },
-      }),
+          orderBy: { deadline: 'asc' },
+          take: 10,
+          include: {
+            school: { select: { name: true, nameZh: true } },
+          },
+        }),
+        'timelines-upcoming',
+        [],
+      ),
 
       // 最近积分变动
-      this.prisma.pointHistory.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      }),
+      safe(
+        this.prisma.pointHistory.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+        'point-history',
+        [],
+      ),
 
       // 选校清单总数
-      this.prisma.schoolListItem.count({ where: { userId } }),
+      safe(
+        this.prisma.schoolListItem.count({ where: { userId } }),
+        'school-list-count',
+        0,
+      ),
 
       // 选校 Tier 分布
-      this.prisma.schoolListItem.groupBy({
-        by: ['tier'],
-        where: { userId },
-        _count: { tier: true },
-      }),
+      safe(
+        this.prisma.schoolListItem.groupBy({
+          by: ['tier'],
+          where: { userId },
+          _count: { tier: true },
+        }),
+        'school-tier-groups',
+        [],
+      ),
 
       // 待办任务（未完成的 ApplicationTask）
-      this.prisma.applicationTask.count({
-        where: { timeline: { userId }, completed: false },
-      }),
+      safe(
+        this.prisma.applicationTask.count({
+          where: { timeline: { userId }, completed: false },
+        }),
+        'pending-task-count',
+        0,
+      ),
 
       // 待办任务按类型分组
-      this.prisma.applicationTask.groupBy({
-        by: ['type'],
-        where: { timeline: { userId }, completed: false },
-        _count: { type: true },
-      }),
+      safe(
+        this.prisma.applicationTask.groupBy({
+          by: ['type'],
+          where: { timeline: { userId }, completed: false },
+          _count: { type: true },
+        }),
+        'pending-task-types',
+        [],
+      ),
 
       // 即将到期的个人事件（比赛/考试）：deadline 或 eventDate 在未来
-      this.prisma.personalEvent.findMany({
-        where: {
-          userId,
-          status: { notIn: ['COMPLETED', 'CANCELLED'] },
-          OR: [{ deadline: { gte: now } }, { eventDate: { gte: now } }],
-        },
-        orderBy: [{ deadline: 'asc' }, { eventDate: 'asc' }],
-        take: 5,
-        select: {
-          id: true,
-          title: true,
-          category: true,
-          deadline: true,
-          eventDate: true,
-        },
-      }),
+      safe(
+        this.prisma.personalEvent.findMany({
+          where: {
+            userId,
+            status: { notIn: ['COMPLETED', 'CANCELLED'] },
+            OR: [{ deadline: { gte: now } }, { eventDate: { gte: now } }],
+          },
+          orderBy: [{ deadline: 'asc' }, { eventDate: 'asc' }],
+          take: 5,
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            deadline: true,
+            eventDate: true,
+          },
+        }),
+        'personal-events',
+        [],
+      ),
 
       // 选校清单中学校的截止日期（SchoolDeadline），用于补充没有生成 ApplicationTimeline 的学校
-      this.prisma.schoolListItem.findMany({
-        where: { userId },
-        select: {
-          schoolId: true,
-          round: true,
-          school: {
-            select: {
-              name: true,
-              nameZh: true,
-              deadlines: {
-                select: {
-                  id: true,
-                  year: true,
-                  round: true,
-                  applicationDeadline: true,
+      safe(
+        this.prisma.schoolListItem.findMany({
+          where: { userId },
+          select: {
+            schoolId: true,
+            round: true,
+            school: {
+              select: {
+                name: true,
+                nameZh: true,
+                deadlines: {
+                  select: {
+                    id: true,
+                    year: true,
+                    round: true,
+                    applicationDeadline: true,
+                  },
+                  orderBy: [{ applicationDeadline: 'asc' }, { year: 'desc' }],
                 },
-                orderBy: [{ applicationDeadline: 'asc' }, { year: 'desc' }],
               },
             },
           },
-        },
-      }),
+        }),
+        'school-list-with-deadlines',
+        [],
+      ),
 
       // 首页优先级队列：最临近的未完成申请任务
-      this.prisma.applicationTask.findMany({
-        where: { timeline: { userId }, completed: false },
-        orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
-        take: 8,
-        select: {
-          id: true,
-          title: true,
-          type: true,
-          dueDate: true,
-          timeline: {
-            select: {
-              id: true,
-              schoolName: true,
-              round: true,
-              school: { select: { name: true, nameZh: true } },
+      safe(
+        this.prisma.applicationTask.findMany({
+          where: { timeline: { userId }, completed: false },
+          orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
+          take: 8,
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            dueDate: true,
+            timeline: {
+              select: {
+                id: true,
+                schoolName: true,
+                round: true,
+                school: { select: { name: true, nameZh: true } },
+              },
             },
           },
-        },
-      }),
+        }),
+        'priority-tasks',
+        [],
+      ),
 
-      this.prisma.applicationTask.count({
-        where: {
-          timeline: { userId },
-          completed: false,
-          dueDate: { lt: now },
-        },
-      }),
-
-      this.prisma.applicationTimeline.findMany({
-        where: {
-          userId,
-          status: {
-            notIn: [
-              'SUBMITTED',
-              'ACCEPTED',
-              'REJECTED',
-              'WAITLISTED',
-              'WITHDRAWN',
-            ],
+      safe(
+        this.prisma.applicationTask.count({
+          where: {
+            timeline: { userId },
+            completed: false,
+            dueDate: { lt: now },
           },
-        },
-        select: { schoolId: true, round: true },
-      }),
+        }),
+        'overdue-task-count',
+        0,
+      ),
+
+      safe(
+        this.prisma.applicationTimeline.findMany({
+          where: {
+            userId,
+            status: {
+              notIn: [
+                'SUBMITTED',
+                'ACCEPTED',
+                'REJECTED',
+                'WAITLISTED',
+                'WITHDRAWN',
+              ],
+            },
+          },
+          select: { schoolId: true, round: true },
+        }),
+        'timeline-coverage',
+        [],
+      ),
 
       // 2026-05: Pipeline snapshot — count timelines per ApplicationStatus
       // so the dashboard can surface "X submitted, Y awaiting decision, Z
       // accepted" instead of pretending submitted schools don't exist.
-      this.prisma.applicationTimeline.groupBy({
-        by: ['status'],
-        where: { userId },
-        _count: { status: true },
-      }),
+      safe(
+        this.prisma.applicationTimeline.groupBy({
+          by: ['status'],
+          where: { userId },
+          _count: { status: true },
+        }),
+        'pipeline-groups',
+        [],
+      ),
 
       // 2026-05: Per-school decisions — top 5 most-recently-updated rows
       // whose status is past IN_PROGRESS. Surfaced inline beneath the
       // pipeline pills so users see "Stanford EA — Accepted (3d ago)"
       // instead of just opaque counts.
-      this.prisma.applicationTimeline.findMany({
-        where: {
-          userId,
-          status: {
-            in: [
-              'SUBMITTED',
-              'ACCEPTED',
-              'REJECTED',
-              'WAITLISTED',
-              'WITHDRAWN',
-            ],
+      safe(
+        this.prisma.applicationTimeline.findMany({
+          where: {
+            userId,
+            status: {
+              in: [
+                'SUBMITTED',
+                'ACCEPTED',
+                'REJECTED',
+                'WAITLISTED',
+                'WITHDRAWN',
+              ],
+            },
           },
-        },
-        orderBy: { updatedAt: 'desc' },
-        take: 5,
-        select: {
-          id: true,
-          schoolId: true,
-          schoolName: true,
-          round: true,
-          status: true,
-          updatedAt: true,
-          school: { select: { name: true, nameZh: true } },
-        },
-      }),
+          orderBy: { updatedAt: 'desc' },
+          take: 5,
+          select: {
+            id: true,
+            schoolId: true,
+            schoolName: true,
+            round: true,
+            status: true,
+            updatedAt: true,
+            school: { select: { name: true, nameZh: true } },
+          },
+        }),
+        'recent-decisions',
+        [],
+      ),
 
       // 2026-05 Phase 2c: Latest essay AI feedback across all user essays.
       // Used by the dashboard <DashboardEssayCoach /> surface to give
       // users a 1-click path from the dashboard back into continued essay
       // work. Returns null when the user has no essays / no AI runs.
-      this.prisma.essayAIResult.findFirst({
-        where: { essay: { profile: { userId } } },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          type: true,
-          suggestions: true,
-          createdAt: true,
-          essay: { select: { id: true, title: true } },
-        },
-      }),
+      safe(
+        this.prisma.essayAIResult.findFirst({
+          where: { essay: { profile: { userId } } },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            type: true,
+            suggestions: true,
+            createdAt: true,
+            essay: { select: { id: true, title: true } },
+          },
+        }),
+        'latest-essay-ai',
+        null,
+      ),
 
       // 2026-05 Phase 2b — 5 missing signals previously dashboard-invisible.
       // 1. Assessment results (latest per type, MBTI + Holland)
-      this.prisma.assessmentResult.findMany({
-        where: {
-          userId,
-          assessment: { type: { in: ['MBTI', 'HOLLAND'] } },
-        },
-        orderBy: { completedAt: 'desc' },
-        select: {
-          result: true,
-          completedAt: true,
-          assessment: { select: { type: true } },
-        },
-      }),
+      safe(
+        this.prisma.assessmentResult.findMany({
+          where: {
+            userId,
+            assessment: { type: { in: ['MBTI', 'HOLLAND'] } },
+          },
+          orderBy: { completedAt: 'desc' },
+          select: {
+            result: true,
+            completedAt: true,
+            assessment: { select: { type: true } },
+          },
+        }),
+        'assessment-results',
+        [],
+      ),
 
       // 2. Recommendation count (total runs)
-      this.prisma.schoolRecommendation.count({ where: { userId } }),
+      safe(
+        this.prisma.schoolRecommendation.count({ where: { userId } }),
+        'recommendation-count',
+        0,
+      ),
 
       // 3. Verification status — latest request determines state
-      this.prisma.verificationRequest.findFirst({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        select: { status: true },
-      }),
+      safe(
+        this.prisma.verificationRequest.findFirst({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          select: { status: true },
+        }),
+        'verification-row',
+        null,
+      ),
 
       // 4. Chat unread total (raw SQL mirrors chat.service.getTotalUnreadCount)
-      this.prisma.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count
-        FROM "Message" m
-        INNER JOIN "ConversationParticipant" cp
-          ON cp."conversationId" = m."conversationId" AND cp."userId" = ${userId}
-        WHERE m."senderId" != ${userId}
-          AND m."createdAt" > COALESCE(cp."lastReadAt", '1970-01-01'::timestamp)`,
+      safe(
+        this.prisma.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count
+          FROM "Message" m
+          INNER JOIN "ConversationParticipant" cp
+            ON cp."conversationId" = m."conversationId" AND cp."userId" = ${userId}
+          WHERE m."senderId" != ${userId}
+            AND m."createdAt" > COALESCE(cp."lastReadAt", '1970-01-01'::timestamp)`,
+        'chat-unread',
+        [] as Array<{ count: bigint }>,
+      ),
     ]);
 
     // 计算档案完成度（传入选校数据用于权重计算）

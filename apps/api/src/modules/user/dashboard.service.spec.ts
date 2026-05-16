@@ -878,5 +878,52 @@ describe('DashboardService', () => {
       expect(timelineItem?.status).toBe('blocked');
       expect(timelineItem?.value).toBe('0/10');
     });
+
+    // 2026-05 Phase 1.5 #15: A single transient sub-query failure must
+    // NOT bring down the whole dashboard. Before the safe() wrapper, ANY
+    // sub-query rejection meant Promise.all rejected → AllExceptionsFilter
+    // → HTTP 500 → user sees a blank page. After the wrapper, that one
+    // sub-query falls back to a sensible default and the rest of the
+    // dashboard renders normally.
+    it('Phase 1.5 #15: degrades gracefully when one sub-query throws', async () => {
+      setupDefaultMocks();
+      // Inject a transient failure on the recommendation count query
+      // (chosen because its result feeds the Hub Stats column — failure
+      // there should NOT break the entire dashboard).
+      (prisma.schoolRecommendation.count as jest.Mock).mockRejectedValueOnce(
+        new Error('simulated DB blip'),
+      );
+
+      // Should NOT throw — the safe() wrapper catches and falls back.
+      const result = await service.getDashboardSummary(userId);
+
+      // The broken query's fallback (0) flows through to the signal.
+      expect(result.signals?.recommendationCount).toBe(0);
+      // The rest of the dashboard renders normally — other counts come
+      // from their (unaffected) mock values.
+      expect(result.profile).toBeDefined();
+      expect(result.workbench).toBeDefined();
+    });
+
+    it('Phase 1.5 #15: degrades gracefully when multiple sub-queries throw', async () => {
+      setupDefaultMocks();
+      (prisma.schoolRecommendation.count as jest.Mock).mockRejectedValueOnce(
+        new Error('blip 1'),
+      );
+      (prisma.assessmentResult.findMany as jest.Mock).mockRejectedValueOnce(
+        new Error('blip 2'),
+      );
+      (prisma.verificationRequest.findFirst as jest.Mock).mockRejectedValueOnce(
+        new Error('blip 3'),
+      );
+
+      const result = await service.getDashboardSummary(userId);
+
+      // All three failed signals fall back; rest of dashboard intact.
+      expect(result.signals?.recommendationCount).toBe(0);
+      expect(result.signals?.assessment.mbti).toBeNull();
+      expect(result.signals?.verificationStatus).toBe('unverified');
+      expect(result.profile).toBeDefined();
+    });
   });
 });
