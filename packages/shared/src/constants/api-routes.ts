@@ -362,6 +362,12 @@ export const settingsRoutes = {
   byCategory: (category: string) => `${API_ROUTES.SETTINGS}/category/${category}`,
 };
 
+// 2026-05 Phase 4 #35: user-facing feature-flag evaluation endpoint.
+// (Admin CRUD lives under /admin/feature-flags — separate.)
+export const featureFlagRoutes = {
+  evaluate: () => '/feature-flags/evaluate',
+};
+
 export const rankingRoutes = {
   list: () => API_ROUTES.RANKINGS,
 };
