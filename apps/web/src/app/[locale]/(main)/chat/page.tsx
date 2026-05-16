@@ -648,7 +648,13 @@ export default function ChatPage() {
 
         <Card
           className={cn(
-            'flex flex-col overflow-hidden min-h-0 py-0 gap-0',
+            // 2026-05 chat layout fix: `min-w-0` on the middle column
+            // Card so a long chat header / message bubble can't push
+            // it wider than `minmax(0,1fr)`. Without this, the chat
+            // header's "Regeneron STS / Innovation Track · Science Fair
+            // Innovators × 全栈开发组" title was forcing the middle col
+            // wider than its grid cell, cascading into the right panel.
+            'min-w-0 flex flex-col overflow-hidden min-h-0 py-0 gap-0',
             showConversations && 'hidden lg:flex'
           )}
         >
