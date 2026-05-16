@@ -201,6 +201,7 @@
   },
   "dashboard": {
     "welcome": "欢迎回来，{name}",
+    "welcomeFirst": "{name}，开始你的申请规划",
     "user": "用户",
     "subtitle": "继续你的申请之旅",
     "editProfile": "编辑档案",
@@ -323,7 +324,7 @@
       "viewTimeline": "查看时间线",
       "viewMoreOverdue": "时间线上还有 {count} 个逾期任务 →",
       "viewMoreMissing": "还有 {count} 所学校未建立时间线 →",
-      "noDeadlines": "暂无近期截止风险",
+      "noDeadlines": "添加目标学校后，截止日期会显示在这里",
       "deadlineOverdue": "已逾期 {count} 天",
       "deadlineToday": "今天截止",
       "deadlineDays": "{count} 天",

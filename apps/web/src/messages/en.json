@@ -201,6 +201,7 @@
   },
   "dashboard": {
     "welcome": "Welcome back, {name}",
+    "welcomeFirst": "Hi {name}, let's start your application journey",
     "user": "User",
     "subtitle": "Continue your application journey",
     "editProfile": "Edit Profile",
@@ -323,7 +324,7 @@
       "viewTimeline": "View timeline",
       "viewMoreOverdue": "{count, plural, one {# overdue task in timeline →} other {# overdue tasks in timeline →}}",
       "viewMoreMissing": "{count, plural, one {# school still needs a timeline →} other {# schools still need a timeline →}}",
-      "noDeadlines": "No upcoming deadline risk",
+      "noDeadlines": "Deadlines will appear here after adding target schools",
       "deadlineOverdue": "{count, plural, one {# day overdue} other {# days overdue}}",
       "deadlineToday": "Due today",
       "deadlineDays": "{count, plural, one {# day} other {# days}}",

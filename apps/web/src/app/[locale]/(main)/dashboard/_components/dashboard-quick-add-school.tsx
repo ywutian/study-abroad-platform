@@ -115,7 +115,10 @@ export function DashboardQuickAddSchool() {
           variant="outline"
           size="sm"
           aria-label={t('triggerAriaLabel')}
-          className="h-7 gap-1 px-2 text-xs"
+          // 2026-05 Phase 1 design piggyback #13: mobile h-9 ensures
+          // WCAG 2.1 SC 2.5.5 (target size ≥ 44px); h-7 = 28px which
+          // fails on touch devices.
+          className="h-9 gap-1 px-2 text-xs sm:h-7"
         >
           <Plus className="h-3.5 w-3.5" />
           {t('trigger')}

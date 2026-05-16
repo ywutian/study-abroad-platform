@@ -160,6 +160,26 @@ export async function runPredictionStabilitySmoke(
     }
     record('test_scores', 'PASS', 'SAT + TOEFL');
 
+    // 2026-05 Phase 1 Bug 1: predictions now require schoolIds ∈ user's
+    // SchoolListItem (invariant I2 — see
+    // docs/architecture/dashboard-invariants.md). The smoke test must
+    // add the school to the user's list before calling /predictions,
+    // otherwise the request fails with 400 PREDICTION_INVALID_SCHOOL_IDS.
+    await request(
+      options.baseUrl,
+      '/school-lists',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          schoolId: school.id,
+          tier: 'TARGET',
+          round: options.round,
+        }),
+      },
+      token
+    );
+    record('school_list_add', 'PASS', `${school.name} (${options.round})`);
+
     const prediction = await request<{
       results: Array<{
         schoolId: string;

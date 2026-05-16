@@ -63,10 +63,27 @@ export class SentryModule implements OnModuleInit, OnModuleDestroy {
             return null;
           }
 
-          // Don't send 4xx errors (client errors)
+          // Don't send 4xx errors (client errors) — EXCEPT a whitelist
+          // of business-critical codes we explicitly want to observe.
+          // 2026-05 Phase 1.5 #19: dashboard data-integrity codes added
+          // so we can see how often users hit the new prediction guards
+          // (412 PROFILE_INSUFFICIENT, 400 INVALID_SCHOOL_IDS) without
+          // drowning Sentry in routine validation noise.
           const statusCode = (hint.originalException as { status?: number })
             ?.status;
-          if (statusCode && statusCode >= 400 && statusCode < 500) {
+          const errorCode = (
+            hint.originalException as { response?: { code?: string } }
+          )?.response?.code;
+          const observed4xxCodes = new Set([
+            'PREDICTION_PROFILE_INSUFFICIENT',
+            'PREDICTION_INVALID_SCHOOL_IDS',
+          ]);
+          if (
+            statusCode &&
+            statusCode >= 400 &&
+            statusCode < 500 &&
+            !(errorCode && observed4xxCodes.has(errorCode))
+          ) {
             return null;
           }
 

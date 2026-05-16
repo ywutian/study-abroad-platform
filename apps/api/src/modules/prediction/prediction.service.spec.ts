@@ -102,7 +102,28 @@ describe('PredictionService counselor primary', () => {
     prisma = {
       profile: { findUnique: jest.fn().mockResolvedValue(mockProfile) },
       school: { findMany: jest.fn().mockResolvedValue([mockSchool]) },
-      schoolListItem: { findMany: jest.fn().mockResolvedValue([]) },
+      // 2026-05 Phase 1 Bug 1+2: predict() now validates schoolIds via
+      // schoolListItem.findMany ({ where: { userId, schoolId: { in: [...] } } })
+      // and completeness via schoolListItem.count. Mock findMany to echo
+      // back whatever schoolIds were requested (so I2 ownership check
+      // passes), and count to return a positive number (so I1
+      // completeness check has a non-zero targetSchools weight).
+      schoolListItem: {
+        findMany: jest
+          .fn()
+          .mockImplementation(
+            (args?: { where?: { schoolId?: { in?: string[] } } }) => {
+              const requested = args?.where?.schoolId?.in;
+              if (Array.isArray(requested)) {
+                return Promise.resolve(
+                  requested.map((schoolId) => ({ schoolId, round: 'RD' })),
+                );
+              }
+              return Promise.resolve([]);
+            },
+          ),
+        count: jest.fn().mockResolvedValue(1),
+      },
       assessmentResult: { findMany: jest.fn().mockResolvedValue([]) },
       schoolProgram: { findMany: jest.fn().mockResolvedValue([]) },
       predictionResult: {
