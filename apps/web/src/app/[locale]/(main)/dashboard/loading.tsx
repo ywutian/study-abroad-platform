@@ -6,12 +6,26 @@ import { Skeleton } from '@/components/ui/skeleton';
  * Dashboard loading skeleton — must match the real page layout to
  * minimize Cumulative Layout Shift (CLS).
  *
- * Real layout (post-PR #170+):
- *   PageHeader → QuickAsk → CommandCenter (2-col xl) → WorkspaceHub (4-col) → Activity
+ * Real layout (current — post PRs #186-200):
+ *   PageHeader
+ *   → QuickAsk
+ *   → CommandCenter (2-col xl: readiness left / priority queue right)
+ *   → [DashboardEssayCoach]    (conditional, no skeleton — see note)
+ *   → [DashboardDecisionPanel] (conditional, no skeleton — see note)
+ *   → DashboardStats (Phase 2.5b — 9-tile snapshot)
+ *   → WorkspaceHub (3-col Research / Community / Tools — Phase 2.5b)
+ *   → DashboardActivity
  *
- * 2026-05 Phase 1.5 #16: rewritten from the legacy "4 stat cards + 3
- * col grid" skeleton which bore no resemblance to the actual page,
- * causing severe layout shift on every visit.
+ * Conditional surfaces (EssayCoach, DecisionPanel) intentionally have
+ * NO skeleton entry: they render null when the user has no data, so
+ * reserving space for them would CAUSE the layout shift this file
+ * exists to prevent.
+ *
+ * History:
+ * - 2026-05 Phase 1.5 #16: rewritten from legacy "4 stat cards" stub
+ * - 2026-05 Phase 1.5 #16 v2 (this update): synced with Phase 2.5a
+ *   (readiness 2-col → 5-col), Phase 2.5b (Hub 4-col → 3-col + new
+ *   Stats card insertion), to eliminate post-load reflow.
  */
 export default function DashboardLoading() {
   return (
@@ -64,8 +78,8 @@ export default function DashboardLoading() {
                   </div>
                 </div>
                 <Skeleton className="mb-3 h-1.5 w-full" />
-                {/* 5 readiness items in 2 col grid */}
-                <div className="grid gap-2 lg:grid-cols-2">
+                {/* 5 readiness items — Phase 2.5a 5-col equal-width grid */}
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} className="h-16 rounded-[var(--theme-radius-card)]" />
                   ))}
@@ -86,15 +100,36 @@ export default function DashboardLoading() {
           </CardContent>
         </Card>
 
-        {/* WorkspaceHub skeleton (4-col Research / Community / Tools / Stats) */}
+        {/*
+          Stats snapshot — Phase 2.5b extracted this from the Hub. 9
+          compact tiles in a 2/3/5-col responsive grid.
+        */}
         <Card className="rounded-[var(--theme-radius-card)]">
           <CardContent className="p-4 sm:p-5">
             <div className="mb-3 space-y-1">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="h-3 w-40" />
             </div>
-            <div className="grid gap-4 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, col) => (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 rounded-[var(--theme-radius-control,0.5rem)]" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/*
+          WorkspaceHub — Phase 2.5b reduced this to 3 nav columns
+          (Research / Community / Tools). Stats was extracted above.
+        */}
+        <Card className="rounded-[var(--theme-radius-card)]">
+          <CardContent className="p-4 sm:p-5">
+            <div className="mb-3 space-y-1">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, col) => (
                 <div key={col}>
                   <Skeleton className="mb-2 h-3 w-20" />
                   <div className="space-y-1.5">
