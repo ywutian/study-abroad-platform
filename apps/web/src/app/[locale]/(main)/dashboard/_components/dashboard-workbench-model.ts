@@ -1,102 +1,22 @@
 'use client';
 
-export type DashboardSeverity = 'critical' | 'warning' | 'normal' | 'success';
-export type DashboardReadinessStatus = 'blocked' | 'attention' | 'ready';
+// 2026-05: Dashboard contract types live in @study-abroad/shared so API +
+// Web can never silently drift on the workbench shape. Re-export here
+// for backward compatibility with consumers that import from this file
+// (CommandCenter, PipelineStrip, page.tsx, tests).
+export type {
+  DashboardDeadlineItem,
+  DashboardPipeline,
+  DashboardPriorityItem,
+  DashboardPriorityKind,
+  DashboardReadinessItem,
+  DashboardReadinessStatus,
+  DashboardRecentDecision,
+  DashboardSeverity,
+  DashboardWorkbench,
+} from '@study-abroad/shared';
 
-export interface DashboardWorkbench {
-  readiness: {
-    score: number;
-    status: DashboardReadinessStatus;
-    items: {
-      key: 'profile' | 'schools' | 'essays' | 'timeline' | 'prediction';
-      label: string;
-      /**
-       * Free-text value still used as fallback when contribution* is absent.
-       * New code should prefer the contribution-score pair (X/Y) to keep
-       * Readiness total = sum of items' contributions, eliminating the
-       * "Readiness 20% / Profile 0%" visual contradiction.
-       */
-      value: string;
-      /** Score this item contributes to the overall Readiness total. */
-      contributionScore?: number;
-      /** Max possible contribution from this item. */
-      contributionDenom?: number;
-      status: DashboardReadinessStatus;
-      href: string;
-      description: string;
-    }[];
-  };
-  metrics: {
-    due7: number;
-    due30: number;
-    overdueTasks: number;
-    missingTimelineCount: number;
-    balancedSchoolList: boolean;
-  };
-  priorityQueue: DashboardPriorityItem[];
-  deadlineStream: DashboardDeadlineItem[];
-  /**
-   * 2026-05: Application status counts by ApplicationStatus enum value.
-   * Optional because the frontend fallback (createFallbackWorkbench)
-   * does not have raw timeline data. Render the strip only when at
-   * least one school is past IN_PROGRESS (avoids noise for new users).
-   */
-  pipeline?: {
-    notStarted: number;
-    inProgress: number;
-    submitted: number;
-    accepted: number;
-    rejected: number;
-    waitlisted: number;
-    withdrawn: number;
-    /**
-     * Per-school decision rows (top 5 by updatedAt desc) for inline
-     * rendering below the count pills. Empty array when no schools are
-     * past IN_PROGRESS.
-     */
-    recentDecisions: Array<{
-      id: string;
-      schoolId: string;
-      schoolName: string;
-      round: string;
-      status: 'SUBMITTED' | 'ACCEPTED' | 'REJECTED' | 'WAITLISTED' | 'WITHDRAWN';
-      decidedAt: string;
-    }>;
-  };
-}
-
-export interface DashboardPriorityItem {
-  id: string;
-  kind:
-    | 'profile'
-    | 'school-list'
-    | 'timeline'
-    | 'timeline-task'
-    | 'essay'
-    | 'prediction'
-    | 'deadline';
-  severity: DashboardSeverity;
-  title: string;
-  description: string;
-  href: string;
-  dueAt?: string | null;
-  daysLeft?: number | null;
-  mutation?: {
-    type: 'timeline-task-toggle';
-    endpoint: string;
-  };
-}
-
-export interface DashboardDeadlineItem {
-  id: string;
-  type: 'school' | 'event' | 'task';
-  title: string;
-  subtitle: string;
-  dueAt: string;
-  daysLeft: number;
-  severity: DashboardSeverity;
-  href: string;
-}
+import type { DashboardPriorityItem, DashboardWorkbench } from '@study-abroad/shared';
 
 export interface DashboardData {
   user: {
