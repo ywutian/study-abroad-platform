@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import { ArrowRight, ExternalLink, Sparkles } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, Check, ExternalLink, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
@@ -19,9 +20,38 @@ import { cn } from '@/lib/utils';
  * only way to ask AI was to click the FloatingChat icon, wait for it to
  * open, then type. This collapses 3 steps into 1.
  */
+// 2026-05 Phase 2.5e: how long the "Sent ✓ opening AI chat…" confirmation
+// stays visible after a submit. Long enough to register without lingering.
+const CONFIRMATION_DURATION_MS = 1800;
+
 export function DashboardQuickAsk() {
   const t = useTranslations('dashboard.quickAsk');
   const [value, setValue] = useState('');
+  // 2026-05 Phase 2.5e: brief post-submit confirmation. Before this, users
+  // pressed submit and the input cleared — but the FloatingChat opens as a
+  // separate panel and on small screens the user could miss it. The
+  // confirmation pill makes the success state unmistakable.
+  const [justSubmitted, setJustSubmitted] = useState(false);
+  // useRef holds the timer id so re-submits within the window restart the
+  // confirmation cleanly without overlapping setTimeouts.
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear any pending timer on unmount so we don't setState on an unmounted
+  // component (React 19 strict mode would warn).
+  useEffect(() => {
+    return () => {
+      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+    };
+  }, []);
+
+  const showConfirmation = () => {
+    setJustSubmitted(true);
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+    confirmTimerRef.current = setTimeout(() => {
+      setJustSubmitted(false);
+      confirmTimerRef.current = null;
+    }, CONFIRMATION_DURATION_MS);
+  };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -36,6 +66,7 @@ export function DashboardQuickAsk() {
     });
     openFloatingAgentChat({ message });
     setValue('');
+    showConfirmation();
   };
 
   const suggestions: string[] = [
@@ -53,6 +84,7 @@ export function DashboardQuickAsk() {
       suggestionIndex: index,
     });
     openFloatingAgentChat({ message });
+    showConfirmation();
   };
 
   return (
@@ -92,6 +124,34 @@ export function DashboardQuickAsk() {
         ))}
       </div>
       {/*
+        2026-05 Phase 2.5e: post-submit confirmation pill. Without this,
+        users pressed submit, the input cleared, but the FloatingChat
+        opens off-screen on small viewports — the success state was
+        effectively invisible. aria-live="polite" so screen readers
+        announce the confirmation without interrupting.
+      */}
+      <div className="mt-2 min-h-[1.25rem]" aria-live="polite">
+        <AnimatePresence>
+          {justSubmitted && (
+            <motion.span
+              key="confirmation"
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -2 }}
+              transition={{ duration: 0.18 }}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full',
+                'border border-success/30 bg-success/10 px-2 py-0.5',
+                'text-2xs font-medium text-success'
+              )}
+            >
+              <Check className="h-3 w-3" aria-hidden="true" />
+              {t('submittedConfirmation')}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+      {/*
         2026-05 Phase 2.5d: AI entry-point hierarchy. The dashboard exposes
         4 AI surfaces (QuickAsk inline / FloatingChat panel / /ai full
         workspace / /chat 1-on-1 messaging — NOT AI). Users were confused
@@ -101,7 +161,7 @@ export function DashboardQuickAsk() {
         compete with the primary submit CTA — it lives below as a tertiary
         affordance.
       */}
-      <div className="mt-2 flex justify-end">
+      <div className="mt-1 flex justify-end">
         <Link
           href="/ai"
           className={cn(
