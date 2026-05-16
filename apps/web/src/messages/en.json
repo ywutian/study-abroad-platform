@@ -300,7 +300,16 @@
         "following": "Following",
         "cases": "My cases",
         "predictions": "Predictions",
-        "points": "Points"
+        "points": "Points",
+        "assessment": "Assessment",
+        "recommendations": "Recommendations",
+        "verification": "Verification",
+        "chatUnread": "Chat unread",
+        "verificationStatus": {
+          "unverified": "Set up",
+          "pending": "Pending",
+          "verified": "Verified"
+        }
       }
     },
     "workbench": {

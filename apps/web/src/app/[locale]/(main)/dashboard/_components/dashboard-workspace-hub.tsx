@@ -145,7 +145,12 @@ export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps)
 
   // Stats column — surfaces high-level counts so the user can read
   // them without jumping to /profile or /followers.
-  const stats = [
+  //
+  // 2026-05 Phase 2b: extended with 4 new signals (assessment /
+  // recommendation / verification / chat unread). Each renders as a
+  // compact tile with label + value (number or short string).
+  const signals = dashboard?.signals;
+  const stats: { label: string; value: string | number; href: string }[] = [
     { label: t('stats.followers'), value: dashboard?.stats.followers ?? 0, href: '/followers' },
     { label: t('stats.following'), value: dashboard?.stats.following ?? 0, href: '/followers' },
     { label: t('stats.cases'), value: dashboard?.stats.cases ?? 0, href: '/cases' },
@@ -155,6 +160,24 @@ export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps)
       href: '/prediction',
     },
     { label: t('stats.points'), value: dashboard?.user.points ?? 0, href: '/referral' },
+    // Phase 2b: 4 new signal tiles. Each gracefully degrades to a
+    // "—" / 0 / "未设置" value when the backend signal is missing.
+    {
+      label: t('stats.assessment'),
+      value: signals?.assessment?.mbti ?? signals?.assessment?.holland ?? '—',
+      href: '/assessment',
+    },
+    {
+      label: t('stats.recommendations'),
+      value: signals?.recommendationCount ?? 0,
+      href: '/schools',
+    },
+    {
+      label: t('stats.verification'),
+      value: t(`stats.verificationStatus.${signals?.verificationStatus ?? 'unverified'}`),
+      href: '/verification',
+    },
+    { label: t('stats.chatUnread'), value: signals?.chatUnread ?? 0, href: '/chat' },
   ];
 
   return (

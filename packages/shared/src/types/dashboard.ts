@@ -196,6 +196,41 @@ export interface DashboardSummary {
    * the user has no essays or no AI runs yet. See DashboardEssayCoach.
    */
   essayCoach?: DashboardEssayCoach | null;
+  /**
+   * 2026-05 Phase 2b: 5 high-value backend signals (assessment,
+   * recommendation, verification, chatUnread + points already in user)
+   * that were previously invisible to the dashboard. Optional so the
+   * frontend fallback (createFallbackWorkbench) doesn't need to set it.
+   */
+  signals?: DashboardSignals;
+}
+
+/**
+ * 2026-05 Phase 2b: Extended signals surface — 5 high-value backend
+ * states that the dashboard had no visibility into until now. Each
+ * field below was already reachable via its own dedicated route, but
+ * never aggregated for the dashboard. See plan Phase 2b.
+ */
+export interface DashboardSignals {
+  /**
+   * MBTI / Holland assessment result codes (e.g., 'INTJ', 'RIA').
+   * Both null when the user hasn't completed any assessment.
+   */
+  assessment: {
+    mbti: string | null;
+    holland: string | null;
+    completedAt: string | null;
+  };
+  /** Total number of school-recommendation runs the user has done. */
+  recommendationCount: number;
+  /**
+   * 'unverified': no VerificationRequest, or last request was REJECTED
+   * 'pending':    most recent request is PENDING
+   * 'verified':   most recent request was APPROVED
+   */
+  verificationStatus: 'unverified' | 'pending' | 'verified';
+  /** Count of unread messages across all conversations the user is in. */
+  chatUnread: number;
 }
 
 /**

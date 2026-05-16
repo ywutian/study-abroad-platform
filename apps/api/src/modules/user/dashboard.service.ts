@@ -3,6 +3,7 @@ import {
   type DashboardEssayCoach,
   type DashboardPriorityKind,
   type DashboardSeverity,
+  type DashboardSignals,
   type DashboardSummary,
   type DashboardWorkbench,
 } from '@study-abroad/shared';
@@ -81,6 +82,11 @@ export class DashboardService {
       pipelineGroups,
       recentDecisionRows,
       latestEssayAiResult,
+      // Phase 2b signals — 5 previously dashboard-invisible states
+      assessmentResults,
+      recommendationCount,
+      latestVerificationRow,
+      chatUnreadRows,
     ] = await Promise.all([
       // 用户信息
       this.prisma.user.findUnique({
@@ -312,6 +318,39 @@ export class DashboardService {
           essay: { select: { id: true, title: true } },
         },
       }),
+
+      // 2026-05 Phase 2b — 5 missing signals previously dashboard-invisible.
+      // 1. Assessment results (latest per type, MBTI + Holland)
+      this.prisma.assessmentResult.findMany({
+        where: {
+          userId,
+          assessment: { type: { in: ['MBTI', 'HOLLAND'] } },
+        },
+        orderBy: { completedAt: 'desc' },
+        select: {
+          result: true,
+          completedAt: true,
+          assessment: { select: { type: true } },
+        },
+      }),
+
+      // 2. Recommendation count (total runs)
+      this.prisma.schoolRecommendation.count({ where: { userId } }),
+
+      // 3. Verification status — latest request determines state
+      this.prisma.verificationRequest.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: { status: true },
+      }),
+
+      // 4. Chat unread total (raw SQL mirrors chat.service.getTotalUnreadCount)
+      this.prisma.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*) as count
+        FROM "Message" m
+        INNER JOIN "ConversationParticipant" cp
+          ON cp."conversationId" = m."conversationId" AND cp."userId" = ${userId}
+        WHERE m."senderId" != ${userId}
+          AND m."createdAt" > COALESCE(cp."lastReadAt", '1970-01-01'::timestamp)`,
     ]);
 
     // 计算档案完成度（传入选校数据用于权重计算）
@@ -542,6 +581,86 @@ export class DashboardService {
       // 2026-05 Phase 2c: latest AI essay feedback for the
       // <DashboardEssayCoach /> card. Null when user has no AI runs.
       essayCoach: this.buildEssayCoach(latestEssayAiResult),
+      // 2026-05 Phase 2b: 5 missing signals surfaced for the Hub.
+      signals: this.buildSignals({
+        assessmentResults,
+        recommendationCount,
+        latestVerificationRow,
+        chatUnreadRows,
+      }),
+    };
+  }
+
+  /**
+   * Phase 2b: Reduce 5 raw query results into the dashboard
+   * `DashboardSignals` shape. Each signal degrades to a sensible
+   * "nothing yet" value when the user has no data — the UI then
+   * decides whether to render the tile or hide it.
+   */
+  private buildSignals(input: {
+    assessmentResults: Array<{
+      result: unknown;
+      completedAt: Date;
+      assessment: { type: string };
+    }>;
+    recommendationCount: number;
+    latestVerificationRow: { status: string } | null;
+    chatUnreadRows: Array<{ count: bigint }>;
+  }): DashboardSignals {
+    // 1. Assessment: pick latest MBTI + latest Holland; extract code
+    //    from `result` JSON (LLM stores as `{ code: 'INTJ', ... }` or
+    //    similar; if the shape differs, suggestion is null and the
+    //    Hub falls back to "completed but unparsed").
+    const mbtiRow = input.assessmentResults.find(
+      (r) => r.assessment.type === 'MBTI',
+    );
+    const hollandRow = input.assessmentResults.find(
+      (r) => r.assessment.type === 'HOLLAND',
+    );
+    const latestAssessmentAt = input.assessmentResults[0]?.completedAt ?? null;
+
+    const extractCode = (result: unknown): string | null => {
+      if (result && typeof result === 'object') {
+        const obj = result as Record<string, unknown>;
+        // Common field names across our LLM prompts
+        for (const key of ['code', 'type', 'mbtiType', 'hollandCode']) {
+          const value = obj[key];
+          if (typeof value === 'string' && value.trim()) {
+            return value.trim();
+          }
+        }
+      }
+      return null;
+    };
+
+    // 2-3. Verification status mapping
+    let verificationStatus: DashboardSignals['verificationStatus'] =
+      'unverified';
+    if (input.latestVerificationRow) {
+      switch (input.latestVerificationRow.status) {
+        case 'APPROVED':
+          verificationStatus = 'verified';
+          break;
+        case 'PENDING':
+          verificationStatus = 'pending';
+          break;
+        case 'REJECTED':
+        default:
+          verificationStatus = 'unverified';
+      }
+    }
+
+    return {
+      assessment: {
+        mbti: mbtiRow ? extractCode(mbtiRow.result) : null,
+        holland: hollandRow ? extractCode(hollandRow.result) : null,
+        completedAt: latestAssessmentAt
+          ? latestAssessmentAt.toISOString()
+          : null,
+      },
+      recommendationCount: input.recommendationCount,
+      verificationStatus,
+      chatUnread: Number(input.chatUnreadRows[0]?.count ?? 0),
     };
   }
 
