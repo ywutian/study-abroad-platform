@@ -92,7 +92,7 @@ export interface DashboardWorkbench {
     score: number;
     status: 'blocked' | 'attention' | 'ready';
     items: {
-      key: 'profile' | 'schools' | 'essays' | 'timeline';
+      key: 'profile' | 'schools' | 'essays' | 'timeline' | 'prediction';
       label: string;
       value: string;
       status: 'blocked' | 'attention' | 'ready';
@@ -555,20 +555,39 @@ export class DashboardService {
     const due30 = deadlineStream.filter(
       (item) => item.daysLeft >= 0 && item.daysLeft <= 30,
     ).length;
+    // 2026-05: Prediction added as 5th readiness item.
+    // Rebalanced weights: Profile 40 + Schools 20 + Essays 15 + Timeline 10 +
+    // Prediction 15 = 100 (with timeline reduced to make room for prediction).
+    // Per-item contribution scores must match the items[] block below so that
+    // users can audit "Readiness 65" against the five sub-scores.
+    const profileContribution = Math.round(completeness * 0.4);
+    const schoolsContribution = Math.round(
+      Math.min(schoolListCount / 6, 1) * 20,
+    );
+    const essaysContribution = essayCount > 0 ? 15 : 0;
+    // Timeline rolls together missing-timeline coverage (selected schools
+    // without a timeline) and pending tasks. Each gap subtracts; perfect
+    // state = 10. Cap at 0.
+    const timelineContribution =
+      missingTimelineCount === 0 && pendingTaskCount === 0
+        ? 10
+        : Math.max(
+            0,
+            8 - missingTimelineCount * 2 - Math.min(pendingTaskCount, 6),
+          );
+    const predictionContribution = predictionsCount > 0 ? 15 : 0;
     const readinessScore = Math.min(
       100,
-      Math.round(
-        completeness * 0.4 +
-          Math.min(schoolListCount / 6, 1) * 25 +
-          (essayCount > 0 ? 15 : 0) +
-          (missingTimelineCount === 0
-            ? 10
-            : Math.max(0, 8 - missingTimelineCount * 2)) +
-          (pendingTaskCount === 0
-            ? 10
-            : Math.max(0, 8 - Math.min(pendingTaskCount, 8))),
-      ),
+      profileContribution +
+        schoolsContribution +
+        essaysContribution +
+        timelineContribution +
+        predictionContribution,
     );
+    // Prediction needs at least one school AND a passable profile (40%+) to
+    // be runnable. Otherwise the row should communicate "blocked by upstream"
+    // not "go run prediction now".
+    const predictionEligible = schoolListCount > 0 && completeness >= 40;
     const priorityQueue = this.buildPriorityQueue({
       locale,
       completeness,
@@ -598,7 +617,7 @@ export class DashboardService {
           {
             key: 'profile',
             label: this.t(locale, '申请档案', 'Profile'),
-            value: `${completeness}%`,
+            value: `${profileContribution}/40`,
             status:
               completeness >= 75
                 ? 'ready'
@@ -622,7 +641,7 @@ export class DashboardService {
           {
             key: 'schools',
             label: this.t(locale, '选校结构', 'School list'),
-            value: String(schoolListCount),
+            value: `${schoolsContribution}/20`,
             status:
               schoolListCount >= 6 && balancedSchoolList
                 ? 'ready'
@@ -645,7 +664,7 @@ export class DashboardService {
           {
             key: 'essays',
             label: this.t(locale, '文书进度', 'Essays'),
-            value: String(essayCount),
+            value: `${essaysContribution}/15`,
             status: essayCount > 0 ? 'ready' : 'attention',
             href: '/essays',
             description:
@@ -664,7 +683,7 @@ export class DashboardService {
           {
             key: 'timeline',
             label: this.t(locale, '时间线闭环', 'Timeline'),
-            value: String(pendingTaskCount),
+            value: `${timelineContribution}/10`,
             status:
               missingTimelineCount === 0 && pendingTaskCount === 0
                 ? 'ready'
@@ -684,6 +703,36 @@ export class DashboardService {
                     '申请节点已纳入统一节奏',
                     'Application milestones are in one planning rhythm',
                   ),
+          },
+          {
+            key: 'prediction',
+            label: this.t(locale, '录取预测', 'Prediction'),
+            value: `${predictionContribution}/15`,
+            status:
+              predictionsCount > 0
+                ? 'ready'
+                : predictionEligible
+                  ? 'attention'
+                  : 'blocked',
+            href: '/prediction',
+            description:
+              predictionsCount > 0
+                ? this.t(
+                    locale,
+                    `已生成 ${predictionsCount} 次录取预测，建议定期复盘`,
+                    `${predictionsCount} predictions generated — review them periodically`,
+                  )
+                : predictionEligible
+                  ? this.t(
+                      locale,
+                      '档案与选校已就绪，运行第一次录取预测',
+                      'Profile and schools are ready — run your first prediction',
+                    )
+                  : this.t(
+                      locale,
+                      '先补齐档案 (>40%) 与至少 1 所目标学校再运行预测',
+                      'Reach 40% profile and add at least one school first',
+                    ),
           },
         ],
       },

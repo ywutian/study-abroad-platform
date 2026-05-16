@@ -219,20 +219,94 @@
         "deadlines": "处理即将截止的任务",
         "deadlinesDesc": "还有 {count} 个截止任务需要在下一次提交窗口前确认。",
         "review": "进入申请工作台",
-        "reviewDesc": "核心设置已经就绪，集中检查校单、文书、材料和截止安排。"
+        "reviewDesc": "核心设置已经就绪，集中检查校单、文书、材料和截止安排。",
+        "predictionItemDescReady": "已生成录取预测，建议随档案变化定期复盘。",
+        "predictionItemDescPending": "档案与选校已就绪，运行第一次录取预测。",
+        "predictionItemDescBlocked": "先把档案补到 40% 并加入至少 1 所目标学校再运行预测。"
       },
       "signals": {
         "profile": "档案",
         "schools": "学校",
         "essays": "文书",
-        "deadlines": "截止"
+        "deadlines": "截止",
+        "prediction": "预测"
       },
       "onboarding": {
         "title": "欢迎来到 Lumni",
         "description": "先完善你的档案，Lumni 会基于此校准录取预测、并按你的画像推荐选校。",
         "cta": "完善档案"
       },
-      "contributionHint": "下方每一项都为整体就绪度贡献一部分分数（相加 = 总分）。"
+      "contributionHint": "下方每一项都为整体就绪度贡献一部分分数（相加 = 总分）。",
+      "tools": {
+        "title": "更多工具",
+        "assessment": "性格测评",
+        "assessmentDesc": "性格与职业匹配",
+        "aiCoach": "AI 助手",
+        "aiCoachDesc": "向 Lumni 提问",
+        "cases": "录取案例",
+        "casesDesc": "查看真实录取故事",
+        "resume": "简历",
+        "resumeDesc": "构建你的 CV"
+      }
+    },
+    "quickAsk": {
+      "placeholder": "向 Lumni 提问任何申请相关的问题…",
+      "submit": "提问",
+      "try": "试试",
+      "suggestions": {
+        "predict": "我有多大概率被 MIT 录取？",
+        "essays": "帮我头脑风暴一篇 Common App 文书",
+        "schools": "为我推荐 5 所 CS 冲刺校"
+      }
+    },
+    "hub": {
+      "title": "工作区",
+      "subtitle": "所有工具一站直达",
+      "sections": {
+        "research": "研究与发现",
+        "social": "社区",
+        "tools": "工具",
+        "stats": "概览"
+      },
+      "links": {
+        "ranking": "自定义排名",
+        "rankingDesc": "按你的偏好生成学校排名",
+        "hall": "名人堂",
+        "hallDesc": "顶尖档案与社区评价",
+        "uncommonApp": "申请工作台",
+        "uncommonAppDesc": "管理学校、文书和申请材料",
+        "cases": "录取案例",
+        "casesDesc": "真实学生的录取故事",
+        "forum": "论坛",
+        "forumDesc": "讨论与问答",
+        "teams": "组队",
+        "teamsDesc": "找到同伴一起申请",
+        "chat": "AI 聊天",
+        "chatDesc": "与 Lumni AI 对话",
+        "followers": "关注",
+        "followersDesc": "管理你的网络",
+        "resume": "简历",
+        "resumeDesc": "构建并导出你的 CV",
+        "timeline": "时间线",
+        "timelineDesc": "所有截止日期和任务",
+        "assessment": "测评",
+        "assessmentDesc": "MBTI、霍兰德和更多",
+        "aiLab": "AI 实验室",
+        "aiLabDesc": "实验性 AI 功能",
+        "vault": "保险箱",
+        "vaultDesc": "加密文档存储",
+        "referral": "邀请奖励",
+        "referralDesc": "邀请好友，赚取积分",
+        "notifications": "通知",
+        "notificationsDesc": "所有提醒和更新"
+      },
+      "stats": {
+        "followers": "粉丝",
+        "following": "关注",
+        "cases": "我的案例",
+        "predictions": "预测次数",
+        "points": "积分"
+      }
     },
     "workbench": {
       "label": "申请作战台",
@@ -251,7 +325,10 @@
       "needsBalance": "待均衡",
       "open": "打开",
       "completeTask": "标记完成",
+      "runNow": "立即运行",
       "viewTimeline": "查看时间线",
+      "viewMoreOverdue": "时间线上还有 {count} 个逾期任务 →",
+      "viewMoreMissing": "还有 {count} 所学校未建立时间线 →",
       "noDeadlines": "暂无近期截止风险",
       "deadlineOverdue": "已逾期 {count} 天",
       "deadlineToday": "今天截止",

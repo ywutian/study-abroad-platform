@@ -17,6 +17,8 @@ import { Link } from '@/lib/i18n/navigation';
 
 import { DashboardActivity } from './_components/dashboard-activity';
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
+import { DashboardWorkspaceHub } from './_components/dashboard-workspace-hub';
 import {
   createFallbackWorkbench,
   type DashboardData,
@@ -98,12 +100,16 @@ export default function DashboardPage() {
         schools: t('dashboard.commandCenter.signals.schools'),
         essays: t('dashboard.commandCenter.signals.essays'),
         timeline: t('dashboard.modules.timeline'),
+        prediction: t('dashboard.commandCenter.signals.prediction'),
         profileDesc: t('dashboard.commandCenter.actions.profileDesc'),
         schoolsDesc: t('dashboard.commandCenter.actions.schoolsDesc'),
         essaysDesc: t('dashboard.commandCenter.actions.essaysDesc'),
         timelineDesc: t('dashboard.commandCenter.actions.deadlinesDesc', {
           count: effectivePending,
         }),
+        predictionItemDescReady: t('dashboard.commandCenter.actions.predictionItemDescReady'),
+        predictionItemDescPending: t('dashboard.commandCenter.actions.predictionItemDescPending'),
+        predictionItemDescBlocked: t('dashboard.commandCenter.actions.predictionItemDescBlocked'),
         profileAction: t('dashboard.commandCenter.actions.profile'),
         schoolAction: t('dashboard.commandCenter.actions.schools'),
         essayAction: t('dashboard.commandCenter.actions.essays'),
@@ -148,6 +154,17 @@ export default function DashboardPage() {
       )}
 
       <div className="space-y-6">
+        {/*
+          Quick Ask AI — collapses 3 clicks (icon → wait → type) into 1.
+          Submitting opens the global FloatingChat with the message
+          prefilled. Full-width strip just under the page header makes
+          AI the default action surface, addressing the "everything
+          requires too many clicks" feedback.
+        */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <DashboardQuickAsk />
+        </motion.div>
+
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <DashboardCommandCenter
             workbench={workbench}
@@ -157,6 +174,20 @@ export default function DashboardPage() {
             schoolTiers={schoolTiers}
             schoolCount={schoolCount}
           />
+        </motion.div>
+
+        {/*
+          Workspace Hub — surfaces all 16+ user-facing functions (Forum,
+          Hall, Teams, Followers, Vault, Resume, Assessment, etc.) so
+          users don't have to hunt in the global Header. Mirrors Header's
+          taxonomy (Research / Social / Tools) plus a Stats column.
+        */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <DashboardWorkspaceHub dashboard={stableDashboard} />
         </motion.div>
 
         <motion.div

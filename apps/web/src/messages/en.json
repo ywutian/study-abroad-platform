@@ -219,20 +219,94 @@
         "deadlines": "Clear upcoming application tasks",
         "deadlinesDesc": "{count} deadline tasks need attention before your next submission window.",
         "review": "Open application workspace",
-        "reviewDesc": "Your core setup is ready. Review schools, essays, requirements, and deadlines in one place."
+        "reviewDesc": "Your core setup is ready. Review schools, essays, requirements, and deadlines in one place.",
+        "predictionItemDescReady": "Predictions generated — review them periodically as your profile evolves.",
+        "predictionItemDescPending": "Profile and schools are ready — run your first admission prediction.",
+        "predictionItemDescBlocked": "Reach 40% profile and add at least one school before running a prediction."
       },
       "signals": {
         "profile": "Profile",
         "schools": "Schools",
         "essays": "Essays",
-        "deadlines": "Deadlines"
+        "deadlines": "Deadlines",
+        "prediction": "Prediction"
       },
       "onboarding": {
         "title": "Welcome to Lumni",
         "description": "Start by completing your profile — Lumni will then calibrate your predictions and recommend schools tailored to you.",
         "cta": "Complete profile"
       },
-      "contributionHint": "Each item below contributes a slice to your readiness score (sum = total)."
+      "contributionHint": "Each item below contributes a slice to your readiness score (sum = total).",
+      "tools": {
+        "title": "More tools",
+        "assessment": "Assessment",
+        "assessmentDesc": "Personality and career fit",
+        "aiCoach": "AI coach",
+        "aiCoachDesc": "Ask Lumni anything",
+        "cases": "Cases",
+        "casesDesc": "Browse admit stories",
+        "resume": "Resume",
+        "resumeDesc": "Build your CV"
+      }
+    },
+    "quickAsk": {
+      "placeholder": "Ask Lumni anything about your application…",
+      "submit": "Ask",
+      "try": "Try",
+      "suggestions": {
+        "predict": "What are my chances at MIT?",
+        "essays": "Help me brainstorm a Common App essay",
+        "schools": "Suggest 5 reach schools for CS"
+      }
+    },
+    "hub": {
+      "title": "Workspace",
+      "subtitle": "All your tools in one place",
+      "sections": {
+        "research": "Research & Discover",
+        "social": "Community",
+        "tools": "Tools",
+        "stats": "At a glance"
+      },
+      "links": {
+        "ranking": "Ranking",
+        "rankingDesc": "Custom school ranking by your priorities",
+        "hall": "Hall of Fame",
+        "hallDesc": "Top profiles & community reviews",
+        "uncommonApp": "Application Workspace",
+        "uncommonAppDesc": "Manage schools, essays, and requirements",
+        "cases": "Admit Cases",
+        "casesDesc": "Real stories from admitted students",
+        "forum": "Forum",
+        "forumDesc": "Discussions and Q&A",
+        "teams": "Teams",
+        "teamsDesc": "Find peers and team up",
+        "chat": "AI Chat",
+        "chatDesc": "Conversation with Lumni AI",
+        "followers": "Followers",
+        "followersDesc": "Manage your network",
+        "resume": "Resume",
+        "resumeDesc": "Build and export your CV",
+        "timeline": "Timeline",
+        "timelineDesc": "All deadlines and tasks",
+        "assessment": "Assessment",
+        "assessmentDesc": "MBTI, Holland, and more",
+        "aiLab": "AI Lab",
+        "aiLabDesc": "Experimental AI features",
+        "vault": "Vault",
+        "vaultDesc": "Encrypted document storage",
+        "referral": "Referral",
+        "referralDesc": "Invite friends, earn points",
+        "notifications": "Notifications",
+        "notificationsDesc": "All your alerts and updates"
+      },
+      "stats": {
+        "followers": "Followers",
+        "following": "Following",
+        "cases": "My cases",
+        "predictions": "Predictions",
+        "points": "Points"
+      }
     },
     "workbench": {
       "label": "Application workbench",
@@ -251,7 +325,10 @@
       "needsBalance": "Needs balance",
       "open": "Open",
       "completeTask": "Mark done",
+      "runNow": "Run now",
       "viewTimeline": "View timeline",
+      "viewMoreOverdue": "{count, plural, one {# overdue task in timeline →} other {# overdue tasks in timeline →}}",
+      "viewMoreMissing": "{count, plural, one {# school still needs a timeline →} other {# schools still need a timeline →}}",
       "noDeadlines": "No upcoming deadline risk",
       "deadlineOverdue": "{count, plural, one {# day overdue} other {# days overdue}}",
       "deadlineToday": "Due today",

@@ -231,10 +231,20 @@ export function DashboardCommandCenter({
               <div className="mt-3 grid gap-2 lg:grid-cols-2">
                 {workbench.readiness.items.map((item) => {
                   const meta = statusMeta[item.status];
+                  // 2026-05: When the prediction row is in the "attention"
+                  // state (eligible to run but hasn't been run yet), route
+                  // the click straight into auto-run mode so a single click
+                  // from the dashboard kicks off the prediction. This
+                  // collapses the previous 4-click flow (open → select →
+                  // run → wait) into 1 click.
+                  const href =
+                    item.key === 'prediction' && item.status === 'attention'
+                      ? `${item.href}?autorun=1`
+                      : item.href;
                   return (
                     <Link
                       key={item.key}
-                      href={item.href}
+                      href={href}
                       className={cn(
                         'block rounded-[var(--theme-radius-card)] border p-3 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]',
                         meta.className
@@ -246,6 +256,18 @@ export function DashboardCommandCenter({
                           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                             {item.description}
                           </p>
+                          {/* Action hint for prediction row in attention state.
+                              Communicates that clicking actually runs, not just
+                              navigates. */}
+                          {item.key === 'prediction' && item.status === 'attention' && (
+                            <Badge
+                              variant="outline"
+                              className="mt-2 border-primary/30 bg-primary/10 px-1.5 py-0 text-2xs text-primary"
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              {t('runNow')}
+                            </Badge>
+                          )}
                           {/* Profile row: surface the Profile Grade letter
                               (independent signal from the contribution score). */}
                           {item.key === 'profile' && (
@@ -317,6 +339,12 @@ export function DashboardCommandCenter({
                 column. Showing it twice in one card was one of the explicit
                 redundancies users complained about.
               */}
+              {/*
+                2026-05: Compute "hidden tasks" — pending timeline tasks NOT
+                surfaced in the priority queue (the queue caps at 6 server-
+                side). Showing this count tells users the queue isn't the
+                whole picture and gives them a clear path to the rest.
+              */}
               {workbench.priorityQueue.slice(1).map((item) => {
                 const meta = severityMeta[item.severity];
                 const isCompleting =
@@ -365,6 +393,25 @@ export function DashboardCommandCenter({
                   </div>
                 );
               })}
+
+              {/* 2026-05: "More pending" footer — when overdue + missing
+                  timeline indicators suggest there are more tasks beyond
+                  what the queue surfaced, give users a one-click path to
+                  the full timeline view. */}
+              {(workbench.metrics.overdueTasks > 0 ||
+                workbench.metrics.missingTimelineCount > 0) && (
+                <Link
+                  href="/timeline"
+                  className="flex items-center justify-between gap-2 rounded-[var(--theme-radius-card)] border border-dashed border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:border-primary/35 hover:text-foreground"
+                >
+                  <span>
+                    {workbench.metrics.overdueTasks > 0
+                      ? t('viewMoreOverdue', { count: workbench.metrics.overdueTasks })
+                      : t('viewMoreMissing', { count: workbench.metrics.missingTimelineCount })}
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
             </div>
 
             <div className="mt-5">
@@ -402,6 +449,13 @@ export function DashboardCommandCenter({
                 </div>
               )}
             </div>
+            {/*
+              2026-05: The 4-icon "More tools" strip that lived here was
+              promoted into a standalone DashboardWorkspaceHub block (4
+              columns × 4 rows = 16 functions + a Stats column). Keeping it
+              outside CommandCenter lets the hub render below the workbench
+              instead of inside the cramped right column.
+            */}
           </div>
         </div>
       </CardContent>
