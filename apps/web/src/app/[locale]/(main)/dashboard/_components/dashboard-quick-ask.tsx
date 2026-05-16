@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, ExternalLink, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
+import { Link } from '@/lib/i18n/navigation';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
@@ -89,6 +90,29 @@ export function DashboardQuickAsk() {
             {suggestion}
           </button>
         ))}
+      </div>
+      {/*
+        2026-05 Phase 2.5d: AI entry-point hierarchy. The dashboard exposes
+        4 AI surfaces (QuickAsk inline / FloatingChat panel / /ai full
+        workspace / /chat 1-on-1 messaging — NOT AI). Users were confused
+        about where the "real" conversation lives. This subtle link clarifies
+        that QuickAsk → FloatingChat is the quick path, and /ai is the full
+        experience (tool calls, history, multi-turn). The link does NOT
+        compete with the primary submit CTA — it lives below as a tertiary
+        affordance.
+      */}
+      <div className="mt-2 flex justify-end">
+        <Link
+          href="/ai"
+          className={cn(
+            'inline-flex items-center gap-1 text-2xs text-muted-foreground',
+            'transition-colors hover:text-primary hover:underline'
+          )}
+          title={t('openFullWorkspaceHint')}
+        >
+          {t('openFullWorkspace')}
+          <ExternalLink className="h-3 w-3" aria-hidden="true" />
+        </Link>
       </div>
     </div>
   );

@@ -23,6 +23,8 @@ const messages = {
         essays: 'Help me brainstorm a Common App essay',
         schools: 'Suggest 5 reach schools for CS',
       },
+      openFullWorkspace: 'Open full AI workspace',
+      openFullWorkspaceHint: 'Need a longer conversation? Open the AI workspace.',
     },
   },
 };
@@ -107,5 +109,17 @@ describe('DashboardQuickAsk', () => {
     expect(openFloatingAgentChat).toHaveBeenCalledWith({
       message: 'What are my chances at MIT?',
     });
+  });
+
+  // 2026-05 Phase 2.5d: the "open full AI workspace" link disambiguates
+  // QuickAsk (quick inline asks → FloatingChat panel) from /ai (full
+  // multi-turn workspace with tool calls + history). Without this link
+  // users didn't know the full workspace existed.
+  it('renders an "Open full AI workspace" link pointing to /ai', () => {
+    renderQuickAsk();
+    const link = screen.getByRole('link', { name: /open full ai workspace/i });
+    expect(link).toBeInTheDocument();
+    // Next.js Link prefixes the locale; assert the path tail.
+    expect(link.getAttribute('href')).toMatch(/\/ai$/);
   });
 });

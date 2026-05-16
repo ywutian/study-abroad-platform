@@ -258,7 +258,9 @@
         "predict": "What are my chances at MIT?",
         "essays": "Help me brainstorm a Common App essay",
         "schools": "Suggest 5 reach schools for CS"
-      }
+      },
+      "openFullWorkspace": "Open full AI workspace",
+      "openFullWorkspaceHint": "Need a longer conversation, tool calls, or history? Open the AI workspace."
     },
     "hub": {
       "title": "Workspace",
