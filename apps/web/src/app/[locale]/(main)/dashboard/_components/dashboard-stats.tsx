@@ -67,7 +67,12 @@ export function DashboardStats({ dashboard }: DashboardStatsProps) {
     {
       label: t('stats.verification'),
       value: t(`stats.verificationStatus.${signals?.verificationStatus ?? 'unverified'}`),
-      href: '/verification',
+      // 2026-05 fix: /verification doesn't exist as a user route (only
+      // /admin/verifications, which is ADMIN-only). The user-facing
+      // verification flow lives via the <VerificationStatusCard /> on
+      // the profile page. Linking to /verification produced a 404 (per
+      // production console screenshot 2026-05-16).
+      href: '/profile',
     },
     { label: t('stats.chatUnread'), value: signals?.chatUnread ?? 0, href: '/chat' },
   ];
