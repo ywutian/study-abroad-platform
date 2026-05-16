@@ -295,7 +295,9 @@
         "assessment": "测评",
         "assessmentDesc": "MBTI、霍兰德和更多",
         "aiLab": "AI 实验室",
-        "aiLabDesc": "实验性 AI 功能"
+        "aiLabDesc": "实验性 AI 功能",
+        "referral": "邀请有奖",
+        "referralDesc": "分享 Lumni — 朋友加入即可获得积分"
       },
       "stats": {
         "followers": "粉丝",
@@ -389,6 +391,8 @@
       "title": "申请进度",
       "viewAll": "查看全部 →",
       "celebrate": "🎉 已收到 {count} 份录取通知，恭喜！",
+      "labelOutcomeHint": "帮助校准 Lumni 的预测 — 标注真实结果",
+      "labelOutcomeCta": "标注结果",
       "status": {
         "submitted": "已提交",
         "accepted": "已录取",

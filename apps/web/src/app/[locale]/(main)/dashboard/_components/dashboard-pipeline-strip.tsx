@@ -1,7 +1,15 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, Clock, HelpCircle, Trophy, XCircle, type LucideIcon } from 'lucide-react';
+import {
+  CheckCircle2,
+  ClipboardEdit,
+  Clock,
+  HelpCircle,
+  Trophy,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
 
 import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -118,16 +126,25 @@ export function DashboardPipelineStrip({
                 ? PILL_META.submitted
                 : PILL_META[decision.status.toLowerCase() as Exclude<PillKind, 'submitted'>];
             const Icon = meta.icon;
+            // 2026-05 Phase 2.6 #26: decided rows get a "Label result"
+            // CTA so users can feed the real admission outcome back into
+            // Lumni's prediction calibration loop (PredictionResult.
+            // outcomeLabel is schema-ready). This is the data-flywheel
+            // moat — competitors don't ask users to log outcomes, so
+            // every accepted/rejected label we capture compounds.
+            const canLabelOutcome =
+              decision.status === 'ACCEPTED' ||
+              decision.status === 'REJECTED' ||
+              decision.status === 'WAITLISTED';
             return (
               <li key={decision.id}>
-                <Link
-                  href="/timeline"
+                <div
                   className={cn(
                     'flex items-center justify-between gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
                     'px-2 py-1 transition-colors hover:bg-[color:var(--theme-control-hover-bg)]'
                   )}
                 >
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <Link href="/timeline" className="flex min-w-0 flex-1 items-center gap-2">
                     <Icon
                       className={cn(
                         'h-3.5 w-3.5 shrink-0',
@@ -138,7 +155,7 @@ export function DashboardPipelineStrip({
                       {decision.schoolName}
                       <span className="text-muted-foreground"> · {decision.round}</span>
                     </span>
-                  </div>
+                  </Link>
                   <span
                     className={cn(
                       'shrink-0 text-2xs font-medium',
@@ -150,7 +167,24 @@ export function DashboardPipelineStrip({
                   <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">
                     {formatRelativeTime(decision.decidedAt, t)}
                   </span>
-                </Link>
+                  {canLabelOutcome && (
+                    <Link
+                      href={{
+                        pathname: '/prediction',
+                        query: { schoolId: decision.schoolId, label: 'outcome' },
+                      }}
+                      title={t('labelOutcomeHint')}
+                      className={cn(
+                        'shrink-0 inline-flex items-center gap-1 rounded-full border',
+                        'border-primary/30 bg-primary/5 px-2 py-0.5 text-2xs font-medium text-primary',
+                        'transition-colors hover:bg-primary/10'
+                      )}
+                    >
+                      <ClipboardEdit className="h-3 w-3" aria-hidden="true" />
+                      {t('labelOutcomeCta')}
+                    </Link>
+                  )}
+                </div>
               </li>
             );
           })}
