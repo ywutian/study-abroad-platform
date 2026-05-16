@@ -18,6 +18,7 @@ import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
+import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { apiClient } from '@/lib/api';
 import { Link } from '@/lib/i18n/navigation';
 
@@ -99,6 +100,11 @@ export default function DashboardPage() {
     registerTour({
       id: TOURS.DASHBOARD,
       steps: getDashboardTourSteps(tTour),
+      // 2026-05 Gap D closure: emit tour outcome events so funnel F7
+      // (tour outcome → D7 retention correlation) can activate.
+      // PII-safe — both callbacks emit no user data.
+      onComplete: () => trackEvent(DASHBOARD_EVENTS.tourCompleted),
+      onSkip: () => trackEvent(DASHBOARD_EVENTS.tourSkipped),
     });
     // Auto-start only if not already completed AND the page has had a
     // tick to render so targets exist. 800ms is enough for animations

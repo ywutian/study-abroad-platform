@@ -18,16 +18,20 @@ funnels in the PR description.
 
 ## Event catalog
 
-| Event                                    | Trigger                                          | Properties                                                | Surface                          |
-| ---------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- | -------------------------------- |
-| `dashboard_quick_ask_submitted`          | User submits the QuickAsk input form             | `source: 'typed'`, `messageLength: number`                | `dashboard-quick-ask.tsx`        |
-| `dashboard_quick_ask_suggestion_clicked` | User clicks one of the 3 suggestion chips        | `suggestionIndex: 0\|1\|2`                                | `dashboard-quick-ask.tsx`        |
-| `dashboard_quick_add_school_opened`      | User opens the QuickAddSchool popover            | (none)                                                    | `dashboard-quick-add-school.tsx` |
-| `dashboard_quick_add_school_added`       | User clicks a school result and the add succeeds | `schoolId: string`, `resultsAtSelectTime: number`         | `dashboard-quick-add-school.tsx` |
-| `dashboard_essay_coach_cta_clicked`      | User clicks "Continue →" on EssayCoach           | `essayId: string`, `type: 'review'\|'polish'`             | `dashboard-essay-coach.tsx`      |
-| `dashboard_decision_panel_impression`    | DecisionPanel renders (dedup'd 60s TTL)          | `accepted`, `waitlisted`, `rejected`, `withdrawn: number` | `dashboard-decision-panel.tsx`   |
-| `dashboard_hub_link_clicked`             | User clicks a WorkspaceHub link (16 options)     | `href: string`                                            | `dashboard-workspace-hub.tsx`    |
-| `dashboard_hub_stat_clicked`             | User clicks a WorkspaceHub stat tile (9 options) | `href: string`                                            | `dashboard-workspace-hub.tsx`    |
+| Event                                        | Trigger                                              | Properties                                                | Surface                          |
+| -------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- | -------------------------------- |
+| `dashboard_quick_ask_submitted`              | User submits the QuickAsk input form                 | `source: 'typed'`, `messageLength: number`                | `dashboard-quick-ask.tsx`        |
+| `dashboard_quick_ask_suggestion_clicked`     | User clicks one of the 3 suggestion chips            | `suggestionIndex: 0\|1\|2`                                | `dashboard-quick-ask.tsx`        |
+| `dashboard_quick_ask_workspace_link_clicked` | User clicks "Open full AI workspace" link            | (none)                                                    | `dashboard-quick-ask.tsx`        |
+| `dashboard_quick_add_school_opened`          | User opens the QuickAddSchool popover                | (none)                                                    | `dashboard-quick-add-school.tsx` |
+| `dashboard_quick_add_school_added`           | User clicks a school result and the add succeeds     | `schoolId: string`, `resultsAtSelectTime: number`         | `dashboard-quick-add-school.tsx` |
+| `dashboard_essay_coach_cta_clicked`          | User clicks "Continue →" on EssayCoach               | `essayId: string`, `type: 'review'\|'polish'`             | `dashboard-essay-coach.tsx`      |
+| `dashboard_decision_panel_impression`        | DecisionPanel renders (dedup'd 60s TTL)              | `accepted`, `waitlisted`, `rejected`, `withdrawn: number` | `dashboard-decision-panel.tsx`   |
+| `dashboard_outcome_label_cta_clicked`        | User clicks "Label result" on a decided pipeline row | `schoolId: string`, `decisionStatus: string`              | `dashboard-pipeline-strip.tsx`   |
+| `dashboard_hub_link_clicked`                 | User clicks a WorkspaceHub link (16 options)         | `href: string`                                            | `dashboard-workspace-hub.tsx`    |
+| `dashboard_hub_stat_clicked`                 | User clicks a WorkspaceHub stat tile (9 options)     | `href: string`                                            | `dashboard-workspace-hub.tsx`    |
+| `dashboard_tour_completed`                   | First-visit tour reaches the final step              | (none)                                                    | `dashboard/page.tsx`             |
+| `dashboard_tour_skipped`                     | First-visit tour closed before completion            | (none)                                                    | `dashboard/page.tsx`             |
 
 ## PII safety
 
@@ -114,21 +118,17 @@ load the rarely-used routes).
 
 ## Future funnels (gaps to wire)
 
-Several dashboard surfaces have been **shipped without analytics
-wiring** — listed here so the gap is visible and gets closed before
-each becomes a guessing-game.
+Tracking dashboard surfaces shipped without analytics. As each gap is
+closed, mark with a date instead of removing — keeps the audit trail
+of when each measurement became available.
 
-### Gap A: Outcome labeling adoption (Phase 2.6 #26)
+### ✅ Gap A: Outcome labeling adoption (closed 2026-05)
 
-The "Label result" CTA on PipelineStrip decision rows links to
-`/prediction?label=outcome&schoolId=…` but emits no event. We can't
-currently answer "what fraction of decided rows get their outcome
-labeled?" — and that fraction IS the data-flywheel adoption metric.
+The "Label result" CTA on PipelineStrip decision rows now emits
+`dashboard_outcome_label_cta_clicked` with `{ schoolId, decisionStatus }`.
+**Funnel F6 below is now active.**
 
-To close: add `dashboard_outcome_label_cta_clicked` with
-`{ schoolId, decisionStatus }`. F6 below would activate immediately.
-
-### Gap B: Referral entry traffic (Phase 2.6 #25)
+### Gap B: Referral entry traffic (Phase 2.6 #25) — _deferred_
 
 The new "Invite & Earn" tile fires `dashboard_hub_link_clicked` with
 `href: '/referral'` (it shares the existing Hub event). That works
@@ -136,32 +136,24 @@ for F5 distribution but doesn't separate "Invite tile interest" from
 ambient Hub browsing.
 
 To close: optional — add a dedicated tile-impression dimension or
-accept the Hub event as good-enough proxy.
+accept the Hub event as good-enough proxy. Left deferred because the
+Hub event proxy is acceptable until we want to A/B the tile copy.
 
-### Gap C: AI workspace migration (Phase 2.5d)
+### ✅ Gap C: AI workspace migration (closed 2026-05)
 
-The "Open full AI workspace" link in QuickAsk is a `<Link>` with no
-`onClick={trackEvent}`. We can't tell whether users actually
-discover the full /ai workspace via this affordance vs landing
-directly.
+The "Open full AI workspace" link in QuickAsk now emits
+`dashboard_quick_ask_workspace_link_clicked` (no properties — single-
+purpose event).
 
-To close: add `dashboard_quick_ask_workspace_link_clicked` (no
-properties needed — single-purpose event).
+### ✅ Gap D: Dashboard tour engagement (closed 2026-05)
 
-### Gap D: Dashboard tour engagement (Phase 2.7 #27)
-
-The driver.js tour has `onComplete` / `onSkip` callbacks but no
-trackEvent wiring. We can't currently answer "what fraction of
-first-visit users complete the tour vs skip after step 1?" — which
-is core onboarding signal.
-
-To close: in the registerTour() call from `dashboard/page.tsx`, pass
-`onComplete` and `onSkip` that emit `dashboard_tour_completed` and
-`dashboard_tour_skipped` (with `lastStepReached` for the skip path).
+The first-visit tour now emits `dashboard_tour_completed` (final step
+reached) and `dashboard_tour_skipped` (closed early). **Funnel F7
+below is now active.**
 
 ## Active funnels
 
-### F6: Outcome labeling adoption _(blocked on Gap A above)_
+### F6: Outcome labeling adoption
 
 ```
 dashboard_decision_panel_impression          [Stage G surface viewed]
@@ -176,7 +168,7 @@ label within 7 days of the decision appearing on the dashboard? This
 is Lumni's **data-flywheel adoption rate** — the metric that
 quantifies the moat.
 
-### F7: Tour engagement _(blocked on Gap D above)_
+### F7: Tour engagement
 
 ```
 [first dashboard visit] → tour auto-starts after 800ms

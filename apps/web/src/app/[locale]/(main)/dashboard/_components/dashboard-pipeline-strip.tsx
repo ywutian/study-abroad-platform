@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { Link } from '@/lib/i18n/navigation';
+import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import type { DashboardWorkbench } from './dashboard-workbench-model';
 
@@ -174,6 +175,17 @@ export function DashboardPipelineStrip({
                         query: { schoolId: decision.schoolId, label: 'outcome' },
                       }}
                       title={t('labelOutcomeHint')}
+                      onClick={() =>
+                        // 2026-05 Gap A closure: emit the outcome-label
+                        // click so funnel F6 (data-flywheel adoption) can
+                        // measure what fraction of decided rows feed the
+                        // calibration loop. schoolId is already user-owned
+                        // (this is the user's own SchoolListItem) — PII-safe.
+                        trackEvent(DASHBOARD_EVENTS.outcomeLabelCtaClicked, {
+                          schoolId: decision.schoolId,
+                          decisionStatus: decision.status,
+                        })
+                      }
                       className={cn(
                         'shrink-0 inline-flex items-center gap-1 rounded-full border',
                         'border-primary/30 bg-primary/5 px-2 py-0.5 text-2xs font-medium text-primary',
