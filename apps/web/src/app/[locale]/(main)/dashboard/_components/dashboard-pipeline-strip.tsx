@@ -105,6 +105,58 @@ export function DashboardPipelineStrip({
           );
         })}
       </div>
+
+      {/* 2026-05: Per-school decision rows. Replaces the previous "opaque
+          counts only" experience with concrete school + round + decision
+          age, so users immediately see WHICH schools they've heard back
+          from without leaving the dashboard. */}
+      {pipeline.recentDecisions.length > 0 && (
+        <ul className="mt-3 space-y-1 border-t border-border pt-2">
+          {pipeline.recentDecisions.map((decision) => {
+            const meta =
+              decision.status === 'SUBMITTED'
+                ? PILL_META.submitted
+                : PILL_META[decision.status.toLowerCase() as Exclude<PillKind, 'submitted'>];
+            const Icon = meta.icon;
+            return (
+              <li key={decision.id}>
+                <Link
+                  href="/timeline"
+                  className={cn(
+                    'flex items-center justify-between gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
+                    'px-2 py-1 transition-colors hover:bg-[color:var(--theme-control-hover-bg)]'
+                  )}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <Icon
+                      className={cn(
+                        'h-3.5 w-3.5 shrink-0',
+                        meta.className.split(' ').find((c) => c.startsWith('text-'))
+                      )}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-xs font-medium">
+                      {decision.schoolName}
+                      <span className="text-muted-foreground"> · {decision.round}</span>
+                    </span>
+                  </div>
+                  <span
+                    className={cn(
+                      'shrink-0 text-2xs font-medium',
+                      meta.className.split(' ').find((c) => c.startsWith('text-'))
+                    )}
+                  >
+                    {t(`status.${decision.status.toLowerCase() as PillKind}`)}
+                  </span>
+                  <span className="shrink-0 text-2xs tabular-nums text-muted-foreground">
+                    {formatRelativeTime(decision.decidedAt, t)}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
       {/* Highlight when the user has any acceptance — celebratory copy
           replaces the bland "you have 1 submitted application" tone. */}
       {pipeline.accepted > 0 && (
@@ -112,4 +164,29 @@ export function DashboardPipelineStrip({
       )}
     </div>
   );
+}
+
+/**
+ * Renders "3d ago", "yesterday", "today" etc. Locale-agnostic via
+ * the shared dashboard.pipelineStrip i18n keys. Uses simple thresholds
+ * — no date-fns dependency added for one usage.
+ */
+function formatRelativeTime(
+  iso: string,
+  t: (key: string, values?: Record<string, number>) => string
+): string {
+  const target = new Date(iso).getTime();
+  const now = Date.now();
+  const diffMs = now - target;
+  const diffSec = Math.max(0, Math.floor(diffMs / 1000));
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffSec < 60) return t('relativeJustNow');
+  if (diffMin < 60) return t('relativeMin', { count: diffMin });
+  if (diffHr < 24) return t('relativeHour', { count: diffHr });
+  if (diffDay < 7) return t('relativeDay', { count: diffDay });
+  if (diffDay < 30) return t('relativeWeek', { count: Math.floor(diffDay / 7) });
+  return t('relativeMonth', { count: Math.floor(diffDay / 30) });
 }

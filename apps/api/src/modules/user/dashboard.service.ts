@@ -146,6 +146,26 @@ export interface DashboardWorkbench {
     rejected: number;
     waitlisted: number;
     withdrawn: number;
+    /**
+     * 2026-05: Per-school decision rows (top 5 by updatedAt desc) so the
+     * dashboard can show "Stanford EA — Accepted, decided 3 days ago"
+     * inline below the pipeline pills, instead of just opaque counts.
+     * `decidedAt` uses ApplicationTimeline.updatedAt as proxy (the
+     * schema doesn't have a dedicated decision-date column yet).
+     */
+    recentDecisions: Array<{
+      id: string;
+      schoolId: string;
+      schoolName: string;
+      round: string;
+      status:
+        | 'SUBMITTED'
+        | 'ACCEPTED'
+        | 'REJECTED'
+        | 'WAITLISTED'
+        | 'WITHDRAWN';
+      decidedAt: string;
+    }>;
   };
 }
 
@@ -203,6 +223,7 @@ export class DashboardService {
       overdueTaskCount,
       timelineCoverage,
       pipelineGroups,
+      recentDecisionRows,
     ] = await Promise.all([
       // 用户信息
       this.prisma.user.findUnique({
@@ -382,6 +403,36 @@ export class DashboardService {
         where: { userId },
         _count: { status: true },
       }),
+
+      // 2026-05: Per-school decisions — top 5 most-recently-updated rows
+      // whose status is past IN_PROGRESS. Surfaced inline beneath the
+      // pipeline pills so users see "Stanford EA — Accepted (3d ago)"
+      // instead of just opaque counts.
+      this.prisma.applicationTimeline.findMany({
+        where: {
+          userId,
+          status: {
+            in: [
+              'SUBMITTED',
+              'ACCEPTED',
+              'REJECTED',
+              'WAITLISTED',
+              'WITHDRAWN',
+            ],
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          schoolId: true,
+          schoolName: true,
+          round: true,
+          status: true,
+          updatedAt: true,
+          school: { select: { name: true, nameZh: true } },
+        },
+      }),
     ]);
 
     // 计算档案完成度（传入选校数据用于权重计算）
@@ -479,8 +530,9 @@ export class DashboardService {
     // 2026-05: Reduce ApplicationStatus groupBy into a stable shape with
     // every status defaulted to 0. Frontend renders the strip only when
     // the user has at least one school past IN_PROGRESS, so no UI noise
-    // for brand-new accounts.
-    const pipeline = {
+    // for brand-new accounts. recentDecisions carries per-school details
+    // for rendering inline below the count pills.
+    const pipeline: NonNullable<DashboardWorkbench['pipeline']> = {
       notStarted: 0,
       inProgress: 0,
       submitted: 0,
@@ -488,6 +540,25 @@ export class DashboardService {
       rejected: 0,
       waitlisted: 0,
       withdrawn: 0,
+      recentDecisions: recentDecisionRows.map((row) => ({
+        id: row.id,
+        schoolId: row.schoolId,
+        // Prefer relation name when available (handles renames after
+        // ApplicationTimeline.schoolName was first set); fall back to the
+        // denormalized cached column.
+        schoolName: getSchoolDisplayName(
+          row.school ?? { name: row.schoolName, nameZh: null },
+          locale,
+        ),
+        round: row.round,
+        status: row.status as
+          | 'SUBMITTED'
+          | 'ACCEPTED'
+          | 'REJECTED'
+          | 'WAITLISTED'
+          | 'WITHDRAWN',
+        decidedAt: row.updatedAt.toISOString(),
+      })),
     };
     for (const row of pipelineGroups) {
       const count = row._count.status;

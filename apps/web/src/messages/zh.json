@@ -367,7 +367,13 @@
         "rejected": "未录取",
         "waitlisted": "Waitlist",
         "withdrawn": "已撤回"
-      }
+      },
+      "relativeJustNow": "刚刚",
+      "relativeMin": "{count} 分钟前",
+      "relativeHour": "{count} 小时前",
+      "relativeDay": "{count} 天前",
+      "relativeWeek": "{count} 周前",
+      "relativeMonth": "{count} 个月前"
     },
     "recentActivity": "最近动态",
     "noRecentActivity": "暂无最近动态",
