@@ -131,6 +131,22 @@ export interface DashboardWorkbench {
     severity: DashboardSeverity;
     href: string;
   }[];
+  /**
+   * 2026-05: Pipeline snapshot — counts of ApplicationTimeline rows by
+   * status. Closes the lifecycle gap where dashboards used to "forget"
+   * about a school the moment the user marked it SUBMITTED. Optional
+   * because the frontend fallback (createFallbackWorkbench) does not
+   * have the raw timeline data.
+   */
+  pipeline?: {
+    notStarted: number;
+    inProgress: number;
+    submitted: number;
+    accepted: number;
+    rejected: number;
+    waitlisted: number;
+    withdrawn: number;
+  };
 }
 
 type DashboardPriorityTaskSource = {
@@ -186,6 +202,7 @@ export class DashboardService {
       priorityTasks,
       overdueTaskCount,
       timelineCoverage,
+      pipelineGroups,
     ] = await Promise.all([
       // 用户信息
       this.prisma.user.findUnique({
@@ -356,6 +373,15 @@ export class DashboardService {
         },
         select: { schoolId: true, round: true },
       }),
+
+      // 2026-05: Pipeline snapshot — count timelines per ApplicationStatus
+      // so the dashboard can surface "X submitted, Y awaiting decision, Z
+      // accepted" instead of pretending submitted schools don't exist.
+      this.prisma.applicationTimeline.groupBy({
+        by: ['status'],
+        where: { userId },
+        _count: { status: true },
+      }),
     ]);
 
     // 计算档案完成度（传入选校数据用于权重计算）
@@ -449,6 +475,47 @@ export class DashboardService {
 
     // 构建最近活动
     const recentActivity = this.buildRecentActivity(pointHistory);
+
+    // 2026-05: Reduce ApplicationStatus groupBy into a stable shape with
+    // every status defaulted to 0. Frontend renders the strip only when
+    // the user has at least one school past IN_PROGRESS, so no UI noise
+    // for brand-new accounts.
+    const pipeline = {
+      notStarted: 0,
+      inProgress: 0,
+      submitted: 0,
+      accepted: 0,
+      rejected: 0,
+      waitlisted: 0,
+      withdrawn: 0,
+    };
+    for (const row of pipelineGroups) {
+      const count = row._count.status;
+      switch (row.status) {
+        case 'NOT_STARTED':
+          pipeline.notStarted = count;
+          break;
+        case 'IN_PROGRESS':
+          pipeline.inProgress = count;
+          break;
+        case 'SUBMITTED':
+          pipeline.submitted = count;
+          break;
+        case 'ACCEPTED':
+          pipeline.accepted = count;
+          break;
+        case 'REJECTED':
+          pipeline.rejected = count;
+          break;
+        case 'WAITLISTED':
+          pipeline.waitlisted = count;
+          break;
+        case 'WITHDRAWN':
+          pipeline.withdrawn = count;
+          break;
+      }
+    }
+
     const workbench = this.buildWorkbench({
       locale,
       completeness,
@@ -464,6 +531,7 @@ export class DashboardService {
       priorityTasks,
       timelineCoverage,
       schoolListWithDeadlines,
+      pipeline,
       now,
     });
 
@@ -518,6 +586,7 @@ export class DashboardService {
     priorityTasks,
     timelineCoverage,
     schoolListWithDeadlines,
+    pipeline,
     now,
   }: {
     locale: string;
@@ -534,6 +603,7 @@ export class DashboardService {
     priorityTasks: DashboardPriorityTaskSource[];
     timelineCoverage: { schoolId: string; round: string }[];
     schoolListWithDeadlines: Array<{ schoolId: string; round: string | null }>;
+    pipeline: NonNullable<DashboardWorkbench['pipeline']>;
     now: Date;
   }): DashboardWorkbench {
     const balancedSchoolList =
@@ -745,6 +815,7 @@ export class DashboardService {
       },
       priorityQueue,
       deadlineStream,
+      pipeline,
     };
   }
 

@@ -345,6 +345,18 @@
         "success": "Ready"
       }
     },
+    "pipelineStrip": {
+      "title": "Application pipeline",
+      "viewAll": "View all →",
+      "celebrate": "{count, plural, one {🎉 # acceptance — congratulations!} other {🎉 # acceptances — congratulations!}}",
+      "status": {
+        "submitted": "Submitted",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "waitlisted": "Waitlisted",
+        "withdrawn": "Withdrawn"
+      }
+    },
     "recentActivity": "Recent Activity",
     "noRecentActivity": "No recent activity",
     "startExploring": "Start Exploring",
