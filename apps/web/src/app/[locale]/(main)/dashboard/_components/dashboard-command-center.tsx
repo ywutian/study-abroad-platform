@@ -255,7 +255,16 @@ export function DashboardCommandCenter({
               </div>
               <Progress value={workbench.readiness.score} className="h-1.5" />
               <p className="mt-1.5 text-xs text-muted-foreground">{tCenter('contributionHint')}</p>
-              <div className="mt-3 grid gap-2 lg:grid-cols-2">
+              {/*
+                2026-05 Phase 2.5a: 5 readiness items in equal-width columns
+                at lg+ (5 cols matches the 5 items, eliminating the previous
+                lg:grid-cols-2 layout that produced an awkward 2-2-1 trailing
+                row). Below lg, stay 2-col on sm tablets and 1-col on phones
+                so the row content (label + value) remains legible. Inner
+                card uses truncate + shrink-0 + flex-wrap badge area so it
+                handles the narrower (≈170-280px) cells cleanly.
+              */}
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
                 {workbench.readiness.items.map((item) => {
                   const meta = statusMeta[item.status];
                   // 2026-05: When the prediction row is in the "attention"
