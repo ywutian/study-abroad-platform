@@ -59,7 +59,13 @@ export function ChatConversationList({
   return (
     <Card
       className={cn(
-        'overflow-hidden flex flex-col min-h-0 py-0 gap-0',
+        // 2026-05 chat layout fix: `min-w-0` is mandatory on grid items
+        // — CSS Grid defaults to `min-width: auto` which refuses to
+        // shrink below the item's intrinsic content width. Without it,
+        // a long conversation title here forces the cell wider than
+        // the grid template's `minmax(280px, 360px)` allocation, which
+        // then cascades to clip the right panel.
+        'min-w-0 overflow-hidden flex flex-col min-h-0 py-0 gap-0',
         !showConversations && 'hidden lg:flex'
       )}
     >
