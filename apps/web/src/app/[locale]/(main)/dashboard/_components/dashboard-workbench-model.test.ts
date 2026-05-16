@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  buildTodoList,
   createFallbackWorkbench,
   getProfileGrade,
   type DashboardData,
@@ -57,32 +56,6 @@ describe('dashboard workbench model', () => {
     expect(getProfileGrade(20).grade).toBe('D');
   });
 
-  it('sorts school and personal deadlines into one todo list', () => {
-    const dashboard = makeDashboard({
-      upcomingDeadlines: [
-        {
-          id: 'school-2',
-          schoolName: 'Stanford',
-          round: 'RD',
-          deadline: '2026-01-15T00:00:00.000Z',
-          daysLeft: 20,
-        },
-      ],
-      upcomingPersonalEvents: [
-        {
-          id: 'event-1',
-          title: 'SAT',
-          category: 'TEST',
-          deadline: '2026-01-05T00:00:00.000Z',
-          eventDate: null,
-          daysLeft: 10,
-        },
-      ],
-    });
-
-    expect(buildTodoList(dashboard, 'en').map((item) => item.id)).toEqual(['event-1', 'school-2']);
-  });
-
   it('prioritizes profile work when fallback data has low readiness', () => {
     const dashboard = makeDashboard({
       profile: {
@@ -112,5 +85,58 @@ describe('dashboard workbench model', () => {
 
     expect(workbench.readiness.status).toBe('ready');
     expect(workbench.metrics.balancedSchoolList).toBe(true);
+  });
+
+  // 2026-05: readiness total must equal the sum of its items' contribution
+  // scores, so users can audit "20% readiness" against the four sub-scores
+  // without hitting the old "Readiness 20% / Profile 0%" contradiction.
+  it('readiness total equals the sum of per-item contribution scores', () => {
+    const dashboard = makeDashboard({
+      profile: {
+        completeness: 50,
+        hasTestScores: true,
+        hasActivities: false,
+        hasAwards: false,
+        targetSchoolCount: 3,
+        essayCount: 1,
+        schoolTiers: { reach: 1, target: 2, safety: 0 },
+      },
+      pendingTasks: { total: 2, byType: [], profileGaps: [] },
+    });
+
+    const workbench = createFallbackWorkbench(dashboard, fallbackCopy);
+    const items = workbench.readiness.items;
+
+    expect(items).toHaveLength(4);
+    for (const item of items) {
+      expect(item.contributionScore).toBeDefined();
+      expect(item.contributionDenom).toBeDefined();
+      expect(item.value).toBe(`${item.contributionScore}/${item.contributionDenom}`);
+    }
+
+    const sum = items.reduce((acc, item) => acc + (item.contributionScore ?? 0), 0);
+    expect(workbench.readiness.score).toBe(Math.min(100, sum));
+  });
+
+  it('emits zero contribution scores for a brand-new empty profile', () => {
+    const dashboard = makeDashboard({
+      profile: {
+        completeness: 0,
+        hasTestScores: false,
+        hasActivities: false,
+        hasAwards: false,
+        targetSchoolCount: 0,
+        essayCount: 0,
+        schoolTiers: { reach: 0, target: 0, safety: 0 },
+      },
+      pendingTasks: { total: 0, byType: [], profileGaps: [] },
+    });
+
+    const workbench = createFallbackWorkbench(dashboard, fallbackCopy);
+    expect(workbench.readiness.score).toBe(15); // only timeline (no pending) contributes
+    expect(workbench.readiness.items[0].contributionScore).toBe(0);
+    expect(workbench.readiness.items[1].contributionScore).toBe(0);
+    expect(workbench.readiness.items[2].contributionScore).toBe(0);
+    expect(workbench.readiness.items[3].contributionScore).toBe(15);
   });
 });

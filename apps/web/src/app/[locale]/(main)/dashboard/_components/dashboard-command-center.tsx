@@ -17,19 +17,32 @@ import {
   Gauge,
   ListChecks,
   School,
+  Sparkles,
+  TrendingUp,
   User,
 } from 'lucide-react';
-import type {
-  DashboardPriorityItem,
-  DashboardReadinessStatus,
-  DashboardSeverity,
-  DashboardWorkbench,
+import {
+  getProfileGrade,
+  type DashboardPriorityItem,
+  type DashboardReadinessStatus,
+  type DashboardSeverity,
+  type DashboardWorkbench,
 } from './dashboard-workbench-model';
 
 interface DashboardCommandCenterProps {
   workbench: DashboardWorkbench;
   completingTaskId?: string | null;
   onCompleteTask: (item: DashboardPriorityItem) => void;
+  /**
+   * Raw profile completeness percentage (0-100). Used to derive the
+   * Profile Grade badge shown on the readiness item and to detect the
+   * 0% empty-state onboarding scenario.
+   */
+  completeness: number;
+  /** Tier breakdown shown as badges on the schools readiness item. */
+  schoolTiers: { reach: number; target: number; safety: number };
+  /** Total school count, used to detect the 0%/0-schools empty state. */
+  schoolCount: number;
 }
 
 const severityMeta: Record<
@@ -101,10 +114,21 @@ export function DashboardCommandCenter({
   workbench,
   completingTaskId,
   onCompleteTask,
+  completeness,
+  schoolTiers,
+  schoolCount,
 }: DashboardCommandCenterProps) {
   const t = useTranslations('dashboard.workbench');
+  const tCenter = useTranslations('dashboard.commandCenter');
+  const tStats = useTranslations('dashboard.stats');
   const topAction = workbench.priorityQueue[0];
   const topSeverity = topAction ? severityMeta[topAction.severity] : severityMeta.normal;
+  const grade = getProfileGrade(completeness);
+  // 2026-05: when a brand-new user has zero profile data AND zero schools,
+  // showing "0%" everywhere is demoralizing. Switch the hero region to a
+  // welcoming onboarding card instead. The right column (priority queue +
+  // deadline stream) keeps rendering normally so the page never feels empty.
+  const isEmptyOnboarding = completeness === 0 && schoolCount === 0;
   const formatDeadline = (daysLeft: number) => {
     if (daysLeft < 0) return t('deadlineOverdue', { count: Math.abs(daysLeft) });
     if (daysLeft === 0) return t('deadlineToday');
@@ -122,32 +146,55 @@ export function DashboardCommandCenter({
                   <Badge variant="secondary">{t('label')}</Badge>
                   <span className="text-xs text-muted-foreground">{t('rhythm')}</span>
                 </div>
-                <div className="mt-4 flex items-start gap-3">
-                  <span
-                    className={cn(
-                      'flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border',
-                      topSeverity.border
-                    )}
-                  >
-                    {topAction ? (
-                      <PriorityKindIcon kind={topAction.kind} className="h-5 w-5" />
-                    ) : (
-                      <ClipboardList className="h-5 w-5" />
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <h2 className="text-xl font-semibold tracking-normal sm:text-2xl">
-                      {topAction?.title ?? t('emptyTitle')}
-                    </h2>
-                    <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-                      {topAction?.description ?? t('emptyDescription')}
-                    </p>
+                {isEmptyOnboarding ? (
+                  <div className="mt-4 flex items-start gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border border-primary/25 bg-primary/5">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="text-xl font-semibold tracking-normal sm:text-2xl">
+                        {tCenter('onboarding.title')}
+                      </h2>
+                      <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+                        {tCenter('onboarding.description')}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="mt-4 flex items-start gap-3">
+                    <span
+                      className={cn(
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--theme-radius-card)] border',
+                        topSeverity.border
+                      )}
+                    >
+                      {topAction ? (
+                        <PriorityKindIcon kind={topAction.kind} className="h-5 w-5" />
+                      ) : (
+                        <ClipboardList className="h-5 w-5" />
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="text-xl font-semibold tracking-normal sm:text-2xl">
+                        {topAction?.title ?? t('emptyTitle')}
+                      </h2>
+                      <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+                        {topAction?.description ?? t('emptyDescription')}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="shrink-0">
-                {topAction ? (
+                {isEmptyOnboarding ? (
+                  <Button asChild className="w-full sm:w-auto">
+                    <Link href="/profile">
+                      {tCenter('onboarding.cta')}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : topAction ? (
                   <Button asChild className="w-full sm:w-auto">
                     <Link href={topAction.href}>
                       {t('primaryCta')}
@@ -158,33 +205,29 @@ export function DashboardCommandCenter({
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <MetricTile label={t('score')} value={`${workbench.readiness.score}%`} />
-              <MetricTile label={t('due7')} value={workbench.metrics.due7} />
-              <MetricTile label={t('due30')} value={workbench.metrics.due30} />
-              <MetricTile
-                label={t('timelineGaps')}
-                value={workbench.metrics.missingTimelineCount}
-                tone={workbench.metrics.missingTimelineCount > 0 ? 'warning' : 'success'}
-              />
-            </div>
-
             <div className="mt-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-semibold">{t('readiness')}</h3>
-                <Badge
-                  variant={
-                    workbench.readiness.status === 'ready'
-                      ? 'success'
-                      : workbench.readiness.status === 'attention'
-                        ? 'warning'
-                        : 'destructive'
-                  }
-                >
-                  {t(`status.${workbench.readiness.status}`)}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+                    {workbench.readiness.score}
+                    <span className="text-xs">/100</span>
+                  </span>
+                  <Badge
+                    variant={
+                      workbench.readiness.status === 'ready'
+                        ? 'success'
+                        : workbench.readiness.status === 'attention'
+                          ? 'warning'
+                          : 'destructive'
+                    }
+                  >
+                    {t(`status.${workbench.readiness.status}`)}
+                  </Badge>
+                </div>
               </div>
               <Progress value={workbench.readiness.score} className="h-1.5" />
+              <p className="mt-1.5 text-xs text-muted-foreground">{tCenter('contributionHint')}</p>
               <div className="mt-3 grid gap-2 lg:grid-cols-2">
                 {workbench.readiness.items.map((item) => {
                   const meta = statusMeta[item.status];
@@ -203,6 +246,51 @@ export function DashboardCommandCenter({
                           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                             {item.description}
                           </p>
+                          {/* Profile row: surface the Profile Grade letter
+                              (independent signal from the contribution score). */}
+                          {item.key === 'profile' && (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'mt-2 px-1.5 py-0 text-2xs',
+                                grade.color,
+                                grade.bgColor
+                              )}
+                            >
+                              <TrendingUp className="h-3 w-3" />
+                              {tStats('profileScore')}: {grade.grade}
+                            </Badge>
+                          )}
+                          {/* Schools row: surface tier breakdown when at
+                              least one school is listed. */}
+                          {item.key === 'schools' && schoolCount > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {schoolTiers.reach > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-destructive/30 bg-destructive/10 px-1.5 py-0 text-2xs text-destructive"
+                                >
+                                  {tStats('reach')} {schoolTiers.reach}
+                                </Badge>
+                              )}
+                              {schoolTiers.target > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-primary/30 bg-primary/10 px-1.5 py-0 text-2xs text-primary"
+                                >
+                                  {tStats('target')} {schoolTiers.target}
+                                </Badge>
+                              )}
+                              {schoolTiers.safety > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-success/30 bg-success/10 px-1.5 py-0 text-2xs text-success"
+                                >
+                                  {tStats('safety')} {schoolTiers.safety}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <span className="shrink-0 text-sm font-semibold tabular-nums">
                           {item.value}
@@ -224,7 +312,12 @@ export function DashboardCommandCenter({
             </div>
 
             <div className="mt-3 space-y-2">
-              {workbench.priorityQueue.map((item) => {
+              {/*
+                Skip index 0 — it's already shown as the hero in the left
+                column. Showing it twice in one card was one of the explicit
+                redundancies users complained about.
+              */}
+              {workbench.priorityQueue.slice(1).map((item) => {
                 const meta = severityMeta[item.severity];
                 const isCompleting =
                   completingTaskId === item.id ||
@@ -316,28 +409,6 @@ export function DashboardCommandCenter({
   );
 }
 
-function MetricTile({
-  label,
-  value,
-  tone = 'normal',
-}: {
-  label: string;
-  value: string | number;
-  tone?: 'normal' | 'warning' | 'success';
-}) {
-  return (
-    <div
-      className={cn(
-        'rounded-[var(--theme-radius-card)] border px-3 py-2.5',
-        tone === 'warning'
-          ? 'border-warning/25 bg-warning/5'
-          : tone === 'success'
-            ? 'border-success/25 bg-success/5'
-            : 'border-border bg-[color:var(--theme-control-bg)]'
-      )}
-    >
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
-    </div>
-  );
-}
+// MetricTile removed 2026-05: its content (Score / Due7 / Due30 / TimelineGaps)
+// duplicated the readiness progress + contribution items below, contributing to
+// the "too many too messy" complaint.

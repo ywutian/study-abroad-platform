@@ -10,7 +10,17 @@ export interface DashboardWorkbench {
     items: {
       key: 'profile' | 'schools' | 'essays' | 'timeline';
       label: string;
+      /**
+       * Free-text value still used as fallback when contribution* is absent.
+       * New code should prefer the contribution-score pair (X/Y) to keep
+       * Readiness total = sum of items' contributions, eliminating the
+       * "Readiness 20% / Profile 0%" visual contradiction.
+       */
       value: string;
+      /** Score this item contributes to the overall Readiness total. */
+      contributionScore?: number;
+      /** Max possible contribution from this item. */
+      contributionDenom?: number;
       status: DashboardReadinessStatus;
       href: string;
       description: string;
@@ -117,16 +127,6 @@ export interface DashboardData {
   workbench?: DashboardWorkbench;
 }
 
-export interface TodoItem {
-  id: string;
-  type: 'school' | 'event';
-  title: string;
-  subtitle: string;
-  date: Date;
-  dateStr: string;
-  daysLeft: number;
-}
-
 export function getProfileGrade(completeness: number): {
   grade: string;
   color: string;
@@ -141,44 +141,9 @@ export function getProfileGrade(completeness: number): {
   return { grade: 'D', color: 'text-destructive', bgColor: 'bg-destructive/10' };
 }
 
-export function buildTodoList(dashboard: DashboardData | undefined, locale: string): TodoItem[] {
-  const items: TodoItem[] = [];
-  const dateFmt = new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-
-  for (const d of dashboard?.upcomingDeadlines ?? []) {
-    const date = new Date(d.deadline);
-    items.push({
-      id: d.id,
-      type: 'school',
-      title: d.schoolName,
-      subtitle: d.round,
-      date,
-      dateStr: dateFmt.format(date),
-      daysLeft: d.daysLeft,
-    });
-  }
-
-  for (const ev of dashboard?.upcomingPersonalEvents ?? []) {
-    const raw = ev.deadline ?? ev.eventDate;
-    if (!raw) continue;
-    const date = new Date(raw);
-    items.push({
-      id: ev.id,
-      type: 'event',
-      title: ev.title,
-      subtitle: ev.category,
-      date,
-      dateStr: dateFmt.format(date),
-      daysLeft: ev.daysLeft,
-    });
-  }
-
-  items.sort((a, b) => a.date.getTime() - b.date.getTime());
-  return items.slice(0, 10);
-}
+// 2026-05: `buildTodoList` and `TodoItem` were removed. Their consumer
+// (DashboardDeadlines card) is deleted; deadline display now lives in
+// CommandCenter.deadlineStream, which is constructed by the API.
 
 export function createFallbackWorkbench(
   dashboard: DashboardData | undefined,
@@ -212,14 +177,19 @@ export function createFallbackWorkbench(
     dashboard.profile.schoolTiers.target > 0 &&
     dashboard.profile.schoolTiers.safety > 0
   );
+  // ── Readiness contribution scores (per-item breakdown of total score) ──
+  // Profile up to 45 pts (45% of total)
+  // Schools up to 25 pts (25% of total, scaled by min(schoolCount/6, 1))
+  // Essays up to 15 pts (binary: has at least 1 essay)
+  // Timeline up to 15 pts (15 when no pending, scales down with pending count)
+  // The four contributions sum to the Readiness total — users can audit it.
+  const profileContribution = Math.round(completeness * 0.45);
+  const schoolsContribution = Math.round(Math.min(schoolCount / 6, 1) * 25);
+  const essaysContribution = essayCount > 0 ? 15 : 0;
+  const timelineContribution = pending === 0 ? 15 : Math.max(0, 12 - Math.min(pending, 12));
   const score = Math.min(
     100,
-    Math.round(
-      completeness * 0.45 +
-        Math.min(schoolCount / 6, 1) * 25 +
-        (essayCount > 0 ? 15 : 0) +
-        (pending === 0 ? 15 : Math.max(0, 12 - Math.min(pending, 12)))
-    )
+    profileContribution + schoolsContribution + essaysContribution + timelineContribution
   );
   const priorityQueue: DashboardPriorityItem[] = [];
 
@@ -278,7 +248,9 @@ export function createFallbackWorkbench(
         {
           key: 'profile',
           label: copy.profile,
-          value: `${completeness}%`,
+          value: `${profileContribution}/45`,
+          contributionScore: profileContribution,
+          contributionDenom: 45,
           status: completeness >= 75 ? 'ready' : completeness >= 40 ? 'attention' : 'blocked',
           href: '/profile',
           description: copy.profileDesc,
@@ -286,7 +258,9 @@ export function createFallbackWorkbench(
         {
           key: 'schools',
           label: copy.schools,
-          value: String(schoolCount),
+          value: `${schoolsContribution}/25`,
+          contributionScore: schoolsContribution,
+          contributionDenom: 25,
           status:
             schoolCount >= 6 && balancedSchoolList
               ? 'ready'
@@ -299,7 +273,9 @@ export function createFallbackWorkbench(
         {
           key: 'essays',
           label: copy.essays,
-          value: String(essayCount),
+          value: `${essaysContribution}/15`,
+          contributionScore: essaysContribution,
+          contributionDenom: 15,
           status: essayCount > 0 ? 'ready' : 'attention',
           href: '/essays',
           description: copy.essaysDesc,
@@ -307,7 +283,9 @@ export function createFallbackWorkbench(
         {
           key: 'timeline',
           label: copy.timeline,
-          value: String(pending),
+          value: `${timelineContribution}/15`,
+          contributionScore: timelineContribution,
+          contributionDenom: 15,
           status: pending === 0 ? 'ready' : 'attention',
           href: '/timeline',
           description: copy.timelineDesc,
