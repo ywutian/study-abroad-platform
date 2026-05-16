@@ -19,6 +19,7 @@ import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 
 import { DashboardActivity } from './_components/dashboard-activity';
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardDecisionPanel } from './_components/dashboard-decision-panel';
 import { DashboardEssayCoach } from './_components/dashboard-essay-coach';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import { DashboardWorkspaceHub } from './_components/dashboard-workspace-hub';
@@ -215,6 +216,23 @@ export default function DashboardPage() {
           transition={{ delay: 0.04 }}
         >
           <DashboardEssayCoach data={stableDashboard?.essayCoach} />
+        </motion.div>
+
+        {/*
+          2026-05 Phase 2a: Decision Hub (Stage G). Renders only when
+          the user has ≥1 decided school (ACCEPTED/WAITLISTED/REJECTED/
+          WITHDRAWN). Reuses the same `pipeline.recentDecisions` data
+          as PipelineStrip but presents it as a fuller decision-phase
+          surface (per-status tiles + celebratory framing + waitlist
+          coaching hint). 22-product research showed 0/22 platforms
+          handle this stage well — Lumni's differentiator.
+        */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.045 }}
+        >
+          <DashboardDecisionPanel pipeline={stableDashboard?.workbench.pipeline ?? null} />
         </motion.div>
 
         {/*
