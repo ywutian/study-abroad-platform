@@ -28,15 +28,38 @@ import type {
   DashboardWorkbench,
 } from '@study-abroad/shared';
 
+/**
+ * Map profile completeness % → grade label + Tailwind color classes.
+ *
+ * 2026-05 Phase 2.5f: Refined from 5 → 6 letter tiers (+ '—' neutral)
+ * with a softer color ramp. The previous scale was visually punishing:
+ *   - 0 was muted (good — neutral), but
+ *   - 1-39 jumped straight to red "D" (destructive)
+ *   - 40-59 was amber "C" (warning)
+ * A user at 15% had barely started yet was rendered in the same red
+ * tone reserved for "blocked / error" elsewhere on the dashboard.
+ *
+ * New scale (lowest → highest):
+ *   completeness | grade | color (Tailwind)
+ *   -------------|-------|------------------
+ *   0            | —     | text-muted-foreground   (Phase 1, unchanged)
+ *   1-19         | D     | text-warning            (NEW — was 'D' destructive)
+ *   20-39        | C-    | text-warning            (NEW intermediate tier)
+ *   40-59        | C     | text-primary            (upgraded from warning — not blocking)
+ *   60-74        | B     | text-primary            (unchanged)
+ *   75-89        | B+    | text-primary            (unchanged)
+ *   90-100       | A     | text-success            (unchanged)
+ *
+ * Destructive color is no longer used for grade — red is reserved for
+ * blocking/error states elsewhere on the dashboard (overdue, rejected,
+ * orphan-data integrity errors). Profile completeness is a coaching
+ * signal, not a fail-state.
+ */
 export function getProfileGrade(completeness: number): {
   grade: string;
   color: string;
   bgColor: string;
 } {
-  // 2026-05 Phase 1 Bug 5: zero-state should not be punished with a red
-  // "D Grade" — that's hostile framing for users who simply haven't
-  // started. Neutral "—" + muted color says "not evaluated yet" instead
-  // of "evaluated and failed". See dashboard-invariants.md (Phase 3a).
   if (completeness === 0) {
     return { grade: '—', color: 'text-muted-foreground', bgColor: 'bg-muted/40' };
   }
@@ -45,8 +68,11 @@ export function getProfileGrade(completeness: number): {
   }
   if (completeness >= 75) return { grade: 'B+', color: 'text-primary', bgColor: 'bg-primary/10' };
   if (completeness >= 60) return { grade: 'B', color: 'text-primary', bgColor: 'bg-primary/10' };
-  if (completeness >= 40) return { grade: 'C', color: 'text-warning', bgColor: 'bg-warning/10' };
-  return { grade: 'D', color: 'text-destructive', bgColor: 'bg-destructive/10' };
+  if (completeness >= 40) return { grade: 'C', color: 'text-primary', bgColor: 'bg-primary/10' };
+  // Phase 2.5f: split former destructive "D" (1-39) into 'C-' (20-39)
+  // and 'D' (1-19), both warning-toned — encouragement, not failure.
+  if (completeness >= 20) return { grade: 'C-', color: 'text-warning', bgColor: 'bg-warning/10' };
+  return { grade: 'D', color: 'text-warning', bgColor: 'bg-warning/10' };
 }
 
 // 2026-05: `buildTodoList` and `TodoItem` were removed. Their consumer
