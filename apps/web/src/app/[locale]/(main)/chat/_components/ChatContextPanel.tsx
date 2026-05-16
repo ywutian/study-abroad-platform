@@ -51,7 +51,12 @@ export function ChatContextPanel({
 
   if (!conversation) {
     return (
-      <aside className={cn('hidden min-h-0 border-l bg-card/80 lg:flex lg:flex-col', className)}>
+      <aside
+        className={cn(
+          'hidden min-h-0 min-w-0 overflow-hidden border-l bg-card/80 lg:flex lg:flex-col',
+          className
+        )}
+      >
         <div className="border-b px-4 py-3">
           <p className="text-sm font-semibold">{t('chat.contextTitle')}</p>
         </div>
@@ -70,7 +75,12 @@ export function ChatContextPanel({
   const isDirect = conversation.kind === 'DIRECT';
 
   return (
-    <aside className={cn('hidden min-h-0 border-l bg-card/80 lg:flex lg:flex-col', className)}>
+    <aside
+      className={cn(
+        'hidden min-h-0 min-w-0 overflow-hidden border-l bg-card/80 lg:flex lg:flex-col',
+        className
+      )}
+    >
       <div className="border-b px-4 py-3">
         <p className="text-sm font-semibold">{t('chat.contextTitle')}</p>
         <p className="mt-0.5 truncate text-xs text-muted-foreground">{title}</p>
