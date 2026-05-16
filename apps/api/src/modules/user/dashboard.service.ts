@@ -1,6 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import {
+  type DashboardPriorityKind,
+  type DashboardSeverity,
+  type DashboardWorkbench,
+} from '@study-abroad/shared';
+
 import { PrismaService } from '../../prisma/prisma.service';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
+
+// 2026-05: Re-export so consumers (e.g. user.controller.ts type imports)
+// don't break. The interfaces live in @study-abroad/shared so API + Web
+// can never silently drift on the dashboard contract.
+export type { DashboardWorkbench };
 
 export interface DashboardSummary {
   // 用户基本信息
@@ -76,98 +87,10 @@ export interface DashboardSummary {
 
 type DashboardDeadlineItem = DashboardSummary['upcomingDeadlines'][number];
 
-type DashboardPriorityKind =
-  | 'profile'
-  | 'school-list'
-  | 'timeline'
-  | 'timeline-task'
-  | 'essay'
-  | 'prediction'
-  | 'deadline';
-
-type DashboardSeverity = 'critical' | 'warning' | 'normal' | 'success';
-
-export interface DashboardWorkbench {
-  readiness: {
-    score: number;
-    status: 'blocked' | 'attention' | 'ready';
-    items: {
-      key: 'profile' | 'schools' | 'essays' | 'timeline' | 'prediction';
-      label: string;
-      value: string;
-      status: 'blocked' | 'attention' | 'ready';
-      href: string;
-      description: string;
-    }[];
-  };
-  metrics: {
-    due7: number;
-    due30: number;
-    overdueTasks: number;
-    missingTimelineCount: number;
-    balancedSchoolList: boolean;
-  };
-  priorityQueue: {
-    id: string;
-    kind: DashboardPriorityKind;
-    severity: DashboardSeverity;
-    title: string;
-    description: string;
-    href: string;
-    dueAt?: string | null;
-    daysLeft?: number | null;
-    mutation?: {
-      type: 'timeline-task-toggle';
-      endpoint: string;
-    };
-  }[];
-  deadlineStream: {
-    id: string;
-    type: 'school' | 'event' | 'task';
-    title: string;
-    subtitle: string;
-    dueAt: string;
-    daysLeft: number;
-    severity: DashboardSeverity;
-    href: string;
-  }[];
-  /**
-   * 2026-05: Pipeline snapshot — counts of ApplicationTimeline rows by
-   * status. Closes the lifecycle gap where dashboards used to "forget"
-   * about a school the moment the user marked it SUBMITTED. Optional
-   * because the frontend fallback (createFallbackWorkbench) does not
-   * have the raw timeline data.
-   */
-  pipeline?: {
-    notStarted: number;
-    inProgress: number;
-    submitted: number;
-    accepted: number;
-    rejected: number;
-    waitlisted: number;
-    withdrawn: number;
-    /**
-     * 2026-05: Per-school decision rows (top 5 by updatedAt desc) so the
-     * dashboard can show "Stanford EA — Accepted, decided 3 days ago"
-     * inline below the pipeline pills, instead of just opaque counts.
-     * `decidedAt` uses ApplicationTimeline.updatedAt as proxy (the
-     * schema doesn't have a dedicated decision-date column yet).
-     */
-    recentDecisions: Array<{
-      id: string;
-      schoolId: string;
-      schoolName: string;
-      round: string;
-      status:
-        | 'SUBMITTED'
-        | 'ACCEPTED'
-        | 'REJECTED'
-        | 'WAITLISTED'
-        | 'WITHDRAWN';
-      decidedAt: string;
-    }>;
-  };
-}
+// DashboardWorkbench, DashboardPriorityKind, DashboardSeverity now live in
+// @study-abroad/shared (imported above) so API + Web can't drift.
+// Local-only type alias kept for the small number of internal helper
+// signatures that referenced the old name.
 
 type DashboardPriorityTaskSource = {
   id: string;
