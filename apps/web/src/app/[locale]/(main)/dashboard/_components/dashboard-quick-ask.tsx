@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
+import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
 /**
@@ -25,6 +26,13 @@ export function DashboardQuickAsk() {
     event.preventDefault();
     const message = value.trim();
     if (!message) return;
+    // 2026-05 Phase 4: track typed-text submissions for funnel analysis.
+    // PII safety: log only the LENGTH of the message — not the content
+    // (free-text from users may include personal details).
+    trackEvent(DASHBOARD_EVENTS.quickAskSubmitted, {
+      source: 'typed',
+      messageLength: message.length,
+    });
     openFloatingAgentChat({ message });
     setValue('');
   };
@@ -35,7 +43,14 @@ export function DashboardQuickAsk() {
     t('suggestions.schools'),
   ];
 
-  const handleSuggestion = (message: string) => {
+  const handleSuggestion = (message: string, index: number) => {
+    // 2026-05 Phase 4: differentiate suggestion-chip clicks from typed
+    // submissions so we can measure which suggestions land. We log the
+    // INDEX of the chip (0/1/2) rather than the message content to
+    // keep events PII-safe AND locale-agnostic.
+    trackEvent(DASHBOARD_EVENTS.quickAskSuggestionClicked, {
+      suggestionIndex: index,
+    });
     openFloatingAgentChat({ message });
   };
 
@@ -60,11 +75,11 @@ export function DashboardQuickAsk() {
       </form>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <span className="text-xs text-muted-foreground">{t('try')}:</span>
-        {suggestions.map((suggestion) => (
+        {suggestions.map((suggestion, index) => (
           <button
             key={suggestion}
             type="button"
-            onClick={() => handleSuggestion(suggestion)}
+            onClick={() => handleSuggestion(suggestion, index)}
             className={cn(
               'rounded-full border border-border bg-[color:var(--theme-control-bg)]',
               'px-2.5 py-0.5 text-xs text-muted-foreground transition-colors',

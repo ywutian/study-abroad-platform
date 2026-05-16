@@ -5,6 +5,7 @@ import { ArrowRight, FileText, Sparkles, Wand2 } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/lib/i18n/navigation';
+import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import type { DashboardEssayCoach } from '@study-abroad/shared';
 
@@ -90,6 +91,15 @@ export function DashboardEssayCoach({ data }: { data?: DashboardEssayCoach | nul
 
           <Link
             href={`/essays?id=${encodeURIComponent(data.essayId)}`}
+            onClick={() =>
+              // 2026-05 Phase 4: track dashboard → /essays funnel for
+              // the Essay Coach card. essayId + type so we can measure
+              // which AI result types drive click-through.
+              trackEvent(DASHBOARD_EVENTS.essayCoachCtaClicked, {
+                essayId: data.essayId,
+                type: data.type,
+              })
+            }
             className={cn(
               'shrink-0 self-center rounded-[var(--theme-radius-control,0.5rem)]',
               'border border-border bg-[color:var(--theme-control-bg)] px-3 py-1.5',

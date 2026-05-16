@@ -19,6 +19,7 @@ import {
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/lib/i18n/navigation';
+import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import type { DashboardData } from './dashboard-workbench-model';
 
@@ -210,6 +211,12 @@ export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps)
                   <Link
                     href={stat.href}
                     aria-label={`${stat.label}: ${stat.value}`}
+                    onClick={() =>
+                      // 2026-05 Phase 4: track stat-tile clicks. Use
+                      // the href as the discriminator (stable identifier
+                      // — survives label translation).
+                      trackEvent(DASHBOARD_EVENTS.hubStatClicked, { href: stat.href })
+                    }
                     className={cn(
                       'flex items-center justify-between gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
                       'border border-border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5',
@@ -240,6 +247,11 @@ function HubColumn({ title, links }: { title: string; links: HubLink[] }) {
           <Link
             key={link.href}
             href={link.href}
+            onClick={() =>
+              // 2026-05 Phase 4: track Hub navigation. href is the
+              // stable identifier — survives label translation/changes.
+              trackEvent(DASHBOARD_EVENTS.hubLinkClicked, { href: link.href })
+            }
             className={cn(
               'group flex items-start gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
               'border border-border bg-[color:var(--theme-control-bg)] p-2',

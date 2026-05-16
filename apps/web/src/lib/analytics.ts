@@ -86,3 +86,27 @@ export const TEAM_EVENTS = {
   cardPublished: 'team_card_published',
   matchActivated: 'team_match_activated',
 } as const;
+
+// ── Dashboard event taxonomy (Phase 4) ─────────────────────
+// Surfaces user actions on the dashboard for funnel analysis. Names
+// follow snake_case and are stable contracts — funnel definitions in
+// docs/analytics-funnels.md key off them. Add new events here BEFORE
+// calling trackEvent so consumers get autocomplete + the analytics
+// review can audit the catalog in one place.
+//
+// See plan: dashboard-commit-agent-merry-platypus.md Phase 4
+
+export const DASHBOARD_EVENTS = {
+  // Quick Ask AI — the dashboard's primary AI surface
+  quickAskSubmitted: 'dashboard_quick_ask_submitted',
+  quickAskSuggestionClicked: 'dashboard_quick_ask_suggestion_clicked',
+  // Quick Add School — the popover that adds schools without leaving dashboard
+  quickAddSchoolOpened: 'dashboard_quick_add_school_opened',
+  quickAddSchoolAdded: 'dashboard_quick_add_school_added',
+  // EssayCoach + DecisionPanel — Phase 2c/2a surfaces
+  essayCoachCtaClicked: 'dashboard_essay_coach_cta_clicked',
+  decisionPanelImpression: 'dashboard_decision_panel_impression',
+  // Hub — workspace navigation
+  hubLinkClicked: 'dashboard_hub_link_clicked',
+  hubStatClicked: 'dashboard_hub_stat_clicked',
+} as const;
