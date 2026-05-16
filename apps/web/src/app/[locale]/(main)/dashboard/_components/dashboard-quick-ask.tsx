@@ -24,7 +24,16 @@ import { cn } from '@/lib/utils';
 // stays visible after a submit. Long enough to register without lingering.
 const CONFIRMATION_DURATION_MS = 1800;
 
-export function DashboardQuickAsk() {
+interface DashboardQuickAskProps {
+  /**
+   * 2026-05 Phase 2.7 #31: optional server-personalized suggestion
+   * chips. When present, used in preference to the hardcoded i18n
+   * fallbacks. Each string is already localized.
+   */
+  personalizedSuggestions?: [string, string, string] | null;
+}
+
+export function DashboardQuickAsk({ personalizedSuggestions }: DashboardQuickAskProps = {}) {
   const t = useTranslations('dashboard.quickAsk');
   const [value, setValue] = useState('');
   // 2026-05 Phase 2.5e: brief post-submit confirmation. Before this, users
@@ -69,7 +78,10 @@ export function DashboardQuickAsk() {
     showConfirmation();
   };
 
-  const suggestions: string[] = [
+  // 2026-05 Phase 2.7 #31: prefer server-personalized chips when
+  // available. Falls back to the hardcoded generic i18n suggestions
+  // for brand-new users (no targetMajor + no school list yet).
+  const suggestions: string[] = personalizedSuggestions ?? [
     t('suggestions.predict'),
     t('suggestions.essays'),
     t('suggestions.schools'),

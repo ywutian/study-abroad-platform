@@ -266,7 +266,9 @@ export default function DashboardPage() {
               entire dashboard, so wrap with AIErrorBoundary like every
               other AI surface on the platform. */}
           <AIErrorBoundary feature="agent-chat">
-            <DashboardQuickAsk />
+            <DashboardQuickAsk
+              personalizedSuggestions={stableDashboard?.quickAskSuggestions ?? null}
+            />
           </AIErrorBoundary>
         </motion.div>
 
