@@ -161,9 +161,15 @@ export function ChatContextPanel({
                             <VerificationIcon verified size="sm" />
                           )}
                         </p>
+                        {/* 2026-05 PII fix: subtitle prefers profile signals
+                            (major / school / role). Email is intentionally
+                            NOT in this fallback chain — even the backend's
+                            masked form ("o***@d***.com") reads as noise here.
+                            For peers without any profile, fall back to a
+                            generic "成员" / "Member" label. */}
                         <p className="truncate text-xs text-muted-foreground">
                           {participant.profile?.targetMajor ||
-                            participant.email ||
+                            participant.profile?.currentSchool ||
                             t('chat.member')}
                         </p>
                       </div>

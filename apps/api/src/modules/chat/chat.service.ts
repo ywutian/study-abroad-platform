@@ -167,6 +167,48 @@ type SocialRecommendationPrismaUser = Prisma.UserGetPayload<{
   select: typeof SOCIAL_RECOMMENDATION_USER_SELECT;
 }>;
 
+/**
+ * 2026-05 chat PII fix: domains that mark a User row as an internal
+ * system account (e.g. seeded by scripts for case-attribution, match
+ * notifications, etc). These users must NEVER appear as real
+ * participants in any chat surface exposed to end-users.
+ *
+ * Production audit found `system@studyabroad.internal` rendering in
+ * the conversation members panel — a real PII / trust regression.
+ */
+const SYSTEM_USER_EMAIL_DOMAINS = ['@studyabroad.internal'];
+
+// Exported for unit tests — runtime callers should stay within this file.
+export function isSystemUserEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return SYSTEM_USER_EMAIL_DOMAINS.some((suffix) =>
+    email.toLowerCase().endsWith(suffix),
+  );
+}
+
+/**
+ * Mask an email so it can't be used as a PII vector when shown to
+ * OTHER chat participants. Strategy: keep the first character of the
+ * local part + first character of the domain label + TLD.
+ *   oliviawu@demo.studyabroad.com → o***@d***.com
+ * Returns null when there's no useful information left after masking
+ * (e.g. very short emails) — caller should then fall back to "成员".
+ */
+export function maskEmailForPeer(
+  email: string | null | undefined,
+): string | null {
+  if (!email) return null;
+  const at = email.indexOf('@');
+  if (at <= 0) return null;
+  const local = email.slice(0, at);
+  const domain = email.slice(at + 1);
+  const lastDot = domain.lastIndexOf('.');
+  if (lastDot <= 0) return null;
+  const domainLabel = domain.slice(0, lastDot);
+  const tld = domain.slice(lastDot);
+  return `${local[0]}***@${domainLabel[0]}***${tld}`;
+}
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -836,16 +878,27 @@ export class ChatService {
         mutedUntil: participant.mutedUntil,
         lastReadAt: participant.lastReadAt,
       },
-      participants: conversation.participants.map((item) => ({
-        id: item.user.id,
-        email: item.user.email,
-        role: item.user.role,
-        profile: item.user.profile,
-        lastReadAt: item.lastReadAt,
-        isPinned: item.isPinned,
-        isArchived: item.isArchived,
-        mutedUntil: item.mutedUntil,
-      })),
+      // 2026-05 chat PII fix:
+      // 1. Filter out system users (`@studyabroad.internal` etc) — they
+      //    are not real chat members and must never appear in the UI.
+      // 2. Mask peer emails (`oliviawu@demo... → o***@d***.com`) so a
+      //    group-chat member can't harvest other members' raw inboxes.
+      //    The current user sees their own email unmasked.
+      participants: conversation.participants
+        .filter((item) => !isSystemUserEmail(item.user.email))
+        .map((item) => ({
+          id: item.user.id,
+          email:
+            item.user.id === userId
+              ? item.user.email
+              : (maskEmailForPeer(item.user.email) ?? undefined),
+          role: item.user.role,
+          profile: item.user.profile,
+          lastReadAt: item.lastReadAt,
+          isPinned: item.isPinned,
+          isArchived: item.isArchived,
+          mutedUntil: item.mutedUntil,
+        })),
       files,
     };
   }
@@ -1016,7 +1069,14 @@ export class ChatService {
       mutedUntil?: Date | null;
     },
   ) {
-    const otherParticipants = conversation.participants.filter(
+    // 2026-05 chat PII fix: system users (e.g. system@studyabroad.internal)
+    // must NOT appear as participants in any user-facing surface. Filter
+    // them out before deriving "other participants" so they don't leak
+    // into the conversation list, title, avatar summary, OR preview.
+    const visibleParticipants = conversation.participants.filter(
+      (participant) => !isSystemUserEmail(participant.user.email),
+    );
+    const otherParticipants = visibleParticipants.filter(
       (participant) => participant.userId !== currentUserId,
     );
     const otherUser =
@@ -1039,10 +1099,14 @@ export class ChatService {
       title: derivedTitle,
       createdBySystem: conversation.createdBySystem,
       otherUser,
-      participantCount: conversation.participants.length,
+      // Use the filtered list — system users would otherwise inflate
+      // the count and break "X位成员" copy across the UI.
+      participantCount: visibleParticipants.length,
       participantPreview: otherParticipants.slice(0, 3).map((participant) => ({
         id: participant.user.id,
-        email: participant.user.email,
+        // Mask peer emails so the conversation-list preview also
+        // doesn't leak raw inboxes.
+        email: maskEmailForPeer(participant.user.email) ?? undefined,
         role: participant.user.role,
         profile: participant.user.profile,
       })),
@@ -1066,7 +1130,17 @@ export class ChatService {
   private getDisplayName(
     user: Prisma.UserGetPayload<{ select: typeof USER_SELECT }>,
   ) {
-    return user.profile?.nickname || user.profile?.realName || user.email;
+    // 2026-05 chat PII fix: never fall back to the raw email — it would
+    // leak peer inboxes into conversation titles. Fall back to the
+    // local-part only (text before `@`), which is the same handle the
+    // user themselves typed at signup but doesn't disclose their domain.
+    if (user.profile?.nickname) return user.profile.nickname;
+    if (user.profile?.realName) return user.profile.realName;
+    if (user.email) {
+      const at = user.email.indexOf('@');
+      return at > 0 ? user.email.slice(0, at) : user.email;
+    }
+    return 'Member';
   }
 
   // ============================================
