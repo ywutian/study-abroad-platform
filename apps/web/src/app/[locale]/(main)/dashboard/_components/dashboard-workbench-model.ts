@@ -35,6 +35,21 @@ export interface DashboardWorkbench {
   };
   priorityQueue: DashboardPriorityItem[];
   deadlineStream: DashboardDeadlineItem[];
+  /**
+   * 2026-05: Application status counts by ApplicationStatus enum value.
+   * Optional because the frontend fallback (createFallbackWorkbench)
+   * does not have raw timeline data. Render the strip only when at
+   * least one school is past IN_PROGRESS (avoids noise for new users).
+   */
+  pipeline?: {
+    notStarted: number;
+    inProgress: number;
+    submitted: number;
+    accepted: number;
+    rejected: number;
+    waitlisted: number;
+    withdrawn: number;
+  };
 }
 
 export interface DashboardPriorityItem {

@@ -98,7 +98,7 @@ describe('DashboardService', () => {
             follow: { count: jest.fn() },
             admissionCase: { count: jest.fn() },
             predictionResult: { count: jest.fn() },
-            applicationTimeline: { findMany: jest.fn() },
+            applicationTimeline: { findMany: jest.fn(), groupBy: jest.fn() },
             pointHistory: { findMany: jest.fn() },
             schoolListItem: {
               count: jest.fn(),
@@ -138,6 +138,8 @@ describe('DashboardService', () => {
     (prisma.applicationTimeline.findMany as jest.Mock).mockResolvedValue(
       mockTimelines,
     );
+    // Default: no schools past IN_PROGRESS, so PipelineStrip stays hidden.
+    (prisma.applicationTimeline.groupBy as jest.Mock).mockResolvedValue([]);
     (prisma.pointHistory.findMany as jest.Mock).mockResolvedValue(
       mockPointHistory,
     );
@@ -544,6 +546,45 @@ describe('DashboardService', () => {
       expect(result.recentActivity).toHaveLength(1);
       expect(result.recentActivity[0].title).toBe('UNKNOWN_ACTION');
       expect(result.recentActivity[0].type).toBe('earn');
+    });
+
+    // 2026-05: Application pipeline — close lifecycle stage F+G gap
+    // where dashboard had no awareness of submitted/decided schools.
+    it('aggregates ApplicationTimeline groupBy into the workbench pipeline', async () => {
+      setupDefaultMocks();
+      (prisma.applicationTimeline.groupBy as jest.Mock).mockResolvedValue([
+        { status: 'NOT_STARTED', _count: { status: 2 } },
+        { status: 'IN_PROGRESS', _count: { status: 4 } },
+        { status: 'SUBMITTED', _count: { status: 3 } },
+        { status: 'ACCEPTED', _count: { status: 1 } },
+        { status: 'WAITLISTED', _count: { status: 1 } },
+      ]);
+
+      const result = await service.getDashboardSummary(userId);
+
+      expect(result.workbench.pipeline).toEqual({
+        notStarted: 2,
+        inProgress: 4,
+        submitted: 3,
+        accepted: 1,
+        rejected: 0,
+        waitlisted: 1,
+        withdrawn: 0,
+      });
+    });
+
+    it('returns all-zero pipeline when groupBy returns nothing', async () => {
+      setupDefaultMocks();
+      const result = await service.getDashboardSummary(userId);
+      expect(result.workbench.pipeline).toEqual({
+        notStarted: 0,
+        inProgress: 0,
+        submitted: 0,
+        accepted: 0,
+        rejected: 0,
+        waitlisted: 0,
+        withdrawn: 0,
+      });
     });
   });
 });

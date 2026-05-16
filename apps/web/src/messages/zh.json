@@ -345,6 +345,18 @@
         "success": "就绪"
       }
     },
+    "pipelineStrip": {
+      "title": "申请进度",
+      "viewAll": "查看全部 →",
+      "celebrate": "🎉 已收到 {count} 份录取通知，恭喜！",
+      "status": {
+        "submitted": "已提交",
+        "accepted": "已录取",
+        "rejected": "未录取",
+        "waitlisted": "Waitlist",
+        "withdrawn": "已撤回"
+      }
+    },
     "recentActivity": "最近动态",
     "noRecentActivity": "暂无最近动态",
     "startExploring": "开始探索",
