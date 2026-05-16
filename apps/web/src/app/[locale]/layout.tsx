@@ -24,6 +24,8 @@ const inter = Inter({
 import { locales } from '@/lib/i18n/config';
 import { Providers } from '@/components/providers';
 import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo';
+// 2026-05 Phase 4 follow-up: Web Vitals → Sentry reporter.
+import { WebVitalsReporter } from '@/components/observability/web-vitals-reporter';
 import { env } from '@/lib/env';
 import '../globals.css';
 
@@ -105,6 +107,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider messages={messages}>
+          {/* Mount Web Vitals reporter once at the locale root — fires
+              globally for every navigation. Renders null. */}
+          <WebVitalsReporter />
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
       </body>
