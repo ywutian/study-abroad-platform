@@ -260,7 +260,8 @@
         "schools": "Suggest 5 reach schools for CS"
       },
       "openFullWorkspace": "Open full AI workspace",
-      "openFullWorkspaceHint": "Need a longer conversation, tool calls, or history? Open the AI workspace."
+      "openFullWorkspaceHint": "Need a longer conversation, tool calls, or history? Open the AI workspace.",
+      "submittedConfirmation": "Sent — opening AI chat"
     },
     "hub": {
       "title": "Workspace",
