@@ -92,8 +92,35 @@ export function DashboardQuickAddSchool() {
   });
   const alreadyAddedIds = new Set((existingList ?? []).map((item) => item.schoolId));
 
+  // 2026-05 Phase 5 #40: optimistic-update pattern via React Query.
+  // The newly-added school is written into the ['school-lists', 'mine']
+  // query cache IMMEDIATELY on click — `alreadyAddedIds` (derived from
+  // that cache) sees it the same render, so the button instantly flips
+  // to its "已添加" state with zero network-round-trip delay.
+  //
+  // If the network call fails, onError restores the snapshot so the
+  // button reverts and the user can retry. onSettled invalidates so the
+  // real server state replaces the optimistic guess as soon as it's known.
+  //
+  // (We use React Query's optimistic-update API rather than React 19's
+  // useOptimistic so the optimistic state participates in the same cache
+  // that powers the deduplication check above — single source of truth.)
+  const SCHOOL_LIST_KEY = ['school-lists', 'mine'] as const;
+  type SchoolListSnapshot = Array<{ schoolId: string }>;
+
   const addSchool = useMutation({
     mutationFn: (schoolId: string) => apiClient.post('/school-lists', { schoolId, tier: 'TARGET' }),
+    onMutate: async (schoolId: string) => {
+      // Cancel any in-flight refetch so it doesn't clobber our optimistic write.
+      await queryClient.cancelQueries({ queryKey: SCHOOL_LIST_KEY });
+      const previous = queryClient.getQueryData<SchoolListSnapshot>(SCHOOL_LIST_KEY) ?? [];
+      // Idempotent: if the schoolId is somehow already in the snapshot,
+      // don't double-add (defensive — alreadyAddedIds disables the button).
+      if (!previous.some((row) => row.schoolId === schoolId)) {
+        queryClient.setQueryData<SchoolListSnapshot>(SCHOOL_LIST_KEY, [...previous, { schoolId }]);
+      }
+      return { previous };
+    },
     onSuccess: (_data, schoolId) => {
       // 2026-05 Phase 4: track successful adds for the dashboard-add
       // → /school-lists-page funnel. Log schoolId (already user-owned)
@@ -103,13 +130,21 @@ export function DashboardQuickAddSchool() {
         resultsAtSelectTime: items.length,
       });
       toast.success(t('added'));
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
       setOpen(false);
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, _schoolId, context) => {
+      // Rollback the optimistic write so the button can be clicked again.
+      if (context?.previous) {
+        queryClient.setQueryData<SchoolListSnapshot>(SCHOOL_LIST_KEY, context.previous);
+      }
       const message = error instanceof Error && error.message ? error.message : t('addFailed');
       toast.error(message);
+    },
+    onSettled: () => {
+      // Replace optimistic state with the real server truth, regardless
+      // of success / failure outcome.
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['school-lists'] });
     },
   });
 
