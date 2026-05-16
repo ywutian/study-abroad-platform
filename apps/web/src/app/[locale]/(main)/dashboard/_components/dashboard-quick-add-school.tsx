@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { apiClient } from '@/lib/api';
+import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { getSchoolName } from '@/lib/utils';
 
@@ -93,7 +94,14 @@ export function DashboardQuickAddSchool() {
 
   const addSchool = useMutation({
     mutationFn: (schoolId: string) => apiClient.post('/school-lists', { schoolId, tier: 'TARGET' }),
-    onSuccess: () => {
+    onSuccess: (_data, schoolId) => {
+      // 2026-05 Phase 4: track successful adds for the dashboard-add
+      // → /school-lists-page funnel. Log schoolId (already user-owned)
+      // and result-count context, not the search query text.
+      trackEvent(DASHBOARD_EVENTS.quickAddSchoolAdded, {
+        schoolId,
+        resultsAtSelectTime: items.length,
+      });
       toast.success(t('added'));
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['school-lists'] });
@@ -109,7 +117,17 @@ export function DashboardQuickAddSchool() {
   const showEmpty = open && debouncedSearch.length >= 2 && !isFetching && items.length === 0;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        // 2026-05 Phase 4: track popover opens to measure
+        // open → add conversion (Phase 4 funnel)
+        if (next && !open) {
+          trackEvent(DASHBOARD_EVENTS.quickAddSchoolOpened);
+        }
+        setOpen(next);
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="outline"

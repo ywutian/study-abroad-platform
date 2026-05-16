@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { CheckCircle2, HelpCircle, Trophy, XCircle, type LucideIcon } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/lib/i18n/navigation';
+import { DASHBOARD_EVENTS, trackImpression } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import type { DashboardPipeline } from '@study-abroad/shared';
 
@@ -29,13 +31,40 @@ export function DashboardDecisionPanel({ pipeline }: { pipeline?: DashboardPipel
   const locale = useLocale();
   const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
 
-  if (!pipeline) return null;
-
   // Invariant I6 — same gate as PipelineStrip.hasMaterial. We don't
   // render unless the user has at least one decided school. (Bare
   // SUBMITTED state belongs to PipelineStrip alone.)
-  const decisionsTotal =
-    pipeline.accepted + pipeline.rejected + pipeline.waitlisted + pipeline.withdrawn;
+  // Computed BEFORE the early return so the impression useEffect below
+  // can react to changes without violating Rules of Hooks.
+  const decisionsTotal = pipeline
+    ? pipeline.accepted + pipeline.rejected + pipeline.waitlisted + pipeline.withdrawn
+    : 0;
+
+  // 2026-05 Phase 4: log a dedup'd impression for the Decision Panel
+  // so we can measure how often Stage G users actually see this
+  // surface. Keyed by accepted+rejected+waitlisted so the impression
+  // re-fires when the counts change.
+  useEffect(() => {
+    if (decisionsTotal === 0) return;
+    trackImpression(
+      `decision-panel:${pipeline?.accepted}-${pipeline?.waitlisted}-${pipeline?.rejected}-${pipeline?.withdrawn}`,
+      DASHBOARD_EVENTS.decisionPanelImpression,
+      {
+        accepted: pipeline?.accepted ?? 0,
+        waitlisted: pipeline?.waitlisted ?? 0,
+        rejected: pipeline?.rejected ?? 0,
+        withdrawn: pipeline?.withdrawn ?? 0,
+      }
+    );
+  }, [
+    decisionsTotal,
+    pipeline?.accepted,
+    pipeline?.waitlisted,
+    pipeline?.rejected,
+    pipeline?.withdrawn,
+  ]);
+
+  if (!pipeline) return null;
   if (decisionsTotal === 0) return null;
 
   // The card layers two views:
