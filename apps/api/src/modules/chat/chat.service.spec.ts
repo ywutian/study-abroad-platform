@@ -825,16 +825,25 @@ describe('isSystemUserEmail (chat PII fix)', () => {
 });
 
 describe('maskEmailForPeer (chat PII fix)', () => {
-  it('masks a typical email to first-letter + domain shape', () => {
+  // 2026-05 revision: first version masked the local part too (o***@d***.com)
+  // which left users unable to identify peers. Production feedback was
+  // "怎么还是被截断的" (how is it still truncated?). New strategy: keep
+  // the full local part (which is essentially a username and the
+  // frontend uses it as the display-name fallback), only mask the
+  // domain (the actually-sensitive bit — corporate / school affiliation).
+  it('keeps the full local part visible; masks the domain', () => {
     expect(maskEmailForPeer('oliviawu@demo.studyabroad.com')).toBe(
-      'o***@d***.com',
+      'oliviawu@***.com',
     );
-    expect(maskEmailForPeer('alice@example.com')).toBe('a***@e***.com');
+    expect(maskEmailForPeer('alice@example.com')).toBe('alice@***.com');
   });
 
   it('preserves the TLD intact (so the peer still knows it is a real address)', () => {
-    expect(maskEmailForPeer('foo@bar.io')).toBe('f***@b***.io');
-    expect(maskEmailForPeer('jane@gmail.com')).toBe('j***@g***.com');
+    expect(maskEmailForPeer('foo@bar.io')).toBe('foo@***.io');
+    expect(maskEmailForPeer('jane@gmail.com')).toBe('jane@***.com');
+    expect(maskEmailForPeer('student42@stanford.edu')).toBe(
+      'student42@***.edu',
+    );
   });
 
   it('returns null for invalid / unmaskable inputs', () => {
