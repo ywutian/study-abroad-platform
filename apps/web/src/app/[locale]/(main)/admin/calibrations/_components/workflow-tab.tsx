@@ -39,8 +39,8 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { PaginationControls } from '../../_components/pagination-controls';
+import type { PaginatedResponse } from '@study-abroad/shared';
 import type {
-  PaginatedResponse,
   PredictionSignalSummary,
   PredictionWorkflowObservation,
   PredictionWorkflowPolicy,

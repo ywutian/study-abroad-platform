@@ -20,8 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import type { PaginatedResponse } from '@study-abroad/shared';
 import type {
-  PaginatedResponse,
   PredictionPolicyGateSummary,
   PredictionWorkflowPolicy,
 } from './prediction-workflow-types';

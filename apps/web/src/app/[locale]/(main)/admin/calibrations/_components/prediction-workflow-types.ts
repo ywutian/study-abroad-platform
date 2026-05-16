@@ -143,10 +143,6 @@ export interface PredictionWorkflowOutcome {
   reviewPriority?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+// 2026-05: Was duplicating @study-abroad/shared's PaginatedResponse<T>
+// (identical shape). Removed — calibrations tabs now import the shared
+// type directly so any future change happens in one place.
