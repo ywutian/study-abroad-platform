@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Compass,
   FileText,
+  Gift,
   Lightbulb,
   type LucideIcon,
   MessageCircle,
@@ -138,6 +139,17 @@ export function DashboardWorkspaceHub() {
       label: t('links.aiLab'),
       description: t('links.aiLabDesc'),
       icon: Lightbulb,
+    },
+    // 2026-05 Phase 2.6 #25: surface the Referral entry on the dashboard
+    // — previously buried under a global Header link nobody clicked.
+    // Referrals are a key data-flywheel mechanic: each invite drives
+    // platform growth AND rewards the inviter (points). Putting it in
+    // Tools where users browse means more invite attempts.
+    {
+      href: '/referral',
+      label: t('links.referral'),
+      description: t('links.referralDesc'),
+      icon: Gift,
     },
   ];
 

@@ -296,7 +296,9 @@
         "assessment": "Assessment",
         "assessmentDesc": "MBTI, Holland, and more",
         "aiLab": "AI Lab",
-        "aiLabDesc": "Experimental AI features"
+        "aiLabDesc": "Experimental AI features",
+        "referral": "Invite & Earn",
+        "referralDesc": "Share Lumni — earn points when friends join"
       },
       "stats": {
         "followers": "Followers",
@@ -390,6 +392,8 @@
       "title": "Application pipeline",
       "viewAll": "View all →",
       "celebrate": "{count, plural, one {🎉 # acceptance — congratulations!} other {🎉 # acceptances — congratulations!}}",
+      "labelOutcomeHint": "Help calibrate Lumni's predictions — log the real result.",
+      "labelOutcomeCta": "Label result",
       "status": {
         "submitted": "Submitted",
         "accepted": "Accepted",
