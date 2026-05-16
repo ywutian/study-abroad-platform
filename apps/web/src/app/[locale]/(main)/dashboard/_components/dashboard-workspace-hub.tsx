@@ -21,17 +21,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@/lib/i18n/navigation';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
-import type { DashboardData } from './dashboard-workbench-model';
 
-interface DashboardWorkspaceHubProps {
-  /**
-   * Dashboard payload — used to surface "at a glance" stats (followers,
-   * following, points, predictions count) so the hub doubles as a quick
-   * stats panel and saves the user from jumping to /profile or /followers
-   * just to see counts.
-   */
-  dashboard: DashboardData | undefined;
-}
+// 2026-05 Phase 2.5b: DashboardWorkspaceHub no longer needs the
+// dashboard payload — the Stats column was extracted to a separate
+// `<DashboardStats />` card. Hub is purely navigation now (3 nav
+// columns: Research / Social / Tools).
 
 interface HubLink {
   href: string;
@@ -53,14 +47,17 @@ interface HubLink {
  * Replaces the previous 4-icon "Tools strip" inside CommandCenter, which
  * only exposed Assessment / AI Coach / Cases / Resume.
  *
+ * 2026-05 Phase 2.5b: Stats column extracted to `<DashboardStats />`
+ * — Hub is now 3-col navigation only. Information-architecture audit
+ * flagged the mixed nav-stats card as a category mistake (nav = "where
+ * can I go", stats = "where am I" — different mental models).
+ *
  * Design intent:
- * - 4 columns × 4 rows = 16 functions (vs old strip's 4)
- * - Stats column doubles as quick info (no need to jump to /profile or
- *   /followers just to see counts)
- * - Compact icon + label + description rows (NOT the deleted 9-card grid)
+ * - 3 columns × 4 rows = 12 navigation destinations
+ * - Compact icon + label + description rows
  * - Mirrors Header nav groupings so users learn one taxonomy
  */
-export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps) {
+export function DashboardWorkspaceHub() {
   const t = useTranslations('dashboard.hub');
 
   const research: HubLink[] = [
@@ -144,42 +141,9 @@ export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps)
     },
   ];
 
-  // Stats column — surfaces high-level counts so the user can read
-  // them without jumping to /profile or /followers.
-  //
-  // 2026-05 Phase 2b: extended with 4 new signals (assessment /
-  // recommendation / verification / chat unread). Each renders as a
-  // compact tile with label + value (number or short string).
-  const signals = dashboard?.signals;
-  const stats: { label: string; value: string | number; href: string }[] = [
-    { label: t('stats.followers'), value: dashboard?.stats.followers ?? 0, href: '/followers' },
-    { label: t('stats.following'), value: dashboard?.stats.following ?? 0, href: '/followers' },
-    { label: t('stats.cases'), value: dashboard?.stats.cases ?? 0, href: '/cases' },
-    {
-      label: t('stats.predictions'),
-      value: dashboard?.stats.predictions ?? 0,
-      href: '/prediction',
-    },
-    { label: t('stats.points'), value: dashboard?.user.points ?? 0, href: '/referral' },
-    // Phase 2b: 4 new signal tiles. Each gracefully degrades to a
-    // "—" / 0 / "未设置" value when the backend signal is missing.
-    {
-      label: t('stats.assessment'),
-      value: signals?.assessment?.mbti ?? signals?.assessment?.holland ?? '—',
-      href: '/assessment',
-    },
-    {
-      label: t('stats.recommendations'),
-      value: signals?.recommendationCount ?? 0,
-      href: '/schools',
-    },
-    {
-      label: t('stats.verification'),
-      value: t(`stats.verificationStatus.${signals?.verificationStatus ?? 'unverified'}`),
-      href: '/verification',
-    },
-    { label: t('stats.chatUnread'), value: signals?.chatUnread ?? 0, href: '/chat' },
-  ];
+  // 2026-05 Phase 2.5b: Stats column extracted to `<DashboardStats />`
+  // (rendered separately on the dashboard). Hub now focuses on
+  // navigation only: Research / Social / Tools — 3 cols instead of 4.
 
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
@@ -191,45 +155,10 @@ export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps)
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-3">
           <HubColumn title={t('sections.research')} links={research} />
           <HubColumn title={t('sections.social')} links={social} />
           <HubColumn title={t('sections.tools')} links={tools} />
-
-          {/* Stats column — distinct visual treatment (compact rows, no
-              icon, just label + number) so it reads as data, not nav. */}
-          <div>
-            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {t('sections.stats')}
-            </h4>
-            {/* 2026-05 Phase 1 design piggyback #12: a11y — wrap stats
-                as a semantic list so screen readers announce "list of 5
-                items" instead of a wall of links. */}
-            <ul role="list" className="space-y-1.5">
-              {stats.map((stat) => (
-                <li key={stat.label}>
-                  <Link
-                    href={stat.href}
-                    aria-label={`${stat.label}: ${stat.value}`}
-                    onClick={() =>
-                      // 2026-05 Phase 4: track stat-tile clicks. Use
-                      // the href as the discriminator (stable identifier
-                      // — survives label translation).
-                      trackEvent(DASHBOARD_EVENTS.hubStatClicked, { href: stat.href })
-                    }
-                    className={cn(
-                      'flex items-center justify-between gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
-                      'border border-border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5',
-                      'transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]'
-                    )}
-                  >
-                    <span className="text-xs text-muted-foreground">{stat.label}</span>
-                    <span className="text-sm font-semibold tabular-nums">{stat.value}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </CardContent>
     </Card>

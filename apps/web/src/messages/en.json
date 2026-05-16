@@ -429,7 +429,9 @@
       "verified": "Verified",
       "reach": "Reach",
       "target": "Target",
-      "safety": "Safety"
+      "safety": "Safety",
+      "snapshotTitle": "Snapshot",
+      "snapshotSubtitle": "Your numbers at a glance"
     },
     "modules": {
       "uncommonApp": "Application Workspace",

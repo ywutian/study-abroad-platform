@@ -429,7 +429,9 @@
       "verified": "已认证",
       "reach": "冲刺",
       "target": "匹配",
-      "safety": "保底"
+      "safety": "保底",
+      "snapshotTitle": "概览",
+      "snapshotSubtitle": "我的关键数据"
     },
     "modules": {
       "uncommonApp": "申请工作台",

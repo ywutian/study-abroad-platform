@@ -22,6 +22,8 @@ import { DashboardCommandCenter } from './_components/dashboard-command-center';
 import { DashboardDecisionPanel } from './_components/dashboard-decision-panel';
 import { DashboardEssayCoach } from './_components/dashboard-essay-coach';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
+// 2026-05 Phase 2.5b: stats extracted from Hub into its own card.
+import { DashboardStats } from './_components/dashboard-stats';
 import { DashboardWorkspaceHub } from './_components/dashboard-workspace-hub';
 import {
   createFallbackWorkbench,
@@ -236,17 +238,34 @@ export default function DashboardPage() {
         </motion.div>
 
         {/*
-          Workspace Hub — surfaces all 16+ user-facing functions (Forum,
-          Hall, Teams, Followers, Vault, Resume, Assessment, etc.) so
-          users don't have to hunt in the global Header. Mirrors Header's
-          taxonomy (Research / Social / Tools) plus a Stats column.
+          2026-05 Phase 2.5b: Dashboard Stats — "where am I" numbers
+          (followers / cases / predictions / points + Phase 2b signals:
+          assessment / recommendations / verification / chat unread).
+          Sits BEFORE Workspace Hub so the user sees their state first,
+          then chooses navigation. Previously this lived inside the Hub
+          as a 4th column, which mixed nav with data display.
+        */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04 }}
+        >
+          <DashboardStats dashboard={stableDashboard} />
+        </motion.div>
+
+        {/*
+          Workspace Hub — surfaces all 12 user-facing navigation
+          destinations (Forum, Hall, Teams, Followers, Vault, Resume,
+          Assessment, etc.) so users don't have to hunt in the global
+          Header. 3 columns mirror Header's taxonomy: Research / Social
+          / Tools. (Stats column was extracted in 2.5b — see above.)
         */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
-          <DashboardWorkspaceHub dashboard={stableDashboard} />
+          <DashboardWorkspaceHub />
         </motion.div>
 
         <motion.div
