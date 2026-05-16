@@ -803,6 +803,15 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.API_URL || 'http://localhost:4101' }}
 
+      # 2026-05 Phase 4 #37: bundle-size budget gate.
+      # Compares post-build app-build-manifest.json against the committed
+      # baseline at apps/web/.bundle-baseline.json. Fails when any route
+      # grows by more than thresholdPct (default 5%).
+      # Until the baseline is seeded, runs in informational mode (prints
+      # top-10 route sizes, never fails).
+      - name: Bundle size budget
+        run: pnpm lint:bundle
+
       - name: Type check Mobile
         run: pnpm --filter mobile exec tsc --noEmit
 
