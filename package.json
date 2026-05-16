@@ -55,6 +55,7 @@
     "system:accuracy-audit": "tsx scripts/audit/run-system-accuracy-audit.ts",
     "lint:drift": "tsx scripts/check-drift.ts",
     "lint:journeys": "tsx scripts/check-journey-paths.ts",
+    "lint:bundle": "tsx scripts/check-bundle-size.ts",
     "snapshot": "tsx scripts/generate-repo-snapshot.ts",
     "lint:dead-code": "knip",
     "lint:all": "pnpm lint && pnpm --filter web lint:quality && pnpm --filter web lint:typography && pnpm --filter api lint:quality && pnpm --filter study-abroad-mobile lint:quality && pnpm --filter web lint:i18n && pnpm --filter study-abroad-mobile lint:i18n && pnpm lint:routes && pnpm lint:integration && pnpm lint:drift && pnpm lint:journeys",

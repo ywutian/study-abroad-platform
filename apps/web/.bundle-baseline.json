@@ -1,0 +1,6 @@
+{
+  "generatedAt": null,
+  "thresholdPct": 5,
+  "routes": {},
+  "_comment": "Seed this file by running `pnpm lint:bundle -- --seed` AFTER `pnpm --filter web build`. Until seeded, the check runs in informational mode (prints sizes, never fails)."
+}
