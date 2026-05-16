@@ -15,6 +15,55 @@
 export type DashboardSeverity = 'critical' | 'warning' | 'normal' | 'success';
 export type DashboardReadinessStatus = 'blocked' | 'attention' | 'ready';
 
+/**
+ * Unified visual tone for dashboard surfaces.
+ *
+ * 2026-05 Phase 2.5c: Both `DashboardSeverity` (priority queue, deadlines)
+ * and `DashboardReadinessStatus` (readiness items) carry **conceptually
+ * different** semantics, but they collapse to the **same 4-color visual
+ * vocabulary** when rendered. Previously each surface duplicated its own
+ * className map, producing 4 places where "destructive/25 bg-destructive/5"
+ * had to stay in lock-step.
+ *
+ * Centralizing tone here lets each consumer call `toneFromSeverity()` /
+ * `toneFromReadinessStatus()` and then look up a single `toneMeta` map.
+ * Adding/changing a visual token now touches exactly one place.
+ *
+ * Semantics:
+ *   - critical: red — blocking issue / overdue / rejected
+ *   - warning:  amber — needs attention soon
+ *   - neutral:  muted — informational, no urgency
+ *   - success:  green — done / ready / accepted
+ */
+export type DashboardTone = 'critical' | 'warning' | 'neutral' | 'success';
+
+export function toneFromSeverity(severity: DashboardSeverity): DashboardTone {
+  switch (severity) {
+    case 'critical':
+      return 'critical';
+    case 'warning':
+      return 'warning';
+    case 'success':
+      return 'success';
+    case 'normal':
+    default:
+      return 'neutral';
+  }
+}
+
+export function toneFromReadinessStatus(status: DashboardReadinessStatus): DashboardTone {
+  switch (status) {
+    case 'blocked':
+      return 'critical';
+    case 'attention':
+      return 'warning';
+    case 'ready':
+      return 'success';
+    default:
+      return 'neutral';
+  }
+}
+
 export type DashboardPriorityKind =
   | 'profile'
   | 'school-list'
