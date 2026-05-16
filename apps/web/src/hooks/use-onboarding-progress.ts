@@ -1,23 +1,16 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { type DashboardData, userRoutes } from '@study-abroad/shared';
+
 import { apiClient, STALE_TIME } from '@/lib/api';
-import { userRoutes } from '@study-abroad/shared';
 import { useAuthStore } from '@/stores';
 
-interface DashboardProfile {
-  completeness: number;
-}
-
-interface DashboardPendingTasks {
-  total: number;
-  profileGaps: string[];
-}
-
-interface DashboardData {
-  profile: DashboardProfile;
-  pendingTasks: DashboardPendingTasks;
-}
+// 2026-05: Was redefining DashboardData locally as a narrow subset
+// (only profile + pendingTasks). Now imports the canonical shape from
+// @study-abroad/shared (PR #179) so this hook can never silently drift
+// from the dashboard contract. Same query key as the page so the query
+// cache is shared.
 
 const COMPLETE_THRESHOLD = 80;
 

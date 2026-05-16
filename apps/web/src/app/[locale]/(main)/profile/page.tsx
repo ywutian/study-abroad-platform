@@ -9,7 +9,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { apiClient } from '@/lib/api';
-import { profileRoutes, schoolListRoutes, userRoutes } from '@study-abroad/shared';
+import {
+  type DashboardData,
+  profileRoutes,
+  schoolListRoutes,
+  userRoutes,
+} from '@study-abroad/shared';
 import type { ProfileReadinessV1 } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { LoadingState } from '@/components/ui/loading-state';
@@ -269,13 +274,13 @@ export default function ProfilePage() {
     };
   }, [profile, targetSchools.length]);
 
-  // Completeness from backend (weighted 6-category system)
+  // Completeness from backend (weighted 6-category system).
+  // 2026-05: Was using an inline narrowed type ({ profile, pendingTasks }).
+  // Now uses the canonical DashboardData from @study-abroad/shared so the
+  // dashboard query cache stays in lockstep with the dashboard page itself.
   const { data: dashboardData } = useQuery({
     queryKey: ['dashboard'],
-    queryFn: () =>
-      apiClient.get<{ profile: { completeness: number }; pendingTasks: { profileGaps: string[] } }>(
-        userRoutes.dashboard()
-      ),
+    queryFn: () => apiClient.get<DashboardData>(userRoutes.dashboard()),
     enabled: isInitialized && !!accessToken,
   });
   const { data: readiness } = useQuery({
