@@ -11412,6 +11412,17 @@
       "browseDesc": "每张卡片展示真实申请者的 GPA、标化成绩和录取结果。点击查看完整档案。",
       "share": "分享案例",
       "shareDesc": "贡献你的录取结果，帮助他人的同时赚取平台积分。"
+    },
+    "dashboard": {
+      "quickAsk": "AI 快速提问",
+      "quickAskDesc": "向 Lumni 提任何问题 — 录取概率、文书思路、选校建议。答案会在侧边面板中打开。",
+      "commandCenter": "申请指挥中心",
+      "commandCenterDesc": "左侧是今天最重要的行动。下方 5 项准备度评分覆盖档案、学校、文书、时间线、预测。",
+      "priorityQueue": "优先级队列",
+      "priorityQueueDesc": "按优先级排序的关键待办项 — 点击任意行即可处理。",
+      "hub": "工作区导航",
+      "hubDesc": "平台所有工具按 Research / Social / Tools 分组。找功能不用翻菜单。",
+      "restart": "重新观看引导"
     }
   },
   "layout": {

@@ -382,7 +382,7 @@ export function DashboardCommandCenter({
             <DashboardPipelineStrip pipeline={workbench.pipeline} />
           </div>
 
-          <div className="min-w-0 p-4 sm:p-5">
+          <div className="min-w-0 p-4 sm:p-5" data-tour="dashboard-priority-queue">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold">{t('priorityQueue')}</h3>
               {/* 2026-05 Phase 1 design piggyback #10: "待均衡" badge in

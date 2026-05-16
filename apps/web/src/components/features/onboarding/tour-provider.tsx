@@ -292,6 +292,10 @@ export const TOURS = {
   CASES: 'cases',
   ESSAYS_PAGE: 'essays_page',
   ESSAYS_FORM: 'essays_form',
+  // 2026-05 Phase 2.7 #27: first-visit dashboard walkthrough.
+  // Covers QuickAsk → CommandCenter → PriorityQueue → Workspace Hub
+  // so users see the 4 key surfaces before they're left to explore alone.
+  DASHBOARD: 'dashboard',
 } as const;
 
 // Tour step builder functions — accept `t` from useTranslations('tour')
@@ -347,6 +351,62 @@ export function getWelcomeTourSteps(t: TourT): TourStep[] {
         description: t('welcome.profileDesc'),
         side: 'bottom',
         align: 'end',
+      },
+    },
+  ];
+}
+
+/**
+ * 2026-05 Phase 2.7 #27: Dashboard tour — fires once on first visit
+ * (TourProvider stores completion in localStorage). Highlights the 4
+ * essential surfaces a new user needs to understand before they can
+ * navigate the dashboard productively.
+ *
+ * Each step targets a `[data-tour]` attribute on the corresponding
+ * dashboard surface. If the user has hidden one (e.g., DecisionPanel
+ * doesn't render for new accounts), driver.js automatically skips
+ * that step rather than throwing.
+ */
+export function getDashboardTourSteps(t: TourT): TourStep[] {
+  return [
+    {
+      id: 'dashboard-quick-ask',
+      element: '[data-tour="dashboard-quick-ask"]',
+      popover: {
+        title: t('dashboard.quickAsk'),
+        description: t('dashboard.quickAskDesc'),
+        side: 'bottom',
+        align: 'start',
+      },
+    },
+    {
+      id: 'dashboard-command-center',
+      element: '[data-tour="dashboard-command-center"]',
+      popover: {
+        title: t('dashboard.commandCenter'),
+        description: t('dashboard.commandCenterDesc'),
+        side: 'top',
+        align: 'start',
+      },
+    },
+    {
+      id: 'dashboard-priority-queue',
+      element: '[data-tour="dashboard-priority-queue"]',
+      popover: {
+        title: t('dashboard.priorityQueue'),
+        description: t('dashboard.priorityQueueDesc'),
+        side: 'left',
+        align: 'start',
+      },
+    },
+    {
+      id: 'dashboard-hub',
+      element: '[data-tour="dashboard-hub"]',
+      popover: {
+        title: t('dashboard.hub'),
+        description: t('dashboard.hubDesc'),
+        side: 'top',
+        align: 'center',
       },
     },
   ];
