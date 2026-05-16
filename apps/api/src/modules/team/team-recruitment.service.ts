@@ -2011,16 +2011,35 @@ export class TeamRecruitmentService {
     return `${this.getContextLabel(sourceCard.recruitmentContext)} · ${sourceCard.team.name} × ${targetCard.team.name}`;
   }
 
+  /**
+   * 2026-05 chat polish: bilingual initial match message. The match
+   * creates ONE message visible to BOTH teams, who may have different
+   * UI locales — so we emit both Chinese and English in a single
+   * message rather than guessing one locale per match. Chinese leads
+   * because the platform's primary user base is zh-CN.
+   *
+   * Previously this was English-only, which read as awkward inside an
+   * otherwise Chinese-language conversation (per production screenshot
+   * 2026-05-16).
+   */
   private buildInitialMatchMessage(
     sourceCard: LoadedRecruitmentCard,
     targetCard: LoadedRecruitmentCard,
   ) {
-    const sourceOffer = sourceCard.offerRoles.join(', ') || 'General support';
-    const targetOffer = targetCard.offerRoles.join(', ') || 'General support';
+    const contextLabel = this.getContextLabel(sourceCard.recruitmentContext);
+    const sourceOfferZh = sourceCard.offerRoles.join('、') || '通用支持';
+    const targetOfferZh = targetCard.offerRoles.join('、') || '通用支持';
+    const sourceOfferEn = sourceCard.offerRoles.join(', ') || 'General support';
+    const targetOfferEn = targetCard.offerRoles.join(', ') || 'General support';
     return [
-      `Matched on ${this.getContextLabel(sourceCard.recruitmentContext)}.`,
-      `${sourceCard.team.name} offers: ${sourceOffer}.`,
-      `${targetCard.team.name} offers: ${targetOffer}.`,
+      `🤝 基于「${contextLabel}」匹配成功`,
+      `${sourceCard.team.name} 提供：${sourceOfferZh}`,
+      `${targetCard.team.name} 提供：${targetOfferZh}`,
+      '破冰话题：目标是什么、时间线如何、由谁主导下一步？',
+      '',
+      `🤝 Matched on ${contextLabel}`,
+      `${sourceCard.team.name} offers: ${sourceOfferEn}`,
+      `${targetCard.team.name} offers: ${targetOfferEn}`,
       'Icebreakers: What scope are you aiming for, what timeline are you working with, and who should own next steps?',
     ].join('\n');
   }
