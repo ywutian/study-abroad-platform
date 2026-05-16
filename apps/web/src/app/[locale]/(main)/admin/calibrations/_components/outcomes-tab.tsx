@@ -40,7 +40,8 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { PaginationControls } from '../../_components/pagination-controls';
-import type { PaginatedResponse, PredictionWorkflowOutcome } from './prediction-workflow-types';
+import type { PaginatedResponse } from '@study-abroad/shared';
+import type { PredictionWorkflowOutcome } from './prediction-workflow-types';
 
 const PAGE_SIZE = 10;
 
