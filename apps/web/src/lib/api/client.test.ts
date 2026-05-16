@@ -203,4 +203,86 @@ describe('ApiClient', () => {
       expect(mockFetch.mock.calls[0][1].method).toBe('PATCH');
     });
   });
+
+  // 2026-05 Phase 5 #42: transient-failure retry with exponential backoff.
+  // Default policy: GET/HEAD/OPTIONS retry up to 2 times; mutating methods
+  // (POST/PUT/PATCH/DELETE) do NOT retry by default to avoid duplicate
+  // writes on transient failures. Caller can opt in via `retries: N`.
+  describe('Retry policy (Phase 5 #42)', () => {
+    it('retries GET on network TypeError up to 2 times by default', async () => {
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch
+        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(networkError)
+        .mockResolvedValueOnce({
+          ok: true,
+          text: () => Promise.resolve(JSON.stringify({ data: 'recovered' })),
+        });
+
+      const result = await apiClient.get('/schools');
+      expect(result).toBe('recovered');
+      expect(mockFetch).toHaveBeenCalledTimes(3); // initial + 2 retries
+    });
+
+    it('retries GET on 503 Service Unavailable', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          json: () => Promise.resolve({ message: 'Service Unavailable' }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: () => Promise.resolve(JSON.stringify({ data: 'recovered' })),
+        });
+
+      const result = await apiClient.get('/schools');
+      expect(result).toBe('recovered');
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('does NOT retry GET on 400 Bad Request (not transient)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({ message: 'Bad input' }),
+      });
+
+      await expect(apiClient.get('/schools')).rejects.toThrow();
+      expect(mockFetch).toHaveBeenCalledTimes(1); // no retry
+    });
+
+    it('does NOT retry POST by default (idempotency safety)', async () => {
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch.mockRejectedValue(networkError);
+
+      await expect(apiClient.post('/applications', { foo: 'bar' })).rejects.toThrow();
+      // Mutations default to 0 retries to avoid duplicate writes — only
+      // the initial attempt should fire.
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries POST when caller explicitly opts in via retries: 2', async () => {
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch
+        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(networkError)
+        .mockResolvedValueOnce({
+          ok: true,
+          text: () => Promise.resolve(JSON.stringify({ data: 'ok' })),
+        });
+
+      const result = await apiClient.post('/idempotent-thing', { foo: 'bar' }, { retries: 2 });
+      expect(result).toBe('ok');
+      expect(mockFetch).toHaveBeenCalledTimes(3);
+    });
+
+    it('throws the last error after exhausting retries', async () => {
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch.mockRejectedValue(networkError);
+
+      await expect(apiClient.get('/schools')).rejects.toThrow(/fetch/);
+      expect(mockFetch).toHaveBeenCalledTimes(3); // initial + 2 retries
+    });
+  });
 });
