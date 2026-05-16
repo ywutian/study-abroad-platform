@@ -345,6 +345,18 @@
         "success": "就绪"
       }
     },
+    "quickAddSchool": {
+      "trigger": "加学校",
+      "triggerAriaLabel": "快速添加学校到清单",
+      "placeholder": "按学校名搜索…",
+      "hint": "至少输入 2 个字符开始搜索",
+      "searching": "搜索中…",
+      "noResults": "没有匹配 \"{search}\" 的学校",
+      "alreadyAdded": "已添加",
+      "added": "学校已加入清单",
+      "addFailed": "添加失败，请重试。",
+      "clear": "清空搜索"
+    },
     "pipelineStrip": {
       "title": "申请进度",
       "viewAll": "查看全部 →",

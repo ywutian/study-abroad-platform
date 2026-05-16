@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { DashboardPipelineStrip } from './dashboard-pipeline-strip';
+import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
 import {
   getProfileGrade,
   type DashboardPriorityItem,
@@ -211,6 +212,13 @@ export function DashboardCommandCenter({
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-semibold">{t('readiness')}</h3>
                 <div className="flex items-center gap-2">
+                  {/* 2026-05: Quick Add School inline. Compresses the
+                      previous 5-click "open schools page → search →
+                      detail → add → confirm round" flow into 2 clicks
+                      (open popover → click result). Lives in the
+                      readiness header (not on the schools row) to avoid
+                      nesting a button inside the row's Link. */}
+                  <DashboardQuickAddSchool />
                   <span className="text-sm font-semibold tabular-nums text-muted-foreground">
                     {workbench.readiness.score}
                     <span className="text-xs">/100</span>

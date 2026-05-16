@@ -345,6 +345,18 @@
         "success": "Ready"
       }
     },
+    "quickAddSchool": {
+      "trigger": "Add school",
+      "triggerAriaLabel": "Quickly add a school to your list",
+      "placeholder": "Search by school name…",
+      "hint": "Type at least 2 characters to search",
+      "searching": "Searching…",
+      "noResults": "No matches for \"{search}\"",
+      "alreadyAdded": "Added",
+      "added": "School added to your list",
+      "addFailed": "Could not add school. Please try again.",
+      "clear": "Clear search"
+    },
     "pipelineStrip": {
       "title": "Application pipeline",
       "viewAll": "View all →",
