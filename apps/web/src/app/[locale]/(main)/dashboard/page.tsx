@@ -236,6 +236,8 @@ export default function DashboardPage() {
             schoolCount={schoolCount}
             predictionsCount={predictionsCount}
             casesCount={casesCount}
+            // 2026-05 Phase 2.7 #28: drives grade-aware rhythm message.
+            grade={stableDashboard?.profile.grade}
           />
         </motion.div>
 

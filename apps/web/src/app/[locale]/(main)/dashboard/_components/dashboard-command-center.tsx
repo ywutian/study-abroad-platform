@@ -56,6 +56,23 @@ interface DashboardCommandCenterProps {
    */
   predictionsCount?: number;
   casesCount?: number;
+  /**
+   * 2026-05 Phase 2.7 #28: Self-reported applicant grade. Drives a
+   * grade-aware rhythm subtitle next to the workbench label badge
+   * (e.g., SENIOR users see "Submission season" instead of the generic
+   * rhythm message). Optional + gracefully falls back to the generic
+   * rhythm when grade is null/missing/unknown.
+   */
+  grade?: string | null;
+}
+
+// 2026-05 Phase 2.7 #28: well-known Profile.grade values. Anything outside
+// this set falls through to the generic rhythm message.
+const KNOWN_GRADES = ['FRESHMAN', 'SOPHOMORE', 'JUNIOR', 'SENIOR', 'GAP_YEAR'] as const;
+type KnownGrade = (typeof KNOWN_GRADES)[number];
+
+function isKnownGrade(value: string | null | undefined): value is KnownGrade {
+  return typeof value === 'string' && (KNOWN_GRADES as readonly string[]).includes(value);
 }
 
 /**
@@ -137,6 +154,7 @@ export function DashboardCommandCenter({
   schoolCount,
   predictionsCount = 0,
   casesCount = 0,
+  grade: applicantGrade,
 }: DashboardCommandCenterProps) {
   const t = useTranslations('dashboard.workbench');
   const tCenter = useTranslations('dashboard.commandCenter');
@@ -144,6 +162,14 @@ export function DashboardCommandCenter({
   const topAction = workbench.priorityQueue[0];
   const topSeverity = toneMeta[topAction ? toneFromSeverity(topAction.severity) : 'neutral'];
   const grade = getProfileGrade(completeness);
+  // 2026-05 Phase 2.7 #28: grade-aware rhythm message. When the user's
+  // Profile.grade is a known value, swap the generic rhythm subtitle for
+  // a grade-specific one ("Submission season" for SENIOR vs "Long-term
+  // planning" for FRESHMAN). Unknown / null grades fall back to generic.
+  const rhythmMessage = isKnownGrade(applicantGrade)
+    ? t(`rhythmByGrade.${applicantGrade}`)
+    : t('rhythm');
+  const gradeLabel = isKnownGrade(applicantGrade) ? t(`gradeLabel.${applicantGrade}`) : null;
   // 2026-05: when a brand-new user has zero profile data AND zero schools,
   // showing "0%" everywhere is demoralizing. Switch the hero region to a
   // welcoming onboarding card instead. The right column (priority queue +
@@ -170,7 +196,15 @@ export function DashboardCommandCenter({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{t('label')}</Badge>
-                  <span className="text-xs text-muted-foreground">{t('rhythm')}</span>
+                  {/* 2026-05 Phase 2.7 #28: show grade as a chip when known
+                      so the rhythm context is also self-evident to the user
+                      ("you're a Senior; submit-season copy is intentional"). */}
+                  {gradeLabel && (
+                    <Badge variant="outline" className="text-2xs">
+                      {gradeLabel}
+                    </Badge>
+                  )}
+                  <span className="text-xs text-muted-foreground">{rhythmMessage}</span>
                 </div>
                 {isEmptyOnboarding ? (
                   <div className="mt-4 flex items-start gap-3">

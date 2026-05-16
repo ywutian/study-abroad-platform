@@ -560,6 +560,10 @@ export class DashboardService {
         targetSchoolCount: schoolListCount,
         essayCount: profile?.essays?.length || 0,
         schoolTiers,
+        // 2026-05 Phase 2.7 #28: surface grade so the dashboard can show
+        // grade-aware copy (a SENIOR vs a SOPHOMORE need different
+        // rhythm framing).
+        grade: profile?.grade ?? null,
       },
       stats: {
         followers: followStats[0],

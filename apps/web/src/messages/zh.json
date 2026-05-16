@@ -320,6 +320,20 @@
     "workbench": {
       "label": "申请作战台",
       "rhythm": "档案、选校、文书和截止日期统一推进",
+      "rhythmByGrade": {
+        "FRESHMAN": "长期规划 — 探索兴趣、打好基础",
+        "SOPHOMORE": "提前布局 — 备考与活动探索，为高年级做准备",
+        "JUNIOR": "今年秋季搭建选校清单 — 重点关注学校、文书与标化",
+        "SENIOR": "提交季 — 截止日期、文书与申请是核心",
+        "GAP_YEAR": "充分利用这段时间 — 强化背景、最终确认选校"
+      },
+      "gradeLabel": {
+        "FRESHMAN": "高一",
+        "SOPHOMORE": "高二",
+        "JUNIOR": "高三",
+        "SENIOR": "高四 / 申请季",
+        "GAP_YEAR": "Gap Year"
+      },
       "emptyTitle": "申请路线处于稳定推进",
       "emptyDescription": "当前没有明显阻塞项，继续复盘截止日期和预测信号。",
       "primaryCta": "进入工作区",
