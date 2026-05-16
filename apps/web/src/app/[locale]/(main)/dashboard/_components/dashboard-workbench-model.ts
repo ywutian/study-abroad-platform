@@ -29,6 +29,13 @@ export function getProfileGrade(completeness: number): {
   color: string;
   bgColor: string;
 } {
+  // 2026-05 Phase 1 Bug 5: zero-state should not be punished with a red
+  // "D Grade" — that's hostile framing for users who simply haven't
+  // started. Neutral "—" + muted color says "not evaluated yet" instead
+  // of "evaluated and failed". See dashboard-invariants.md (Phase 3a).
+  if (completeness === 0) {
+    return { grade: '—', color: 'text-muted-foreground', bgColor: 'bg-muted/40' };
+  }
   if (completeness >= 90) {
     return { grade: 'A', color: 'text-success', bgColor: 'bg-success/10' };
   }

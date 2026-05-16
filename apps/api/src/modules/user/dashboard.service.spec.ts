@@ -149,7 +149,17 @@ describe('DashboardService', () => {
       mockPointHistory,
     );
     (prisma.schoolListItem.count as jest.Mock).mockResolvedValue(9);
-    (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([]);
+    // 2026-05 Phase 1 Bug 3: dashboard.service now derives userSchoolIds
+    // from schoolListItem.findMany to filter orphan predictions. Mock 9
+    // items to match the count so the default "full data" assertions
+    // (stats.predictions = 4) still pass.
+    (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue(
+      Array.from({ length: 9 }, (_, i) => ({
+        schoolId: `school-${i + 1}`,
+        round: 'RD',
+        school: { name: `School ${i + 1}`, nameZh: null, deadlines: [] },
+      })),
+    );
     (prisma.schoolListItem.groupBy as jest.Mock).mockResolvedValue(
       mockSchoolTierGroups,
     );
@@ -677,6 +687,44 @@ describe('DashboardService', () => {
           decidedAt: decidedAt.toISOString(),
         },
       ]);
+    });
+
+    // 2026-05 Phase 1 Bug 3: validate orphan-prediction filtering.
+    // Reproduces the production "105 predictions + 0 schools" bug:
+    // when a user removes schools after running predictions, the raw
+    // PredictionResult.count is stale. dashboard.stats.predictions
+    // must reflect only predictions whose schoolId is still in the
+    // user's SchoolListItem.
+    it('Phase 1 Bug 3: stats.predictions excludes orphan predictions', async () => {
+      setupDefaultMocks();
+      // User has 0 schools (removed all after running predictions)
+      (prisma.schoolListItem.count as jest.Mock).mockResolvedValue(0);
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([]);
+      // But 105 raw prediction records exist (history from when they had schools)
+      (prisma.predictionResult.count as jest.Mock).mockResolvedValue(105);
+
+      const result = await service.getDashboardSummary(userId);
+      // ✓ valid count = 0 (no schools in current list → no valid predictions)
+      expect(result.stats.predictions).toBe(0);
+    });
+
+    // 2026-05 Phase 1 Bug 4: validate timeline vacuous-truth defense.
+    // When schoolCount=0, missingTimelineCount===0 is vacuously true
+    // (no schools means no missing timelines). The old code awarded
+    // a perfect 10/10 ready — confusing users into thinking they had
+    // completed planning. Now: schoolListCount===0 → timeline blocked.
+    it('Phase 1 Bug 4: timeline status is blocked when schoolListCount=0', async () => {
+      setupDefaultMocks();
+      (prisma.schoolListItem.count as jest.Mock).mockResolvedValue(0);
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.applicationTask.count as jest.Mock).mockResolvedValue(0);
+
+      const result = await service.getDashboardSummary(userId);
+      const timelineItem = result.workbench.readiness.items.find(
+        (item) => item.key === 'timeline',
+      );
+      expect(timelineItem?.status).toBe('blocked');
+      expect(timelineItem?.value).toBe('0/10');
     });
   });
 });

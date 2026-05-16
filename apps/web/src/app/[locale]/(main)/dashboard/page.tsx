@@ -15,6 +15,8 @@ import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { apiClient } from '@/lib/api';
 import { Link } from '@/lib/i18n/navigation';
 
+import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
+
 import { DashboardActivity } from './_components/dashboard-activity';
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
@@ -38,6 +40,11 @@ export default function DashboardPage() {
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => apiClient.get<DashboardData>(userRoutes.dashboard()),
+    // 2026-05 Phase 1.5 #21: dashboard is highly mutable (every school
+    // add / prediction run / task toggle changes it). Override the
+    // global 5-min staleTime to 30s so users see fresh data without
+    // hammering the API on every focus.
+    staleTime: 30_000,
   });
 
   // Consume pendingOnboarding from sessionStorage (fallback from registration)
@@ -88,6 +95,14 @@ export default function DashboardPage() {
   const pendingTotal = stableDashboard?.pendingTasks.total ?? 0;
   const profileGaps = stableDashboard?.pendingTasks.profileGaps ?? [];
   const effectivePending = pendingTotal > 0 ? pendingTotal : profileGaps.length;
+  const predictionsCount = stableDashboard?.stats.predictions ?? 0;
+  const casesCount = stableDashboard?.stats.cases ?? 0;
+  // 2026-05 Phase 1 design piggyback #9: "双欢迎"文案修复 — when the
+  // CommandCenter shows the empty-onboarding hero ("欢迎来到 Lumni"),
+  // PageHeader must NOT also say "欢迎回来" — the two together looked
+  // self-contradictory in the production screenshot.
+  const isEmptyOnboarding =
+    completeness === 0 && schoolCount === 0 && predictionsCount === 0 && casesCount === 0;
   const displayName = isHydrated
     ? dashboard?.user.nickname || dashboard?.user.email?.split('@')[0] || t('dashboard.user')
     : t('dashboard.user');
@@ -123,7 +138,9 @@ export default function DashboardPage() {
   return (
     <PageContainer variant="tool" maxWidth="fluid" className="max-w-[1500px]">
       <PageHeader
-        title={t('dashboard.welcome', { name: displayName })}
+        title={t(isEmptyOnboarding ? 'dashboard.welcomeFirst' : 'dashboard.welcome', {
+          name: displayName,
+        })}
         description={t('dashboard.subtitle')}
         icon={LayoutDashboard}
         variant="tool"
@@ -162,7 +179,13 @@ export default function DashboardPage() {
           requires too many clicks" feedback.
         */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <DashboardQuickAsk />
+          {/* 2026-05 Phase 1.5 #17: QuickAsk wraps an AI feature (the
+              FloatingChat bridge). An AI failure should NOT crash the
+              entire dashboard, so wrap with AIErrorBoundary like every
+              other AI surface on the platform. */}
+          <AIErrorBoundary feature="agent-chat">
+            <DashboardQuickAsk />
+          </AIErrorBoundary>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
@@ -173,6 +196,8 @@ export default function DashboardPage() {
             completeness={completeness}
             schoolTiers={schoolTiers}
             schoolCount={schoolCount}
+            predictionsCount={predictionsCount}
+            casesCount={casesCount}
           />
         </motion.div>
 

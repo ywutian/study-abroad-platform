@@ -46,6 +46,15 @@ interface DashboardCommandCenterProps {
   schoolTiers: { reach: number; target: number; safety: number };
   /** Total school count, used to detect the 0%/0-schools empty state. */
   schoolCount: number;
+  /**
+   * 2026-05 Phase 1 Bug 6: tighter onboarding gate. Previously triggered
+   * only on (completeness === 0 && schoolCount === 0), which falsely
+   * matched experienced users who had 105 predictions / cases / etc.
+   * Now also require predictionsCount === 0 && casesCount === 0 so the
+   * "Welcome to Lumni" hero appears only for truly new accounts.
+   */
+  predictionsCount?: number;
+  casesCount?: number;
 }
 
 const severityMeta: Record<
@@ -120,6 +129,8 @@ export function DashboardCommandCenter({
   completeness,
   schoolTiers,
   schoolCount,
+  predictionsCount = 0,
+  casesCount = 0,
 }: DashboardCommandCenterProps) {
   const t = useTranslations('dashboard.workbench');
   const tCenter = useTranslations('dashboard.commandCenter');
@@ -131,7 +142,13 @@ export function DashboardCommandCenter({
   // showing "0%" everywhere is demoralizing. Switch the hero region to a
   // welcoming onboarding card instead. The right column (priority queue +
   // deadline stream) keeps rendering normally so the page never feels empty.
-  const isEmptyOnboarding = completeness === 0 && schoolCount === 0;
+  // 2026-05 Phase 1 Bug 6: empty onboarding hero only for truly new
+  // accounts. Previously triggered on (completeness===0 && schoolCount===0)
+  // alone, which falsely matched experienced users with 105 predictions /
+  // cases / etc — causing "Welcome to Lumni" to appear next to "已生成
+  // 105 次录取预测". Now also require predictionsCount + casesCount === 0.
+  const isEmptyOnboarding =
+    completeness === 0 && schoolCount === 0 && predictionsCount === 0 && casesCount === 0;
   const formatDeadline = (daysLeft: number) => {
     if (daysLeft < 0) return t('deadlineOverdue', { count: Math.abs(daysLeft) });
     if (daysLeft === 0) return t('deadlineToday');
@@ -324,7 +341,13 @@ export function DashboardCommandCenter({
                             </div>
                           )}
                         </div>
-                        <span className="shrink-0 text-sm font-semibold tabular-nums">
+                        <span
+                          className="shrink-0 text-sm font-semibold tabular-nums"
+                          // 2026-05 Phase 1 design piggyback #12: a11y —
+                          // bare "10/10" is hard for screen readers to
+                          // interpret without context.
+                          aria-label={`${item.label}: ${item.value}`}
+                        >
                           {item.value}
                         </span>
                       </div>
@@ -347,9 +370,14 @@ export function DashboardCommandCenter({
           <div className="min-w-0 p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold">{t('priorityQueue')}</h3>
-              <Badge variant={workbench.metrics.balancedSchoolList ? 'success' : 'warning'}>
-                {workbench.metrics.balancedSchoolList ? t('balanced') : t('needsBalance')}
-              </Badge>
+              {/* 2026-05 Phase 1 design piggyback #10: "待均衡" badge in
+                  0-school accounts is meaningless ("nothing to balance");
+                  hide it until the user has added at least one school. */}
+              {schoolCount > 0 && (
+                <Badge variant={workbench.metrics.balancedSchoolList ? 'success' : 'warning'}>
+                  {workbench.metrics.balancedSchoolList ? t('balanced') : t('needsBalance')}
+                </Badge>
+              )}
             </div>
 
             <div className="mt-3 space-y-2">

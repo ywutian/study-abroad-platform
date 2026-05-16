@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,11 @@ interface DashboardActivityProps {
 
 export function DashboardActivity({ activities }: DashboardActivityProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  // 2026-05 Phase 1.5 #18: pass locale to toLocaleDateString so zh
+  // users see Chinese dates ("2026/5/15") instead of browser default
+  // (often "5/15/2026" en-US). Maps next-intl 'zh'/'en' → BCP 47.
+  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
   return (
     <Card className="rounded-[var(--theme-radius-card)] py-0">
       <CardHeader className="px-4 py-4">
@@ -52,7 +57,7 @@ export function DashboardActivity({ activities }: DashboardActivityProps) {
                   <p className="text-xs text-muted-foreground">{activity.description}</p>
                 </div>
                 <span className="text-xs text-muted-foreground shrink-0">
-                  {new Date(activity.createdAt).toLocaleDateString()}
+                  {new Date(activity.createdAt).toLocaleDateString(dateLocale)}
                 </span>
               </div>
             ))}

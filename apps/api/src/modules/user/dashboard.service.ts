@@ -8,6 +8,7 @@ import {
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
+import { calculateProfileCompleteness } from '../profile/profile-completeness.util';
 
 // 2026-05: Re-export so consumers (e.g. user.controller.ts type imports)
 // don't break. The interfaces live in @study-abroad/shared so API + Web
@@ -106,7 +107,14 @@ export class DashboardService {
       // 案例数
       this.prisma.admissionCase.count({ where: { userId } }),
 
-      // 预测数
+      // 预测数 — 2026-05 Phase 1 Bug 3: count ALL predictions for this
+      // user's profile here. The orphan-filtering (only counting predictions
+      // whose schoolId is still in the user's SchoolListItem) happens
+      // post-query via `validPredictionsCount` below, since PredictionResult
+      // has no relation to SchoolListItem in the Prisma schema (only the
+      // schoolId scalar exists). This resolves the "105 predictions + 0
+      // schools" production contradiction without a DB write or schema
+      // change. See docs/architecture/dashboard-invariants.md.
       this.prisma.predictionResult.count({
         where: { profile: { userId } },
       }),
@@ -441,6 +449,25 @@ export class DashboardService {
       }
     }
 
+    // 2026-05 Phase 1 Bug 3: Compute "valid" predictionsCount — only
+    // predictions whose schoolId is still in the user's SchoolListItem.
+    // Resolves the "105 predictions + 0 schools" production contradiction
+    // by filtering orphan records from the user-facing count without
+    // writing to the DB. PredictionResult.schoolId has no Prisma relation
+    // to SchoolListItem, so we use a 2-step query: (1) above we got the
+    // raw count of all predictions; (2) here we count predictions whose
+    // schoolId is in the user's current school list.
+    const userSchoolIds = schoolListWithDeadlines.map((item) => item.schoolId);
+    const validPredictionsCount =
+      userSchoolIds.length === 0
+        ? 0
+        : await this.prisma.predictionResult.count({
+            where: {
+              profile: { userId },
+              schoolId: { in: userSchoolIds },
+            },
+          });
+
     const workbench = this.buildWorkbench({
       locale,
       completeness,
@@ -448,7 +475,7 @@ export class DashboardService {
       schoolListCount,
       schoolTiers,
       essayCount: profile?.essays?.length || 0,
-      predictionsCount,
+      predictionsCount: validPredictionsCount,
       pendingTaskCount,
       overdueTaskCount,
       upcomingDeadlines,
@@ -482,7 +509,9 @@ export class DashboardService {
         followers: followStats[0],
         following: followStats[1],
         cases: casesCount,
-        predictions: predictionsCount,
+        // 2026-05 Phase 1 Bug 3: expose valid-only count (orphans filtered).
+        // See `validPredictionsCount` above for the rationale.
+        predictions: validPredictionsCount,
       },
       pendingTasks: {
         total: pendingTaskCount,
@@ -563,13 +592,20 @@ export class DashboardService {
     // Timeline rolls together missing-timeline coverage (selected schools
     // without a timeline) and pending tasks. Each gap subtracts; perfect
     // state = 10. Cap at 0.
+    //
+    // 2026-05 Phase 1 Bug 4: with 0 schools, missingTimelineCount===0 is
+    // vacuously true (no schools means no missing timelines), so the
+    // previous formula awarded a perfect 10/10 — confusing users into
+    // thinking they were ahead. Now: schoolListCount === 0 → 0/10.
     const timelineContribution =
-      missingTimelineCount === 0 && pendingTaskCount === 0
-        ? 10
-        : Math.max(
-            0,
-            8 - missingTimelineCount * 2 - Math.min(pendingTaskCount, 6),
-          );
+      schoolListCount === 0
+        ? 0
+        : missingTimelineCount === 0 && pendingTaskCount === 0
+          ? 10
+          : Math.max(
+              0,
+              8 - missingTimelineCount * 2 - Math.min(pendingTaskCount, 6),
+            );
     const predictionContribution = predictionsCount > 0 ? 15 : 0;
     const readinessScore = Math.min(
       100,
@@ -678,26 +714,40 @@ export class DashboardService {
           {
             key: 'timeline',
             label: this.t(locale, '时间线闭环', 'Timeline'),
-            value: `${timelineContribution}/10`,
+            // 2026-05 Phase 1 Bug 4: timeline can't be "ready" without any
+            // schools. Without this guard, an empty user (0 schools → 0
+            // missingTimelines → 0 pendingTasks) showed status='ready'
+            // 10/10 ✓ — vacuous truth that confused users into thinking
+            // they had completed planning. See dashboard-invariants.md.
+            value:
+              schoolListCount === 0 ? '0/10' : `${timelineContribution}/10`,
             status:
-              missingTimelineCount === 0 && pendingTaskCount === 0
-                ? 'ready'
-                : missingTimelineCount === 0
-                  ? 'attention'
-                  : 'blocked',
+              schoolListCount === 0
+                ? 'blocked'
+                : missingTimelineCount === 0 && pendingTaskCount === 0
+                  ? 'ready'
+                  : missingTimelineCount === 0
+                    ? 'attention'
+                    : 'blocked',
             href: '/timeline',
             description:
-              missingTimelineCount > 0
+              schoolListCount === 0
                 ? this.t(
                     locale,
-                    `${missingTimelineCount} 所选校还没有申请时间线`,
-                    `${missingTimelineCount} selected schools still need timelines`,
+                    '先添加目标学校，时间线会自动生成',
+                    'Add target schools first — timeline will populate automatically',
                   )
-                : this.t(
-                    locale,
-                    '申请节点已纳入统一节奏',
-                    'Application milestones are in one planning rhythm',
-                  ),
+                : missingTimelineCount > 0
+                  ? this.t(
+                      locale,
+                      `${missingTimelineCount} 所选校还没有申请时间线`,
+                      `${missingTimelineCount} selected schools still need timelines`,
+                    )
+                  : this.t(
+                      locale,
+                      '申请节点已纳入统一节奏',
+                      'Application milestones are in one planning rhythm',
+                    ),
           },
           {
             key: 'prediction',
@@ -1121,85 +1171,17 @@ export class DashboardService {
     return nextDeadline;
   }
 
+  /**
+   * @deprecated 2026-05 Phase 1: algorithm extracted to
+   * `apps/api/src/modules/profile/profile-completeness.util.ts` so
+   * dashboard readiness and prediction precondition (Phase 1 Bug 2)
+   * stay in lockstep. Kept as thin wrapper for in-class call-sites.
+   */
   private calculateProfileCompleteness(
-    profile: any,
+    profile: Parameters<typeof calculateProfileCompleteness>[0],
     schoolListCount: number,
   ): { completeness: number; profileGaps: string[] } {
-    if (!profile) {
-      return {
-        completeness: 0,
-        profileGaps: [
-          'basicInfo',
-          'gpa',
-          'testScores',
-          'activities',
-          'awards',
-          'targetSchools',
-        ],
-      };
-    }
-
-    let score = 0;
-    const gaps: string[] = [];
-
-    // Industry priority: GPA + rigor first, tests second.
-    // When applyingTestOptional is true, the testScores weight is redistributed to GPA
-    // so test-optional applicants are not penalized for missing standardized scores.
-    const isTestOptional = profile.applyingTestOptional === true;
-    const weights = {
-      basicInfo: 20,
-      gpa: isTestOptional ? 35 : 25, // GPA is the #1 academic signal
-      testScores: isTestOptional ? 0 : 15,
-      activities: 20,
-      awards: 10,
-      targetSchools: 10,
-    };
-
-    // 基本信息
-    if (profile.targetMajor || profile.grade) {
-      score += weights.basicInfo;
-    } else {
-      gaps.push('basicInfo');
-    }
-
-    // GPA
-    if (profile.gpa) {
-      score += weights.gpa;
-    } else {
-      gaps.push('gpa');
-    }
-
-    // 标化成绩 — skipped when test-optional (weight is 0)
-    if (!isTestOptional) {
-      if (profile.testScores?.length > 0) {
-        score += weights.testScores;
-      } else {
-        gaps.push('testScores');
-      }
-    }
-
-    // 活动
-    if (profile.activities?.length > 0) {
-      score += weights.activities;
-    } else {
-      gaps.push('activities');
-    }
-
-    // 奖项
-    if (profile.awards?.length > 0) {
-      score += weights.awards;
-    } else {
-      gaps.push('awards');
-    }
-
-    // 目标学校（使用 SchoolListItem 数据）
-    if (schoolListCount > 0) {
-      score += weights.targetSchools;
-    } else {
-      gaps.push('targetSchools');
-    }
-
-    return { completeness: Math.min(100, score), profileGaps: gaps };
+    return calculateProfileCompleteness(profile, schoolListCount);
   }
 
   private buildRecentActivity(

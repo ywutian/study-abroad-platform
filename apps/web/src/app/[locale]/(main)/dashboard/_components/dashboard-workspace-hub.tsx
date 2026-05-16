@@ -178,22 +178,27 @@ export function DashboardWorkspaceHub({ dashboard }: DashboardWorkspaceHubProps)
             <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t('sections.stats')}
             </h4>
-            <div className="space-y-1.5">
+            {/* 2026-05 Phase 1 design piggyback #12: a11y — wrap stats
+                as a semantic list so screen readers announce "list of 5
+                items" instead of a wall of links. */}
+            <ul role="list" className="space-y-1.5">
               {stats.map((stat) => (
-                <Link
-                  key={stat.label}
-                  href={stat.href}
-                  className={cn(
-                    'flex items-center justify-between gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
-                    'border border-border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5',
-                    'transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]'
-                  )}
-                >
-                  <span className="text-xs text-muted-foreground">{stat.label}</span>
-                  <span className="text-sm font-semibold tabular-nums">{stat.value}</span>
-                </Link>
+                <li key={stat.label}>
+                  <Link
+                    href={stat.href}
+                    aria-label={`${stat.label}: ${stat.value}`}
+                    className={cn(
+                      'flex items-center justify-between gap-2 rounded-[var(--theme-radius-control,0.5rem)]',
+                      'border border-border bg-[color:var(--theme-control-bg)] px-2.5 py-1.5',
+                      'transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]'
+                    )}
+                  >
+                    <span className="text-xs text-muted-foreground">{stat.label}</span>
+                    <span className="text-sm font-semibold tabular-nums">{stat.value}</span>
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </CardContent>
