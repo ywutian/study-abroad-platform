@@ -925,5 +925,66 @@ describe('DashboardService', () => {
       expect(result.signals?.verificationStatus).toBe('unverified');
       expect(result.profile).toBeDefined();
     });
+
+    // 2026-05 Phase 2.7 #31: quickAskSuggestions personalization.
+    // When the user has no targetMajor and no schools in their list,
+    // the chips should be the generic defaults that match the
+    // hardcoded i18n fallbacks (so brand-new users see what they always have).
+    it('Phase 2.7 #31: quickAskSuggestions falls back to generic defaults for empty profile', async () => {
+      setupDefaultMocks();
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValueOnce({
+        nickname: null,
+        grade: null,
+        targetMajor: null,
+        testScores: [],
+        activities: [],
+        awards: [],
+        education: [],
+        essays: [],
+      });
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValueOnce([]);
+
+      const result = await service.getDashboardSummary(userId, 'zh');
+
+      expect(result.quickAskSuggestions).toEqual([
+        '我有多大概率被 MIT 录取？',
+        '帮我头脑风暴一篇 Common App 文书',
+        '为我推荐 5 所 CS 冲刺校',
+      ]);
+    });
+
+    it('Phase 2.7 #31: quickAskSuggestions personalizes by targetMajor + first school', async () => {
+      setupDefaultMocks();
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValueOnce({
+        nickname: null,
+        grade: null,
+        targetMajor: 'Computer Science',
+        testScores: [],
+        activities: [],
+        awards: [],
+        education: [],
+        essays: [],
+      });
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValueOnce([
+        {
+          schoolId: 'school-1',
+          round: 'EA',
+          school: {
+            name: 'Stanford',
+            nameZh: '斯坦福',
+            deadlines: [],
+          },
+        },
+      ]);
+
+      const result = await service.getDashboardSummary(userId, 'zh');
+
+      // Chip 1: predicts against the first school in user's list
+      // Chip 2: essay brainstorm scoped to that school
+      // Chip 3: reach schools for the user's targetMajor
+      expect(result.quickAskSuggestions?.[0]).toMatch(/斯坦福|Stanford/);
+      expect(result.quickAskSuggestions?.[1]).toMatch(/斯坦福|Stanford/);
+      expect(result.quickAskSuggestions?.[2]).toContain('Computer Science');
+    });
   });
 });

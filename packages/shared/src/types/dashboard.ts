@@ -261,6 +261,17 @@ export interface DashboardSummary {
    * frontend fallback (createFallbackWorkbench) doesn't need to set it.
    */
   signals?: DashboardSignals;
+  /**
+   * 2026-05 Phase 2.7 #31: 3 personalized QuickAsk suggestion chips
+   * generated server-side from the user's profile (targetMajor) +
+   * school list (first added school name). Frontend uses these in
+   * preference to the hardcoded i18n suggestions; falls back to the
+   * generic chips when this field is undefined (e.g., frontend
+   * fallback or backend hasn't computed yet).
+   *
+   * Each string is already localized — backend reads the request locale.
+   */
+  quickAskSuggestions?: [string, string, string];
 }
 
 /**

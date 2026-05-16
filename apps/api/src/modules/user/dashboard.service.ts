@@ -726,7 +726,73 @@ export class DashboardService {
         latestVerificationRow,
         chatUnreadRows,
       }),
+      // 2026-05 Phase 2.7 #31: personalized QuickAsk chips.
+      // Built server-side from profile.targetMajor + first school in
+      // schoolList so the chips read like real questions for THIS user
+      // ("我有多大概率被 Stanford 录取？" vs the hardcoded MIT default).
+      quickAskSuggestions: this.buildQuickAskSuggestions({
+        targetMajor: profile?.targetMajor ?? null,
+        firstSchoolName: schoolListWithDeadlines[0]?.school
+          ? getSchoolDisplayName(schoolListWithDeadlines[0].school, locale)
+          : null,
+        locale,
+      }),
     };
+  }
+
+  /**
+   * 2026-05 Phase 2.7 #31: Generate 3 personalized QuickAsk chips
+   * based on the user's profile + first-added school. Falls back to
+   * the original generic prompts (matching the i18n defaults) when
+   * the user has no profile signal yet.
+   *
+   * The chips are emitted as already-localized strings — the frontend
+   * uses them verbatim. This keeps the frontend dumb (`map → render`)
+   * and the personalization logic centralized.
+   */
+  private buildQuickAskSuggestions(input: {
+    targetMajor: string | null;
+    firstSchoolName: string | null;
+    locale: string;
+  }): [string, string, string] {
+    const isZh = input.locale === 'zh';
+    const { targetMajor, firstSchoolName } = input;
+
+    // Generic defaults — match exactly the hardcoded i18n fallback so
+    // brand-new users see the same chips they always have.
+    const defaults: [string, string, string] = isZh
+      ? [
+          '我有多大概率被 MIT 录取？',
+          '帮我头脑风暴一篇 Common App 文书',
+          '为我推荐 5 所 CS 冲刺校',
+        ]
+      : [
+          'What are my chances at MIT?',
+          'Help me brainstorm a Common App essay',
+          'Suggest 5 reach schools for CS',
+        ];
+
+    // No personalization signal → bail out.
+    if (!targetMajor && !firstSchoolName) return defaults;
+
+    const school = firstSchoolName ?? 'MIT';
+    const major = targetMajor ?? (isZh ? 'CS' : 'CS');
+
+    return isZh
+      ? [
+          `我有多大概率被 ${school} 录取？`,
+          firstSchoolName
+            ? `帮我头脑风暴一篇 ${school} 申请文书`
+            : '帮我头脑风暴一篇 Common App 文书',
+          `为我推荐 5 所 ${major} 冲刺校`,
+        ]
+      : [
+          `What are my chances at ${school}?`,
+          firstSchoolName
+            ? `Help me brainstorm a ${school} application essay`
+            : 'Help me brainstorm a Common App essay',
+          `Suggest 5 reach schools for ${major}`,
+        ];
   }
 
   /**
