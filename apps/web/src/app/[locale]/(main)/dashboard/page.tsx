@@ -8,6 +8,11 @@ import { ArrowRight, CalendarClock, LayoutDashboard } from 'lucide-react';
 import { profileRoutes, userRoutes } from '@study-abroad/shared';
 
 import { QuickExperience } from '@/components/features/onboarding/quick-experience';
+import {
+  getDashboardTourSteps,
+  TOURS,
+  useTour,
+} from '@/components/features/onboarding/tour-provider';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -33,13 +38,34 @@ import {
 
 export default function DashboardPage() {
   const t = useTranslations();
+  const tTour = useTranslations('tour');
   const queryClient = useQueryClient();
+  const { registerTour, startTour, hasCompletedTour } = useTour();
   const [isHydrated, setIsHydrated] = useState(false);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  // 2026-05 Phase 2.7 #27: Register + auto-start the dashboard tour on
+  // first visit. driver.js skips steps whose target [data-tour] isn't
+  // present (e.g., DecisionPanel doesn't render for new accounts), so
+  // the tour gracefully degrades for any subset of dashboard surfaces.
+  useEffect(() => {
+    if (!isHydrated) return;
+    registerTour({
+      id: TOURS.DASHBOARD,
+      steps: getDashboardTourSteps(tTour),
+    });
+    // Auto-start only if not already completed AND the page has had a
+    // tick to render so targets exist. 800ms is enough for animations
+    // + suspense without feeling laggy.
+    if (!hasCompletedTour(TOURS.DASHBOARD)) {
+      const handle = setTimeout(() => startTour(TOURS.DASHBOARD), 800);
+      return () => clearTimeout(handle);
+    }
+  }, [isHydrated, registerTour, startTour, hasCompletedTour, tTour]);
 
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard'],
@@ -182,7 +208,11 @@ export default function DashboardPage() {
           AI the default action surface, addressing the "everything
           requires too many clicks" feedback.
         */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-tour="dashboard-quick-ask"
+        >
           {/* 2026-05 Phase 1.5 #17: QuickAsk wraps an AI feature (the
               FloatingChat bridge). An AI failure should NOT crash the
               entire dashboard, so wrap with AIErrorBoundary like every
@@ -192,7 +222,11 @@ export default function DashboardPage() {
           </AIErrorBoundary>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-tour="dashboard-command-center"
+        >
           <DashboardCommandCenter
             workbench={workbench}
             completingTaskId={completingTaskId}
@@ -264,6 +298,7 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
+          data-tour="dashboard-hub"
         >
           <DashboardWorkspaceHub />
         </motion.div>
