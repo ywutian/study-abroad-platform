@@ -119,3 +119,82 @@ export interface DashboardWorkbench {
   deadlineStream: DashboardDeadlineItem[];
   pipeline?: DashboardPipeline;
 }
+
+/**
+ * Top-level dashboard payload returned by `GET /users/dashboard`.
+ *
+ * 2026-05: Centralized after PR #178 to prevent the same drift class
+ * that the workbench types had. Previously the API called this
+ * `DashboardSummary` and the web called the SAME shape `DashboardData`,
+ * with three subtle drifts (hasEducation / upcomingPersonalEvents /
+ * workbench were all `required` in the API but `optional` in the web —
+ * over-defensive aliasing that masked real bugs if the API ever
+ * stopped populating them).
+ *
+ * The API guarantees all listed fields are present (it builds the
+ * shape via `buildWorkbench()` and emits empty arrays where there's no
+ * data). `DashboardData` is exported as an alias for back-compat with
+ * existing web consumers.
+ */
+export interface DashboardSummary {
+  user: {
+    email: string;
+    role: string;
+    points: number;
+    createdAt: string;
+    nickname?: string;
+  };
+  profile: {
+    completeness: number;
+    hasTestScores: boolean;
+    hasActivities: boolean;
+    hasAwards: boolean;
+    hasEducation: boolean;
+    targetSchoolCount: number;
+    essayCount: number;
+    schoolTiers: {
+      reach: number;
+      target: number;
+      safety: number;
+    };
+  };
+  stats: {
+    followers: number;
+    following: number;
+    cases: number;
+    predictions: number;
+  };
+  pendingTasks: {
+    total: number;
+    byType: { type: string; count: number }[];
+    profileGaps: string[];
+  };
+  upcomingDeadlines: Array<{
+    id: string;
+    schoolName: string;
+    round: string;
+    deadline: string;
+    daysLeft: number;
+  }>;
+  upcomingPersonalEvents: Array<{
+    id: string;
+    title: string;
+    category: string;
+    deadline: string | null;
+    eventDate: string | null;
+    daysLeft: number;
+  }>;
+  recentActivity: Array<{
+    type: string;
+    title: string;
+    description: string;
+    createdAt: string;
+  }>;
+  workbench: DashboardWorkbench;
+}
+
+/**
+ * Web-side alias for {@link DashboardSummary}. Kept so existing web
+ * imports (`type DashboardData`) continue to work without churn.
+ */
+export type DashboardData = DashboardSummary;
