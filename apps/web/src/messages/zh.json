@@ -258,7 +258,9 @@
         "predict": "我有多大概率被 MIT 录取？",
         "essays": "帮我头脑风暴一篇 Common App 文书",
         "schools": "为我推荐 5 所 CS 冲刺校"
-      }
+      },
+      "openFullWorkspace": "打开完整 AI 工作区",
+      "openFullWorkspaceHint": "需要更长的对话、工具调用或历史记录？打开 AI 工作区。"
     },
     "hub": {
       "title": "工作区",
