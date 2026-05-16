@@ -57,6 +57,10 @@ const KNOWN_PREFIXES = new Set([
   'settings',
   'health',
   'admin',
+  // 2026-05 Phase 4 #35: lives in apps/api/src/common/feature-flags/
+  // (not apps/api/src/modules/) so the controller scan above misses it.
+  // Adding here explicitly keeps the routes check honest.
+  'feature-flags',
 ]);
 
 // Prefixes that are not backend API routes (navigation, static assets, etc.)
