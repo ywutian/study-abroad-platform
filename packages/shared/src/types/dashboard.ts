@@ -206,6 +206,15 @@ export interface DashboardSummary {
       target: number;
       safety: number;
     };
+    /**
+     * 2026-05 Phase 2.7 #28: Self-reported applicant grade. Drives
+     * grade-aware copy on the dashboard (a SENIOR sees a different
+     * rhythm message than a FRESHMAN). Stored as a free-form string in
+     * `Profile.grade` — well-known values: 'FRESHMAN' | 'SOPHOMORE' |
+     * 'JUNIOR' | 'SENIOR' | 'GAP_YEAR'. Frontend gracefully degrades
+     * any unknown / null value to the generic rhythm message.
+     */
+    grade?: string | null;
   };
   stats: {
     followers: number;

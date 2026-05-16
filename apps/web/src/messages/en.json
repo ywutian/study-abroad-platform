@@ -320,6 +320,20 @@
     "workbench": {
       "label": "Application workbench",
       "rhythm": "Profile, schools, essays, and deadlines in one operating view",
+      "rhythmByGrade": {
+        "FRESHMAN": "Long-term planning — explore your interests and build a strong foundation",
+        "SOPHOMORE": "Plan ahead — test prep + activity exploration set you up for senior year",
+        "JUNIOR": "Build your shortlist this fall — focus on schools, essays, and standardized tests",
+        "SENIOR": "Submission season — deadlines, essays, and applications are your focus",
+        "GAP_YEAR": "Use this time wisely — strengthen your application and finalize your school list"
+      },
+      "gradeLabel": {
+        "FRESHMAN": "Freshman",
+        "SOPHOMORE": "Sophomore",
+        "JUNIOR": "Junior",
+        "SENIOR": "Senior",
+        "GAP_YEAR": "Gap Year"
+      },
       "emptyTitle": "Your application route is stable",
       "emptyDescription": "No blocking item is visible right now. Keep reviewing deadlines and prediction signals.",
       "primaryCta": "Open workspace",
