@@ -10,12 +10,18 @@
 **Continuous Closure Engine is built and running on real data.**
 
 - `ClosureTarget` work-queue table — 2538 targets (240 schools × tracked fields).
-- Closure: **46.1%** (1171/2538 — 1113 CLOSED + 58 UNAVAILABLE), up from 42.3% baseline.
-- Collection wave 1 done — 4 Claude subagents, real WebSearch+WebFetch+parse:
+- Closure: **47.7%** (1210/2538 — 1127 CLOSED + 83 UNAVAILABLE; 16 FAILED, 1312 PENDING), up from 42.3% baseline.
+- Collection wave 1 — 4 Claude subagents, real WebSearch+WebFetch+parse:
   - needBlindInternational: 8 resolved (cited official sources), 17 honest null
   - edAcceptanceRate: 30 UNAVAILABLE (verified no binding ED / no published rate)
   - eaAcceptanceRate: Harvard 8.74% + Yale 9.02% (REA); 28 UNAVAILABLE
   - yieldRate: 30/30 CLOSED (CDS/IR-sourced)
+- Collection wave 2 — 2 more subagents:
+  - needBlindInternational b2: 14 resolved (Georgetown/USC need-blind; 12 need-aware), 16 FAILED
+  - gpaDistribution probe: 25 UNAVAILABLE (LACs/conservatories verified to leave CDS C11 blank)
+- **Lesson learned**: gpaDistribution / ED / EA batches must target large public &
+  private _research universities_ — selective LACs & conservatories systematically
+  don't publish C11 or round-specific rates. Bias future batch selection accordingly.
 
 Per-field closure: act25/75 100% · transferAcceptanceRate 85% · oosAcceptanceRate 81% ·
 gpaDistribution 73% · edAcceptanceRate 40% · eaAcceptanceRate 17% · needBlindInternational 14% ·
