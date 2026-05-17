@@ -95,7 +95,11 @@ async function main() {
     _count: { _all: true },
   });
   const total = byStatus.reduce((n, r) => n + r._count._all, 0);
-  const closed = byStatus.find((r) => r.status === 'CLOSED')?._count._all ?? 0;
+  // A target is "closed" if CLOSED (data found) or UNAVAILABLE (verified that
+  // no such data is published) — both are terminal-success states.
+  const closed = byStatus
+    .filter((r) => r.status === 'CLOSED' || r.status === 'UNAVAILABLE')
+    .reduce((n, r) => n + r._count._all, 0);
   console.log(`closure_targets: ${upserts} upserted, ${total} total`);
   for (const r of byStatus.sort((a, b) => b._count._all - a._count._all)) {
     console.log(`  ${r.status.padEnd(13)} ${r._count._all}`);
