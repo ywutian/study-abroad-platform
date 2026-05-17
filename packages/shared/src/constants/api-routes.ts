@@ -124,6 +124,10 @@ export const hallRoutes = {
   reviewerQualification: () => `${API_ROUTES.HALLS}/reviewer/qualification`,
   // Hall refactor Stage 5 — AI review coach
   reviewerCoach: () => `${API_ROUTES.HALLS}/reviewer/coach`,
+  // Hall refactor Stage 3 — Verified China Admit Dashboard
+  verifiedChinaAdmitTrend: () => `${API_ROUTES.HALLS}/verified/china-admit-trend`,
+  verifiedDifficultySignal: () => `${API_ROUTES.HALLS}/verified/difficulty-signal`,
+  verifiedEdRdComparison: () => `${API_ROUTES.HALLS}/verified/ed-rd-comparison`,
 };
 
 // Hall refactor Stage 7 — Points redemption (cross-module spend outlet)

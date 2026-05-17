@@ -33,6 +33,7 @@ import {
   type QualificationResult,
 } from './reviewer-qualification.service';
 import { ReviewCoachService } from './review-coach.service';
+import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
 import type { ReviewerInsight } from './review-coach.prompts';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportTargetType } from '@prisma/client';
@@ -51,6 +52,7 @@ import {
   VoteListDto,
   BatchRankingDto,
   VerifiedRankingQueryDto,
+  VerifiedDashboardQueryDto,
   VerifiedRankingResponseDto,
   HallReactionDto,
   RankingAnalysisDto,
@@ -77,6 +79,7 @@ export class HallController {
     private readonly aggregatorService: HallReviewAggregatorService,
     private readonly qualificationService: ReviewerQualificationService,
     private readonly reviewCoachService: ReviewCoachService,
+    private readonly verifiedDashboardService: HallVerifiedDashboardService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -470,6 +473,37 @@ export class HallController {
   @ApiOperation({ summary: 'Get available years for filtering' })
   async getAvailableYears(): Promise<number[]> {
     return this.hallService.getAvailableYears();
+  }
+
+  // ============================================
+  // Verified — China Admit Dashboard (Stage 3)
+  // ============================================
+
+  @Get('verified/china-admit-trend')
+  @Public()
+  @ApiOperation({ summary: 'Per-school China-mainland admit count over time' })
+  async getChinaAdmitTrend(@Query() query: VerifiedDashboardQueryDto) {
+    return this.verifiedDashboardService.getChinaAdmitTrend(
+      query.schoolIds,
+      query.years ?? 4,
+    );
+  }
+
+  @Get('verified/difficulty-signal')
+  @Public()
+  @ApiOperation({ summary: 'Year-over-year admission difficulty signal' })
+  async getDifficultySignal(@Query() query: VerifiedDashboardQueryDto) {
+    return this.verifiedDashboardService.getDifficultySignal(query.schoolIds);
+  }
+
+  @Get('verified/ed-rd-comparison')
+  @Public()
+  @ApiOperation({ summary: 'ED vs RD admit comparison for one cycle' })
+  async getEdRdComparison(@Query() query: VerifiedDashboardQueryDto) {
+    return this.verifiedDashboardService.getEdRdComparison(
+      query.schoolIds,
+      query.year ?? new Date().getFullYear() - 1,
+    );
   }
 
   // ============================================

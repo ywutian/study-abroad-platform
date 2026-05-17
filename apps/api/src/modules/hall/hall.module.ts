@@ -4,6 +4,7 @@ import { HallRankingService } from './hall-ranking.service';
 import { HallReviewService } from './hall-review.service';
 import { HallListService } from './hall-list.service';
 import { HallVerifiedService } from './hall-verified.service';
+import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
 import { HallOverviewService } from './hall-overview.service';
 import { HallReviewAggregatorService } from './hall-review-aggregator.service';
 import { ReviewerQualificationService } from './reviewer-qualification.service';
@@ -31,6 +32,7 @@ import { NotificationModule } from '../notification/notification.module';
     HallReviewService,
     HallListService,
     HallVerifiedService,
+    HallVerifiedDashboardService,
     HallOverviewService,
     HallReviewAggregatorService,
     ReviewerQualificationService,

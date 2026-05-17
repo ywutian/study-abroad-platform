@@ -199,3 +199,67 @@ export interface ChallengeAttemptResult {
     isCorrect: boolean;
   }>;
 }
+
+// ---------------------------------------------------------------------------
+// Hall refactor Stage 3 — Verified China Admit Dashboard
+// ---------------------------------------------------------------------------
+
+/**
+ * Data reliability rating shown on every China Admit Card.
+ *  A — verified case >= 5 (high confidence)
+ *  B — verified case >= 3 (medium)
+ *  C — verified case 1-2 (low, advisory only)
+ *  D — no verified case (number hidden, fallback copy shown)
+ */
+export type DataReliability = 'A' | 'B' | 'C' | 'D';
+
+/** Year-over-year admission difficulty signal for a school. */
+export type DifficultySignal = 'stable' | 'declining' | 'surging';
+
+/** One school's China-mainland admit count over recent years. */
+export interface ChinaAdmitTrendEntry {
+  schoolId: string;
+  schoolName: string;
+  schoolNameZh?: string;
+  schoolRank?: number;
+  /** Per-year admitted count, ascending by year. */
+  yearly: Array<{ year: number; admitted: number; total: number }>;
+  reliability: DataReliability;
+  /** Total verified ADMITTED cases backing this card. */
+  sampleSize: number;
+}
+
+export interface ChinaAdmitTrendResponse {
+  schools: ChinaAdmitTrendEntry[];
+  lastUpdated: string; // ISO date
+}
+
+/** Difficulty signal entry for a single school. */
+export interface DifficultySignalEntry {
+  schoolId: string;
+  schoolName: string;
+  schoolNameZh?: string;
+  signal: DifficultySignal;
+  /** Percentage change in admit count across the compared window. */
+  changePct: number;
+  sampleSize: number;
+}
+
+/** ED vs RD admission comparison for a single school in one cycle. */
+export interface EdRdComparisonEntry {
+  schoolId: string;
+  schoolName: string;
+  schoolNameZh?: string;
+  edAdmitted: number;
+  rdAdmitted: number;
+  /** ED share of total admits, 0-100 integer. null when no admits. */
+  edSharePct: number | null;
+  /** Qualitative ED tilt label derived from edSharePct. */
+  edTilt: 'ed_favored' | 'balanced' | 'rd_favored' | 'insufficient';
+  sampleSize: number;
+}
+
+export interface EdRdComparisonResponse {
+  year: number;
+  schools: EdRdComparisonEntry[];
+}
