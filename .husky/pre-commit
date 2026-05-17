@@ -131,3 +131,19 @@ if [ "$MOBILE_SRC_CHANGED" -gt "0" ]; then
     exit 1
   fi
 fi
+
+# ── Deprecated brand-term check ────────────────────────────
+# After the 校友广场 / Alumni Square rebrand, legacy names (功能大厅,
+# Feature Hall, 锐评模式, 认证排行) must never reappear in shipped strings.
+if [ "$WEB_SRC_CHANGED" -gt "0" ] || [ "$MOBILE_SRC_CHANGED" -gt "0" ]; then
+  echo ""
+  echo "🏷️  Running deprecated brand-term check..."
+  echo ""
+
+  if ! pnpm exec tsx scripts/check-deprecated-terms.ts --staged; then
+    echo ""
+    echo "❌ Deprecated brand-term check failed. See docs/BRAND_GUIDELINE.md."
+    echo ""
+    exit 1
+  fi
+fi

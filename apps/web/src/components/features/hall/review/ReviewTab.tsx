@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ReviewTab — 锐评模式标签页 orchestrator.
+ * ReviewTab — 同伴反馈标签页 orchestrator.
  *
  * Flow:
  *   1. Select a public profile (ProfileSelector).
