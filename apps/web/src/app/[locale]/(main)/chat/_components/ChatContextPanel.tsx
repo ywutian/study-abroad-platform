@@ -1,16 +1,29 @@
 'use client';
 
-import type { ElementType } from 'react';
 import { useTranslations } from 'next-intl';
-import { Archive, BellOff, FileText, Flag, Pin, ShieldCheck, Users } from 'lucide-react';
+import {
+  Archive,
+  BellOff,
+  FileText,
+  Flag,
+  MoreHorizontal,
+  Pin,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
 import { VerificationIcon } from '@/components/features';
 import { cn } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
@@ -81,107 +94,112 @@ export function ChatContextPanel({
         className
       )}
     >
-      {/* 2026-05 design rework: previously this header rendered both
-          "会话资料" AND a truncated copy of `title` underneath. The
-          title was *also* rendered immediately below (avatar + title
-          card), so users saw the same string truncated to "...Sc"
-          twice within 80px of each other — pure information
-          redundancy. The panel now shows only the section name; the
-          full conversation identity lives in the structured header
-          card below (which has enough room to actually be readable). */}
-      <div className="border-b px-4 py-3">
+      {/* Sticky panel header: just the section name + a ⋯ menu for
+          conversation preferences (pin / mute / archive). Preferences
+          used to be 3 inline toggle rows below the team header card,
+          which ate ~150px of vertical space and forced users to
+          scroll past them every time to reach members/files. */}
+      <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
         <p className="text-sm font-semibold">{t('chat.contextTitle')}</p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t('common.more')}
+              className="h-7 w-7"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem onClick={onPin} className="gap-2">
+              <Pin className={cn('h-4 w-4', isPinned && 'text-primary')} />
+              {isPinned ? t('chat.unpinConversation') : t('chat.pinConversation')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onMute} className="gap-2">
+              <BellOff className={cn('h-4 w-4', isMuted && 'text-primary')} />
+              {isMuted ? t('chat.unmuteConversation') : t('chat.muteConversation')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onArchive} className="gap-2">
+              <Archive className={cn('h-4 w-4', isArchived && 'text-primary')} />
+              {isArchived ? t('chat.unarchiveConversation') : t('chat.archiveConversation')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <ScrollArea className="min-w-0 min-h-0 flex-1">
-        <div className="space-y-5 p-4">
-          {/* 2026-05 design rework: split header into a 1-on-1
-              variant and a structured MATCH_GROUP variant. The old
-              code was a single flex row that worked OK for short
-              peer names but mangled compound match titles like
-              "Regeneron STS / Innovation Track · Science Fair
-              Innovators × 全栈开发组" — 30+ chars in a 320px rail
-              can't be displayed linearly. The match variant parses
-              the title into (context, teamA, teamB) and stacks them
-              vertically so each team name gets its own readable line
-              with the × visually centered between them. */}
-          {isDirect ? (
-            <DirectHeader
-              title={title}
-              isMuted={isMuted}
-              isArchived={isArchived}
-              createdBySystem={conversation.createdBySystem}
-              hasTeamMatch={Boolean(conversation.teamMatchId)}
-              t={t}
-            />
-          ) : (
-            <MatchGroupHeader
-              title={title}
-              participantCount={conversation.participantCount}
-              isMuted={isMuted}
-              isArchived={isArchived}
-              createdBySystem={conversation.createdBySystem}
-              hasTeamMatch={Boolean(conversation.teamMatchId)}
-              t={t}
-            />
-          )}
-
-          <Separator />
-
-          <section className="space-y-3">
-            <PreferenceRow
-              icon={Pin}
-              label={t('chat.pinConversation')}
-              checked={isPinned}
-              onCheckedChange={onPin}
-            />
-            <PreferenceRow
-              icon={BellOff}
-              label={t('chat.muteConversation')}
-              checked={isMuted}
-              onCheckedChange={onMute}
-            />
-            <PreferenceRow
-              icon={Archive}
-              label={t('chat.archiveConversation')}
-              checked={isArchived}
-              onCheckedChange={onArchive}
-            />
-          </section>
-
-          <Separator />
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">{t('chat.members')}</h2>
-              <Badge variant="outline">{participants.length}</Badge>
+      {/* 2026-05 scroll ergonomics rework (follow-up to #221):
+          - `type="always"` on Radix ScrollArea so users immediately
+            see they can scroll (default `hover` only shows on
+            mouseover, leaving no affordance when the wheel hasn't
+            touched the panel yet).
+          - Wrapping div is `relative` so the bottom fade gradient
+            (sibling of ScrollArea) can absolute-overlay the last
+            ~24px of scroll content with a `card → transparent`
+            gradient. Users see content "fade away" at the bottom
+            as a non-intrusive "there's more below" hint.
+          - The team header card is `sticky top-0` inside the scroll
+            content. Even when the user scrolls deep into members /
+            files, the "Who am I matched with" context stays pinned
+            at the top, so the panel is always self-explanatory. */}
+      <div className="relative min-h-0 flex-1">
+        <ScrollArea type="always" className="min-w-0 h-full">
+          <div className="space-y-5 p-4">
+            <div className="sticky top-0 z-10 -mx-4 -mt-4 border-b bg-card/95 px-4 pt-4 pb-3 backdrop-blur-sm">
+              {isDirect ? (
+                <DirectHeader
+                  title={title}
+                  isMuted={isMuted}
+                  isArchived={isArchived}
+                  createdBySystem={conversation.createdBySystem}
+                  hasTeamMatch={Boolean(conversation.teamMatchId)}
+                  t={t}
+                />
+              ) : (
+                <MatchGroupHeader
+                  title={title}
+                  participantCount={conversation.participantCount}
+                  isMuted={isMuted}
+                  isArchived={isArchived}
+                  createdBySystem={conversation.createdBySystem}
+                  hasTeamMatch={Boolean(conversation.teamMatchId)}
+                  t={t}
+                />
+              )}
             </div>
-            {isLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold">{t('chat.members')}</h2>
+                <Badge variant="outline">{participants.length}</Badge>
               </div>
-            ) : (
-              <div className="space-y-2">
-                {participants.map((participant) => {
-                  const displayName = getDisplayName(participant);
-                  return (
-                    <div
-                      key={participant.id}
-                      className="flex items-center gap-3 rounded-md border bg-background/50 p-2"
-                    >
-                      <Avatar className="h-8 w-8 border">
-                        <AvatarImage src={participant.profile?.avatarUrl} />
-                        <AvatarFallback>{displayName[0]?.toUpperCase() || '?'}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1 truncate text-sm font-medium">
-                          {displayName}
-                          {participant.role === 'VERIFIED' && (
-                            <VerificationIcon verified size="sm" />
-                          )}
-                        </p>
-                        {/* 2026-05 design rework: previous fallback chain
+              {isLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {participants.map((participant) => {
+                    const displayName = getDisplayName(participant);
+                    return (
+                      <div
+                        key={participant.id}
+                        className="flex items-center gap-3 rounded-md border bg-background/50 p-2"
+                      >
+                        <Avatar className="h-8 w-8 border">
+                          <AvatarImage src={participant.profile?.avatarUrl} />
+                          <AvatarFallback>{displayName[0]?.toUpperCase() || '?'}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-1 truncate text-sm font-medium">
+                            {displayName}
+                            {participant.role === 'VERIFIED' && (
+                              <VerificationIcon verified size="sm" />
+                            )}
+                          </p>
+                          {/* 2026-05 design rework: previous fallback chain
                             was `targetMajor || currentSchool || "成员"` —
                             but `targetMajor` is the LEAST contextually
                             clear of the three (a user with major="Business"
@@ -198,88 +216,94 @@ export function ChatContextPanel({
                             Major is intentionally dropped from this
                             subtitle; users who want to see a peer's major
                             can click through to the profile. */}
-                        <p className="truncate text-xs text-muted-foreground">
-                          {participant.profile?.currentSchool || roleLabel(participant.role, t)}
-                        </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {participant.profile?.currentSchool || roleLabel(participant.role, t)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            <Separator />
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold">{t('chat.sharedFiles')}</h2>
+                <Badge variant="outline">{files.length}</Badge>
               </div>
+              {files.length ? (
+                <div className="space-y-2">
+                  {files.slice(0, 8).map((file) => {
+                    const safeUrl = isSafeUrl(file.url);
+                    const content = (
+                      <>
+                        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="truncate">{file.name}</span>
+                      </>
+                    );
+
+                    return safeUrl ? (
+                      <a
+                        key={file.id}
+                        href={file.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 rounded-md border bg-background/50 px-3 py-2 text-sm hover:bg-muted/60"
+                      >
+                        {content}
+                      </a>
+                    ) : (
+                      <div
+                        key={file.id}
+                        className="flex items-center gap-2 rounded-md border bg-background/50 px-3 py-2 text-sm text-muted-foreground"
+                      >
+                        {content}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="rounded-md border bg-background/50 px-3 py-4 text-center text-sm text-muted-foreground">
+                  {t('chat.noSharedFiles')}
+                </p>
+              )}
+            </section>
+
+            {isDirect && (
+              <>
+                <Separator />
+                <section className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={onReport}
+                  >
+                    <Flag className="h-4 w-4" />
+                    {t('chat.reportUser')}
+                  </Button>
+                  <Button
+                    variant="soft-destructive"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={onBlock}
+                  >
+                    {t('chat.blockUser')}
+                  </Button>
+                </section>
+              </>
             )}
-          </section>
-
-          <Separator />
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold">{t('chat.sharedFiles')}</h2>
-              <Badge variant="outline">{files.length}</Badge>
-            </div>
-            {files.length ? (
-              <div className="space-y-2">
-                {files.slice(0, 8).map((file) => {
-                  const safeUrl = isSafeUrl(file.url);
-                  const content = (
-                    <>
-                      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="truncate">{file.name}</span>
-                    </>
-                  );
-
-                  return safeUrl ? (
-                    <a
-                      key={file.id}
-                      href={file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 rounded-md border bg-background/50 px-3 py-2 text-sm hover:bg-muted/60"
-                    >
-                      {content}
-                    </a>
-                  ) : (
-                    <div
-                      key={file.id}
-                      className="flex items-center gap-2 rounded-md border bg-background/50 px-3 py-2 text-sm text-muted-foreground"
-                    >
-                      {content}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="rounded-md border bg-background/50 px-3 py-4 text-center text-sm text-muted-foreground">
-                {t('chat.noSharedFiles')}
-              </p>
-            )}
-          </section>
-
-          {isDirect && (
-            <>
-              <Separator />
-              <section className="space-y-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={onReport}
-                >
-                  <Flag className="h-4 w-4" />
-                  {t('chat.reportUser')}
-                </Button>
-                <Button
-                  variant="soft-destructive"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={onBlock}
-                >
-                  {t('chat.blockUser')}
-                </Button>
-              </section>
-            </>
-          )}
-        </div>
-      </ScrollArea>
+          </div>
+        </ScrollArea>
+        {/* Bottom fade gradient — pointer-events-none so it doesn't
+            intercept clicks on the last visible row. Sits OUTSIDE
+            ScrollArea (sibling) so it stays pinned to the visible
+            viewport bottom and not the scroll content's true end. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-card to-transparent" />
+      </div>
     </aside>
   );
 }
@@ -474,27 +498,5 @@ function MatchGroupHeader({
         t={t}
       />
     </section>
-  );
-}
-
-function PreferenceRow({
-  icon: Icon,
-  label,
-  checked,
-  onCheckedChange,
-}: {
-  icon: ElementType;
-  label: string;
-  checked: boolean;
-  onCheckedChange: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-md border bg-background/50 px-3 py-2">
-      <div className="flex min-w-0 items-center gap-2">
-        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <span className="truncate text-sm">{label}</span>
-      </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} aria-label={label} />
-    </div>
   );
 }
