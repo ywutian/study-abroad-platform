@@ -26,14 +26,14 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
               {item.schoolName}
             </Text>
             <Text style={[S.rankingApplicants, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.ranking.applicants', {
+              {t('hall.ranking.applicants', {
                 count: item.totalApplicants,
               })}
             </Text>
           </View>
           <View style={[S.percentileBadge, { backgroundColor: pColor + '15' }]}>
             <Text style={[S.percentileText, { color: pColor }]}>
-              {t('hallOfFame.ranking.top')} {Math.round(100 - item.percentile)}%
+              {t('hall.ranking.top')} {Math.round(100 - item.percentile)}%
             </Text>
           </View>
         </View>
@@ -41,21 +41,21 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
         <View style={S.rankScoreRow}>
           <View style={S.rankBox}>
             <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.ranking.yourRank')}
+              {t('hall.ranking.yourRank')}
             </Text>
             <Text style={[S.rankValue, { color: pColor }]}>#{item.yourRank}</Text>
           </View>
           <View style={[S.rankDivider, { backgroundColor: c.border }]} />
           <View style={S.rankBox}>
             <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.ranking.score')}
+              {t('hall.ranking.score')}
             </Text>
             <Text style={[S.rankValue, { color: c.foreground }]}>{item.yourScore}</Text>
           </View>
           <View style={[S.rankDivider, { backgroundColor: c.border }]} />
           <View style={S.rankBox}>
             <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.ranking.position')}
+              {t('hall.ranking.position')}
             </Text>
             <Text style={[S.positionText, { color: pColor }]}>{item.competitivePosition}</Text>
           </View>
@@ -64,7 +64,7 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
         {breakdownKeys.length > 0 && (
           <View style={[S.breakdownContainer, { borderTopColor: c.border }]}>
             <Text style={[S.breakdownTitle, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.ranking.breakdown')}
+              {t('hall.ranking.breakdown')}
             </Text>
             {breakdownKeys.map((key) => (
               <ProgressBar

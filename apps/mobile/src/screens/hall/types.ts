@@ -1,7 +1,30 @@
 /**
- * Shared types, constants, and helpers for the Hall of Fame feature.
+ * Shared types, constants, and helpers for the Hall (校友广场) feature.
+ *
+ * Stage 4 — payload-shaped types (HallOverviewPayload, ChinaAdmitTrendEntry,
+ * DifficultySignalEntry, ReviewSwipeData, …) are imported from
+ * `@study-abroad/shared` and re-exported here so screen code has a single
+ * import surface. Mobile-only view types stay local.
  */
 import { useColors } from '@/utils/theme';
+
+export type {
+  HallOverviewPayload,
+  HallOverviewPoints,
+  HallOverviewSwipe,
+  HallOverviewDailyChallenge,
+  HallOverviewReviewer,
+  HallActivityEntry,
+  SwipeBadgeTier,
+  ReviewerLevel,
+  ReviewSwipeDirection,
+  ReviewSwipeData,
+  ChinaAdmitTrendEntry,
+  ChinaAdmitTrendResponse,
+  DifficultySignal,
+  DifficultySignalEntry,
+  DataReliability,
+} from '@study-abroad/shared';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,6 +67,30 @@ export interface CreateReviewDto {
   overallScore: number;
   comment?: string;
   tags?: string[];
+  method?: 'CLASSIC' | 'SWIPE';
+  swipeData?: import('@study-abroad/shared').ReviewSwipeData;
+}
+
+/**
+ * Desensitized public profile presented in the Tinder-style review deck.
+ * Returned by `GET /halls/public-profiles`.
+ */
+export interface ReviewProfileCard {
+  userId: string;
+  nickname: string;
+  avatarUrl?: string | null;
+  grade?: string | null;
+  targetMajor?: string | null;
+  region?: string | null;
+  gpaRange?: string | null;
+  satRange?: string | null;
+  actRange?: string | null;
+  toeflRange?: string | null;
+  activityCount: number;
+  activityCategories?: string[];
+  awardCount: number;
+  topAwardTier?: string | null;
+  curriculumType?: string | null;
 }
 
 export interface RankingResult {
@@ -55,44 +102,6 @@ export interface RankingResult {
   percentile: number;
   breakdown: Record<string, number>;
   competitivePosition: string;
-}
-
-export interface HallList {
-  id: string;
-  title: string;
-  description?: string;
-  category: string;
-  voteCount: number;
-  myVote?: 'up' | 'down' | null;
-  creator: {
-    id: string;
-    nickname: string;
-    avatarUrl?: string | null;
-  };
-  itemCount: number;
-  createdAt: string;
-}
-
-export interface HallListDetail {
-  id: string;
-  title: string;
-  description?: string;
-  category: string;
-  voteCount: number;
-  myVote?: 'up' | 'down' | null;
-  creator: {
-    id: string;
-    nickname: string;
-    avatarUrl?: string | null;
-  };
-  items: { rank: number; name: string; value?: string }[];
-}
-
-export interface CreateListDto {
-  title: string;
-  description?: string;
-  category: string;
-  items: { name: string; value?: string }[];
 }
 
 export interface VerifiedUserDto {
@@ -122,8 +131,12 @@ export interface VerifiedRankingResponse {
   };
 }
 
-export type TabKey = 'reviews' | 'ranking' | 'lists' | 'verified';
+/** 4-tab IA (Stage 4): verified default / ranking / review / path. */
+export type TabKey = 'verified' | 'ranking' | 'review' | 'path';
 export type RankingFilter = 'all' | 'admitted' | 'top20' | 'ivy';
+
+/** Tinder-style review swipe step dimensions (overall is derived). */
+export type ReviewStep = 'academic' | 'test' | 'activity' | 'award';
 
 export type Colors = ReturnType<typeof useColors>;
 
@@ -132,6 +145,8 @@ export type Colors = ReturnType<typeof useColors>;
 // ---------------------------------------------------------------------------
 
 export const SCORE_LABELS = ['academic', 'test', 'activity', 'award', 'overall'] as const;
+
+export const REVIEW_STEPS: ReviewStep[] = ['academic', 'test', 'activity', 'award'];
 
 export const PERCENTILE_COLORS = {
   top10: '#6f7b58',
@@ -149,7 +164,15 @@ export const RESULT_BADGE_VARIANT: Record<string, 'success' | 'error' | 'warning
   DEFERRED: 'secondary',
 };
 
-export const LIST_CATEGORIES = ['tier', 'major', 'location', 'value', 'other'] as const;
+/**
+ * Swipe direction → 1-10 score mapping for the Tinder review deck.
+ *  right = strong (9) · left = weak (3) · up = unsure (excluded from average).
+ */
+export const SWIPE_SCORE: Record<'left' | 'right' | 'up', number> = {
+  left: 3,
+  right: 9,
+  up: 5,
+};
 
 // ---------------------------------------------------------------------------
 // Helpers

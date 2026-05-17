@@ -9,7 +9,6 @@ export { default as SettingsScreen } from './settings/SettingsScreen';
 export { default as CustomRankingScreen } from './ranking/CustomRankingScreen';
 export { default as EssaysScreen } from './essays/EssaysScreen';
 export { default as EssayEditorScreen } from './essays/EssayEditorScreen';
-export { default as HallOfFameScreen } from './hall/HallOfFameScreen';
 
 // Feature module screens (P2)
 export { default as ResumeScreen } from './resume/ResumeScreen';

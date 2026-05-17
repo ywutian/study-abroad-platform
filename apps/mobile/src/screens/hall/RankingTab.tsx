@@ -42,7 +42,7 @@ export function RankingTab() {
     [c]
   );
 
-  if (isLoading) return <Loading text={t('hallOfFame.loading')} />;
+  if (isLoading) return <Loading text={t('hall.loading')} />;
 
   const rankings = rankingData || [];
 
@@ -50,8 +50,8 @@ export function RankingTab() {
     return (
       <EmptyState
         icon="bar-chart-outline"
-        title={t('hallOfFame.ranking.empty')}
-        description={t('hallOfFame.ranking.emptyDesc')}
+        title={t('hall.ranking.empty')}
+        description={t('hall.ranking.emptyDesc')}
       />
     );
   }
