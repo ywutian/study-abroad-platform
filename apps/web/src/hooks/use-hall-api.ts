@@ -20,6 +20,8 @@ import type {
   RedemptionType,
   RedemptionResult,
   RedemptionCatalogItem,
+  ChinaAdmitTrendResponse,
+  DifficultySignalEntry,
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api';
 import type {
@@ -48,6 +50,11 @@ export const hallKeys = {
     [...hallKeys.all, 'reviewAggregate', profileUserId] as const,
   redemptionCatalog: () => [...hallKeys.all, 'redemptionCatalog'] as const,
   redemptionHistory: () => [...hallKeys.all, 'redemptionHistory'] as const,
+  // Hall refactor Stage 3 — Verified China Admit Dashboard
+  chinaAdmitTrend: (schoolIds: string[], years: number) =>
+    [...hallKeys.all, 'chinaAdmitTrend', years, ...schoolIds] as const,
+  difficultySignal: (schoolIds: string[]) =>
+    [...hallKeys.all, 'difficultySignal', ...schoolIds] as const,
 };
 
 // ============================================
@@ -361,5 +368,38 @@ export function useRedeem() {
       queryClient.invalidateQueries({ queryKey: hallKeys.overview() });
       queryClient.invalidateQueries({ queryKey: hallKeys.redemptionHistory() });
     },
+  });
+}
+
+// ============================================
+// Hall refactor Stage 3 — Verified China Admit Dashboard
+// ============================================
+
+/** Per-school China-mainland admit trend (default: top-30 schools, 4 years). */
+export function useChinaAdmitTrend(schoolIds: string[] = [], years = 4) {
+  const qs = new URLSearchParams();
+  if (schoolIds.length) qs.set('schoolIds', schoolIds.join(','));
+  qs.set('years', String(years));
+  return useQuery({
+    queryKey: hallKeys.chinaAdmitTrend(schoolIds, years),
+    queryFn: () =>
+      apiClient.get<ChinaAdmitTrendResponse>(
+        `${hallRoutes.verifiedChinaAdmitTrend()}?${qs.toString()}`,
+      ),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Year-over-year admission difficulty signal per school. */
+export function useDifficultySignal(schoolIds: string[] = []) {
+  const qs = new URLSearchParams();
+  if (schoolIds.length) qs.set('schoolIds', schoolIds.join(','));
+  return useQuery({
+    queryKey: hallKeys.difficultySignal(schoolIds),
+    queryFn: () =>
+      apiClient.get<DifficultySignalEntry[]>(
+        `${hallRoutes.verifiedDifficultySignal()}${qs.toString() ? `?${qs}` : ''}`,
+      ),
+    staleTime: 5 * 60_000,
   });
 }

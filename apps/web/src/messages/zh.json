@@ -6767,7 +6767,25 @@
     "totalVerified": "认证总数",
     "totalAdmitted": "录取总数",
     "topSchools": "顶尖学校",
-    "ivyPlus": "藤校+"
+    "ivyPlus": "藤校+",
+    "dashboard": {
+      "banner": "{count} 所学校 · 平台审核认证案例 · 更新于 {date}",
+      "rank": "US News 第 {rank} 名",
+      "emptyTitle": "中国大陆录取数据采集中",
+      "emptyBody": "认证的中国大陆录取案例审核完成后将在此展示。",
+      "noChinaData": "暂无中国大陆专属数据",
+      "reliability": {
+        "A": "高可信 — 5 个及以上认证案例",
+        "B": "中可信 — 3 个及以上认证案例",
+        "C": "低可信 — 1-2 个案例，仅供参考",
+        "D": "暂无认证案例"
+      },
+      "signal": {
+        "stable": "稳定",
+        "declining": "下降",
+        "surging": "明显收紧"
+      }
+    }
   },
   "vault": {
     "title": "安全保险库",

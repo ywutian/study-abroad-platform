@@ -6788,7 +6788,25 @@
     "totalVerified": "Total Verified",
     "totalAdmitted": "Total Admitted",
     "topSchools": "Top Schools",
-    "ivyPlus": "Ivy+"
+    "ivyPlus": "Ivy+",
+    "dashboard": {
+      "banner": "{count} schools · platform-reviewed verified cases · updated {date}",
+      "rank": "US News #{rank}",
+      "emptyTitle": "China admit data is being collected",
+      "emptyBody": "Verified mainland-China admission cases will appear here once enough are reviewed.",
+      "noChinaData": "No mainland-China-specific data yet",
+      "reliability": {
+        "A": "High confidence — 5+ verified cases",
+        "B": "Medium confidence — 3+ verified cases",
+        "C": "Low confidence — 1-2 cases, advisory only",
+        "D": "No verified case"
+      },
+      "signal": {
+        "stable": "Stable",
+        "declining": "Declining",
+        "surging": "Sharply harder"
+      }
+    }
   },
   "vault": {
     "title": "Secure Vault",
