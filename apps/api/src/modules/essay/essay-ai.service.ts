@@ -37,7 +37,7 @@ import {
   EssayBrainstormResponseDto,
 } from './dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 
@@ -48,7 +48,7 @@ export class EssayAiService {
   constructor(
     private prisma: PrismaService,
     private llmService: LLMService,
-    private caseIncentiveService: CaseIncentiveService,
+    private pointsService: PointsService,
     @Optional()
     private memoryManager?: MemoryManagerService,
   ) {}
@@ -79,7 +79,7 @@ export class EssayAiService {
     locale = 'zh',
   ): Promise<EssayPolishResponseDto> {
     // 检查积分
-    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_POLISH);
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_POLISH);
 
     // 获取文书
     const essay = await this.prisma.essay.findUnique({
@@ -137,7 +137,7 @@ export class EssayAiService {
     } catch (error) {
       // 退还积分
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_POLISH,
         this.logger,
@@ -155,7 +155,7 @@ export class EssayAiService {
     locale = 'zh',
   ): Promise<EssayReviewResponseDto> {
     const isZh = locale === 'zh';
-    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_REVIEW);
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_REVIEW);
 
     const essay = await this.prisma.essay.findUnique({
       where: { id: dto.essayId },
@@ -271,7 +271,7 @@ export class EssayAiService {
       return response;
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_REVIEW,
         this.logger,
@@ -301,7 +301,7 @@ export class EssayAiService {
       );
     }
 
-    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_POLISH);
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_POLISH);
 
     try {
       const result = await this.polishEssayLlm(
@@ -395,7 +395,7 @@ export class EssayAiService {
       };
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_POLISH,
         this.logger,
@@ -544,7 +544,7 @@ export class EssayAiService {
     locale = 'zh',
   ): Promise<EssayBrainstormResponseDto> {
     const isZh = locale === 'zh';
-    await this.caseIncentiveService.charge(
+    await this.pointsService.charge(
       userId,
       PointAction.AI_ESSAY_BRAINSTORM,
     );
@@ -624,7 +624,7 @@ export class EssayAiService {
       return response;
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_BRAINSTORM,
         this.logger,
@@ -676,7 +676,7 @@ export class EssayAiService {
     style?: PolishStyle,
     locale = 'zh',
   ): Promise<EssayPolishResponseDto> {
-    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_POLISH);
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_POLISH);
 
     try {
       const result = await this.polishEssayLlm(content, style, locale);
@@ -697,7 +697,7 @@ export class EssayAiService {
       };
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_POLISH,
         this.logger,
@@ -718,7 +718,7 @@ export class EssayAiService {
     wordLimit?: number,
   ): Promise<EssayReviewResponseDto> {
     const isZh = locale === 'zh';
-    await this.caseIncentiveService.charge(userId, PointAction.AI_ESSAY_REVIEW);
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_REVIEW);
 
     const systemPrompt = buildReviewSystemPrompt(
       locale,
@@ -762,7 +762,7 @@ export class EssayAiService {
       return response;
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_REVIEW,
         this.logger,
@@ -783,7 +783,7 @@ export class EssayAiService {
     locale = 'zh',
   ): Promise<EssayBrainstormResponseDto> {
     const isZh = locale === 'zh';
-    await this.caseIncentiveService.charge(
+    await this.pointsService.charge(
       userId,
       PointAction.AI_ESSAY_BRAINSTORM,
     );
@@ -822,7 +822,7 @@ export class EssayAiService {
       return response;
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_BRAINSTORM,
         this.logger,

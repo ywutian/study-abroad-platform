@@ -3,6 +3,7 @@ import { HallReviewService } from './hall-review.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { PointsService } from '../points/incentive.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('HallReviewService', () => {
@@ -40,6 +41,12 @@ describe('HallReviewService', () => {
     remember: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockPointsService = {
+    adjustPoints: jest
+      .fn()
+      .mockResolvedValue({ success: true, newBalance: 0 }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -47,6 +54,10 @@ describe('HallReviewService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: MemoryManagerService, useValue: mockMemoryManager },
+        {
+          provide: PointsService,
+          useValue: mockPointsService,
+        },
       ],
     }).compile();
 

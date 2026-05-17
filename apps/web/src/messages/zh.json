@@ -1383,7 +1383,7 @@
     "prediction": "录取预测",
     "cases": "案例库",
     "chat": "消息",
-    "hall": "功能大厅",
+    "hall": "校友广场",
     "forum": "论坛",
     "teams": "组队",
     "assessment": "性格测评",
@@ -1413,7 +1413,7 @@
       "assessment": "性格与职业兴趣测评",
       "timeline": "追踪申请截止日期与任务",
       "cases": "浏览真实录取结果与申请故事",
-      "hall": "招生官视角评估与排名对比",
+      "hall": "认证录取数据、同伴反馈与排名对比",
       "essayGallery": "浏览优秀录取文书案例",
       "chat": "与认证用户实时聊天交流",
       "vault": "安全存储敏感信息与密码",
@@ -2914,15 +2914,53 @@
     "youRecalledMessage": "你撤回了一条消息"
   },
   "hall": {
-    "title": "功能大厅",
-    "description": "招生官打分、排名对比、创建榜单",
+    "title": "校友广场",
+    "description": "认证录取数据、同伴反馈、排名对比与案例研习",
     "tabs": {
       "tinder": "预测游戏",
-      "review": "锐评模式",
+      "review": "同伴反馈",
       "ranking": "排名对比",
       "lists": "用户榜单",
       "challenge": "社区挑战",
-      "verified": "认证排行"
+      "verified": "中国大陆录取数据",
+      "path": "学长之路",
+      "verifiedDesc": "已认证录取案例数据墙：中国大陆录取人数、难度信号、ED/RD 对比",
+      "rankingDesc": "对照目标学校，看你的硬件在历史申请池中的位置",
+      "reviewDesc": "同伴 Tinder 滑评，帮你看清档案在群体直觉中的样子",
+      "pathDesc": "学长之路：研究真实申请档案，AI 复盘帮你建立招生官思维"
+    },
+    "hero": {
+      "points": "积分",
+      "today": "今日 +{count}",
+      "streak": "连胜",
+      "best": "{badge} · 最佳 {count}",
+      "reviewer": "评审者",
+      "credit": "信用 {count}",
+      "dailyChallenge": "每日挑战",
+      "badges": {
+        "bronze": "青铜",
+        "silver": "白银",
+        "gold": "黄金",
+        "platinum": "铂金",
+        "diamond": "钻石"
+      },
+      "reviewerLevels": {
+        "L1": "学习者",
+        "L2": "同侪",
+        "L3": "资深"
+      }
+    },
+    "path": {
+      "modes": {
+        "single": {
+          "label": "单案例研习",
+          "description": "一次研究一个学长案例，AI 复盘帮你建立招生官思维"
+        },
+        "challenge": {
+          "label": "批量挑战",
+          "description": "同一申请者批量预测多校结果，看你的判断和真实结果的差距"
+        }
+      }
     },
     "challenge": {
       "loading": "加载挑战中...",
@@ -6765,7 +6803,25 @@
     "totalVerified": "认证总数",
     "totalAdmitted": "录取总数",
     "topSchools": "顶尖学校",
-    "ivyPlus": "藤校+"
+    "ivyPlus": "藤校+",
+    "dashboard": {
+      "banner": "{count} 所学校 · 平台审核认证案例 · 更新于 {date}",
+      "rank": "US News 第 {rank} 名",
+      "emptyTitle": "中国大陆录取数据采集中",
+      "emptyBody": "认证的中国大陆录取案例审核完成后将在此展示。",
+      "noChinaData": "暂无中国大陆专属数据",
+      "reliability": {
+        "A": "高可信 — 5 个及以上认证案例",
+        "B": "中可信 — 3 个及以上认证案例",
+        "C": "低可信 — 1-2 个案例，仅供参考",
+        "D": "暂无认证案例"
+      },
+      "signal": {
+        "stable": "稳定",
+        "declining": "下降",
+        "surging": "明显收紧"
+      }
+    }
   },
   "vault": {
     "title": "安全保险库",
@@ -7756,6 +7812,34 @@
         "thinLabel": "信息较少",
         "thinAria": "组队卡摘要偏短"
       }
+    }
+  },
+  "pointsCenter": {
+    "title": "积分中心",
+    "description": "使用你在平台上累积的积分",
+    "balance": "积分余额",
+    "todayEarned": "今日 +{count}",
+    "catalogTitle": "兑换",
+    "redeem": "兑换",
+    "insufficient": "积分不足",
+    "historyTitle": "兑换记录",
+    "confirmTitle": "确认兑换",
+    "confirmBody": "确定用 {cost} 积分兑换「{name}」？",
+    "cancel": "取消",
+    "confirm": "确认",
+    "redeemSuccess": "兑换成功",
+    "redeemError": "兑换失败，请重试。",
+    "types": {
+      "CONSULT_15MIN": "顾问 15 分钟咨询",
+      "MEMBERSHIP_MONTHLY": "月度会员",
+      "CASE_PREMIUM_UNLOCK": "高级案例解锁",
+      "EXPERT_LIST_UNLOCK": "专家选校清单解锁",
+      "PREDICTION_DEEP_DIVE": "录取预测深度解读"
+    },
+    "status": {
+      "PENDING": "处理中",
+      "FULFILLED": "已完成",
+      "CANCELLED": "已取消"
     }
   },
   "points": {

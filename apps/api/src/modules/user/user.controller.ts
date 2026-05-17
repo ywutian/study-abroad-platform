@@ -9,7 +9,7 @@ import {
 import type { Response } from 'express';
 import { UserService } from './user.service';
 import { DashboardService } from './dashboard.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
@@ -22,7 +22,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly dashboardService: DashboardService,
-    private readonly caseIncentiveService: CaseIncentiveService,
+    private readonly pointsService: PointsService,
     private readonly pointsConfigService: PointsConfigService,
   ) {}
 
@@ -88,7 +88,7 @@ export class UserController {
   @Get('me/points')
   @ApiOperation({ summary: 'Get current user points' })
   async getMyPoints(@CurrentUser() user: CurrentUserPayload) {
-    const points = await this.caseIncentiveService.getUserPoints(user.id);
+    const points = await this.pointsService.getUserPoints(user.id);
     return { points };
   }
 
@@ -104,7 +104,7 @@ export class UserController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('limit') limit?: string,
   ) {
-    const history = await this.caseIncentiveService.getPointHistory(
+    const history = await this.pointsService.getPointHistory(
       user.id,
       limit ? parseInt(limit, 10) : 20,
     );
@@ -164,8 +164,8 @@ export class UserController {
   @ApiOperation({ summary: 'Get points summary statistics' })
   async getPointSummary(@CurrentUser() user: CurrentUserPayload) {
     const [points, history] = await Promise.all([
-      this.caseIncentiveService.getUserPoints(user.id),
-      this.caseIncentiveService.getPointHistory(user.id, 100),
+      this.pointsService.getUserPoints(user.id),
+      this.pointsService.getPointHistory(user.id, 100),
     ]);
 
     // 计算统计数据

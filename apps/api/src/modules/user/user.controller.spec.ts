@@ -2,14 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { DashboardService } from './dashboard.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 
 describe('UserController', () => {
   let controller: UserController;
   let userService: UserService;
   let dashboardService: DashboardService;
-  let caseIncentiveService: CaseIncentiveService;
+  let pointsService: PointsService;
   let pointsConfigService: PointsConfigService;
 
   const mockUser = {
@@ -92,7 +92,7 @@ describe('UserController', () => {
           },
         },
         {
-          provide: CaseIncentiveService,
+          provide: PointsService,
           useValue: {
             getUserPoints: jest.fn().mockResolvedValue(100),
             getPointHistory: jest.fn().mockResolvedValue(mockPointHistory),
@@ -110,8 +110,8 @@ describe('UserController', () => {
     controller = module.get<UserController>(UserController);
     userService = module.get<UserService>(UserService);
     dashboardService = module.get<DashboardService>(DashboardService);
-    caseIncentiveService =
-      module.get<CaseIncentiveService>(CaseIncentiveService);
+    pointsService =
+      module.get<PointsService>(PointsService);
     pointsConfigService = module.get<PointsConfigService>(PointsConfigService);
   });
 
@@ -190,7 +190,7 @@ describe('UserController', () => {
     it('should return the current user points', async () => {
       const result = await controller.getMyPoints(mockUser);
 
-      expect(caseIncentiveService.getUserPoints).toHaveBeenCalledWith('user-1');
+      expect(pointsService.getUserPoints).toHaveBeenCalledWith('user-1');
       expect(result).toEqual({ points: 100 });
     });
   });
@@ -199,7 +199,7 @@ describe('UserController', () => {
     it('should return enriched point history with default limit', async () => {
       const result = await controller.getPointHistory(mockUser, undefined);
 
-      expect(caseIncentiveService.getPointHistory).toHaveBeenCalledWith(
+      expect(pointsService.getPointHistory).toHaveBeenCalledWith(
         'user-1',
         20,
       );
@@ -213,7 +213,7 @@ describe('UserController', () => {
     it('should use provided limit', async () => {
       await controller.getPointHistory(mockUser, '5');
 
-      expect(caseIncentiveService.getPointHistory).toHaveBeenCalledWith(
+      expect(pointsService.getPointHistory).toHaveBeenCalledWith(
         'user-1',
         5,
       );
@@ -261,8 +261,8 @@ describe('UserController', () => {
     it('should return point summary statistics', async () => {
       const result = await controller.getPointSummary(mockUser);
 
-      expect(caseIncentiveService.getUserPoints).toHaveBeenCalledWith('user-1');
-      expect(caseIncentiveService.getPointHistory).toHaveBeenCalledWith(
+      expect(pointsService.getUserPoints).toHaveBeenCalledWith('user-1');
+      expect(pointsService.getPointHistory).toHaveBeenCalledWith(
         'user-1',
         100,
       );

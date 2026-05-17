@@ -18,7 +18,7 @@ import {
   PaginationDto,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import {
   BatchImportCaseDto,
   ReviewCaseEssayDto,
@@ -41,7 +41,7 @@ export class CaseService {
     private caseBatchService: CaseBatchService,
     private caseMemoryService: CaseMemoryService,
     @Optional()
-    private caseIncentiveService?: CaseIncentiveService,
+    private pointsService?: PointsService,
   ) {}
 
   // ============ Delegated Query Methods ============
@@ -300,9 +300,9 @@ export class CaseService {
     });
 
     // 奖励积分
-    if (this.caseIncentiveService) {
+    if (this.pointsService) {
       fireAndForget(
-        this.caseIncentiveService.reward(userId, PointAction.SUBMIT_CASE, {
+        this.pointsService.reward(userId, PointAction.SUBMIT_CASE, {
           caseId: admissionCase.id,
         }),
         this.logger,

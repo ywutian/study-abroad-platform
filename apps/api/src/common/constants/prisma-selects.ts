@@ -86,6 +86,7 @@ export const SCHOOL_BASIC_SELECT = {
 export const USER_SUMMARY_SELECT = {
   id: true,
   role: true,
+  reviewerLevel: true, // Hall refactor Phase 1: surface L1/L2/L3 to all consumers (admin UI, hall reviewer badges, etc.)
   profile: { select: { realName: true, avatarUrl: true } },
 } as const satisfies Prisma.UserSelect;
 

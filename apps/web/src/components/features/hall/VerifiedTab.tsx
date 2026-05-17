@@ -36,6 +36,8 @@ import {
 import { apiClient } from '@/lib/api';
 import { API_ROUTES } from '@study-abroad/shared';
 import { cn } from '@/lib/utils';
+import { useRouter } from '@/lib/i18n/navigation';
+import { ChinaAdmitDashboard } from './ChinaAdmitDashboard';
 
 interface VerifiedUser {
   rank: number;
@@ -82,6 +84,7 @@ export function VerifiedTab() {
   const t = useTranslations('verifiedRanking');
   const tc = useTranslations('cases');
   const locale = useLocale();
+  const router = useRouter();
 
   const getResultLabel = (result: string) => {
     const labels: Record<string, string> = {
@@ -226,6 +229,9 @@ export function VerifiedTab() {
         </div>
       )}
 
+      {/* Stage 3 — China Admit Dashboard (中国大陆录取数据中心) */}
+      <ChinaAdmitDashboard />
+
       {/* Filters */}
       <Card className="mb-6">
         <CardContent className="pt-6">
@@ -287,8 +293,18 @@ export function VerifiedTab() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.03 }}
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => router.push(`/cases/${user.caseId}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(`/cases/${user.caseId}`);
+                      }
+                    }}
                     className={cn(
-                      'flex items-center gap-4 p-4 rounded-lg border transition-colors',
+                      'flex items-center gap-4 p-4 rounded-lg border transition-colors cursor-pointer',
+                      'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                       user.rank <= 3 ? 'bg-warning/5' : 'hover:bg-muted/50'
                     )}
                   >

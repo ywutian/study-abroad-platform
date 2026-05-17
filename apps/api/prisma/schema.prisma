@@ -552,8 +552,33 @@ model User {
   // Peer review system (互评)
   peerReviewsGiven    PeerReview[] @relation("ReviewsGiven")
   peerReviewsReceived PeerReview[] @relation("ReviewsReceived")
-  avgRating           Float? // 平均评分 (缓存)
-  reviewCount         Int          @default(0) // 评价数
+  avgRating           Float? // @deprecated 平均评分 (历史字段，Stage 6 将删除；新代码用 peerAvgRating)
+  reviewCount         Int          @default(0) // @deprecated (历史字段，Stage 6 将删除；新代码用 peerReviewCount)
+
+  // Hall review + Peer review 评分缓存拆字段 (Stage 1 修复 double-write race condition)
+  // Hall 锐评（公开评审广场）由 hall-review.service 写入
+  hallAvgRating   Float?
+  hallReviewCount Int    @default(0)
+  // Peer 互评（1-on-1 互关 7 天）由 peer-review.service 写入
+  peerAvgRating   Float?
+  peerReviewCount Int    @default(0)
+
+  // Hall 锐评者权限与隐私 (Stage 1 L1/L2/L3 三层权限模型)
+  acceptPeerReview    Boolean       @default(true) // 是否接受 Hall 锐评（隐私开关）
+  reviewerLevel       ReviewerLevel @default(L1) // 评审者等级
+  reviewerCredit      Int           @default(100) // 信用分（被举报扣分，<50 限制）
+  reviewerQualifiedAt DateTime? // L2 资质测试通过时间
+
+  // Hall 学长之路（合并 Tinder + Challenge）持久化
+  challengeAttempts ChallengeAttempt[]
+
+  // Hall refactor Stage 7 — desensitized profile snapshot for hall surfaces
+  // (锐评/排行/聚合)；hall-* services 必须读这个字段而不是 profile 原表。
+  // Refreshed when the user toggles "进入锐评池" or saves profile changes.
+  hallPublicProfile Json?
+
+  // Hall refactor Stage 7 — points redemption history
+  pointsRedemptions PointsRedemption[]
 
   // Assessment (测评)
   assessmentResults AssessmentResult[]
@@ -2508,6 +2533,11 @@ model AdmissionCase {
   verifiedAt           DateTime?
   verificationRequests VerificationRequest[]
 
+  // Stage 1 三级 Verified 认证 (China Admit Dashboard)
+  verificationLevel    VerificationLevel @default(L1) // L1 自报 / L2 平台核验 / L3 顾问审定
+  verifiedBy           String? // admin/expert userId 或 'public_aggregation' 来源标记
+  verificationEvidence Json? // { admitLetterHash?, emailDomain?, expertSignature?, source? }
+
   // Swipe game
   swipes CaseSwipe[]
 
@@ -2704,6 +2734,12 @@ model Review {
   tags         String[] // 评审标签: well-rounded, strong-stem 等
   helpfulCount Int          @default(0) // 缓存: 被标记有帮助的次数
 
+  // Tinder-style 锐评升级 (Stage 1; nullable 保持向后兼容)
+  swipeData          Json? // { directionsPerStep: { academic|test|activity|award: 'left'|'right'|'up' }, ... }
+  reviewMethod       ReviewMethod @default(CLASSIC) // CLASSIC = 旧 slider, SWIPE = 新 Tinder UI
+  reviewerConfidence Int? // 1-100 信心度 (由拖拽距离派生)
+  quickTags          String[]     @default([]) // 强弱点标签 (strong_academics 等)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2712,6 +2748,7 @@ model Review {
   @@unique([reviewerId, profileUserId])
   @@index([profileUserId, status, createdAt])
   @@index([reviewerId])
+  @@index([reviewMethod])
 }
 
 // 评审互动反应
@@ -2733,6 +2770,26 @@ enum ReviewStatus {
   DRAFT
   PUBLISHED
   HIDDEN
+}
+
+// 锐评模式（Stage 1 Tinder 风格升级）
+enum ReviewMethod {
+  CLASSIC // 旧 4 维 slider 评审
+  SWIPE // 新 Tinder 风格滑动评审
+}
+
+// 评审者权限等级（Stage 1 三层权限模型）
+enum ReviewerLevel {
+  L1 // 任何注册用户 — 仅能 vote helpful
+  L2 // 已完成自己档案 80%+ 通过 3 题资质测试 — 可评，权重 ×1.0
+  L3 // VERIFIED 用户（已上岸 Top 50） — 可评，权重 ×3.0
+}
+
+// Verified 认证等级（Stage 1 China Admit Dashboard）
+enum VerificationLevel {
+  L1 // 用户自报（不计入统计）
+  L2 // 平台核验（录取信扫描 + 邮箱核验 + admin 审核）
+  L3 // 前招生官审定（L2 + 签约前招生官签字背书）
 }
 
 model UserList {
@@ -3475,6 +3532,64 @@ model PointHistory {
   @@index([userId])
   @@index([createdAt])
   @@index([action, createdAt])
+}
+
+// ============================================
+// Points Redemption (Hall refactor Stage 7 — 积分跨模块兑换出口)
+// ============================================
+
+enum RedemptionType {
+  CONSULT_15MIN          // 顾问 15 分钟咨询
+  MEMBERSHIP_MONTHLY     // 月度会员
+  CASE_PREMIUM_UNLOCK    // 高级案例解锁
+  EXPERT_LIST_UNLOCK     // 专家清单解锁
+  PREDICTION_DEEP_DIVE   // Prediction 高级解读
+}
+
+enum RedemptionStatus {
+  PENDING                // 已创建，等待履约（如顾问预约链接生成）
+  FULFILLED              // 已履约
+  CANCELLED              // 用户取消或履约失败（积分退还）
+}
+
+model PointsRedemption {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          RedemptionType
+  pointsSpent   Int              // 实际扣除的积分（来自当时的 PointsConfig 配置）
+  status        RedemptionStatus @default(PENDING)
+  metadata      Json? // { consultationId?, subscriptionPlan?, caseId?, listId?, predictionResultId? }
+  fulfilledAt   DateTime?
+  cancelledAt   DateTime?
+  cancelReason  String?
+  createdAt     DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([status])
+}
+
+// ============================================
+// Challenge Attempts (Hall 学长之路 多校批量预测持久化)
+// Stage 1 新增 — 此前 swipe.service.submitChallenge 不持久化，无法做挑战排行榜/历史回看
+// ============================================
+
+model ChallengeAttempt {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applicantUserId String // 被挑战的申请人（cases[0].user）
+  caseIds         String[] // 涉及的 case ID 列表
+  guesses         Json // { [caseId]: 'admitted' | 'rejected' | 'waitlisted' }
+  correctCount    Int
+  totalCount      Int
+  accuracy        Int // 0-100 整数（避免浮点）
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([applicantUserId])
+  @@index([accuracy])
 }
 
 // ============================================

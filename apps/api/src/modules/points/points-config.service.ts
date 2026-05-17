@@ -13,9 +13,22 @@ export enum PointAction {
   REFER_USER = 'REFER_USER',
   VERIFICATION_APPROVED = 'VERIFICATION_APPROVED',
   SWIPE_CORRECT = 'SWIPE_CORRECT',
+  SUBMIT_REVIEW = 'SUBMIT_REVIEW',
+  REVIEW_HELPFUL = 'REVIEW_HELPFUL',
+  // Hall refactor Phase 1: review/challenge/application-progress incentives
+  REVIEW_SWIPE_COMPLETE = 'REVIEW_SWIPE_COMPLETE',
+  REVIEW_HELPFUL_RECEIVED = 'REVIEW_HELPFUL_RECEIVED',
+  REVIEWER_LEVEL_UP = 'REVIEWER_LEVEL_UP',
+  CHALLENGE_COMPLETE = 'CHALLENGE_COMPLETE',
+  CASE_STUDY_COMPLETE = 'CASE_STUDY_COMPLETE',
+  PROFILE_RESEARCHED_5_SCHOOLS = 'PROFILE_RESEARCHED_5_SCHOOLS',
+  ESSAY_DRAFT_COMPLETE = 'ESSAY_DRAFT_COMPLETE',
+  ED_SUBMITTED = 'ED_SUBMITTED',
 
   // Spending points
   VIEW_CASE_DETAIL = 'VIEW_CASE_DETAIL',
+  RANKING_ANALYZED = 'RANKING_ANALYZED',
+  REVIEW_REPORTED = 'REVIEW_REPORTED', // 被举报扣分（负值由 admin 配置）
   AI_ANALYSIS = 'AI_ANALYSIS',
   MESSAGE_VERIFIED = 'MESSAGE_VERIFIED',
   AI_ESSAY_POLISH = 'AI_ESSAY_POLISH',
@@ -87,10 +100,84 @@ const POINT_ACTION_REGISTRY: Record<
     description: '滑动猜测正确',
     type: 'earn',
   },
+  [PointAction.SUBMIT_REVIEW]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_SUBMIT_REVIEW,
+    defaultPoints: 20,
+    description: '发布锐评',
+    type: 'earn',
+  },
+  [PointAction.REVIEW_HELPFUL]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_REVIEW_HELPFUL,
+    defaultPoints: 10,
+    description: '锐评被标记为有帮助',
+    type: 'earn',
+  },
+  // Hall refactor Phase 1 — Tinder review + challenge + application-progress actions
+  [PointAction.REVIEW_SWIPE_COMPLETE]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_REVIEW_SWIPE_COMPLETE,
+    defaultPoints: 10,
+    description: '完成 Tinder 风格 4 维滑动锐评（≥5 字理由）',
+    type: 'earn',
+  },
+  [PointAction.REVIEW_HELPFUL_RECEIVED]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_REVIEW_HELPFUL_RECEIVED,
+    defaultPoints: 5,
+    description: '滑动锐评被点 helpful（上限 20/条）',
+    type: 'earn',
+  },
+  [PointAction.REVIEWER_LEVEL_UP]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_REVIEWER_LEVEL_UP,
+    defaultPoints: 50,
+    description: '通过 L2 评审者资质测试升级',
+    type: 'earn',
+  },
+  [PointAction.CHALLENGE_COMPLETE]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_CHALLENGE_COMPLETE,
+    defaultPoints: 20,
+    description: '完成 1 次社区挑战（每日上限 1 次）',
+    type: 'earn',
+  },
+  [PointAction.CASE_STUDY_COMPLETE]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_CASE_STUDY_COMPLETE,
+    defaultPoints: 5,
+    description: '完成 1 个案例研习（含复盘笔记）',
+    type: 'earn',
+  },
+  [PointAction.PROFILE_RESEARCHED_5_SCHOOLS]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_PROFILE_RESEARCHED_5_SCHOOLS,
+    defaultPoints: 30,
+    description: '研究透 5 所目标学校（青铜段位）',
+    type: 'earn',
+  },
+  [PointAction.ESSAY_DRAFT_COMPLETE]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_ESSAY_DRAFT_COMPLETE,
+    defaultPoints: 50,
+    description: '完成 1 篇文书草稿（黄金段位）',
+    type: 'earn',
+  },
+  [PointAction.ED_SUBMITTED]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_ED_SUBMITTED,
+    defaultPoints: 100,
+    description: '提交 ED 申请（钻石段位）',
+    type: 'earn',
+  },
   [PointAction.VIEW_CASE_DETAIL]: {
     settingKey: SETTING_KEYS.POINTS_ACTION_VIEW_CASE_DETAIL,
     defaultPoints: -20,
     description: '查看案例详情',
+    type: 'spend',
+  },
+  // Hall refactor Phase 1 — RANKING_ANALYZED 灰度先设 0，稳定后调 -10；REVIEW_REPORTED 由 admin 配置
+  [PointAction.RANKING_ANALYZED]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_RANKING_ANALYZED,
+    defaultPoints: 0,
+    description: '使用 AI 排名分析（灰度先 0，稳定后调 -10）',
+    type: 'spend',
+  },
+  [PointAction.REVIEW_REPORTED]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_REVIEW_REPORTED,
+    defaultPoints: -20,
+    description: '锐评被举报且 admin 判定属实（评审者扣分）',
     type: 'spend',
   },
   [PointAction.AI_ANALYSIS]: {

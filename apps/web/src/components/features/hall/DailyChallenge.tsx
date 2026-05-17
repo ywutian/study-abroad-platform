@@ -61,7 +61,7 @@ export function DailyChallenge({ currentCount, targetCount, className }: DailyCh
             <div>
               <span className="font-semibold">{t('title')}</span>
               {isCompleted && (
-                <Badge className="ml-2 bg-emerald-500/10 text-emerald-600">{t('completed')}</Badge>
+                <Badge className="ml-2 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">{t('completed')}</Badge>
               )}
             </div>
           </div>
@@ -91,7 +91,7 @@ export function DailyChallenge({ currentCount, targetCount, className }: DailyCh
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', damping: 12, stiffness: 200 }}
-            className="mt-4 flex items-center gap-2 text-emerald-600 bg-emerald-500/10 rounded-lg p-3"
+            className="mt-4 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-lg p-3"
           >
             <motion.div
               animate={{ rotate: [0, -10, 10, -5, 5, 0] }}
@@ -101,7 +101,7 @@ export function DailyChallenge({ currentCount, targetCount, className }: DailyCh
             </motion.div>
             <div>
               <p className="font-medium text-sm">{t('challengeComplete')}</p>
-              <p className="text-xs text-emerald-600/80">{t('keepItUp')}</p>
+              <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">{t('keepItUp')}</p>
             </div>
           </motion.div>
         ) : (

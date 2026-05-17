@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { ProfileHelpersService } from './profile-helpers.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import {
   BadRequestException,
   ForbiddenException,
@@ -64,7 +64,7 @@ describe('ProfileScoresService', () => {
     verifyProfileOwnership: jest.fn(),
   };
 
-  const mockCaseIncentiveService = {
+  const mockPointsService = {
     charge: jest.fn().mockResolvedValue(undefined),
   };
 
@@ -76,7 +76,7 @@ describe('ProfileScoresService', () => {
         { provide: CacheInvalidationService, useValue: mockCacheInvalidation },
         { provide: LLMService, useValue: mockLLMService },
         { provide: ProfileHelpersService, useValue: mockHelpers },
-        { provide: CaseIncentiveService, useValue: mockCaseIncentiveService },
+        { provide: PointsService, useValue: mockPointsService },
       ],
     }).compile();
 

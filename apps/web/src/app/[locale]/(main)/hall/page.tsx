@@ -1,119 +1,158 @@
 'use client';
 
 /**
- * Hall 主页面 — 功能大厅
+ * Hall — 校友广场 (refactored Stage 3)
  *
- * 职责：页面布局 + Tab 切换 + URL 持久化
- * 各 Tab 的业务逻辑已拆分到独立组件：
- * - TinderTab   — 预测游戏
- * - ReviewTab   — 锐评模式
- * - RankingTab  — 排名对比
- * - ListsTab    — 用户榜单
- * - ChallengeTab — 挑战模式
- * - VerifiedTab — 认证排行
+ * IA: 4 tabs in order of value to the user
+ *   verified  — China Admit Dashboard (default, highest decision value)
+ *   ranking   — competitive position vs target schools
+ *   review    — peer reviews (Tinder-style + classic) for self-improvement
+ *   path      — 学长之路 (TinderTab + ChallengeTab merged with sub-toggle)
+ *
+ * Backwards compatible: `?tab=tinder` / `?tab=challenge` / `?tab=lists`
+ * auto-redirect to the new structure so old bookmarks/emails keep working.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
-import { Award, Zap, Users, Trophy, List, Target, CheckCircle2 } from 'lucide-react';
+import { Award, BadgeCheck, BarChart3, MessageSquare, GraduationCap } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import type { HallTab } from '@/types/hall';
+import { HallHeroBar } from '@/components/features/hall/HallHeroBar';
 
-// 按需加载各 Tab 组件（code-split）
-const TinderTab = dynamic(
-  () => import('@/components/features/hall/TinderTab').then((m) => ({ default: m.TinderTab })),
-  { ssr: false }
-);
-const ReviewTab = dynamic(
-  () => import('@/components/features/hall/ReviewTab').then((m) => ({ default: m.ReviewTab })),
+const VerifiedTab = dynamic(
+  () => import('@/components/features/hall/VerifiedTab').then((m) => ({ default: m.VerifiedTab })),
   { ssr: false }
 );
 const RankingTab = dynamic(
   () => import('@/components/features/hall/RankingTab').then((m) => ({ default: m.RankingTab })),
   { ssr: false }
 );
-const ListsTab = dynamic(
-  () => import('@/components/features/hall/ListsTab').then((m) => ({ default: m.ListsTab })),
+const ReviewTab = dynamic(
+  () => import('@/components/features/hall/ReviewTab').then((m) => ({ default: m.ReviewTab })),
   { ssr: false }
 );
-const ChallengeTab = dynamic(
-  () =>
-    import('@/components/features/hall/ChallengeTab').then((m) => ({ default: m.ChallengeTab })),
-  { ssr: false }
-);
-const VerifiedTab = dynamic(
-  () => import('@/components/features/hall/VerifiedTab').then((m) => ({ default: m.VerifiedTab })),
+const PathTab = dynamic(
+  () => import('@/components/features/hall/PathTab').then((m) => ({ default: m.PathTab })),
   { ssr: false }
 );
 
-// Tab 配置
-const TAB_CONFIG = [
+type HallTabV2 = 'verified' | 'ranking' | 'review' | 'path';
+
+// Tab config with i18n keys, icons, and 1-line descriptions for hover tooltips
+const TAB_CONFIG: Array<{
+  value: HallTabV2;
+  labelKey: string;
+  descriptionKey: string;
+  icon: typeof Award;
+  // Stage 8 will swap to brand-aligned semantic palette
+  color: string;
+}> = [
   {
-    value: 'tinder' as const,
-    labelKey: 'hall.tabs.tinder',
-    icon: Zap,
-    color: 'bg-gradient-to-r from-pink-500 to-rose-500',
+    value: 'verified',
+    labelKey: 'hall.tabs.verified',
+    descriptionKey: 'hall.tabs.verifiedDesc',
+    icon: BadgeCheck,
+    color: 'bg-gradient-to-r from-indigo-500 to-blue-500',
   },
-  { value: 'review' as const, labelKey: 'hall.tabs.review', icon: Users, color: 'bg-primary' },
-  { value: 'ranking' as const, labelKey: 'hall.tabs.ranking', icon: Trophy, color: 'bg-warning' },
-  { value: 'lists' as const, labelKey: 'hall.tabs.lists', icon: List, color: 'bg-primary' },
   {
-    value: 'challenge' as const,
-    labelKey: 'hall.tabs.challenge',
-    icon: Target,
+    value: 'ranking',
+    labelKey: 'hall.tabs.ranking',
+    descriptionKey: 'hall.tabs.rankingDesc',
+    icon: BarChart3,
     color: 'bg-gradient-to-r from-amber-500 to-orange-500',
   },
   {
-    value: 'verified' as const,
-    labelKey: 'hall.tabs.verified',
-    icon: CheckCircle2,
-    color: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+    value: 'review',
+    labelKey: 'hall.tabs.review',
+    descriptionKey: 'hall.tabs.reviewDesc',
+    icon: MessageSquare,
+    color: 'bg-gradient-to-r from-violet-500 to-purple-500',
+  },
+  {
+    value: 'path',
+    labelKey: 'hall.tabs.path',
+    descriptionKey: 'hall.tabs.pathDesc',
+    icon: GraduationCap,
+    color: 'bg-gradient-to-r from-rose-500 to-pink-500',
   },
 ];
 
 const VALID_TABS = TAB_CONFIG.map((t) => t.value);
+
+// Legacy tab → new tab mapping (back-compat for bookmarks/emails)
+const LEGACY_TAB_MAP: Record<string, HallTabV2> = {
+  tinder: 'path',
+  challenge: 'path',
+  lists: 'verified', // Lists merged into Verified's expert-curated section
+};
 
 export default function HallPage() {
   const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const initialTab = VALID_TABS.includes(searchParams.get('tab') as HallTab)
-    ? (searchParams.get('tab') as HallTab)
-    : 'tinder';
-  const [activeTab, setActiveTab] = useState<HallTab>(initialTab);
+  const rawTab = searchParams.get('tab');
+  const mappedFromLegacy = rawTab && LEGACY_TAB_MAP[rawTab];
+  const initialTab: HallTabV2 = mappedFromLegacy
+    ? mappedFromLegacy
+    : VALID_TABS.includes(rawTab as HallTabV2)
+      ? (rawTab as HallTabV2)
+      : 'verified'; // Stage 3: default is now Verified (was Tinder)
 
-  const handleTabChange = (tab: HallTab) => {
+  const [activeTab, setActiveTab] = useState<HallTabV2>(initialTab);
+
+  // Auto-rewrite legacy ?tab values to the new IA so the URL is canonical.
+  useEffect(() => {
+    if (mappedFromLegacy) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('tab', mappedFromLegacy);
+      router.replace(`/hall?${params.toString()}`, { scroll: false });
+    }
+    // intentionally only run on legacy hit at mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleTabChange = (tab: HallTabV2) => {
     setActiveTab(tab);
     const params = new URLSearchParams(searchParams.toString());
-    if (tab === 'tinder') params.delete('tab');
+    if (tab === 'verified') params.delete('tab');
     else params.set('tab', tab);
     const qs = params.toString();
     router.replace(`/hall${qs ? `?${qs}` : ''}`, { scroll: false });
   };
 
   return (
-    <PageContainer maxWidth="7xl">
+    <PageContainer variant="community">
       <PageHeader
         title={t('hall.title')}
         description={t('hall.description')}
         icon={Award}
-        color="rose"
+        color="indigo"
       />
 
-      {/* Tab 切换器 */}
+      {/* Stage 3 — Hero bar with overview from /halls/me/overview BFF */}
+      <HallHeroBar />
+
+      {/* Tab 切换器 — 4 tabs, all min-w-0 inside grid for overflow safety */}
       <div className="mb-4 sm:mb-8">
-        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+        <div
+          className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1"
+          role="tablist"
+          aria-label={t('hall.title')}
+        >
           {TAB_CONFIG.map((tab) => {
             const isActive = activeTab === tab.value;
             return (
               <button
                 key={tab.value}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => handleTabChange(tab.value)}
+                title={t(tab.descriptionKey)}
                 className={cn(
                   'flex items-center gap-2 rounded-xl px-4 py-2.5 font-medium transition-all whitespace-nowrap',
                   isActive
@@ -136,14 +175,11 @@ export default function HallPage() {
         </div>
       </div>
 
-      {/* Tab 内容区 */}
       <AnimatePresence mode="wait">
-        {activeTab === 'tinder' && <TinderTab />}
-        {activeTab === 'review' && <ReviewTab />}
-        {activeTab === 'ranking' && <RankingTab />}
-        {activeTab === 'lists' && <ListsTab />}
-        {activeTab === 'challenge' && <ChallengeTab />}
         {activeTab === 'verified' && <VerifiedTab />}
+        {activeTab === 'ranking' && <RankingTab />}
+        {activeTab === 'review' && <ReviewTab />}
+        {activeTab === 'path' && <PathTab />}
       </AnimatePresence>
     </PageContainer>
   );

@@ -24,7 +24,7 @@ import {
   toPublicSchoolMediaAsset,
   type PublicSchoolMediaAssetInput,
 } from '../../common/utils/school-public-media.util';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { PREDICTION_LOCK_TTL } from './prediction-error';
 
@@ -201,7 +201,7 @@ export class PredictionService {
     private persistenceService: PredictionPersistenceService,
     private reportingService: PredictionReportingService,
     private policyService: PredictionPolicyService,
-    @Optional() private caseIncentiveService?: CaseIncentiveService,
+    @Optional() private pointsService?: PointsService,
     // ML platform services (modelRegistry, shadowEvaluator, modelMonitor,
     // mlPrimaryService, distillationService) deleted 2026-05-07.
     @Optional() private featureFlagService?: FeatureFlagService,
@@ -1288,13 +1288,13 @@ export class PredictionService {
 
     // 扣除积分
     let chargedUserId: string | undefined;
-    if (chargePoints && this.caseIncentiveService) {
+    if (chargePoints && this.pointsService) {
       const profile = await this.prisma.profile.findUnique({
         where: { id: profileId },
         select: { userId: true },
       });
       if (profile?.userId) {
-        await this.caseIncentiveService.charge(
+        await this.pointsService.charge(
           profile.userId,
           PointAction.AI_ANALYSIS,
         );
@@ -1309,7 +1309,7 @@ export class PredictionService {
       // 退还积分（被锁定说明有并发请求）
       if (chargedUserId) {
         await safeRefund(
-          this.caseIncentiveService!,
+          this.pointsService!,
           chargedUserId,
           PointAction.AI_ANALYSIS,
           this.logger,
@@ -1329,7 +1329,7 @@ export class PredictionService {
       // 退还积分
       if (chargedUserId) {
         await safeRefund(
-          this.caseIncentiveService!,
+          this.pointsService!,
           chargedUserId,
           PointAction.AI_ANALYSIS,
           this.logger,

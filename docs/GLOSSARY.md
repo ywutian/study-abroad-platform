@@ -20,7 +20,7 @@
 | Essay Prompt           | 文书题目     | The specific question or topic a school requires students to write about                                        |
 | Forum                  | 论坛         | Community discussion board with categories, posts, comments, and likes                                          |
 | Global Event           | 全局事件     | Platform-wide events (test dates, competition deadlines, summer programs) that users can subscribe to           |
-| Hall                   | 大厅         | The community module where users share profiles, create lists, and compare rankings                             |
+| Hall (Alumni Square)   | 校友广场     | The community module (`hall`): China Admit Dashboard, Peer Pulse, rank comparison, alumni journey. Renamed from "Feature Hall / 功能大厅" |
 | Holland Code           | 霍兰德代码   | RIASEC personality assessment for career/major interest matching                                                |
 | MBTI                   | MBTI         | Myers-Briggs Type Indicator personality assessment                                                              |
 | Memory Type            | 记忆类型     | Classification of stored AI memories: FACT, PREFERENCE, DECISION, SUMMARY, FEEDBACK                             |

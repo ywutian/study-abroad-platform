@@ -1399,7 +1399,7 @@
     "prediction": "Admission Prediction",
     "cases": "Case Library",
     "chat": "Messages",
-    "hall": "Feature Hall",
+    "hall": "Alumni Square",
     "forum": "Forum",
     "teams": "Teams",
     "assessment": "Assessment",
@@ -1429,7 +1429,7 @@
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
       "cases": "Explore real admission outcomes and application stories",
-      "hall": "Admissions officer evaluation and rank comparison",
+      "hall": "Verified admit data, peer feedback and rank comparison",
       "essayGallery": "Browse excellent admission essay examples",
       "chat": "Real-time chat with verified users",
       "vault": "Securely store sensitive information and passwords",
@@ -2930,15 +2930,53 @@
     "youRecalledMessage": "You recalled a message"
   },
   "hall": {
-    "title": "Feature Hall",
-    "description": "Admissions officer scoring, rank comparison, create lists",
+    "title": "Alumni Square",
+    "description": "Verified admit data, peer feedback, rank comparison and case study",
     "tabs": {
       "tinder": "Prediction Game",
-      "review": "Review Mode",
+      "review": "Peer Pulse",
       "ranking": "Rank Comparison",
       "lists": "User Lists",
       "challenge": "Community Challenge",
-      "verified": "Verified Ranking"
+      "verified": "China Admit Dashboard",
+      "path": "Alumni Journey",
+      "verifiedDesc": "Verified admit data: China admit counts, difficulty signals, ED vs RD",
+      "rankingDesc": "Where your stats sit vs the historical applicant pool at your targets",
+      "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
+      "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
+    },
+    "hero": {
+      "points": "Points",
+      "today": "+{count} today",
+      "streak": "Streak",
+      "best": "{badge} · best {count}",
+      "reviewer": "Reviewer",
+      "credit": "Credit {count}",
+      "dailyChallenge": "Daily Challenge",
+      "badges": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      },
+      "reviewerLevels": {
+        "L1": "Learner",
+        "L2": "Peer",
+        "L3": "Senior"
+      }
+    },
+    "path": {
+      "modes": {
+        "single": {
+          "label": "Single Case Study",
+          "description": "Study one alumni case at a time — AI reflection builds admit-officer intuition"
+        },
+        "challenge": {
+          "label": "Batch Challenge",
+          "description": "Predict one applicant's results across multiple schools, then compare with reality"
+        }
+      }
     },
     "challenge": {
       "loading": "Loading challenge...",
@@ -6786,7 +6824,25 @@
     "totalVerified": "Total Verified",
     "totalAdmitted": "Total Admitted",
     "topSchools": "Top Schools",
-    "ivyPlus": "Ivy+"
+    "ivyPlus": "Ivy+",
+    "dashboard": {
+      "banner": "{count} schools · platform-reviewed verified cases · updated {date}",
+      "rank": "US News #{rank}",
+      "emptyTitle": "China admit data is being collected",
+      "emptyBody": "Verified mainland-China admission cases will appear here once enough are reviewed.",
+      "noChinaData": "No mainland-China-specific data yet",
+      "reliability": {
+        "A": "High confidence — 5+ verified cases",
+        "B": "Medium confidence — 3+ verified cases",
+        "C": "Low confidence — 1-2 cases, advisory only",
+        "D": "No verified case"
+      },
+      "signal": {
+        "stable": "Stable",
+        "declining": "Declining",
+        "surging": "Sharply harder"
+      }
+    }
   },
   "vault": {
     "title": "Secure Vault",
@@ -7777,6 +7833,34 @@
         "thinLabel": "Light on detail",
         "thinAria": "Recruitment card has a short headline"
       }
+    }
+  },
+  "pointsCenter": {
+    "title": "Points Center",
+    "description": "Spend the points you earned across the platform",
+    "balance": "Points Balance",
+    "todayEarned": "+{count} earned today",
+    "catalogTitle": "Redeem",
+    "redeem": "Redeem",
+    "insufficient": "Not enough",
+    "historyTitle": "Redemption History",
+    "confirmTitle": "Confirm redemption",
+    "confirmBody": "Redeem \"{name}\" for {cost} points?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "redeemSuccess": "Redeemed successfully",
+    "redeemError": "Redemption failed. Please try again.",
+    "types": {
+      "CONSULT_15MIN": "15-min counselor consultation",
+      "MEMBERSHIP_MONTHLY": "Monthly membership",
+      "CASE_PREMIUM_UNLOCK": "Premium case unlock",
+      "EXPERT_LIST_UNLOCK": "Expert school list unlock",
+      "PREDICTION_DEEP_DIVE": "Prediction deep-dive analysis"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "FULFILLED": "Fulfilled",
+      "CANCELLED": "Cancelled"
     }
   },
   "points": {

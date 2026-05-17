@@ -14,6 +14,7 @@ import {
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 
 function toInputJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value));
@@ -33,6 +34,7 @@ export class HallListService {
 
   constructor(
     private prisma: PrismaService,
+    private pointsService: PointsService,
     @Optional() private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -52,6 +54,18 @@ export class HallListService {
       this.recordCreateListToMemory(userId, data),
       this.logger,
       'Failed to record create list to memory',
+    );
+
+    // Hall refactor Phase 1: award CASE_STUDY_COMPLETE for curating a list.
+    // Once Lists → "Expert curated lists" lands (Stage 2), this reward will be
+    // reserved for admin/editor curated entries.
+    fireAndForget(
+      this.pointsService.adjustPoints(userId, PointAction.CASE_STUDY_COMPLETE, {
+        listId: list.id,
+        source: 'create_list',
+      }),
+      this.logger,
+      'Failed to award list creation points',
     );
 
     return list;
