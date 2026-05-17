@@ -81,7 +81,10 @@ async function main() {
           priority: isNull ? cfg.weight * rankWeight : 0,
           tier: isNull ? null : 'OFFICIAL',
         },
-        update: {}, // create-only — never clobber engine progress
+        // Re-runnable sync: if the School field now has a real value the
+        // target is genuinely CLOSED; otherwise leave the engine's status
+        // (PENDING / FAILED / NEEDS_REVIEW) untouched.
+        update: isNull ? {} : { status: 'CLOSED' },
       });
       upserts++;
     }
