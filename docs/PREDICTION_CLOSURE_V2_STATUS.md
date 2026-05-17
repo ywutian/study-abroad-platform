@@ -10,14 +10,17 @@
 **Continuous Closure Engine is built and running on real data.**
 
 - `ClosureTarget` work-queue table — 2538 targets (240 schools × tracked fields).
-- Closure: **51.7%** (1311/2538 — 1144 CLOSED + 167 UNAVAILABLE; 48 FAILED, 1179 PENDING), up from 42.3% baseline (3 collection waves).
+- Closure: **56.1%** (1423/2538 — 1231 CLOSED + 192 UNAVAILABLE; 74 FAILED, 1041 PENDING), up from 42.3% baseline (4 collection waves, 15 subagents).
 - Per-field: act25/75 100% · oosAcceptanceRate 100% · gpaDistribution 92.5% ·
-  transferAcceptanceRate 85% · edAcceptanceRate 47% · eaAcceptanceRate 29% ·
-  needBlindInternational 22% · yieldRate 12% · ed2AcceptanceRate / hasRestrictiveEa 0%.
-- Wave 3 (5 subagents): gpaDistribution research-unis (6 CLOSED real CDS C11),
-  ED b2 (Syracuse), EA sweep (Georgetown/Notre Dame/UVA), OOS sweep (UC Merced;
-  rest UNAVAILABLE — publics don't publish residency-split rates), needblind b3
-  (6 need-aware). All source-cited, no fabrication.
+  transferAcceptanceRate 85% · edAcceptanceRate 47% · yieldRate 37% ·
+  eaAcceptanceRate 29% · needBlindInternational 24% · ed2 / hasRestrictiveEa 10%.
+- Wave 4 (4 subagents): yieldRate ×2 (59/59 CLOSED), needblind b4, CDS-PDF
+  extractor for ed2/REA. **Structural finding**: `ed2AcceptanceRate` is not
+  derivable — CDS C21 reports a single combined ED count, never separates ED II
+  → that field will be ~all-UNAVAILABLE (honest terminal closure).
+- **needBlindInternational ceiling**: most schools (esp. publics) never publish
+  an explicit international admission-review policy → many targets legitimately
+  FAILED/UNAVAILABLE. FAILED-after-verification should be reclassified UNAVAILABLE.
 - Collection wave 1 — 4 Claude subagents, real WebSearch+WebFetch+parse:
   - needBlindInternational: 8 resolved (cited official sources), 17 honest null
   - edAcceptanceRate: 30 UNAVAILABLE (verified no binding ED / no published rate)
