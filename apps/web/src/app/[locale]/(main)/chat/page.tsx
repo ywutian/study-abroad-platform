@@ -66,7 +66,16 @@ export default function ChatPage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const currentUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthReady = useAuthStore((state) => state.isInitialized);
   const currentUserId = currentUser?.id ?? null;
+  // Gate every protected useQuery on this page until AuthInitializer has
+  // restored the session via the httpOnly refresh cookie and populated the
+  // in-memory accessToken. Without this, queries fire synchronously on first
+  // paint with no Authorization header → 401 in the console (the apiClient's
+  // refresh-and-retry mask hides the symptom but leaves the noise). Matches
+  // the pattern used in /profile, /schools, /prediction.
+  const isAuthed = isAuthReady && !!accessToken;
 
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [showConversations, setShowConversations] = useState(true);
@@ -195,7 +204,14 @@ export default function ChatPage() {
           limit: CONVERSATION_LIMIT,
         },
       }),
+    enabled: isAuthed,
   });
+  // React Query v5: `isLoading = isPending && isFetching`. With `enabled: false`
+  // (auth not ready yet), `isLoading` is `false`, which would briefly flash the
+  // ConversationList's empty-state during the auth-init window. Keep the
+  // skeleton up until either we are actively fetching, or auth is still
+  // resolving.
+  const isListLoading = isLoading || !isAuthReady;
   const conversations = useMemo(
     () => (Array.isArray(conversationsData) ? conversationsData : []),
     [conversationsData]
@@ -245,14 +261,14 @@ export default function ChatPage() {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage: Message[]) =>
       lastPage.length >= 50 ? lastPage[lastPage.length - 1]?.id : undefined,
-    enabled: !!selectedConversation,
+    enabled: isAuthed && !!selectedConversation,
   });
 
   const { data: contextData, isLoading: contextLoading } = useQuery({
     queryKey: ['conversation-context', selectedConversation],
     queryFn: () =>
       apiClient.get<ChatContext>(chatRoutes.conversationContext(selectedConversation || '')),
-    enabled: !!selectedConversation,
+    enabled: isAuthed && !!selectedConversation,
   });
 
   const sortedMessages = useMemo(() => {
@@ -653,7 +669,7 @@ export default function ChatPage() {
           onSearchChange={setSearchQuery}
           onFilterChange={setFilter}
           onSelect={handleSelectConversation}
-          isLoading={isLoading}
+          isLoading={isListLoading}
           isUserOnline={isUserOnline}
           showConversations={showConversations}
         />
