@@ -590,6 +590,7 @@ export function roundMultiplier(
     ed2AcceptanceRate?: number | null;
     eaAcceptanceRate?: number | null;
     acceptanceRate?: number | null;
+    yieldRate?: number | null;
     hasEarlyDecision?: boolean | null;
     hasEarlyDecision2?: boolean | null;
     hasEarlyAction?: boolean | null;
@@ -688,6 +689,40 @@ export function roundMultiplier(
           ? 'Early Action (school-published)'
           : 'Restrictive Early Action (school-published)',
       evidence: `This school admits ${(eaRate * 100).toFixed(1)}% of ${r === 'EA' ? 'EA' : 'REA/SCEA'} applicants vs ${(overallRate * 100).toFixed(1)}% overall (×${clamped.toFixed(2)})`,
+      impact: 'positive',
+    };
+  }
+
+  // closure-v2 yield-informed fallback: when a school publishes no ED rate but
+  // does publish a CDS C2 yield, refine the flat 2.5× ED heuristic. Low-yield
+  // schools front-load their class through binding ED and admit a larger share
+  // of the ED pool; high-yield schools (HYPSM) rely on ED less. Bounded to
+  // [2.0, 3.2] so it never exceeds the data-driven path. Zero-drift on current
+  // data — no school carries `yieldRate` until the CDS C2 marathon populates it.
+  const yieldFrac =
+    school?.yieldRate == null
+      ? null
+      : school.yieldRate > 1
+        ? school.yieldRate / 100
+        : school.yieldRate;
+  if (
+    (r === 'ED' || r === 'ED2') &&
+    edRate == null &&
+    ed2Rate == null &&
+    yieldFrac != null &&
+    yieldFrac > 0 &&
+    yieldFrac < 1
+  ) {
+    // yield 0.20 → 3.2× ; yield 0.70 → 2.0× ; linear, clamped.
+    const estimate = clamp(3.2 - (yieldFrac - 0.2) * (1.2 / 0.5), 2.0, 3.2);
+    const multiplier = r === 'ED2' ? clamp(estimate * 0.8, 1.6, 2.6) : estimate;
+    return {
+      multiplier,
+      label:
+        r === 'ED2'
+          ? 'Early Decision 2 (yield-informed estimate)'
+          : 'Early Decision (yield-informed estimate)',
+      evidence: `No published ${r} admit rate; estimated from this school's ${(yieldFrac * 100).toFixed(0)}% CDS yield — lower yield implies a larger ED boost (×${multiplier.toFixed(2)}).`,
       impact: 'positive',
     };
   }
@@ -892,7 +927,16 @@ export function geoMultiplier(
     };
   }
   const schoolState = school.state?.trim().toUpperCase();
-  const applicantLocation = profile.highSchoolLocation?.trim().toUpperCase();
+  // closure-v2: prefer the explicit state of residence over the HS location.
+  // A boarding-school student from TX attending a CA prep school is a TX
+  // resident for UC residency purposes; highSchoolLocation mis-classifies them.
+  // Falls back to highSchoolLocation (legacy behaviour) when unset — zero-drift
+  // on current data since no profile carries stateOfResidence yet.
+  const applicantLocation = (
+    profile.stateOfResidence ?? profile.highSchoolLocation
+  )
+    ?.trim()
+    .toUpperCase();
   if (!schoolState || !applicantLocation) {
     return { ...NEUTRAL, label: 'Geography' };
   }

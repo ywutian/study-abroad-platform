@@ -1,6 +1,7 @@
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import {
   athleteMultiplier,
+  geoMultiplier,
   gpaBandMultiplier,
   intlMultiplier,
   legacyHookMultiplier,
@@ -178,6 +179,83 @@ describe('counselor modifiers launch guards', () => {
 
       expect(result.multiplier).toBe(1);
       expect(result.label).toContain('does not offer Early Decision');
+    });
+
+    // closure-v2: yield-informed ED fallback (CDS C2).
+    it('estimates the ED boost from CDS yield when no ED rate is published', () => {
+      const lowYield = roundMultiplier(
+        'ED',
+        baseSchool({ acceptanceRate: 0.2, yieldRate: 25 }),
+      );
+      const highYield = roundMultiplier(
+        'ED',
+        baseSchool({ acceptanceRate: 0.2, yieldRate: 70 }),
+      );
+
+      expect(lowYield.label).toContain('yield-informed');
+      expect(lowYield.multiplier).toBeGreaterThan(highYield.multiplier);
+      expect(lowYield.multiplier).toBeLessThanOrEqual(3.2);
+      expect(highYield.multiplier).toBeGreaterThanOrEqual(2.0);
+    });
+
+    it('prefers the published ED rate over the yield estimate', () => {
+      const result = roundMultiplier(
+        'ED',
+        baseSchool({
+          acceptanceRate: 0.1,
+          edAcceptanceRate: 0.2,
+          yieldRate: 25,
+        }),
+      );
+
+      expect(result.label).toContain('school-published');
+      expect(result.label).not.toContain('yield-informed');
+    });
+
+    it('falls back to the flat 2.5x ED heuristic when no yield is known', () => {
+      const result = roundMultiplier('ED', baseSchool({ acceptanceRate: 0.1 }));
+
+      expect(result.multiplier).toBe(2.5);
+      expect(result.label).toBe('Early Decision');
+    });
+  });
+
+  // closure-v2: geoMultiplier prefers an explicit state of residence over the
+  // high-school location, and falls back to the legacy field when it is unset.
+  describe('geoMultiplier — state of residence preference', () => {
+    it('uses stateOfResidence over highSchoolLocation when both are present', () => {
+      const result = geoMultiplier(
+        baseProfile({
+          isInternational: false,
+          stateOfResidence: 'CA',
+          highSchoolLocation: 'NY',
+        }),
+        baseSchool({ isPrivate: false, state: 'CA' }),
+      );
+
+      expect(result.label).toContain('In-state');
+    });
+
+    it('falls back to highSchoolLocation when stateOfResidence is unset', () => {
+      const result = geoMultiplier(
+        baseProfile({ isInternational: false, highSchoolLocation: 'CA' }),
+        baseSchool({ isPrivate: false, state: 'CA' }),
+      );
+
+      expect(result.label).toContain('In-state');
+    });
+
+    it('classifies out-of-state by stateOfResidence even if HS is in-state', () => {
+      const result = geoMultiplier(
+        baseProfile({
+          isInternational: false,
+          stateOfResidence: 'NY',
+          highSchoolLocation: 'CA',
+        }),
+        baseSchool({ isPrivate: false, state: 'CA' }),
+      );
+
+      expect(result.label).toContain('Out-of-state');
     });
   });
 

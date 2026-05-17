@@ -95,6 +95,10 @@ export interface ProfileInput {
   isFirstGen?: boolean;
   /** Whether the student is a recruited athlete */
   recruitedAthlete?: boolean;
+  /** closure-v2: 2-letter US state of legal residence, independent of where the
+   *  applicant attends high school. geoMultiplier prefers this over
+   *  highSchoolLocation for the in-state / out-of-state determination. */
+  stateOfResidence?: string;
   /** PR-14: Whether the student is applying test-optional (no SAT/ACT submitted).
    * Counselor applies 0.85× modifier at <20% admit schools per Common App data. */
   applyingTestOptional?: boolean;
@@ -141,6 +145,9 @@ export interface SchoolInput {
   ed2AcceptanceRate?: number;
   /** EA acceptance rate (0–100 percentage) */
   eaAcceptanceRate?: number;
+  /** closure-v2: CDS C2 yield (enrolled / admitted), 0–100 percentage. Lets
+   *  roundMultiplier estimate an ED boost when no published ED rate exists. */
+  yieldRate?: number;
   /** Institution type */
   institutionType?: string;
   /** CDS Section C GPA distribution for admitted students */

@@ -97,6 +97,14 @@ enum EducationSystem {
   GAOKAO
   CANADIAN
   AUSTRALIAN
+  // Hybrid curricula common in Chinese international departments (中外合作班).
+  // Added 2026-05 (closure-v2) so HighSchool.curriculumSystem can distinguish
+  // 中美班 / 中加班 / 中英班 instead of collapsing them to OTHER.
+  AP_AND_GAOKAO
+  IB_AND_GAOKAO
+  A_LEVEL_AND_GAOKAO
+  DSE // Hong Kong Diploma of Secondary Education
+  MIXED // School offers multiple distinct tracks
   OTHER
 }
 
@@ -165,6 +173,42 @@ enum HighSchoolType {
   INTL_OTHER
   PUBLIC_OTHER
   PRIVATE_OTHER
+}
+
+// closure-v2 (2026-05): applicant lifecycle context for the counselor engine.
+// gpaBandMultiplier switches to a transfer model when applicantType=TRANSFER.
+enum ApplicantType {
+  FRESHMAN
+  TRANSFER
+  GAP_YEAR
+  HOMESCHOOLED
+}
+
+// closure-v2 (2026-05): recruited-athlete pipeline status. athleteMultiplier
+// scales the boost by how far the recruitment has progressed.
+enum RecruitStatus {
+  NONE
+  CONTACTED
+  OFFER
+  VERBAL
+  COMMITTED
+}
+
+// closure-v2 (2026-05): Chinese high-school taxonomy. Drives
+// chineseHighSchoolModifier and feeder-signal interpretation.
+//   INTL_PRIVATE      民办国际化学校 (鼎石 / 包玉刚 级)
+//   INTL_PUBLIC_DEPT  公立国际部     (人大附 ICC 级)
+//   BILINGUAL_PRIVATE 双语私立        (七德 级)
+//   GAOKAO_TOP        顶尖高考校      (衡水 / 上中 级)
+//   GAOKAO_REGULAR    一般高考校
+//   MIXED             同校既有国际部又有普高
+enum CnHsCategory {
+  INTL_PRIVATE
+  INTL_PUBLIC_DEPT
+  BILINGUAL_PRIVATE
+  GAOKAO_TOP
+  GAOKAO_REGULAR
+  MIXED
 }
 
 enum ReportTargetType {
@@ -740,6 +784,21 @@ model Profile {
   // declaration "I'm applying test-optional" vs "I haven't filled in yet".
   applyingTestOptional Boolean? @default(false)
 
+  // closure-v2 (2026-05): geo / lifecycle / recruiting context for the
+  // counselor engine. All nullable & additive — existing profiles unaffected.
+  //   stateOfResidence     2-letter US state, independent of HS location;
+  //                        geoMultiplier prefers this over highSchoolLocation.
+  //   highSchoolId         direct FK to the HighSchool reference DB (currently
+  //                        only reachable via the Education relation).
+  stateOfResidence     String?
+  applicationCycleYear Int? // e.g. 2027 for class of 2027
+  applicantType        ApplicantType?
+  recruitedSport       String? // sport name when recruitedAthlete=true
+  recruitedDivision    String? // D1 / D2 / D3
+  recruitedCoachStatus RecruitStatus? @default(NONE)
+  highSchoolId         String?
+  highSchool           HighSchool?    @relation(fields: [highSchoolId], references: [id], onDelete: SetNull)
+
   // Recommendation preferences (JSON)
   recommendationPreferences Json?
 
@@ -763,6 +822,7 @@ model Profile {
   @@index([userId])
   @@index([visibility])
   @@index([onboardingCompleted])
+  @@index([highSchoolId])
 }
 
 model SemesterGpa {
@@ -1076,8 +1136,28 @@ model HighSchool {
   qualityGrade    String? // A/B/C/D — determines routing
   hsImpactEnabled Boolean @default(true) // D-grade schools do not participate in prediction scoring
 
+  // === closure-v2 (2026-05): curriculum + reference data ===
+  curriculumSystem EducationSystem? // IB / AP / A_LEVEL / GAOKAO / hybrid
+  ncesId           String?          @unique // US NCES Common Core of Data ID
+  apOfferings      Int? // # of AP courses offered
+  ibOfferings      Boolean? // offers IB diploma programme
+  classSize        Int? // graduating class size (GPA percentile context)
+  schoolProfilePdfUrl       String? // college-counseling "school profile" PDF
+  schoolProfileExtractedFields Json? // { gradingScale, avgSat, pctTo4yr, ... }
+
+  // === closure-v2: Chinese high-school specific ===
+  cnHsCategory         CnHsCategory?
+  cnHsCityTier         Int? // 1-4 (1 = 北上广深)
+  cnHsProvince         String? // province / municipality
+  cnHsAlternativeNames String[]      @default([]) // ["人大附中","RDFZ",...]
+  gpaConversionTable   Json? // { rawScale, targetScale, mapping }
+  hasGaokaoTrack       Boolean? // retains a 高考 track
+  hasIntlTrack         Boolean? // has an 国际部 / 国际班
+  intlAdmissionList    Json? // { "2024": [{ college, count }], ... } yearly US admit board
+
   educations          Education[]
   cases               AdmissionCase[]
+  profiles            Profile[]
   sourceObservations  PredictionSourceObservation[]
   relationshipSignals SchoolRelationshipSignal[]
   createdAt           DateTime                      @default(now())
@@ -1087,6 +1167,8 @@ model HighSchool {
   @@index([country])
   @@index([tier])
   @@index([type])
+  @@index([cnHsCategory])
+  @@index([curriculumSystem])
 }
 
 model HighSchoolSuggestion {
@@ -1245,6 +1327,15 @@ model School {
   // Used by counselor roundMultiplier to scale ED/EA boost per school selectivity
   edAcceptanceRate Decimal? @db.Decimal(5, 2) // Early Decision admit rate %
   eaAcceptanceRate Decimal? @db.Decimal(5, 2) // Early Action / REA admit rate %
+
+  // closure-v2 (2026-05): CDS-derived early-round refinements.
+  //   yieldRate         CDS C2 enrolled/admitted ratio; lets roundMultiplier use a
+  //                     yield-corrected ED estimate instead of a flat 2.5x heuristic.
+  //   ed2AcceptanceRate CDS C21 Early Decision II admit rate (distinct from ED I).
+  //   hasRestrictiveEa  true = REA/SCEA (single-choice) rather than open EA.
+  yieldRate         Decimal? @db.Decimal(5, 2) // Enrolled / admitted, %
+  ed2AcceptanceRate Decimal? @db.Decimal(5, 2) // Early Decision II admit rate %
+  hasRestrictiveEa  Boolean? // null=unknown, true=REA/SCEA, false=open EA
 
   // School-specific enrolled freshman GPA distribution (from CDS C9)
   // Shape: { "3.75-4.00": 0.91, "3.50-3.74": 0.07, "3.25-3.49": 0.02, "3.00-3.24": 0, "<3.00": 0 }
