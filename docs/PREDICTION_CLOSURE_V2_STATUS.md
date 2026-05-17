@@ -11,15 +11,18 @@
 
 - `ClosureTarget` work-queue table — **7293 targets** (comprehensive scope:
   240 schools × 26 fields + 165 HighSchools × 7 fields).
-- Closure: **91.5%** (6675/7293 — 6096 CLOSED + 579 UNAVAILABLE; 16 FAILED,
-  602 PENDING). 8 collection waves, 37 subagents. Past the 90% methodology line.
-- Fully resolved fields: yieldRate, all School display/outcomes (description,
-  descriptionZh, totalEnrollment, niche, graduationRate, retentionRate,
-  percentNeedMet, averageNetPrice, studentFacultyRatio), act25/75, oosAR.
-- Remaining PENDING (602): curriculumSystem ~60, eaAcceptanceRate ~70,
-  ed2AcceptanceRate ~105 (structural — will be UNAVAILABLE), hasRestrictiveEa
-  ~105, edAcceptanceRate ~97, needBlindInternational ~50, intlAcceptanceRate
-  ~55, sat25/75 ~62, acceptanceRate 1.
+- Closure: **99.8%** (7276/7293 — 6296 CLOSED + 980 UNAVAILABLE; 17 FAILED,
+  **0 PENDING**). 10 collection waves, 45 Claude subagents. **MILESTONE: every
+  ClosureTarget in the School+HighSchool scope is terminal — PENDING=0.**
+- All 33 tracked fields fully resolved (CLOSED with provenance, or UNAVAILABLE
+  verified-not-published per methodology #1). Zero fabrication across all waves.
+- 17 FAILED edge-cases (0.2%): a few CDS-behind-auth, 2 real values rejected by
+  a strict range gate (Harvard transfer 0.71%, So. Miss 95.36% — could be hand-
+  set), 1 unidentifiable school. Retryable; not blocking.
+- **Next**: (a) the cron-driven Tier-1 ClosureScheduler (plan Phase 0.5) for
+  hands-off freshness re-checks; (b) full-platform scope expansion — grow
+  HighSchool 165→2800 (NCES + CN HS import), AdmissionCase →5000 (case
+  scraping); seeder cron auto-enqueues the new rows.
 - The earlier "56.1%" measured only the 11 hardest fields; the 83.9% is the
   honest comprehensive figure (many School fields — acceptanceRate, SAT bands,
   descriptions, enrolment — were already populated pre-closure-v2).
