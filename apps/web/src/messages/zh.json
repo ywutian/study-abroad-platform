@@ -2926,6 +2926,39 @@
       "reviewDesc": "同伴 Tinder 滑评，帮你看清档案在群体直觉中的样子",
       "pathDesc": "学长之路：研究真实申请档案，AI 复盘帮你建立招生官思维"
     },
+    "hero": {
+      "points": "积分",
+      "today": "今日 +{count}",
+      "streak": "连胜",
+      "best": "{badge} · 最佳 {count}",
+      "reviewer": "评审者",
+      "credit": "信用 {count}",
+      "dailyChallenge": "每日挑战",
+      "badges": {
+        "bronze": "青铜",
+        "silver": "白银",
+        "gold": "黄金",
+        "platinum": "铂金",
+        "diamond": "钻石"
+      },
+      "reviewerLevels": {
+        "L1": "学习者",
+        "L2": "同侪",
+        "L3": "资深"
+      }
+    },
+    "path": {
+      "modes": {
+        "single": {
+          "label": "单案例研习",
+          "description": "一次研究一个学长案例，AI 复盘帮你建立招生官思维"
+        },
+        "challenge": {
+          "label": "批量挑战",
+          "description": "同一申请者批量预测多校结果，看你的判断和真实结果的差距"
+        }
+      }
+    },
     "challenge": {
       "loading": "加载挑战中...",
       "empty": "暂无挑战",
@@ -7776,6 +7809,34 @@
         "thinLabel": "信息较少",
         "thinAria": "组队卡摘要偏短"
       }
+    }
+  },
+  "pointsCenter": {
+    "title": "积分中心",
+    "description": "使用你在平台上累积的积分",
+    "balance": "积分余额",
+    "todayEarned": "今日 +{count}",
+    "catalogTitle": "兑换",
+    "redeem": "兑换",
+    "insufficient": "积分不足",
+    "historyTitle": "兑换记录",
+    "confirmTitle": "确认兑换",
+    "confirmBody": "确定用 {cost} 积分兑换「{name}」？",
+    "cancel": "取消",
+    "confirm": "确认",
+    "redeemSuccess": "兑换成功",
+    "redeemError": "兑换失败，请重试。",
+    "types": {
+      "CONSULT_15MIN": "顾问 15 分钟咨询",
+      "MEMBERSHIP_MONTHLY": "月度会员",
+      "CASE_PREMIUM_UNLOCK": "高级案例解锁",
+      "EXPERT_LIST_UNLOCK": "专家选校清单解锁",
+      "PREDICTION_DEEP_DIVE": "录取预测深度解读"
+    },
+    "status": {
+      "PENDING": "处理中",
+      "FULFILLED": "已完成",
+      "CANCELLED": "已取消"
     }
   },
   "points": {

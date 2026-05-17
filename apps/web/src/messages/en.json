@@ -2942,6 +2942,39 @@
       "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
       "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
     },
+    "hero": {
+      "points": "Points",
+      "today": "+{count} today",
+      "streak": "Streak",
+      "best": "{badge} · best {count}",
+      "reviewer": "Reviewer",
+      "credit": "Credit {count}",
+      "dailyChallenge": "Daily Challenge",
+      "badges": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      },
+      "reviewerLevels": {
+        "L1": "Learner",
+        "L2": "Peer",
+        "L3": "Senior"
+      }
+    },
+    "path": {
+      "modes": {
+        "single": {
+          "label": "Single Case Study",
+          "description": "Study one alumni case at a time — AI reflection builds admit-officer intuition"
+        },
+        "challenge": {
+          "label": "Batch Challenge",
+          "description": "Predict one applicant's results across multiple schools, then compare with reality"
+        }
+      }
+    },
     "challenge": {
       "loading": "Loading challenge...",
       "empty": "No Challenge Available",
@@ -7797,6 +7830,34 @@
         "thinLabel": "Light on detail",
         "thinAria": "Recruitment card has a short headline"
       }
+    }
+  },
+  "pointsCenter": {
+    "title": "Points Center",
+    "description": "Spend the points you earned across the platform",
+    "balance": "Points Balance",
+    "todayEarned": "+{count} earned today",
+    "catalogTitle": "Redeem",
+    "redeem": "Redeem",
+    "insufficient": "Not enough",
+    "historyTitle": "Redemption History",
+    "confirmTitle": "Confirm redemption",
+    "confirmBody": "Redeem \"{name}\" for {cost} points?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "redeemSuccess": "Redeemed successfully",
+    "redeemError": "Redemption failed. Please try again.",
+    "types": {
+      "CONSULT_15MIN": "15-min counselor consultation",
+      "MEMBERSHIP_MONTHLY": "Monthly membership",
+      "CASE_PREMIUM_UNLOCK": "Premium case unlock",
+      "EXPERT_LIST_UNLOCK": "Expert school list unlock",
+      "PREDICTION_DEEP_DIVE": "Prediction deep-dive analysis"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "FULFILLED": "Fulfilled",
+      "CANCELLED": "Cancelled"
     }
   },
   "points": {

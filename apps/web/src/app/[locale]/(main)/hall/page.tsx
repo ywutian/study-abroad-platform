@@ -87,7 +87,7 @@ const VALID_TABS = TAB_CONFIG.map((t) => t.value);
 const LEGACY_TAB_MAP: Record<string, HallTabV2> = {
   tinder: 'path',
   challenge: 'path',
-  lists: 'verified', // Lists被合并到Verified的"专家清单"分类
+  lists: 'verified', // Lists merged into Verified's expert-curated section
 };
 
 export default function HallPage() {

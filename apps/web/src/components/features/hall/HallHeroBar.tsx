@@ -13,11 +13,14 @@
  * Skeleton-friendly: degrades gracefully while loading or when overview fails.
  */
 
+import { useTranslations } from 'next-intl';
+import { Flame, Trophy, Shield, Sparkles, ChevronRight } from 'lucide-react';
 import { useHallOverview } from '@/hooks/use-hall-api';
-import { Flame, Trophy, Shield, Sparkles } from 'lucide-react';
+import { Link } from '@/lib/i18n/navigation';
 import { cn } from '@/lib/utils';
 
 export function HallHeroBar() {
+  const t = useTranslations('hall.hero');
   const { data: overview, isLoading } = useHallOverview();
 
   if (isLoading || !overview) {
@@ -53,23 +56,29 @@ export function HallHeroBar() {
         'min-w-0',
       )}
     >
-      {/* 积分余额 + 今日 */}
-      <div className="flex min-w-0 items-center gap-3">
+      {/* 积分余额 + 今日 — links to the Points Center (redemption outlet) */}
+      <Link
+        href="/points"
+        className="group flex min-w-0 items-center gap-3 rounded-lg transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
           <Sparkles className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <div className="text-xs text-muted-foreground">积分</div>
+          <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
+            {t('points')}
+            <ChevronRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
           <div className="truncate text-xl font-semibold tabular-nums">
             {overview.points.balance.toLocaleString()}
           </div>
           {overview.points.todayEarned > 0 && (
             <div className="truncate text-xs text-emerald-600 dark:text-emerald-400">
-              今日 +{overview.points.todayEarned}
+              {t('today', { count: overview.points.todayEarned })}
             </div>
           )}
         </div>
-      </div>
+      </Link>
 
       {/* 连胜 + 徽章 */}
       <div className="flex min-w-0 items-center gap-3">
@@ -77,12 +86,15 @@ export function HallHeroBar() {
           <Flame className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <div className="text-xs text-muted-foreground">连胜</div>
+          <div className="text-xs text-muted-foreground">{t('streak')}</div>
           <div className="truncate text-xl font-semibold tabular-nums">
             {overview.swipe.currentStreak}
           </div>
           <div className="truncate text-xs text-muted-foreground">
-            {badgeLabel(overview.swipe.badge)} · 最佳 {overview.swipe.bestStreak}
+            {t('best', {
+              badge: t(`badges.${overview.swipe.badge}`),
+              count: overview.swipe.bestStreak,
+            })}
           </div>
         </div>
       </div>
@@ -93,12 +105,12 @@ export function HallHeroBar() {
           <Shield className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <div className="text-xs text-muted-foreground">评审者</div>
+          <div className="text-xs text-muted-foreground">{t('reviewer')}</div>
           <div className="truncate text-xl font-semibold">
-            {reviewerLabel(overview.reviewer.level)}
+            {t(`reviewerLevels.${overview.reviewer.level}`)}
           </div>
           <div className="truncate text-xs text-muted-foreground">
-            信用 {overview.reviewer.credit}
+            {t('credit', { count: overview.reviewer.credit })}
           </div>
         </div>
       </div>
@@ -109,7 +121,7 @@ export function HallHeroBar() {
           <Trophy className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs text-muted-foreground">每日挑战</div>
+          <div className="text-xs text-muted-foreground">{t('dailyChallenge')}</div>
           <div className="truncate text-xl font-semibold tabular-nums">
             {overview.dailyChallenge.count} / {overview.dailyChallenge.target}
           </div>
@@ -128,24 +140,4 @@ export function HallHeroBar() {
       </div>
     </div>
   );
-}
-
-function badgeLabel(badge: string): string {
-  const map: Record<string, string> = {
-    bronze: '青铜',
-    silver: '白银',
-    gold: '黄金',
-    platinum: '铂金',
-    diamond: '钻石',
-  };
-  return map[badge] ?? badge;
-}
-
-function reviewerLabel(level: string): string {
-  const map: Record<string, string> = {
-    L1: '学习者',
-    L2: '同侪',
-    L3: '资深',
-  };
-  return map[level] ?? level;
 }
