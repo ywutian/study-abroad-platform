@@ -108,7 +108,10 @@ export function ChatMessageArea({
       onScroll={onScroll}
       role="log"
       aria-label={t('chat.title')}
-      className="flex-1 min-h-0 overflow-y-auto px-4 py-5 relative"
+      // 2026-05 chat layout fix: `min-w-0` mirrors the column-level guard.
+      // Long unbroken strings (URLs, share codes) in chat bubbles must not
+      // expand the scroll container past its flex cell.
+      className="min-w-0 flex-1 min-h-0 overflow-y-auto px-4 py-5 relative"
     >
       <div className="space-y-3">
         {/* 加载更多 spinner */}
