@@ -3,7 +3,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { EssayGalleryService } from './essay-gallery.service';
 import { EssayAiService } from './essay-ai.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 
 jest.mock('../points/refund.helper', () => ({
   safeRefund: jest.fn().mockResolvedValue(undefined),
@@ -37,7 +37,7 @@ describe('EssayGalleryService', () => {
         EssayGalleryService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: EssayAiService, useValue: mockEssayAiService },
-        { provide: CaseIncentiveService, useValue: mockIncentiveService },
+        { provide: PointsService, useValue: mockIncentiveService },
       ],
     }).compile();
 

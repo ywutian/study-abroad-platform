@@ -1,6 +1,12 @@
+/**
+ * VerifiedTab — 认证 tab (Hall refactor Stage 4 M5).
+ *
+ * Default tab of the Hall. Leads with the China Admit Dashboard (verified
+ * mainland-China admit trend + difficulty signals — highest decision value)
+ * then shows the verified-user ranking list below.
+ */
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -13,6 +19,7 @@ import { apiClient } from '@/lib/api/client';
 import type { VerifiedUserDto, VerifiedRankingResponse, RankingFilter } from './types';
 import { RANKING_FILTERS } from './types';
 import { VerifiedItem } from './VerifiedItem';
+import { ChinaAdmitDashboard } from './ChinaAdmitDashboard';
 
 export function VerifiedTab() {
   const { t } = useTranslation();
@@ -47,29 +54,38 @@ export function VerifiedTab() {
   const filterLabel = useCallback(
     (filter: RankingFilter): string => {
       const map: Record<RankingFilter, string> = {
-        all: t('hallOfFame.verified.filters.all'),
-        admitted: t('hallOfFame.verified.filters.admitted'),
-        top20: t('hallOfFame.verified.filters.top20'),
-        ivy: t('hallOfFame.verified.filters.ivy'),
+        all: t('hall.verified.filters.all'),
+        admitted: t('hall.verified.filters.admitted'),
+        top20: t('hall.verified.filters.top20'),
+        ivy: t('hall.verified.filters.ivy'),
       };
       return map[filter];
     },
     [t]
   );
 
-  const renderVerifiedUserCard = useCallback(
-    ({ item }: { item: VerifiedUserDto }) => <VerifiedItem item={item} colors={c} />,
-    [c]
-  );
-
-  if (isLoading) return <Loading text={t('hallOfFame.loading')} />;
+  if (isLoading) return <Loading text={t('hall.loading')} />;
 
   const users = verifiedData?.items || [];
   const stats = verifiedData?.stats;
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* Stats summary */}
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: insets.bottom + spacing['3xl'] }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      {/* China Admit Dashboard — highest decision-value surface, shown first */}
+      <Text style={[S.sectionTitle, { color: c.foreground }]}>
+        {t('hall.verified.chinaAdmit.title')}
+      </Text>
+      <ChinaAdmitDashboard />
+
+      {/* Verified-user ranking */}
+      <Text style={[S.sectionTitle, { color: c.foreground, marginTop: spacing.xl }]}>
+        {t('hall.verified.title')}
+      </Text>
+
       {stats && (
         <Animated.View
           entering={FadeInDown.duration(400)}
@@ -78,21 +94,21 @@ export function VerifiedTab() {
           <View style={S.vStatItem}>
             <Text style={[S.vStatValue, { color: c.primary }]}>{stats.totalVerified}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.stats.total')}
+              {t('hall.verified.stats.total')}
             </Text>
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
             <Text style={[S.vStatValue, { color: c.success }]}>{stats.admittedCount}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.stats.admitted')}
+              {t('hall.verified.stats.admitted')}
             </Text>
           </View>
           <View style={[S.vStatDivider, { backgroundColor: c.border }]} />
           <View style={S.vStatItem}>
             <Text style={[S.vStatValue, { color: c.info }]}>{stats.avgGpa.toFixed(2)}</Text>
             <Text style={[S.vStatLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.stats.avgGpa')}
+              {t('hall.verified.stats.avgGpa')}
             </Text>
           </View>
         </Animated.View>
@@ -124,22 +140,22 @@ export function VerifiedTab() {
       </ScrollView>
 
       {users.length === 0 ? (
-        <EmptyState icon="shield-checkmark-outline" title={t('hallOfFame.verified.empty')} />
+        <EmptyState icon="shield-checkmark-outline" title={t('hall.verified.empty')} />
       ) : (
-        <FlashList
-          data={users}
-          renderItem={renderVerifiedUserCard}
-          keyExtractor={(item) => item.userId}
-          contentContainerStyle={{ paddingBottom: insets.bottom + spacing['3xl'] }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        />
+        users.map((item: VerifiedUserDto) => (
+          <VerifiedItem key={item.userId} item={item} colors={c} />
+        ))
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const S = StyleSheet.create({
+  sectionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
+    marginBottom: spacing.md,
+  },
   verifiedStatsRow: {
     flexDirection: 'row',
     alignItems: 'center',

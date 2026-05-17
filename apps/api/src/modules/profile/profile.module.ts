@@ -14,6 +14,7 @@ import { ProfileApplicationAnalysisV2Service } from './profile-application-analy
 import { ProfileReadinessService } from './profile-readiness.service';
 import { ApplicationAnalysisWorkflowService } from './application-analysis-workflow.service';
 import { ApplicationAnalysisExperimentScheduler } from './application-analysis-experiment.scheduler';
+import { HallPublicProfileService } from './hall-public-profile.service';
 import { FeatureFlagModule } from '../../common/feature-flags';
 import { AiModule } from '../ai/ai.module';
 import { AiAgentMemoryModule } from '../ai-agent/memory/memory.module';
@@ -46,12 +47,14 @@ import { PredictionModule } from '../prediction/prediction.module';
     ApplicationAnalysisExperimentScheduler,
     ProfileApplicationAnalysisService,
     ProfileService,
+    HallPublicProfileService,
   ],
   exports: [
     ProfileService,
     ProfileEnrichmentService,
     ApplicationAnalysisWorkflowService,
     ProfileApplicationAnalysisV2Service,
+    HallPublicProfileService,
   ],
 })
 export class ProfileModule {}

@@ -4,6 +4,8 @@ import { MemoryType, EntityType } from '@prisma/client';
 import { getSchoolDisplayName } from '../../common/utils/locale.util';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { PointsService, PointAction } from '../points/incentive.service';
+import { fireAndForget } from '../../common/utils/async.util';
 import {
   extractProfileMetrics,
   extractSchoolMetrics,
@@ -71,6 +73,7 @@ export class HallRankingService {
 
   constructor(
     private prisma: PrismaService,
+    private pointsService: PointsService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private llmService?: LLMService,
   ) {}
@@ -582,6 +585,18 @@ export class HallRankingService {
       }>(response);
 
       if (parsed.analysis && Array.isArray(parsed.strengths)) {
+        // Hall refactor Phase 1: log/charge RANKING_ANALYZED via PointsService.
+        // Default value is 0 (rollout safe); admin can tune to -10 once stable.
+        // fireAndForget so a points failure never blocks the analysis response.
+        fireAndForget(
+          this.pointsService.adjustPoints(
+            userId,
+            PointAction.RANKING_ANALYZED,
+            { schoolId, source: 'ai_ranking_analysis' },
+          ),
+          this.logger,
+          'Failed to record RANKING_ANALYZED',
+        );
         return {
           analysis: parsed.analysis,
           strengths: parsed.strengths,

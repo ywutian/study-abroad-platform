@@ -5,6 +5,7 @@ import { HallReviewService } from './hall-review.service';
 import { HallListService } from './hall-list.service';
 import { HallVerifiedService } from './hall-verified.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { LLMService } from '../ai-agent/core/llm.service';
 import { NotificationService } from '../notification/notification.service';
@@ -35,6 +36,9 @@ jest.mock('../../common/utils/scoring', () => ({
 describe('HallService', () => {
   let service: HallService;
   let _prisma: PrismaService;
+  const mockPointsService = {
+    adjustPoints: jest.fn().mockResolvedValue({ success: true, newBalance: 0 }),
+  };
 
   const mockPrisma = {
     profile: {
@@ -117,6 +121,10 @@ describe('HallService', () => {
         {
           provide: NotificationService,
           useValue: { createNotification: jest.fn().mockResolvedValue({}) },
+        },
+        {
+          provide: PointsService,
+          useValue: mockPointsService,
         },
       ],
     }).compile();
@@ -301,19 +309,22 @@ describe('HallService', () => {
       expect(result).toEqual(updatedReview);
     });
 
-    it('should award 20 points for new PUBLISHED review', async () => {
+    it('should award SUBMIT_REVIEW via PointsService for new PUBLISHED review', async () => {
       mockPrisma.review.findUnique.mockResolvedValue(null);
       mockPrisma.review.create.mockResolvedValue({ id: 'review-new' });
 
       await service.createReview('reviewer-1', reviewData);
 
-      expect(mockPrisma.pointHistory.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          userId: 'reviewer-1',
-          action: 'SUBMIT_REVIEW',
-          points: 20,
+      // Hall refactor Phase 1: points now flow through PointsService.adjustPoints
+      // (admin-configurable), not a direct pointHistory.create write that
+      // bypassed the enabled flag and dynamic config.
+      expect(mockPointsService.adjustPoints).toHaveBeenCalledWith(
+        'reviewer-1',
+        PointAction.SUBMIT_REVIEW,
+        expect.objectContaining({
+          profileUserId: reviewData.profileUserId,
         }),
-      });
+      );
     });
 
     it('should NOT award points for DRAFT review', async () => {
@@ -325,7 +336,7 @@ describe('HallService', () => {
         status: 'DRAFT',
       });
 
-      expect(mockPrisma.pointHistory.create).not.toHaveBeenCalled();
+      expect(mockPointsService.adjustPoints).not.toHaveBeenCalled();
     });
 
     it('should NOT award points when updating existing review', async () => {
@@ -342,7 +353,8 @@ describe('HallService', () => {
 
       await service.createReview('reviewer-1', reviewData);
 
-      expect(mockPrisma.pointHistory.create).not.toHaveBeenCalled();
+      // Updates should never re-award points.
+      expect(mockPointsService.adjustPoints).not.toHaveBeenCalled();
     });
   });
 

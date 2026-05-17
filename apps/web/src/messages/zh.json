@@ -589,7 +589,10 @@
     },
     "hero": {
       "eyebrow": "Lumni Command Center · GPT-5 驱动",
-      "headline": ["照亮你的", "录取路线"],
+      "headline": [
+        "照亮你的",
+        "录取路线"
+      ],
       "subtitle": "从选校、文书、时间线到提交，Lumni 把复杂申请拆成清晰、可执行的计划，并用真实录取数据持续校准每一步。",
       "features": [
         "2 分钟生成首版录取路线图",
@@ -606,7 +609,12 @@
       },
       "aiDisclosure": {
         "trigger": "查看模型依据",
-        "inputs": ["学术档案强度", "学校历史录取结果", "文书与材料完成度", "时间线与截止日期压力"],
+        "inputs": [
+          "学术档案强度",
+          "学校历史录取结果",
+          "文书与材料完成度",
+          "时间线与截止日期压力"
+        ],
         "confidence": "中等",
         "limitations": [
           "学校当年的临时招生偏好无法被直接观测。",
@@ -622,7 +630,13 @@
         "profileLabel": "Amy Z. · 12 年级",
         "profileMeta": "GPA 3.92 · SAT 1540 · 计算机科学",
         "termLabel": "2026 秋季 · CS",
-        "sections": ["总览", "选校 · 6", "文书 · 14", "时间线", "组队"],
+        "sections": [
+          "总览",
+          "选校 · 6",
+          "文书 · 14",
+          "时间线",
+          "组队"
+        ],
         "title": "录取路线中枢",
         "assistantBadge": "AI 助理",
         "assistantMessages": [
@@ -631,7 +645,11 @@
           "Purdue 的申请材料已齐套，今晚是最稳妥的提交窗口。"
         ],
         "tasksLabel": "今日 · 3 个任务",
-        "tasks": ["完成 GT Why-Essay v2", "提醒 Ms. Chen 上传推荐信", "确认 Purdue 提交窗口"],
+        "tasks": [
+          "完成 GT Why-Essay v2",
+          "提醒 Ms. Chen 上传推荐信",
+          "确认 Purdue 提交窗口"
+        ],
         "askAnything": "继续问 AI",
         "statusReady": "分析就绪",
         "statusLive": "实时录取信号 · 已同步",
@@ -689,7 +707,16 @@
               "tone": "reach",
               "probability": 18,
               "deadline": "1月2日",
-              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+              "spark": [
+                4,
+                5,
+                6,
+                5,
+                7,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "卡内基梅隆 · SCS",
@@ -697,7 +724,16 @@
               "tone": "reach",
               "probability": 24,
               "deadline": "12月1日",
-              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+              "spark": [
+                3,
+                4,
+                5,
+                7,
+                6,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "加州伯克利 · EECS",
@@ -705,7 +741,16 @@
               "tone": "target",
               "probability": 42,
               "deadline": "11月30日",
-              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+              "spark": [
+                5,
+                6,
+                5,
+                7,
+                8,
+                7,
+                9,
+                10
+              ]
             },
             {
               "name": "佐治亚理工",
@@ -713,7 +758,16 @@
               "tone": "target",
               "probability": 58,
               "deadline": "10月15日",
-              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+              "spark": [
+                6,
+                7,
+                8,
+                7,
+                8,
+                9,
+                9,
+                10
+              ]
             },
             {
               "name": "密歇根 · CSE",
@@ -721,7 +775,16 @@
               "tone": "safety",
               "probability": 71,
               "deadline": "11月1日",
-              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+              "spark": [
+                7,
+                7,
+                8,
+                9,
+                8,
+                9,
+                10,
+                10
+              ]
             }
           ]
         },
@@ -929,7 +992,14 @@
       "visuals": {
         "signalNoise": {
           "label": "碎片化信息流",
-          "tabs": ["小红书", "College Confidential", "Reddit", "一亩三分地", "US News", "官网 FAQ"],
+          "tabs": [
+            "小红书",
+            "College Confidential",
+            "Reddit",
+            "一亩三分地",
+            "US News",
+            "官网 FAQ"
+          ],
           "notes": [
             "MIT 还看 AP Physics C 吗？",
             "夏校值不值得花 8 万？",
@@ -1028,7 +1098,11 @@
             "patience is a virtue",
             "recipes are really stories told in flavors"
           ],
-          "chips": ["声音更真", "节奏更紧", "结尾偏弱"]
+          "chips": [
+            "声音更真",
+            "节奏更紧",
+            "结尾偏弱"
+          ]
         },
         "timeline": {
           "label": "申请节奏",
@@ -1092,7 +1166,11 @@
         "mentor": {
           "label": "专家把关",
           "quote": "AI 负责拉齐全局节奏，真人只在不可逆的判断点出手。",
-          "points": ["选校结构复核", "最终文书方向确认", "提交前风险检查"]
+          "points": [
+            "选校结构复核",
+            "最终文书方向确认",
+            "提交前风险检查"
+          ]
         }
       }
     },
@@ -1126,12 +1204,24 @@
         "eyebrow": "Lumni 工作台",
         "title": "从资料到递交，一屏看清优先级",
         "note": "申请矩阵 · 文书任务 · AI 追踪",
-        "cards": ["选校清单", "文书排期", "协作提醒"],
+        "cards": [
+          "选校清单",
+          "文书排期",
+          "协作提醒"
+        ],
         "assistantBadge": "AI 助理",
         "tip": "AI 正在比对 MIT / CMU 文书重合度",
         "tasksLabel": "今日推进",
-        "tasks": ["完善申请画像", "完成 GT Why Essay", "确认 Purdue 提交"],
-        "columns": ["学校", "档位", "进度"]
+        "tasks": [
+          "完善申请画像",
+          "完成 GT Why Essay",
+          "确认 Purdue 提交"
+        ],
+        "columns": [
+          "学校",
+          "档位",
+          "进度"
+        ]
       }
     },
     "social": {
@@ -1188,7 +1278,10 @@
     },
     "cta": {
       "eyebrow": "现在开始 · 免费",
-      "title": ["别再把时间", "浪费在信息差上"],
+      "title": [
+        "别再把时间",
+        "浪费在信息差上"
+      ],
       "subtitle": "注册只要 30 秒。两分钟后，你就能看到属于自己的第一版申请矩阵和下一步优先级。",
       "primary": "免费创建账号",
       "secondary": "预约 1v1 咨询",
@@ -1199,19 +1292,41 @@
       "columns": [
         {
           "title": "产品",
-          "links": ["AI 选校", "文书工作台", "三年时间线", "录取预测", "组队社区"]
+          "links": [
+            "AI 选校",
+            "文书工作台",
+            "三年时间线",
+            "录取预测",
+            "组队社区"
+          ]
         },
         {
           "title": "资源",
-          "links": ["学员案例", "帮助中心", "关于我们", "免费开始", "服务条款"]
+          "links": [
+            "学员案例",
+            "帮助中心",
+            "关于我们",
+            "免费开始",
+            "服务条款"
+          ]
         },
         {
           "title": "公司",
-          "links": ["关于团队", "学生社区", "联系支持", "隐私保护", "注册账号"]
+          "links": [
+            "关于团队",
+            "学生社区",
+            "联系支持",
+            "隐私保护",
+            "注册账号"
+          ]
         },
         {
           "title": "法律",
-          "links": ["隐私政策", "服务条款", "帮助文档"]
+          "links": [
+            "隐私政策",
+            "服务条款",
+            "帮助文档"
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · 让录取不再是黑箱。",
@@ -1383,7 +1498,7 @@
     "prediction": "录取预测",
     "cases": "案例库",
     "chat": "消息",
-    "hall": "功能大厅",
+    "hall": "校友广场",
     "forum": "论坛",
     "teams": "组队",
     "assessment": "性格测评",
@@ -1413,7 +1528,7 @@
       "assessment": "性格与职业兴趣测评",
       "timeline": "追踪申请截止日期与任务",
       "cases": "浏览真实录取结果与申请故事",
-      "hall": "招生官视角评估与排名对比",
+      "hall": "认证录取数据、同伴反馈与排名对比",
       "essayGallery": "浏览优秀录取文书案例",
       "chat": "与认证用户实时聊天交流",
       "vault": "安全存储敏感信息与密码",
@@ -2727,6 +2842,11 @@
     "hint": {
       "addHighSchool": "在个人资料中补充高中信息可提升预测准确度",
       "goToProfile": "前往个人资料"
+    },
+    "hallLink": {
+      "title": "查看已认证录取数据",
+      "body": "在校友广场浏览本校及相似院校的真实录取案例。",
+      "cta": "查看认证录取"
     }
   },
   "cases": {
@@ -2791,7 +2911,12 @@
       "apCourses": "AP 课程（{count} 门）",
       "ibScore": "IB 总分",
       "applicantBackground": "申请人背景",
-      "applicationStory": "申请故事"
+      "applicationStory": "申请故事",
+      "verifiedCallout": {
+        "title": "真实录取趋势",
+        "desc": "查看同类院校的中国大陆真实录取数据与难度信号。",
+        "action": "查看真实录取看板"
+      }
     },
     "guide": {
       "title": "看看和你背景相似的同学都录了哪里",
@@ -2808,6 +2933,11 @@
       "bullet2": "通过认证的贡献获得积分和徽章",
       "bullet3": "将你的档案与目标学校已录取的学生进行比较",
       "startTour": "30秒了解如何使用"
+    },
+    "verifiedBanner": {
+      "title": "查看这些案例的录取定位",
+      "desc": "前往「真实录取看板」，了解逐年真实的中国大陆录取趋势。",
+      "action": "打开看板"
     }
   },
   "chat": {
@@ -2914,15 +3044,53 @@
     "youRecalledMessage": "你撤回了一条消息"
   },
   "hall": {
-    "title": "功能大厅",
-    "description": "招生官打分、排名对比、创建榜单",
+    "title": "校友广场",
+    "description": "认证录取数据、同伴反馈、排名对比与案例研习",
     "tabs": {
       "tinder": "预测游戏",
-      "review": "锐评模式",
+      "review": "同伴反馈",
       "ranking": "排名对比",
       "lists": "用户榜单",
       "challenge": "社区挑战",
-      "verified": "认证排行"
+      "verified": "中国大陆录取数据",
+      "path": "学长之路",
+      "verifiedDesc": "已认证录取案例数据墙：中国大陆录取人数、难度信号、ED/RD 对比",
+      "rankingDesc": "对照目标学校，看你的硬件在历史申请池中的位置",
+      "reviewDesc": "同伴 Tinder 滑评，帮你看清档案在群体直觉中的样子",
+      "pathDesc": "学长之路：研究真实申请档案，AI 复盘帮你建立招生官思维"
+    },
+    "hero": {
+      "points": "积分",
+      "today": "今日 +{count}",
+      "streak": "连胜",
+      "best": "{badge} · 最佳 {count}",
+      "reviewer": "评审者",
+      "credit": "信用 {count}",
+      "dailyChallenge": "每日挑战",
+      "badges": {
+        "bronze": "青铜",
+        "silver": "白银",
+        "gold": "黄金",
+        "platinum": "铂金",
+        "diamond": "钻石"
+      },
+      "reviewerLevels": {
+        "L1": "学习者",
+        "L2": "同侪",
+        "L3": "资深"
+      }
+    },
+    "path": {
+      "modes": {
+        "single": {
+          "label": "单案例研习",
+          "description": "一次研究一个学长案例，AI 复盘帮你建立招生官思维"
+        },
+        "challenge": {
+          "label": "批量挑战",
+          "description": "同一申请者批量预测多校结果，看你的判断和真实结果的差距"
+        }
+      }
     },
     "challenge": {
       "loading": "加载挑战中...",
@@ -2986,7 +3154,7 @@
       "testScores": "标化成绩",
       "finalVerdict": "最终评定",
       "scores": "标化",
-      "title": "锐评模式",
+      "title": "同伴反馈",
       "academic": "学术能力",
       "academicDesc": "评估学术能力",
       "activity": "活动质量",
@@ -3076,7 +3244,41 @@
       "helpful": "有帮助",
       "insightful": "有见地",
       "markedHelpful": "已标记有帮助",
-      "markedInsightful": "已标记有见地"
+      "markedInsightful": "已标记有见地",
+      "changeMode": "更换评审模式",
+      "mode": {
+        "recommended": "推荐",
+        "swipeTitle": "滑动评审",
+        "swipeDesc": "Tinder 风格：滑动每张维度卡片快速打分。",
+        "classicTitle": "经典评审",
+        "classicDesc": "每个维度用滑块和评语，完全掌控。"
+      },
+      "swipe": {
+        "verdictTitle": "最终评定",
+        "verdictDesc": "补充你的评审理由并提交。",
+        "rationale": "你的评审理由",
+        "rationaleHint": "说明你为何这样给这位申请者打分……",
+        "rationaleMin": "至少需要 {min} 个字符。",
+        "quickTags": "快捷标签（可选）",
+        "dragHint": "拖动卡片——向左、向上或向右",
+        "stepCounter": "第 {current} / {total} 步",
+        "direction": {
+          "notEnough": "不够出色",
+          "unsure": "难以判断",
+          "impressive": "令人印象深刻"
+        }
+      },
+      "quickTag": {
+        "well-rounded": "全面发展",
+        "strong-stem": "理工强",
+        "high-gpa": "GPA 优秀",
+        "leadership": "领导力",
+        "creative": "富有创造力",
+        "community-impact": "社区影响力",
+        "research-oriented": "研究导向",
+        "athletic": "体育特长"
+      },
+      "disclaimer": "评价是其他成员的个人观点，不构成专业的招生建议。"
     },
     "ranking": {
       "title": "排名对比",
@@ -3277,6 +3479,22 @@
       "gold": "黄金",
       "platinum": "白金",
       "diamond": "钻石"
+    },
+    "onboarding": {
+      "skip": "跳过",
+      "next": "下一步",
+      "done": "开始体验",
+      "step": "第 {current} / {total} 步",
+      "steps": {
+        "welcomeTitle": "欢迎来到校友广场",
+        "welcomeBody": "在这里，申请者可以对比定位、获得同伴反馈，并向已认证的录取案例学习。",
+        "pointsTitle": "贡献内容赚取积分",
+        "pointsBody": "锐评同伴、完成挑战和分享录取结果都能赚取积分，可在积分中心兑换。",
+        "leaderboardTitle": "了解你的位置",
+        "leaderboardBody": "排行榜标签会显示你在同目标校申请者中的竞争位置。",
+        "privacyTitle": "一切由你掌控",
+        "privacyBody": "同伴锐评需主动开启，你的档案始终匿名。可随时在设置中管理。"
+      }
     }
   },
   "settings": {
@@ -3320,7 +3538,9 @@
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
       "deleteAccount": "删除账户",
-      "deleteAccountDesc": "永久删除您的账户和数据"
+      "deleteAccountDesc": "永久删除您的账户和数据",
+      "peerReview": "锐评隐私",
+      "peerReviewDesc": "控制其他成员是否可以锐评你的档案"
     },
     "comingSoonHint": "此功能即将上线",
     "dialogs": {
@@ -5013,7 +5233,12 @@
         "name": "免费版",
         "period": "永久",
         "description": "基础功能，适合初次体验",
-        "features": ["浏览学校信息", "查看公开案例", "基础 AI 对话 (每日5次)", "档案管理"]
+        "features": [
+          "浏览学校信息",
+          "查看公开案例",
+          "基础 AI 对话 (每日5次)",
+          "档案管理"
+        ]
       },
       "pro": {
         "name": "专业版",
@@ -6765,7 +6990,32 @@
     "totalVerified": "认证总数",
     "totalAdmitted": "录取总数",
     "topSchools": "顶尖学校",
-    "ivyPlus": "藤校+"
+    "ivyPlus": "藤校+",
+    "dashboard": {
+      "banner": "{count} 所学校 · 平台审核认证案例 · 更新于 {date}",
+      "rank": "US News 第 {rank} 名",
+      "emptyTitle": "中国大陆录取数据采集中",
+      "emptyBody": "认证的中国大陆录取案例审核完成后将在此展示。",
+      "noChinaData": "暂无中国大陆专属数据",
+      "reliability": {
+        "A": "高可信 — 5 个及以上认证案例",
+        "B": "中可信 — 3 个及以上认证案例",
+        "C": "低可信 — 1-2 个案例，仅供参考",
+        "D": "暂无认证案例"
+      },
+      "signal": {
+        "stable": "稳定",
+        "declining": "下降",
+        "surging": "明显收紧"
+      },
+      "disclaimer": "过往录取结果不代表未来的录取概率。数据由用户分享，无法完全核实。"
+    },
+    "crossLink": {
+      "predictTitle": "想知道自己的概率？",
+      "predictBody": "为你的目标院校测算一次录取概率。",
+      "predictCta": "测我的录取概率",
+      "askAi": "问 AI"
+    }
   },
   "vault": {
     "title": "安全保险库",
@@ -7756,6 +8006,34 @@
         "thinLabel": "信息较少",
         "thinAria": "组队卡摘要偏短"
       }
+    }
+  },
+  "pointsCenter": {
+    "title": "积分中心",
+    "description": "使用你在平台上累积的积分",
+    "balance": "积分余额",
+    "todayEarned": "今日 +{count}",
+    "catalogTitle": "兑换",
+    "redeem": "兑换",
+    "insufficient": "积分不足",
+    "historyTitle": "兑换记录",
+    "confirmTitle": "确认兑换",
+    "confirmBody": "确定用 {cost} 积分兑换「{name}」？",
+    "cancel": "取消",
+    "confirm": "确认",
+    "redeemSuccess": "兑换成功",
+    "redeemError": "兑换失败，请重试。",
+    "types": {
+      "CONSULT_15MIN": "顾问 15 分钟咨询",
+      "MEMBERSHIP_MONTHLY": "月度会员",
+      "CASE_PREMIUM_UNLOCK": "高级案例解锁",
+      "EXPERT_LIST_UNLOCK": "专家选校清单解锁",
+      "PREDICTION_DEEP_DIVE": "录取预测深度解读"
+    },
+    "status": {
+      "PENDING": "处理中",
+      "FULFILLED": "已完成",
+      "CANCELLED": "已取消"
     }
   },
   "points": {
@@ -11450,5 +11728,31 @@
   },
   "activityForm": {
     "linkedToTemplate": "已关联模板"
+  },
+  "peerReviewSettings": {
+    "title": "锐评隐私设置",
+    "description": "决定校友广场成员是否可以锐评你的申请档案",
+    "toggleCardTitle": "接受同伴锐评",
+    "toggleCardDesc": "开启后，你的脱敏档案可能出现在锐评池中",
+    "toggleLabel": "允许其他成员锐评我的档案",
+    "toggleHint": "其他成员会对你的学术、标化、活动和奖项打分并给出建议。",
+    "minorBlocked": "未满 16 岁的成员暂不能开启锐评。年满 16 岁后此设置将自动解锁。",
+    "guardianAdvisory": "你尚未满 18 岁，开启前请先与家长或监护人确认。",
+    "explainTitle": "锐评如何运作",
+    "explainWhat": "校友广场的成员可以查看你档案的脱敏快照，并给出分数、标签和文字建议，帮助你改进。",
+    "explainPrivacy": "你的真实姓名、联系方式和敏感身份信息绝不会被分享，评审者只能看到匿名的学术快照。",
+    "explainControl": "你可以随时关闭此设置。关闭后你将不再进入锐评池；已收到的评价仍仅对你本人可见。",
+    "badgeAnonymized": "匿名快照",
+    "badgeReversible": "可随时关闭",
+    "toast": {
+      "enabled": "已开启同伴锐评",
+      "disabled": "已关闭同伴锐评",
+      "error": "设置更新失败，请重试。"
+    },
+    "consentDialog": {
+      "title": "监护人同意",
+      "description": "你的年龄在 16 至 18 岁之间。继续即表示你确认家长或监护人同意你的档案被其他成员锐评。",
+      "confirm": "我已确认，开启"
+    }
   }
 }

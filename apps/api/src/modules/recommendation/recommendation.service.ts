@@ -21,7 +21,7 @@ import {
   RecommendedSchoolDto,
   RecommendationAnalysisDto,
 } from './dto';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import {
@@ -48,7 +48,7 @@ export class RecommendationService {
   constructor(
     private prisma: PrismaService,
     private llmService: LLMService,
-    private caseIncentiveService: CaseIncentiveService,
+    private pointsService: PointsService,
     private redis: RedisService,
     @Optional() private memoryManager?: MemoryManagerService,
     @Optional() private historicalService?: PredictionHistoricalService,
@@ -95,7 +95,7 @@ export class RecommendationService {
     const isZh = locale === 'zh';
 
     // Check points
-    await this.caseIncentiveService.charge(
+    await this.pointsService.charge(
       userId,
       PointAction.AI_SCHOOL_RECOMMENDATION,
     );
@@ -116,7 +116,7 @@ export class RecommendationService {
 
     if (!profile) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_SCHOOL_RECOMMENDATION,
         this.logger,
@@ -454,7 +454,7 @@ export class RecommendationService {
       return response;
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_SCHOOL_RECOMMENDATION,
         this.logger,
@@ -769,7 +769,7 @@ export class RecommendationService {
       if (!profile.targetMajor) missingFields.push('targetMajor');
     }
 
-    const canAfford = await this.caseIncentiveService.canPerformAction(
+    const canAfford = await this.pointsService.canPerformAction(
       userId,
       PointAction.AI_SCHOOL_RECOMMENDATION,
     );

@@ -18,7 +18,7 @@ User account management including dashboard aggregation, GDPR data export, soft/
 
 ## Dependencies
 
-DashboardService, CaseIncentiveService, PointsConfigService | AI/LLM: No
+DashboardService, PointsService, PointsConfigService | AI/LLM: No
 
 ## Business Rules
 

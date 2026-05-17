@@ -2,6 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HallController } from './hall.controller';
 import { HallService } from './hall.service';
 import { SwipeService } from './swipe.service';
+import { HallOverviewService } from './hall-overview.service';
+import { HallReviewAggregatorService } from './hall-review-aggregator.service';
+import { ReviewerQualificationService } from './reviewer-qualification.service';
+import { ReviewCoachService } from './review-coach.service';
+import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 describe('HallController', () => {
   let controller: HallController;
@@ -54,6 +60,56 @@ describe('HallController', () => {
             submitSwipe: jest.fn(),
             getStats: jest.fn(),
             getLeaderboard: jest.fn(),
+          },
+        },
+        {
+          provide: HallOverviewService,
+          useValue: {
+            getOverview: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: HallReviewAggregatorService,
+          useValue: {
+            aggregateForApplicant: jest.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: ReviewerQualificationService,
+          useValue: {
+            getQuestions: jest.fn().mockResolvedValue([]),
+            submitAnswers: jest.fn().mockResolvedValue({
+              correct: 0,
+              total: 3,
+              passed: false,
+              promotedTo: null,
+              breakdown: [],
+            }),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            review: { findUnique: jest.fn() },
+            report: { create: jest.fn() },
+          },
+        },
+        {
+          provide: ReviewCoachService,
+          useValue: {
+            generateInsight: jest.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: HallVerifiedDashboardService,
+          useValue: {
+            getChinaAdmitTrend: jest
+              .fn()
+              .mockResolvedValue({ schools: [], lastUpdated: '' }),
+            getDifficultySignal: jest.fn().mockResolvedValue([]),
+            getEdRdComparison: jest
+              .fn()
+              .mockResolvedValue({ year: 2024, schools: [] }),
           },
         },
       ],

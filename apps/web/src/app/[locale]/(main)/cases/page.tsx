@@ -5,8 +5,9 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
 import dynamic from 'next/dynamic';
-import { BookOpen, FileText } from 'lucide-react';
+import { BookOpen, FileText, BadgeCheck, ArrowRight } from 'lucide-react';
 
+import { Link } from '@/lib/i18n/navigation';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
@@ -54,6 +55,24 @@ export default function CasesPage() {
         icon={BookOpen}
         color="emerald"
       />
+
+      {/* Cross-link to the Verified China Admit Dashboard */}
+      <Link
+        href="/hall?tab=verified"
+        className="mb-6 flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 transition-colors hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+          <BadgeCheck className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-sm">{t('cases.verifiedBanner.title')}</p>
+          <p className="text-xs text-muted-foreground">{t('cases.verifiedBanner.desc')}</p>
+        </div>
+        <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+          {t('cases.verifiedBanner.action')}
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </Link>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-6">

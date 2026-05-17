@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SwipeService } from './swipe.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma, Visibility } from '@prisma/client';
@@ -117,7 +117,7 @@ describe('SwipeService', () => {
           },
         },
         {
-          provide: CaseIncentiveService,
+          provide: PointsService,
           useValue: {
             adjustPoints: jest.fn().mockResolvedValue({
               success: true,

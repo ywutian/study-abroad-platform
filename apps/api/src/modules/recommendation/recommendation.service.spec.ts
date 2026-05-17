@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RecommendationService } from './recommendation.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LLMService } from '../ai-agent/core/llm.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { MemoryManagerService } from '../ai-agent/memory';
 import { BadRequestException } from '@nestjs/common';
 import { RedisService } from '../../common/redis/redis.service';
@@ -11,7 +11,7 @@ describe('RecommendationService', () => {
   let service: RecommendationService;
   let prisma: PrismaService;
   let llmService: LLMService;
-  let caseIncentive: CaseIncentiveService;
+  let pointsSvc: PointsService;
 
   const mockProfile = {
     id: 'profile-1',
@@ -123,7 +123,7 @@ describe('RecommendationService', () => {
           },
         },
         {
-          provide: CaseIncentiveService,
+          provide: PointsService,
           useValue: {
             charge: jest.fn().mockResolvedValue(undefined),
             refund: jest.fn().mockResolvedValue(undefined),
@@ -149,7 +149,7 @@ describe('RecommendationService', () => {
     service = module.get<RecommendationService>(RecommendationService);
     prisma = module.get<PrismaService>(PrismaService);
     llmService = module.get<LLMService>(LLMService);
-    caseIncentive = module.get<CaseIncentiveService>(CaseIncentiveService);
+    pointsSvc = module.get<PointsService>(PointsService);
   });
 
   afterEach(() => {
@@ -168,7 +168,7 @@ describe('RecommendationService', () => {
 
       await service.generateRecommendation('user-1', dto);
 
-      expect(caseIncentive.charge).toHaveBeenCalledWith(
+      expect(pointsSvc.charge).toHaveBeenCalledWith(
         'user-1',
         expect.any(String),
       );
@@ -196,7 +196,7 @@ describe('RecommendationService', () => {
       await expect(
         service.generateRecommendation('user-1', dto as any),
       ).rejects.toThrow();
-      expect(caseIncentive.refund).toHaveBeenCalled();
+      expect(pointsSvc.refund).toHaveBeenCalled();
     });
 
     it('should refund points if AI service fails', async () => {
@@ -208,7 +208,7 @@ describe('RecommendationService', () => {
       await expect(
         service.generateRecommendation('user-1', dto as any),
       ).rejects.toThrow(BadRequestException);
-      expect(caseIncentive.refund).toHaveBeenCalled();
+      expect(pointsSvc.refund).toHaveBeenCalled();
     });
 
     it('should return structured recommendation with analysis', async () => {
@@ -248,7 +248,7 @@ describe('RecommendationService', () => {
       await expect(
         service.generateRecommendation('user-1', dto as any),
       ).rejects.toThrow(BadRequestException);
-      expect(caseIncentive.refund).toHaveBeenCalled();
+      expect(pointsSvc.refund).toHaveBeenCalled();
     });
   });
 
@@ -320,9 +320,7 @@ describe('RecommendationService', () => {
         testScores: [{ id: 'ts-1' }],
         activities: [{ id: 'act-1' }],
       });
-      (caseIncentive as any).canPerformAction = jest
-        .fn()
-        .mockResolvedValue(true);
+      (pointsSvc as any).canPerformAction = jest.fn().mockResolvedValue(true);
 
       const result = await service.checkPreflight('user-1');
 
@@ -339,9 +337,7 @@ describe('RecommendationService', () => {
         testScores: [],
         activities: [],
       });
-      (caseIncentive as any).canPerformAction = jest
-        .fn()
-        .mockResolvedValue(true);
+      (pointsSvc as any).canPerformAction = jest.fn().mockResolvedValue(true);
 
       const result = await service.checkPreflight('user-1');
 
@@ -355,9 +351,7 @@ describe('RecommendationService', () => {
     it('should return canGenerate=false when no profile exists', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({ points: 100 });
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(null);
-      (caseIncentive as any).canPerformAction = jest
-        .fn()
-        .mockResolvedValue(true);
+      (pointsSvc as any).canPerformAction = jest.fn().mockResolvedValue(true);
 
       const result = await service.checkPreflight('user-1');
 
@@ -409,7 +403,7 @@ describe('RecommendationService', () => {
             useValue: prisma,
           },
           { provide: LLMService, useValue: llmService },
-          { provide: CaseIncentiveService, useValue: caseIncentive },
+          { provide: PointsService, useValue: pointsSvc },
           {
             provide: MemoryManagerService,
             useValue: { remember: jest.fn(), recall: jest.fn() },

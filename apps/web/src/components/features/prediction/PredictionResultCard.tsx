@@ -19,9 +19,12 @@ import {
   Database,
   AlertTriangle,
   MessageSquareText,
+  BadgeCheck,
+  ChevronRight,
 } from 'lucide-react';
 import { cn, formatAcceptanceRate } from '@/lib/utils';
 import { AgentType } from '@study-abroad/shared';
+import { Link } from '@/lib/i18n/navigation';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import { TIER_CONFIG, getProbabilityColor } from './constants';
 import type { PredictionResult } from './types';
@@ -452,6 +455,21 @@ export const PredictionResultCard = memo(
                   <p className="mt-1 text-sm">{publicExplanation?.nextAction ?? nextSuggestion}</p>
                 </div>
               )}
+
+              {/* Stage 7 B2 — cross-link to verified admit data in the Hall */}
+              <Link
+                href="/hall?tab=verified"
+                className="mt-3 flex items-center gap-2 rounded-[var(--theme-radius-button)] border bg-background/70 px-3 py-2 text-sm transition-colors hover:bg-muted/60"
+              >
+                <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{t('hallLink.title')}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    {t('hallLink.body')}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </Link>
             </div>
           )}
 

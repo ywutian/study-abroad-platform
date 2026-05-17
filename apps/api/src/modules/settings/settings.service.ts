@@ -21,6 +21,21 @@ export const SETTING_KEYS = {
   POINTS_ACTION_MESSAGE_VERIFIED: 'points_action_MESSAGE_VERIFIED',
   POINTS_ACTION_VERIFICATION_APPROVED: 'points_action_VERIFICATION_APPROVED',
   POINTS_ACTION_SWIPE_CORRECT: 'points_action_SWIPE_CORRECT',
+  POINTS_ACTION_SUBMIT_REVIEW: 'points_action_SUBMIT_REVIEW',
+  POINTS_ACTION_REVIEW_HELPFUL: 'points_action_REVIEW_HELPFUL',
+  // Hall refactor Phase 1 — Tinder review + challenge + application-progress
+  POINTS_ACTION_REVIEW_SWIPE_COMPLETE: 'points_action_REVIEW_SWIPE_COMPLETE',
+  POINTS_ACTION_REVIEW_HELPFUL_RECEIVED:
+    'points_action_REVIEW_HELPFUL_RECEIVED',
+  POINTS_ACTION_REVIEWER_LEVEL_UP: 'points_action_REVIEWER_LEVEL_UP',
+  POINTS_ACTION_CHALLENGE_COMPLETE: 'points_action_CHALLENGE_COMPLETE',
+  POINTS_ACTION_CASE_STUDY_COMPLETE: 'points_action_CASE_STUDY_COMPLETE',
+  POINTS_ACTION_PROFILE_RESEARCHED_5_SCHOOLS:
+    'points_action_PROFILE_RESEARCHED_5_SCHOOLS',
+  POINTS_ACTION_ESSAY_DRAFT_COMPLETE: 'points_action_ESSAY_DRAFT_COMPLETE',
+  POINTS_ACTION_ED_SUBMITTED: 'points_action_ED_SUBMITTED',
+  POINTS_ACTION_RANKING_ANALYZED: 'points_action_RANKING_ANALYZED',
+  POINTS_ACTION_REVIEW_REPORTED: 'points_action_REVIEW_REPORTED',
   POINTS_ACTION_AI_ESSAY_POLISH: 'points_action_AI_ESSAY_POLISH',
   POINTS_ACTION_AI_ESSAY_REVIEW: 'points_action_AI_ESSAY_REVIEW',
   POINTS_ACTION_AI_ESSAY_BRAINSTORM: 'points_action_AI_ESSAY_BRAINSTORM',
@@ -125,6 +140,70 @@ const DEFAULT_SETTINGS: Record<
   [SETTING_KEYS.POINTS_ACTION_SWIPE_CORRECT]: {
     value: '5',
     description: 'Base points rewarded for a correct swipe guess',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_SUBMIT_REVIEW]: {
+    value: '20',
+    description: 'Points rewarded for publishing a hall review',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_REVIEW_HELPFUL]: {
+    value: '10',
+    description: 'Points rewarded when a hall review is marked helpful',
+    category: 'points',
+  },
+  // Hall refactor Phase 1 — Tinder review + challenge + application-progress incentives
+  [SETTING_KEYS.POINTS_ACTION_REVIEW_SWIPE_COMPLETE]: {
+    value: '10',
+    description:
+      'Points for completing a Tinder-style 4-dim swipe review (≥5 char rationale)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_REVIEW_HELPFUL_RECEIVED]: {
+    value: '5',
+    description:
+      'Points when a swipe review is marked helpful (capped at 20 per review)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_REVIEWER_LEVEL_UP]: {
+    value: '50',
+    description: 'Points for passing the L2 reviewer qualification quiz',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_CHALLENGE_COMPLETE]: {
+    value: '20',
+    description: 'Points for completing one community challenge (1/day)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_CASE_STUDY_COMPLETE]: {
+    value: '5',
+    description: 'Points for completing one case study (with reflection note)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_PROFILE_RESEARCHED_5_SCHOOLS]: {
+    value: '30',
+    description: 'Application progress: researched 5 target schools (bronze)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_ESSAY_DRAFT_COMPLETE]: {
+    value: '50',
+    description: 'Application progress: completed one essay draft (gold)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_ED_SUBMITTED]: {
+    value: '100',
+    description: 'Application progress: submitted ED application (diamond)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_RANKING_ANALYZED]: {
+    value: '0',
+    description:
+      'Points consumed for AI ranking analysis (rollout default 0; tune to -10 after stable)',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_REVIEW_REPORTED]: {
+    value: '-20',
+    description: 'Points deducted when a review is reported and confirmed',
     category: 'points',
   },
   [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_POLISH]: {

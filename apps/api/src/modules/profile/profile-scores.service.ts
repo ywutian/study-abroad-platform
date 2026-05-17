@@ -21,7 +21,7 @@ import {
   UpdateSemesterGpaDto,
 } from './dto';
 import { ProfileHelpersService } from './profile-helpers.service';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import {
   buildActivitySortSystemPrompt,
@@ -45,7 +45,7 @@ export class ProfileScoresService {
     private cacheInvalidation: CacheInvalidationService,
     private llmService: LLMService,
     private helpers: ProfileHelpersService,
-    private caseIncentiveService: CaseIncentiveService,
+    private pointsService: PointsService,
   ) {}
 
   // ============================================
@@ -560,10 +560,7 @@ export class ProfileScoresService {
     refinedLength: number;
   }> {
     // Charge points before performing AI call
-    await this.caseIncentiveService.charge(
-      userId,
-      PointAction.AI_ACTIVITY_REFINE,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ACTIVITY_REFINE);
 
     const activity = await this.prisma.activity.findFirst({
       where: { id: activityId, profile: { userId } },
@@ -572,7 +569,7 @@ export class ProfileScoresService {
 
     if (!activity) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ACTIVITY_REFINE,
         this.logger,
@@ -582,7 +579,7 @@ export class ProfileScoresService {
 
     if (!activity.description || activity.description.length <= 150) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ACTIVITY_REFINE,
         this.logger,
@@ -636,10 +633,7 @@ export class ProfileScoresService {
     activityId: string,
     locale: string,
   ): Promise<{ commonAppDescription: string }> {
-    await this.caseIncentiveService.charge(
-      userId,
-      PointAction.AI_ACTIVITY_REFINE,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ACTIVITY_REFINE);
 
     const activity = await this.prisma.activity.findFirst({
       where: { id: activityId, profile: { userId } },
@@ -648,7 +642,7 @@ export class ProfileScoresService {
 
     if (!activity) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ACTIVITY_REFINE,
         this.logger,
@@ -658,7 +652,7 @@ export class ProfileScoresService {
 
     if (!activity.description || activity.description.length <= 150) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ACTIVITY_REFINE,
         this.logger,
@@ -694,7 +688,7 @@ export class ProfileScoresService {
       });
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ACTIVITY_REFINE,
         this.logger,
@@ -708,7 +702,7 @@ export class ProfileScoresService {
 
     if (!parsed?.commonAppDescription) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ACTIVITY_REFINE,
         this.logger,

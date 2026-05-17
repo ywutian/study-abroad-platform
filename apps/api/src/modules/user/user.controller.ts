@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Delete, Put, Res, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Delete,
+  Patch,
+  Put,
+  Res,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -9,11 +18,12 @@ import {
 import type { Response } from 'express';
 import { UserService } from './user.service';
 import { DashboardService } from './dashboard.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { UpdateUserLocaleDto } from './dto/update-user-locale.dto';
+import { UpdatePeerReviewSettingDto } from './dto/update-peer-review-setting.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -22,7 +32,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly dashboardService: DashboardService,
-    private readonly caseIncentiveService: CaseIncentiveService,
+    private readonly pointsService: PointsService,
     private readonly pointsConfigService: PointsConfigService,
   ) {}
 
@@ -65,6 +75,30 @@ export class UserController {
     };
   }
 
+  @Get('me/peer-review-setting')
+  @ApiOperation({
+    summary: 'Get Alumni Square peer-review opt-in state (and derived age)',
+  })
+  async getPeerReviewSetting(@CurrentUser() user: CurrentUserPayload) {
+    return this.userService.getPeerReviewSetting(user.id);
+  }
+
+  @Patch('me/peer-review-setting')
+  @ApiOperation({ summary: 'Toggle Alumni Square peer-review opt-in' })
+  @ApiResponse({
+    status: 403,
+    description: 'Users under 16 cannot enable peer reviews',
+  })
+  async updatePeerReviewSetting(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdatePeerReviewSettingDto,
+  ) {
+    return this.userService.updatePeerReviewSetting(
+      user.id,
+      dto.acceptPeerReview,
+    );
+  }
+
   @Get('me/export')
   @ApiOperation({ summary: 'Export user data (GDPR compliance)' })
   @ApiResponse({ status: 200, description: 'Returns all user data as JSON' })
@@ -88,7 +122,7 @@ export class UserController {
   @Get('me/points')
   @ApiOperation({ summary: 'Get current user points' })
   async getMyPoints(@CurrentUser() user: CurrentUserPayload) {
-    const points = await this.caseIncentiveService.getUserPoints(user.id);
+    const points = await this.pointsService.getUserPoints(user.id);
     return { points };
   }
 
@@ -104,7 +138,7 @@ export class UserController {
     @CurrentUser() user: CurrentUserPayload,
     @Query('limit') limit?: string,
   ) {
-    const history = await this.caseIncentiveService.getPointHistory(
+    const history = await this.pointsService.getPointHistory(
       user.id,
       limit ? parseInt(limit, 10) : 20,
     );
@@ -164,8 +198,8 @@ export class UserController {
   @ApiOperation({ summary: 'Get points summary statistics' })
   async getPointSummary(@CurrentUser() user: CurrentUserPayload) {
     const [points, history] = await Promise.all([
-      this.caseIncentiveService.getUserPoints(user.id),
-      this.caseIncentiveService.getPointHistory(user.id, 100),
+      this.pointsService.getUserPoints(user.id),
+      this.pointsService.getPointHistory(user.id, 100),
     ]);
 
     // 计算统计数据

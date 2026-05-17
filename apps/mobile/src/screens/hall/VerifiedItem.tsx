@@ -62,7 +62,7 @@ export const VerifiedItem = memo(function VerifiedItem({ item, colors: c }: Veri
           <View style={S.pointsBox}>
             <Text style={[S.pointsValue, { color: c.primary }]}>{item.pointsTotal}</Text>
             <Text style={[S.pointsLabel, { color: c.foregroundMuted }]}>
-              {t('hallOfFame.verified.points')}
+              {t('hall.verified.points')}
             </Text>
           </View>
         </View>

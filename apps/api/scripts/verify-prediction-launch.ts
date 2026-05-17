@@ -15,7 +15,7 @@ import { Test } from '@nestjs/testing';
 import { InstitutionType } from '@prisma/client';
 import { RedisService } from '../src/common/redis/redis.service';
 import { FeatureFlagService } from '../src/common/feature-flags/feature-flag.service';
-import { CaseIncentiveService } from '../src/modules/points/incentive.service';
+import { PointsService } from '../src/modules/points/incentive.service';
 import { CounselorEngineModule } from '../src/modules/prediction/counselor/counselor-engine.module';
 import { CounselorEngineService } from '../src/modules/prediction/counselor/counselor-engine.service';
 import { CompliantDistillationService } from '../src/modules/prediction/distillation/compliant-distillation.service';
@@ -115,7 +115,7 @@ async function main() {
         },
       },
       {
-        provide: CaseIncentiveService,
+        provide: PointsService,
         useValue: { charge: async () => ({ success: true }) },
       },
       {

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { PredictionService } from './prediction.service';
 import { PredictionTransformerService } from './prediction-transformer.service';
 import { PredictionStatisticalEngine } from './prediction-statistical-engine.service';
@@ -230,7 +230,7 @@ describe('PredictionService counselor primary', () => {
             }),
           },
         },
-        { provide: CaseIncentiveService, useValue: { charge: jest.fn() } },
+        { provide: PointsService, useValue: { charge: jest.fn() } },
         {
           provide: FeatureFlagService,
           useValue: { isEnabled: jest.fn().mockResolvedValue(false) },

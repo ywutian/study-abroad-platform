@@ -472,6 +472,26 @@ export default function CaseDetailPage() {
             </div>
           </div>
         )}
+
+        {/* ── Verified China Admit Dashboard callout ── */}
+        <Link
+          href="/hall?tab=verified"
+          className="flex items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 transition-colors hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+            <BadgeCheck className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-sm">{t('cases.detail.verifiedCallout.title')}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('cases.detail.verifiedCallout.desc')}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="shrink-0 gap-1">
+            {t('cases.detail.verifiedCallout.action')}
+            <ArrowLeft className="h-4 w-4 rotate-180" />
+          </Button>
+        </Link>
       </motion.div>
     </PageContainer>
   );

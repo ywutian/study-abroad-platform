@@ -589,7 +589,10 @@
     },
     "hero": {
       "eyebrow": "Lumni Command Center · Powered by GPT-5",
-      "headline": ["Illuminate your", "admissions route"],
+      "headline": [
+        "Illuminate your",
+        "admissions route"
+      ],
       "subtitle": "From school lists and essays to timelines and submission, Lumni turns a complex application season into a clear plan calibrated by real admissions data.",
       "features": [
         "Generate the first admissions route in 2 minutes",
@@ -627,7 +630,13 @@
         "profileLabel": "Amy Z. · Senior",
         "profileMeta": "GPA 3.92 · SAT 1540 · CS",
         "termLabel": "Fall 2026 · CS",
-        "sections": ["Overview", "Schools · 6", "Essays · 14", "Timeline", "Teams"],
+        "sections": [
+          "Overview",
+          "Schools · 6",
+          "Essays · 14",
+          "Timeline",
+          "Teams"
+        ],
         "title": "Admissions Route Hub",
         "assistantBadge": "AI Copilot",
         "assistantMessages": [
@@ -698,7 +707,16 @@
               "tone": "reach",
               "probability": 18,
               "deadline": "Jan 2",
-              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+              "spark": [
+                4,
+                5,
+                6,
+                5,
+                7,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "Carnegie Mellon · SCS",
@@ -706,7 +724,16 @@
               "tone": "reach",
               "probability": 24,
               "deadline": "Dec 1",
-              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+              "spark": [
+                3,
+                4,
+                5,
+                7,
+                6,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "UC Berkeley · EECS",
@@ -714,7 +741,16 @@
               "tone": "target",
               "probability": 42,
               "deadline": "Nov 30",
-              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+              "spark": [
+                5,
+                6,
+                5,
+                7,
+                8,
+                7,
+                9,
+                10
+              ]
             },
             {
               "name": "Georgia Tech",
@@ -722,7 +758,16 @@
               "tone": "target",
               "probability": 58,
               "deadline": "Oct 15",
-              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+              "spark": [
+                6,
+                7,
+                8,
+                7,
+                8,
+                9,
+                9,
+                10
+              ]
             },
             {
               "name": "UMich · CSE",
@@ -730,7 +775,16 @@
               "tone": "safety",
               "probability": 71,
               "deadline": "Nov 1",
-              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+              "spark": [
+                7,
+                7,
+                8,
+                9,
+                8,
+                9,
+                10,
+                10
+              ]
             }
           ]
         },
@@ -1044,7 +1098,11 @@
             "patience is a virtue",
             "recipes are really stories told in flavors"
           ],
-          "chips": ["More personal", "Tighter rhythm", "Ending needs lift"]
+          "chips": [
+            "More personal",
+            "Tighter rhythm",
+            "Ending needs lift"
+          ]
         },
         "timeline": {
           "label": "Pacing map",
@@ -1108,7 +1166,11 @@
         "mentor": {
           "label": "Human oversight",
           "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
-          "points": ["List structure review", "Final essay direction", "Submission risk check"]
+          "points": [
+            "List structure review",
+            "Final essay direction",
+            "Submission risk check"
+          ]
         }
       }
     },
@@ -1142,12 +1204,24 @@
         "eyebrow": "Lumni dashboard",
         "title": "One surface for list strategy, essays, and pacing",
         "note": "School matrix · essay sprint · AI review",
-        "cards": ["School list", "Essay sprint", "Team signals"],
+        "cards": [
+          "School list",
+          "Essay sprint",
+          "Team signals"
+        ],
         "assistantBadge": "AI Copilot",
         "tip": "AI is checking overlap between MIT and CMU essays",
         "tasksLabel": "Today’s push",
-        "tasks": ["Refine the profile", "Finish GT Why Essay", "Confirm Purdue submission"],
-        "columns": ["School", "Tier", "Progress"]
+        "tasks": [
+          "Refine the profile",
+          "Finish GT Why Essay",
+          "Confirm Purdue submission"
+        ],
+        "columns": [
+          "School",
+          "Tier",
+          "Progress"
+        ]
       }
     },
     "social": {
@@ -1204,7 +1278,10 @@
     },
     "cta": {
       "eyebrow": "Start now · Free",
-      "title": ["Stop wasting years", "to information gaps"],
+      "title": [
+        "Stop wasting years",
+        "to information gaps"
+      ],
       "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
       "primary": "Create free account",
       "secondary": "Book a 1:1 consult",
@@ -1215,19 +1292,41 @@
       "columns": [
         {
           "title": "Product",
-          "links": ["AI matching", "Essay desk", "Timeline", "Probability", "Teams"]
+          "links": [
+            "AI matching",
+            "Essay desk",
+            "Timeline",
+            "Probability",
+            "Teams"
+          ]
         },
         {
           "title": "Resources",
-          "links": ["Student stories", "Help center", "About us", "Get started", "Terms"]
+          "links": [
+            "Student stories",
+            "Help center",
+            "About us",
+            "Get started",
+            "Terms"
+          ]
         },
         {
           "title": "Company",
-          "links": ["About the team", "Community", "Support", "Privacy", "Create account"]
+          "links": [
+            "About the team",
+            "Community",
+            "Support",
+            "Privacy",
+            "Create account"
+          ]
         },
         {
           "title": "Legal",
-          "links": ["Privacy policy", "Terms of service", "Help docs"]
+          "links": [
+            "Privacy policy",
+            "Terms of service",
+            "Help docs"
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · Admissions, no longer a black box.",
@@ -1399,7 +1498,7 @@
     "prediction": "Admission Prediction",
     "cases": "Case Library",
     "chat": "Messages",
-    "hall": "Feature Hall",
+    "hall": "Alumni Square",
     "forum": "Forum",
     "teams": "Teams",
     "assessment": "Assessment",
@@ -1429,7 +1528,7 @@
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
       "cases": "Explore real admission outcomes and application stories",
-      "hall": "Admissions officer evaluation and rank comparison",
+      "hall": "Verified admit data, peer feedback and rank comparison",
       "essayGallery": "Browse excellent admission essay examples",
       "chat": "Real-time chat with verified users",
       "vault": "Securely store sensitive information and passwords",
@@ -2743,6 +2842,11 @@
     "hint": {
       "addHighSchool": "Add your high school in your profile for more accurate predictions",
       "goToProfile": "Go to Profile"
+    },
+    "hallLink": {
+      "title": "See verified admit data",
+      "body": "Browse real admit cases for this and similar schools in the Alumni Square.",
+      "cta": "View verified admits"
     }
   },
   "cases": {
@@ -2807,7 +2911,12 @@
       "apCourses": "AP Courses ({count})",
       "ibScore": "IB Score",
       "applicantBackground": "Applicant Background",
-      "applicationStory": "Application Story"
+      "applicationStory": "Application Story",
+      "verifiedCallout": {
+        "title": "Verified admission trends",
+        "desc": "See verified China-mainland admit data and difficulty signals for schools like this.",
+        "action": "View Verified Dashboard"
+      }
     },
     "guide": {
       "title": "See where students like you got accepted",
@@ -2824,6 +2933,11 @@
       "bullet2": "Earn points and verification badges for your contributions",
       "bullet3": "Compare your profile against admitted students at your target schools",
       "startTour": "Learn how to use in 30 seconds"
+    },
+    "verifiedBanner": {
+      "title": "See where these cases rank",
+      "desc": "Explore the Verified China Admit Dashboard for real, year-over-year admission trends.",
+      "action": "Open dashboard"
     }
   },
   "chat": {
@@ -2930,15 +3044,53 @@
     "youRecalledMessage": "You recalled a message"
   },
   "hall": {
-    "title": "Feature Hall",
-    "description": "Admissions officer scoring, rank comparison, create lists",
+    "title": "Alumni Square",
+    "description": "Verified admit data, peer feedback, rank comparison and case study",
     "tabs": {
       "tinder": "Prediction Game",
-      "review": "Review Mode",
+      "review": "Peer Pulse",
       "ranking": "Rank Comparison",
       "lists": "User Lists",
       "challenge": "Community Challenge",
-      "verified": "Verified Ranking"
+      "verified": "China Admit Dashboard",
+      "path": "Alumni Journey",
+      "verifiedDesc": "Verified admit data: China admit counts, difficulty signals, ED vs RD",
+      "rankingDesc": "Where your stats sit vs the historical applicant pool at your targets",
+      "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
+      "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
+    },
+    "hero": {
+      "points": "Points",
+      "today": "+{count} today",
+      "streak": "Streak",
+      "best": "{badge} · best {count}",
+      "reviewer": "Reviewer",
+      "credit": "Credit {count}",
+      "dailyChallenge": "Daily Challenge",
+      "badges": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      },
+      "reviewerLevels": {
+        "L1": "Learner",
+        "L2": "Peer",
+        "L3": "Senior"
+      }
+    },
+    "path": {
+      "modes": {
+        "single": {
+          "label": "Single Case Study",
+          "description": "Study one alumni case at a time — AI reflection builds admit-officer intuition"
+        },
+        "challenge": {
+          "label": "Batch Challenge",
+          "description": "Predict one applicant's results across multiple schools, then compare with reality"
+        }
+      }
     },
     "challenge": {
       "loading": "Loading challenge...",
@@ -3002,7 +3154,7 @@
       "testScores": "Test Scores",
       "finalVerdict": "Final Verdict",
       "scores": "Scores",
-      "title": "Sharp Review Mode",
+      "title": "Peer Review",
       "academic": "Academic",
       "academicDesc": "Evaluate academic ability",
       "activity": "Activities",
@@ -3092,7 +3244,41 @@
       "helpful": "Helpful",
       "insightful": "Insightful",
       "markedHelpful": "Marked as helpful",
-      "markedInsightful": "Marked as insightful"
+      "markedInsightful": "Marked as insightful",
+      "changeMode": "Change review mode",
+      "mode": {
+        "recommended": "Recommended",
+        "swipeTitle": "Swipe Review",
+        "swipeDesc": "Tinder-style: swipe each dimension card to score it fast.",
+        "classicTitle": "Classic Review",
+        "classicDesc": "Slider + comment for each dimension — full control."
+      },
+      "swipe": {
+        "verdictTitle": "Final Verdict",
+        "verdictDesc": "Add your rationale and submit your review.",
+        "rationale": "Your rationale",
+        "rationaleHint": "Explain why you scored this applicant the way you did...",
+        "rationaleMin": "At least {min} characters required.",
+        "quickTags": "Quick tags (optional)",
+        "dragHint": "Drag the card — left, up, or right",
+        "stepCounter": "Step {current} of {total}",
+        "direction": {
+          "notEnough": "Not enough",
+          "unsure": "Unsure",
+          "impressive": "Impressive"
+        }
+      },
+      "quickTag": {
+        "well-rounded": "Well-rounded",
+        "strong-stem": "Strong STEM",
+        "high-gpa": "High GPA",
+        "leadership": "Leadership",
+        "creative": "Creative",
+        "community-impact": "Community impact",
+        "research-oriented": "Research-oriented",
+        "athletic": "Athletic"
+      },
+      "disclaimer": "Reviews are personal opinions from other members, not professional admissions advice."
     },
     "ranking": {
       "title": "Rank Comparison",
@@ -3293,6 +3479,22 @@
       "gold": "Gold",
       "platinum": "Platinum",
       "diamond": "Diamond"
+    },
+    "onboarding": {
+      "skip": "Skip",
+      "next": "Next",
+      "done": "Get started",
+      "step": "Step {current} of {total}",
+      "steps": {
+        "welcomeTitle": "Welcome to the Alumni Square",
+        "welcomeBody": "A community space where applicants compare positioning, get peer feedback, and learn from verified admit cases.",
+        "pointsTitle": "Earn points by contributing",
+        "pointsBody": "Reviewing peers, completing challenges and sharing outcomes earns points you can redeem in the Points Center.",
+        "leaderboardTitle": "See where you stand",
+        "leaderboardBody": "The ranking tab shows your competitive position against applicants targeting the same schools.",
+        "privacyTitle": "You are in control",
+        "privacyBody": "Peer reviews are opt-in and your profile is always anonymized. Manage this anytime in Settings."
+      }
     }
   },
   "settings": {
@@ -3336,7 +3538,9 @@
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data"
+      "deleteAccountDesc": "Permanently delete your account and data",
+      "peerReview": "Peer Reviews",
+      "peerReviewDesc": "Control whether others can review your profile"
     },
     "comingSoonHint": "This feature is coming soon",
     "dialogs": {
@@ -6786,7 +6990,32 @@
     "totalVerified": "Total Verified",
     "totalAdmitted": "Total Admitted",
     "topSchools": "Top Schools",
-    "ivyPlus": "Ivy+"
+    "ivyPlus": "Ivy+",
+    "dashboard": {
+      "banner": "{count} schools · platform-reviewed verified cases · updated {date}",
+      "rank": "US News #{rank}",
+      "emptyTitle": "China admit data is being collected",
+      "emptyBody": "Verified mainland-China admission cases will appear here once enough are reviewed.",
+      "noChinaData": "No mainland-China-specific data yet",
+      "reliability": {
+        "A": "High confidence — 5+ verified cases",
+        "B": "Medium confidence — 3+ verified cases",
+        "C": "Low confidence — 1-2 cases, advisory only",
+        "D": "No verified case"
+      },
+      "signal": {
+        "stable": "Stable",
+        "declining": "Declining",
+        "surging": "Sharply harder"
+      },
+      "disclaimer": "Past admit results do not predict future odds. Data is shared by users and cannot be fully verified."
+    },
+    "crossLink": {
+      "predictTitle": "Want your own odds?",
+      "predictBody": "Run an admission probability estimate for your target schools.",
+      "predictCta": "Estimate my chances",
+      "askAi": "Ask AI"
+    }
   },
   "vault": {
     "title": "Secure Vault",
@@ -7777,6 +8006,34 @@
         "thinLabel": "Light on detail",
         "thinAria": "Recruitment card has a short headline"
       }
+    }
+  },
+  "pointsCenter": {
+    "title": "Points Center",
+    "description": "Spend the points you earned across the platform",
+    "balance": "Points Balance",
+    "todayEarned": "+{count} earned today",
+    "catalogTitle": "Redeem",
+    "redeem": "Redeem",
+    "insufficient": "Not enough",
+    "historyTitle": "Redemption History",
+    "confirmTitle": "Confirm redemption",
+    "confirmBody": "Redeem \"{name}\" for {cost} points?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "redeemSuccess": "Redeemed successfully",
+    "redeemError": "Redemption failed. Please try again.",
+    "types": {
+      "CONSULT_15MIN": "15-min counselor consultation",
+      "MEMBERSHIP_MONTHLY": "Monthly membership",
+      "CASE_PREMIUM_UNLOCK": "Premium case unlock",
+      "EXPERT_LIST_UNLOCK": "Expert school list unlock",
+      "PREDICTION_DEEP_DIVE": "Prediction deep-dive analysis"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "FULFILLED": "Fulfilled",
+      "CANCELLED": "Cancelled"
     }
   },
   "points": {
@@ -11471,5 +11728,31 @@
   },
   "activityForm": {
     "linkedToTemplate": "Linked to template"
+  },
+  "peerReviewSettings": {
+    "title": "Peer Review Privacy",
+    "description": "Decide whether Alumni Square members can review your application profile",
+    "toggleCardTitle": "Accept peer reviews",
+    "toggleCardDesc": "When on, your anonymized profile may appear in the review pool",
+    "toggleLabel": "Allow others to review my profile",
+    "toggleHint": "Other members give scores and suggestions on your academics, tests, activities and awards.",
+    "minorBlocked": "Peer reviews are unavailable for members under 16. This setting will unlock automatically once you turn 16.",
+    "guardianAdvisory": "You are under 18. Please confirm with a parent or guardian before turning this on.",
+    "explainTitle": "How peer review works",
+    "explainWhat": "Members of the Alumni Square can view a desensitized snapshot of your profile and offer scores, tags and written suggestions to help you improve.",
+    "explainPrivacy": "Your real name, contact details and sensitive identifiers are never shared. Reviewers see only an anonymized academic snapshot.",
+    "explainControl": "You can turn this off at any time. Turning it off removes you from the review pool going forward; reviews already received remain visible only to you.",
+    "badgeAnonymized": "Anonymized snapshot",
+    "badgeReversible": "Reversible anytime",
+    "toast": {
+      "enabled": "Peer reviews enabled",
+      "disabled": "Peer reviews disabled",
+      "error": "Could not update this setting. Please try again."
+    },
+    "consentDialog": {
+      "title": "Guardian consent",
+      "description": "You are between 16 and 18 years old. By continuing, you confirm a parent or guardian agrees to your profile being reviewed by other members.",
+      "confirm": "I confirm — enable"
+    }
   }
 }

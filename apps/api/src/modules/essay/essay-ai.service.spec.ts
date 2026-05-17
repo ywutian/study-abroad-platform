@@ -3,7 +3,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { EssayAiService } from './essay-ai.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LLMService } from '../ai-agent/core/llm.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 
 jest.mock('../../common/utils/llm-json.util', () => ({
@@ -66,7 +66,7 @@ describe('EssayAiService', () => {
         EssayAiService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: LLMService, useValue: mockLLMService },
-        { provide: CaseIncentiveService, useValue: mockIncentiveService },
+        { provide: PointsService, useValue: mockIncentiveService },
         { provide: MemoryManagerService, useValue: mockMemoryManager },
       ],
     }).compile();

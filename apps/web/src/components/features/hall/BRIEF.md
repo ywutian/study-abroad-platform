@@ -9,10 +9,13 @@ Tinder-style swipe interface for reviewing real admission cases — gamified lea
 - SwipeCard — draggable case card with applicant stats (framer-motion gestures)
 - SwipeStack — manages card deck with accept/reject swipe logic
 - SwipeResultOverlay — shows result after swipe decision
-- SwipeReviewMode — review previously swiped cases
 - TinderTab — main swipe interface tab
-- ReviewTab — review past decisions
-- RankingTab — leaderboard display
+- ReviewTab — re-export shim for `review/ReviewTab` (stable import path)
+- review/ — peer-review experience: ReviewTab orchestrator + ClassicReviewWizard
+  (slider fallback) + SwipeReviewWizard (Tinder-style 4-step swipe) + review-shared
+- RankingTab — thin orchestrator (data + state)
+- ranking/ — RankingTab sub-components: SummaryStats, SchoolPicker, ResultsGrid
+  (RankingCard), CompetitorDistribution, AiPanel + ranking-shared (POSITION_CONFIG)
 - ListsTab — curated case lists
 - VerifiedTab / ChallengeTab — verified cases and daily challenges
 - BadgeDisplay — achievement badges with progress tracking
@@ -29,5 +32,7 @@ Tinder-style swipe interface for reviewing real admission cases — gamified lea
 ## Patterns
 
 - Framer Motion for drag gestures and card animations
+- Shared swipe physics: `lib/hooks/useSwipeGesture.ts` (x/y/rotate/opacity + drag-end classifier)
 - Tab-based page split (TinderTab, ReviewTab, RankingTab, ListsTab)
+- Review is single-track: one ReviewTab orchestrator → choose swipe/classic wizard → one submit
 - Gamification: badges, streaks, daily challenges, leaderboard

@@ -22,7 +22,7 @@ Essay (profileId, type, title, content, schoolId, promptId), EssayPrompt (school
 
 ## Dependencies
 
-PrismaService, LLMService, CaseIncentiveService (points), MemoryManagerService (@Optional) | AI/LLM: Yes
+PrismaService, LLMService, PointsService (points), MemoryManagerService (@Optional) | AI/LLM: Yes
 
 ## Business Rules
 
@@ -33,6 +33,6 @@ PrismaService, LLMService, CaseIncentiveService (points), MemoryManagerService (
 
 ## Gotchas
 
-- Points are charged upfront via `CaseIncentiveService.charge()` and refunded via `safeRefund()` on error
+- Points are charged upfront via `PointsService.charge()` and refunded via `safeRefund()` on error
 - MemoryManagerService is `@Optional()`
 - Multiple sub-controllers: essay-ai, essay-prompt, essay-prompt-admin, essay-scraper

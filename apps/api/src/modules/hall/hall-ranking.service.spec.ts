@@ -3,6 +3,7 @@ import { HallRankingService } from './hall-ranking.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { PointsService } from '../points/incentive.service';
 
 jest.mock('../../common/utils/scoring', () => ({
   extractProfileMetrics: jest.fn().mockReturnValue({
@@ -54,6 +55,10 @@ describe('HallRankingService', () => {
     chatSimpleGuarded: jest.fn(),
   };
 
+  const mockPointsService = {
+    adjustPoints: jest.fn().mockResolvedValue({ success: true, newBalance: 0 }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -61,6 +66,7 @@ describe('HallRankingService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: MemoryManagerService, useValue: mockMemoryManager },
         { provide: LLMService, useValue: mockLLMService },
+        { provide: PointsService, useValue: mockPointsService },
       ],
     }).compile();
 
@@ -363,6 +369,7 @@ describe('HallRankingService', () => {
           { provide: PrismaService, useValue: mockPrisma },
           { provide: MemoryManagerService, useValue: null },
           { provide: LLMService, useValue: null },
+          { provide: PointsService, useValue: mockPointsService },
         ],
       }).compile();
 

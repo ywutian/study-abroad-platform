@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { CaseIncentiveService } from './incentive.service';
+import { PointsService } from './incentive.service';
 import { PointAction } from './points-config.service';
 
 /**
@@ -9,7 +9,7 @@ import { PointAction } from './points-config.service';
  * scattered across essay-ai, recommendation, and case-gallery services.
  */
 export async function safeRefund(
-  incentiveService: CaseIncentiveService,
+  incentiveService: PointsService,
   userId: string,
   action: PointAction,
   logger: Logger,
