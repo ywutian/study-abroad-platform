@@ -762,130 +762,6 @@
     "challengeComplete": "挑战完成",
     "noLeaderboard": "暂无排行榜数据"
   },
-  "hallOfFame": {
-    "title": "荣誉殿堂",
-    "subtitle": "记录每一份努力与成功",
-    "tabs": {
-      "reviews": "锐评",
-      "ranking": "排名",
-      "lists": "榜单",
-      "verified": "认证",
-      "all": "全部",
-      "ivy": "藤校",
-      "top10": "Top 10",
-      "top30": "Top 30"
-    },
-    "stats": {
-      "totalAdmissions": "总录取",
-      "topSchools": "Top 学校",
-      "avgGpa": "平均 GPA",
-      "successRate": "成功率"
-    },
-    "reviews": {
-      "popular": "热门",
-      "myReviews": "我的评价",
-      "writeReview": "写评价",
-      "academic": "学术",
-      "test": "标化成绩",
-      "activity": "课外活动",
-      "award": "获奖",
-      "overall": "总评",
-      "helpful": "有帮助",
-      "insightful": "有见解",
-      "comment": "评论",
-      "tags": "标签",
-      "submit": "提交评价",
-      "empty": "暂无评价",
-      "scores": {
-        "academic": "学术",
-        "test": "考试",
-        "activity": "活动",
-        "award": "奖项",
-        "overall": "综合"
-      },
-      "reviewFor": "评价对象",
-      "created": "评价已提交！",
-      "mine": "我的评价",
-      "write": "撰写",
-      "emptyDesc": "来写下第一条评价吧！",
-      "targetUser": "要评价的用户 ID",
-      "targetPlaceholder": "输入用户 ID...",
-      "commentPlaceholder": "分享你的看法...",
-      "tagsPlaceholder": "例如：细致、有帮助、背景相似"
-    },
-    "ranking": {
-      "rank": "排名",
-      "score": "分数",
-      "percentile": "百分位",
-      "applicants": "{{count}} 位申请者",
-      "position": "竞争位置",
-      "empty": "添加学校到列表以查看排名",
-      "emptyDesc": "先补充目标学校，系统会根据你的背景生成排名对比。",
-      "top": "前",
-      "yourRank": "你的排名",
-      "breakdown": "分数拆解"
-    },
-    "lists": {
-      "create": "创建榜单",
-      "title": "标题",
-      "description": "描述",
-      "category": "分类",
-      "items": "项目",
-      "votes": "投票",
-      "empty": "暂无榜单",
-      "created": "榜单已创建！",
-      "categories": {
-        "tier": "档位",
-        "major": "专业",
-        "location": "地区",
-        "value": "价值",
-        "other": "其他"
-      },
-      "titleRequired": "请输入标题",
-      "emptyDesc": "创建第一个榜单！",
-      "createTitle": "创建榜单",
-      "submit": "创建",
-      "titleLabel": "标题",
-      "titlePlaceholder": "例如 Top CS 项目",
-      "descLabel": "描述",
-      "descPlaceholder": "可选描述...",
-      "categoryLabel": "类别",
-      "itemsLabel": "条目（每行一个）",
-      "itemsPlaceholder": "MIT\\nStanford\\nCMU\\n...",
-      "detail": "榜单详情"
-    },
-    "verified": {
-      "all": "全部",
-      "admitted": "已录取",
-      "top20": "Top 20",
-      "ivy": "藤校",
-      "totalVerified": "已认证",
-      "admittedCount": "已录取",
-      "empty": "暂无认证用户",
-      "points": "积分",
-      "filters": {
-        "all": "全部",
-        "admitted": "已录取",
-        "top20": "Top 20",
-        "ivy": "藤校"
-      },
-      "stats": {
-        "total": "已认证",
-        "admitted": "已录取",
-        "avgGpa": "平均 GPA"
-      }
-    },
-    "empty": {
-      "title": "暂无数据",
-      "description": "成为第一个加入荣誉殿堂的人吧！"
-    },
-    "card": {
-      "scores": "标化",
-      "undergrad": "本科"
-    },
-    "loading": "加载中...",
-    "cancel": "取消"
-  },
   "essays": {
     "title": "我的文书",
     "types": {
@@ -964,34 +840,181 @@
     }
   },
   "hall": {
-    "title": "功能大厅",
+    "title": "校友广场",
+    "subtitle": "认证录取数据、同行反馈与排名对比",
+    "loading": "加载中...",
+    "cancel": "取消",
     "tabs": {
-      "review": "招生官打分",
-      "ranking": "排名对比",
-      "lists": "用户榜单"
+      "verified": "认证",
+      "ranking": "排名",
+      "review": "同行锐评",
+      "path": "学长之路"
+    },
+    "stats": {
+      "totalAdmissions": "总录取",
+      "topSchools": "Top 学校",
+      "avgGpa": "平均 GPA",
+      "successRate": "成功率"
     },
     "review": {
-      "title": "扮演招生官",
-      "academic": "学术能力",
-      "activity": "活动质量",
-      "essay": "文书水平",
-      "overall": "综合评分",
-      "comment": "点评",
-      "submitReview": "提交评分",
-      "selectProfile": "选择档案进行评分"
+      "title": "同行锐评",
+      "intro": "滑动模式",
+      "introDesc": "逐维度评价同行档案 —— 滑动打分。",
+      "popular": "热门",
+      "mine": "我的评价",
+      "empty": "暂无评价",
+      "emptyDesc": "来写下第一条评价吧！",
+      "noProfiles": "暂无可评价的档案",
+      "noProfilesDesc": "稍后再来查看更多公开档案。",
+      "start": "开始评价",
+      "next": "下一份档案",
+      "submit": "提交评价",
+      "submitting": "提交中...",
+      "created": "评价已提交！",
+      "swipeHint": "右滑 = 强 · 左滑 = 弱 · 上滑 = 不确定",
+      "swipeLeft": "偏弱",
+      "swipeRight": "突出",
+      "swipeUp": "不确定",
+      "comment": "评论",
+      "commentPlaceholder": "分享你的看法...",
+      "applicantProfile": "申请者档案",
+      "targetMajor": "目标专业",
+      "unknownMajor": "未定专业",
+      "stepProgress": "第 {{current}} / {{total}} 步",
+      "helpful": "有帮助",
+      "insightful": "有见解",
+      "scores": {
+        "academic": "学术",
+        "test": "考试",
+        "activity": "活动",
+        "award": "奖项",
+        "overall": "综合"
+      },
+      "steps": {
+        "academic": "学术背景",
+        "test": "标化成绩",
+        "activity": "课外活动",
+        "award": "奖项荣誉"
+      },
+      "stepDesc": {
+        "academic": "学术记录是否突出？",
+        "test": "标化成绩是否有竞争力？",
+        "activity": "活动是否有深度和意义？",
+        "award": "奖项是否含金量高？"
+      }
     },
     "ranking": {
-      "title": "排名对比",
-      "myRank": "我的排名",
-      "selectSchool": "选择目标院校",
-      "viewRanking": "查看排名"
+      "rank": "排名",
+      "score": "分数",
+      "percentile": "百分位",
+      "applicants": "{{count}} 位申请者",
+      "position": "竞争位置",
+      "empty": "添加学校到列表以查看排名",
+      "emptyDesc": "先补充目标学校，系统会根据你的背景生成排名对比。",
+      "top": "前",
+      "yourRank": "你的排名",
+      "breakdown": "分数拆解"
     },
-    "lists": {
-      "title": "用户榜单",
-      "createList": "创建榜单",
-      "vote": "投票",
-      "myLists": "我的榜单",
-      "popularLists": "热门榜单"
+    "verified": {
+      "title": "中国录取数据中心",
+      "filters": {
+        "all": "全部",
+        "admitted": "已录取",
+        "top20": "Top 20",
+        "ivy": "藤校"
+      },
+      "stats": {
+        "total": "已认证",
+        "admitted": "已录取",
+        "avgGpa": "平均 GPA"
+      },
+      "empty": "暂无认证用户",
+      "points": "积分",
+      "chinaAdmit": {
+        "title": "中国大陆录取趋势",
+        "banner": "{{count}} 所学校 · 平台核实案例 · 更新于 {{date}}",
+        "rank": "US News 第 {{rank}} 名",
+        "emptyTitle": "中国录取数据收集中",
+        "emptyBody": "核实后的中国大陆录取案例足够多时会显示在这里。",
+        "noChinaData": "暂无中国大陆数据",
+        "admittedUnit": "录取",
+        "reliability": {
+          "A": "高可信度 —— 5+ 个核实案例",
+          "B": "中等可信度 —— 3+ 个核实案例",
+          "C": "低可信度 —— 1-2 个案例，仅供参考",
+          "D": "暂无核实案例"
+        },
+        "signal": {
+          "stable": "稳定",
+          "declining": "难度下降",
+          "surging": "明显变难"
+        }
+      }
+    },
+    "path": {
+      "title": "学长之路",
+      "modes": {
+        "single": "单案研习",
+        "challenge": "批量挑战",
+        "singleDesc": "一次研习一个校友案例 —— 培养招生官直觉。",
+        "challengeDesc": "预测同一申请者在多所学校的结果。"
+      }
+    },
+    "empty": {
+      "title": "暂无数据",
+      "description": "成为第一个加入校友广场的人吧！"
+    },
+    "card": {
+      "scores": "标化",
+      "undergrad": "本科"
+    },
+    "challenge": {
+      "title": "批量挑战",
+      "loading": "加载挑战中...",
+      "empty": "暂无可用挑战",
+      "emptyDesc": "目前共享案例不足，稍后再来。",
+      "applicantProfile": "申请者档案",
+      "grade": "年级",
+      "targetMajor": "目标专业",
+      "predictResults": "预测录取结果",
+      "schoolsCount": "{{count}} 所学校",
+      "selectResult": "选择结果...",
+      "submit": "提交预测",
+      "submitting": "提交中...",
+      "newChallenge": "新挑战",
+      "accuracy": "{{correct}}/{{total}} 正确（{{accuracy}}%）",
+      "reward": "获得 +{{points}} 积分",
+      "yourGuess": "你的预测",
+      "actual": "实际",
+      "results": {
+        "ADMITTED": "录取",
+        "ACCEPTED": "录取",
+        "REJECTED": "拒绝",
+        "WAITLISTED": "候补",
+        "DEFERRED": "延迟"
+      }
+    },
+    "hero": {
+      "points": "积分",
+      "today": "今日 +{{count}}",
+      "streak": "连胜",
+      "best": "最佳 {{count}}",
+      "reviewer": "评审",
+      "credit": "信用 {{count}}",
+      "dailyChallenge": "每日挑战",
+      "dailyProgress": "{{count}}/{{target}} 次",
+      "badges": {
+        "bronze": "青铜",
+        "silver": "白银",
+        "gold": "黄金",
+        "platinum": "铂金",
+        "diamond": "钻石"
+      },
+      "levels": {
+        "L1": "学习者",
+        "L2": "同行",
+        "L3": "学长"
+      }
     }
   },
   "ranking": {

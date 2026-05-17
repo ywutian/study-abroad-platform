@@ -762,130 +762,6 @@
     "challengeComplete": "Challenge complete",
     "noLeaderboard": "No leaderboard data yet"
   },
-  "hallOfFame": {
-    "title": "Hall of Fame",
-    "subtitle": "Recording every effort and success",
-    "tabs": {
-      "reviews": "Reviews",
-      "ranking": "Ranking",
-      "lists": "Lists",
-      "verified": "Verified",
-      "all": "All",
-      "ivy": "Ivy League",
-      "top10": "Top 10",
-      "top30": "Top 30"
-    },
-    "stats": {
-      "totalAdmissions": "Admissions",
-      "topSchools": "Top Schools",
-      "avgGpa": "Avg GPA",
-      "successRate": "Success Rate"
-    },
-    "reviews": {
-      "popular": "Popular",
-      "myReviews": "My Reviews",
-      "writeReview": "Write Review",
-      "academic": "Academic",
-      "test": "Test Scores",
-      "activity": "Activities",
-      "award": "Awards",
-      "overall": "Overall",
-      "helpful": "Helpful",
-      "insightful": "Insightful",
-      "comment": "Comment",
-      "tags": "Tags",
-      "submit": "Submit Review",
-      "empty": "No reviews yet",
-      "scores": {
-        "academic": "Academic",
-        "test": "Test",
-        "activity": "Activity",
-        "award": "Award",
-        "overall": "Overall"
-      },
-      "reviewFor": "Review for",
-      "created": "Review submitted!",
-      "mine": "My Reviews",
-      "write": "Write",
-      "emptyDesc": "Be the first to write a review!",
-      "targetUser": "User ID to Review",
-      "targetPlaceholder": "Enter user ID...",
-      "commentPlaceholder": "Share your thoughts...",
-      "tagsPlaceholder": "e.g. detailed, helpful, similar background"
-    },
-    "ranking": {
-      "rank": "Rank",
-      "score": "Score",
-      "percentile": "Percentile",
-      "applicants": "{{count}} applicants",
-      "position": "Position",
-      "empty": "Add schools to your list to see rankings",
-      "emptyDesc": "Add target schools first, then we will compare rankings against your profile.",
-      "top": "Top",
-      "yourRank": "Your Rank",
-      "breakdown": "Score Breakdown"
-    },
-    "lists": {
-      "create": "Create List",
-      "title": "Title",
-      "description": "Description",
-      "category": "Category",
-      "items": "Items",
-      "votes": "votes",
-      "empty": "No lists yet",
-      "created": "List created!",
-      "categories": {
-        "tier": "Tier",
-        "major": "Major",
-        "location": "Location",
-        "value": "Value",
-        "other": "Other"
-      },
-      "titleRequired": "Title is required",
-      "emptyDesc": "Create the first list!",
-      "createTitle": "Create a List",
-      "submit": "Create",
-      "titleLabel": "Title",
-      "titlePlaceholder": "e.g. Top CS Programs",
-      "descLabel": "Description",
-      "descPlaceholder": "Optional description...",
-      "categoryLabel": "Category",
-      "itemsLabel": "Items (one per line)",
-      "itemsPlaceholder": "MIT\\nStanford\\nCMU\\n...",
-      "detail": "List Detail"
-    },
-    "verified": {
-      "all": "All",
-      "admitted": "Admitted",
-      "top20": "Top 20",
-      "ivy": "Ivy",
-      "totalVerified": "Verified",
-      "admittedCount": "Admitted",
-      "empty": "No verified users yet",
-      "points": "pts",
-      "filters": {
-        "all": "All",
-        "admitted": "Admitted",
-        "top20": "Top 20",
-        "ivy": "Ivy"
-      },
-      "stats": {
-        "total": "Verified",
-        "admitted": "Admitted",
-        "avgGpa": "Avg GPA"
-      }
-    },
-    "empty": {
-      "title": "No data yet",
-      "description": "Be the first to join the Hall of Fame!"
-    },
-    "card": {
-      "scores": "Scores",
-      "undergrad": "Undergrad"
-    },
-    "loading": "Loading...",
-    "cancel": "Cancel"
-  },
   "essays": {
     "title": "My Essays",
     "types": {
@@ -964,34 +840,181 @@
     }
   },
   "hall": {
-    "title": "Feature Hall",
+    "title": "Alumni Square",
+    "subtitle": "Verified admit data, peer feedback and rank comparison",
+    "loading": "Loading...",
+    "cancel": "Cancel",
     "tabs": {
-      "review": "Admissions Review",
-      "ranking": "Rank Comparison",
-      "lists": "User Lists"
+      "verified": "Verified",
+      "ranking": "Ranking",
+      "review": "Peer Review",
+      "path": "Alumni Path"
+    },
+    "stats": {
+      "totalAdmissions": "Admissions",
+      "topSchools": "Top Schools",
+      "avgGpa": "Avg GPA",
+      "successRate": "Success Rate"
     },
     "review": {
-      "title": "Play Admissions Officer",
-      "academic": "Academic",
-      "activity": "Activities",
-      "essay": "Essay",
-      "overall": "Overall",
+      "title": "Peer Review",
+      "intro": "Swipe Mode",
+      "introDesc": "Review a peer profile dimension by dimension — swipe to score.",
+      "popular": "Popular",
+      "mine": "My Reviews",
+      "empty": "No reviews yet",
+      "emptyDesc": "Be the first to write a review!",
+      "noProfiles": "No profiles to review",
+      "noProfilesDesc": "Check back later for more public profiles.",
+      "start": "Start Review",
+      "next": "Next Profile",
+      "submit": "Submit Review",
+      "submitting": "Submitting...",
+      "created": "Review submitted!",
+      "swipeHint": "Swipe right = strong · left = weak · up = unsure",
+      "swipeLeft": "Weak",
+      "swipeRight": "Strong",
+      "swipeUp": "Unsure",
       "comment": "Comment",
-      "submitReview": "Submit Review",
-      "selectProfile": "Select a profile to review"
+      "commentPlaceholder": "Share your thoughts...",
+      "applicantProfile": "Applicant Profile",
+      "targetMajor": "Target Major",
+      "unknownMajor": "Undeclared",
+      "stepProgress": "Step {{current}} / {{total}}",
+      "helpful": "Helpful",
+      "insightful": "Insightful",
+      "scores": {
+        "academic": "Academic",
+        "test": "Test",
+        "activity": "Activity",
+        "award": "Award",
+        "overall": "Overall"
+      },
+      "steps": {
+        "academic": "Academic Background",
+        "test": "Test Scores",
+        "activity": "Extracurriculars",
+        "award": "Awards & Honors"
+      },
+      "stepDesc": {
+        "academic": "Is the academic record strong?",
+        "test": "Are the test scores competitive?",
+        "activity": "Are the activities deep and meaningful?",
+        "award": "Are the awards prestigious?"
+      }
     },
     "ranking": {
-      "title": "Rank Comparison",
-      "myRank": "My Rank",
-      "selectSchool": "Select Target School",
-      "viewRanking": "View Ranking"
+      "rank": "Rank",
+      "score": "Score",
+      "percentile": "Percentile",
+      "applicants": "{{count}} applicants",
+      "position": "Position",
+      "empty": "Add schools to your list to see rankings",
+      "emptyDesc": "Add target schools first, then we will compare rankings against your profile.",
+      "top": "Top",
+      "yourRank": "Your Rank",
+      "breakdown": "Score Breakdown"
     },
-    "lists": {
-      "title": "User Lists",
-      "createList": "Create List",
-      "vote": "Vote",
-      "myLists": "My Lists",
-      "popularLists": "Popular Lists"
+    "verified": {
+      "title": "China Admit Dashboard",
+      "filters": {
+        "all": "All",
+        "admitted": "Admitted",
+        "top20": "Top 20",
+        "ivy": "Ivy"
+      },
+      "stats": {
+        "total": "Verified",
+        "admitted": "Admitted",
+        "avgGpa": "Avg GPA"
+      },
+      "empty": "No verified users yet",
+      "points": "pts",
+      "chinaAdmit": {
+        "title": "Mainland-China Admit Trend",
+        "banner": "{{count}} schools · platform-verified cases · updated {{date}}",
+        "rank": "US News #{{rank}}",
+        "emptyTitle": "China admit data is being collected",
+        "emptyBody": "Verified mainland-China admission cases will appear here once enough are reviewed.",
+        "noChinaData": "No mainland-China data yet",
+        "admittedUnit": "admitted",
+        "reliability": {
+          "A": "High confidence — 5+ verified cases",
+          "B": "Medium confidence — 3+ verified cases",
+          "C": "Low confidence — 1-2 cases, advisory only",
+          "D": "No verified case"
+        },
+        "signal": {
+          "stable": "Stable",
+          "declining": "Declining",
+          "surging": "Sharply harder"
+        }
+      }
+    },
+    "path": {
+      "title": "Alumni Path",
+      "modes": {
+        "single": "Single Case",
+        "challenge": "Batch Challenge",
+        "singleDesc": "Study one alumni case at a time — build admit-officer intuition.",
+        "challengeDesc": "Predict one applicant's results across multiple schools."
+      }
+    },
+    "empty": {
+      "title": "No data yet",
+      "description": "Be the first to join Alumni Square!"
+    },
+    "card": {
+      "scores": "Scores",
+      "undergrad": "Undergrad"
+    },
+    "challenge": {
+      "title": "Batch Challenge",
+      "loading": "Loading challenge...",
+      "empty": "No challenge available",
+      "emptyDesc": "Not enough shared cases right now. Check back later.",
+      "applicantProfile": "Applicant Profile",
+      "grade": "Grade",
+      "targetMajor": "Target Major",
+      "predictResults": "Predict the results",
+      "schoolsCount": "{{count}} schools",
+      "selectResult": "Select result...",
+      "submit": "Submit Predictions",
+      "submitting": "Submitting...",
+      "newChallenge": "New Challenge",
+      "accuracy": "{{correct}}/{{total}} correct ({{accuracy}}%)",
+      "reward": "+{{points}} pts earned",
+      "yourGuess": "Your guess",
+      "actual": "Actual",
+      "results": {
+        "ADMITTED": "Admitted",
+        "ACCEPTED": "Accepted",
+        "REJECTED": "Rejected",
+        "WAITLISTED": "Waitlisted",
+        "DEFERRED": "Deferred"
+      }
+    },
+    "hero": {
+      "points": "Points",
+      "today": "+{{count}} today",
+      "streak": "Streak",
+      "best": "best {{count}}",
+      "reviewer": "Reviewer",
+      "credit": "Credit {{count}}",
+      "dailyChallenge": "Daily Challenge",
+      "dailyProgress": "{{count}}/{{target}} done",
+      "badges": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      },
+      "levels": {
+        "L1": "Learner",
+        "L2": "Peer",
+        "L3": "Senior"
+      }
     }
   },
   "ranking": {
