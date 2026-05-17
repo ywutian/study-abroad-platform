@@ -578,10 +578,16 @@ export default function ChatPage() {
   }, [currentConvIsMuted, preferenceMutation, selectedConversation]);
 
   return (
-    <PageContainer
-      maxWidth="full"
-      className="mx-auto flex w-full max-w-[1760px] flex-col lg:h-[calc(100dvh-6.5rem)]"
-    >
+    // 2026-05 PR 2/3: migrated to `variant="workbench"` — this used to
+    // be `maxWidth="full"` + className override with `max-w-[1760px]
+    // flex flex-col lg:h-[calc(100dvh-6.5rem)]`. That pattern depended
+    // on tw-merge priority to *reverse* the variant's max-w-full, which
+    // was semantically backwards and made it easy to miss (essays/page
+    // had copied the same anti-pattern). The `workbench` variant
+    // encodes the structural shape (mx-auto + max-w-[1760px] + flex
+    // column + viewport-minus-header height + min-w-0) as a first-class
+    // concept so any future three-column tool surface stays consistent.
+    <PageContainer variant="workbench">
       <div className="mb-3 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -631,7 +637,13 @@ export default function ChatPage() {
         stays minmax(0,1fr) (already correctly shrinkable). At xl+ all
         cols hit their max and the layout matches the original design.
       */}
-      <div className="grid min-h-[620px] gap-3 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)_minmax(260px,320px)] lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+      {/* 2026-05 PR 2: `min-w-0` on the grid container itself, even
+          though the PageContainer parent now has `min-w-0` via the
+          workbench variant. Defence-in-depth: the grid is also a
+          potential flex item inside the PageContainer's flex column,
+          so it needs its own min-w-0 to prevent any future change
+          from re-introducing the cascading overflow chain. */}
+      <div className="grid min-w-0 min-h-[620px] gap-3 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)_minmax(260px,320px)] lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         <ChatConversationList
           conversations={sortedConversations}
           selectedId={selectedConversation}
