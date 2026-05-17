@@ -41,7 +41,10 @@ export class PointsRedemptionController {
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Redeem points for a specific reward type' })
-  async redeem(@CurrentUser() user: CurrentUserPayload, @Body() body: RedeemDto) {
+  async redeem(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: RedeemDto,
+  ) {
     return this.redemptionService.redeem(user.id, body.type, body.metadata);
   }
 }
