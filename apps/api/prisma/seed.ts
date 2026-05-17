@@ -2149,6 +2149,25 @@ async function seedFeatureFlags() {
       enabled: true,
       rules: { percentage: 0 },
     },
+    // closure-v2: research-only pipelines. Both default OFF and MUST stay off
+    // for served traffic until the ADR-0020 bar is met (≥500 verified outcomes
+    // per subgroup + subgroup-conditioned calibration design). See
+    // docs/adr/0020-addendum-research-pipeline.md. The counselor engine reads
+    // SchoolCohortRoundPrior / SchoolRelationshipSignal only when these are on.
+    {
+      key: 'prediction-cohort-priors',
+      description:
+        'closure-v2 research pipeline. When ON, the counselor engine consumes SchoolCohortRoundPrior (cohort-level admit rates aggregated from verified AdmissionCase outcomes). Default OFF — flipping it on for served traffic requires a new ADR per ADR-0020.',
+      enabled: false,
+      rules: { percentage: 0 },
+    },
+    {
+      key: 'prediction-feeder-signals',
+      description:
+        'closure-v2 research pipeline. When ON, the counselor engine consumes SchoolRelationshipSignal (high-school → college feeder admit patterns). Default OFF — flipping it on for served traffic requires a new ADR per ADR-0020.',
+      enabled: false,
+      rules: { percentage: 0 },
+    },
   ];
 
   for (const flag of flags) {
