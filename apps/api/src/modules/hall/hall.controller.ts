@@ -29,7 +29,6 @@ import {
 import {
   ReviewerQualificationService,
   type QualificationQuestion,
-  type QualificationAnswer,
   type QualificationResult,
 } from './reviewer-qualification.service';
 import { ReviewCoachService } from './review-coach.service';
@@ -57,6 +56,9 @@ import {
   HallReactionDto,
   RankingAnalysisDto,
   ChallengeGuessesDto,
+  ReportReviewDto,
+  SubmitQualificationDto,
+  ReviewCoachRequestDto,
 } from './dto';
 import {
   SwipeActionDto,
@@ -123,7 +125,7 @@ export class HallController {
   async reportReview(
     @CurrentUser() user: CurrentUserPayload,
     @Param('reviewId') reviewId: string,
-    @Body() body: { reason: string; detail?: string },
+    @Body() body: ReportReviewDto,
   ) {
     // Sanity: don't allow reporting your own review
     const review = await this.prisma.review.findUnique({
@@ -166,7 +168,7 @@ export class HallController {
   })
   async submitReviewerQualification(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { answers: QualificationAnswer[] },
+    @Body() body: SubmitQualificationDto,
   ): Promise<QualificationResult> {
     return this.qualificationService.submitAnswers(user.id, body.answers ?? []);
   }
@@ -184,11 +186,11 @@ export class HallController {
   })
   async getReviewerCoachInsight(
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body?: { locale?: 'en' | 'zh' },
+    @Body() body: ReviewCoachRequestDto,
   ): Promise<{ insight: ReviewerInsight | null; fallback: boolean }> {
     const insight = await this.reviewCoachService.generateInsight(
       user.id,
-      body?.locale ?? user.locale === 'en' ? 'en' : 'zh',
+      (body?.locale ?? user.locale === 'en') ? 'en' : 'zh',
     );
     // Graceful degradation: AI failures never block the review flow.
     return { insight, fallback: insight === null };

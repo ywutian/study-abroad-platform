@@ -205,7 +205,13 @@ export class HallVerifiedDashboardService {
 
     const grouped = new Map<
       string,
-      { name: string; nameZh: string | null; rank: number | null; ed: number; rd: number }
+      {
+        name: string;
+        nameZh: string | null;
+        rank: number | null;
+        ed: number;
+        rd: number;
+      }
     >();
 
     for (const c of cases) {
@@ -222,7 +228,11 @@ export class HallVerifiedDashboardService {
       }
       const round = (c.round ?? '').toUpperCase();
       // ED / EA / REA all count as the binding/early bucket for this view
-      if (round.includes('ED') || round.includes('EA') || round.includes('REA')) {
+      if (
+        round.includes('ED') ||
+        round.includes('EA') ||
+        round.includes('REA')
+      ) {
         entry.ed += 1;
       } else {
         entry.rd += 1;

@@ -1,16 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RedemptionType } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleSensitive } from '../../common/decorators/throttle.decorator';
 import { PointsRedemptionService } from './points-redemption.service';
+import { RedeemDto } from './redeem.dto';
 
 /**
  * Hall refactor Stage 7 — Points redemption (cross-module spend outlet).
@@ -47,10 +41,7 @@ export class PointsRedemptionController {
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Redeem points for a specific reward type' })
-  async redeem(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { type: RedemptionType; metadata?: Record<string, unknown> },
-  ) {
+  async redeem(@CurrentUser() user: CurrentUserPayload, @Body() body: RedeemDto) {
     return this.redemptionService.redeem(user.id, body.type, body.metadata);
   }
 }

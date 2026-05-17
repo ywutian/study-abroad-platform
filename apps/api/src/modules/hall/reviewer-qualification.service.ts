@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ReviewerLevel } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsService, PointAction } from '../points/incentive.service';
@@ -85,11 +81,11 @@ export class ReviewerQualificationService {
         },
       });
       fireAndForget(
-        this.pointsService.adjustPoints(
-          userId,
-          PointAction.REVIEWER_LEVEL_UP,
-          { fromLevel: 'L1', toLevel: 'L2', score: `${correct}/${total}` },
-        ),
+        this.pointsService.adjustPoints(userId, PointAction.REVIEWER_LEVEL_UP, {
+          fromLevel: 'L1',
+          toLevel: 'L2',
+          score: `${correct}/${total}`,
+        }),
         this.logger,
         'Failed to award REVIEWER_LEVEL_UP',
       );

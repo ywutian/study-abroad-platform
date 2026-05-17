@@ -9,8 +9,10 @@ import {
   ArrayMinSize,
   ArrayMaxSize,
   IsEnum,
+  IsIn,
   IsObject,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
@@ -74,25 +76,33 @@ export class CreateReviewDto {
   @MaxLength(50000)
   comment?: string;
 
-  @ApiPropertyOptional({ description: 'Academic module comment (max 2000 chars)' })
+  @ApiPropertyOptional({
+    description: 'Academic module comment (max 2000 chars)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
   academicComment?: string;
 
-  @ApiPropertyOptional({ description: 'Test scores module comment (max 2000 chars)' })
+  @ApiPropertyOptional({
+    description: 'Test scores module comment (max 2000 chars)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
   testComment?: string;
 
-  @ApiPropertyOptional({ description: 'Activities module comment (max 2000 chars)' })
+  @ApiPropertyOptional({
+    description: 'Activities module comment (max 2000 chars)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
   activityComment?: string;
 
-  @ApiPropertyOptional({ description: 'Awards module comment (max 2000 chars)' })
+  @ApiPropertyOptional({
+    description: 'Awards module comment (max 2000 chars)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
@@ -276,6 +286,52 @@ export class VerifiedDashboardQueryDto {
   @Min(2000)
   @Max(2100)
   year?: number;
+}
+
+/**
+ * Hall refactor Stage 2 — review report payload.
+ */
+export class ReportReviewDto {
+  @ApiProperty({ description: 'Report reason (max 200 chars)' })
+  @IsString()
+  @MaxLength(200)
+  reason: string;
+
+  @ApiPropertyOptional({ description: 'Additional detail (max 5000 chars)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  detail?: string;
+}
+
+/** One answer in the reviewer qualification quiz. */
+export class QualificationAnswerDto {
+  @ApiProperty({ description: 'Question id' })
+  @IsString()
+  @MaxLength(64)
+  questionId: string;
+
+  @ApiProperty({ enum: ['admit', 'reject', 'waitlist'] })
+  @IsIn(['admit', 'reject', 'waitlist'])
+  answer: 'admit' | 'reject' | 'waitlist';
+}
+
+/** Hall refactor Stage 2 — reviewer qualification quiz submission. */
+export class SubmitQualificationDto {
+  @ApiProperty({ type: [QualificationAnswerDto] })
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => QualificationAnswerDto)
+  answers: QualificationAnswerDto[];
+}
+
+/** Hall refactor Stage 5 — AI review coach request. */
+export class ReviewCoachRequestDto {
+  @ApiPropertyOptional({ enum: ['en', 'zh'] })
+  @IsOptional()
+  @IsIn(['en', 'zh'])
+  locale?: 'en' | 'zh';
 }
 
 export * from './verified-ranking.dto';

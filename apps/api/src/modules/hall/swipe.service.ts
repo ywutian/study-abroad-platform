@@ -744,7 +744,7 @@ export class SwipeService {
           userId,
           applicantUserId,
           caseIds: cases.map((c) => c.id),
-          guesses: guesses as Prisma.InputJsonValue,
+          guesses: guesses,
           correctCount: correct,
           totalCount: cases.length,
           accuracy,

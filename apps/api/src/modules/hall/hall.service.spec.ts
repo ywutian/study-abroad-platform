@@ -37,9 +37,7 @@ describe('HallService', () => {
   let service: HallService;
   let _prisma: PrismaService;
   const mockPointsService = {
-    adjustPoints: jest
-      .fn()
-      .mockResolvedValue({ success: true, newBalance: 0 }),
+    adjustPoints: jest.fn().mockResolvedValue({ success: true, newBalance: 0 }),
   };
 
   const mockPrisma = {

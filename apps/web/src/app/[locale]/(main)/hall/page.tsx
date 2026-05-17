@@ -57,28 +57,28 @@ const TAB_CONFIG: Array<{
     labelKey: 'hall.tabs.verified',
     descriptionKey: 'hall.tabs.verifiedDesc',
     icon: BadgeCheck,
-    color: 'bg-gradient-to-r from-indigo-500 to-blue-500',
+    color: 'bg-indigo-500',
   },
   {
     value: 'ranking',
     labelKey: 'hall.tabs.ranking',
     descriptionKey: 'hall.tabs.rankingDesc',
     icon: BarChart3,
-    color: 'bg-gradient-to-r from-amber-500 to-orange-500',
+    color: 'bg-amber-500',
   },
   {
     value: 'review',
     labelKey: 'hall.tabs.review',
     descriptionKey: 'hall.tabs.reviewDesc',
     icon: MessageSquare,
-    color: 'bg-gradient-to-r from-violet-500 to-purple-500',
+    color: 'bg-violet-500',
   },
   {
     value: 'path',
     labelKey: 'hall.tabs.path',
     descriptionKey: 'hall.tabs.pathDesc',
     icon: GraduationCap,
-    color: 'bg-gradient-to-r from-rose-500 to-pink-500',
+    color: 'bg-rose-500',
   },
 ];
 

@@ -544,10 +544,7 @@ export class EssayAiService {
     locale = 'zh',
   ): Promise<EssayBrainstormResponseDto> {
     const isZh = locale === 'zh';
-    await this.pointsService.charge(
-      userId,
-      PointAction.AI_ESSAY_BRAINSTORM,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_BRAINSTORM);
 
     // Enrich with school data
     let brainstormSchoolCtx = '';
@@ -783,10 +780,7 @@ export class EssayAiService {
     locale = 'zh',
   ): Promise<EssayBrainstormResponseDto> {
     const isZh = locale === 'zh';
-    await this.pointsService.charge(
-      userId,
-      PointAction.AI_ESSAY_BRAINSTORM,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_BRAINSTORM);
 
     const systemPrompt = buildBrainstormSystemPrompt(locale);
 

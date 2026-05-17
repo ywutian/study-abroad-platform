@@ -76,9 +76,9 @@ export class ReviewCoachService {
     const avg = (arr: number[]): number =>
       arr.length === 0 ? 0 : arr.reduce((a, b) => a + b, 0) / arr.length;
 
-    const swipeData = latest.swipeData as
-      | { directionsPerStep?: Record<string, string> }
-      | null;
+    const swipeData = latest.swipeData as {
+      directionsPerStep?: Record<string, string>;
+    } | null;
     const directions = swipeData?.directionsPerStep;
     const ctx: ReviewCoachContext = {
       currentReview: {
@@ -136,9 +136,7 @@ export class ReviewCoachService {
         !Array.isArray(insight.styleProfile.strict) ||
         !Array.isArray(insight.styleProfile.lenient)
       ) {
-        this.logger.warn(
-          'Review coach returned invalid shape — discarding',
-        );
+        this.logger.warn('Review coach returned invalid shape — discarding');
         return null;
       }
       return insight;

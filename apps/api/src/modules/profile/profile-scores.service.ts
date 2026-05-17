@@ -560,10 +560,7 @@ export class ProfileScoresService {
     refinedLength: number;
   }> {
     // Charge points before performing AI call
-    await this.pointsService.charge(
-      userId,
-      PointAction.AI_ACTIVITY_REFINE,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ACTIVITY_REFINE);
 
     const activity = await this.prisma.activity.findFirst({
       where: { id: activityId, profile: { userId } },
@@ -636,10 +633,7 @@ export class ProfileScoresService {
     activityId: string,
     locale: string,
   ): Promise<{ commonAppDescription: string }> {
-    await this.pointsService.charge(
-      userId,
-      PointAction.AI_ACTIVITY_REFINE,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ACTIVITY_REFINE);
 
     const activity = await this.prisma.activity.findFirst({
       where: { id: activityId, profile: { userId } },

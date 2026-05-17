@@ -141,7 +141,13 @@ export class HallPublicProfileService {
   }
 
   private topAwardTier(awards: AwardRow[]): string | null {
-    const tierOrder = ['INTERNATIONAL', 'NATIONAL', 'REGIONAL', 'STATE', 'SCHOOL'];
+    const tierOrder = [
+      'INTERNATIONAL',
+      'NATIONAL',
+      'REGIONAL',
+      'STATE',
+      'SCHOOL',
+    ];
     for (const tier of tierOrder) {
       if (awards.some((a) => a.level === tier)) return tier;
     }

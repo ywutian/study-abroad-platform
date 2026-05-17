@@ -320,9 +320,7 @@ describe('RecommendationService', () => {
         testScores: [{ id: 'ts-1' }],
         activities: [{ id: 'act-1' }],
       });
-      (pointsSvc as any).canPerformAction = jest
-        .fn()
-        .mockResolvedValue(true);
+      (pointsSvc as any).canPerformAction = jest.fn().mockResolvedValue(true);
 
       const result = await service.checkPreflight('user-1');
 
@@ -339,9 +337,7 @@ describe('RecommendationService', () => {
         testScores: [],
         activities: [],
       });
-      (pointsSvc as any).canPerformAction = jest
-        .fn()
-        .mockResolvedValue(true);
+      (pointsSvc as any).canPerformAction = jest.fn().mockResolvedValue(true);
 
       const result = await service.checkPreflight('user-1');
 
@@ -355,9 +351,7 @@ describe('RecommendationService', () => {
     it('should return canGenerate=false when no profile exists', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({ points: 100 });
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(null);
-      (pointsSvc as any).canPerformAction = jest
-        .fn()
-        .mockResolvedValue(true);
+      (pointsSvc as any).canPerformAction = jest.fn().mockResolvedValue(true);
 
       const result = await service.checkPreflight('user-1');
 

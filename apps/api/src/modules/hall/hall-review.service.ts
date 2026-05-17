@@ -14,10 +14,7 @@ import { fireAndForget } from '../../common/utils/async.util';
 import { Review, MemoryType, ReviewMethod, Prisma } from '@prisma/client';
 import { createPaginatedResponse } from '../../common/dto/pagination.dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import {
-  PointsService,
-  PointAction,
-} from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import {
   ContentModerationService,
   ModerationAction,

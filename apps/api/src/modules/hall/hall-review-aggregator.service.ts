@@ -153,7 +153,10 @@ export class HallReviewAggregatorService {
 
     // Trimmed mean: drop top + bottom 10%
     const trimCount = Math.floor(values.length * 0.1);
-    const trimmed = values.slice(trimCount, values.length - trimCount || undefined);
+    const trimmed = values.slice(
+      trimCount,
+      values.length - trimCount || undefined,
+    );
     const trimmedMean =
       trimmed.length > 0
         ? trimmed.reduce((a, b) => a + b, 0) / trimmed.length

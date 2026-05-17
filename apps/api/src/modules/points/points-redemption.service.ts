@@ -4,11 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  Prisma,
-  RedemptionStatus,
-  RedemptionType,
-} from '@prisma/client';
+import { Prisma, RedemptionStatus, RedemptionType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsService } from './incentive.service';
 import { PointsConfigService } from './points-config.service';
@@ -82,7 +78,9 @@ export class PointsRedemptionService {
         type,
         pointsSpent: cost,
         status: RedemptionStatus.PENDING,
-        metadata: (metadata ?? null) as Prisma.InputJsonValue | typeof Prisma.JsonNull,
+        metadata: (metadata ?? null) as
+          | Prisma.InputJsonValue
+          | typeof Prisma.JsonNull,
       },
     });
 
@@ -127,7 +125,9 @@ export class PointsRedemptionService {
               ...(redemption.metadata as Record<string, unknown> | null),
               fulfillment: fulfillmentMetadata,
             } as Prisma.InputJsonValue)
-          : (redemption.metadata as Prisma.InputJsonValue | typeof Prisma.JsonNull) ?? Prisma.JsonNull,
+          : ((redemption.metadata as
+              | Prisma.InputJsonValue
+              | typeof Prisma.JsonNull) ?? Prisma.JsonNull),
       },
     });
   }
@@ -135,10 +135,7 @@ export class PointsRedemptionService {
   /**
    * Cancel a redemption and refund the points (used when fulfillment fails).
    */
-  async cancel(
-    redemptionId: string,
-    reason: string,
-  ): Promise<void> {
+  async cancel(redemptionId: string, reason: string): Promise<void> {
     const redemption = await this.prisma.pointsRedemption.findUnique({
       where: { id: redemptionId },
     });
@@ -205,7 +202,8 @@ const REDEMPTION_COSTS: Record<RedemptionType, number> = {
 const REDEMPTION_DESCRIPTIONS: Record<RedemptionType, string> = {
   [RedemptionType.CONSULT_15MIN]: '顾问 15 分钟 1-on-1 咨询',
   [RedemptionType.MEMBERSHIP_MONTHLY]: '月度会员体验',
-  [RedemptionType.CASE_PREMIUM_UNLOCK]: '解锁 1 个高级案例（完整文书 + 推荐信策略）',
+  [RedemptionType.CASE_PREMIUM_UNLOCK]:
+    '解锁 1 个高级案例（完整文书 + 推荐信策略）',
   [RedemptionType.EXPERT_LIST_UNLOCK]: '解锁 1 个专家精选清单',
   [RedemptionType.PREDICTION_DEEP_DIVE]: 'Prediction 高级解读（含改进建议）',
 };

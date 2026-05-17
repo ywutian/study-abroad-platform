@@ -29,9 +29,7 @@ describe('HallListService', () => {
   };
 
   const mockPointsService = {
-    adjustPoints: jest
-      .fn()
-      .mockResolvedValue({ success: true, newBalance: 0 }),
+    adjustPoints: jest.fn().mockResolvedValue({ success: true, newBalance: 0 }),
   };
 
   beforeEach(async () => {

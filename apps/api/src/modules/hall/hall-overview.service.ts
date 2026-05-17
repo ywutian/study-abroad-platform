@@ -78,7 +78,7 @@ export class HallOverviewService {
       : null;
     const today = this.toUtcDate(new Date());
     const dailyChallengeCount =
-      dailyChallengeDate === today ? swipeStats?.dailyChallengeCount ?? 0 : 0;
+      dailyChallengeDate === today ? (swipeStats?.dailyChallengeCount ?? 0) : 0;
 
     return {
       points: {
@@ -99,7 +99,7 @@ export class HallOverviewService {
         completed: dailyChallengeCount >= DAILY_CHALLENGE_TARGET,
       },
       reviewer: {
-        level: user.reviewerLevel as ReviewerLevel,
+        level: user.reviewerLevel,
         credit: user.reviewerCredit,
         acceptPeerReview: user.acceptPeerReview,
         hallAvgRating: user.hallAvgRating,

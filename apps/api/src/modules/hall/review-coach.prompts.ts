@@ -137,7 +137,12 @@ export interface AggregatorPromptStats {
   reviewerCount: number;
   dimensionStats: Record<
     string,
-    { impressiveRate: number; notEnoughRate: number; unsureRate: number; weightedMean: number }
+    {
+      impressiveRate: number;
+      notEnoughRate: number;
+      unsureRate: number;
+      weightedMean: number;
+    }
   >;
   topQuickTags: string[];
 }

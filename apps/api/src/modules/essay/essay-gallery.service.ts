@@ -232,10 +232,7 @@ export class EssayGalleryService {
     schoolName?: string,
     locale = 'zh',
   ) {
-    await this.pointsService.charge(
-      userId,
-      PointAction.AI_ESSAY_GALLERY,
-    );
+    await this.pointsService.charge(userId, PointAction.AI_ESSAY_GALLERY);
 
     const essay = await this.getGalleryEssayDetail(caseId);
 

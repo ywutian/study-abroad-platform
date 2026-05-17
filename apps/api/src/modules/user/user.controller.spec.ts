@@ -110,8 +110,7 @@ describe('UserController', () => {
     controller = module.get<UserController>(UserController);
     userService = module.get<UserService>(UserService);
     dashboardService = module.get<DashboardService>(DashboardService);
-    pointsService =
-      module.get<PointsService>(PointsService);
+    pointsService = module.get<PointsService>(PointsService);
     pointsConfigService = module.get<PointsConfigService>(PointsConfigService);
   });
 
@@ -199,10 +198,7 @@ describe('UserController', () => {
     it('should return enriched point history with default limit', async () => {
       const result = await controller.getPointHistory(mockUser, undefined);
 
-      expect(pointsService.getPointHistory).toHaveBeenCalledWith(
-        'user-1',
-        20,
-      );
+      expect(pointsService.getPointHistory).toHaveBeenCalledWith('user-1', 20);
       expect(pointsConfigService.getAllRules).toHaveBeenCalled();
       expect(result).toHaveLength(2);
       expect(result[0]).toHaveProperty('description');
@@ -213,10 +209,7 @@ describe('UserController', () => {
     it('should use provided limit', async () => {
       await controller.getPointHistory(mockUser, '5');
 
-      expect(pointsService.getPointHistory).toHaveBeenCalledWith(
-        'user-1',
-        5,
-      );
+      expect(pointsService.getPointHistory).toHaveBeenCalledWith('user-1', 5);
     });
   });
 
@@ -262,10 +255,7 @@ describe('UserController', () => {
       const result = await controller.getPointSummary(mockUser);
 
       expect(pointsService.getUserPoints).toHaveBeenCalledWith('user-1');
-      expect(pointsService.getPointHistory).toHaveBeenCalledWith(
-        'user-1',
-        100,
-      );
+      expect(pointsService.getPointHistory).toHaveBeenCalledWith('user-1', 100);
       expect(result.currentPoints).toBe(100);
       expect(result.totalEarned).toBe(10);
       expect(result.totalSpent).toBe(5);
