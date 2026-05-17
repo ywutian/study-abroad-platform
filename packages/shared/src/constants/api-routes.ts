@@ -372,6 +372,7 @@ export const userRoutes = {
   dashboard: () => `${API_ROUTES.USERS}/me/dashboard`,
   referral: () => `${API_ROUTES.USERS}/me/referral`,
   referrals: () => `${API_ROUTES.USERS}/me/referrals`,
+  peerReviewSetting: () => `${API_ROUTES.USERS}/me/peer-review-setting`,
 };
 
 export const essayPromptRoutes = {

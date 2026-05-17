@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Delete, Put, Res, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Delete,
+  Patch,
+  Put,
+  Res,
+  Query,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -14,6 +23,7 @@ import { PointsConfigService } from '../points/points-config.service';
 import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { UpdateUserLocaleDto } from './dto/update-user-locale.dto';
+import { UpdatePeerReviewSettingDto } from './dto/update-peer-review-setting.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -63,6 +73,30 @@ export class UserController {
       message:
         'Account deleted successfully. Your data will be permanently removed within 30 days.',
     };
+  }
+
+  @Get('me/peer-review-setting')
+  @ApiOperation({
+    summary: 'Get Alumni Square peer-review opt-in state (and derived age)',
+  })
+  async getPeerReviewSetting(@CurrentUser() user: CurrentUserPayload) {
+    return this.userService.getPeerReviewSetting(user.id);
+  }
+
+  @Patch('me/peer-review-setting')
+  @ApiOperation({ summary: 'Toggle Alumni Square peer-review opt-in' })
+  @ApiResponse({
+    status: 403,
+    description: 'Users under 16 cannot enable peer reviews',
+  })
+  async updatePeerReviewSetting(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdatePeerReviewSettingDto,
+  ) {
+    return this.userService.updatePeerReviewSetting(
+      user.id,
+      dto.acceptPeerReview,
+    );
   }
 
   @Get('me/export')

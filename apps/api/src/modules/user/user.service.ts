@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
   Logger,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -71,6 +72,73 @@ export class UserService {
       where: { id },
       data,
     });
+  }
+
+  /**
+   * Read the current user's Alumni Square peer-review privacy state.
+   * Also derives age (when a profile birthday exists) so the frontend can
+   * gate the toggle for minors per the platform's youth-safety policy.
+   * @param id - The unique identifier of the user
+   * @returns Current opt-in flag plus an optional derived age
+   */
+  async getPeerReviewSetting(
+    id: string,
+  ): Promise<{ acceptPeerReview: boolean; age: number | null }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id, deletedAt: null },
+      select: {
+        acceptPeerReview: true,
+        profile: { select: { birthday: true } },
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      acceptPeerReview: user.acceptPeerReview,
+      age: this.deriveAge(user.profile?.birthday ?? null),
+    };
+  }
+
+  /**
+   * Update the current user's peer-review opt-in flag, enforcing the
+   * youth-safety rule: users under 16 cannot enable peer reviews.
+   * @param id - The unique identifier of the user
+   * @param acceptPeerReview - Desired opt-in state
+   * @throws {ForbiddenException} When a user under 16 attempts to opt in
+   * @returns The persisted opt-in flag
+   */
+  async updatePeerReviewSetting(
+    id: string,
+    acceptPeerReview: boolean,
+  ): Promise<{ acceptPeerReview: boolean }> {
+    const current = await this.getPeerReviewSetting(id);
+    if (acceptPeerReview && current.age !== null && current.age < 16) {
+      throw new ForbiddenException(
+        'Users under 16 cannot enable peer reviews.',
+      );
+    }
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: { acceptPeerReview },
+      select: { acceptPeerReview: true },
+    });
+    return { acceptPeerReview: updated.acceptPeerReview };
+  }
+
+  /** Derive whole-year age from a birthday; null when unknown. */
+  private deriveAge(birthday: Date | null): number | null {
+    if (!birthday) return null;
+    const now = new Date();
+    let age = now.getFullYear() - birthday.getFullYear();
+    const monthDiff = now.getMonth() - birthday.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && now.getDate() < birthday.getDate())
+    ) {
+      age -= 1;
+    }
+    return age >= 0 && age < 150 ? age : null;
   }
 
   /**
