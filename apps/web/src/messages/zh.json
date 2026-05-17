@@ -1383,7 +1383,7 @@
     "prediction": "录取预测",
     "cases": "案例库",
     "chat": "消息",
-    "hall": "功能大厅",
+    "hall": "校友广场",
     "forum": "论坛",
     "teams": "组队",
     "assessment": "性格测评",
@@ -1413,7 +1413,7 @@
       "assessment": "性格与职业兴趣测评",
       "timeline": "追踪申请截止日期与任务",
       "cases": "浏览真实录取结果与申请故事",
-      "hall": "招生官视角评估与排名对比",
+      "hall": "认证录取数据、同伴反馈与排名对比",
       "essayGallery": "浏览优秀录取文书案例",
       "chat": "与认证用户实时聊天交流",
       "vault": "安全存储敏感信息与密码",
@@ -2911,8 +2911,8 @@
     "youRecalledMessage": "你撤回了一条消息"
   },
   "hall": {
-    "title": "功能大厅",
-    "description": "招生官打分、排名对比、创建榜单",
+    "title": "校友广场",
+    "description": "认证录取数据、同伴反馈、排名对比与案例研习",
     "tabs": {
       "tinder": "预测游戏",
       "review": "同伴反馈",

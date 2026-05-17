@@ -1399,7 +1399,7 @@
     "prediction": "Admission Prediction",
     "cases": "Case Library",
     "chat": "Messages",
-    "hall": "Feature Hall",
+    "hall": "Alumni Square",
     "forum": "Forum",
     "teams": "Teams",
     "assessment": "Assessment",
@@ -1429,7 +1429,7 @@
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
       "cases": "Explore real admission outcomes and application stories",
-      "hall": "Admissions officer evaluation and rank comparison",
+      "hall": "Verified admit data, peer feedback and rank comparison",
       "essayGallery": "Browse excellent admission essay examples",
       "chat": "Real-time chat with verified users",
       "vault": "Securely store sensitive information and passwords",
@@ -2927,8 +2927,8 @@
     "youRecalledMessage": "You recalled a message"
   },
   "hall": {
-    "title": "Feature Hall",
-    "description": "Admissions officer scoring, rank comparison, create lists",
+    "title": "Alumni Square",
+    "description": "Verified admit data, peer feedback, rank comparison and case study",
     "tabs": {
       "tinder": "Prediction Game",
       "review": "Peer Pulse",
