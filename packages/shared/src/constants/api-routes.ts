@@ -113,6 +113,24 @@ export const hallRoutes = {
   verifiedRanking: () => `${API_ROUTES.HALLS}/verified-ranking`,
   swipe: () => `${API_ROUTES.HALLS}/swipe`,
   publicProfiles: () => `${API_ROUTES.HALLS}/public-profiles`,
+  // Hall refactor Phase 1 — new endpoints
+  meOverview: () => `${API_ROUTES.HALLS}/me/overview`,
+  challengeSubmit: () => `${API_ROUTES.HALLS}/swipe/challenge`,
+  // Hall refactor Stage 2 — aggregate, report, reviewer qualification
+  reviewAggregate: (profileUserId: string) =>
+    `${API_ROUTES.HALLS}/reviews/${profileUserId}/aggregate`,
+  reviewReport: (reviewId: string) =>
+    `${API_ROUTES.HALLS}/reviews/${reviewId}/report`,
+  reviewerQualification: () => `${API_ROUTES.HALLS}/reviewer/qualification`,
+  // Hall refactor Stage 5 — AI review coach
+  reviewerCoach: () => `${API_ROUTES.HALLS}/reviewer/coach`,
+};
+
+// Hall refactor Stage 7 — Points redemption (cross-module spend outlet)
+// (`pointsRoutes` already exists below — use a distinct namespace to avoid clash)
+export const pointsRedemptionRoutes = {
+  redemptions: () => `${API_ROUTES.POINTS}/redemptions`,
+  redemptionsCatalog: () => `${API_ROUTES.POINTS}/redemptions/catalog`,
 };
 
 export const chatRoutes = {

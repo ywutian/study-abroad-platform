@@ -17,7 +17,7 @@ import {
   ReviewVerificationDto,
   ReviewAction,
 } from './dto/review-verification.dto';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import {
   NotificationService,
   NotificationType,
@@ -32,7 +32,7 @@ export class VerificationService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
-    private caseIncentiveService: CaseIncentiveService,
+    private pointsService: PointsService,
     private notificationService: NotificationService,
   ) {}
 
@@ -267,7 +267,7 @@ export class VerificationService {
 
     // 奖励积分 (outside transaction, handled by centralized service)
     if (dto.action === ReviewAction.APPROVE) {
-      await this.caseIncentiveService
+      await this.pointsService
         .reward(request.userId, PointAction.VERIFICATION_APPROVED, {
           caseId: request.caseId,
         })

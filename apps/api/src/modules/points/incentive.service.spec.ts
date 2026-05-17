@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
-import { CaseIncentiveService } from './incentive.service';
+import { PointsService } from './incentive.service';
 import { PointsConfigService, PointAction } from './points-config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-describe('CaseIncentiveService', () => {
-  let service: CaseIncentiveService;
+describe('PointsService', () => {
+  let service: PointsService;
 
   const mockPrisma = {
     user: {
@@ -30,13 +30,13 @@ describe('CaseIncentiveService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        CaseIncentiveService,
+        PointsService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: PointsConfigService, useValue: mockPointsConfig },
       ],
     }).compile();
 
-    service = module.get<CaseIncentiveService>(CaseIncentiveService);
+    service = module.get<PointsService>(PointsService);
   });
 
   afterEach(() => {

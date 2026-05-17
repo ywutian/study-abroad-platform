@@ -11,26 +11,20 @@ import {
   NotificationType,
 } from '../notification/notification.service';
 import { fireAndForget } from '../../common/utils/async.util';
-import { Review, MemoryType } from '@prisma/client';
+import { Review, MemoryType, ReviewMethod, Prisma } from '@prisma/client';
 import { createPaginatedResponse } from '../../common/dto/pagination.dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
+import {
+  PointsService,
+  PointAction,
+} from '../points/incentive.service';
+import {
+  ContentModerationService,
+  ModerationAction,
+} from '../ai-agent/security/content-moderation.service';
 import { HALL_REVIEWER_SELECT } from './hall.constants';
-
-interface CreateReviewDto {
-  profileUserId: string;
-  academicScore: number;
-  testScore: number;
-  activityScore: number;
-  awardScore: number;
-  overallScore: number;
-  comment?: string;
-  academicComment?: string;
-  testComment?: string;
-  activityComment?: string;
-  awardComment?: string;
-  tags?: string[];
-  status?: 'DRAFT' | 'PUBLISHED';
-}
+// Use the validated DTO class (with class-validator decorators + @MaxLength) instead of a duplicate inline interface.
+import { CreateReviewDto } from './dto';
 
 @Injectable()
 export class HallReviewService {
@@ -39,6 +33,8 @@ export class HallReviewService {
   constructor(
     private prisma: PrismaService,
     private notificationService: NotificationService,
+    private pointsService: PointsService,
+    @Optional() private moderation?: ContentModerationService,
     @Optional() private memoryManager?: MemoryManagerService,
   ) {}
 
@@ -48,6 +44,38 @@ export class HallReviewService {
   ): Promise<Review> {
     if (reviewerId === data.profileUserId) {
       throw new BadRequestException('Cannot review yourself');
+    }
+
+    // Hall refactor Stage 2: content moderation gate.
+    // Combine all user-supplied text and run through the @Global() ContentModerationService.
+    // Optional because some test modules don't provide it; in production it's always present.
+    if (this.moderation) {
+      const combinedText = [
+        data.comment,
+        data.academicComment,
+        data.testComment,
+        data.activityComment,
+        data.awardComment,
+        ...(data.quickTags ?? []),
+      ]
+        .filter((s): s is string => typeof s === 'string' && s.length > 0)
+        .join(' ');
+
+      if (combinedText.length > 0) {
+        const result = await this.moderation.moderate(combinedText, {
+          context: 'input',
+        });
+        if (result.action === ModerationAction.BLOCK) {
+          throw new BadRequestException(
+            'Your review contains content that violates the community guidelines. Please revise.',
+          );
+        }
+        if (result.action === ModerationAction.WARN) {
+          this.logger.warn(
+            `Review by ${reviewerId} flagged WARN; severity=${result.severity}`,
+          );
+        }
+      }
     }
 
     const reviewData = {
@@ -64,6 +92,14 @@ export class HallReviewService {
       tags: data.tags || [],
       status:
         data.status === 'DRAFT' ? ('DRAFT' as const) : ('PUBLISHED' as const),
+      // Hall refactor Phase 1: Tinder swipe review fields (CLASSIC default for backward compat).
+      // swipeData uses Prisma.JsonNull sentinel to write SQL NULL (not the JSON value `null`).
+      reviewMethod: data.reviewMethod ?? ReviewMethod.CLASSIC,
+      swipeData: data.swipeData
+        ? (data.swipeData as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
+      reviewerConfidence: data.reviewerConfidence ?? null,
+      quickTags: data.quickTags ?? [],
     };
 
     const existing = await this.prisma.review.findUnique({
@@ -100,22 +136,19 @@ export class HallReviewService {
       );
 
       if (!existing) {
+        // Route through PointsService (dynamic admin config, not hardcoded).
+        // Pick the action based on review method: Tinder swipe reviews use the
+        // new REVIEW_SWIPE_COMPLETE action; classic 4-dim slider reviews keep SUBMIT_REVIEW.
+        const rewardAction =
+          reviewData.reviewMethod === ReviewMethod.SWIPE
+            ? PointAction.REVIEW_SWIPE_COMPLETE
+            : PointAction.SUBMIT_REVIEW;
         fireAndForget(
-          this.prisma.pointHistory
-            .create({
-              data: {
-                userId: reviewerId,
-                action: 'SUBMIT_REVIEW',
-                points: 20,
-                metadata: { profileUserId: data.profileUserId },
-              },
-            })
-            .then(() =>
-              this.prisma.user.update({
-                where: { id: reviewerId },
-                data: { points: { increment: 20 } },
-              }),
-            ),
+          this.pointsService.adjustPoints(reviewerId, rewardAction, {
+            profileUserId: data.profileUserId,
+            reviewId: review.id,
+            reviewMethod: reviewData.reviewMethod,
+          }),
           this.logger,
           'Failed to award review points',
         );
@@ -298,22 +331,18 @@ export class HallReviewService {
         'Failed to send helpful notification',
       );
 
+      // Route through PointsService (see comment in createReview).
+      // Choose action by review method so admin can tune Tinder vs classic helpful rewards separately.
+      const helpfulAction =
+        review.reviewMethod === ReviewMethod.SWIPE
+          ? PointAction.REVIEW_HELPFUL_RECEIVED
+          : PointAction.REVIEW_HELPFUL;
       fireAndForget(
-        this.prisma.pointHistory
-          .create({
-            data: {
-              userId: review.reviewerId,
-              action: 'REVIEW_HELPFUL',
-              points: 10,
-              metadata: { reviewId, reactedBy: userId },
-            },
-          })
-          .then(() =>
-            this.prisma.user.update({
-              where: { id: review.reviewerId },
-              data: { points: { increment: 10 } },
-            }),
-          ),
+        this.pointsService.adjustPoints(review.reviewerId, helpfulAction, {
+          reviewId,
+          reactedBy: userId,
+          reviewMethod: review.reviewMethod,
+        }),
         this.logger,
         'Failed to award helpful points',
       );

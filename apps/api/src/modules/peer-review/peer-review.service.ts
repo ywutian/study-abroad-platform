@@ -109,20 +109,8 @@ export class PeerReviewService {
         expiresAt,
       },
       include: {
-        reviewer: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
-        reviewee: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
+        reviewer: { select: USER_SUMMARY_SELECT },
+        reviewee: { select: USER_SUMMARY_SELECT },
       },
     });
 
@@ -140,20 +128,8 @@ export class PeerReviewService {
     const review = await this.prisma.peerReview.findUnique({
       where: { id: reviewId },
       include: {
-        reviewer: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
-        reviewee: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
+        reviewer: { select: USER_SUMMARY_SELECT },
+        reviewee: { select: USER_SUMMARY_SELECT },
       },
     });
 
@@ -221,20 +197,8 @@ export class PeerReviewService {
           : {}),
       },
       include: {
-        reviewer: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
-        reviewee: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
+        reviewer: { select: USER_SUMMARY_SELECT },
+        reviewee: { select: USER_SUMMARY_SELECT },
       },
     });
 
@@ -258,20 +222,8 @@ export class PeerReviewService {
         OR: [{ reviewerId: userId }, { revieweeId: userId }],
       },
       include: {
-        reviewer: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
-        reviewee: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
+        reviewer: { select: USER_SUMMARY_SELECT },
+        reviewee: { select: USER_SUMMARY_SELECT },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -371,20 +323,8 @@ export class PeerReviewService {
         ],
       },
       include: {
-        reviewer: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
-        reviewee: {
-          select: {
-            id: true,
-            role: true,
-            profile: { select: { realName: true, avatarUrl: true } },
-          },
-        },
+        reviewer: { select: USER_SUMMARY_SELECT },
+        reviewee: { select: USER_SUMMARY_SELECT },
       },
       orderBy: { completedAt: 'desc' },
     });
@@ -416,11 +356,17 @@ export class PeerReviewService {
   private async updateUserRating(userId: string): Promise<void> {
     const rating = await this.getUserRating(userId);
 
+    // Hall refactor Phase 1: dual-write the legacy avgRating/reviewCount fields
+    // (kept for one cycle of backward compat) AND the new peer-owned fields.
+    // hall-review aggregates write to hallAvgRating/hallReviewCount separately.
+    // Stage 6 will drop the legacy columns.
     await this.prisma.user.update({
       where: { id: userId },
       data: {
         avgRating: rating.overall,
         reviewCount: rating.count,
+        peerAvgRating: rating.overall,
+        peerReviewCount: rating.count,
       },
     });
   }

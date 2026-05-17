@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EssayAiService } from './essay-ai.service';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import {
   CASE_PUBLIC_WHERE,
@@ -21,7 +21,7 @@ export class EssayGalleryService {
   constructor(
     private prisma: PrismaService,
     private essayAiService: EssayAiService,
-    private caseIncentiveService: CaseIncentiveService,
+    private pointsService: PointsService,
   ) {}
 
   /**
@@ -232,7 +232,7 @@ export class EssayGalleryService {
     schoolName?: string,
     locale = 'zh',
   ) {
-    await this.caseIncentiveService.charge(
+    await this.pointsService.charge(
       userId,
       PointAction.AI_ESSAY_GALLERY,
     );
@@ -241,7 +241,7 @@ export class EssayGalleryService {
 
     if (!essay.content) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_GALLERY,
         this.logger,
@@ -264,7 +264,7 @@ export class EssayGalleryService {
       };
     } catch (error) {
       await safeRefund(
-        this.caseIncentiveService,
+        this.pointsService,
         userId,
         PointAction.AI_ESSAY_GALLERY,
         this.logger,

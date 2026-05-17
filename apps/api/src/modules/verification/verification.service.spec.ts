@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { VerificationService } from './verification.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../../common/storage/storage.service';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { NotificationService } from '../notification/notification.service';
 import {
   NotFoundException,
@@ -17,7 +17,7 @@ describe('VerificationService', () => {
   let service: VerificationService;
   let prisma: PrismaService;
   let storage: StorageService;
-  let caseIncentive: CaseIncentiveService;
+  let pointsSvc: PointsService;
 
   const mockCase = {
     id: 'case-1',
@@ -84,7 +84,7 @@ describe('VerificationService', () => {
           },
         },
         {
-          provide: CaseIncentiveService,
+          provide: PointsService,
           useValue: {
             reward: jest.fn().mockResolvedValue(undefined),
           },
@@ -99,7 +99,7 @@ describe('VerificationService', () => {
     service = module.get<VerificationService>(VerificationService);
     prisma = module.get<PrismaService>(PrismaService);
     storage = module.get<StorageService>(StorageService);
-    caseIncentive = module.get<CaseIncentiveService>(CaseIncentiveService);
+    pointsSvc = module.get<PointsService>(PointsService);
   });
 
   afterEach(() => {
@@ -326,7 +326,7 @@ describe('VerificationService', () => {
           data: { role: Role.VERIFIED },
         }),
       );
-      expect(caseIncentive.reward).toHaveBeenCalled();
+      expect(pointsSvc.reward).toHaveBeenCalled();
     });
 
     it('should reject verification without updating case or user', async () => {
@@ -356,7 +356,7 @@ describe('VerificationService', () => {
 
       expect(txMock.admissionCase.update).not.toHaveBeenCalled();
       expect(txMock.user.update).not.toHaveBeenCalled();
-      expect(caseIncentive.reward).not.toHaveBeenCalled();
+      expect(pointsSvc.reward).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if request does not exist', async () => {
@@ -404,7 +404,7 @@ describe('VerificationService', () => {
         user: { update: jest.fn() },
       };
       (prisma.$transaction as jest.Mock).mockImplementation((fn) => fn(txMock));
-      (caseIncentive.reward as jest.Mock).mockRejectedValue(
+      (pointsSvc.reward as jest.Mock).mockRejectedValue(
         new Error('Points error'),
       );
 

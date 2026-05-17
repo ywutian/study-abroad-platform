@@ -18,8 +18,27 @@ import {
 } from '@nestjs/swagger';
 import { HallService } from './hall.service';
 import { SwipeService } from './swipe.service';
-import { CurrentUser, Public } from '../../common/decorators';
+import {
+  HallOverviewService,
+  type HallOverviewPayload,
+} from './hall-overview.service';
+import {
+  HallReviewAggregatorService,
+  type AggregatedReviewPayload,
+} from './hall-review-aggregator.service';
+import {
+  ReviewerQualificationService,
+  type QualificationQuestion,
+  type QualificationAnswer,
+  type QualificationResult,
+} from './reviewer-qualification.service';
+import { ReviewCoachService } from './review-coach.service';
+import type { ReviewerInsight } from './review-coach.prompts';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ReportTargetType } from '@prisma/client';
+import { CurrentUser, Public, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { Role } from '@prisma/client';
 import {
   ThrottleRelaxed,
   ThrottleAI,
@@ -54,7 +73,123 @@ export class HallController {
   constructor(
     private readonly hallService: HallService,
     private readonly swipeService: SwipeService,
+    private readonly hallOverviewService: HallOverviewService,
+    private readonly aggregatorService: HallReviewAggregatorService,
+    private readonly qualificationService: ReviewerQualificationService,
+    private readonly reviewCoachService: ReviewCoachService,
+    private readonly prisma: PrismaService,
   ) {}
+
+  // ============================================
+  // Hall refactor Phase 1: aggregated BFF endpoint
+  // ============================================
+
+  @Get('me/overview')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Aggregated overview for Hall hero bar (points, swipe, daily challenge, reviewer, activity)',
+  })
+  async getOverview(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<HallOverviewPayload> {
+    return this.hallOverviewService.getOverview(user.id);
+  }
+
+  // ============================================
+  // Stage 2: Review aggregation, reporting, reviewer qualification
+  // ============================================
+
+  @Get('reviews/:profileUserId/aggregate')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Aggregate of reviews for an applicant (returns inProgress=true below 7-review threshold)',
+  })
+  async aggregateReviews(
+    @Param('profileUserId') profileUserId: string,
+  ): Promise<AggregatedReviewPayload | null> {
+    return this.aggregatorService.aggregateForApplicant(profileUserId);
+  }
+
+  @Post('reviews/:reviewId/report')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Report a review (reuses central Report queue for admin triage)',
+  })
+  async reportReview(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('reviewId') reviewId: string,
+    @Body() body: { reason: string; detail?: string },
+  ) {
+    // Sanity: don't allow reporting your own review
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+      select: { id: true, reviewerId: true },
+    });
+    if (!review) {
+      return { success: false, message: 'Review not found' };
+    }
+    if (review.reviewerId === user.id) {
+      return { success: false, message: 'Cannot report your own review' };
+    }
+    const report = await this.prisma.report.create({
+      data: {
+        reporterId: user.id,
+        targetType: ReportTargetType.REVIEW,
+        targetId: reviewId,
+        reason: body.reason?.slice(0, 200) ?? 'unspecified',
+        detail: body.detail?.slice(0, 5000),
+      },
+    });
+    return { success: true, reportId: report.id };
+  }
+
+  @Get('reviewer/qualification')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get the L1→L2 reviewer qualification quiz (3 questions)',
+  })
+  async getReviewerQualificationQuiz(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<QualificationQuestion[]> {
+    return this.qualificationService.getQuestions(user.id);
+  }
+
+  @Post('reviewer/qualification')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Submit qualification quiz answers (60% to promote L1→L2)',
+  })
+  async submitReviewerQualification(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: { answers: QualificationAnswer[] },
+  ): Promise<QualificationResult> {
+    return this.qualificationService.submitAnswers(user.id, body.answers ?? []);
+  }
+
+  // ============================================
+  // Stage 5: AI Review Coach (gentle reflective feedback)
+  // ============================================
+
+  @Post('reviewer/coach')
+  @ThrottleAI()
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'AI Review Coach: reflective insight on reviewer style (gated by reviewer aiCoachConsent)',
+  })
+  async getReviewerCoachInsight(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body?: { locale?: 'en' | 'zh' },
+  ): Promise<{ insight: ReviewerInsight | null; fallback: boolean }> {
+    const insight = await this.reviewCoachService.generateInsight(
+      user.id,
+      body?.locale ?? user.locale === 'en' ? 'en' : 'zh',
+    );
+    // Graceful degradation: AI failures never block the review flow.
+    return { insight, fallback: insight === null };
+  }
 
   // ============================================
   // Public Profiles
@@ -253,9 +388,13 @@ export class HallController {
     return this.hallService.getListById(id);
   }
 
+  // Hall refactor Phase 2: Lists are transitioning to ADMIN-curated expert lists.
+  // Mutations are restricted to OPERATOR/ADMIN/SUPER_ADMIN; voting is restricted
+  // similarly until the new "expert curated" UX ships in Stage 3.
   @Post('lists')
+  @Roles(Role.OPERATOR, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create user list' })
+  @ApiOperation({ summary: 'Create a curated list (admin/editor only)' })
   async createList(
     @CurrentUser() user: CurrentUserPayload,
     @Body() data: CreateUserListDto,
@@ -264,8 +403,9 @@ export class HallController {
   }
 
   @Put('lists/:id')
+  @Roles(Role.OPERATOR, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update my list' })
+  @ApiOperation({ summary: 'Update a curated list (admin/editor only)' })
   async updateList(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -275,8 +415,9 @@ export class HallController {
   }
 
   @Delete('lists/:id')
+  @Roles(Role.OPERATOR, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete my list' })
+  @ApiOperation({ summary: 'Delete a curated list (admin/editor only)' })
   async deleteList(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -286,8 +427,9 @@ export class HallController {
   }
 
   @Post('lists/:id/vote')
+  @Roles(Role.OPERATOR, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Vote on a list' })
+  @ApiOperation({ summary: 'Vote on a list (deprecated — admin tooling only)' })
   async voteList(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -297,8 +439,11 @@ export class HallController {
   }
 
   @Delete('lists/:id/vote')
+  @Roles(Role.OPERATOR, Role.ADMIN, Role.SUPER_ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Remove vote from list' })
+  @ApiOperation({
+    summary: 'Remove vote from list (deprecated — admin tooling only)',
+  })
   async removeVote(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

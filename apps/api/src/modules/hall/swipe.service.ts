@@ -28,7 +28,7 @@ import {
   SwipeBadge,
 } from './swipe-dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { CaseIncentiveService, PointAction } from '../points/incentive.service';
+import { PointsService, PointAction } from '../points/incentive.service';
 import { PointsConfigService } from '../points/points-config.service';
 
 // 徽章升级阈值
@@ -92,7 +92,7 @@ export class SwipeService {
 
   constructor(
     private prisma: PrismaService,
-    private caseIncentiveService: CaseIncentiveService,
+    private pointsService: PointsService,
     private pointsConfig: PointsConfigService,
     @Optional()
     private memoryManager?: MemoryManagerService,
@@ -237,7 +237,7 @@ export class SwipeService {
       // Award points outside transaction via centralized service
       if (pointsEarned > 0) {
         fireAndForget(
-          this.caseIncentiveService.adjustPoints(
+          this.pointsService.adjustPoints(
             userId,
             PointAction.SWIPE_CORRECT,
             { caseId: dto.caseId, streak: newStreak },
@@ -703,7 +703,12 @@ export class SwipeService {
     const caseIds = Object.keys(guesses);
     const cases = await this.prisma.admissionCase.findMany({
       where: { id: { in: caseIds }, ...CASE_REVIEW_APPROVED_WHERE },
-      select: { id: true, result: true, school: { select: { name: true } } },
+      select: {
+        id: true,
+        result: true,
+        userId: true, // Hall refactor Phase 1: needed for ChallengeAttempt.applicantUserId
+        school: { select: { name: true } },
+      },
     });
 
     let correct = 0;
@@ -723,6 +728,66 @@ export class SwipeService {
 
     const accuracy =
       cases.length > 0 ? Math.round((correct / cases.length) * 100) : 0;
+
+    // ============================================================
+    // Hall refactor Phase 1: persist the attempt + award daily reward
+    // (previously this method only returned in-memory results — no
+    //  persistence, no leaderboard, no challenge history possible)
+    // ============================================================
+    let attemptId: string | null = null;
+    let rewardEarned = 0;
+    const applicantUserId = cases[0]?.userId;
+    if (applicantUserId && cases.length > 0) {
+      // Persist regardless of reward (we want full attempt history).
+      const attempt = await this.prisma.challengeAttempt.create({
+        data: {
+          userId,
+          applicantUserId,
+          caseIds: cases.map((c) => c.id),
+          guesses: guesses as Prisma.InputJsonValue,
+          correctCount: correct,
+          totalCount: cases.length,
+          accuracy,
+        },
+      });
+      attemptId = attempt.id;
+
+      // Daily limit: reward CHALLENGE_COMPLETE at most once per UTC day.
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
+      const alreadyRewardedToday = await this.prisma.pointHistory.findFirst({
+        where: {
+          userId,
+          action: PointAction.CHALLENGE_COMPLETE,
+          createdAt: { gte: todayStart },
+        },
+        select: { id: true },
+      });
+      if (!alreadyRewardedToday) {
+        // Read configured value so the response can show the expected reward
+        // even though we write via fireAndForget. If admin set this to 0 the
+        // client will simply skip the "+N points" toast.
+        rewardEarned = await this.pointsConfig.getPointValue(
+          PointAction.CHALLENGE_COMPLETE,
+        );
+        // fireAndForget so a points failure never blocks the response.
+        fireAndForget(
+          this.pointsService.adjustPoints(
+            userId,
+            PointAction.CHALLENGE_COMPLETE,
+            {
+              attemptId,
+              applicantUserId,
+              correct,
+              total: cases.length,
+              accuracy,
+            },
+          ),
+          this.logger,
+          'Failed to award challenge points',
+        );
+      }
+    }
 
     // Memory integration: record challenge results
     if (this.memoryManager) {
@@ -744,7 +809,11 @@ export class SwipeService {
       }
     }
 
+    // Shape matches shared `ChallengeAttemptResult` so web/mobile can rely
+    // on `attemptId` for deep-links and `rewardEarned` for "+N points" toasts.
     return {
+      attemptId,
+      rewardEarned,
       results,
       correct,
       total: cases.length,

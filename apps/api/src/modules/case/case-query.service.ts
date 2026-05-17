@@ -19,7 +19,7 @@ import {
   createPaginatedResponse,
   PaginatedResponseDto,
 } from '../../common/dto/pagination.dto';
-import { CaseIncentiveService } from '../points/incentive.service';
+import { PointsService } from '../points/incentive.service';
 import { SCHOOL_NAME_RANK_SELECT } from '../../common/constants/prisma-selects';
 import { CaseMemoryService } from './case-memory.service';
 
@@ -50,7 +50,7 @@ export class CaseQueryService {
     private prisma: PrismaService,
     private caseMemoryService: CaseMemoryService,
     @Optional()
-    private caseIncentiveService?: CaseIncentiveService,
+    private pointsService?: PointsService,
   ) {}
 
   /**
@@ -240,9 +240,9 @@ export class CaseQueryService {
 
     // ANONYMOUS visibility - allow public access
     // 扣除查看积分（首次查看才扣）
-    if (requesterId && this.caseIncentiveService) {
+    if (requesterId && this.pointsService) {
       fireAndForget(
-        this.caseIncentiveService.chargeViewCaseDetail(requesterId, id),
+        this.pointsService.chargeViewCaseDetail(requesterId, id),
         this.logger,
         'Failed to charge view case detail',
       );

@@ -18,8 +18,8 @@ export { PointAction } from './points-config.service';
  * 积分值和开关状态从 PointsConfigService 动态读取（管理员可配置）。
  */
 @Injectable()
-export class CaseIncentiveService {
-  private readonly logger = new Logger(CaseIncentiveService.name);
+export class PointsService {
+  private readonly logger = new Logger(PointsService.name);
 
   constructor(
     private prisma: PrismaService,
@@ -52,13 +52,29 @@ export class CaseIncentiveService {
     }
 
     // Get dynamic point value from config, or use override (for variable-value actions like swipe)
+    const isKnownAction = Object.values(PointAction).includes(
+      action as PointAction,
+    );
     const pointValue =
       pointsOverride ??
-      (Object.values(PointAction).includes(action as PointAction)
+      (isKnownAction
         ? await this.pointsConfig.getPointValue(action as PointAction)
         : 0);
 
     if (pointValue === 0) {
+      // Surface silent-zero conditions instead of failing quietly
+      // (the historical bug: unregistered actions silently returned success with 0 points).
+      if (!isKnownAction && pointsOverride === undefined) {
+        this.logger.warn(
+          `Silent zero-point: action="${String(action)}" not in PointAction enum (userId=${userId}). ` +
+            `Register the action in points-config.service.ts + settings.service.ts SETTING_KEYS.`,
+        );
+      } else if (isKnownAction && pointsOverride === undefined) {
+        // Registered but explicitly configured to 0 — informational only.
+        this.logger.debug(
+          `Configured zero-point: ${String(action)} (userId=${userId}) — skipping write`,
+        );
+      }
       return { success: true, newBalance: await this.getUserPoints(userId) };
     }
 

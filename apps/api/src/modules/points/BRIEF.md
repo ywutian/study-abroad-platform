@@ -22,7 +22,7 @@ PrismaService, PointsConfigService, EventEmitter2 (listens to USER_REGISTERED fo
 
 ## Business Rules
 
-- ALL point mutations must go through `CaseIncentiveService` — never modify `user.points` directly
+- ALL point mutations must go through `PointsService` — never modify `user.points` directly
 - Points system can be globally disabled (all operations return success with 0 balance)
 - Action values are admin-configurable at runtime (not hardcoded)
 - Negative adjustments (charges) fail if insufficient balance
@@ -31,7 +31,7 @@ PrismaService, PointsConfigService, EventEmitter2 (listens to USER_REGISTERED fo
 
 ## Gotchas
 
-- Service is named `CaseIncentiveService` (legacy name) but handles ALL point operations platform-wide
+- Service is named `PointsService` (legacy name) but handles ALL point operations platform-wide
 - `PointAction` enum re-exported from `points-config.service.ts` for backward compatibility
 - `safeRefund()` helper used by essay-ai and other modules to refund on LLM failure
 - `@Optional()` injection in consumer modules means points system is gracefully degradable

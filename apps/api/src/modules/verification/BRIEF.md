@@ -17,7 +17,7 @@ Identity verification for admission cases — users submit proof documents, admi
 
 ## Dependencies
 
-StorageService (file upload), CaseIncentiveService (points reward), NotificationService | AI/LLM: No
+StorageService (file upload), PointsService (points reward), NotificationService | AI/LLM: No
 
 ## Business Rules
 

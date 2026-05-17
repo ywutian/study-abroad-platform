@@ -16,7 +16,7 @@ Public profile showcase: community rankings, reviews, user-curated school lists,
 
 ## Data Model
 
-Review (reviewerId, profileId, rating, content), UserList (title, schools), UserListVote, HallReaction, SwipeAction (userId, targetId, action). References: User, Profile, School.
+Review (reviewerId, profileUserId, academicScore/testScore/activityScore/awardScore/overallScore, comments, tags, status, helpfulCount), ReviewReaction (reviewId, userId, type), UserList (title, items[]), UserListVote, CaseSwipe (userId, caseId, prediction), SwipeStats (per-user aggregates + badge). References: User, Profile, School, AdmissionCase.
 
 ## Dependencies
 

@@ -7,8 +7,13 @@ import {
   IsArray,
   IsBoolean,
   ArrayMinSize,
+  ArrayMaxSize,
+  IsEnum,
+  IsObject,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ReviewMethod } from '@prisma/client';
 
 export class CreateReviewDto {
   @ApiProperty({ description: 'User ID of the profile being reviewed' })
@@ -62,35 +67,42 @@ export class CreateReviewDto {
   @Max(10)
   overallScore: number;
 
-  @ApiPropertyOptional({ description: 'General comment' })
+  @ApiPropertyOptional({ description: 'General comment (max 50000 chars)' })
   @IsOptional()
   @IsString()
+  @MaxLength(50000)
   comment?: string;
 
-  @ApiPropertyOptional({ description: 'Academic module comment' })
+  @ApiPropertyOptional({ description: 'Academic module comment (max 2000 chars)' })
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   academicComment?: string;
 
-  @ApiPropertyOptional({ description: 'Test scores module comment' })
+  @ApiPropertyOptional({ description: 'Test scores module comment (max 2000 chars)' })
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   testComment?: string;
 
-  @ApiPropertyOptional({ description: 'Activities module comment' })
+  @ApiPropertyOptional({ description: 'Activities module comment (max 2000 chars)' })
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   activityComment?: string;
 
-  @ApiPropertyOptional({ description: 'Awards module comment' })
+  @ApiPropertyOptional({ description: 'Awards module comment (max 2000 chars)' })
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   awardComment?: string;
 
   @ApiPropertyOptional({ description: 'Review tags', type: [String] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(10)
   @IsString({ each: true })
+  @MaxLength(50, { each: true })
   tags?: string[];
 
   @ApiPropertyOptional({
@@ -99,7 +111,49 @@ export class CreateReviewDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   status?: 'DRAFT' | 'PUBLISHED';
+
+  // ===== Hall refactor Phase 1: Tinder-style swipe review fields (all optional, backward compatible) =====
+
+  @ApiPropertyOptional({
+    description: 'Review method: CLASSIC (legacy slider) or SWIPE (Tinder UI)',
+    enum: ReviewMethod,
+    default: ReviewMethod.CLASSIC,
+  })
+  @IsOptional()
+  @IsEnum(ReviewMethod)
+  reviewMethod?: ReviewMethod;
+
+  @ApiPropertyOptional({
+    description:
+      'Swipe metadata: { directionsPerStep: { academic|test|activity|award: "left"|"right"|"up" }, ... }',
+  })
+  @IsOptional()
+  @IsObject()
+  swipeData?: Record<string, unknown>;
+
+  @ApiPropertyOptional({
+    description: 'Reviewer confidence 1-100 (derived from drag distance)',
+    minimum: 1,
+    maximum: 100,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  reviewerConfidence?: number;
+
+  @ApiPropertyOptional({
+    description: 'Strength/weakness multi-select tags',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(50, { each: true })
+  quickTags?: string[];
 }
 
 export class CreateUserListDto {
