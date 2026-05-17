@@ -89,15 +89,35 @@ export function ChatContextPanel({
       <ScrollArea className="min-w-0 min-h-0 flex-1">
         <div className="space-y-5 p-4">
           <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted/40">
+            {/* 2026-05 hotfix (follow-up to #217-#219): the avatar+title
+                row needs BOTH defenses to actually truncate:
+                  (a) parent flex container: `min-w-0` (so itself can
+                      shrink below content's intrinsic width)
+                  (b) the text wrapper: `min-w-0 flex-1`
+                  (c) the fixed-size avatar: `shrink-0`
+                The previous code had only `min-w-0` on the text
+                wrapper. `min-w-0` alone PERMITS shrinking but doesn't
+                FORCE the element to constrain — without `flex-1` it
+                grew to fit the long title (e.g. "Regeneron STS /
+                Innovation Track · Science Fair Innovators × 全栈开发组")
+                and pushed the whole row past the viewport. The
+                truncate ellipsis never appeared on this row because
+                the element was wider than the panel; the visual cut
+                at the viewport edge was just <main>'s production
+                overflow-x-clip hiding the overflow.
+
+                The members section below (line ~167) had the correct
+                `min-w-0 flex-1` combo all along — proof this is the
+                canonical pattern for flex-row + truncate. */}
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
                 {isDirect ? (
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 ) : (
                   <Users className="h-5 w-5 text-primary" />
                 )}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{title}</p>
                 <p className="text-xs text-muted-foreground">
                   {isDirect
