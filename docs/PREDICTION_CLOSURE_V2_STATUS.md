@@ -9,18 +9,25 @@
 
 **Continuous Closure Engine is built and running on real data.**
 
-- `ClosureTarget` work-queue table — 2538 targets (240 schools × tracked fields).
-- Closure: **56.1%** (1423/2538 — 1231 CLOSED + 192 UNAVAILABLE; 74 FAILED, 1041 PENDING), up from 42.3% baseline (4 collection waves, 15 subagents).
-- Per-field: act25/75 100% · oosAcceptanceRate 100% · gpaDistribution 92.5% ·
-  transferAcceptanceRate 85% · edAcceptanceRate 47% · yieldRate 37% ·
-  eaAcceptanceRate 29% · needBlindInternational 24% · ed2 / hasRestrictiveEa 10%.
-- Wave 4 (4 subagents): yieldRate ×2 (59/59 CLOSED), needblind b4, CDS-PDF
-  extractor for ed2/REA. **Structural finding**: `ed2AcceptanceRate` is not
-  derivable — CDS C21 reports a single combined ED count, never separates ED II
-  → that field will be ~all-UNAVAILABLE (honest terminal closure).
-- **needBlindInternational ceiling**: most schools (esp. publics) never publish
-  an explicit international admission-review policy → many targets legitimately
-  FAILED/UNAVAILABLE. FAILED-after-verification should be reclassified UNAVAILABLE.
+- `ClosureTarget` work-queue table — **7293 targets** (comprehensive scope:
+  240 schools × 26 fields + 165 HighSchools × 7 fields).
+- Closure: **83.9%** (6116/7293 — 5801 CLOSED + 315 UNAVAILABLE; 82 FAILED,
+  1095 PENDING). 5 collection waves, 22 subagents.
+- The earlier "56.1%" measured only the 11 hardest fields; the 83.9% is the
+  honest comprehensive figure (many School fields — acceptanceRate, SAT bands,
+  descriptions, enrolment — were already populated pre-closure-v2).
+- **1095 PENDING + 82 FAILED = 1177 targets remain** for the engine.
+- Structural findings (engine self-learned, applied to batch selection):
+  - `ed2AcceptanceRate` not derivable — CDS C21 never separates ED II → ~all UNAVAILABLE.
+  - `gpaDistribution` (CDS C11) commonly blank even at research unis → regional/
+    state universities are the productive targets.
+  - ED/EA round rates: publics largely have no ED & publish no EA-round rate → UNAVAILABLE.
+  - `needBlindInternational`: most schools never publish an explicit intl
+    admission-review policy → many legitimately FAILED/UNAVAILABLE.
+  - `yieldRate`: fully tractable — every batch ~100% CLOSED from CDS C2 / IPEDS.
+- Known cleanup item: duplicate School rows (UMN Twin Cities, Penn State,
+  Binghamton) — flagged by multiple agents; dedupe pass needed.
+- FAILED-after-verification targets should be reclassified UNAVAILABLE.
 - Collection wave 1 — 4 Claude subagents, real WebSearch+WebFetch+parse:
   - needBlindInternational: 8 resolved (cited official sources), 17 honest null
   - edAcceptanceRate: 30 UNAVAILABLE (verified no binding ED / no published rate)
