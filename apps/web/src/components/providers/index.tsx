@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { OfflineIndicator } from '@/components/ui/offline-indicator';
 import { TourProvider } from '@/components/features/onboarding/tour-provider';
 import { FeedbackWidget } from '@/components/features/feedback/feedback-widget';
+import { OverflowDetector } from '@/components/dev/overflow-detector';
 import { useAuthStore, startTokenRefreshInterval, stopTokenRefreshInterval } from '@/stores/auth';
 import { ThemeAppearanceManager } from '@/hooks/use-theme-appearance-overrides';
 import { HeroVisualManager } from '@/hooks/use-hero-visual';
@@ -63,6 +64,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
                   <Toaster position="top-center" richColors />
                   <OfflineIndicator />
                   <FeedbackWidget />
+                  {/* Dev-only: warns on horizontal overflow that the
+                      production overflow-x-clip would otherwise hide.
+                      Renders nothing in production. */}
+                  <OverflowDetector />
                 </TourProvider>
               </TooltipProvider>
             </ProgressProvider>

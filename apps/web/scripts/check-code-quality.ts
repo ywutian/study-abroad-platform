@@ -12,6 +12,8 @@
  * 8. Tooltip used without TooltipProvider (runtime crash)
  * 9. DS semantic aliases bypassing the shared --ds-* namespace
  * 10. Undefined --ds-* references in web source
+ * 11. Custom CSS Grid template (grid-cols-[...]) without min-w-0
+ *     on the grid container itself (PR #214/#215/#217 root cause)
  *
  * Usage:
  *   npx tsx scripts/check-code-quality.ts           # Check all
@@ -575,6 +577,52 @@ function checkDsVarBypass(filePath: string, lines: string[]): Issue[] {
   return issues;
 }
 
+// 2026-05 PR 3 (follow-up to #214/#215/#217):
+// Custom CSS Grid templates that use bespoke pixel/minmax column
+// definitions (e.g. `grid-cols-[360px_1fr_320px]`,
+// `lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)_minmax(260px,320px)]`)
+// MUST set `min-w-0` on the grid container itself. CSS Grid defaults
+// each item's `min-width` to `auto`, which refuses to shrink below the
+// intrinsic content width. Without min-w-0 on the container, a long
+// child can push the container past its allotted parent width,
+// cascading through every ancestor and ultimately past the viewport.
+//
+// We allow the standard `grid-cols-N` shorthand (no custom template)
+// because those don't trigger the auto-min-width pathology in the
+// same way (Tailwind's defaults pair them with safe child sizing).
+//
+// Severity = warning (not error) so existing pages with long-tail
+// false positives don't block CI immediately; the rule will be
+// upgraded to error once the codebase is clean.
+const CUSTOM_GRID_TEMPLATE_PATTERN = /(?:lg:|xl:|2xl:|md:|sm:)?grid-cols-\[[^\]]+\]/;
+
+function checkGridMinW(filePath: string, lines: string[]): Issue[] {
+  const issues: Issue[] = [];
+  if (!filePath.endsWith('.tsx')) return issues;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isCommentLine(line)) continue;
+    if (!CUSTOM_GRID_TEMPLATE_PATTERN.test(line)) continue;
+
+    // Look for `min-w-0` on the SAME line (where the className lives).
+    // We tolerate `lg:min-w-0` / `md:min-w-0` too — same idea, just
+    // breakpoint-scoped. Also tolerate explicit `min-w-` with any
+    // value (e.g. `min-w-full`).
+    if (/\bmin-w-(?:0|full|\[[^\]]+\])\b/.test(line)) continue;
+
+    issues.push({
+      file: relativePath(filePath),
+      line: i + 1,
+      rule: 'no-missing-min-w-in-grid-container',
+      message:
+        'Custom CSS Grid template without `min-w-0` on the grid container — long content in any cell can push the container past its parent width (see PR #214/#215/#217). Add `min-w-0` to the same className.',
+      severity: 'warning',
+    });
+  }
+  return issues;
+}
+
 function checkUndefinedDsVar(
   filePath: string,
   lines: string[],
@@ -634,6 +682,7 @@ function main() {
       ...checkDecorativeRotate(filePath, lines),
       ...checkDsVarBypass(filePath, lines),
       ...checkUndefinedDsVar(filePath, lines, definedDsTokens),
+      ...checkGridMinW(filePath, lines),
       ...checkPageSize(filePath, lines),
       ...checkConsole(filePath, lines),
       ...checkMissingLoading(filePath),
