@@ -2931,11 +2931,16 @@
     "description": "Admissions officer scoring, rank comparison, create lists",
     "tabs": {
       "tinder": "Prediction Game",
-      "review": "Review Mode",
+      "review": "Peer Pulse",
       "ranking": "Rank Comparison",
       "lists": "User Lists",
       "challenge": "Community Challenge",
-      "verified": "Verified Ranking"
+      "verified": "China Admit Dashboard",
+      "path": "Alumni Journey",
+      "verifiedDesc": "Verified admit data: China admit counts, difficulty signals, ED vs RD",
+      "rankingDesc": "Where your stats sit vs the historical applicant pool at your targets",
+      "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
+      "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
     },
     "challenge": {
       "loading": "Loading challenge...",

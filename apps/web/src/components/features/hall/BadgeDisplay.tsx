@@ -15,9 +15,11 @@ interface BadgeConfig {
   key: SwipeBadge;
 }
 
+// Hall refactor Stage 3 — dark mode coverage for badge palette
+// (previously only silver had a dark: variant — failed WCAG AA on gold/yellow)
 const BADGE_CONFIG: Record<SwipeBadge, BadgeConfig> = {
   bronze: {
-    color: 'text-amber-700',
+    color: 'text-amber-700 dark:text-amber-500',
     bgColor: 'bg-amber-700',
     icon: Shield,
     key: 'bronze',
@@ -29,19 +31,19 @@ const BADGE_CONFIG: Record<SwipeBadge, BadgeConfig> = {
     key: 'silver',
   },
   gold: {
-    color: 'text-yellow-500',
+    color: 'text-yellow-600 dark:text-yellow-400',
     bgColor: 'bg-yellow-500',
     icon: Crown,
     key: 'gold',
   },
   platinum: {
-    color: 'text-cyan-500',
+    color: 'text-cyan-600 dark:text-cyan-400',
     bgColor: 'bg-cyan-500',
     icon: Award,
     key: 'platinum',
   },
   diamond: {
-    color: 'text-violet-500',
+    color: 'text-violet-600 dark:text-violet-400',
     bgColor: 'bg-violet-500',
     icon: Gem,
     key: 'diamond',

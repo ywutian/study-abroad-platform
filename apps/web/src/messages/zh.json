@@ -2915,11 +2915,16 @@
     "description": "招生官打分、排名对比、创建榜单",
     "tabs": {
       "tinder": "预测游戏",
-      "review": "锐评模式",
+      "review": "同伴反馈",
       "ranking": "排名对比",
       "lists": "用户榜单",
       "challenge": "社区挑战",
-      "verified": "认证排行"
+      "verified": "中国大陆录取数据",
+      "path": "学长之路",
+      "verifiedDesc": "已认证录取案例数据墙：中国大陆录取人数、难度信号、ED/RD 对比",
+      "rankingDesc": "对照目标学校，看你的硬件在历史申请池中的位置",
+      "reviewDesc": "同伴 Tinder 滑评，帮你看清档案在群体直觉中的样子",
+      "pathDesc": "学长之路：研究真实申请档案，AI 复盘帮你建立招生官思维"
     },
     "challenge": {
       "loading": "加载挑战中...",
