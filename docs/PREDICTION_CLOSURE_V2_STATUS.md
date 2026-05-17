@@ -11,10 +11,15 @@
 
 - `ClosureTarget` work-queue table — **7293 targets** (comprehensive scope:
   240 schools × 26 fields + 165 HighSchools × 7 fields).
-- Closure: **89.5%** (6530/7293 — 6029 CLOSED + 501 UNAVAILABLE; 16 FAILED,
-  747 PENDING). 7 collection waves, 33 subagents.
-- yieldRate field fully resolved. Remaining PENDING (747): mostly HighSchool
-  fields (curriculumSystem ~125 + eval dims), needBlind/EA tails, some display.
+- Closure: **91.5%** (6675/7293 — 6096 CLOSED + 579 UNAVAILABLE; 16 FAILED,
+  602 PENDING). 8 collection waves, 37 subagents. Past the 90% methodology line.
+- Fully resolved fields: yieldRate, all School display/outcomes (description,
+  descriptionZh, totalEnrollment, niche, graduationRate, retentionRate,
+  percentNeedMet, averageNetPrice, studentFacultyRatio), act25/75, oosAR.
+- Remaining PENDING (602): curriculumSystem ~60, eaAcceptanceRate ~70,
+  ed2AcceptanceRate ~105 (structural — will be UNAVAILABLE), hasRestrictiveEa
+  ~105, edAcceptanceRate ~97, needBlindInternational ~50, intlAcceptanceRate
+  ~55, sat25/75 ~62, acceptanceRate 1.
 - The earlier "56.1%" measured only the 11 hardest fields; the 83.9% is the
   honest comprehensive figure (many School fields — acceptanceRate, SAT bands,
   descriptions, enrolment — were already populated pre-closure-v2).
