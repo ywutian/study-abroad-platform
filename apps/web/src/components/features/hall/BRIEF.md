@@ -13,7 +13,9 @@ Tinder-style swipe interface for reviewing real admission cases — gamified lea
 - ReviewTab — re-export shim for `review/ReviewTab` (stable import path)
 - review/ — peer-review experience: ReviewTab orchestrator + ClassicReviewWizard
   (slider fallback) + SwipeReviewWizard (Tinder-style 4-step swipe) + review-shared
-- RankingTab — leaderboard display
+- RankingTab — thin orchestrator (data + state)
+- ranking/ — RankingTab sub-components: SummaryStats, SchoolPicker, ResultsGrid
+  (RankingCard), CompetitorDistribution, AiPanel + ranking-shared (POSITION_CONFIG)
 - ListsTab — curated case lists
 - VerifiedTab / ChallengeTab — verified cases and daily challenges
 - BadgeDisplay — achievement badges with progress tracking
