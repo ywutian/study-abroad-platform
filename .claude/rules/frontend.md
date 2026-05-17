@@ -22,7 +22,7 @@ All API calls go through Next.js rewrites: `/api/:path*` -> backend. Same-origin
 ThemeProvider -> ErrorBoundary -> QueryProvider (staleTime: 5min, retry: 1)
   -> ProgressProvider -> TourProvider -> AuthInitializer
 ```
-Also renders: `<Toaster>`, `<OfflineIndicator>`, `<FeedbackWidget>`.
+Also renders: `<Toaster>`, `<OfflineIndicator>`, `<FeedbackWidget>`, `<OverflowDetector>` (dev-only).
 
 ## Route Protection (`proxy.ts`)
 
@@ -73,6 +73,15 @@ Key utility classes: `zone-tinted`/`zone-dark`, `glass`/`glass-heavy`/`glass-pre
 - Layer 2 (layout): `PageContainer` and `Card` have `overflow-hidden` built-in
 - Layer 3 (component): `flex` + `justify-between` MUST have `min-w-0` on variable-width child, `shrink-0` on fixed-width. Use `truncate` or `line-clamp-N`.
 
+## Layout Robustness (4 ironclad rules)
+
+Lessons from PR #214 / #215 / #217 (the /chat right-panel clipping incident — the right column was being clipped at the viewport edge despite two rounds of fixes):
+
+1. **Every grid/flex child must be `min-w-0`** — including the outermost wrapper of a nested component. Inner `truncate` is not enough: if the outer flex/grid container has `min-width:auto` (the default), a long string still pushes the cell past its allotted width. The cascade then pushes siblings past viewport. Custom grid templates (`grid-cols-[…px…]` or `grid-cols-[minmax(…)…]`) **also need `min-w-0` on the grid container itself** — enforced by the `no-missing-min-w-in-grid-container` lint rule.
+2. **`PageContainer.maxWidth` and className `max-w-*` are mutually exclusive** — use the `variant` system (now includes `workbench` for viewport-locked three-column tool surfaces). Never override max-width via className; it depends on tw-merge priority and is semantically backwards.
+3. **`overflow-x-clip` is production-only** — `app/[locale]/(main)/layout.tsx` applies it only when `NODE_ENV === 'production'`. Dev mode lets `OverflowDetector` flag the real bug instead of silently masking it. If you need to add `overflow-x-*` elsewhere, condition it the same way.
+4. **Page-fills-viewport height uses `--app-header-h` CSS var** — defined on the `(main)` layout root, default `6.5rem`. Do not encode `h-[calc(100dvh-6.5rem)]` magic numbers in leaf pages. The `workbench` PageContainer variant already does this for you.
+
 ## Frontend AI Requests
 
 ```typescript
@@ -114,3 +123,4 @@ AI Error Boundary: `<AIErrorBoundary feature="...">` wraps AI feature components
 | `no-missing-loading` | warning | `page.tsx` without `loading.tsx` |
 | `no-missing-error-boundary` | warning | Route group without `error.tsx` |
 | `no-tooltip-without-provider` | error | `Tooltip` without `TooltipProvider` |
+| `no-missing-min-w-in-grid-container` | warning | Custom `grid-cols-[…]` without `min-w-0` (overflow root cause PR #214/#215/#217) |
