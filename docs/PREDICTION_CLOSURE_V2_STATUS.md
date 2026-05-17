@@ -19,10 +19,19 @@
 - FAILED cleanup done: Harvard transfer 0.71% + USM 95.36% were real CDS D2
   values wrongly range-gated → corrected to CLOSED; 15 CDS-auth-walled/unpublished
   → reclassified UNAVAILABLE (verified not publicly accessible = terminal).
-- **Next**: (a) the cron-driven Tier-1 ClosureScheduler (plan Phase 0.5) for
-  hands-off freshness re-checks; (b) full-platform scope expansion — grow
-  HighSchool 165→2800 (NCES + CN HS import), AdmissionCase →5000 (case
-  scraping); seeder cron auto-enqueues the new rows.
+- **Tier-1 engine BUILT**: `ClosureSchedulerService` (`apps/api/src/modules/
+prediction/closure/`) — a non-pausing `setInterval` tick loop (mirrors the
+  codebase's TaskQueueService pattern). Each tick syncs the queue against the
+  live DB (new entities enqueued, PENDING→CLOSED when a value appears) and
+  re-opens stale CLOSED targets. Gated by `CLOSURE_ENGINE_ENABLED` (default
+  off); `CLOSURE_ENGINE_INTERVAL_MS` (default 30min) / `CLOSURE_FRESHNESS_DAYS`
+  (default 365) configurable. Build-typecheck clean; 6 unit tests pass.
+  Enable in prod/staging by setting `CLOSURE_ENGINE_ENABLED=true`.
+- **Next**: full-platform scope expansion — grow HighSchool 165→2800 (NCES +
+  CN HS import), AdmissionCase →5000 (case scraping); the scheduler's syncQueue
+  auto-enqueues the new rows on the next tick. Per-field programmatic
+  collection within a tick (Tavily + LLM) is the remaining collector build;
+  until then PENDING targets are collected by the closure-agent waves.
 - The earlier "56.1%" measured only the 11 hardest fields; the 83.9% is the
   honest comprehensive figure (many School fields — acceptanceRate, SAT bands,
   descriptions, enrolment — were already populated pre-closure-v2).
