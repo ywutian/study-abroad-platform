@@ -2842,6 +2842,11 @@
     "hint": {
       "addHighSchool": "在个人资料中补充高中信息可提升预测准确度",
       "goToProfile": "前往个人资料"
+    },
+    "hallLink": {
+      "title": "查看已认证录取数据",
+      "body": "在校友广场浏览本校及相似院校的真实录取案例。",
+      "cta": "查看认证录取"
     }
   },
   "cases": {
@@ -3269,7 +3274,8 @@
         "community-impact": "社区影响力",
         "research-oriented": "研究导向",
         "athletic": "体育特长"
-      }
+      },
+      "disclaimer": "评价是其他成员的个人观点，不构成专业的招生建议。"
     },
     "ranking": {
       "title": "排名对比",
@@ -3470,6 +3476,22 @@
       "gold": "黄金",
       "platinum": "白金",
       "diamond": "钻石"
+    },
+    "onboarding": {
+      "skip": "跳过",
+      "next": "下一步",
+      "done": "开始体验",
+      "step": "第 {current} / {total} 步",
+      "steps": {
+        "welcomeTitle": "欢迎来到校友广场",
+        "welcomeBody": "在这里，申请者可以对比定位、获得同伴反馈，并向已认证的录取案例学习。",
+        "pointsTitle": "贡献内容赚取积分",
+        "pointsBody": "锐评同伴、完成挑战和分享录取结果都能赚取积分，可在积分中心兑换。",
+        "leaderboardTitle": "了解你的位置",
+        "leaderboardBody": "排行榜标签会显示你在同目标校申请者中的竞争位置。",
+        "privacyTitle": "一切由你掌控",
+        "privacyBody": "同伴锐评需主动开启，你的档案始终匿名。可随时在设置中管理。"
+      }
     }
   },
   "settings": {
@@ -3513,7 +3535,9 @@
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
       "deleteAccount": "删除账户",
-      "deleteAccountDesc": "永久删除您的账户和数据"
+      "deleteAccountDesc": "永久删除您的账户和数据",
+      "peerReview": "锐评隐私",
+      "peerReviewDesc": "控制其他成员是否可以锐评你的档案"
     },
     "comingSoonHint": "此功能即将上线",
     "dialogs": {
@@ -6980,7 +7004,14 @@
         "stable": "稳定",
         "declining": "下降",
         "surging": "明显收紧"
-      }
+      },
+      "disclaimer": "过往录取结果不代表未来的录取概率。数据由用户分享，无法完全核实。"
+    },
+    "crossLink": {
+      "predictTitle": "想知道自己的概率？",
+      "predictBody": "为你的目标院校测算一次录取概率。",
+      "predictCta": "测我的录取概率",
+      "askAi": "问 AI"
     }
   },
   "vault": {
@@ -11694,5 +11725,31 @@
   },
   "activityForm": {
     "linkedToTemplate": "已关联模板"
+  },
+  "peerReviewSettings": {
+    "title": "锐评隐私设置",
+    "description": "决定校友广场成员是否可以锐评你的申请档案",
+    "toggleCardTitle": "接受同伴锐评",
+    "toggleCardDesc": "开启后，你的脱敏档案可能出现在锐评池中",
+    "toggleLabel": "允许其他成员锐评我的档案",
+    "toggleHint": "其他成员会对你的学术、标化、活动和奖项打分并给出建议。",
+    "minorBlocked": "未满 16 岁的成员暂不能开启锐评。年满 16 岁后此设置将自动解锁。",
+    "guardianAdvisory": "你尚未满 18 岁，开启前请先与家长或监护人确认。",
+    "explainTitle": "锐评如何运作",
+    "explainWhat": "校友广场的成员可以查看你档案的脱敏快照，并给出分数、标签和文字建议，帮助你改进。",
+    "explainPrivacy": "你的真实姓名、联系方式和敏感身份信息绝不会被分享，评审者只能看到匿名的学术快照。",
+    "explainControl": "你可以随时关闭此设置。关闭后你将不再进入锐评池；已收到的评价仍仅对你本人可见。",
+    "badgeAnonymized": "匿名快照",
+    "badgeReversible": "可随时关闭",
+    "toast": {
+      "enabled": "已开启同伴锐评",
+      "disabled": "已关闭同伴锐评",
+      "error": "设置更新失败，请重试。"
+    },
+    "consentDialog": {
+      "title": "监护人同意",
+      "description": "你的年龄在 16 至 18 岁之间。继续即表示你确认家长或监护人同意你的档案被其他成员锐评。",
+      "confirm": "我已确认，开启"
+    }
   }
 }

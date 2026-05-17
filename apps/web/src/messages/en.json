@@ -2842,6 +2842,11 @@
     "hint": {
       "addHighSchool": "Add your high school in your profile for more accurate predictions",
       "goToProfile": "Go to Profile"
+    },
+    "hallLink": {
+      "title": "See verified admit data",
+      "body": "Browse real admit cases for this and similar schools in the Alumni Square.",
+      "cta": "View verified admits"
     }
   },
   "cases": {
@@ -3269,7 +3274,8 @@
         "community-impact": "Community impact",
         "research-oriented": "Research-oriented",
         "athletic": "Athletic"
-      }
+      },
+      "disclaimer": "Reviews are personal opinions from other members, not professional admissions advice."
     },
     "ranking": {
       "title": "Rank Comparison",
@@ -3470,6 +3476,22 @@
       "gold": "Gold",
       "platinum": "Platinum",
       "diamond": "Diamond"
+    },
+    "onboarding": {
+      "skip": "Skip",
+      "next": "Next",
+      "done": "Get started",
+      "step": "Step {current} of {total}",
+      "steps": {
+        "welcomeTitle": "Welcome to the Alumni Square",
+        "welcomeBody": "A community space where applicants compare positioning, get peer feedback, and learn from verified admit cases.",
+        "pointsTitle": "Earn points by contributing",
+        "pointsBody": "Reviewing peers, completing challenges and sharing outcomes earns points you can redeem in the Points Center.",
+        "leaderboardTitle": "See where you stand",
+        "leaderboardBody": "The ranking tab shows your competitive position against applicants targeting the same schools.",
+        "privacyTitle": "You are in control",
+        "privacyBody": "Peer reviews are opt-in and your profile is always anonymized. Manage this anytime in Settings."
+      }
     }
   },
   "settings": {
@@ -3513,7 +3535,9 @@
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data"
+      "deleteAccountDesc": "Permanently delete your account and data",
+      "peerReview": "Peer Reviews",
+      "peerReviewDesc": "Control whether others can review your profile"
     },
     "comingSoonHint": "This feature is coming soon",
     "dialogs": {
@@ -6980,7 +7004,14 @@
         "stable": "Stable",
         "declining": "Declining",
         "surging": "Sharply harder"
-      }
+      },
+      "disclaimer": "Past admit results do not predict future odds. Data is shared by users and cannot be fully verified."
+    },
+    "crossLink": {
+      "predictTitle": "Want your own odds?",
+      "predictBody": "Run an admission probability estimate for your target schools.",
+      "predictCta": "Estimate my chances",
+      "askAi": "Ask AI"
     }
   },
   "vault": {
@@ -11694,5 +11725,31 @@
   },
   "activityForm": {
     "linkedToTemplate": "Linked to template"
+  },
+  "peerReviewSettings": {
+    "title": "Peer Review Privacy",
+    "description": "Decide whether Alumni Square members can review your application profile",
+    "toggleCardTitle": "Accept peer reviews",
+    "toggleCardDesc": "When on, your anonymized profile may appear in the review pool",
+    "toggleLabel": "Allow others to review my profile",
+    "toggleHint": "Other members give scores and suggestions on your academics, tests, activities and awards.",
+    "minorBlocked": "Peer reviews are unavailable for members under 16. This setting will unlock automatically once you turn 16.",
+    "guardianAdvisory": "You are under 18. Please confirm with a parent or guardian before turning this on.",
+    "explainTitle": "How peer review works",
+    "explainWhat": "Members of the Alumni Square can view a desensitized snapshot of your profile and offer scores, tags and written suggestions to help you improve.",
+    "explainPrivacy": "Your real name, contact details and sensitive identifiers are never shared. Reviewers see only an anonymized academic snapshot.",
+    "explainControl": "You can turn this off at any time. Turning it off removes you from the review pool going forward; reviews already received remain visible only to you.",
+    "badgeAnonymized": "Anonymized snapshot",
+    "badgeReversible": "Reversible anytime",
+    "toast": {
+      "enabled": "Peer reviews enabled",
+      "disabled": "Peer reviews disabled",
+      "error": "Could not update this setting. Please try again."
+    },
+    "consentDialog": {
+      "title": "Guardian consent",
+      "description": "You are between 16 and 18 years old. By continuing, you confirm a parent or guardian agrees to your profile being reviewed by other members.",
+      "confirm": "I confirm — enable"
+    }
   }
 }
