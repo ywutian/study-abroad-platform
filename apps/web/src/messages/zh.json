@@ -2906,7 +2906,12 @@
       "apCourses": "AP 课程（{count} 门）",
       "ibScore": "IB 总分",
       "applicantBackground": "申请人背景",
-      "applicationStory": "申请故事"
+      "applicationStory": "申请故事",
+      "verifiedCallout": {
+        "title": "真实录取趋势",
+        "desc": "查看同类院校的中国大陆真实录取数据与难度信号。",
+        "action": "查看真实录取看板"
+      }
     },
     "guide": {
       "title": "看看和你背景相似的同学都录了哪里",
@@ -2923,6 +2928,11 @@
       "bullet2": "通过认证的贡献获得积分和徽章",
       "bullet3": "将你的档案与目标学校已录取的学生进行比较",
       "startTour": "30秒了解如何使用"
+    },
+    "verifiedBanner": {
+      "title": "查看这些案例的录取定位",
+      "desc": "前往「真实录取看板」，了解逐年真实的中国大陆录取趋势。",
+      "action": "打开看板"
     }
   },
   "chat": {

@@ -2906,7 +2906,12 @@
       "apCourses": "AP Courses ({count})",
       "ibScore": "IB Score",
       "applicantBackground": "Applicant Background",
-      "applicationStory": "Application Story"
+      "applicationStory": "Application Story",
+      "verifiedCallout": {
+        "title": "Verified admission trends",
+        "desc": "See verified China-mainland admit data and difficulty signals for schools like this.",
+        "action": "View Verified Dashboard"
+      }
     },
     "guide": {
       "title": "See where students like you got accepted",
@@ -2923,6 +2928,11 @@
       "bullet2": "Earn points and verification badges for your contributions",
       "bullet3": "Compare your profile against admitted students at your target schools",
       "startTour": "Learn how to use in 30 seconds"
+    },
+    "verifiedBanner": {
+      "title": "See where these cases rank",
+      "desc": "Explore the Verified China Admit Dashboard for real, year-over-year admission trends.",
+      "action": "Open dashboard"
     }
   },
   "chat": {
