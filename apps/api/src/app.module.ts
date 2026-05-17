@@ -18,6 +18,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { SchoolModule } from './modules/school/school.module';
 import { RankingModule } from './modules/ranking/ranking.module';
 import { PredictionModule } from './modules/prediction/prediction.module';
+import { ClosureModule } from './modules/prediction/closure/closure.module';
 import { CaseModule } from './modules/case/case.module';
 import { PointsModule } from './modules/points/points.module';
 import { ChatModule } from './modules/chat/chat.module';
@@ -93,6 +94,7 @@ import { FeatureFlagGuard } from './common/feature-flags';
     SchoolModule,
     RankingModule,
     PredictionModule,
+    ClosureModule,
     CaseModule,
     PointsModule,
     ChatModule,
