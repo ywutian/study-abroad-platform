@@ -11,14 +11,14 @@
 
 - `ClosureTarget` work-queue table — **7293 targets** (comprehensive scope:
   240 schools × 26 fields + 165 HighSchools × 7 fields).
-- Closure: **99.8%** (7276/7293 — 6296 CLOSED + 980 UNAVAILABLE; 17 FAILED,
-  **0 PENDING**). 10 collection waves, 45 Claude subagents. **MILESTONE: every
-  ClosureTarget in the School+HighSchool scope is terminal — PENDING=0.**
+- Closure: **100.0%** (7293/7293 — 6298 CLOSED + 995 UNAVAILABLE; **0 PENDING,
+  0 FAILED**). 10 collection waves, 45 Claude subagents. **MILESTONE: every
+  ClosureTarget in the School+HighSchool scope is terminal.**
 - All 33 tracked fields fully resolved (CLOSED with provenance, or UNAVAILABLE
   verified-not-published per methodology #1). Zero fabrication across all waves.
-- 17 FAILED edge-cases (0.2%): a few CDS-behind-auth, 2 real values rejected by
-  a strict range gate (Harvard transfer 0.71%, So. Miss 95.36% — could be hand-
-  set), 1 unidentifiable school. Retryable; not blocking.
+- FAILED cleanup done: Harvard transfer 0.71% + USM 95.36% were real CDS D2
+  values wrongly range-gated → corrected to CLOSED; 15 CDS-auth-walled/unpublished
+  → reclassified UNAVAILABLE (verified not publicly accessible = terminal).
 - **Next**: (a) the cron-driven Tier-1 ClosureScheduler (plan Phase 0.5) for
   hands-off freshness re-checks; (b) full-platform scope expansion — grow
   HighSchool 165→2800 (NCES + CN HS import), AdmissionCase →5000 (case
