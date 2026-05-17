@@ -15,8 +15,8 @@ import { VerificationIcon } from '@/components/features';
 import { cn } from '@/lib/utils';
 import { isSafeUrl } from '@/lib/utils/url';
 
-import type { ChatContext, Conversation } from './types';
-import { getConversationTitle, getDisplayName } from './utils';
+import type { ChatContext, ChatUser, Conversation } from './types';
+import { getConversationTitle, getDisplayName, parseMatchTitle } from './utils';
 
 interface ChatContextPanelProps {
   conversation: Conversation | null;
@@ -81,60 +81,50 @@ export function ChatContextPanel({
         className
       )}
     >
+      {/* 2026-05 design rework: previously this header rendered both
+          "会话资料" AND a truncated copy of `title` underneath. The
+          title was *also* rendered immediately below (avatar + title
+          card), so users saw the same string truncated to "...Sc"
+          twice within 80px of each other — pure information
+          redundancy. The panel now shows only the section name; the
+          full conversation identity lives in the structured header
+          card below (which has enough room to actually be readable). */}
       <div className="border-b px-4 py-3">
         <p className="text-sm font-semibold">{t('chat.contextTitle')}</p>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">{title}</p>
       </div>
 
       <ScrollArea className="min-w-0 min-h-0 flex-1">
         <div className="space-y-5 p-4">
-          <section className="space-y-3">
-            {/* 2026-05 hotfix (follow-up to #217-#219): the avatar+title
-                row needs BOTH defenses to actually truncate:
-                  (a) parent flex container: `min-w-0` (so itself can
-                      shrink below content's intrinsic width)
-                  (b) the text wrapper: `min-w-0 flex-1`
-                  (c) the fixed-size avatar: `shrink-0`
-                The previous code had only `min-w-0` on the text
-                wrapper. `min-w-0` alone PERMITS shrinking but doesn't
-                FORCE the element to constrain — without `flex-1` it
-                grew to fit the long title (e.g. "Regeneron STS /
-                Innovation Track · Science Fair Innovators × 全栈开发组")
-                and pushed the whole row past the viewport. The
-                truncate ellipsis never appeared on this row because
-                the element was wider than the panel; the visual cut
-                at the viewport edge was just <main>'s production
-                overflow-x-clip hiding the overflow.
-
-                The members section below (line ~167) had the correct
-                `min-w-0 flex-1` combo all along — proof this is the
-                canonical pattern for flex-row + truncate. */}
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
-                {isDirect ? (
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                ) : (
-                  <Users className="h-5 w-5 text-primary" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {isDirect
-                    ? t('chat.directConversation')
-                    : t('chat.participants', { count: conversation.participantCount })}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {conversation.createdBySystem && (
-                <Badge variant="info">{t('chat.systemMatched')}</Badge>
-              )}
-              {conversation.teamMatchId && <Badge variant="secondary">{t('chat.teamMatch')}</Badge>}
-              {isMuted && <Badge variant="outline">{t('chat.muted')}</Badge>}
-              {isArchived && <Badge variant="outline">{t('chat.archived')}</Badge>}
-            </div>
-          </section>
+          {/* 2026-05 design rework: split header into a 1-on-1
+              variant and a structured MATCH_GROUP variant. The old
+              code was a single flex row that worked OK for short
+              peer names but mangled compound match titles like
+              "Regeneron STS / Innovation Track · Science Fair
+              Innovators × 全栈开发组" — 30+ chars in a 320px rail
+              can't be displayed linearly. The match variant parses
+              the title into (context, teamA, teamB) and stacks them
+              vertically so each team name gets its own readable line
+              with the × visually centered between them. */}
+          {isDirect ? (
+            <DirectHeader
+              title={title}
+              isMuted={isMuted}
+              isArchived={isArchived}
+              createdBySystem={conversation.createdBySystem}
+              hasTeamMatch={Boolean(conversation.teamMatchId)}
+              t={t}
+            />
+          ) : (
+            <MatchGroupHeader
+              title={title}
+              participantCount={conversation.participantCount}
+              isMuted={isMuted}
+              isArchived={isArchived}
+              createdBySystem={conversation.createdBySystem}
+              hasTeamMatch={Boolean(conversation.teamMatchId)}
+              t={t}
+            />
+          )}
 
           <Separator />
 
@@ -191,16 +181,25 @@ export function ChatContextPanel({
                             <VerificationIcon verified size="sm" />
                           )}
                         </p>
-                        {/* 2026-05 PII fix: subtitle prefers profile signals
-                            (major / school / role). Email is intentionally
-                            NOT in this fallback chain — even the backend's
-                            masked form ("o***@d***.com") reads as noise here.
-                            For peers without any profile, fall back to a
-                            generic "成员" / "Member" label. */}
+                        {/* 2026-05 design rework: previous fallback chain
+                            was `targetMajor || currentSchool || "成员"` —
+                            but `targetMajor` is the LEAST contextually
+                            clear of the three (a user with major="Business"
+                            renders as just "Business" next to peers
+                            showing "成员", producing the inconsistent
+                            triplet "成员 / Business / 成员" that confused
+                            users about what the subtitle meant).
+                            Cleaner ranking:
+                              1. School name — reads naturally as a school
+                                 (e.g. "Stanford University").
+                              2. Role-aware label — admins/business/verified
+                                 get their own clear label; everyone else
+                                 falls back to generic "成员".
+                            Major is intentionally dropped from this
+                            subtitle; users who want to see a peer's major
+                            can click through to the profile. */}
                         <p className="truncate text-xs text-muted-foreground">
-                          {participant.profile?.targetMajor ||
-                            participant.profile?.currentSchool ||
-                            t('chat.member')}
+                          {participant.profile?.currentSchool || roleLabel(participant.role, t)}
                         </p>
                       </div>
                     </div>
@@ -282,6 +281,199 @@ export function ChatContextPanel({
         </div>
       </ScrollArea>
     </aside>
+  );
+}
+
+type T = ReturnType<typeof useTranslations>;
+
+/**
+ * Role → human-readable label. Returns localized strings via the
+ * passed-in translator. Falls back to generic "chat.member" so the
+ * member list never shows a raw enum value to the user.
+ */
+function roleLabel(role: ChatUser['role'], t: T): string {
+  switch (role) {
+    case 'ADMIN':
+      return t('chat.roleAdmin');
+    case 'VERIFIED':
+      return t('chat.roleVerified');
+    default:
+      return t('chat.member');
+  }
+}
+
+/**
+ * Status badges shared by both header variants — kept together so
+ * the two headers display the same set in the same order.
+ */
+function StatusBadges({
+  createdBySystem,
+  hasTeamMatch,
+  isMuted,
+  isArchived,
+  t,
+}: {
+  createdBySystem?: boolean;
+  hasTeamMatch: boolean;
+  isMuted: boolean;
+  isArchived: boolean;
+  t: T;
+}) {
+  if (!createdBySystem && !hasTeamMatch && !isMuted && !isArchived) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {createdBySystem && <Badge variant="info">{t('chat.systemMatched')}</Badge>}
+      {hasTeamMatch && <Badge variant="secondary">{t('chat.teamMatch')}</Badge>}
+      {isMuted && <Badge variant="outline">{t('chat.muted')}</Badge>}
+      {isArchived && <Badge variant="outline">{t('chat.archived')}</Badge>}
+    </div>
+  );
+}
+
+/**
+ * 1-on-1 conversation header. Single row with avatar + peer name,
+ * because there's no compound structure to display.
+ */
+function DirectHeader({
+  title,
+  createdBySystem,
+  hasTeamMatch,
+  isMuted,
+  isArchived,
+  t,
+}: {
+  title: string;
+  createdBySystem?: boolean;
+  hasTeamMatch: boolean;
+  isMuted: boolean;
+  isArchived: boolean;
+  t: T;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+          <ShieldCheck className="h-5 w-5 text-primary" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{title}</p>
+          <p className="text-xs text-muted-foreground">{t('chat.directConversation')}</p>
+        </div>
+      </div>
+      <StatusBadges
+        createdBySystem={createdBySystem}
+        hasTeamMatch={hasTeamMatch}
+        isMuted={isMuted}
+        isArchived={isArchived}
+        t={t}
+      />
+    </section>
+  );
+}
+
+/**
+ * MATCH_GROUP conversation header. Parses the compound title into
+ * (context, teamA, teamB) and renders each piece in its own readable
+ * slot:
+ *
+ *   ┌──────────────────────────────┐
+ *   │ [icon] context badge         │   ← e.g. "Regeneron STS / Innovation Track"
+ *   │                              │
+ *   │ ┌─────────────────────────┐  │
+ *   │ │  Science Fair Innovators │  │  ← team A on its own line, free to wrap
+ *   │ └─────────────────────────┘  │
+ *   │            × vs              │
+ *   │ ┌─────────────────────────┐  │
+ *   │ │  全栈开发组               │  │  ← team B on its own line
+ *   │ └─────────────────────────┘  │
+ *   │                              │
+ *   │ [系统匹配] [团队匹配]         │
+ *   └──────────────────────────────┘
+ *
+ * Falls back to the linear single-line layout when the title doesn't
+ * follow the canonical "ctx · A × B" shape (e.g. legacy free-form
+ * group names) — see parseMatchTitle for the parsing rules.
+ */
+function MatchGroupHeader({
+  title,
+  participantCount,
+  createdBySystem,
+  hasTeamMatch,
+  isMuted,
+  isArchived,
+  t,
+}: {
+  title: string;
+  participantCount: number;
+  createdBySystem?: boolean;
+  hasTeamMatch: boolean;
+  isMuted: boolean;
+  isArchived: boolean;
+  t: T;
+}) {
+  const parsed = parseMatchTitle(title);
+  const structured = parsed.teamA && parsed.teamB;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+          <Users className="h-5 w-5 text-primary" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-1">
+          {parsed.context && (
+            <p
+              className="break-words text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              title={parsed.context}
+            >
+              {parsed.context}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {t('chat.participants', { count: participantCount })}
+          </p>
+        </div>
+      </div>
+
+      {structured ? (
+        <div className="space-y-1.5">
+          <div
+            className="rounded-md border bg-background/70 px-3 py-2 text-sm font-medium leading-snug break-words"
+            title={parsed.teamA ?? undefined}
+          >
+            {parsed.teamA}
+          </div>
+          <div
+            className="flex items-center gap-2 px-1 text-overline text-muted-foreground"
+            aria-hidden="true"
+          >
+            <span className="h-px flex-1 bg-border" />
+            {t('chat.matchVs')}
+            <span className="h-px flex-1 bg-border" />
+          </div>
+          <div
+            className="rounded-md border bg-background/70 px-3 py-2 text-sm font-medium leading-snug break-words"
+            title={parsed.teamB ?? undefined}
+          >
+            {parsed.teamB}
+          </div>
+        </div>
+      ) : (
+        // Legacy / free-form group title — render whole thing in a
+        // wrap-capable block instead of truncating into oblivion.
+        <p className="break-words text-sm font-medium leading-snug" title={parsed.title}>
+          {parsed.title}
+        </p>
+      )}
+
+      <StatusBadges
+        createdBySystem={createdBySystem}
+        hasTeamMatch={hasTeamMatch}
+        isMuted={isMuted}
+        isArchived={isArchived}
+        t={t}
+      />
+    </section>
   );
 }
 
