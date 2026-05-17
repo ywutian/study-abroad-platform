@@ -28,20 +28,25 @@ import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 import { ChinaAdmitChart, ChinaAdmitNoData } from './ChinaAdmitChart';
 
-const RELIABILITY_COLOR: Record<DataReliability, string> = {
-  A: '#10b981',
-  B: '#3b82f6',
-  C: '#f59e0b',
-  D: '#94a3b8',
+/** Theme color token per data-reliability rating (resolved via useColors). */
+const RELIABILITY_TOKEN: Record<
+  DataReliability,
+  'success' | 'info' | 'warning' | 'foregroundMuted'
+> = {
+  A: 'success',
+  B: 'info',
+  C: 'warning',
+  D: 'foregroundMuted',
 };
 
+/** Icon + theme color token per year-over-year difficulty signal. */
 const SIGNAL_META: Record<
   DifficultySignal,
-  { icon: keyof typeof Ionicons.glyphMap; color: string }
+  { icon: keyof typeof Ionicons.glyphMap; token: 'success' | 'warning' | 'error' }
 > = {
-  stable: { icon: 'remove-outline', color: '#10b981' },
-  declining: { icon: 'trending-down-outline', color: '#f59e0b' },
-  surging: { icon: 'trending-up-outline', color: '#ef4444' },
+  stable: { icon: 'remove-outline', token: 'success' },
+  declining: { icon: 'trending-down-outline', token: 'warning' },
+  surging: { icon: 'trending-up-outline', token: 'error' },
 };
 
 export function ChinaAdmitDashboard() {
@@ -106,6 +111,7 @@ export function ChinaAdmitDashboard() {
           const signal = signalMap.get(school.schoolId);
           const sigKey: DifficultySignal = signal?.signal ?? 'stable';
           const sig = SIGNAL_META[sigKey];
+          const sigColor = c[sig.token];
           const label = isZh && school.schoolNameZh ? school.schoolNameZh : school.schoolName;
           return (
             <Animated.View
@@ -115,7 +121,7 @@ export function ChinaAdmitDashboard() {
             >
               {/* Header — school name + reliability rating */}
               <View style={S.cardHeader}>
-                <View style={[S.signalDot, { backgroundColor: sig.color }]} />
+                <View style={[S.signalDot, { backgroundColor: sigColor }]} />
                 <View style={S.cardHeaderText}>
                   <Text style={[S.schoolName, { color: c.foreground }]} numberOfLines={1}>
                     {label}
@@ -133,13 +139,13 @@ export function ChinaAdmitDashboard() {
               {school.reliability === 'D' ? (
                 <ChinaAdmitNoData label={t('hall.verified.chinaAdmit.noChinaData')} />
               ) : (
-                <ChinaAdmitChart yearly={school.yearly} color={sig.color} />
+                <ChinaAdmitChart yearly={school.yearly} color={sigColor} />
               )}
 
               {/* Difficulty signal label */}
               <View style={S.signalRow}>
-                <Ionicons name={sig.icon} size={14} color={sig.color} />
-                <Text style={[S.signalText, { color: sig.color }]}>
+                <Ionicons name={sig.icon} size={14} color={sigColor} />
+                <Text style={[S.signalText, { color: sigColor }]}>
                   {t(`hall.verified.chinaAdmit.signal.${sigKey}`)}
                 </Text>
                 {signal && signal.changePct !== 0 ? (
@@ -159,7 +165,8 @@ export function ChinaAdmitDashboard() {
 
 function ReliabilityBadge({ reliability }: { reliability: DataReliability }) {
   const { t } = useTranslation();
-  const color = RELIABILITY_COLOR[reliability];
+  const c = useColors();
+  const color = c[RELIABILITY_TOKEN[reliability]];
   return (
     <View
       style={[S.reliabilityBadge, { backgroundColor: color + '22' }]}
