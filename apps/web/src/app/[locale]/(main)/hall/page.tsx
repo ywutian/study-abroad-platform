@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { Award, BadgeCheck, BarChart3, MessageSquare, GraduationCap } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { HallHeroBar } from '@/components/features/hall/HallHeroBar';
+import { HallOnboarding } from '@/components/features/hall/HallOnboarding';
 
 const VerifiedTab = dynamic(
   () => import('@/components/features/hall/VerifiedTab').then((m) => ({ default: m.VerifiedTab })),
@@ -133,6 +134,9 @@ export default function HallPage() {
         icon={Award}
         color="indigo"
       />
+
+      {/* Stage 6 — first-visit onboarding (localStorage-gated, shows once) */}
+      <HallOnboarding />
 
       {/* Stage 3 — Hero bar with overview from /halls/me/overview BFF */}
       <HallHeroBar />

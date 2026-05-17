@@ -31,6 +31,7 @@ import {
   Send,
   Star,
   Send as SendIcon,
+  Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -339,6 +340,12 @@ export function SwipeReviewWizard({
                 ))}
               </div>
             </div>
+
+            {/* Stage 6 — review-is-opinion compliance disclaimer */}
+            <p className="flex items-start gap-1.5 pt-1 text-xs text-muted-foreground">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0">{t('hall.review.disclaimer')}</span>
+            </p>
 
             <div className="flex justify-between pt-2">
               <Button variant="outline" onClick={goBack} className="gap-1">

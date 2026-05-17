@@ -14,11 +14,24 @@
 import { useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Loader2, ShieldCheck, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import {
+  Loader2,
+  ShieldCheck,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  Info,
+  Target,
+  Sparkles,
+} from 'lucide-react';
 import type { DifficultySignal, DifficultySignalEntry } from '@study-abroad/shared';
+import { AgentType } from '@study-abroad/shared';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { getLocalizedName } from '@/lib/i18n/locale-utils';
 import { cn } from '@/lib/utils';
+import { useRouter } from '@/lib/i18n/navigation';
+import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
 import { useChinaAdmitTrend, useDifficultySignal } from '@/hooks/use-hall-api';
 
 const RELIABILITY_STYLES: Record<string, string> = {
@@ -51,7 +64,9 @@ const SIGNAL_STYLES: Record<
 
 export function ChinaAdmitDashboard() {
   const t = useTranslations('verifiedRanking.dashboard');
+  const tx = useTranslations('verifiedRanking.crossLink');
   const locale = useLocale();
+  const router = useRouter();
 
   const { data: trend, isLoading } = useChinaAdmitTrend([], 4);
   const { data: signals } = useDifficultySignal([]);
@@ -177,6 +192,44 @@ export function ChinaAdmitDashboard() {
           })}
         </div>
       )}
+
+      {/* Stage 7 B2/B7 — cross-links to prediction + agent chat */}
+      <div className="mt-4 flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-medium">{tx('predictTitle')}</p>
+          <p className="text-sm text-muted-foreground">{tx('predictBody')}</p>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() =>
+              openFloatingAgentChat({
+                message: tx('askAi'),
+                agentHint: AgentType.SCHOOL,
+              })
+            }
+          >
+            <Sparkles className="h-4 w-4" />
+            {tx('askAi')}
+          </Button>
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => router.push('/prediction')}
+          >
+            <Target className="h-4 w-4" />
+            {tx('predictCta')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Stage 6 — compliance disclaimer */}
+      <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <span className="min-w-0">{t('disclaimer')}</span>
+      </p>
     </div>
   );
 }
