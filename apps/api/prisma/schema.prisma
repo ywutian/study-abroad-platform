@@ -211,6 +211,49 @@ enum CnHsCategory {
   MIXED
 }
 
+// closure-v2 Continuous Closure Engine: work-queue status of one (entity,
+// field) closure target. The closure-scheduler walks PENDING rows by priority,
+// runs a real collection batch, and moves each row to a terminal state.
+// CLOSED / UNAVAILABLE are terminal-success; FAILED is retryable.
+enum ClosureTargetStatus {
+  PENDING
+  IN_PROGRESS
+  CLOSED
+  UNAVAILABLE
+  FAILED
+  NEEDS_REVIEW
+}
+
+// closure-v2 Continuous Closure Engine — work queue. One row per (entity,
+// field) the engine must close. Seeded from the 10-Wave scope; the scheduler
+// picks PENDING rows by `priority` each tick.
+model ClosureTarget {
+  id            String              @id @default(cuid())
+  wave          String // "wave-1.2", "wave-5.1.cn", "wave-6.3" ...
+  entityType    String // School | HighSchool | AdmissionCase | reference
+  entityId      String? // id of the target row when applicable
+  entityName    String // human label used for subagent dispatch
+  field         String // needBlindInternational | gpaDistribution | ...
+  status        ClosureTargetStatus @default(PENDING)
+  priority      Float               @default(0) // closureGap x predictionImpact x 1/(attempts+1)
+  attempts      Int                 @default(0)
+  batchId       String?
+  lastAttemptAt DateTime?
+  lastError     String?
+  sourceUrl     String? // provenance once closed
+  confidence    Float?
+  tier          String? // OFFICIAL | PARTNER | SCRAPED | UNAVAILABLE
+  notes         String?             @db.Text
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([entityType, entityId, field])
+  @@index([status, priority(sort: Desc)])
+  @@index([wave])
+  @@index([entityType, field])
+  @@index([batchId])
+}
+
 enum ReportTargetType {
   USER
   MESSAGE
