@@ -49,8 +49,17 @@ export function ChatHeader({
   const title = getConversationTitle(conversation);
 
   return (
-    <div className="border-b px-4 py-3 shrink-0 bg-card/95">
-      <div className="flex items-center justify-between">
+    // 2026-05 chat layout fix (follow-up to #214/#215): the inner title
+    // wrapper already has `min-w-0 truncate`, but the ChatHeader root
+    // itself sits as a flex item inside the middle column Card. Without
+    // `min-w-0` here, a long title (e.g. "Regeneron STS / Innovation
+    // Track · Science Fair Innovators × 全栈开发组") forces the header
+    // wider than its grid column, which cascades and pushes the right
+    // ContextPanel off-viewport — even with the column's own min-w-0.
+    // Rule: every grid/flex child must be `min-w-0`, including the
+    // outermost wrapper of nested components.
+    <div className="min-w-0 border-b px-4 py-3 shrink-0 bg-card/95">
+      <div className="flex min-w-0 items-center justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             variant="ghost"

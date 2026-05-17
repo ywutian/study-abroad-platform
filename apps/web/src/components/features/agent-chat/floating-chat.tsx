@@ -39,6 +39,14 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   const pendingAction = useFloatingChatBridgeStore((state) => state.queue[0] || null);
   const consumePendingAction = useFloatingChatBridgeStore((state) => state.consumeFirst);
   const isAssistantWorkspace = pathname === '/ai' || /^\/[^/]+\/ai\/?$/.test(pathname ?? '');
+  // 2026-05: Hide on /chat (the human-messaging workbench). The AI agent
+  // floating button is semantically redundant on a messaging page and its
+  // fixed bottom-right 420×600 panel (z-50) occludes the right-hand
+  // ChatContextPanel's bottom rows, contributing to the perceived
+  // "right panel is clipped" report. /chat already has its own AI entry
+  // points inside the conversation surface.
+  const isMessagingWorkspace =
+    pathname === '/chat' || /^\/[^/]+\/chat(\/.*)?$/.test(pathname ?? '');
 
   // Stable refs for event handlers — avoids stale closures and re-registration
   const isOpenRef = useRef(isOpen);
@@ -75,7 +83,7 @@ export function FloatingChat({ defaultOpen = false }: FloatingChatProps) {
   }, []); // Stable — uses refs for isOpen check
 
   // SSR 时不渲染（避免 createPortal 和 framer-motion 导致 hydration mismatch）
-  if (!isHydrated || isAssistantWorkspace) return null;
+  if (!isHydrated || isAssistantWorkspace || isMessagingWorkspace) return null;
 
   const chatWindow = (
     <AnimatePresence>
