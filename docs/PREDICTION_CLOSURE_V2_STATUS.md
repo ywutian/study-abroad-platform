@@ -11,8 +11,8 @@
 
 - `ClosureTarget` work-queue table — **7293 targets** (comprehensive scope:
   240 schools × 26 fields + 165 HighSchools × 7 fields).
-- Closure: **83.9%** (6116/7293 — 5801 CLOSED + 315 UNAVAILABLE; 82 FAILED,
-  1095 PENDING). 5 collection waves, 22 subagents.
+- Closure: **88.1%** (6422/7293 — 5925 CLOSED + 497 UNAVAILABLE; 16 FAILED,
+  855 PENDING). 6 collection waves, 28 subagents.
 - The earlier "56.1%" measured only the 11 hardest fields; the 83.9% is the
   honest comprehensive figure (many School fields — acceptanceRate, SAT bands,
   descriptions, enrolment — were already populated pre-closure-v2).
