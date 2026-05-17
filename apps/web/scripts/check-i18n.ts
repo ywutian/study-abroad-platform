@@ -38,6 +38,7 @@ const EXEMPT_FILES = [
   'prediction/SuggestionsPanel.test.ts', // 上述分类匹配的测试用例
   'components/features/teams/team-recruitment-contract.test.ts', // locale 优先级用例含 titleZh 等 fixture 中文
   'components/features/teams/team-recruitment-utils.test.ts', // 组队招募展示层单测含双语 fixture
+  'app/[locale]/(main)/chat/_components/utils.test.ts', // parseMatchTitle 单测含真实匹配标题 fixture（中文团队名）
 ];
 
 /** 豁免行模式（匹配到则跳过该行） */
