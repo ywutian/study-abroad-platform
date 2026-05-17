@@ -103,7 +103,6 @@ export {
   LeaderboardList,
   ModuleSelector,
   ReviewModuleCard,
-  SwipeReviewMode,
   SwipeResultOverlay,
   // Tab components (from hall/page.tsx refactor)
   TinderTab,

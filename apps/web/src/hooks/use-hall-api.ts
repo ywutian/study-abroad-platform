@@ -146,26 +146,46 @@ export const reviewKeys = {
   myReviews: () => [...hallKeys.all, 'myReviews'] as const,
 };
 
+/** Per-step swipe direction recorded by the Tinder review wizard. */
+export type ReviewSwipeDirection = 'left' | 'right' | 'up';
+
+/** Swipe metadata persisted alongside a SWIPE-method review. */
+export interface ReviewSwipeData {
+  directionsPerStep: Partial<
+    Record<'academic' | 'test' | 'activity' | 'award', ReviewSwipeDirection>
+  >;
+  confidencePerStep?: Partial<
+    Record<'academic' | 'test' | 'activity' | 'award', number>
+  >;
+}
+
+export interface SubmitReviewInput {
+  profileUserId: string;
+  academicScore: number;
+  testScore: number;
+  activityScore: number;
+  awardScore: number;
+  overallScore: number;
+  comment?: string;
+  academicComment?: string;
+  testComment?: string;
+  activityComment?: string;
+  awardComment?: string;
+  tags?: string[];
+  status?: 'DRAFT' | 'PUBLISHED';
+  // Hall refactor Stage 3 — Tinder swipe review fields (backend CreateReviewDto).
+  reviewMethod?: 'CLASSIC' | 'SWIPE';
+  swipeData?: ReviewSwipeData;
+  reviewerConfidence?: number;
+  quickTags?: string[];
+}
+
 /** 提交评审 */
 export function useSubmitReview() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: {
-      profileUserId: string;
-      academicScore: number;
-      testScore: number;
-      activityScore: number;
-      awardScore: number;
-      overallScore: number;
-      comment?: string;
-      academicComment?: string;
-      testComment?: string;
-      activityComment?: string;
-      awardComment?: string;
-      tags?: string[];
-      status?: 'DRAFT' | 'PUBLISHED';
-    }) => apiClient.post(hallRoutes.reviews(), data),
+    mutationFn: (data: SubmitReviewInput) => apiClient.post(hallRoutes.reviews(), data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: hallKeys.publicLists() });
       queryClient.invalidateQueries({ queryKey: reviewKeys.reviews(variables.profileUserId) });

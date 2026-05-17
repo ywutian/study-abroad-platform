@@ -589,7 +589,10 @@
     },
     "hero": {
       "eyebrow": "Lumni Command Center · Powered by GPT-5",
-      "headline": ["Illuminate your", "admissions route"],
+      "headline": [
+        "Illuminate your",
+        "admissions route"
+      ],
       "subtitle": "From school lists and essays to timelines and submission, Lumni turns a complex application season into a clear plan calibrated by real admissions data.",
       "features": [
         "Generate the first admissions route in 2 minutes",
@@ -627,7 +630,13 @@
         "profileLabel": "Amy Z. · Senior",
         "profileMeta": "GPA 3.92 · SAT 1540 · CS",
         "termLabel": "Fall 2026 · CS",
-        "sections": ["Overview", "Schools · 6", "Essays · 14", "Timeline", "Teams"],
+        "sections": [
+          "Overview",
+          "Schools · 6",
+          "Essays · 14",
+          "Timeline",
+          "Teams"
+        ],
         "title": "Admissions Route Hub",
         "assistantBadge": "AI Copilot",
         "assistantMessages": [
@@ -698,7 +707,16 @@
               "tone": "reach",
               "probability": 18,
               "deadline": "Jan 2",
-              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+              "spark": [
+                4,
+                5,
+                6,
+                5,
+                7,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "Carnegie Mellon · SCS",
@@ -706,7 +724,16 @@
               "tone": "reach",
               "probability": 24,
               "deadline": "Dec 1",
-              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+              "spark": [
+                3,
+                4,
+                5,
+                7,
+                6,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "UC Berkeley · EECS",
@@ -714,7 +741,16 @@
               "tone": "target",
               "probability": 42,
               "deadline": "Nov 30",
-              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+              "spark": [
+                5,
+                6,
+                5,
+                7,
+                8,
+                7,
+                9,
+                10
+              ]
             },
             {
               "name": "Georgia Tech",
@@ -722,7 +758,16 @@
               "tone": "target",
               "probability": 58,
               "deadline": "Oct 15",
-              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+              "spark": [
+                6,
+                7,
+                8,
+                7,
+                8,
+                9,
+                9,
+                10
+              ]
             },
             {
               "name": "UMich · CSE",
@@ -730,7 +775,16 @@
               "tone": "safety",
               "probability": 71,
               "deadline": "Nov 1",
-              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+              "spark": [
+                7,
+                7,
+                8,
+                9,
+                8,
+                9,
+                10,
+                10
+              ]
             }
           ]
         },
@@ -1044,7 +1098,11 @@
             "patience is a virtue",
             "recipes are really stories told in flavors"
           ],
-          "chips": ["More personal", "Tighter rhythm", "Ending needs lift"]
+          "chips": [
+            "More personal",
+            "Tighter rhythm",
+            "Ending needs lift"
+          ]
         },
         "timeline": {
           "label": "Pacing map",
@@ -1108,7 +1166,11 @@
         "mentor": {
           "label": "Human oversight",
           "quote": "AI keeps the system moving. Humans intervene on the irreversible calls.",
-          "points": ["List structure review", "Final essay direction", "Submission risk check"]
+          "points": [
+            "List structure review",
+            "Final essay direction",
+            "Submission risk check"
+          ]
         }
       }
     },
@@ -1142,12 +1204,24 @@
         "eyebrow": "Lumni dashboard",
         "title": "One surface for list strategy, essays, and pacing",
         "note": "School matrix · essay sprint · AI review",
-        "cards": ["School list", "Essay sprint", "Team signals"],
+        "cards": [
+          "School list",
+          "Essay sprint",
+          "Team signals"
+        ],
         "assistantBadge": "AI Copilot",
         "tip": "AI is checking overlap between MIT and CMU essays",
         "tasksLabel": "Today’s push",
-        "tasks": ["Refine the profile", "Finish GT Why Essay", "Confirm Purdue submission"],
-        "columns": ["School", "Tier", "Progress"]
+        "tasks": [
+          "Refine the profile",
+          "Finish GT Why Essay",
+          "Confirm Purdue submission"
+        ],
+        "columns": [
+          "School",
+          "Tier",
+          "Progress"
+        ]
       }
     },
     "social": {
@@ -1204,7 +1278,10 @@
     },
     "cta": {
       "eyebrow": "Start now · Free",
-      "title": ["Stop wasting years", "to information gaps"],
+      "title": [
+        "Stop wasting years",
+        "to information gaps"
+      ],
       "subtitle": "Sign up in 30 seconds. Two minutes later, you should already see your first matrix and the next priorities that actually matter.",
       "primary": "Create free account",
       "secondary": "Book a 1:1 consult",
@@ -1215,19 +1292,41 @@
       "columns": [
         {
           "title": "Product",
-          "links": ["AI matching", "Essay desk", "Timeline", "Probability", "Teams"]
+          "links": [
+            "AI matching",
+            "Essay desk",
+            "Timeline",
+            "Probability",
+            "Teams"
+          ]
         },
         {
           "title": "Resources",
-          "links": ["Student stories", "Help center", "About us", "Get started", "Terms"]
+          "links": [
+            "Student stories",
+            "Help center",
+            "About us",
+            "Get started",
+            "Terms"
+          ]
         },
         {
           "title": "Company",
-          "links": ["About the team", "Community", "Support", "Privacy", "Create account"]
+          "links": [
+            "About the team",
+            "Community",
+            "Support",
+            "Privacy",
+            "Create account"
+          ]
         },
         {
           "title": "Legal",
-          "links": ["Privacy policy", "Terms of service", "Help docs"]
+          "links": [
+            "Privacy policy",
+            "Terms of service",
+            "Help docs"
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · Admissions, no longer a black box.",
@@ -3127,7 +3226,40 @@
       "helpful": "Helpful",
       "insightful": "Insightful",
       "markedHelpful": "Marked as helpful",
-      "markedInsightful": "Marked as insightful"
+      "markedInsightful": "Marked as insightful",
+      "changeMode": "Change review mode",
+      "mode": {
+        "recommended": "Recommended",
+        "swipeTitle": "Swipe Review",
+        "swipeDesc": "Tinder-style: swipe each dimension card to score it fast.",
+        "classicTitle": "Classic Review",
+        "classicDesc": "Slider + comment for each dimension — full control."
+      },
+      "swipe": {
+        "verdictTitle": "Final Verdict",
+        "verdictDesc": "Add your rationale and submit your review.",
+        "rationale": "Your rationale",
+        "rationaleHint": "Explain why you scored this applicant the way you did...",
+        "rationaleMin": "At least {min} characters required.",
+        "quickTags": "Quick tags (optional)",
+        "dragHint": "Drag the card — left, up, or right",
+        "stepCounter": "Step {current} of {total}",
+        "direction": {
+          "notEnough": "Not enough",
+          "unsure": "Unsure",
+          "impressive": "Impressive"
+        }
+      },
+      "quickTag": {
+        "well-rounded": "Well-rounded",
+        "strong-stem": "Strong STEM",
+        "high-gpa": "High GPA",
+        "leadership": "Leadership",
+        "creative": "Creative",
+        "community-impact": "Community impact",
+        "research-oriented": "Research-oriented",
+        "athletic": "Athletic"
+      }
     },
     "ranking": {
       "title": "Rank Comparison",
