@@ -379,14 +379,12 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       ? {
           label: t('school.stats.acceptanceRate'),
           value: fmtPercent(school.acceptanceRate),
-          source: getSchoolFieldSource(school, 'acceptanceRate'),
         }
       : null,
     isPublicFieldSource(getSchoolFieldSource(school, 'tuition')) && school.tuition != null
       ? {
           label: t('school.stats.tuition'),
           value: fmtCurrency(school.tuition),
-          source: getSchoolFieldSource(school, 'tuition'),
         }
       : null,
     isPublicFieldSource(getSchoolFieldSource(school, 'studentCount', 'totalEnrollment')) &&
@@ -394,7 +392,6 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       ? {
           label: t('school.stats.studentCount'),
           value: fmtNumber(school.studentCount ?? school.totalEnrollment),
-          source: getSchoolFieldSource(school, 'studentCount', 'totalEnrollment'),
         }
       : null,
     isPublicFieldSource(getSchoolFieldSource(school, 'graduationRate')) &&
@@ -403,21 +400,18 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
           label: t('school.graduationRate'),
           value: fmtPercent(school.graduationRate, 0),
           bar: Number(school.graduationRate),
-          source: getSchoolFieldSource(school, 'graduationRate'),
         }
       : null,
     isPublicFieldSource(getSchoolFieldSource(school, 'avgSalary')) && school.avgSalary != null
       ? {
           label: t('school.stats.avgSalary'),
           value: fmtCurrency(school.avgSalary),
-          source: getSchoolFieldSource(school, 'avgSalary'),
         }
       : null,
   ].filter(Boolean) as Array<{
     label: string;
     value: ReactNode;
     bar?: number;
-    source?: SchoolFieldSource;
   }>;
 
   const getPublicSource = (...fields: string[]) => {
@@ -1018,16 +1012,13 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
                     <div className="flex items-center gap-2 text-right">
                       {row.bar != null && <PercentBar value={row.bar} />}
                       <span className="whitespace-nowrap font-semibold">{row.value}</span>
-                      {row.source && (
-                        <TrustBadge
-                          source={row.source}
-                          sourceUrl={getFieldSourceUrl(row.source, school)}
-                        />
-                      )}
                     </div>
                   </div>
                 </div>
               ))}
+              <p className="text-xs leading-relaxed text-muted-foreground sm:col-span-2 lg:col-span-1">
+                {t('school.publishedSnapshot.sourceNote')}
+              </p>
             </CardContent>
           </Card>
         )}

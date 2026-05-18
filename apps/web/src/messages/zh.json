@@ -6564,7 +6564,8 @@
     },
     "publishedSnapshot": {
       "title": "申请与费用快照",
-      "description": "展示有来源记录的录取、费用和学生规模数据"
+      "description": "展示有来源记录的录取、费用和学生规模数据",
+      "sourceNote": "数据采集自各校公开渠道，可能与最新官方发布存在时间差。"
     },
     "supplemental": {
       "title": "补充信息",
