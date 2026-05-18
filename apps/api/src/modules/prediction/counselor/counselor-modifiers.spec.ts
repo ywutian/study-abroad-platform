@@ -91,7 +91,7 @@ describe('counselor modifiers launch guards', () => {
   // (rigor-in-context) — only on the equivSat heuristic path, only when
   // highSchoolAcademicRigor is set.
   describe('gpaBandMultiplier — academic-rigor calibration', () => {
-    it('lifts a borderline GPA at a high-rigor (grade-deflation) school', () => {
+    it('lifts the GPA multiplier at a high-rigor (grade-deflation) school', () => {
       const baseline = gpaBandMultiplier(
         baseProfile({ gpa: 3.85 }),
         baseSchool({ gpaDistribution: undefined }),
@@ -100,9 +100,10 @@ describe('counselor modifiers launch guards', () => {
         baseProfile({ gpa: 3.85, highSchoolAcademicRigor: 5 }),
         baseSchool({ gpaDistribution: undefined }),
       );
-      expect(baseline.label).toContain('below school median');
-      expect(withRigor.label).toContain('above 75th percentile');
       expect(withRigor.multiplier).toBeGreaterThan(baseline.multiplier);
+      // smooth ±9% post-band nudge — never flips a discrete band
+      expect(withRigor.label).toBe(baseline.label);
+      expect(withRigor.multiplier / baseline.multiplier).toBeCloseTo(1.09, 2);
     });
 
     it('lowers a GPA at a low-rigor (lenient) school', () => {
