@@ -1,6 +1,9 @@
 export const US_NEWS_RANKING_SOURCE = 'US_NEWS' as const;
 export const US_NEWS_CORE_RANKING_LIST = 'US_NEWS_CORE' as const;
 
+/** All ranking sources surfaced to users. US News stays the primary badge source. */
+export const SCHOOL_RANKING_SOURCES = ['US_NEWS', 'QS', 'THE', 'ARWU', 'FORBES', 'WSJ'] as const;
+
 export const SCHOOL_RANKING_LISTS = [
   'NATIONAL_UNIVERSITY',
   'LIBERAL_ARTS',
@@ -10,7 +13,16 @@ export const SCHOOL_RANKING_LISTS = [
   'ENGINEERING_NO_PHD',
 ] as const;
 
-export type SchoolRankingSource = typeof US_NEWS_RANKING_SOURCE;
+/** One global/national list per non-US-News source. */
+export const GLOBAL_RANKING_LISTS = [
+  'QS_WORLD',
+  'THE_WORLD',
+  'ARWU_WORLD',
+  'FORBES_AMERICA',
+  'WSJ_US',
+] as const;
+
+export type SchoolRankingSource = (typeof SCHOOL_RANKING_SOURCES)[number];
 export type SchoolRankingList = (typeof SCHOOL_RANKING_LISTS)[number];
 export type SchoolRankingListSelection = typeof US_NEWS_CORE_RANKING_LIST | SchoolRankingList;
 export type SchoolRankingConfidence = 'verified' | 'fallback';
@@ -50,11 +62,31 @@ export const RANKING_LIST_LABEL_KEYS: Record<SchoolRankingListSelection | string
   CS_GRADUATE: 'cs',
   BUSINESS: 'business',
   MBA: 'business',
+  QS_WORLD: 'qsWorld',
+  THE_WORLD: 'theWorld',
+  ARWU_WORLD: 'arwuWorld',
+  FORBES_AMERICA: 'forbesAmerica',
+  WSJ_US: 'wsjUs',
 };
 
 export const RANKING_SOURCE_LABELS: Record<string, string> = {
   US_NEWS: 'US News',
   'US News': 'US News',
+  QS: 'QS',
+  THE: 'THE',
+  ARWU: 'ARWU',
+  FORBES: 'Forbes',
+  WSJ: 'WSJ',
+};
+
+/** Display order for the multi-source rankings panel (US News first). */
+const RANKING_SOURCE_DISPLAY_ORDER: Record<string, number> = {
+  US_NEWS: 0,
+  QS: 1,
+  THE: 2,
+  ARWU: 3,
+  FORBES: 4,
+  WSJ: 5,
 };
 
 const RANKING_LIST_SELECTION_SET = new Set<string>([
@@ -181,4 +213,33 @@ export function formatRankingForPlainText(ranking?: SchoolRanking | null): strin
   const list = ranking.list === US_NEWS_CORE_RANKING_LIST ? 'legacy' : ranking.list;
   const suffix = ranking.confidence === 'fallback' ? ' fallback' : '';
   return `${source} ${list} #${ranking.rank}${suffix}`;
+}
+
+/**
+ * Collapses a school's rankings to one best row per source for the
+ * multi-source detail-page panel. Best = lowest rank, newest year on a tie.
+ * Sorted by RANKING_SOURCE_DISPLAY_ORDER (US News first).
+ */
+export function groupRankingsBySource(rankings?: SchoolRanking[] | null): SchoolRanking[] {
+  if (!rankings?.length) return [];
+
+  const bestBySource = new Map<string, SchoolRanking>();
+  for (const input of rankings) {
+    if (!Number.isFinite(input.rank) || input.rank <= 0) continue;
+    const ranking = normalizeSchoolRanking(input);
+    const existing = bestBySource.get(ranking.source);
+    if (
+      !existing ||
+      ranking.rank < existing.rank ||
+      (ranking.rank === existing.rank && ranking.year > existing.year)
+    ) {
+      bestBySource.set(ranking.source, ranking);
+    }
+  }
+
+  return Array.from(bestBySource.values()).sort(
+    (a, b) =>
+      (RANKING_SOURCE_DISPLAY_ORDER[a.source] ?? 99) -
+      (RANKING_SOURCE_DISPLAY_ORDER[b.source] ?? 99)
+  );
 }

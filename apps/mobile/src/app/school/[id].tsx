@@ -12,12 +12,17 @@ import {
   CardHeader,
   CardTitle,
   Badge,
-  RankingBadge,
   Button,
   Loading,
   ErrorState,
   Skeleton,
 } from '@/components/ui';
+import { getRankingListShortLabel } from '@/components/ui/RankingBadge';
+import {
+  createLegacyUsNewsRanking,
+  getRankingSourceLabel,
+  groupRankingsBySource,
+} from '@study-abroad/shared/ranking';
 import { SchoolAvatar } from '@/components/features/SchoolAvatar';
 import { Tabs } from '@/components/ui/Tabs';
 import { API_ROUTES, schoolRoutes } from '@study-abroad/shared';
@@ -175,38 +180,50 @@ export default function SchoolDetailScreen() {
               <CardTitle>{t('schools.detail.rankings')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <View style={styles.rankingsRow}>
-                {(school.rankings?.length || school.usNewsRank) && (
-                  <View style={styles.rankItem}>
-                    <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
+              {(() => {
+                const rows = [...(school.rankings ?? [])];
+                if (!rows.some((r) => r.source === 'US_NEWS')) {
+                  const legacy = createLegacyUsNewsRanking(school.usNewsRank);
+                  if (legacy) rows.push(legacy);
+                }
+                if (!rows.some((r) => r.source === 'QS') && school.qsRank) {
+                  rows.push({
+                    source: 'QS',
+                    list: 'QS_WORLD',
+                    rank: school.qsRank,
+                    year: 2025,
+                    confidence: 'fallback',
+                  });
+                }
+                const grouped = groupRankingsBySource(rows);
+                if (grouped.length === 0) {
+                  return (
                     <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
-                      {t('schools.detail.usnewsRank')}
+                      {t('schools.detail.rankingsEmpty')}
                     </Text>
-                    <DataSourceLabel
-                      field="usNewsRank"
-                      provenance={provenance}
-                      locale={locale}
-                      colors={colors}
-                    />
+                  );
+                }
+                return grouped.map((r, index) => (
+                  <View
+                    key={r.source}
+                    style={[
+                      styles.rankingListRow,
+                      index > 0 && { borderTopWidth: 1, borderTopColor: colors.border },
+                    ]}
+                  >
+                    <View style={styles.rankingListInfo}>
+                      <Text style={[styles.rankSource, { color: colors.foreground }]}>
+                        {getRankingSourceLabel(r.source)}
+                        {r.confidence === 'fallback' ? ' · Legacy' : ''}
+                      </Text>
+                      <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
+                        {getRankingListShortLabel(r.list)} · {r.year}
+                      </Text>
+                    </View>
+                    <Text style={[styles.rankValue, { color: colors.primary }]}>#{r.rank}</Text>
                   </View>
-                )}
-                {school.qsRank && (
-                  <View style={styles.rankItem}>
-                    <Text style={[styles.rankValue, { color: colors.primary }]}>
-                      #{school.qsRank}
-                    </Text>
-                    <Text style={[styles.rankLabel, { color: colors.foregroundMuted }]}>
-                      {t('schools.detail.qsRank')}
-                    </Text>
-                    <DataSourceLabel
-                      field="qsRank"
-                      provenance={provenance}
-                      locale={locale}
-                      colors={colors}
-                    />
-                  </View>
-                )}
-              </View>
+                ));
+              })()}
             </CardContent>
           </Card>
 
@@ -497,6 +514,20 @@ const styles = StyleSheet.create({
   },
   rankItem: {
     alignItems: 'center',
+  },
+  rankingListRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  rankingListInfo: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  rankSource: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
   },
   rankValue: {
     fontSize: fontSize['2xl'],

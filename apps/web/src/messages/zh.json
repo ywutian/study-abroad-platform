@@ -94,7 +94,12 @@
       "performingArts": "表演艺术",
       "engineering": "工程",
       "cs": "计算机",
-      "business": "商科"
+      "business": "商科",
+      "qsWorld": "世界",
+      "theWorld": "世界",
+      "arwuWorld": "世界",
+      "forbesAmerica": "全美",
+      "wsjUs": "全美"
     },
     "rankingTooltip": "{source} {year} 已验证排名",
     "rankingTooltipOverall": "US News 本科主榜是产品默认视图，组合展示 National Universities 与 Liberal Arts Colleges，并非 US News 官方单一总榜。",
@@ -6677,6 +6682,13 @@
     "supplemental": {
       "title": "补充信息",
       "description": "可追溯但非官方的数据来源与补充排名"
+    },
+    "rankings": {
+      "title": "大学排名",
+      "description": "每个排名体系展示最优结果。世界排名（QS、THE、ARWU）主要覆盖研究型大学，文理学院与艺术类院校可能未上榜。",
+      "empty": "暂无该校的已发布排名。",
+      "year": "{year} 年",
+      "sourceLink": "查看 {source} 排名来源"
     },
     "supplementalRanking": "补充排名",
     "supplementalCampusLife": "补充校园生活评级",

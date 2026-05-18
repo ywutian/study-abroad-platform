@@ -344,6 +344,7 @@
     "detail": {
       "overview": "Overview",
       "rankings": "Rankings",
+      "rankingsEmpty": "No published rankings available yet.",
       "admissions": "Admissions",
       "requirements": "Requirements",
       "deadlines": "Deadlines",

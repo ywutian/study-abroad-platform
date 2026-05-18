@@ -1,0 +1,1781 @@
+{
+  "source": "ARWU",
+  "list": "ARWU_WORLD",
+  "year": 2025,
+  "sourceUrl": "https://www.shanghairanking.com/rankings/arwu/2025",
+  "note": "ARWU (Academic Ranking of World Universities / ShanghaiRanking) 2025, released August 2025. Extracted from the official ShanghaiRanking PDF. Banded ranks (101+) recorded with the band lower-bound integer. Joint ranks within the Top 100 reproduced faithfully.",
+  "entries": [
+    { "name": "Harvard University", "rank": 1 },
+    { "name": "Stanford University", "rank": 2 },
+    { "name": "Massachusetts Institute of Technology", "rank": 3 },
+    { "name": "University of Cambridge", "rank": 4 },
+    { "name": "University of California, Berkeley", "rank": 5 },
+    { "name": "University of Oxford", "rank": 6 },
+    { "name": "Princeton University", "rank": 7 },
+    { "name": "Columbia University", "rank": 8 },
+    { "name": "California Institute of Technology", "rank": 9 },
+    { "name": "University of Chicago", "rank": 10 },
+    { "name": "Yale University", "rank": 11 },
+    { "name": "Cornell University", "rank": 12 },
+    { "name": "Paris-Saclay University", "rank": 13 },
+    { "name": "University College London", "rank": 14 },
+    { "name": "University of Pennsylvania", "rank": 14 },
+    { "name": "University of California, Los Angeles", "rank": 16 },
+    { "name": "University of Washington", "rank": 17 },
+    { "name": "Tsinghua University", "rank": 18 },
+    { "name": "Johns Hopkins University", "rank": 19 },
+    { "name": "University of California, San Diego", "rank": 20 },
+    { "name": "University of California, San Francisco", "rank": 21 },
+    { "name": "ETH Zurich", "rank": 22 },
+    { "name": "Peking University", "rank": 23 },
+    { "name": "Zhejiang University", "rank": 24 },
+    { "name": "University of Toronto", "rank": 25 },
+    { "name": "Imperial College London", "rank": 26 },
+    { "name": "Washington University in St Louis", "rank": 26 },
+    { "name": "New York University", "rank": 28 },
+    { "name": "Rockefeller University", "rank": 29 },
+    { "name": "Shanghai Jiao Tong University", "rank": 30 },
+    { "name": "Northwestern University", "rank": 31 },
+    { "name": "The University of Tokyo", "rank": 31 },
+    { "name": "University of Michigan, Ann Arbor", "rank": 33 },
+    { "name": "PSL University", "rank": 34 },
+    { "name": "University of Copenhagen", "rank": 35 },
+    { "name": "University of Wisconsin, Madison", "rank": 36 },
+    { "name": "The University of Edinburgh", "rank": 37 },
+    { "name": "The University of Melbourne", "rank": 38 },
+    { "name": "University of North Carolina at Chapel Hill", "rank": 39 },
+    { "name": "University of Science and Technology of China", "rank": 40 },
+    { "name": "Fudan University", "rank": 41 },
+    { "name": "University of Munich", "rank": 42 },
+    { "name": "Sorbonne University", "rank": 43 },
+    { "name": "Swiss Federal Institute of Technology Lausanne", "rank": 44 },
+    { "name": "Technical University of Munich", "rank": 45 },
+    { "name": "Duke University", "rank": 46 },
+    { "name": "Kyoto University", "rank": 46 },
+    { "name": "The University of Manchester", "rank": 46 },
+    { "name": "The University of Texas at Austin", "rank": 49 },
+    { "name": "Karolinska Institute", "rank": 50 },
+    { "name": "Heidelberg University", "rank": 51 },
+    { "name": "University of Minnesota, Twin Cities", "rank": 51 },
+    { "name": "University of British Columbia", "rank": 53 },
+    { "name": "University of Illinois at Urbana-Champaign", "rank": 53 },
+    { "name": "University of Maryland, College Park", "rank": 55 },
+    { "name": "National University of Singapore", "rank": 56 },
+    { "name": "Utrecht University", "rank": 56 },
+    { "name": "University of Geneva", "rank": 58 },
+    { "name": "University of Texas Southwestern Medical Center", "rank": 58 },
+    { "name": "Université Paris Cité", "rank": 60 },
+    { "name": "King's College London", "rank": 61 },
+    { "name": "University of Colorado Boulder", "rank": 62 },
+    { "name": "Vanderbilt University", "rank": 62 },
+    { "name": "University of Zurich", "rank": 64 },
+    { "name": "Sun Yat-sen University", "rank": 65 },
+    { "name": "The University of Queensland", "rank": 65 },
+    { "name": "The University of Hong Kong", "rank": 67 },
+    { "name": "University of Bonn", "rank": 68 },
+    { "name": "University of Southern California", "rank": 68 },
+    { "name": "University of California, Santa Barbara", "rank": 70 },
+    { "name": "Weizmann Institute of Science", "rank": 71 },
+    { "name": "University of Sydney", "rank": 72 },
+    { "name": "Huazhong University of Science and Technology", "rank": 73 },
+    { "name": "University of Groningen", "rank": 73 },
+    { "name": "Nanjing University", "rank": 75 },
+    { "name": "KU Leuven", "rank": 76 },
+    { "name": "McGill University", "rank": 76 },
+    { "name": "Monash University", "rank": 76 },
+    { "name": "University of California, Irvine", "rank": 79 },
+    { "name": "The University of New South Wales", "rank": 80 },
+    { "name": "Seoul National University", "rank": 81 },
+    { "name": "Wuhan University", "rank": 81 },
+    { "name": "Ohio State University, Columbus", "rank": 83 },
+    { "name": "University of Oslo", "rank": 83 },
+    { "name": "Aarhus University", "rank": 85 },
+    { "name": "University of Texas M. D. Anderson Cancer Center", "rank": 86 },
+    { "name": "Sichuan University", "rank": 87 },
+    { "name": "Nanyang Technological University", "rank": 88 },
+    { "name": "The Hebrew University of Jerusalem", "rank": 88 },
+    { "name": "University of Pittsburgh", "rank": 88 },
+    { "name": "Ghent University", "rank": 91 },
+    { "name": "Xi'an Jiaotong University", "rank": 92 },
+    { "name": "Uppsala University", "rank": 93 },
+    { "name": "University of Basel", "rank": 94 },
+    { "name": "University of Helsinki", "rank": 94 },
+    { "name": "Central South University", "rank": 96 },
+    { "name": "Technion Israel Institute of Technology", "rank": 97 },
+    { "name": "University of Bristol", "rank": 98 },
+    { "name": "City University of Hong Kong", "rank": 99 },
+    { "name": "Stockholm University", "rank": 100 },
+    { "name": "Boston University", "rank": 101, "banded": true },
+    { "name": "Brown University", "rank": 101, "banded": true },
+    { "name": "Carnegie Mellon University", "rank": 101, "banded": true },
+    { "name": "Emory University", "rank": 101, "banded": true },
+    { "name": "Mount Sinai School of Medicine", "rank": 101, "banded": true },
+    { "name": "Indiana University, Bloomington", "rank": 101, "banded": true },
+    {
+      "name": "Mayo Clinic College of Medicine and Science",
+      "rank": 101,
+      "banded": true
+    },
+    {
+      "name": "Penn State University, University Park",
+      "rank": 101,
+      "banded": true
+    },
+    {
+      "name": "Purdue University, West Lafayette",
+      "rank": 101,
+      "banded": true
+    },
+    { "name": "Rice University", "rank": 101, "banded": true },
+    { "name": "University of California, Davis", "rank": 101, "banded": true },
+    { "name": "Beihang University", "rank": 101, "banded": true },
+    { "name": "Beijing Institute of Technology", "rank": 101, "banded": true },
+    { "name": "Beijing Normal University", "rank": 101, "banded": true },
+    { "name": "Erasmus University Rotterdam", "rank": 101, "banded": true },
+    { "name": "Harbin Institute of Technology", "rank": 101, "banded": true },
+    { "name": "Institute of Science Tokyo", "rank": 101, "banded": true },
+    { "name": "Jilin University", "rank": 101, "banded": true },
+    { "name": "King Saud University", "rank": 101, "banded": true },
+    { "name": "Leiden University", "rank": 101, "banded": true },
+    { "name": "Lund University", "rank": 101, "banded": true },
+    { "name": "McMaster University", "rank": 101, "banded": true },
+    { "name": "Moscow State University", "rank": 101, "banded": true },
+    { "name": "Nagoya University", "rank": 101, "banded": true },
+    {
+      "name": "Northwestern Polytechnical University",
+      "rank": 101,
+      "banded": true
+    },
+    { "name": "Radboud University Nijmegen", "rank": 101, "banded": true },
+    { "name": "Sapienza University of Rome", "rank": 101, "banded": true },
+    { "name": "Shandong University", "rank": 101, "banded": true },
+    { "name": "Soochow University", "rank": 101, "banded": true },
+    {
+      "name": "South China University of Technology",
+      "rank": 101,
+      "banded": true
+    },
+    { "name": "Southeast University", "rank": 101, "banded": true },
+    {
+      "name": "Southern University of Science and Technology of China",
+      "rank": 101,
+      "banded": true
+    },
+    {
+      "name": "The Australian National University",
+      "rank": 101,
+      "banded": true
+    },
+    {
+      "name": "The Chinese University of Hong Kong",
+      "rank": 101,
+      "banded": true
+    },
+    { "name": "The University of Warwick", "rank": 101, "banded": true },
+    {
+      "name": "The University of Western Australia",
+      "rank": 101,
+      "banded": true
+    },
+    { "name": "Tianjin University", "rank": 101, "banded": true },
+    { "name": "Tongji University", "rank": 101, "banded": true },
+    {
+      "name": "Université libre de Bruxelles (ULB)",
+      "rank": 101,
+      "banded": true
+    },
+    { "name": "University of Alberta", "rank": 101, "banded": true },
+    { "name": "University of Amsterdam", "rank": 101, "banded": true },
+    { "name": "University of Freiburg", "rank": 101, "banded": true },
+    { "name": "University of Glasgow", "rank": 101, "banded": true },
+    { "name": "University of Lausanne", "rank": 101, "banded": true },
+    { "name": "University of Liverpool", "rank": 101, "banded": true },
+    { "name": "University of Nottingham", "rank": 101, "banded": true },
+    { "name": "University of Sao Paulo", "rank": 101, "banded": true },
+    { "name": "University of Strasbourg", "rank": 101, "banded": true },
+    { "name": "University of Vienna", "rank": 101, "banded": true },
+    { "name": "Xiamen University", "rank": 101, "banded": true },
+    { "name": "Aix-Marseille University", "rank": 151, "banded": true },
+    { "name": "Arizona State University", "rank": 151, "banded": true },
+    { "name": "Case Western Reserve University", "rank": 151, "banded": true },
+    { "name": "China Agricultural University", "rank": 151, "banded": true },
+    { "name": "Chongqing University", "rank": 151, "banded": true },
+    { "name": "Dalian University of Technology", "rank": 151, "banded": true },
+    { "name": "Delft University of Technology", "rank": 151, "banded": true },
+    { "name": "Georgia Institute of Technology", "rank": 151, "banded": true },
+    { "name": "Goethe University Frankfurt", "rank": 151, "banded": true },
+    { "name": "Hunan University", "rank": 151, "banded": true },
+    { "name": "Michigan State University", "rank": 151, "banded": true },
+    { "name": "Nankai University", "rank": 151, "banded": true },
+    {
+      "name": "Norwegian University of Science and Technology",
+      "rank": 151,
+      "banded": true
+    },
+    { "name": "Peking Union Medical College", "rank": 151, "banded": true },
+    {
+      "name": "Rutgers, The State University of New Jersey - New Brunswick",
+      "rank": 151,
+      "banded": true
+    },
+    { "name": "Sungkyunkwan University", "rank": 151, "banded": true },
+    { "name": "Technical University of Denmark", "rank": 151, "banded": true },
+    {
+      "name": "The Hong Kong Polytechnic University",
+      "rank": 151,
+      "banded": true
+    },
+    {
+      "name": "London School of Economics and Political Science",
+      "rank": 151,
+      "banded": true
+    },
+    { "name": "The University of Adelaide", "rank": 151, "banded": true },
+    { "name": "The University of Calgary", "rank": 151, "banded": true },
+    { "name": "The University of Sheffield", "rank": 151, "banded": true },
+    { "name": "Université Grenoble Alpes", "rank": 151, "banded": true },
+    { "name": "University of Arizona", "rank": 151, "banded": true },
+    { "name": "University of Barcelona", "rank": 151, "banded": true },
+    { "name": "University of Bern", "rank": 151, "banded": true },
+    { "name": "University of Birmingham", "rank": 151, "banded": true },
+    {
+      "name": "University of California, Santa Cruz",
+      "rank": 151,
+      "banded": true
+    },
+    { "name": "University of Cologne", "rank": 151, "banded": true },
+    {
+      "name": "University of Electronic Science and Technology of China",
+      "rank": 151,
+      "banded": true
+    },
+    { "name": "University of Exeter", "rank": 151, "banded": true },
+    { "name": "University of Florida", "rank": 151, "banded": true },
+    { "name": "University of Goettingen", "rank": 151, "banded": true },
+    { "name": "University of Gothenburg", "rank": 151, "banded": true },
+    { "name": "University of Leeds", "rank": 151, "banded": true },
+    { "name": "University of Mainz", "rank": 151, "banded": true },
+    {
+      "name": "University of Massachusetts Chan Medical School",
+      "rank": 151,
+      "banded": true
+    },
+    { "name": "University of Milan", "rank": 151, "banded": true },
+    { "name": "University of Montpellier", "rank": 151, "banded": true },
+    { "name": "University of Montreal", "rank": 151, "banded": true },
+    { "name": "University of Muenster", "rank": 151, "banded": true },
+    { "name": "University of Padua", "rank": 151, "banded": true },
+    { "name": "University of Southampton", "rank": 151, "banded": true },
+    { "name": "University of Tuebingen", "rank": 151, "banded": true },
+    { "name": "University of Utah", "rank": 151, "banded": true },
+    { "name": "University of Waterloo", "rank": 151, "banded": true },
+    { "name": "Vrije Universiteit Amsterdam", "rank": 151, "banded": true },
+    { "name": "Wageningen University & Research", "rank": 151, "banded": true },
+    { "name": "Yonsei University", "rank": 151, "banded": true },
+    { "name": "Zhengzhou University", "rank": 151, "banded": true },
+    { "name": "Baylor College of Medicine", "rank": 201, "banded": true },
+    {
+      "name": "Beijing University of Chemical Technology",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Beijing University of Technology", "rank": 201, "banded": true },
+    { "name": "Capital Medical University", "rank": 201, "banded": true },
+    { "name": "Cardiff University", "rank": 201, "banded": true },
+    { "name": "Catholic University of Louvain", "rank": 201, "banded": true },
+    { "name": "China University of Geosciences", "rank": 201, "banded": true },
+    { "name": "Claude Bernard University Lyon 1", "rank": 201, "banded": true },
+    { "name": "Curtin University", "rank": 201, "banded": true },
+    { "name": "Deakin University", "rank": 201, "banded": true },
+    { "name": "Dresden University of Technology", "rank": 201, "banded": true },
+    { "name": "Durham University", "rank": 201, "banded": true },
+    { "name": "East China Normal University", "rank": 201, "banded": true },
+    {
+      "name": "East China University of Science and Technology",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "George Mason University", "rank": 201, "banded": true },
+    { "name": "Hanyang University", "rank": 201, "banded": true },
+    {
+      "name": "Heinrich Heine University Duesseldorf",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Hokkaido University", "rank": 201, "banded": true },
+    { "name": "Huazhong Agricultural University", "rank": 201, "banded": true },
+    { "name": "Institut polytechnique de Paris", "rank": 201, "banded": true },
+    { "name": "Keio University", "rank": 201, "banded": true },
+    { "name": "Kiel University", "rank": 201, "banded": true },
+    {
+      "name": "King Abdullah University of Science and Technology",
+      "rank": 201,
+      "banded": true
+    },
+    {
+      "name": "Korea Advanced Institute of Science and Technology",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Korea University", "rank": 201, "banded": true },
+    {
+      "name": "KTH Royal Institute of Technology",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Kyushu University", "rank": 201, "banded": true },
+    { "name": "Lanzhou University", "rank": 201, "banded": true },
+    {
+      "name": "London School of Hygiene & Tropical Medicine",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Macquarie University", "rank": 201, "banded": true },
+    { "name": "Medical University of Vienna", "rank": 201, "banded": true },
+    { "name": "Nanjing Agricultural University", "rank": 201, "banded": true },
+    { "name": "Nanjing Medical University", "rank": 201, "banded": true },
+    {
+      "name": "Nanjing University of Aeronautics and Astronautics",
+      "rank": 201,
+      "banded": true
+    },
+    {
+      "name": "Nanjing University of Science and Technology",
+      "rank": 201,
+      "banded": true
+    },
+    {
+      "name": "National Autonomous University of Mexico",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "National Taiwan University", "rank": 201, "banded": true },
+    { "name": "Newcastle University", "rank": 201, "banded": true },
+    {
+      "name": "North Carolina State University - Raleigh",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Northeastern University (Boston)", "rank": 201, "banded": true },
+    {
+      "name": "Northeastern University (Shenyang)",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Northwest A&F University", "rank": 201, "banded": true },
+    {
+      "name": "Oregon Health & Science University",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Oregon State University", "rank": 201, "banded": true },
+    { "name": "Osaka University", "rank": 201, "banded": true },
+    { "name": "Queen Mary University of London", "rank": 201, "banded": true },
+    { "name": "Queen's University", "rank": 201, "banded": true },
+    { "name": "Ruhr University Bochum", "rank": 201, "banded": true },
+    { "name": "RWTH Aachen University", "rank": 201, "banded": true },
+    { "name": "Shanghai University", "rank": 201, "banded": true },
+    { "name": "Shenzhen University", "rank": 201, "banded": true },
+    { "name": "Southern Medical University", "rank": 201, "banded": true },
+    {
+      "name": "Swinburne University of Technology",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Technical University of Berlin", "rank": 201, "banded": true },
+    { "name": "Tel Aviv University", "rank": 201, "banded": true },
+    { "name": "Texas A&M University", "rank": 201, "banded": true },
+    {
+      "name": "The Hong Kong University of Science and Technology",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "The University of Auckland", "rank": 201, "banded": true },
+    {
+      "name": "The University of Tennessee, Knoxville",
+      "rank": 201,
+      "banded": true
+    },
+    {
+      "name": "University of Texas Health Science Center at Houston",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "Tohoku University", "rank": 201, "banded": true },
+    { "name": "Trinity College Dublin", "rank": 201, "banded": true },
+    { "name": "Tufts University", "rank": 201, "banded": true },
+    { "name": "University of Aberdeen", "rank": 201, "banded": true },
+    { "name": "University of Bergen", "rank": 201, "banded": true },
+    { "name": "University of Bologna", "rank": 201, "banded": true },
+    { "name": "University of Bordeaux", "rank": 201, "banded": true },
+    { "name": "University of Buenos Aires", "rank": 201, "banded": true },
+    {
+      "name": "University of California, Riverside",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "University of Cape Town", "rank": 201, "banded": true },
+    { "name": "University of Colorado at Denver", "rank": 201, "banded": true },
+    { "name": "University of Connecticut", "rank": 201, "banded": true },
+    { "name": "University of Delaware", "rank": 201, "banded": true },
+    { "name": "University of Erlangen-Nuremberg", "rank": 201, "banded": true },
+    { "name": "University of Hamburg", "rank": 201, "banded": true },
+    { "name": "University of Houston", "rank": 201, "banded": true },
+    { "name": "University of Innsbruck", "rank": 201, "banded": true },
+    { "name": "University of Leipzig", "rank": 201, "banded": true },
+    { "name": "University of Lisbon", "rank": 201, "banded": true },
+    { "name": "University of Lorraine", "rank": 201, "banded": true },
+    {
+      "name": "University of Massachusetts, Amherst",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "University of Missouri, Columbia", "rank": 201, "banded": true },
+    { "name": "University of Naples Federico II", "rank": 201, "banded": true },
+    { "name": "University of Ottawa", "rank": 201, "banded": true },
+    { "name": "University of Pisa", "rank": 201, "banded": true },
+    { "name": "University of Porto", "rank": 201, "banded": true },
+    { "name": "University of Rochester", "rank": 201, "banded": true },
+    {
+      "name": "University of Science and Technology Beijing",
+      "rank": 201,
+      "banded": true
+    },
+    { "name": "University of Sussex", "rank": 201, "banded": true },
+    { "name": "University of Technology Sydney", "rank": 201, "banded": true },
+    { "name": "University of the Witwatersrand", "rank": 201, "banded": true },
+    { "name": "University of Tsukuba", "rank": 201, "banded": true },
+    { "name": "University of Turin", "rank": 201, "banded": true },
+    { "name": "University of Valencia", "rank": 201, "banded": true },
+    { "name": "University of Virginia", "rank": 201, "banded": true },
+    { "name": "University of Wuerzburg", "rank": 201, "banded": true },
+    { "name": "University of York", "rank": 201, "banded": true },
+    { "name": "Vienna University of Technology", "rank": 201, "banded": true },
+    { "name": "Virginia Tech", "rank": 201, "banded": true },
+    { "name": "Wuhan University of Technology", "rank": 201, "banded": true },
+    { "name": "Aalborg University", "rank": 301, "banded": true },
+    {
+      "name": "Albert Einstein College of Medicine",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Anhui University", "rank": 301, "banded": true },
+    {
+      "name": "Autonomous University of Barcelona",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Autonomous University of Madrid", "rank": 301, "banded": true },
+    {
+      "name": "Ben-Gurion University of the Negev",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Brandeis University", "rank": 301, "banded": true },
+    {
+      "name": "Chalmers University of Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Charles University", "rank": 301, "banded": true },
+    {
+      "name": "China University of Petroleum (East China)",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Colorado State University", "rank": 301, "banded": true },
+    { "name": "Complutense University of Madrid", "rank": 301, "banded": true },
+    { "name": "Dalhousie University", "rank": 301, "banded": true },
+    { "name": "Dartmouth College", "rank": 301, "banded": true },
+    { "name": "Ecole Normale Superieure de Lyon", "rank": 301, "banded": true },
+    {
+      "name": "Eindhoven University of Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Florida State University", "rank": 301, "banded": true },
+    { "name": "Fujian Medical University", "rank": 301, "banded": true },
+    { "name": "Fuzhou University", "rank": 301, "banded": true },
+    { "name": "George Washington University", "rank": 301, "banded": true },
+    { "name": "Griffith University", "rank": 301, "banded": true },
+    {
+      "name": "Guangdong University of Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Guangxi University", "rank": 301, "banded": true },
+    { "name": "Guangzhou Medical University", "rank": 301, "banded": true },
+    { "name": "Henan University", "rank": 301, "banded": true },
+    { "name": "Jiangnan University", "rank": 301, "banded": true },
+    { "name": "Jiangsu University", "rank": 301, "banded": true },
+    { "name": "Jinan University", "rank": 301, "banded": true },
+    {
+      "name": "Karlsruhe Institute of Technology",
+      "rank": 301,
+      "banded": true
+    },
+    {
+      "name": "Kunming University of Science and Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Kyung Hee University", "rank": 301, "banded": true },
+    { "name": "La Trobe University", "rank": 301, "banded": true },
+    { "name": "Lancaster University", "rank": 301, "banded": true },
+    { "name": "Laval University", "rank": 301, "banded": true },
+    { "name": "Linkoping University", "rank": 301, "banded": true },
+    { "name": "Maastricht University", "rank": 301, "banded": true },
+    { "name": "Nanchang University", "rank": 301, "banded": true },
+    { "name": "Nanjing Tech University", "rank": 301, "banded": true },
+    {
+      "name": "Nanjing University of Information Science and Technology",
+      "rank": 301,
+      "banded": true
+    },
+    {
+      "name": "Nanjing University of Posts and Telecommunications",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Ocean University of China", "rank": 301, "banded": true },
+    {
+      "name": "Paul Sabatier University (Toulouse 3)",
+      "rank": 301,
+      "banded": true
+    },
+    {
+      "name": "Pohang University of Science and Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Polytechnic University of Milan", "rank": 301, "banded": true },
+    { "name": "Pompeu Fabra University", "rank": 301, "banded": true },
+    {
+      "name": "Princess Nourah Bint Abdulrahman University",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Qingdao University", "rank": 301, "banded": true },
+    { "name": "Queen's University Belfast", "rank": 301, "banded": true },
+    {
+      "name": "Queensland University of Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Renmin University of China", "rank": 301, "banded": true },
+    { "name": "RMIT University", "rank": 301, "banded": true },
+    { "name": "ShanghaiTech University", "rank": 301, "banded": true },
+    {
+      "name": "South China Agricultural University",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Southwest Jiaotong University", "rank": 301, "banded": true },
+    { "name": "Stony Brook University", "rank": 301, "banded": true },
+    { "name": "The University of Georgia", "rank": 301, "banded": true },
+    {
+      "name": "Ulsan National Institute of Science and Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "University College Cork", "rank": 301, "banded": true },
+    { "name": "University College Dublin", "rank": 301, "banded": true },
+    {
+      "name": "University of Alabama at Birmingham",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "University of Antwerp", "rank": 301, "banded": true },
+    { "name": "University of Cincinnati", "rank": 301, "banded": true },
+    { "name": "University of Duisburg-Essen", "rank": 301, "banded": true },
+    { "name": "University of Dundee", "rank": 301, "banded": true },
+    { "name": "University of East Anglia", "rank": 301, "banded": true },
+    { "name": "University of Florence", "rank": 301, "banded": true },
+    { "name": "University of Genoa", "rank": 301, "banded": true },
+    { "name": "University of Granada", "rank": 301, "banded": true },
+    { "name": "University of Hawaii at Manoa", "rank": 301, "banded": true },
+    { "name": "University of Iowa", "rank": 301, "banded": true },
+    { "name": "University of Kansas", "rank": 301, "banded": true },
+    { "name": "University of Kentucky", "rank": 301, "banded": true },
+    { "name": "University of Leicester", "rank": 301, "banded": true },
+    { "name": "University of Macau", "rank": 301, "banded": true },
+    { "name": "University of Manitoba", "rank": 301, "banded": true },
+    { "name": "University of Marburg", "rank": 301, "banded": true },
+    { "name": "University of Miami", "rank": 301, "banded": true },
+    { "name": "University of Milano-Bicocca", "rank": 301, "banded": true },
+    { "name": "University of Nebraska, Lincoln", "rank": 301, "banded": true },
+    { "name": "University of Notre Dame", "rank": 301, "banded": true },
+    { "name": "University of Potsdam", "rank": 301, "banded": true },
+    {
+      "name": "University of Shanghai for Science and Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "University of Southern Denmark", "rank": 301, "banded": true },
+    { "name": "University of St Andrews", "rank": 301, "banded": true },
+    { "name": "University of Stuttgart", "rank": 301, "banded": true },
+    { "name": "University of Tasmania", "rank": 301, "banded": true },
+    { "name": "University of the Basque Country", "rank": 301, "banded": true },
+    { "name": "University of Trento", "rank": 301, "banded": true },
+    { "name": "University of Ulm", "rank": 301, "banded": true },
+    { "name": "University of Victoria", "rank": 301, "banded": true },
+    { "name": "University of Wollongong", "rank": 301, "banded": true },
+    { "name": "Virginia Commonwealth University", "rank": 301, "banded": true },
+    { "name": "Vrije Universiteit Brussel", "rank": 301, "banded": true },
+    { "name": "Western Sydney University", "rank": 301, "banded": true },
+    { "name": "Western University", "rank": 301, "banded": true },
+    { "name": "Westlake University", "rank": 301, "banded": true },
+    { "name": "Xidian University", "rank": 301, "banded": true },
+    { "name": "Yangzhou University", "rank": 301, "banded": true },
+    { "name": "Yunnan University", "rank": 301, "banded": true },
+    {
+      "name": "Zhejiang University of Technology",
+      "rank": 301,
+      "banded": true
+    },
+    { "name": "Aalto University", "rank": 401, "banded": true },
+    { "name": "Anhui Medical University", "rank": 401, "banded": true },
+    { "name": "Cairo University", "rank": 401, "banded": true },
+    {
+      "name": "Università Cattolica del Sacro Cuore",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "China Medical University (Taichung)",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "China University of Geosciences Beijing",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "China University of Mining and Technology",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "City University of New York - Graduate Center",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Donghua University", "rank": 401, "banded": true },
+    { "name": "Flinders University", "rank": 401, "banded": true },
+    {
+      "name": "Fujian Agriculture and Forestry University",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Georgetown University", "rank": 401, "banded": true },
+    { "name": "Guangzhou University", "rank": 401, "banded": true },
+    { "name": "Guizhou University", "rank": 401, "banded": true },
+    { "name": "Hainan University", "rank": 401, "banded": true },
+    { "name": "Hannover Medical School", "rank": 401, "banded": true },
+    { "name": "Hefei University of Technology", "rank": 401, "banded": true },
+    { "name": "Hiroshima University", "rank": 401, "banded": true },
+    { "name": "Hohai University", "rank": 401, "banded": true },
+    { "name": "Indiana University, Indianapolis", "rank": 401, "banded": true },
+    { "name": "Iowa State University", "rank": 401, "banded": true },
+    { "name": "James Cook University", "rank": 401, "banded": true },
+    { "name": "King Khalid University", "rank": 401, "banded": true },
+    { "name": "Kyungpook National University", "rank": 401, "banded": true },
+    { "name": "Leibniz University Hannover", "rank": 401, "banded": true },
+    {
+      "name": "Louisiana State University - Baton Rouge",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "Macau University of Science and Technology",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Masaryk University", "rank": 401, "banded": true },
+    { "name": "Medical University of Graz", "rank": 401, "banded": true },
+    { "name": "Medical University of Innsbruck", "rank": 401, "banded": true },
+    { "name": "Nanjing Normal University", "rank": 401, "banded": true },
+    {
+      "name": "Nanjing University of Chinese Medicine",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "National Cheng Kung University", "rank": 401, "banded": true },
+    { "name": "National Tsing Hua University", "rank": 401, "banded": true },
+    {
+      "name": "National University of Defense Technology",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "National Yang Ming Chiao Tung University",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Ningbo University", "rank": 401, "banded": true },
+    { "name": "Northwest University", "rank": 401, "banded": true },
+    {
+      "name": "Okinawa Institute of Science and Technology Graduate University",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Osaka Metropolitan University", "rank": 401, "banded": true },
+    {
+      "name": "Polytechnic University of Valencia",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Pusan National University", "rank": 401, "banded": true },
+    { "name": "Saarland University", "rank": 401, "banded": true },
+    { "name": "Sao Paulo State University", "rank": 401, "banded": true },
+    { "name": "Sejong University", "rank": 401, "banded": true },
+    { "name": "Simon Fraser University", "rank": 401, "banded": true },
+    { "name": "South China Normal University", "rank": 401, "banded": true },
+    { "name": "Southwest University", "rank": 401, "banded": true },
+    { "name": "St Petersburg University", "rank": 401, "banded": true },
+    { "name": "Stellenbosch University", "rank": 401, "banded": true },
+    {
+      "name": "Swedish University of Agricultural Sciences",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Technical University Darmstadt", "rank": 401, "banded": true },
+    {
+      "name": "Tehran University of Medical Sciences",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Temple University", "rank": 401, "banded": true },
+    {
+      "name": "The Chinese University of Hong Kong, Shenzhen",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "The University of Newcastle, Australia",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "The University of Reading", "rank": 401, "banded": true },
+    {
+      "name": "The University of Texas at Dallas",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Toulouse Capitole University", "rank": 401, "banded": true },
+    { "name": "Umea University", "rank": 401, "banded": true },
+    { "name": "University of Aveiro", "rank": 401, "banded": true },
+    { "name": "University of Bari", "rank": 401, "banded": true },
+    { "name": "University of Bath", "rank": 401, "banded": true },
+    { "name": "University of Bayreuth", "rank": 401, "banded": true },
+    { "name": "University of Belgrade", "rank": 401, "banded": true },
+    { "name": "University of Campinas", "rank": 401, "banded": true },
+    { "name": "University of Canterbury", "rank": 401, "banded": true },
+    { "name": "University of Central Florida", "rank": 401, "banded": true },
+    { "name": "University of Côte d'Azur", "rank": 401, "banded": true },
+    { "name": "University of Essex", "rank": 401, "banded": true },
+    { "name": "University of Illinois Chicago", "rank": 401, "banded": true },
+    { "name": "University of Jena", "rank": 401, "banded": true },
+    { "name": "University of Kent", "rank": 401, "banded": true },
+    { "name": "University of Konstanz", "rank": 401, "banded": true },
+    { "name": "University of Liege", "rank": 401, "banded": true },
+    { "name": "University of Lille", "rank": 401, "banded": true },
+    {
+      "name": "University of Maryland, Baltimore",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "University of Oklahoma, Norman", "rank": 401, "banded": true },
+    { "name": "University of Otago", "rank": 401, "banded": true },
+    { "name": "University of Oulu", "rank": 401, "banded": true },
+    { "name": "University of Pavia", "rank": 401, "banded": true },
+    { "name": "University of Regensburg", "rank": 401, "banded": true },
+    { "name": "University of Rennes", "rank": 401, "banded": true },
+    { "name": "University of Rome Tor Vergata", "rank": 401, "banded": true },
+    { "name": "University of Saskatchewan", "rank": 401, "banded": true },
+    { "name": "University of Seville", "rank": 401, "banded": true },
+    { "name": "University of South Australia", "rank": 401, "banded": true },
+    {
+      "name": "University of South Carolina, Columbia",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "University of South Florida", "rank": 401, "banded": true },
+    { "name": "University of Surrey", "rank": 401, "banded": true },
+    { "name": "University of Szeged", "rank": 401, "banded": true },
+    { "name": "University of Tehran", "rank": 401, "banded": true },
+    { "name": "University of Turku", "rank": 401, "banded": true },
+    { "name": "University of Vermont", "rank": 401, "banded": true },
+    { "name": "University of Verona", "rank": 401, "banded": true },
+    { "name": "University of Warsaw", "rank": 401, "banded": true },
+    {
+      "name": "Victoria University of Wellington",
+      "rank": 401,
+      "banded": true
+    },
+    {
+      "name": "Vita-Salute San Raffaele University",
+      "rank": 401,
+      "banded": true
+    },
+    { "name": "Washington State University", "rank": 401, "banded": true },
+    { "name": "Wenzhou Medical University", "rank": 401, "banded": true },
+    { "name": "Alexandria University", "rank": 501, "banded": true },
+    {
+      "name": "Aristotle University of Thessaloniki",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Auburn University", "rank": 501, "banded": true },
+    { "name": "Bangor University", "rank": 501, "banded": true },
+    { "name": "Bar-Ilan University", "rank": 501, "banded": true },
+    { "name": "Beijing Jiaotong University", "rank": 501, "banded": true },
+    { "name": "Boston College", "rank": 501, "banded": true },
+    { "name": "Carleton University", "rank": 501, "banded": true },
+    { "name": "Central China Normal University", "rank": 501, "banded": true },
+    { "name": "Changzhou University", "rank": 501, "banded": true },
+    {
+      "name": "China University of Petroleum, Beijing",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Chongqing Medical University", "rank": 501, "banded": true },
+    { "name": "Drexel University", "rank": 501, "banded": true },
+    { "name": "Eotvos Lorand University", "rank": 501, "banded": true },
+    {
+      "name": "Federal University of Minas Gerais",
+      "rank": 501,
+      "banded": true
+    },
+    {
+      "name": "Federal University of Rio de Janeiro",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Fujian Normal University", "rank": 501, "banded": true },
+    { "name": "Hangzhou Dianzi University", "rank": 501, "banded": true },
+    { "name": "Hangzhou Normal University", "rank": 501, "banded": true },
+    { "name": "Harbin Engineering University", "rank": 501, "banded": true },
+    { "name": "Hebei University", "rank": 501, "banded": true },
+    { "name": "Hebei University of Technology", "rank": 501, "banded": true },
+    { "name": "Indian Institute of Science", "rank": 501, "banded": true },
+    { "name": "Istanbul University", "rank": 501, "banded": true },
+    { "name": "Jagiellonian University", "rank": 501, "banded": true },
+    {
+      "name": "Jiangsu University of Science and Technology",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "King Abdulaziz University", "rank": 501, "banded": true },
+    { "name": "Kobe University", "rank": 501, "banded": true },
+    { "name": "Medical College of Wisconsin", "rank": 501, "banded": true },
+    {
+      "name": "Medical University of South Carolina",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Murdoch University", "rank": 501, "banded": true },
+    { "name": "Nanjing Forestry University", "rank": 501, "banded": true },
+    {
+      "name": "National and Kapodistrian University of Athens",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "National Polytechnic Institute", "rank": 501, "banded": true },
+    { "name": "National Sun Yat-Sen University", "rank": 501, "banded": true },
+    {
+      "name": "North China Electric Power University",
+      "rank": 501,
+      "banded": true
+    },
+    {
+      "name": "Northeast Agricultural University",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Northeast Normal University", "rank": 501, "banded": true },
+    { "name": "Northern Arizona University", "rank": 501, "banded": true },
+    { "name": "Okayama University", "rank": 501, "banded": true },
+    {
+      "name": "Pontificia Universidad Catolica de Chile",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Qatar University", "rank": 501, "banded": true },
+    { "name": "Saint Louis University", "rank": 501, "banded": true },
+    { "name": "San Diego State University", "rank": 501, "banded": true },
+    { "name": "Shaanxi Normal University", "rank": 501, "banded": true },
+    { "name": "Shandong Agricultural University", "rank": 501, "banded": true },
+    {
+      "name": "Shandong University of Science and Technology",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Shanxi University", "rank": 501, "banded": true },
+    { "name": "Tampere University", "rank": 501, "banded": true },
+    { "name": "Texas Tech University", "rank": 501, "banded": true },
+    { "name": "The City College of New York", "rank": 501, "banded": true },
+    {
+      "name": "University of New Mexico - Albuquerque",
+      "rank": 501,
+      "banded": true
+    },
+    {
+      "name": "University of Texas Health Science Center at San Antonio",
+      "rank": 501,
+      "banded": true
+    },
+    {
+      "name": "University of Texas Medical Branch at Galveston",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "Tianjin Medical University", "rank": 501, "banded": true },
+    { "name": "Tulane University", "rank": 501, "banded": true },
+    {
+      "name": "UiT The Arctic University of Norway",
+      "rank": 501,
+      "banded": true
+    },
+    {
+      "name": "State University of New York at Buffalo",
+      "rank": 501,
+      "banded": true
+    },
+    {
+      "name": "University of Arkansas at Fayetteville",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "University of Bremen", "rank": 501, "banded": true },
+    { "name": "University of California, Merced", "rank": 501, "banded": true },
+    {
+      "name": "University of Campania Luigi Vanvitelli",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "University of Catania", "rank": 501, "banded": true },
+    { "name": "University of Chile", "rank": 501, "banded": true },
+    { "name": "University of Coimbra", "rank": 501, "banded": true },
+    { "name": "University of Fribourg", "rank": 501, "banded": true },
+    { "name": "University of Galway", "rank": 501, "banded": true },
+    { "name": "University of Giessen", "rank": 501, "banded": true },
+    { "name": "University of Guelph", "rank": 501, "banded": true },
+    { "name": "University of Halle-Wittenberg", "rank": 501, "banded": true },
+    { "name": "University of Johannesburg", "rank": 501, "banded": true },
+    { "name": "University of Ljubljana", "rank": 501, "banded": true },
+    { "name": "University of Luebeck", "rank": 501, "banded": true },
+    { "name": "University of Maine", "rank": 501, "banded": true },
+    { "name": "University of Minho", "rank": 501, "banded": true },
+    { "name": "University of Nantes", "rank": 501, "banded": true },
+    { "name": "University of Navarra", "rank": 501, "banded": true },
+    { "name": "University of Nevada, Las Vegas", "rank": 501, "banded": true },
+    { "name": "University of Nevada, Reno", "rank": 501, "banded": true },
+    { "name": "University of Oregon", "rank": 501, "banded": true },
+    { "name": "University of Parma", "rank": 501, "banded": true },
+    { "name": "University of Perugia", "rank": 501, "banded": true },
+    { "name": "University of Pretoria", "rank": 501, "banded": true },
+    { "name": "University of Rostock", "rank": 501, "banded": true },
+    { "name": "University of Salamanca", "rank": 501, "banded": true },
+    {
+      "name": "University of Santiago de Compostela",
+      "rank": 501,
+      "banded": true
+    },
+    { "name": "University of Tartu", "rank": 501, "banded": true },
+    { "name": "University of Twente", "rank": 501, "banded": true },
+    { "name": "University of Ulsan", "rank": 501, "banded": true },
+    { "name": "University of Zaragoza", "rank": 501, "banded": true },
+    { "name": "Utah State University", "rank": 501, "banded": true },
+    { "name": "Vellore Institute of Technology", "rank": 501, "banded": true },
+    { "name": "Vilnius University", "rank": 501, "banded": true },
+    { "name": "Wake Forest University", "rank": 501, "banded": true },
+    { "name": "Wenzhou University", "rank": 501, "banded": true },
+    { "name": "West Virginia University", "rank": 501, "banded": true },
+    { "name": "Xi'an University of Technology", "rank": 501, "banded": true },
+    { "name": "Yanshan University", "rank": 501, "banded": true },
+    { "name": "Yeungnam University", "rank": 501, "banded": true },
+    { "name": "Zhejiang Sci-Tech University", "rank": 501, "banded": true },
+    { "name": "Addis Ababa University", "rank": 601, "banded": true },
+    { "name": "Ain Shams University", "rank": 601, "banded": true },
+    { "name": "Air Force Medical University", "rank": 601, "banded": true },
+    { "name": "Australian Catholic University", "rank": 601, "banded": true },
+    { "name": "Baylor University", "rank": 601, "banded": true },
+    { "name": "Beijing Forestry University", "rank": 601, "banded": true },
+    {
+      "name": "Beijing Technology and Business University",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Binghamton University", "rank": 601, "banded": true },
+    { "name": "University of Brescia", "rank": 601, "banded": true },
+    { "name": "Brunel University London", "rank": 601, "banded": true },
+    { "name": "Chang Gung University", "rank": 601, "banded": true },
+    { "name": "Chang'an University", "rank": 601, "banded": true },
+    { "name": "Chengdu University of Technology", "rank": 601, "banded": true },
+    { "name": "Chiba University", "rank": 601, "banded": true },
+    {
+      "name": "China Medical University (Shenyang)",
+      "rank": 601,
+      "banded": true
+    },
+    {
+      "name": "China University of Mining and Technology-Beijing",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Chonnam National University", "rank": 601, "banded": true },
+    { "name": "Chulalongkorn University", "rank": 601, "banded": true },
+    { "name": "Clemson University", "rank": 601, "banded": true },
+    { "name": "Colorado School of Mines", "rank": 601, "banded": true },
+    { "name": "Concordia University", "rank": 601, "banded": true },
+    { "name": "Dalian Maritime University", "rank": 601, "banded": true },
+    { "name": "Ewha Womans University", "rank": 601, "banded": true },
+    {
+      "name": "Federal University of Rio Grande do Sul",
+      "rank": 601,
+      "banded": true
+    },
+    {
+      "name": "Federal University of Santa Catarina",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Florida International University", "rank": 601, "banded": true },
+    { "name": "Georgia State University", "rank": 601, "banded": true },
+    { "name": "Graz University of Technology", "rank": 601, "banded": true },
+    {
+      "name": "Henan University of Science and Technology",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Homi Bhabha National Institute", "rank": 601, "banded": true },
+    { "name": "Hong Kong Baptist University", "rank": 601, "banded": true },
+    { "name": "Hunan Normal University", "rank": 601, "banded": true },
+    {
+      "name": "Indian Institute of Technology Delhi",
+      "rank": 601,
+      "banded": true
+    },
+    {
+      "name": "Indian Institute of Technology Kanpur",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "INHA University", "rank": 601, "banded": true },
+    { "name": "Kansas State University", "rank": 601, "banded": true },
+    { "name": "Khalifa University", "rank": 601, "banded": true },
+    { "name": "Lanzhou University of Technology", "rank": 601, "banded": true },
+    { "name": "Lebanese American University", "rank": 601, "banded": true },
+    { "name": "Liverpool John Moores University", "rank": 601, "banded": true },
+    { "name": "Mahidol University", "rank": 601, "banded": true },
+    {
+      "name": "Manchester Metropolitan University",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Mansoura University", "rank": 601, "banded": true },
+    { "name": "Marche Polytechnic University", "rank": 601, "banded": true },
+    { "name": "Mississippi State University", "rank": 601, "banded": true },
+    {
+      "name": "Moscow Institute of Physics and Technology",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Nantong University", "rank": 601, "banded": true },
+    { "name": "Naval Medical University", "rank": 601, "banded": true },
+    { "name": "Northeast Forestry University", "rank": 601, "banded": true },
+    { "name": "Polytechnic University of Madrid", "rank": 601, "banded": true },
+    { "name": "Polytechnic University of Turin", "rank": 601, "banded": true },
+    { "name": "Qilu University of Technology", "rank": 601, "banded": true },
+    {
+      "name": "Qingdao University of Science and Technology",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Rensselaer Polytechnic Institute", "rank": 601, "banded": true },
+    { "name": "Rush University", "rank": 601, "banded": true },
+    {
+      "name": "Saveetha Institute of Medical and Technical Sciences",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Semmelweis University", "rank": 601, "banded": true },
+    {
+      "name": "Shandong First Medical University",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Shanghai Normal University", "rank": 601, "banded": true },
+    { "name": "Shanghai Ocean University", "rank": 601, "banded": true },
+    { "name": "Southwest Petroleum University", "rank": 601, "banded": true },
+    { "name": "Taif University", "rank": 601, "banded": true },
+    { "name": "Taiyuan University of Technology", "rank": 601, "banded": true },
+    {
+      "name": "Technical University of Braunschweig",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Technical University of Dortmund", "rank": 601, "banded": true },
+    { "name": "Thomas Jefferson University", "rank": 601, "banded": true },
+    {
+      "name": "Università della Svizzera italiana",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "University of Alicante", "rank": 601, "banded": true },
+    { "name": "University of Augsburg", "rank": 601, "banded": true },
+    { "name": "University of Burgundy Europe", "rank": 601, "banded": true },
+    { "name": "University of Delhi", "rank": 601, "banded": true },
+    { "name": "University of Eastern Finland", "rank": 601, "banded": true },
+    { "name": "University of Ferrara", "rank": 601, "banded": true },
+    { "name": "University of Graz", "rank": 601, "banded": true },
+    { "name": "University of Haifa", "rank": 601, "banded": true },
+    {
+      "name": "University of Health Sciences Turkey",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "University of Iceland", "rank": 601, "banded": true },
+    { "name": "University of KwaZulu-Natal", "rank": 601, "banded": true },
+    { "name": "University of Louisville", "rank": 601, "banded": true },
+    { "name": "University of Luxembourg", "rank": 601, "banded": true },
+    { "name": "University of Malaya", "rank": 601, "banded": true },
+    { "name": "University of Murcia", "rank": 601, "banded": true },
+    {
+      "name": "University of Natural Resources and Life Sciences",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "University of New Hampshire", "rank": 601, "banded": true },
+    { "name": "University of North Texas", "rank": 601, "banded": true },
+    { "name": "University of Oldenburg", "rank": 601, "banded": true },
+    { "name": "University of Oviedo", "rank": 601, "banded": true },
+    { "name": "University of Salerno", "rank": 601, "banded": true },
+    { "name": "University of Siena", "rank": 601, "banded": true },
+    {
+      "name": "University of Southern Queensland",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "University of Toledo", "rank": 601, "banded": true },
+    { "name": "University of Trieste", "rank": 601, "banded": true },
+    { "name": "University of Wyoming", "rank": 601, "banded": true },
+    { "name": "University of Zagreb", "rank": 601, "banded": true },
+    { "name": "University Rovira i Virgili", "rank": 601, "banded": true },
+    { "name": "Wayne State University", "rank": 601, "banded": true },
+    { "name": "Xinjiang University", "rank": 601, "banded": true },
+    { "name": "York University", "rank": 601, "banded": true },
+    {
+      "name": "Zhejiang Chinese Medical University",
+      "rank": 601,
+      "banded": true
+    },
+    { "name": "Zhejiang Normal University", "rank": 601, "banded": true },
+    { "name": "Al-Azhar University", "rank": 701, "banded": true },
+    { "name": "Anhui Agricultural University", "rank": 701, "banded": true },
+    { "name": "Ankara University", "rank": 701, "banded": true },
+    { "name": "Army Medical University", "rank": 701, "banded": true },
+    {
+      "name": "Beijing University of Posts and Telecommunications",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Bielefeld University", "rank": 701, "banded": true },
+    { "name": "Brigham Young University", "rank": 701, "banded": true },
+    { "name": "China Pharmaceutical University", "rank": 701, "banded": true },
+    {
+      "name": "Chongqing University of Posts and Telecommunications",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Chung-Ang University", "rank": 701, "banded": true },
+    { "name": "Chungbuk National University", "rank": 701, "banded": true },
+    { "name": "Chungnam National University", "rank": 701, "banded": true },
+    {
+      "name": "City St George's, University of London",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "COMSATS University Islamabad", "rank": 701, "banded": true },
+    { "name": "Copenhagen Business School", "rank": 701, "banded": true },
+    { "name": "Federal University of Parana", "rank": 701, "banded": true },
+    {
+      "name": "Federal University of Santa Maria",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Federal University of Sao Paulo", "rank": 701, "banded": true },
+    { "name": "Gachon University", "rank": 701, "banded": true },
+    { "name": "Guangxi Normal University", "rank": 701, "banded": true },
+    { "name": "Hacettepe University", "rank": 701, "banded": true },
+    { "name": "Hallym University", "rank": 701, "banded": true },
+    { "name": "Harbin Medical University", "rank": 701, "banded": true },
+    { "name": "Hebei Medical University", "rank": 701, "banded": true },
+    { "name": "Henan Normal University", "rank": 701, "banded": true },
+    { "name": "Heriot-Watt University", "rank": 701, "banded": true },
+    { "name": "Hubei University", "rank": 701, "banded": true },
+    { "name": "Humanitas University", "rank": 701, "banded": true },
+    {
+      "name": "Indian Institute of Technology Madras",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Istanbul University-Cerrahpasa", "rank": 701, "banded": true },
+    { "name": "Jeonbuk National University", "rank": 701, "banded": true },
+    { "name": "Jiangxi Normal University", "rank": 701, "banded": true },
+    { "name": "Kangwon National University", "rank": 701, "banded": true },
+    { "name": "Kent State University", "rank": 701, "banded": true },
+    { "name": "Kindai University", "rank": 701, "banded": true },
+    {
+      "name": "King Fahd University of Petroleum & Minerals",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Kitasato University", "rank": 701, "banded": true },
+    { "name": "Koc University", "rank": 701, "banded": true },
+    { "name": "Lulea University of Technology", "rank": 701, "banded": true },
+    {
+      "name": "Memorial University of Newfoundland",
+      "rank": 701,
+      "banded": true
+    },
+    {
+      "name": "National Taiwan University of Science and Technology",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "National University of Malaysia", "rank": 701, "banded": true },
+    { "name": "Northumbria University", "rank": 701, "banded": true },
+    { "name": "North-West University", "rank": 701, "banded": true },
+    {
+      "name": "Norwegian University of Life Sciences",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "NOVA University Lisbon", "rank": 701, "banded": true },
+    { "name": "Oklahoma State University", "rank": 701, "banded": true },
+    { "name": "Palacký University Olomouc", "rank": 701, "banded": true },
+    { "name": "Paris-East Créteil University", "rank": 701, "banded": true },
+    {
+      "name": "Polytechnic University of Catalonia",
+      "rank": 701,
+      "banded": true
+    },
+    {
+      "name": "Prince Sattam Bin Abdulaziz University",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Scuola Normale Superiore di Pisa", "rank": 701, "banded": true },
+    { "name": "Shantou University", "rank": 701, "banded": true },
+    { "name": "Shanxi Medical University", "rank": 701, "banded": true },
+    { "name": "Shinshu University", "rank": 701, "banded": true },
+    { "name": "Southern Methodist University", "rank": 701, "banded": true },
+    {
+      "name": "Southwestern University of Finance and Economics",
+      "rank": 701,
+      "banded": true
+    },
+    {
+      "name": "SRM Institute of Science and Technology",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Stockholm School of Economics", "rank": 701, "banded": true },
+    {
+      "name": "SUNY Downstate Health Sciences University",
+      "rank": 701,
+      "banded": true
+    },
+    {
+      "name": "Suzhou University of Science and Technology",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Swansea University", "rank": 701, "banded": true },
+    { "name": "Tarbiat Modares University", "rank": 701, "banded": true },
+    {
+      "name": "The University of Alabama, Tuscaloosa",
+      "rank": 701,
+      "banded": true
+    },
+    {
+      "name": "The University of Texas at Arlington",
+      "rank": 701,
+      "banded": true
+    },
+    {
+      "name": "The University of Texas at San Antonio",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "The University of Waikato", "rank": 701, "banded": true },
+    { "name": "Tiangong University", "rank": 701, "banded": true },
+    { "name": "Tianjin University of Technology", "rank": 701, "banded": true },
+    { "name": "Tilburg University", "rank": 701, "banded": true },
+    { "name": "United Arab Emirates University", "rank": 701, "banded": true },
+    { "name": "University at Albany", "rank": 701, "banded": true },
+    { "name": "University of Alcala", "rank": 701, "banded": true },
+    { "name": "University of Brasília", "rank": 701, "banded": true },
+    { "name": "University of Calabria", "rank": 701, "banded": true },
+    { "name": "University of Cantabria", "rank": 701, "banded": true },
+    { "name": "University of Clermont Auvergne", "rank": 701, "banded": true },
+    { "name": "University of Extremadura", "rank": 701, "banded": true },
+    { "name": "University of Greenwich", "rank": 701, "banded": true },
+    { "name": "University of Jinan", "rank": 701, "banded": true },
+    { "name": "University of Jyvaskyla", "rank": 701, "banded": true },
+    { "name": "University of La Laguna", "rank": 701, "banded": true },
+    { "name": "University of Limerick", "rank": 701, "banded": true },
+    { "name": "University of Mannheim", "rank": 701, "banded": true },
+    {
+      "name": "University of Maryland, Baltimore County",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "University of Palermo", "rank": 701, "banded": true },
+    { "name": "University of Plymouth", "rank": 701, "banded": true },
+    { "name": "University of Quebec at Montreal", "rank": 701, "banded": true },
+    { "name": "University of Science, Malaysia", "rank": 701, "banded": true },
+    { "name": "University of Sherbrooke", "rank": 701, "banded": true },
+    { "name": "University of South China", "rank": 701, "banded": true },
+    { "name": "University of Stirling", "rank": 701, "banded": true },
+    { "name": "University of Strathclyde", "rank": 701, "banded": true },
+    {
+      "name": "University of the Balearic Islands",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "University of the Punjab", "rank": 701, "banded": true },
+    { "name": "Waseda University", "rank": 701, "banded": true },
+    { "name": "Wuhan Institute of Technology", "rank": 701, "banded": true },
+    {
+      "name": "Wuhan University of Science and Technology",
+      "rank": 701,
+      "banded": true
+    },
+    { "name": "Xiangtan University", "rank": 701, "banded": true },
+    { "name": "Xuzhou Medical University", "rank": 701, "banded": true },
+    { "name": "AGH University of Krakow", "rank": 801, "banded": true },
+    { "name": "Anhui Normal University", "rank": 801, "banded": true },
+    { "name": "Augusta University", "rank": 801, "banded": true },
+    { "name": "Birkbeck, University of London", "rank": 801, "banded": true },
+    { "name": "Brock University", "rank": 801, "banded": true },
+    {
+      "name": "Budapest University of Technology and Economics",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Capital Normal University", "rank": 801, "banded": true },
+    {
+      "name": "Central University of Finance and Economics",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Changsha University of Science and Technology",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Chengdu University", "rank": 801, "banded": true },
+    { "name": "Chiang Mai University", "rank": 801, "banded": true },
+    { "name": "Cranfield University", "rank": 801, "banded": true },
+    {
+      "name": "Czech Technical University in Prague",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Czech University of Life Sciences Prague",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Dongguan University of Technology",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Edith Cowan University", "rank": 801, "banded": true },
+    { "name": "Ege University", "rank": 801, "banded": true },
+    { "name": "Federal University of Sao Carlos", "rank": 801, "banded": true },
+    { "name": "Federal University of Vicosa", "rank": 801, "banded": true },
+    { "name": "Guangxi Medical University", "rank": 801, "banded": true },
+    {
+      "name": "Guangzhou University of Chinese Medicine",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Heilongjiang University", "rank": 801, "banded": true },
+    { "name": "HSE University", "rank": 801, "banded": true },
+    {
+      "name": "Indian Institute of Technology Bombay",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Indian Institute of Technology Kharagpur",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Indian Institute of Technology Roorkee",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "INSA Toulouse", "rank": 801, "banded": true },
+    { "name": "Istanbul Technical University", "rank": 801, "banded": true },
+    { "name": "Johannes Kepler University Linz", "rank": 801, "banded": true },
+    { "name": "Kanazawa University", "rank": 801, "banded": true },
+    { "name": "King Faisal University", "rank": 801, "banded": true },
+    { "name": "Konkuk University", "rank": 801, "banded": true },
+    { "name": "Loughborough University", "rank": 801, "banded": true },
+    {
+      "name": "Manipal Academy of Higher Education",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Massey University", "rank": 801, "banded": true },
+    { "name": "Maynooth University", "rank": 801, "banded": true },
+    {
+      "name": "Montana State University, Bozeman",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Nagasaki University", "rank": 801, "banded": true },
+    { "name": "National Central University", "rank": 801, "banded": true },
+    { "name": "National Chung Hsing University", "rank": 801, "banded": true },
+    { "name": "National University of Colombia", "rank": 801, "banded": true },
+    {
+      "name": "New Jersey Institute of Technology",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "New York University Abu Dhabi", "rank": 801, "banded": true },
+    {
+      "name": "North China University of Water Resources and Electric Power",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "North University of China", "rank": 801, "banded": true },
+    { "name": "Nottingham Trent University", "rank": 801, "banded": true },
+    { "name": "Ohio University", "rank": 801, "banded": true },
+    { "name": "Old Dominion University", "rank": 801, "banded": true },
+    { "name": "Politecnico di Bari", "rank": 801, "banded": true },
+    { "name": "Qassim University", "rank": 801, "banded": true },
+    { "name": "Qingdao Agricultural University", "rank": 801, "banded": true },
+    {
+      "name": "Royal Holloway, University of London",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Shahid Beheshti University of Medical Sciences",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Shandong Normal University", "rank": 801, "banded": true },
+    {
+      "name": "Shanghai University of Finance and Economics",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Shanghai University of Traditional Chinese Medicine",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Sharif University of Technology", "rank": 801, "banded": true },
+    {
+      "name": "Shenyang Pharmaceutical University",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Sichuan Agricultural University", "rank": 801, "banded": true },
+    {
+      "name": "Skolkovo Institute of Science and Technology",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Syracuse University", "rank": 801, "banded": true },
+    { "name": "Taipei Medical University", "rank": 801, "banded": true },
+    { "name": "The Catholic University of Korea", "rank": 801, "banded": true },
+    {
+      "name": "The Education University of Hong Kong",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "The Graduate University for Advanced Studies",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "The Royal Veterinary College", "rank": 801, "banded": true },
+    {
+      "name": "The University of Texas at El Paso",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Tokyo University of Science", "rank": 801, "banded": true },
+    { "name": "Ulster University", "rank": 801, "banded": true },
+    { "name": "University of Antioquia", "rank": 801, "banded": true },
+    { "name": "University of Cagliari", "rank": 801, "banded": true },
+    { "name": "University of Crete", "rank": 801, "banded": true },
+    { "name": "University of Cyprus", "rank": 801, "banded": true },
+    { "name": "University of Hertfordshire", "rank": 801, "banded": true },
+    { "name": "University of Hull", "rank": 801, "banded": true },
+    { "name": "University of Jaen", "rank": 801, "banded": true },
+    { "name": "University of Kassel", "rank": 801, "banded": true },
+    { "name": "University of Lleida", "rank": 801, "banded": true },
+    { "name": "University of Magdeburg", "rank": 801, "banded": true },
+    { "name": "University of Malaga", "rank": 801, "banded": true },
+    { "name": "University of Messina", "rank": 801, "banded": true },
+    {
+      "name": "University of Missouri, Kansas City",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "University of Modena and Reggio Emilia",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "University of Nebraska Medical Center",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "University of Oklahoma Health Sciences Center",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "University of Poitiers", "rank": 801, "banded": true },
+    { "name": "University of Rhode Island", "rank": 801, "banded": true },
+    { "name": "University of South Africa", "rank": 801, "banded": true },
+    { "name": "University of the Sunshine Coast", "rank": 801, "banded": true },
+    {
+      "name": "University of Versailles Saint-Quentin-en-Yvelines",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "University of Vigo", "rank": 801, "banded": true },
+    {
+      "name": "University of Wisconsin, Milwaukee",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "University Putra Malaysia", "rank": 801, "banded": true },
+    { "name": "University Savoie Mont Blanc", "rank": 801, "banded": true },
+    { "name": "Ural Federal University", "rank": 801, "banded": true },
+    {
+      "name": "Xi'an Jiaotong-Liverpool University",
+      "rank": 801,
+      "banded": true
+    },
+    {
+      "name": "Xi'an University of Architecture and Technology",
+      "rank": 801,
+      "banded": true
+    },
+    { "name": "Yangtze University", "rank": 801, "banded": true },
+    { "name": "Yantai University", "rank": 801, "banded": true },
+    { "name": "Zhejiang A&F University", "rank": 801, "banded": true },
+    { "name": "Adam Mickiewicz University", "rank": 901, "banded": true },
+    { "name": "Ajou University", "rank": 901, "banded": true },
+    {
+      "name": "Al-Imam Mohammad Ibn Saud Islamic University",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Amherst College", "rank": 901, "banded": true },
+    {
+      "name": "Anhui University of Science and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Ataturk University", "rank": 901, "banded": true },
+    {
+      "name": "Auckland University of Technology",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Banaras Hindu University", "rank": 901, "banded": true },
+    { "name": "Carlos III University of Madrid", "rank": 901, "banded": true },
+    {
+      "name": "Chengdu University of Traditional Chinese Medicine",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "China Jiliang University", "rank": 901, "banded": true },
+    {
+      "name": "Comenius University in Bratislava",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Dalian Medical University", "rank": 901, "banded": true },
+    { "name": "Dongguk University", "rank": 901, "banded": true },
+    { "name": "Federal University of Bahia", "rank": 901, "banded": true },
+    { "name": "Federal University of Ceara", "rank": 901, "banded": true },
+    { "name": "Federal University of Pelotas", "rank": 901, "banded": true },
+    { "name": "Federal University of Pernambuco", "rank": 901, "banded": true },
+    { "name": "Free University of Bozen-Bolzano", "rank": 901, "banded": true },
+    { "name": "Gansu Agricultural University", "rank": 901, "banded": true },
+    { "name": "Gazi University", "rank": 901, "banded": true },
+    { "name": "Gyeongsang National University", "rank": 901, "banded": true },
+    { "name": "Hainan Medical University", "rank": 901, "banded": true },
+    { "name": "Hamburg University of Technology", "rank": 901, "banded": true },
+    { "name": "Hangzhou City University", "rank": 901, "banded": true },
+    { "name": "Hangzhou Medical College", "rank": 901, "banded": true },
+    {
+      "name": "Hassan II University of Casablanca",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Hebei Normal University", "rank": 901, "banded": true },
+    { "name": "Henan Agricultural University", "rank": 901, "banded": true },
+    { "name": "Henan Polytechnic University", "rank": 901, "banded": true },
+    { "name": "Huaqiao University", "rank": 901, "banded": true },
+    { "name": "Hunan Agricultural University", "rank": 901, "banded": true },
+    {
+      "name": "Iran University of Medical Sciences",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Jaume I University", "rank": 901, "banded": true },
+    { "name": "Jazan University", "rank": 901, "banded": true },
+    { "name": "Jilin Agricultural University", "rank": 901, "banded": true },
+    { "name": "Juntendo University", "rank": 901, "banded": true },
+    { "name": "Kaohsiung Medical University", "rank": 901, "banded": true },
+    { "name": "Kumamoto University", "rank": 901, "banded": true },
+    { "name": "Kunming Medical University", "rank": 901, "banded": true },
+    { "name": "Lehigh University", "rank": 901, "banded": true },
+    { "name": "Liaocheng University", "rank": 901, "banded": true },
+    { "name": "Lingnan University", "rank": 901, "banded": true },
+    { "name": "Linnaeus University", "rank": 901, "banded": true },
+    { "name": "Loyola University Chicago", "rank": 901, "banded": true },
+    { "name": "Marmara University", "rank": 901, "banded": true },
+    {
+      "name": "Michigan Technological University",
+      "rank": 901,
+      "banded": true
+    },
+    {
+      "name": "Nanjing University of Finance and Economics",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Nicolaus Copernicus University", "rank": 901, "banded": true },
+    { "name": "Ningxia University", "rank": 901, "banded": true },
+    { "name": "North Dakota State University", "rank": 901, "banded": true },
+    { "name": "Novosibirsk State University", "rank": 901, "banded": true },
+    { "name": "Orebro University", "rank": 901, "banded": true },
+    { "name": "Pukyong National University", "rank": 901, "banded": true },
+    {
+      "name": "RCSI University of Medicine and Health Sciences",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Rio de Janeiro State University", "rank": 901, "banded": true },
+    { "name": "Roma Tre University", "rank": 901, "banded": true },
+    { "name": "Rutgers University, Newark", "rank": 901, "banded": true },
+    {
+      "name": "Shaanxi University of Science and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    {
+      "name": "Shandong University of Technology",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Shihezi University", "rank": 901, "banded": true },
+    { "name": "Southwest Medical University", "rank": 901, "banded": true },
+    {
+      "name": "Southwest University of Science and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    {
+      "name": "Taiyuan University of Science and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    {
+      "name": "The Islamia University of Bahawalpur",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "The Open University", "rank": 901, "banded": true },
+    { "name": "Tokushima University", "rank": 901, "banded": true },
+    {
+      "name": "Tokyo University of Agriculture and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Umm Al-Qura University", "rank": 901, "banded": true },
+    { "name": "University of Alaska Fairbanks", "rank": 901, "banded": true },
+    {
+      "name": "University of Arkansas for Medical Sciences",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "University of Beira Interior", "rank": 901, "banded": true },
+    { "name": "University of Cadiz", "rank": 901, "banded": true },
+    { "name": "University of Calcutta", "rank": 901, "banded": true },
+    { "name": "University of Castilla-La Mancha", "rank": 901, "banded": true },
+    { "name": "University of Central Lancashire", "rank": 901, "banded": true },
+    { "name": "University of Chieti-Pescara", "rank": 901, "banded": true },
+    { "name": "University of Cordoba", "rank": 901, "banded": true },
+    { "name": "University of Eastern Piedmont", "rank": 901, "banded": true },
+    { "name": "University of Ghana", "rank": 901, "banded": true },
+    { "name": "University of Girona", "rank": 901, "banded": true },
+    { "name": "University of Hohenheim", "rank": 901, "banded": true },
+    {
+      "name": "University of International Business and Economics",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "University of Lahore", "rank": 901, "banded": true },
+    {
+      "name": "University of Las Palmas de Gran Canaria",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "University of New Brunswick", "rank": 901, "banded": true },
+    { "name": "University of Patras", "rank": 901, "banded": true },
+    {
+      "name": "University of Picardie Jules Verne",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "University of Portsmouth", "rank": 901, "banded": true },
+    { "name": "University of Regina", "rank": 901, "banded": true },
+    { "name": "University of Sharjah", "rank": 901, "banded": true },
+    {
+      "name": "University of Tennessee Health Science Center",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "University of Windsor", "rank": 901, "banded": true },
+    { "name": "University of Wuppertal", "rank": 901, "banded": true },
+    { "name": "Warsaw University of Technology", "rank": 901, "banded": true },
+    {
+      "name": "Wroclaw University of Science and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    {
+      "name": "Xi'an University of Science and Technology",
+      "rank": 901,
+      "banded": true
+    },
+    { "name": "Yokohama City University", "rank": 901, "banded": true },
+    { "name": "Zagazig University", "rank": 901, "banded": true },
+    {
+      "name": "Zhongnan University of Economics and Law",
+      "rank": 901,
+      "banded": true
+    }
+  ]
+}
