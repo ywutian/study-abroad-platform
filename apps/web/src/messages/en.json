@@ -1429,7 +1429,7 @@
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
       "cases": "Explore real admission outcomes and application stories",
-      "hall": "Verified admit data, peer feedback and rank comparison",
+      "hall": "Verified admit data, peer reviews and rank comparison",
       "essayGallery": "Browse excellent admission essay examples",
       "chat": "Real-time chat with verified users",
       "vault": "Securely store sensitive information and passwords",
@@ -2946,7 +2946,7 @@
   },
   "hall": {
     "title": "Alumni Square",
-    "description": "Verified admit data, peer feedback, rank comparison and case study",
+    "description": "Verified admit data, peer reviews, rank comparison and case study",
     "tabs": {
       "tinder": "Prediction Game",
       "review": "Peer Pulse",
@@ -3384,11 +3384,13 @@
     "onboarding": {
       "skip": "Skip",
       "next": "Next",
+      "back": "Back",
       "done": "Get started",
       "step": "Step {current} of {total}",
+      "replay": "Replay the intro",
       "steps": {
         "welcomeTitle": "Welcome to the Alumni Square",
-        "welcomeBody": "A community space where applicants compare positioning, get peer feedback, and learn from verified admit cases.",
+        "welcomeBody": "A community space where applicants compare positioning, get peer reviews, and learn from verified admit cases.",
         "pointsTitle": "Earn points by contributing",
         "pointsBody": "Reviewing peers, completing challenges and sharing outcomes earns points you can redeem in the Points Center.",
         "leaderboardTitle": "See where you stand",

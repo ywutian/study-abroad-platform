@@ -1413,7 +1413,7 @@
       "assessment": "性格与职业兴趣测评",
       "timeline": "追踪申请截止日期与任务",
       "cases": "浏览真实录取结果与申请故事",
-      "hall": "认证录取数据、同伴反馈与排名对比",
+      "hall": "认证录取数据、同伴锐评与排名对比",
       "essayGallery": "浏览优秀录取文书案例",
       "chat": "与认证用户实时聊天交流",
       "vault": "安全存储敏感信息与密码",
@@ -2930,7 +2930,7 @@
   },
   "hall": {
     "title": "校友广场",
-    "description": "认证录取数据、同伴反馈、排名对比与案例研习",
+    "description": "认证录取数据、同伴锐评、排名对比与案例研习",
     "tabs": {
       "tinder": "预测游戏",
       "review": "同伴反馈",
@@ -3039,7 +3039,7 @@
       "testScores": "标化成绩",
       "finalVerdict": "最终评定",
       "scores": "标化",
-      "title": "同伴反馈",
+      "title": "同伴锐评",
       "academic": "学术能力",
       "academicDesc": "评估学术能力",
       "activity": "活动质量",
@@ -3368,11 +3368,13 @@
     "onboarding": {
       "skip": "跳过",
       "next": "下一步",
+      "back": "上一步",
       "done": "开始体验",
       "step": "第 {current} / {total} 步",
+      "replay": "重看引导",
       "steps": {
         "welcomeTitle": "欢迎来到校友广场",
-        "welcomeBody": "在这里，申请者可以对比定位、获得同伴反馈，并向已认证的录取案例学习。",
+        "welcomeBody": "在这里，申请者可以对比定位、获得同伴锐评，并向已认证的录取案例学习。",
         "pointsTitle": "贡献内容赚取积分",
         "pointsBody": "锐评同伴、完成挑战和分享录取结果都能赚取积分，可在积分中心兑换。",
         "leaderboardTitle": "了解你的位置",

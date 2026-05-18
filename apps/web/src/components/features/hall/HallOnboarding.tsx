@@ -5,12 +5,13 @@
  *
  * 4 short steps (what you can do / how points work / leaderboard / privacy),
  * gated on a localStorage "seen" flag so it shows exactly once per browser.
- * Rendered by `hall/page.tsx`.
+ * Rendered by `hall/page.tsx`. Pass `forceShow` to replay it on demand
+ * (the "?" button in the page header).
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Compass, Coins, BarChart3, ShieldCheck } from 'lucide-react';
+import { Compass, Coins, BarChart3, ShieldCheck, ChevronLeft } from 'lucide-react';
 
 import {
   Dialog,
@@ -25,11 +26,13 @@ import { cn } from '@/lib/utils';
 
 const STORAGE_KEY = 'hall-onboarding-seen-v1';
 
+// Step copy lives under `hall.onboarding.steps.*`; the buttons (skip/next/done/
+// step) live directly under `hall.onboarding.*` — keep the `steps.` prefix here.
 const STEPS = [
-  { icon: Compass, titleKey: 'welcomeTitle', bodyKey: 'welcomeBody' },
-  { icon: Coins, titleKey: 'pointsTitle', bodyKey: 'pointsBody' },
-  { icon: BarChart3, titleKey: 'leaderboardTitle', bodyKey: 'leaderboardBody' },
-  { icon: ShieldCheck, titleKey: 'privacyTitle', bodyKey: 'privacyBody' },
+  { icon: Compass, titleKey: 'steps.welcomeTitle', bodyKey: 'steps.welcomeBody' },
+  { icon: Coins, titleKey: 'steps.pointsTitle', bodyKey: 'steps.pointsBody' },
+  { icon: BarChart3, titleKey: 'steps.leaderboardTitle', bodyKey: 'steps.leaderboardBody' },
+  { icon: ShieldCheck, titleKey: 'steps.privacyTitle', bodyKey: 'steps.privacyBody' },
 ] as const;
 
 function hasSeenOnboarding(): boolean {
@@ -51,23 +54,43 @@ function markSeen(): void {
   }
 }
 
-export function HallOnboarding() {
+interface HallOnboardingProps {
+  /**
+   * Replay trigger. Increment this (e.g. from the "?" header button) to reopen
+   * the walkthrough on demand. A single mounted instance handles both the
+   * first-visit auto-open and replays — avoids stacking two dialogs.
+   */
+  replayNonce?: number;
+}
+
+export function HallOnboarding({ replayNonce = 0 }: HallOnboardingProps) {
   const t = useTranslations('hall.onboarding');
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
 
-  // localStorage is only readable on the client — defer to an effect.
+  // First-visit auto-open is deferred so the page (lazy-loaded tabs + hero BFF
+  // fetch) settles before the modal covers it.
   useEffect(() => {
-    if (!hasSeenOnboarding()) {
+    if (hasSeenOnboarding()) return;
+    const timer = window.setTimeout(() => setOpen(true), 650);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  // On-demand replay — opens immediately, restarting from the first step.
+  useEffect(() => {
+    if (replayNonce > 0) {
+      setStepIndex(0);
       setOpen(true);
     }
-  }, []);
+  }, [replayNonce]);
 
   const close = () => {
     markSeen();
     setOpen(false);
   };
 
+  const isFirst = stepIndex === 0;
   const isLast = stepIndex === STEPS.length - 1;
   const step = STEPS[stepIndex];
   const StepIcon = step.icon;
@@ -79,22 +102,25 @@ export function HallOnboarding() {
         if (!next) close();
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        // Land focus on "Next" so Enter advances the walkthrough (the default
+        // first-focusable element is "Skip", which would dismiss it).
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          nextButtonRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <StepIcon className="h-6 w-6" />
           </div>
           <DialogTitle className="text-center">{t(step.titleKey)}</DialogTitle>
-          <DialogDescription className="text-center">
-            {t(step.bodyKey)}
-          </DialogDescription>
+          <DialogDescription className="text-center">{t(step.bodyKey)}</DialogDescription>
         </DialogHeader>
 
-        {/* Step dots */}
-        <div
-          className="flex items-center justify-center gap-1.5"
-          aria-label={t('step', { current: stepIndex + 1, total: STEPS.length })}
-        >
+        {/* Step dots — decorative; progress is announced via the live region below */}
+        <div className="flex items-center justify-center gap-1.5" aria-hidden>
           {STEPS.map((_, i) => (
             <span
               key={i}
@@ -102,27 +128,38 @@ export function HallOnboarding() {
                 'h-1.5 rounded-full transition-all',
                 i === stepIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted'
               )}
-              aria-hidden
             />
           ))}
         </div>
+        <p className="sr-only" role="status" aria-live="polite">
+          {t('step', { current: stepIndex + 1, total: STEPS.length })}
+        </p>
 
         <DialogFooter className="flex-row justify-between gap-2 sm:justify-between">
           <Button variant="ghost" size="sm" onClick={close}>
             {t('skip')}
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              if (isLast) {
-                close();
-              } else {
-                setStepIndex((i) => i + 1);
-              }
-            }}
-          >
-            {isLast ? t('done') : t('next')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {!isFirst && (
+              <Button variant="outline" size="sm" onClick={() => setStepIndex((i) => i - 1)}>
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                {t('back')}
+              </Button>
+            )}
+            <Button
+              ref={nextButtonRef}
+              size="sm"
+              onClick={() => {
+                if (isLast) {
+                  close();
+                } else {
+                  setStepIndex((i) => i + 1);
+                }
+              }}
+            >
+              {isLast ? t('done') : t('next')}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

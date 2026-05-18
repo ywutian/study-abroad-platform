@@ -5,7 +5,12 @@
  * 运行: pnpm --filter api ts-node prisma/seed-all-features.ts
  */
 
-import { PrismaClient, Prisma, DataReviewStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  Prisma,
+  DataReviewStatus,
+  VerificationLevel,
+} from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -2108,6 +2113,15 @@ async function main() {
       visibility: caseData.visibility,
       isVerified: caseData.visibility === 'VERIFIED_ONLY',
       reviewStatus: DataReviewStatus.AUTO_APPROVED,
+      // China-mainland demo cohort. The verified-data dashboard
+      // (`/verified/china-admit-trend`) filters on nationality + L2/L3
+      // verification, so verified cases must carry both to be visible there
+      // and stay consistent with the hero-bar counts.
+      nationality: 'China',
+      verificationLevel:
+        caseData.visibility === 'VERIFIED_ONLY'
+          ? VerificationLevel.L2
+          : VerificationLevel.L1,
       essayType: caseData.essayType as any,
       essayPrompt: caseData.essayPrompt,
       essayContent: caseData.essayContent,
