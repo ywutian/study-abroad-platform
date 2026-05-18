@@ -521,6 +521,14 @@ export class PredictionTransformerService {
         (school as any).eaAcceptanceRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
+      // closure-v2: CDS C2 yield — feeds roundMultiplier's yield-informed ED
+      // estimate. Without this line the SchoolInput.yieldRate field and the
+      // engine branch that reads it are unreachable dead code.
+      yieldRate: captureField(
+        'yieldRate',
+        (school as any).yieldRate,
+        (value) => clampPercentRate(toNumber(value)) as any,
+      ),
       institutionType: captureField(
         'institutionType',
         (school as any).institutionType,
