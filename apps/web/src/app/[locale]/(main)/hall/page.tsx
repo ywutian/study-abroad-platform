@@ -19,8 +19,16 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
-import { Award, BadgeCheck, BarChart3, MessageSquare, GraduationCap } from 'lucide-react';
+import {
+  Award,
+  BadgeCheck,
+  BarChart3,
+  MessageSquare,
+  GraduationCap,
+  HelpCircle,
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button';
 import { HallHeroBar } from '@/components/features/hall/HallHeroBar';
 import { HallOnboarding } from '@/components/features/hall/HallOnboarding';
 
@@ -105,6 +113,7 @@ export default function HallPage() {
       : 'verified'; // Stage 3: default is now Verified (was Tinder)
 
   const [activeTab, setActiveTab] = useState<HallTabV2>(initialTab);
+  const [onboardingReplayNonce, setOnboardingReplayNonce] = useState(0);
 
   // Auto-rewrite legacy ?tab values to the new IA so the URL is canonical.
   useEffect(() => {
@@ -133,10 +142,22 @@ export default function HallPage() {
         description={t('hall.description')}
         icon={Award}
         color="indigo"
+        actions={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setOnboardingReplayNonce((n) => n + 1)}
+            aria-label={t('hall.onboarding.replay')}
+            title={t('hall.onboarding.replay')}
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
+        }
       />
 
-      {/* Stage 6 — first-visit onboarding (localStorage-gated, shows once) */}
-      <HallOnboarding />
+      {/* Stage 6 — first-visit onboarding (localStorage-gated, shows once);
+          the "?" header button replays it via the nonce. */}
+      <HallOnboarding replayNonce={onboardingReplayNonce} />
 
       {/* Stage 3 — Hero bar with overview from /halls/me/overview BFF */}
       <HallHeroBar />

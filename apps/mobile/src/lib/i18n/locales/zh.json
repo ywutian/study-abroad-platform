@@ -841,13 +841,13 @@
   },
   "hall": {
     "title": "校友广场",
-    "subtitle": "认证录取数据、同行反馈与排名对比",
+    "subtitle": "认证录取数据、同伴锐评与排名对比",
     "loading": "加载中...",
     "cancel": "取消",
     "tabs": {
       "verified": "认证",
       "ranking": "排名",
-      "review": "同行锐评",
+      "review": "同伴锐评",
       "path": "学长之路"
     },
     "stats": {
@@ -857,9 +857,9 @@
       "successRate": "成功率"
     },
     "review": {
-      "title": "同行锐评",
+      "title": "同伴锐评",
       "intro": "滑动模式",
-      "introDesc": "逐维度评价同行档案 —— 滑动打分。",
+      "introDesc": "逐维度评价同伴档案 —— 滑动打分。",
       "popular": "热门",
       "mine": "我的评价",
       "empty": "暂无评价",
