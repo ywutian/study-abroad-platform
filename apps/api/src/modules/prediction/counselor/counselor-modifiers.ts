@@ -258,28 +258,9 @@ export function gpaBandMultiplier(
   }
 
   // ── Heuristic fallback: GPA → equivalent SAT against school sat25/75 ──────
-  let equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
+  const equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
   if (equivSat == null) {
     return { ...NEUTRAL, label: 'GPA' };
-  }
-  // closure-v2: rigor-in-context calibration. A face-value GPA is misleading
-  // across high schools — a 3.75 at a grade-deflation school is far stronger
-  // than a 3.75 at a lenient one; admissions officers calibrate GPA by the
-  // school profile's course-rigor rating ("most demanding"). Mirrors the
-  // validated gpaAdjustment in @study-abroad/shared scoring. Applies ONLY to
-  // this equivSat heuristic — the CDS-C9 data-driven path above is already
-  // school-contextualised, and the engine suppresses gpaBandMultiplier
-  // entirely when a Tier-1 cell already encodes GPA (no double-counting).
-  // Zero-drift when highSchoolAcademicRigor is unset (no HS linked / D-grade).
-  const rigor = profile.highSchoolAcademicRigor;
-  if (
-    rigor != null &&
-    rigor >= 1 &&
-    rigor <= 5 &&
-    profile.highSchoolImpactEnabled !== false
-  ) {
-    const rigorAdj = 0.94 + rigor * 0.03; // rigor 1→×0.97, 3→×1.03, 5→×1.09
-    equivSat = clamp(Math.round(equivSat * rigorAdj), 1050, 1600);
   }
   const usableSat = usableSatBand(school);
   const sat25 = usableSat?.sat25;
@@ -293,44 +274,71 @@ export function gpaBandMultiplier(
       impact: 'neutral',
     };
   }
+
+  // Band the GPA-equivalent SAT against the school's 25/50/75 distribution.
+  let result: ModifierResult;
   if (equivSat >= sat75) {
-    return {
+    result = {
       multiplier: 1.3,
       label: 'GPA above 75th percentile',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equivalent SAT ~${equivSat}) is at/above this school's 75th percentile (${sat75})`,
       impact: 'positive',
     };
-  }
-  if (sat50 && equivSat >= sat50) {
-    return {
+  } else if (sat50 && equivSat >= sat50) {
+    result = {
       multiplier: 1.1,
       label: 'GPA above median',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) is above this school's median (${sat50})`,
       impact: 'positive',
     };
-  }
-  if (equivSat >= sat25) {
-    return {
+  } else if (equivSat >= sat25) {
+    result = {
       multiplier: 0.85,
       label: 'GPA below school median',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) sits between 25th and 50th percentile (${sat25}-${sat50 ?? sat75})`,
       impact: 'negative',
     };
-  }
-  if (equivSat >= sat25 - 100) {
-    return {
+  } else if (equivSat >= sat25 - 100) {
+    result = {
       multiplier: 0.5,
       label: 'GPA just below 25th percentile',
       evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) is below 25th percentile (${sat25}) but within 100 points`,
       impact: 'negative',
     };
+  } else {
+    result = {
+      multiplier: 0.15,
+      label: 'GPA well below 25th percentile',
+      evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) is more than 100 points below this school's 25th percentile (${sat25})`,
+      impact: 'negative',
+    };
   }
-  return {
-    multiplier: 0.15,
-    label: 'GPA well below 25th percentile',
-    evidence: `GPA ${profile.gpa?.toFixed(2)} (equiv SAT ~${equivSat}) is more than 100 points below this school's 25th percentile (${sat25})`,
-    impact: 'negative',
-  };
+
+  // closure-v2: rigor-in-context calibration. A face-value GPA is misleading
+  // across high schools — a 3.75 at a grade-deflation school is stronger than
+  // a 3.75 at a lenient one; admissions officers calibrate GPA by the school
+  // profile's course-rigor rating ("most demanding"). Applied as a SMALL
+  // SMOOTH post-band multiplier (NOT an equivSat shift) so it can never flip a
+  // discrete band — a rigor flag is a gentle ±9% nudge, not a ×0.85→×1.30
+  // cliff. Applies only to this equivSat heuristic; the CDS-C9 data-driven
+  // path above is already school-contextualised, and the engine suppresses
+  // gpaBandMultiplier entirely when a Tier-1 cell encodes GPA. Kept small so it
+  // does not materially double-count with highSchoolContextComponent (tier is
+  // partly derived from academicRigor). Zero-drift when rigor is unset.
+  const rigor = profile.highSchoolAcademicRigor;
+  if (
+    rigor != null &&
+    rigor >= 1 &&
+    rigor <= 5 &&
+    profile.highSchoolImpactEnabled !== false
+  ) {
+    const rigorAdj = 0.94 + rigor * 0.03; // rigor 1→×0.97, 3→×1.03, 5→×1.09
+    result = {
+      ...result,
+      multiplier: clamp(result.multiplier * rigorAdj, 0.15, 1.3),
+    };
+  }
+  return result;
 }
 
 /**

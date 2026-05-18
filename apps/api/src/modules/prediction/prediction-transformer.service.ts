@@ -382,6 +382,10 @@ export class PredictionTransformerService {
           : undefined,
       isFirstGen: (profile as any).firstGeneration ?? false,
       recruitedAthlete: (profile as any).recruitedAthlete ?? false,
+      // closure-v2: explicit US state of residence (independent of HS location).
+      // geoMultiplier prefers this over highSchoolLocation; without this line
+      // the geoMultiplier branch that reads it is unreachable dead code.
+      stateOfResidence: (profile as any).stateOfResidence ?? undefined,
       urmStatus: (profile as any).urmStatus ?? null,
       // PR-14: explicit "applying test-optional" flag triggers 0.85× modifier
       // at <20% admit schools per Common App data.
