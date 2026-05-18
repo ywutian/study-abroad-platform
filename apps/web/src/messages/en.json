@@ -6789,7 +6789,8 @@
     },
     "publishedSnapshot": {
       "title": "Admissions & Cost Snapshot",
-      "description": "Traceable admit, cost, and enrollment data from sourced records"
+      "description": "Traceable admit, cost, and enrollment data from sourced records",
+      "sourceNote": "Collected from publicly available school channels; figures may lag the latest official releases."
     },
     "supplemental": {
       "title": "Supplemental Information",
