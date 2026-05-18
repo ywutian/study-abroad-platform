@@ -26,6 +26,8 @@
     "db:seed": "ts-node prisma/seed.ts",
     "closure:update": "tsx scripts/closure-agents/closure-update.ts",
     "closure:status": "tsx scripts/closure-agents/closure-status.ts",
+    "db:seed:prediction-closure:build": "tsx prisma/seeds/build-prediction-closure-payload.ts",
+    "db:seed:prediction-closure": "tsx prisma/seeds/seed-prediction-closure.ts",
     "db:seed:forum-communities": "ts-node prisma/seed-forum-communities.ts",
     "db:seed:competitions": "ts-node prisma/seed-competitions.ts",
     "db:seed:teams": "ts-node prisma/seed-teams.ts",
