@@ -54,6 +54,7 @@ describe('ProfileController', () => {
       warnings: ['school_list.min_count'],
       nextActions: [],
       canRunPrediction: true,
+      predictionBlockers: [],
       canGenerateRecommendation: true,
       canRunApplicationAnalysis: false,
     },
@@ -77,6 +78,8 @@ describe('ProfileController', () => {
             calculateCompleteness: jest.fn().mockResolvedValue({
               score: 72,
               sections: {},
+              canRunPrediction: true,
+              predictionBlockers: [],
             }),
             getTestScores: jest.fn().mockResolvedValue([mockTestScore]),
             createTestScore: jest.fn().mockResolvedValue(mockTestScore),

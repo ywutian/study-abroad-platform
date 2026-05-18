@@ -20,6 +20,27 @@ export interface PredictionRequest {
   forceRefresh?: boolean;
 }
 
+/**
+ * Reasons a profile is not yet eligible to run an admission prediction.
+ *
+ * Single source of truth for prediction eligibility — consumed identically
+ * by the readiness endpoint (`/profiles/me/readiness`), the predict 412
+ * backstop (`POST /predictions`), the `/profiles/me/completeness` endpoint,
+ * the web UI, and mobile. The predicate that produces these lives in
+ * `apps/api/src/modules/profile/prediction-eligibility.util.ts`.
+ *
+ * - `MISSING_GPA` — no GPA on the profile (the single most predictive input)
+ * - `MISSING_BASIC_INFO` — neither target major nor grade is set
+ * - `NO_TARGET_SCHOOLS` — the user's school list is empty (no anchor)
+ */
+export type PredictionBlocker = 'MISSING_GPA' | 'MISSING_BASIC_INFO' | 'NO_TARGET_SCHOOLS';
+
+/** Result of evaluating whether a profile may run an admission prediction. */
+export interface PredictionEligibility {
+  canRunPrediction: boolean;
+  blockers: PredictionBlocker[];
+}
+
 export type TierType = 'reach' | 'match' | 'safety' | 'unavailable';
 export type ConfidenceLevel = 'low' | 'medium' | 'high';
 export type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';

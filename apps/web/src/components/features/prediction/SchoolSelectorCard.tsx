@@ -19,6 +19,8 @@ interface SchoolSelectorCardProps {
   onRemove: (schoolId: string) => void;
   onPredict: () => void;
   isPredicting: boolean;
+  /** True when the profile is below the prediction-eligibility bar. */
+  profileBlocked?: boolean;
   predictionTiers?: Partial<Record<string, TierType>>;
   hasPredictions?: boolean;
   className?: string;
@@ -31,6 +33,7 @@ export function SchoolSelectorCard({
   onRemove,
   onPredict,
   isPredicting,
+  profileBlocked = false,
   predictionTiers = {},
   hasPredictions = false,
   className,
@@ -222,7 +225,7 @@ export function SchoolSelectorCard({
 
         <Button
           onClick={onPredict}
-          disabled={isPredicting || selectedSchools.length === 0}
+          disabled={isPredicting || selectedSchools.length === 0 || profileBlocked}
           className="w-full"
         >
           {isPredicting ? (
@@ -241,6 +244,9 @@ export function SchoolSelectorCard({
             </>
           )}
         </Button>
+        {profileBlocked && !isPredicting && (
+          <p className="mt-2 text-xs text-warning">{t('prediction.profileInsufficientHint')}</p>
+        )}
       </CardContent>
     </Card>
   );

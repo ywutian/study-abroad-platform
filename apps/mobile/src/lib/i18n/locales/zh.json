@@ -1058,6 +1058,7 @@
     "low": "参考有限",
     "profileCompleteness": "档案完整度",
     "completeProfileHint": "完善档案可提高预测准确度",
+    "predictionBlockedHint": "需先填写 GPA 并添加至少 1 所目标院校才能运行录取预测",
     "stats": {
       "predicted": "已预测学校",
       "safety": "保底选择",

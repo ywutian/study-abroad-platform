@@ -245,11 +245,18 @@ class ApiClient {
             toast.error(i18n.serverError);
           }
 
-          // 翻译错误消息用于用户展示
+          // 翻译错误消息用于用户展示。
+          // 412 PRECONDITION_FAILED（如预测档案不达标）的后端 message 已按用户
+          // locale 本地化且包含动态信息（缺哪些字段），直接展示，不要被通用
+          // "操作失败" 兜底覆盖。
+          const isPreconditionFailed =
+            response.status === 412 || errorCode === 'PREDICTION_PROFILE_INSUFFICIENT';
           const errorKey = mapApiErrorToKey(errorMessage);
-          const displayMessage = errorKey
-            ? (API_ERROR_MESSAGES[locale][errorKey] ?? i18n.operationFailed)
-            : i18n.operationFailed;
+          const displayMessage = isPreconditionFailed
+            ? errorMessage
+            : errorKey
+              ? (API_ERROR_MESSAGES[locale][errorKey] ?? i18n.operationFailed)
+              : i18n.operationFailed;
 
           throw new ApiError(
             errorMessage,

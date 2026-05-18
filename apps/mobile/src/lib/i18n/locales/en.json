@@ -1058,6 +1058,7 @@
     "low": "Limited",
     "profileCompleteness": "Profile Completeness",
     "completeProfileHint": "Complete your profile for better prediction accuracy",
+    "predictionBlockedHint": "Add your GPA and at least 1 target school to run an admission prediction",
     "stats": {
       "predicted": "Schools Predicted",
       "safety": "Safety Options",

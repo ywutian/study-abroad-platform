@@ -19,29 +19,47 @@ chain.
 
 ## Invariants
 
-### I1: `predictionsCount > 0 ⟹ profile.completeness ≥ 40%`
+### I1: `predictionsCount > 0 ⟹ profile is prediction-eligible`
 
-**Business reason**: with sparse profile data, the prediction model's
+**Definition of prediction-eligible** — all three must hold:
+
+1. **GPA present** — any GPA signal: cumulative `gpa`, grade-level
+   `gpa9`–`gpa12`, or per-semester `semesterGpas`. GPA is the single
+   most predictive input; without it a prediction just echoes the
+   school's overall admit rate.
+2. **Basic info present** — a target major OR a grade level.
+3. **≥ 1 target school** in the user's `SchoolListItem` (the anchor).
+
+**Business reason**: with sparse profile data the prediction model's
 signals are too few — output probabilities become misleadingly
-confident. Below 40% completeness we should not generate any
-prediction at all.
+confident. A pure completeness-percentage threshold is _not_ a safe
+gate: a profile with test scores + activities + awards + schools but
+no GPA scores ~75% yet still cannot produce a credible prediction.
+The gate is therefore field-explicit, not score-based.
 
 **Enforced at**: `apps/api/src/modules/prediction/prediction.service.ts`
 inside `runPredictionWithLock` when `validateInputs=true` (the
 user-facing `predict()` entry sets this true; internal
-`predictForApplicationAnalysis` sets false).
+`predictForApplicationAnalysis` sets false). On violation it throws
+`PreconditionFailedException` (HTTP 412) with code
+`PREDICTION_PROFILE_INSUFFICIENT`, a localized `message`, and
+`details.blockers` (`PredictionBlocker[]`).
 
-**Algorithm**: completeness is computed by
-`apps/api/src/modules/profile/profile-completeness.util.ts` —
-**single source of truth shared by dashboard.service.ts and
-prediction.service.ts**. If you change the formula, both readers
-update atomically.
+**Single source of truth**: `evaluatePredictionEligibility` in
+`apps/api/src/modules/profile/prediction-eligibility.util.ts`. It is
+consumed by **all** of: the `POST /predictions` 412 backstop, the
+`/profiles/me/readiness` endpoint (`overall.canRunPrediction` +
+`overall.predictionBlockers`), and the `/profiles/me/completeness`
+endpoint. The web UI and mobile gate their "run prediction" affordance
+on the readiness/completeness flags, so the gate and the UI can never
+disagree. If you change the predicate, every reader updates atomically.
 
-**Violation symptom**: a user with empty profile but non-zero
-predictions count (the dashboard would show "0/40" profile + "15/15"
-prediction).
+**Violation symptom**: a user with an ineligible profile but non-zero
+predictions count, or a "run prediction" button enabled in the UI that
+the backend then rejects with an opaque 412.
 
-**Test**: `prediction.invariants.spec.ts` (Phase 1).
+**Test**: `prediction.invariants.spec.ts` and
+`prediction-eligibility.util.spec.ts`.
 
 ### I2: `predictionsCount > 0 ⟹ schoolId ∈ user.SchoolListItem`
 
@@ -167,7 +185,11 @@ When you add a new dashboard signal or prediction precondition:
 3. Add a regression test (`*.spec.ts`)
 4. Update this document
 5. If the invariant straddles modules (prediction + dashboard +
-   profile), use a shared util (like
-   `profile-completeness.util.ts`) to keep the algorithm in one
-   place — drift here causes the same class of bug PRs #178/#179
-   eliminated for type contracts.
+   profile), use a shared util (like `profile-completeness.util.ts`
+   for the completeness percentage, or `prediction-eligibility.util.ts`
+   for the prediction gate) to keep the predicate in one place —
+   drift here causes the same class of bug PRs #178/#179 eliminated
+   for type contracts. (I1 itself drifted this way in 2026-05: the
+   readiness endpoint used `score ≥ 45 && schools > 0` while the
+   predict endpoint used `completeness ≥ 40` — fixed by the shared
+   `evaluatePredictionEligibility` predicate.)

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { PredictionBlocker } from '@study-abroad/shared';
 import {
   Profile,
   TestScore,
@@ -532,6 +533,8 @@ export class ProfileService {
       string,
       { score: number; maxScore: number; missing: string[] }
     >;
+    canRunPrediction: boolean;
+    predictionBlockers: PredictionBlocker[];
   }> {
     return this.analysisService.calculateCompleteness(userId);
   }

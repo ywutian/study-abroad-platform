@@ -10,6 +10,10 @@ import type {
 } from '@study-abroad/shared';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  evaluatePredictionEligibility,
+  hasGpaSignal,
+} from './prediction-eligibility.util';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const FRESH_PREDICTION_DAYS = 90;
@@ -244,6 +248,14 @@ export class ProfileReadinessService {
       ...workflowReadiness.items.flatMap((item) => item.gaps),
     ];
 
+    // Prediction eligibility — single source of truth shared with the
+    // `POST /predictions` 412 backstop and the `/completeness` endpoint.
+    const predictionEligibility = evaluatePredictionEligibility({
+      hasGpa: hasGpaSignal(profile),
+      hasBasicInfo: !!(profile?.targetMajor || profile?.grade),
+      schoolListCount: schoolList.length,
+    });
+
     return {
       readinessVersion: 'profile-readiness-v1',
       computedAt: now.toISOString(),
@@ -253,8 +265,8 @@ export class ProfileReadinessService {
         blockers: Array.from(new Set(blockers)),
         warnings: Array.from(new Set(warnings)),
         nextActions,
-        canRunPrediction:
-          profileCompleteness.score >= 45 && schoolList.length > 0,
+        canRunPrediction: predictionEligibility.canRunPrediction,
+        predictionBlockers: predictionEligibility.blockers,
         canGenerateRecommendation: profileCompleteness.score >= 60,
         canRunApplicationAnalysis:
           profileCompleteness.score >= 60 &&
