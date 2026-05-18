@@ -1,5 +1,6 @@
 import type {
   FieldProvenance,
+  ProvenanceOrigin,
   RealDataStatus,
   SchoolProvenance,
 } from '@study-abroad/shared';
@@ -8,6 +9,13 @@ import {
   normalizeFieldProvenance,
   normalizeSchoolProvenance,
 } from '@study-abroad/shared/utils';
+
+/**
+ * Source token for synthesized placeholder provenance — a field that has a
+ * value but no recorded provenance. Deliberately neutral: it must not resemble
+ * any real data source (no COLLEGE_SCORECARD/IPEDS/SCRAPER guessing).
+ */
+const SYNTHESIZED_FALLBACK_SOURCE = 'UNSOURCED';
 
 export const SCHOOL_TOP_LEVEL_PROVENANCE_FIELDS = [
   'name',
@@ -218,121 +226,6 @@ export function collectPresentSchoolFacts(
   return facts;
 }
 
-function resolveFallbackSourceForField(
-  school: SchoolLike,
-  field: string,
-): string {
-  const metadata = toRecord(school.metadata);
-  const lastScraped = pickTimestamp(
-    typeof metadata.lastScraped === 'string' ? metadata.lastScraped : null,
-  );
-  const hasBigFuture = Boolean(toRecord(metadata.bigfuture).lastScrapedAt);
-  const hasAppily = Boolean(toRecord(metadata.appily).lastScrapedAt);
-
-  if (
-    [
-      'acceptanceRate',
-      'satAvg',
-      'sat25',
-      'sat75',
-      'satMath25',
-      'satMath75',
-      'satReading25',
-      'satReading75',
-      'actAvg',
-      'act25',
-      'act75',
-      'studentCount',
-      'avgSalary',
-      'graduationRate',
-    ].includes(field) &&
-    school.scorecardId
-  ) {
-    return 'COLLEGE_SCORECARD';
-  }
-
-  if (
-    [
-      'tuition',
-      'totalEnrollment',
-      'isPrivate',
-      'intlStudentPct',
-      'intlAcceptanceRate',
-    ].includes(field) &&
-    school.ipedsId
-  ) {
-    return 'IPEDS';
-  }
-
-  if (
-    [
-      'retentionRate',
-      'studentFacultyRatio',
-      'percentNeedMet',
-      'averageAidPackage',
-      'averageNetPrice',
-      'roomAndBoard',
-      'applicationFee',
-      'feeWaiverAvailable',
-      'acceptsCommonApp',
-      'acceptsCoalition',
-      'testOptional',
-      'testingPolicy',
-      'hasEarlyDecision',
-    ].includes(field)
-  ) {
-    if (hasBigFuture) return 'BIGFUTURE';
-    if (school.ipedsId) return 'IPEDS';
-  }
-
-  if (
-    [
-      'salary6YrPostGrad',
-      'loanDefaultRate',
-      'monthlyLoanPayment',
-      'countriesRepresented',
-      'studentOrgsCount',
-      'housingAvailable',
-      'housingRequiredYears',
-      'percentLivingOnCampus',
-      'mealPlanCost',
-      'campusSafetyServices',
-      'campusLifeSummary',
-      'nicheSafetyGrade',
-      'nicheLifeGrade',
-      'nicheFoodGrade',
-      'nicheOverallGrade',
-    ].includes(field)
-  ) {
-    if (hasAppily) return 'APPILY';
-  }
-
-  if (
-    [
-      'essayCount',
-      'applicationType',
-      'applicationCycle',
-      'toeflMin',
-      'ieltsMin',
-      'requirements.applicationFee',
-      'essayPrompts',
-      'deadlines.rea',
-      'deadlines.ea',
-      'deadlines.ed',
-      'deadlines.ed2',
-      'deadlines.rd',
-    ].includes(field) &&
-    lastScraped
-  ) {
-    return 'SCRAPER';
-  }
-
-  if (school.scorecardId) return 'COLLEGE_SCORECARD';
-  if (school.ipedsId) return 'IPEDS';
-  if (lastScraped) return 'SCRAPER';
-  return 'SEED';
-}
-
 function resolveFallbackFetchedAt(school: SchoolLike, field: string): string {
   const metadata = toRecord(school.metadata);
 
@@ -370,6 +263,7 @@ function resolveFallbackFetchedAt(school: SchoolLike, field: string): string {
 
 export function createFieldProvenance(params: {
   source: string;
+  origin?: ProvenanceOrigin;
   fetchedAt?: string;
   verifiedAt?: string;
   verifiedBy?: string;
@@ -384,12 +278,18 @@ export function createFieldProvenance(params: {
   originalFormula?: string;
   permanent?: boolean;
 }): FieldProvenance {
-  const tier = deriveTrustTierFromSource(params.source);
+  // A synthesized placeholder must never derive a high-trust tier from its
+  // (neutral) source token — it has no real source. Pin it to SEED.
+  const tier =
+    params.origin === 'SYNTHESIZED'
+      ? 'SEED'
+      : deriveTrustTierFromSource(params.source);
 
   return {
     tier,
     source: params.source,
     fetchedAt: params.fetchedAt ?? new Date().toISOString(),
+    ...(params.origin ? { origin: params.origin } : {}),
     ...(params.verifiedAt ? { verifiedAt: params.verifiedAt } : {}),
     ...(params.verifiedBy ? { verifiedBy: params.verifiedBy } : {}),
     ...(params.sourceUrl ? { sourceUrl: params.sourceUrl } : {}),
@@ -457,8 +357,11 @@ export function buildNormalizedSchoolProvenance(
   for (const field of Object.keys(facts)) {
     if (next[field]) continue;
 
+    // The field has a value but no recorded provenance. Synthesize an honest
+    // placeholder — never guess a real source or pretend it was verified.
     next[field] = createFieldProvenance({
-      source: resolveFallbackSourceForField(school, field),
+      source: SYNTHESIZED_FALLBACK_SOURCE,
+      origin: 'SYNTHESIZED',
       fetchedAt: resolveFallbackFetchedAt(school, field),
     });
   }
@@ -481,8 +384,10 @@ export function getNormalizedFieldProvenance(
   const facts = collectPresentSchoolFacts(school);
   if (!(field in facts)) return null;
 
+  // Value present but no recorded provenance — honest synthesized placeholder.
   return createFieldProvenance({
-    source: resolveFallbackSourceForField(school, field),
+    source: SYNTHESIZED_FALLBACK_SOURCE,
+    origin: 'SYNTHESIZED',
     fetchedAt: resolveFallbackFetchedAt(school, field),
   });
 }

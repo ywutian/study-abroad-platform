@@ -83,6 +83,7 @@ export const DATA_SOURCE_LABELS: Record<string, { en: string; zh: string }> = {
   MANUAL_ADMIN: { en: 'Platform entry', zh: '平台录入' },
   CLOSURE_V2: { en: 'Verified data review', zh: '核验数据采集' },
   SEED: { en: 'Curated dataset', zh: '整理数据集' },
+  UNSOURCED: { en: 'Source not recorded', zh: '来源未记录' },
   SCRAPER: { en: 'School website', zh: '学校官网' },
   'SCRAPER:TAVILY_NICHE': {
     en: 'Niche search index',
