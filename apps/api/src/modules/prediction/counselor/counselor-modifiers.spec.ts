@@ -651,4 +651,41 @@ describe('counselor modifiers launch guards', () => {
       expect(result.multiplier).toBeGreaterThan(1);
     });
   });
+
+  // closure-v2: the need-aware financial-aid penalty is refined by how much
+  // demonstrated need the school actually meets (CDS H2 percentNeedMet).
+  describe('financialAidContext — percentNeedMet refinement', () => {
+    const aidProfile = (o: Partial<ProfileInput> = {}) =>
+      baseProfile({ isInternational: true, needsFinancialAid: true, ...o });
+    const needAware = (o: Partial<SchoolInput> = {}) =>
+      baseSchool({ needBlindInternational: false, acceptanceRate: 0.1, ...o });
+    const fac = (p: ProfileInput, s: SchoolInput) =>
+      profileContextMultiplier(p, s).components.financialAidContext.multiplier;
+
+    it('compounds the penalty at a gapping school (low % need met)', () => {
+      expect(fac(aidProfile(), needAware({ percentNeedMet: 80 }))).toBeLessThan(
+        fac(aidProfile(), needAware()),
+      );
+    });
+
+    it('is zero-drift when percentNeedMet is unset', () => {
+      expect(fac(aidProfile(), needAware())).toBeCloseTo(0.95, 5);
+    });
+
+    it('does not penalize further at a full-demonstrated-need school', () => {
+      expect(fac(aidProfile(), needAware({ percentNeedMet: 100 }))).toBeCloseTo(
+        0.95,
+        5,
+      );
+    });
+
+    it('stays neutral at a need-blind school regardless of percentNeedMet', () => {
+      expect(
+        fac(
+          aidProfile(),
+          needAware({ needBlindInternational: true, percentNeedMet: 70 }),
+        ),
+      ).toBe(1.0);
+    });
+  });
 });
