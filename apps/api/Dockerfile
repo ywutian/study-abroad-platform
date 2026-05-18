@@ -31,6 +31,13 @@ RUN pnpm --filter @study-abroad/shared build
 # Build API
 RUN pnpm --filter api build
 
+# Compile the prediction-closure seeder to plain CommonJS JS so it can run in
+# the production image with `node` (tsx is a devDependency, absent from --prod).
+# Output lands in prisma/seeds/, copied wholesale into the runner stage below.
+RUN cd apps/api && npx tsc prisma/seeds/seed-prediction-closure.ts \
+    --module commonjs --target es2022 --moduleResolution node \
+    --esModuleInterop --skipLibCheck --outDir prisma/seeds
+
 # Deploy to /prod with all dependencies (pnpm deploy creates standalone package)
 RUN pnpm --filter api deploy /prod --prod --legacy
 
