@@ -18,10 +18,21 @@ export type RealDataStatus =
   | 'MANUAL_REVIEW'
   | 'PERMANENT_HEURISTIC';
 
+/**
+ * Whether a provenance entry reflects a real recorded source, or was
+ * synthesized at read time as a placeholder for a field that has a value but
+ * no recorded provenance. Absent ⇒ treat as 'RECORDED' (legacy data).
+ *
+ * SYNTHESIZED entries must never claim a specific source, date, or freshness —
+ * they exist only so the UI can render an honest "unverified" state.
+ */
+export type ProvenanceOrigin = 'RECORDED' | 'SYNTHESIZED';
+
 export interface FieldProvenance {
   tier: TrustTier;
   source: string;
   fetchedAt: string;
+  origin?: ProvenanceOrigin;
   verifiedAt?: string;
   verifiedBy?: string;
   sourceUrl?: string;
@@ -43,6 +54,7 @@ export interface SchoolFieldSource {
   tier: TrustTier;
   source: string;
   fetchedAt: string;
+  origin?: ProvenanceOrigin;
   verifiedAt?: string;
   verifiedBy?: string;
   sourceUrl?: string;

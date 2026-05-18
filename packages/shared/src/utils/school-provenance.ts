@@ -189,6 +189,9 @@ export function normalizeFieldProvenance(value: unknown, now = new Date()): Fiel
           : undefined,
     confidence,
     staleness: deriveProvenanceStaleness(fetchedAt, now),
+    ...(entry.origin === 'SYNTHESIZED' || entry.origin === 'RECORDED'
+      ? { origin: entry.origin }
+      : {}),
     ...(realDataStatus ? { realDataStatus } : {}),
     ...(typeof entry.validatorCount === 'number' ? { validatorCount: entry.validatorCount } : {}),
     ...(typeof entry.originalFormula === 'string'
@@ -223,6 +226,7 @@ export function serializeFieldProvenance(
     tier: provenance.tier,
     source: provenance.source,
     fetchedAt: provenance.fetchedAt,
+    ...(provenance.origin ? { origin: provenance.origin } : {}),
     ...(provenance.verifiedAt ? { verifiedAt: provenance.verifiedAt } : {}),
     ...(provenance.verifiedBy ? { verifiedBy: provenance.verifiedBy } : {}),
     ...(provenance.sourceUrl ? { sourceUrl: provenance.sourceUrl } : {}),
@@ -255,12 +259,18 @@ export function toSchoolFieldSource(
   provenance: FieldProvenance,
   now = new Date()
 ): SchoolFieldSource {
-  const staleness = provenance.staleness ?? deriveProvenanceStaleness(provenance.fetchedAt, now);
+  // A synthesized placeholder has no real fetch — never report it as fresh,
+  // never treat it as verified, never feed it to prediction.
+  const synthesized = provenance.origin === 'SYNTHESIZED';
+  const staleness = synthesized
+    ? 'STALE'
+    : (provenance.staleness ?? deriveProvenanceStaleness(provenance.fetchedAt, now));
 
   return {
     tier: provenance.tier,
     source: provenance.source,
     fetchedAt: provenance.fetchedAt,
+    ...(provenance.origin ? { origin: provenance.origin } : {}),
     ...(provenance.verifiedAt ? { verifiedAt: provenance.verifiedAt } : {}),
     ...(provenance.verifiedBy ? { verifiedBy: provenance.verifiedBy } : {}),
     ...(provenance.sourceUrl ? { sourceUrl: provenance.sourceUrl } : {}),
@@ -277,9 +287,10 @@ export function toSchoolFieldSource(
     ...(typeof provenance.permanent === 'boolean' ? { permanent: provenance.permanent } : {}),
     staleness,
     isVerified:
-      Boolean(provenance.verifiedAt || provenance.verifiedBy) ||
-      provenance.tier === 'OFFICIAL' ||
-      provenance.tier === 'PARTNER',
-    predictionEligible: isPredictionEligibleTrustTier(provenance.tier),
+      !synthesized &&
+      (Boolean(provenance.verifiedAt || provenance.verifiedBy) ||
+        provenance.tier === 'OFFICIAL' ||
+        provenance.tier === 'PARTNER'),
+    predictionEligible: !synthesized && isPredictionEligibleTrustTier(provenance.tier),
   };
 }
