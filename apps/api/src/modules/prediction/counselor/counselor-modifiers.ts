@@ -258,9 +258,28 @@ export function gpaBandMultiplier(
   }
 
   // ── Heuristic fallback: GPA → equivalent SAT against school sat25/75 ──────
-  const equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
+  let equivSat = gpaToEquivalentSat(profile.gpa, profile.gpaScale);
   if (equivSat == null) {
     return { ...NEUTRAL, label: 'GPA' };
+  }
+  // closure-v2: rigor-in-context calibration. A face-value GPA is misleading
+  // across high schools — a 3.75 at a grade-deflation school is far stronger
+  // than a 3.75 at a lenient one; admissions officers calibrate GPA by the
+  // school profile's course-rigor rating ("most demanding"). Mirrors the
+  // validated gpaAdjustment in @study-abroad/shared scoring. Applies ONLY to
+  // this equivSat heuristic — the CDS-C9 data-driven path above is already
+  // school-contextualised, and the engine suppresses gpaBandMultiplier
+  // entirely when a Tier-1 cell already encodes GPA (no double-counting).
+  // Zero-drift when highSchoolAcademicRigor is unset (no HS linked / D-grade).
+  const rigor = profile.highSchoolAcademicRigor;
+  if (
+    rigor != null &&
+    rigor >= 1 &&
+    rigor <= 5 &&
+    profile.highSchoolImpactEnabled !== false
+  ) {
+    const rigorAdj = 0.94 + rigor * 0.03; // rigor 1→×0.97, 3→×1.03, 5→×1.09
+    equivSat = clamp(Math.round(equivSat * rigorAdj), 1050, 1600);
   }
   const usableSat = usableSatBand(school);
   const sat25 = usableSat?.sat25;

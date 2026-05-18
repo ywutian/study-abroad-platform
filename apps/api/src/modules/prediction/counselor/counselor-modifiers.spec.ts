@@ -87,6 +87,54 @@ describe('counselor modifiers launch guards', () => {
     });
   });
 
+  // closure-v2: GPA is calibrated by the high school's course-rigor rating
+  // (rigor-in-context) — only on the equivSat heuristic path, only when
+  // highSchoolAcademicRigor is set.
+  describe('gpaBandMultiplier — academic-rigor calibration', () => {
+    it('lifts a borderline GPA at a high-rigor (grade-deflation) school', () => {
+      const baseline = gpaBandMultiplier(
+        baseProfile({ gpa: 3.85 }),
+        baseSchool({ gpaDistribution: undefined }),
+      );
+      const withRigor = gpaBandMultiplier(
+        baseProfile({ gpa: 3.85, highSchoolAcademicRigor: 5 }),
+        baseSchool({ gpaDistribution: undefined }),
+      );
+      expect(baseline.label).toContain('below school median');
+      expect(withRigor.label).toContain('above 75th percentile');
+      expect(withRigor.multiplier).toBeGreaterThan(baseline.multiplier);
+    });
+
+    it('lowers a GPA at a low-rigor (lenient) school', () => {
+      const withRigor = gpaBandMultiplier(
+        baseProfile({ gpa: 3.75, highSchoolAcademicRigor: 1 }),
+        baseSchool({ gpaDistribution: undefined }),
+      );
+      expect(withRigor.multiplier).toBeLessThan(0.85);
+    });
+
+    it('is zero-drift when highSchoolAcademicRigor is unset', () => {
+      const noRigor = gpaBandMultiplier(
+        baseProfile({ gpa: 3.85 }),
+        baseSchool({ gpaDistribution: undefined }),
+      );
+      expect(noRigor.label).toContain('below school median');
+      expect(noRigor.multiplier).toBe(0.85);
+    });
+
+    it('does not apply rigor when highSchoolImpactEnabled is false', () => {
+      const suppressed = gpaBandMultiplier(
+        baseProfile({
+          gpa: 3.85,
+          highSchoolAcademicRigor: 5,
+          highSchoolImpactEnabled: false,
+        }),
+        baseSchool({ gpaDistribution: undefined }),
+      );
+      expect(suppressed.multiplier).toBe(0.85); // identical to the unset case
+    });
+  });
+
   describe('testBandMultiplier testingPolicy and ACT handling', () => {
     it('ignores SAT/ACT at test-blind schools', () => {
       const result = testBandMultiplier(
