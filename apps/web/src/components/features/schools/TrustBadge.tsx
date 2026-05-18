@@ -18,6 +18,9 @@ const TIER_STYLES: Record<SchoolFieldSource['tier'], string> = {
   UNAVAILABLE: 'border-dashed border-muted-foreground/40 bg-muted/60 text-muted-foreground',
 };
 
+const UNVERIFIED_STYLE =
+  'border-dashed border-muted-foreground/40 bg-muted/60 text-muted-foreground';
+
 interface TrustBadgeProps {
   source?: SchoolFieldSource | null;
   sourceUrl?: string | null;
@@ -29,6 +32,33 @@ export function TrustBadge({ source, sourceUrl, className }: TrustBadgeProps) {
   const locale = useLocale();
 
   if (!source) return null;
+
+  // Synthesized provenance is a placeholder for a field that has a value but no
+  // recorded source. It must NOT render a source name, a date, or a freshness —
+  // those would be fabricated. Show an honest "unverified" badge instead.
+  if (source.origin === 'SYNTHESIZED') {
+    const unverifiedLabel = t('school.trust.unverified.label');
+    return (
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="outline"
+              tabIndex={0}
+              role="note"
+              aria-label={unverifiedLabel}
+              className={cn('gap-1 text-2xs font-medium', UNVERIFIED_STYLE, className)}
+            >
+              {unverifiedLabel}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs text-xs">
+            <p>{t('school.trust.unverified.tooltip')}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
   const localeKey = locale === 'zh' ? 'zh' : 'en';
   const tierLabel = t(`school.trust.badges.${source.tier}`);
@@ -49,6 +79,9 @@ export function TrustBadge({ source, sourceUrl, className }: TrustBadgeProps) {
         <TooltipTrigger asChild>
           <Badge
             variant="outline"
+            tabIndex={0}
+            role="note"
+            aria-label={tierTitle}
             className={cn('gap-1 text-2xs font-medium', TIER_STYLES[source.tier], className)}
           >
             {tierLabel}
