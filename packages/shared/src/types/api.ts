@@ -81,6 +81,7 @@ export const DATA_SOURCE_LABELS: Record<string, { en: string; zh: string }> = {
     zh: '美国联邦教育统计 (IPEDS)',
   },
   MANUAL_ADMIN: { en: 'Platform entry', zh: '平台录入' },
+  CLOSURE_V2: { en: 'Verified data review', zh: '核验数据采集' },
   SEED: { en: 'Curated dataset', zh: '整理数据集' },
   SCRAPER: { en: 'School website', zh: '学校官网' },
   'SCRAPER:TAVILY_NICHE': {
