@@ -131,9 +131,30 @@ function toRecord(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+/**
+ * Derive a `source` for provenance entries that omit it.
+ *
+ * closure-v2 collected data carries `tier` + `verifiedBy` + `sourceUrl` but no
+ * explicit `source` field. Without this fallback, `normalizeFieldProvenance`
+ * would discard every closure-v2 entry as malformed — silently losing real,
+ * verified source URLs. Deriving a source keeps verified data instead.
+ */
+function deriveProvenanceSource(entry: Record<string, unknown>): string | undefined {
+  const verifiedBy = typeof entry.verifiedBy === 'string' ? entry.verifiedBy : undefined;
+  const sourceUrl = typeof entry.sourceUrl === 'string' ? entry.sourceUrl : undefined;
+
+  if (verifiedBy && verifiedBy.toLowerCase().startsWith('closure-v2')) {
+    return 'CLOSURE_V2';
+  }
+  if (verifiedBy) return verifiedBy;
+  if (sourceUrl) return 'SCRAPER';
+  return undefined;
+}
+
 export function normalizeFieldProvenance(value: unknown, now = new Date()): FieldProvenance | null {
   const entry = toRecord(value);
-  const source = typeof entry.source === 'string' ? entry.source : undefined;
+  const source =
+    (typeof entry.source === 'string' ? entry.source : undefined) ?? deriveProvenanceSource(entry);
   const fetchedAt =
     typeof entry.fetchedAt === 'string'
       ? entry.fetchedAt
