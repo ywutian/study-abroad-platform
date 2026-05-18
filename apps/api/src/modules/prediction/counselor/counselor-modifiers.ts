@@ -1502,7 +1502,7 @@ function financialAidContextComponent(
   // full context penalty; unreviewed schools receive a half-strength hedge.
   const overallRate = normalizeRate(school.acceptanceRate);
   const isVerifiedNeedAware = school.needBlindInternational === false;
-  const multiplier =
+  let multiplier =
     overallRate != null && overallRate < 0.4
       ? isVerifiedNeedAware
         ? 0.95
@@ -1510,12 +1510,37 @@ function financialAidContextComponent(
       : isVerifiedNeedAware
         ? 0.98
         : 0.99;
+
+  // closure-v2: refine the coarse need-aware penalty by how much demonstrated
+  // need the school actually meets (CDS Section H2). A need-aware school that
+  // gaps applicants (low % need met) is both harder to be admitted to with aid
+  // and harder to enrol at; one meeting ~full need is admission-friction only.
+  // Bounded [0.90, 1.0] — this is a yield-side signal, never a positive boost.
+  // Zero-drift when percentNeedMet is unset.
+  let needMetNote = '';
+  const rawPnm = school.percentNeedMet;
+  if (rawPnm != null && Number.isFinite(rawPnm)) {
+    const pnm = rawPnm <= 1 ? rawPnm * 100 : rawPnm; // tolerate fraction storage
+    if (pnm < 90) {
+      multiplier *= 0.97;
+      needMetNote = ` It meets only ~${pnm.toFixed(0)}% of demonstrated need (gapping), compounding the aid friction.`;
+    } else if (pnm < 98) {
+      multiplier *= 0.99;
+      needMetNote = ` It meets ~${pnm.toFixed(0)}% of demonstrated need.`;
+    } else {
+      needMetNote =
+        ' It meets ~full demonstrated need once a student is admitted.';
+    }
+    multiplier = clamp(multiplier, 0.9, 1.0);
+  }
+
   return makeComponent(
     multiplier,
     'Financial aid context',
-    isVerifiedNeedAware
+    (isVerifiedNeedAware
       ? 'International applicant needs financial aid at a verified need-aware school; applying the full context adjustment.'
-      : 'International applicant needs financial aid, but need-blind status is unreviewed; applying a half-strength context hedge.',
+      : 'International applicant needs financial aid, but need-blind status is unreviewed; applying a half-strength context hedge.') +
+      needMetNote,
   );
 }
 
