@@ -9,26 +9,8 @@ import type { SchoolRanking } from '@/lib/utils/ranking';
 // ============================================
 export type { SwipeCaseData };
 
-// ============================================
-// Public Profile (Review Mode)
-// ============================================
-export interface PublicProfile {
-  id: string;
-  userId: string;
-  grade?: string;
-  gpa?: number;
-  gpaScale?: number;
-  targetMajor?: string;
-  visibility: string;
-  testScores?: Array<{ type: string; score: number }>;
-  activities?: Array<{ name: string; category: string; role: string; description?: string }>;
-  awards?: Array<{ name: string; level: string; year?: number }>;
-  _count?: {
-    testScores: number;
-    activities: number;
-    awards: number;
-  };
-}
+// Hall §7 Decision B: `PublicProfile` (review-mode profile picker type) was
+// removed when the peer-review subsystem was retired.
 
 // ============================================
 // School (Ranking Mode)
@@ -131,7 +113,6 @@ export interface SwipeBatchResponse {
 
 // ============================================
 // Tab configuration type
+// Hall §7 Decision B: the `review` tab and `ReviewModuleType` were removed.
 // ============================================
-export type HallTab = 'tinder' | 'review' | 'ranking' | 'lists' | 'challenge' | 'verified';
-
-export type ReviewModuleType = 'standardized' | 'honors' | 'activities';
+export type HallTab = 'tinder' | 'ranking' | 'lists' | 'challenge' | 'verified';

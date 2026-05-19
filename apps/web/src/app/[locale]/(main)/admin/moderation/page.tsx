@@ -23,13 +23,14 @@ import { toast } from 'sonner';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { ForumContentTab } from './_components/forum-content-tab';
 import { ChatContentTab } from './_components/chat-content-tab';
-import { ReviewsContentTab } from './_components/reviews-content-tab';
 import { AiModerationTab } from './_components/ai-moderation-tab';
 import { ReportsTab } from './_components/reports-tab';
 import { ReviewStatisticsTab } from './_components/review-statistics-tab';
 
+// Hall §7 Decision B: the Hall peer-review "reviews" moderation tab was
+// removed when the Review feature was retired.
 const PAGE_SIZE = 20;
-const VALID_TABS = ['forum', 'chat', 'reviews', 'aiModeration', 'reports', 'statistics'] as const;
+const VALID_TABS = ['forum', 'chat', 'aiModeration', 'reports', 'statistics'] as const;
 type ModerationTab = (typeof VALID_TABS)[number];
 
 export default function AdminModerationPage() {
@@ -63,8 +64,6 @@ export default function AdminModerationPage() {
           return apiClient.delete(adminRoutes.forumsCommentDelete(id));
         case 'message':
           return apiClient.delete(adminRoutes.chatsMessageDelete(id));
-        case 'review':
-          return apiClient.delete(adminRoutes.reviewById(id));
         default:
           throw new Error('Unknown type');
       }
@@ -77,9 +76,6 @@ export default function AdminModerationPage() {
       } else if (type === 'message') {
         queryClient.invalidateQueries({ queryKey: ['adminChatMessages'] });
         toast.success(t('contentMod.messageDeleted'));
-      } else if (type === 'review') {
-        queryClient.invalidateQueries({ queryKey: ['adminReviews'] });
-        toast.success(t('contentMod.reviewDeleted'));
       }
     },
   });
@@ -97,7 +93,6 @@ export default function AdminModerationPage() {
         <TabsList>
           <TabsTrigger value="forum">{t('contentMod.forum')}</TabsTrigger>
           <TabsTrigger value="chat">{t('contentMod.chat')}</TabsTrigger>
-          <TabsTrigger value="reviews">{t('contentMod.reviews')}</TabsTrigger>
           <TabsTrigger value="aiModeration">{t('moderation.aiModeration')}</TabsTrigger>
           <TabsTrigger value="reports">{t('contentMod.reports')}</TabsTrigger>
           <TabsTrigger value="statistics">{t('reviewStats.title')}</TabsTrigger>
@@ -109,10 +104,6 @@ export default function AdminModerationPage() {
 
         <TabsContent value="chat">
           <ChatContentTab pageSize={PAGE_SIZE} onDeleteRequest={setDeleteTarget} />
-        </TabsContent>
-
-        <TabsContent value="reviews">
-          <ReviewsContentTab pageSize={PAGE_SIZE} onDeleteRequest={setDeleteTarget} />
         </TabsContent>
 
         <TabsContent value="aiModeration" className="space-y-4">

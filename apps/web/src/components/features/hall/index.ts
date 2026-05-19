@@ -5,7 +5,7 @@ export { SwipeResultOverlay } from './SwipeResultOverlay';
 export { HallOnboarding } from './HallOnboarding';
 
 // Hall Tab 组件（从 hall/page.tsx 拆分）
+// Hall §7 Decision B: ReviewTab removed (peer-review subsystem retired).
 export { TinderTab } from './TinderTab';
-export { ReviewTab } from './ReviewTab';
 export { RankingTab } from './RankingTab';
 export { ListsTab } from './ListsTab';

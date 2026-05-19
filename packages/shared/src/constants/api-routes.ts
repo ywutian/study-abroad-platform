@@ -105,24 +105,17 @@ export const forumRoutes = {
   comments: (postId: string) => `${API_ROUTES.FORUMS}/posts/${postId}/comments`,
 };
 
+// Hall §7 Decision B: the peer-review subsystem was retired — the `reviews`,
+// `reviewReact`, `reviewReport`, `reviewerQualification`, `reviewerCoach` and
+// `publicProfiles` routes were removed.
 export const hallRoutes = {
   lists: () => `${API_ROUTES.HALLS}/lists`,
   listVote: (id: string) => `${API_ROUTES.HALLS}/lists/${id}/vote`,
-  reviews: () => `${API_ROUTES.HALLS}/reviews`,
-  reviewReact: (id: string) => `${API_ROUTES.HALLS}/reviews/${id}/react`,
   verifiedRanking: () => `${API_ROUTES.HALLS}/verified-ranking`,
   swipe: () => `${API_ROUTES.HALLS}/swipe`,
-  publicProfiles: () => `${API_ROUTES.HALLS}/public-profiles`,
   // Hall refactor Phase 1 — new endpoints
   meOverview: () => `${API_ROUTES.HALLS}/me/overview`,
   challengeSubmit: () => `${API_ROUTES.HALLS}/swipe/challenge`,
-  // Hall refactor Stage 2 — report, reviewer qualification
-  // (2026-05 Plan C C2b: `reviewAggregate` removed — numeric review-score
-  // aggregation endpoint retired.)
-  reviewReport: (reviewId: string) => `${API_ROUTES.HALLS}/reviews/${reviewId}/report`,
-  reviewerQualification: () => `${API_ROUTES.HALLS}/reviewer/qualification`,
-  // Hall refactor Stage 5 — AI review coach
-  reviewerCoach: () => `${API_ROUTES.HALLS}/reviewer/coach`,
   // Hall refactor Stage 3 — Verified China Admit Dashboard
   verifiedChinaAdmitTrend: () => `${API_ROUTES.HALLS}/verified/china-admit-trend`,
   verifiedDifficultySignal: () => `${API_ROUTES.HALLS}/verified/difficulty-signal`,
@@ -371,7 +364,8 @@ export const userRoutes = {
   dashboard: () => `${API_ROUTES.USERS}/me/dashboard`,
   referral: () => `${API_ROUTES.USERS}/me/referral`,
   referrals: () => `${API_ROUTES.USERS}/me/referrals`,
-  peerReviewSetting: () => `${API_ROUTES.USERS}/me/peer-review-setting`,
+  // Hall §7 Decision B: `peerReviewSetting` removed — the Hall 锐评 opt-in
+  // endpoint was deleted with the retired peer-review subsystem.
 };
 
 export const essayPromptRoutes = {
@@ -472,9 +466,8 @@ export const adminRoutes = {
   forumsPostsBatch: () => `${API_ROUTES.ADMIN}/forums/posts/batch`,
   forumsCommentDelete: (id: string) => `${API_ROUTES.ADMIN}/forums/comments/${id}`,
   chatsMessageDelete: (id: string) => `${API_ROUTES.ADMIN}/chats/messages/${id}`,
-  reviewById: (id: string) => `${API_ROUTES.ADMIN}/reviews/${id}`,
-  reviewHide: (id: string) => `${API_ROUTES.ADMIN}/reviews/${id}/hide`,
-  reviewUnhide: (id: string) => `${API_ROUTES.ADMIN}/reviews/${id}/unhide`,
+  // Hall §7 Decision B: the `/admin/reviews/*` Hall-review moderation routes
+  // were removed along with the retired peer-review subsystem.
 
   // Payments
   payments: () => `${API_ROUTES.ADMIN}/payments`,

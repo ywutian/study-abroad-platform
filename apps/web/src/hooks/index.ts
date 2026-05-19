@@ -14,6 +14,7 @@ export { useAuth } from './use-auth';
 export { useDebounce } from './useDebounce';
 
 // Hall 模块
+// Hall §7 Decision B: useSubmitReview removed (peer-review subsystem retired).
 export {
   hallKeys,
   useSwipeCases,
@@ -22,7 +23,6 @@ export {
   useTargetRanking,
   useSchoolRanking,
   useAiAnalysis,
-  useSubmitReview,
   usePublicLists,
 } from './use-hall-api';
 

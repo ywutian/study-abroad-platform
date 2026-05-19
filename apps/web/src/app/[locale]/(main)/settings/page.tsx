@@ -19,7 +19,6 @@ import {
   Languages,
   Lock,
   LogOut,
-  MessageSquareHeart,
   Monitor,
   Moon,
   Palette,
@@ -126,14 +125,8 @@ export default function SettingsPage() {
           type: 'link',
           href: '/settings/security',
         },
-        {
-          id: 'peerReview',
-          icon: MessageSquareHeart,
-          label: t('settings.items.peerReview'),
-          description: t('settings.items.peerReviewDesc'),
-          type: 'link',
-          href: '/settings/peer-review',
-        },
+        // Hall §7 Decision B: the "peerReview" settings item (Hall 锐评 opt-in)
+        // was removed when the peer-review subsystem was retired.
       ],
     },
     {

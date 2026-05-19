@@ -2,15 +2,6 @@ import { Prisma } from '@prisma/client';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 
 /**
- * Reviewer select for hall reviews — includes email for display.
- */
-export const HALL_REVIEWER_SELECT = {
-  id: true,
-  email: true,
-  role: true,
-} as const satisfies Prisma.UserSelect;
-
-/**
  * 2026-05 Hall Plan C (C4): the SINGLE source of truth for "what counts as a
  * verified admission case" across every Hall verified surface.
  *

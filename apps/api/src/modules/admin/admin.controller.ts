@@ -211,7 +211,7 @@ export class AdminController {
   @RequirePermission(Permission.USER_VIEW)
   @ApiOperation({ summary: 'Get user details' })
   async getUser(@Param('id') id: string) {
-    return this.prisma.user.findUniqueOrThrow({
+    const user = await this.prisma.user.findUniqueOrThrow({
       where: { id },
       select: {
         id: true,
@@ -226,11 +226,23 @@ export class AdminController {
         _count: {
           select: {
             admissionCases: true,
-            reviewsGiven: true,
+            // Hall §7 Decision B: the Hall `Review` relation was dropped.
+            // This per-user "reviews given" count now reflects the surviving
+            // 1-on-1 PeerReview feature.
+            peerReviewsGiven: true,
           },
         },
       },
     });
+    // Keep the stable `reviewsGiven` key the admin UI expects.
+    const { _count, ...rest } = user;
+    return {
+      ...rest,
+      _count: {
+        admissionCases: _count.admissionCases,
+        reviewsGiven: _count.peerReviewsGiven,
+      },
+    };
   }
 
   // Role changes consolidated to AdminRoleController: POST /admin/roles/users/:id/role

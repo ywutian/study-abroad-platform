@@ -398,7 +398,9 @@ export class AdminService {
           _count: {
             select: {
               admissionCases: true,
-              reviewsGiven: true,
+              // Hall §7 Decision B: the Hall `Review` relation was dropped.
+              // "Reviews given" now counts the surviving PeerReview feature.
+              peerReviewsGiven: true,
             },
           },
         },
@@ -407,7 +409,14 @@ export class AdminService {
     ]);
 
     return {
-      data: users,
+      // Keep the stable `reviewsGiven` key the admin UI expects.
+      data: users.map(({ _count, ...rest }) => ({
+        ...rest,
+        _count: {
+          admissionCases: _count.admissionCases,
+          reviewsGiven: _count.peerReviewsGiven,
+        },
+      })),
       total,
       page,
       pageSize,
@@ -634,7 +643,9 @@ export class AdminService {
       }),
       this.prisma.admissionCase.count(),
       this.prisma.report.count({ where: { status: ReportStatus.PENDING } }),
-      this.prisma.review.count(),
+      // Hall §7 Decision B: the Hall `Review` table was dropped. The admin
+      // "Reviews" stat now counts the surviving 1-on-1 `PeerReview` feature.
+      this.prisma.peerReview.count(),
       // New metrics
       this.prisma.user.count({
         where: { createdAt: { gte: todayStart }, deletedAt: null },

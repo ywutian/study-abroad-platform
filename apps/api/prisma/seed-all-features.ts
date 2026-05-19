@@ -2316,58 +2316,13 @@ async function main() {
   console.log(`  Conversations created: ${conversationsCreated}\n`);
 
   // ------------------------------------------
-  // 6. Reviews & Peer Reviews
+  // 6. Peer Reviews
+  //
+  // Hall §7 Decision B: the Hall `Review` (锐评) seeding loop was removed
+  // when the peer-review subsystem was retired. The 1-on-1 `PeerReview`
+  // feature below is unrelated and kept.
   // ------------------------------------------
-  console.log('6. Creating reviews and peer reviews...\n');
-
-  let reviewsCreated = 0;
-  for (let i = 0; i < Math.min(createdUsers.length - 1, 5); i++) {
-    const reviewer = createdUsers[i];
-    const reviewee = createdUsers[i + 1];
-
-    const existing = await prisma.review.findFirst({
-      where: { reviewerId: reviewer.id, profileUserId: reviewee.id },
-    });
-
-    if (!existing) {
-      await prisma.review.create({
-        data: {
-          reviewerId: reviewer.id,
-          profileUserId: reviewee.id,
-          academicScore: randomInt(6, 10),
-          testScore: randomInt(5, 10),
-          activityScore: randomInt(6, 10),
-          awardScore: randomInt(5, 10),
-          overallScore: randomInt(6, 10),
-          comment: randomPick([
-            '背景很强！活动列表很有亮点，建议文书再打磨一下。',
-            '整体很均衡，标化和活动都不错。建议多展示个人特色。',
-            '学术背景出色，建议在文书中更多展现软实力。',
-            '活动非常有深度，可以看出是真的热爱。建议标化再冲一下。',
-            '非常全面的 profile，竞争力很强。推荐 EA 申请。',
-          ]),
-          academicComment: randomPick([
-            'GPA 非常扎实',
-            '学术背景一般，需要提升',
-            null,
-          ]),
-          activityComment: randomPick([
-            '活动深度不错',
-            '活动广度可以但缺乏深度',
-            null,
-          ]),
-          tags: randomPick([
-            ['well-rounded'],
-            ['strong-stem', 'high-gpa'],
-            ['leadership'],
-            [],
-          ]),
-          status: 'PUBLISHED',
-        },
-      });
-      reviewsCreated++;
-    }
-  }
+  console.log('6. Creating peer reviews...\n');
 
   // Peer Reviews
   let peerReviewsCreated = 0;
@@ -2407,9 +2362,7 @@ async function main() {
       peerReviewsCreated++;
     }
   }
-  console.log(
-    `  Reviews: ${reviewsCreated}, Peer reviews: ${peerReviewsCreated}\n`,
-  );
+  console.log(`  Peer reviews: ${peerReviewsCreated}\n`);
 
   // ------------------------------------------
   // 7. School Lists (选校清单)
@@ -3129,18 +3082,14 @@ async function main() {
     if (!existing) {
       const totalSwipes = randomInt(20, 200);
       const correctCount = Math.floor(totalSwipes * randomFloat(0.4, 0.85));
-      const streak = randomInt(0, 15);
-      const bestStreak = randomInt(streak, 25);
 
+      // Hall §7 Decision B / C6: streak / bestStreak / badge columns were
+      // dropped from SwipeStats (de-gamification).
       await prisma.swipeStats.create({
         data: {
           userId: user.id,
           totalSwipes,
           correctCount,
-          streak,
-          bestStreak,
-          badge:
-            bestStreak >= 20 ? 'gold' : bestStreak >= 10 ? 'silver' : 'bronze',
         },
       });
 
@@ -3471,7 +3420,7 @@ async function main() {
   Essay Examples: (using AdmissionCase essays)
   Social Follows: ${followsCreated}
   Chat Conversations: ${conversationsCreated}
-  Reviews: ${reviewsCreated}, Peer Reviews: ${peerReviewsCreated}
+  Peer Reviews: ${peerReviewsCreated}
   School List Items: ${schoolListsCreated}
   Custom Rankings: ${rankingsCreated}
   User Lists: ${listsCreated}
