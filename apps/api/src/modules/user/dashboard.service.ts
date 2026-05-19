@@ -1431,7 +1431,27 @@ export class DashboardService {
       });
     }
 
-    return items.slice(0, 6);
+    // 2026-05 Dashboard prereq: stable urgency sort. Previously items were
+    // returned in fixed push order (profile→school→timeline→tasks→essay→
+    // prediction), so priorityQueue[0] was always 'profile-gaps' whenever
+    // completeness < 75 — burying e.g. a task due in 3 days under "complete
+    // your profile". Sort: critical→warning→normal→success, then nearest
+    // deadline first, original push order as a stable tiebreak.
+    const ordered = items
+      .map((item, index) => ({ item, index }))
+      .sort((a, b) => {
+        const sev =
+          this.severityRank(a.item.severity) -
+          this.severityRank(b.item.severity);
+        if (sev !== 0) return sev;
+        const aDays = a.item.daysLeft ?? Number.POSITIVE_INFINITY;
+        const bDays = b.item.daysLeft ?? Number.POSITIVE_INFINITY;
+        if (aDays !== bDays) return aDays - bDays;
+        return a.index - b.index;
+      })
+      .map((entry) => entry.item);
+
+    return ordered.slice(0, 6);
   }
 
   private getTaskSchoolName(
@@ -1453,6 +1473,22 @@ export class DashboardService {
     if (daysLeft <= 3) return 'critical';
     if (daysLeft <= 14) return 'warning';
     return 'normal';
+  }
+
+  /** Sort weight for priority-queue ordering — lower = more urgent. */
+  private severityRank(severity: DashboardSeverity): number {
+    switch (severity) {
+      case 'critical':
+        return 0;
+      case 'warning':
+        return 1;
+      case 'normal':
+        return 2;
+      case 'success':
+        return 3;
+      default:
+        return 2;
+    }
   }
 
   private formatDaysLeft(daysLeft: number, locale: string): string {

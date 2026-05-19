@@ -170,6 +170,92 @@ export interface DashboardWorkbench {
 }
 
 /**
+ * Dashboard application-stage selector.
+ *
+ * `/dashboard` is a stable workbench — its layout is constant for every
+ * user. `deriveStage` does NOT drive layout structure; it only answers
+ * "what should the focus card say / which sidebar tab opens by default /
+ * what tone the copy uses".
+ *
+ * Real application season is structurally parallel (writing RD essays +
+ * waiting on EA results + handling a waitlist, all at once). `primary`
+ * only picks the focus card's subject; `parallel` explicitly carries
+ * every other in-flight track so no application line is ever dropped
+ * behind a single stage label.
+ */
+export type DashboardStage = 'onboarding' | 'planning' | 'executing' | 'submitting' | 'decision';
+
+export interface DeriveStageInput {
+  /** profile.targetSchoolCount */
+  targetSchoolCount: number;
+  /** profile.essayCount */
+  essayCount: number;
+  /** profile.completeness (0-100) */
+  completeness: number;
+  /** workbench.pipeline — optional; undefined is treated as all-zero. */
+  pipeline?: DashboardPipeline | null;
+}
+
+export interface DeriveStageResult {
+  /** Drives the focus card subject, default sidebar tab, and copy tone. */
+  primary: DashboardStage;
+  /**
+   * Tracks running *in addition to* `primary`. The focus card renders an
+   * "N other things in progress" hint from this, so the parallel reality
+   * of application season is never hidden behind one stage label.
+   */
+  parallel: {
+    hasInProgress: boolean;
+    hasSubmitted: boolean;
+    hasWaitlisted: boolean;
+    hasAccepted: boolean;
+  };
+}
+
+/**
+ * Pure stage selector — zero side effects, safe to call on every render.
+ * Pairs with `toneFromSeverity` as a dashboard-contract helper.
+ */
+export function deriveStage(input: DeriveStageInput): DeriveStageResult {
+  const p = input.pipeline;
+  const inProgress = p?.inProgress ?? 0;
+  const submitted = p?.submitted ?? 0;
+  const accepted = p?.accepted ?? 0;
+  const rejected = p?.rejected ?? 0;
+  const waitlisted = p?.waitlisted ?? 0;
+
+  const parallel = {
+    hasInProgress: inProgress > 0,
+    hasSubmitted: submitted > 0,
+    hasWaitlisted: waitlisted > 0,
+    hasAccepted: accepted > 0,
+  };
+
+  // Priority high→low — take the latest application phase as `primary`.
+  // Each branch only sets `primary`; `parallel` always carries the rest.
+
+  // 1. decision — any real result arrived (accepted / waitlisted / rejected).
+  //    `withdrawn` does not count: a user-initiated drop is not "a result".
+  if (accepted > 0 || waitlisted > 0 || rejected > 0) {
+    return { primary: 'decision', parallel };
+  }
+  // 2. submitting — submitted some, still writing others (parallel crunch).
+  if (submitted > 0 && inProgress > 0) {
+    return { primary: 'submitting', parallel };
+  }
+  // 3. executing — already working materials (timelines or essays started).
+  if (inProgress > 0 || submitted > 0 || input.essayCount > 0) {
+    return { primary: 'executing', parallel };
+  }
+  // 4. planning — has target schools but has not started any materials.
+  if (input.targetSchoolCount > 0) {
+    return { primary: 'planning', parallel };
+  }
+  // 5. onboarding — fallback: brand-new account.
+  return { primary: 'onboarding', parallel };
+}
+
+/**
  * Top-level dashboard payload returned by `GET /users/dashboard`.
  *
  * 2026-05: Centralized after PR #178 to prevent the same drift class

@@ -190,7 +190,7 @@ export function DashboardCommandCenter({
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
       <CardContent className="p-0">
-        <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_390px]">
+        <div className="grid min-w-0 gap-0 xl:grid-cols-[minmax(0,1fr)_390px]">
           <div className="min-w-0 border-b border-border p-4 sm:p-5 xl:border-b-0 xl:border-r">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">

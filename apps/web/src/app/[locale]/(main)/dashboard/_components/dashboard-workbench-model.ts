@@ -140,6 +140,10 @@ export function createFallbackWorkbench(
   // a passable profile. If those preconditions aren't met, the row should
   // signal "blocked by upstream signals" rather than "go run prediction".
   const predictionEligible = schoolCount > 0 && completeness >= 40;
+  // Fallback (used only when the API didn't return a workbench) has no
+  // timeline-task data, so the if/else chain below pushes at most one
+  // item — the API's severity-then-deadline sort in buildPriorityQueue
+  // has no analogue to mirror here.
   const priorityQueue: DashboardPriorityItem[] = [];
 
   if (completeness < 75) {
