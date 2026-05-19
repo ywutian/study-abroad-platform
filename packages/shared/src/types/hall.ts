@@ -224,7 +224,12 @@ export interface DifficultySignalEntry {
   schoolName: string;
   schoolNameZh?: string;
   signal: DifficultySignal;
-  /** Percentage change in admit count across the compared window. */
+  /**
+   * Change in admit RATE across the compared window, in percentage POINTS
+   * (e.g. 42% → 30% = -12). Hall Plan C (C4): previously this was a change
+   * in raw admit count, which was dominated by how many cases were
+   * submitted that year — a sampling artifact, not real selectivity.
+   */
   changePct: number;
   sampleSize: number;
 }

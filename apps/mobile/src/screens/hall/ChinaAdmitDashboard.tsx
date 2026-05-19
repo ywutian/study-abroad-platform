@@ -4,7 +4,8 @@
  * Mobile equivalent of the web `ChinaAdmitDashboard`. Each card shows one
  * school's year-over-year verified admit counts (SVG bar chart) plus:
  *  - an A/B/C/D data-reliability rating
- *  - a year-over-year difficulty signal (stable / declining / surging)
+ *  - an admit-RATE trend signal (stable / declining / surging) — C4: derived
+ *    from admitted ÷ total, not raw count, to avoid sampling artifacts
  *
  * D-reliability schools never render a misleading admit number — the chart
  * is replaced with an explicit "no data" placeholder.
@@ -142,7 +143,7 @@ export function ChinaAdmitDashboard() {
                 <ChinaAdmitChart yearly={school.yearly} color={sigColor} />
               )}
 
-              {/* Difficulty signal label */}
+              {/* Admit-rate trend label (C4: rate-based, not raw count) */}
               <View style={S.signalRow}>
                 <Ionicons name={sig.icon} size={14} color={sigColor} />
                 <Text style={[S.signalText, { color: sigColor }]}>
@@ -151,7 +152,8 @@ export function ChinaAdmitDashboard() {
                 {signal && signal.changePct !== 0 ? (
                   <Text style={[S.signalChange, { color: c.foregroundMuted }]}>
                     ({signal.changePct > 0 ? '+' : ''}
-                    {signal.changePct}%)
+                    {signal.changePct}
+                    {t('hall.verified.chinaAdmit.changePctUnit')})
                   </Text>
                 ) : null}
               </View>

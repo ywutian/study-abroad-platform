@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, AdmissionResult, Visibility } from '@prisma/client';
-import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
+import { VERIFIED_CASE_WHERE } from './hall.constants';
 import {
   VerifiedRankingQueryDto,
   VerifiedRankingResponseDto,
@@ -28,15 +28,17 @@ export class HallVerifiedService {
   ];
 
   /**
-   * 2026-05 Hall Plan C (security B4): the base filter for every PUBLIC
-   * verified-case surface. `getVerifiedRanking` is `@Public()`, so it must
-   * NEVER include PRIVATE-visibility cases — only ANONYMOUS / VERIFIED_ONLY.
-   * Previously the queries filtered `isVerified` + review status but had
-   * no `visibility` filter, leaking private cases to logged-out visitors.
+   * The PUBLIC verified-case filter = the shared {@link VERIFIED_CASE_WHERE}
+   * trust predicate (C4: one source of truth) + a `visibility` narrowing.
+   *
+   * 2026-05 Hall Plan C (security B4): `getVerifiedRanking` is `@Public()`,
+   * so it must NEVER include PRIVATE-visibility cases — only ANONYMOUS /
+   * VERIFIED_ONLY. Previously the queries filtered `isVerified` + review
+   * status but had no `visibility` filter, leaking private cases to
+   * logged-out visitors.
    */
   private readonly PUBLIC_CASE_WHERE = {
-    isVerified: true,
-    ...CASE_REVIEW_APPROVED_WHERE,
+    ...VERIFIED_CASE_WHERE,
     visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
   } satisfies Prisma.AdmissionCaseWhereInput;
 
@@ -165,7 +167,7 @@ export class HallVerifiedService {
 
   async getAvailableYears(): Promise<number[]> {
     const cases = await this.prisma.admissionCase.findMany({
-      where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
+      where: { ...VERIFIED_CASE_WHERE },
       select: { year: true },
       distinct: ['year'],
       orderBy: { year: 'desc' },

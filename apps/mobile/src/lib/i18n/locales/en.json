@@ -905,10 +905,11 @@
           "D": "No verified case"
         },
         "signal": {
-          "stable": "Stable",
-          "declining": "Declining",
-          "surging": "Sharply harder"
-        }
+          "stable": "Admit rate steady",
+          "declining": "Admit rate trending down",
+          "surging": "Admit rate dropped sharply"
+        },
+        "changePctUnit": "pt"
       }
     },
     "path": {

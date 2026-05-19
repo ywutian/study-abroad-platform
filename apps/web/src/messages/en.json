@@ -6840,6 +6840,7 @@
   },
   "verifiedRanking": {
     "title": "Verified Ranking",
+    "listTitle": "Verified admission records",
     "description": "View admission rankings of verified users",
     "filtersLabel": "Filters",
     "totalRecords": "{count} verified records",
@@ -6885,10 +6886,12 @@
         "D": "No verified case"
       },
       "signal": {
-        "stable": "Stable",
-        "declining": "Declining",
-        "surging": "Sharply harder"
+        "stable": "Admit rate steady",
+        "declining": "Admit rate trending down",
+        "surging": "Admit rate dropped sharply"
       },
+      "signalNote": "Trend is computed from the verified admit rate (admitted ÷ total) in our sample, not a raw count.",
+      "changePctUnit": "pt",
       "disclaimer": "Past admit results do not predict future odds. Data is shared by users and cannot be fully verified."
     },
     "crossLink": {

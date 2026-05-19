@@ -13,25 +13,19 @@ interface VerifiedItemProps {
   colors: Colors;
 }
 
+// 2026-05 Hall Plan C (C4): this card used to render a gold/silver/bronze
+// trophy "rank" badge, framing verified admission records as a leaderboard
+// where the rank-1 student "beat" everyone else. Admissions is not a contest
+// between applicants — the rank badge is dropped; this is now a neutral
+// verified-record card.
 export const VerifiedItem = memo(function VerifiedItem({ item, colors: c }: VerifiedItemProps) {
   const { t } = useTranslation();
-  const isTop3 = item.rank <= 3;
-  const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-  const medalColor = isTop3 ? medalColors[item.rank - 1] : undefined;
   const resultVariant = RESULT_BADGE_VARIANT[item.result] || ('secondary' as const);
 
   return (
     <AnimatedCard style={S.verifiedCard}>
       <CardContent>
         <View style={S.verifiedRow}>
-          <View style={[S.verifiedRank, isTop3 && { backgroundColor: medalColor + '20' }]}>
-            {isTop3 ? (
-              <Ionicons name="trophy" size={18} color={medalColor} />
-            ) : (
-              <Text style={[S.verifiedRankText, { color: c.foregroundMuted }]}>{item.rank}</Text>
-            )}
-          </View>
-
           <Avatar source={item.avatarUrl} name={item.nickname} size="default" />
           <View style={S.verifiedInfo}>
             <View style={S.verifiedNameRow}>
@@ -79,17 +73,6 @@ const S = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  verifiedRank: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  verifiedRankText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
   },
   verifiedInfo: {
     flex: 1,

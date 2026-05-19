@@ -17,6 +17,9 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api';
+import { API_ROUTES } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
 import {
@@ -98,6 +101,14 @@ const LEGACY_TAB_MAP: Record<string, HallTabV2> = {
   lists: 'verified', // Lists merged into Verified's expert-curated section
 };
 
+// 2026-05 Hall Plan C (C4): the default tab used to be hardcoded to
+// `verified`. The verified dataset is still sparse (the real China-mainland
+// admit pipeline is not yet live — see HALL_PLAN_C §7.4), so leading with a
+// near-empty "数据中心" signals an abandoned product on first impression.
+// Below this many verified records, fall back to `path`, which always has
+// browsable content.
+const VERIFIED_SPARSE_THRESHOLD = 5;
+
 export default function HallPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -105,14 +116,38 @@ export default function HallPage() {
 
   const rawTab = searchParams.get('tab');
   const mappedFromLegacy = rawTab && LEGACY_TAB_MAP[rawTab];
-  const initialTab: HallTabV2 = mappedFromLegacy
-    ? mappedFromLegacy
-    : VALID_TABS.includes(rawTab as HallTabV2)
-      ? (rawTab as HallTabV2)
-      : 'verified'; // Stage 3: default is now Verified (was Tinder)
+  // An explicit, valid (non-legacy) ?tab means the user picked a tab — their
+  // choice always wins over the data-aware default below.
+  const explicitTab: HallTabV2 | null = VALID_TABS.includes(rawTab as HallTabV2)
+    ? (rawTab as HallTabV2)
+    : null;
+  const initialTab: HallTabV2 = mappedFromLegacy ? mappedFromLegacy : (explicitTab ?? 'verified');
 
   const [activeTab, setActiveTab] = useState<HallTabV2>(initialTab);
   const [onboardingReplayNonce, setOnboardingReplayNonce] = useState(0);
+  // Once the user clicks a tab, stop applying the data-aware default.
+  const [userPickedTab, setUserPickedTab] = useState(false);
+
+  // C4 — data-aware default: only relevant when no tab was explicitly chosen.
+  const hasExplicitTab = Boolean(mappedFromLegacy || explicitTab);
+  const { data: verifiedProbe } = useQuery<{ total: number }>({
+    queryKey: ['hall-verified-probe'],
+    queryFn: () =>
+      apiClient.get(`${API_ROUTES.HALLS}/verified-ranking`, {
+        params: { limit: '1', offset: '0' },
+      }),
+    enabled: !hasExplicitTab,
+    staleTime: 5 * 60_000,
+  });
+
+  // When verified is sparse and the user hasn't picked a tab, fall back to
+  // `path` (always populated). Runs once the probe resolves.
+  useEffect(() => {
+    if (hasExplicitTab || userPickedTab) return;
+    if (verifiedProbe && verifiedProbe.total < VERIFIED_SPARSE_THRESHOLD) {
+      setActiveTab('path');
+    }
+  }, [verifiedProbe, hasExplicitTab, userPickedTab]);
 
   // Auto-rewrite legacy ?tab values to the new IA so the URL is canonical.
   useEffect(() => {
@@ -126,6 +161,7 @@ export default function HallPage() {
   }, []);
 
   const handleTabChange = (tab: HallTabV2) => {
+    setUserPickedTab(true);
     setActiveTab(tab);
     const params = new URLSearchParams(searchParams.toString());
     if (tab === 'verified') params.delete('tab');

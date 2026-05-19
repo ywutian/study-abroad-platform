@@ -6819,6 +6819,7 @@
   },
   "verifiedRanking": {
     "title": "认证榜单",
+    "listTitle": "已验证录取记录",
     "description": "查看已认证用户的录取排名",
     "filtersLabel": "筛选",
     "totalRecords": "共 {count} 条认证记录",
@@ -6864,10 +6865,12 @@
         "D": "暂无认证案例"
       },
       "signal": {
-        "stable": "稳定",
-        "declining": "下降",
-        "surging": "明显收紧"
+        "stable": "录取率平稳",
+        "declining": "录取率走低",
+        "surging": "录取率明显下滑"
       },
+      "signalNote": "趋势基于样本中已验证案例的录取率（录取数 ÷ 总数）计算，非原始人数。",
+      "changePctUnit": " 个百分点",
       "disclaimer": "过往录取结果不代表未来的录取概率。数据由用户分享，无法完全核实。"
     },
     "crossLink": {

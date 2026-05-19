@@ -142,7 +142,7 @@ export function ChinaAdmitDashboard() {
                       <span
                         className={cn(
                           'shrink-0 rounded-md px-1.5 py-0.5 text-xs font-bold',
-                          RELIABILITY_STYLES[s.reliability],
+                          RELIABILITY_STYLES[s.reliability]
                         )}
                         title={t(`reliability.${s.reliability}`)}
                       >
@@ -157,16 +157,14 @@ export function ChinaAdmitDashboard() {
                       <div className="flex items-end gap-1.5">
                         {s.yearly.map((y) => (
                           <div key={y.year} className="flex flex-1 flex-col items-center gap-1">
-                            <span className="text-xs font-medium tabular-nums">
-                              {y.admitted}
-                            </span>
+                            <span className="text-xs font-medium tabular-nums">{y.admitted}</span>
                             <div
                               className="w-full rounded-t bg-indigo-500/80 dark:bg-indigo-400/80"
                               style={{
                                 height: `${Math.round((y.admitted / maxAdmit) * 40) + 4}px`,
                               }}
                             />
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-2xs text-muted-foreground">
                               {String(y.year).slice(2)}
                             </span>
                           </div>
@@ -174,14 +172,15 @@ export function ChinaAdmitDashboard() {
                       </div>
                     )}
 
-                    {/* Difficulty signal label */}
+                    {/* Admit-rate trend label (C4: rate-based, not count) */}
                     <div className={cn('mt-auto flex items-center gap-1.5 text-xs', sig.text)}>
                       <SignalIcon className="h-3.5 w-3.5" />
                       <span>{t(`signal.${signal?.signal ?? 'stable'}`)}</span>
                       {signal && signal.changePct !== 0 ? (
                         <span className="text-muted-foreground">
                           ({signal.changePct > 0 ? '+' : ''}
-                          {signal.changePct}%)
+                          {signal.changePct}
+                          {t('changePctUnit')})
                         </span>
                       ) : null}
                     </div>
@@ -214,19 +213,21 @@ export function ChinaAdmitDashboard() {
             <Sparkles className="h-4 w-4" />
             {tx('askAi')}
           </Button>
-          <Button
-            size="sm"
-            className="gap-1.5"
-            onClick={() => router.push('/prediction')}
-          >
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/prediction')}>
             <Target className="h-4 w-4" />
             {tx('predictCta')}
           </Button>
         </div>
       </div>
 
-      {/* Stage 6 — compliance disclaimer */}
+      {/* C4 — admit-rate methodology note */}
       <p className="mt-3 flex items-start gap-1.5 text-xs text-muted-foreground">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <span className="min-w-0">{t('signalNote')}</span>
+      </p>
+
+      {/* Stage 6 — compliance disclaimer */}
+      <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <span className="min-w-0">{t('disclaimer')}</span>
       </p>

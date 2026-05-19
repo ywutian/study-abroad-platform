@@ -20,14 +20,12 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Loader2,
-  Trophy,
   CheckCircle2,
   GraduationCap,
-  Medal,
-  Crown,
   Star,
   Users,
-  Award,
+  Crown,
+  ListChecks,
   Building2,
   ChevronRight,
   Filter,
@@ -128,35 +126,6 @@ export function VerifiedTab() {
 
   const handleLoadMore = () => {
     setOffset((prev) => prev + limit);
-  };
-
-  const renderRankBadge = (rank: number) => {
-    if (rank === 1) {
-      return (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br bg-warning flex items-center justify-center border-2 border-amber-500/30">
-          <Crown className="h-5 w-5 text-white" />
-        </div>
-      );
-    }
-    if (rank === 2) {
-      return (
-        <div className="w-10 h-10 rounded-full bg-slate-400 dark:bg-slate-500 flex items-center justify-center shadow-md">
-          <Medal className="h-5 w-5 text-white" />
-        </div>
-      );
-    }
-    if (rank === 3) {
-      return (
-        <div className="w-10 h-10 rounded-full bg-warning flex items-center justify-center shadow-md">
-          <Award className="h-5 w-5 text-white" />
-        </div>
-      );
-    }
-    return (
-      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
-        {rank}
-      </div>
-    );
   };
 
   return (
@@ -269,12 +238,16 @@ export function VerifiedTab() {
         </CardContent>
       </Card>
 
-      {/* Leaderboard */}
+      {/* 2026-05 Hall Plan C (C4): this used to be a "排行榜 / Leaderboard"
+          with crown/medal rank badges, implying a student who got into the
+          #1 school "beat" one at #15. Admissions is not a contest between
+          applicants — reframed as a neutral, browsable list of verified
+          admission records. The data rows are unchanged. */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-amber-500" />
-            {t('title')}
+            <ListChecks className="h-5 w-5 text-muted-foreground" />
+            {t('listTitle')}
           </CardTitle>
           <CardDescription>{t('totalRecords', { count: data?.total || 0 })}</CardDescription>
         </CardHeader>
@@ -305,11 +278,9 @@ export function VerifiedTab() {
                     className={cn(
                       'flex items-center gap-4 p-4 rounded-lg border transition-colors cursor-pointer',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                      user.rank <= 3 ? 'bg-warning/5' : 'hover:bg-muted/50'
+                      'hover:bg-muted/50'
                     )}
                   >
-                    {renderRankBadge(user.rank)}
-
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold truncate">{user.userName}</span>

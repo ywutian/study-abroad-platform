@@ -905,10 +905,11 @@
           "D": "暂无核实案例"
         },
         "signal": {
-          "stable": "稳定",
-          "declining": "难度下降",
-          "surging": "明显变难"
-        }
+          "stable": "录取率平稳",
+          "declining": "录取率走低",
+          "surging": "录取率明显下滑"
+        },
+        "changePctUnit": " 个百分点"
       }
     },
     "path": {
