@@ -189,8 +189,20 @@ export function DashboardCommandCenter({
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
       <CardContent className="p-0">
-        <div className="grid min-w-0 gap-0 xl:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="min-w-0 border-b border-border p-4 sm:p-5 xl:border-b-0 xl:border-r">
+        {/*
+          2026-05 dashboard redesign batch 2: CommandCenter is now a
+          single vertical column (hero + readiness on top, priority
+          queue + deadline stream below the divider). The previous
+          internal xl two-column split (1fr main + 390px fixed) was
+          REMOVED because the card now lives inside the page-level
+          two-column workbench grid — nesting a 2-col card inside a
+          2-col page produced a ~437px left sub-column at xl that
+          crushed the 5-up readiness grid to ~87px/cell. One nesting
+          level only: the page grid owns the horizontal split, this
+          card owns the vertical flow.
+        */}
+        <div className="min-w-0">
+          <div className="min-w-0 border-b border-border p-4 sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -295,15 +307,19 @@ export function DashboardCommandCenter({
               <Progress value={workbench.readiness.score} className="h-1.5" />
               <p className="mt-1.5 text-xs text-muted-foreground">{tCenter('contributionHint')}</p>
               {/*
-                2026-05 Phase 2.5a: 5 readiness items in equal-width columns
-                at lg+ (5 cols matches the 5 items, eliminating the previous
-                lg:grid-cols-2 layout that produced an awkward 2-2-1 trailing
-                row). Below lg, stay 2-col on sm tablets and 1-col on phones
-                so the row content (label + value) remains legible. Inner
-                card uses truncate + shrink-0 + flex-wrap badge area so it
-                handles the narrower (≈170-280px) cells cleanly.
+                2026-05 dashboard redesign batch 2: readiness grid
+                breakpoints re-keyed to the page-level two-column
+                workbench. CommandCenter now sits in the MAIN column
+                (1fr after a ~21rem sidebar), so the old `lg:grid-cols-5`
+                crushed the 5 items to ~109px/cell at lg. New ladder:
+                1-col phones → 2-col sm (≈285px/cell at lg viewport) →
+                3-col xl (≈264px/cell) → 5-col only at 2xl where the
+                main column is genuinely wide. Inner card uses truncate
+                + shrink-0 + flex-wrap badges so it stays legible.
+                The matching skeleton in loading.tsx uses this exact
+                breakpoint string — keep them in sync (CLS).
               */}
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
                 {workbench.readiness.items.map((item) => {
                   const meta = toneMeta[toneFromReadinessStatus(item.status)];
                   // 2026-05: When the prediction row is in the "attention"
@@ -421,8 +437,8 @@ export function DashboardCommandCenter({
 
             <div className="mt-3 space-y-2">
               {/*
-                Skip index 0 — it's already shown as the hero in the left
-                column. Showing it twice in one card was one of the explicit
+                Skip index 0 — it's already shown as the hero above.
+                Showing it twice in one card was one of the explicit
                 redundancies users complained about.
               */}
               {/*

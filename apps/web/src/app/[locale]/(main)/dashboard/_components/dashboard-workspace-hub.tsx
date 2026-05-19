@@ -56,9 +56,11 @@ interface HubLink {
  * can I go", stats = "where am I" — different mental models).
  *
  * Design intent:
- * - 3 columns × 4 rows = 12 navigation destinations
+ * - 3 nav groups (Research / Social / Tools), 13 destinations total
  * - Compact icon + label + description rows
  * - Mirrors Header nav groupings so users learn one taxonomy
+ * - 2026-05 batch 2: groups stack vertically inside the workbench
+ *   sidebar (collapsed by default — secondary navigation)
  */
 export function DashboardWorkspaceHub() {
   const t = useTranslations('dashboard.hub');
@@ -174,8 +176,12 @@ export function DashboardWorkspaceHub() {
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
           </CollapsibleTrigger>
 
+          {/* 2026-05 dashboard redesign batch 2: the Hub now lives in the
+              ~21rem workbench sidebar, so the 3 nav groups stack
+              vertically. The old `lg:grid-cols-3` (viewport-keyed) would
+              crush each column to ~93px inside the narrow sidebar. */}
           <CollapsibleContent>
-            <div className="mt-3 grid gap-4 lg:grid-cols-3">
+            <div className="mt-3 space-y-4">
               <HubColumn title={t('sections.research')} links={research} />
               <HubColumn title={t('sections.social')} links={social} />
               <HubColumn title={t('sections.tools')} links={tools} />
