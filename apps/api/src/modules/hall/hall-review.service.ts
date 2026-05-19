@@ -10,9 +10,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { deriveAge } from '../../common/utils/age.util';
 
 /**
- * 2026-05 Hall Plan C (C2): peer review is gated below this age. Because
- * `User.acceptPeerReview` defaults to `true` (opt-out), the toggle does
- * NOT protect existing minors — this hard age floor does.
+ * 2026-05 Hall Plan C (C2): peer review is gated below this age.
+ * Hall §7 Decision C flipped `User.acceptPeerReview` to opt-IN
+ * (`@default(false)`), so the toggle is now affirmative consent — but this
+ * hard age floor remains the backstop that protects minors regardless.
  */
 const MIN_REVIEWABLE_AGE = 16;
 import {

@@ -651,7 +651,9 @@ model User {
   peerReviewCount Int    @default(0)
 
   // Hall 锐评者权限与隐私 (Stage 1 L1/L2/L3 三层权限模型)
-  acceptPeerReview    Boolean       @default(true) // 是否接受 Hall 锐评（隐私开关）
+  // Hall §7 Decision C — opt-OUT by default (PIPL consent fix). The 锐评 pool
+  // is affirmative-consent only; new users are never auto-enrolled.
+  acceptPeerReview    Boolean       @default(false) // 是否接受 Hall 锐评（隐私开关）
   reviewerLevel       ReviewerLevel @default(L1) // 评审者等级
   reviewerCredit      Int           @default(100) // 信用分（被举报扣分，<50 限制）
   reviewerQualifiedAt DateTime? // L2 资质测试通过时间
