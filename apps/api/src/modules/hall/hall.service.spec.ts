@@ -946,7 +946,6 @@ describe('HallService', () => {
       expect(result.analysis).toContain('AI');
       expect(result.strengths).toEqual([]);
       expect(result.improvements).toEqual([]);
-      expect(result.competitivePosition).toBe('unknown');
     });
   });
 });

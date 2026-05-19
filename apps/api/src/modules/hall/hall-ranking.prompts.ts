@@ -27,15 +27,14 @@ export function buildRankingAnalysisSystemPrompt(locale: string): string {
 1. analysis、strengths、improvements 必须用中文
 2. 学校官方名称、GPA/SAT/ACT/TOEFL、US News 等术语保持原文
 3. 不要发明未提供的学生经历、学校政策、录取概率或排名数据
-4. competitivePosition 只能是 strong、moderate 或 challenging
+4. 不要在 analysis 中给出或暗示录取概率、录取把握或竞争力档位——录取概率由专门的录取预测系统负责，你只解释优势与改进方向
 5. 只输出 JSON，不要其他内容
 
 输出 JSON 格式：
 {
   "analysis": "综合分析（2-3句话）",
   "strengths": ["优势1", "优势2"],
-  "improvements": ["改进建议1", "改进建议2"],
-  "competitivePosition": "strong|moderate|challenging"
+  "improvements": ["改进建议1", "改进建议2"]
 }`;
   }
 
@@ -45,15 +44,14 @@ Rules:
 1. Write analysis, strengths, and improvements in English
 2. Preserve official school names and terms such as GPA/SAT/ACT/TOEFL and US News
 3. Do not invent student experiences, school policies, admission probabilities, or ranking data
-4. competitivePosition must be strong, moderate, or challenging
+4. Do not state or imply an admission probability, admission likelihood, or competitiveness tier in the analysis — admission probability is owned by the dedicated prediction system; you only explain strengths and areas to improve
 5. Output JSON only, no extra text
 
 Output JSON format:
 {
   "analysis": "Comprehensive analysis (2-3 sentences)",
   "strengths": ["Strength 1", "Strength 2"],
-  "improvements": ["Improvement suggestion 1", "Improvement suggestion 2"],
-  "competitivePosition": "strong|moderate|challenging"
+  "improvements": ["Improvement suggestion 1", "Improvement suggestion 2"]
 }`;
 }
 

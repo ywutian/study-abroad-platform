@@ -87,15 +87,15 @@ export interface RankingResult {
     medianScore: number;
     totalCount: number;
   };
-  /** 竞争力定位 */
-  competitivePosition: 'strong' | 'moderate' | 'challenging';
+  // 2026-05 Hall Plan C (C1): `competitivePosition` removed — see
+  // hall-ranking.service.ts. The ranking surface reports a relative
+  // percentile only, not a strong/moderate/challenging tier verdict.
 }
 
 export interface AiAnalysisResult {
   analysis: string;
   strengths: string[];
   improvements: string[];
-  competitivePosition: string;
 }
 
 // ============================================

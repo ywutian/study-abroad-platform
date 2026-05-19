@@ -101,7 +101,9 @@ export interface RankingResult {
   yourScore: number;
   percentile: number;
   breakdown: Record<string, number>;
-  competitivePosition: string;
+  // 2026-05 Hall Plan C (C1): `competitivePosition` removed — the
+  // strong/moderate/challenging tier collided with prediction's
+  // reach/match/safety. Ranking shows a relative percentile only.
 }
 
 export interface VerifiedUserDto {

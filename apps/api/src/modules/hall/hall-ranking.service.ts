@@ -49,7 +49,13 @@ export interface RankingResult {
     medianScore: number;
     totalCount: number;
   };
-  competitivePosition: 'strong' | 'moderate' | 'challenging';
+  // 2026-05 Hall Plan C (C1): `competitivePosition` (strong/moderate/
+  // challenging) was REMOVED. It was a tier verdict computed off a tiny,
+  // self-selected pool of platform users who happened to add the school
+  // to a list — not the real applicant pool — and it collided with
+  // prediction's reach/match/safety, which ai-system.md designates the
+  // sole tier authority. The ranking surface now reports only a relative
+  // percentile, explicitly framed as rough peer context.
 }
 
 export interface PublicProfileResponse {
@@ -272,13 +278,6 @@ export class HallRankingService {
           ? Math.round((1 - (userIndex + 1) / allProfiles.length) * 100)
           : 100;
 
-      const competitivePosition: 'strong' | 'moderate' | 'challenging' =
-        userPercentile >= 70
-          ? 'strong'
-          : userPercentile >= 40
-            ? 'moderate'
-            : 'challenging';
-
       rankings.push({
         schoolId: school.id,
         schoolName: getSchoolDisplayName(school, locale),
@@ -303,7 +302,6 @@ export class HallRankingService {
           medianScore: this.calcBands(overallScores).p50,
           totalCount: allProfiles.length,
         },
-        competitivePosition,
       });
     }
 
@@ -350,27 +348,19 @@ export class HallRankingService {
             ranking.percentiles[a] <= ranking.percentiles[b] ? a : b,
           );
           const schoolDisplayName = getSchoolDisplayName(school, locale);
-          const positionLabel = isZh
-            ? ranking.competitivePosition === 'strong'
-              ? '强'
-              : ranking.competitivePosition === 'moderate'
-                ? '中等'
-                : '待提升'
-            : ranking.competitivePosition;
 
           await this.memoryManager.remember(userId, {
             type: MemoryType.FACT,
             category: 'ranking',
             content: isZh
-              ? `用户在 ${schoolDisplayName} 排名第${ranking.yourRank}/${ranking.totalApplicants}（前${ranking.percentile}%），竞争力${positionLabel}。最强维度: ${strongest}，待提升: ${weakest}`
-              : `User ranked #${ranking.yourRank}/${ranking.totalApplicants} (top ${ranking.percentile}%) at ${schoolDisplayName}. Competitiveness: ${positionLabel}. Strongest: ${strongest}, Weakest: ${weakest}`,
+              ? `用户在 ${schoolDisplayName} 的同伴样本中排名第${ranking.yourRank}/${ranking.totalApplicants}（前${ranking.percentile}%）。最强维度: ${strongest}，待提升: ${weakest}`
+              : `User ranked #${ranking.yourRank}/${ranking.totalApplicants} (top ${ranking.percentile}%) in the peer sample for ${schoolDisplayName}. Strongest: ${strongest}, Weakest: ${weakest}`,
             importance: 0.7,
             metadata: {
               schoolId: school.id,
               schoolName: school.name,
               rank: ranking.yourRank,
               percentile: ranking.percentile,
-              competitivePosition: ranking.competitivePosition,
               breakdown: ranking.breakdown,
               strongestDim: strongest,
               weakestDim: weakest,
@@ -481,7 +471,6 @@ export class HallRankingService {
     analysis: string;
     strengths: string[];
     improvements: string[];
-    competitivePosition: string;
   }> {
     const isZh = locale === 'zh';
     if (!this.llmService) {
@@ -491,7 +480,6 @@ export class HallRankingService {
           : 'AI analysis service is temporarily unavailable.',
         strengths: [],
         improvements: [],
-        competitivePosition: 'unknown',
       };
     }
 
@@ -511,7 +499,6 @@ export class HallRankingService {
           : 'Please complete your profile first.',
         strengths: [],
         improvements: [],
-        competitivePosition: 'unknown',
       };
     }
 
@@ -524,7 +511,6 @@ export class HallRankingService {
         analysis: isZh ? '未找到该学校信息。' : 'School not found.',
         strengths: [],
         improvements: [],
-        competitivePosition: 'unknown',
       };
     }
 
@@ -536,7 +522,6 @@ export class HallRankingService {
           : 'Please complete your profile first.',
         strengths: [],
         improvements: [],
-        competitivePosition: 'unknown',
       };
     }
 
@@ -581,7 +566,6 @@ export class HallRankingService {
         analysis: string;
         strengths: string[];
         improvements: string[];
-        competitivePosition: 'strong' | 'moderate' | 'challenging' | 'unknown';
       }>(response);
 
       if (parsed.analysis && Array.isArray(parsed.strengths)) {
@@ -601,7 +585,6 @@ export class HallRankingService {
           analysis: parsed.analysis,
           strengths: parsed.strengths,
           improvements: parsed.improvements || [],
-          competitivePosition: parsed.competitivePosition || 'unknown',
         };
       }
     } catch (error) {
@@ -614,7 +597,6 @@ export class HallRankingService {
         : 'AI analysis is temporarily unavailable. Please try again later.',
       strengths: [],
       improvements: [],
-      competitivePosition: 'unknown',
     };
   }
 }

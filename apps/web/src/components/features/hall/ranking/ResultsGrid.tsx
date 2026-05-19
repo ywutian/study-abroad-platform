@@ -19,10 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Trophy, ChevronUp, ChevronDown, Minus, ArrowUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Trophy, ChevronUp, ChevronDown, Minus, ArrowUpDown, ArrowRight, Info } from 'lucide-react';
 import type { AiAnalysisResult, RankingResult } from '@/types/hall';
-import { POSITION_CONFIG, type SortMode } from './ranking-shared';
+import { type SortMode } from './ranking-shared';
+import { Link } from '@/lib/i18n/navigation';
 import { CompetitorDistribution } from './CompetitorDistribution';
 import { AiPanel } from './AiPanel';
 
@@ -128,10 +128,11 @@ const RankingCard = memo(function RankingCard({
   onRequestAnalysis,
 }: RankingCardProps) {
   const t = useTranslations();
-  const positionConfig = result.competitivePosition
-    ? POSITION_CONFIG[result.competitivePosition]
-    : null;
-  const PositionIcon = positionConfig?.icon;
+  // 2026-05 Hall Plan C (C1): the competitorStats sample is platform users
+  // who added this school to a list — not the real applicant pool. Below
+  // ~30 the percentile is statistically thin, so surface a caveat.
+  const sampleSize = result.competitorStats?.totalCount ?? result.totalApplicants;
+  const smallSample = sampleSize < 30;
 
   return (
     <motion.div
@@ -145,41 +146,51 @@ const RankingCard = memo(function RankingCard({
           <h4 className="font-semibold text-sm sm:text-base truncate">{result.schoolName}</h4>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {t('hall.ranking.competitorsCount', {
-                count: result.competitorStats?.totalCount ?? result.totalApplicants,
-              })}
+              {t('hall.ranking.competitorsCount', { count: sampleSize })}
             </p>
             {result.yourScore !== undefined && (
               <Badge variant="outline" className="text-xs">
                 {result.yourScore.toFixed(1)}
               </Badge>
             )}
-            {positionConfig && PositionIcon && (
-              <Badge variant="outline" className={cn('text-xs gap-1', positionConfig.className)}>
-                <PositionIcon className="h-3 w-3" />
-                {t(`hall.ranking.${result.competitivePosition}`)}
-              </Badge>
-            )}
           </div>
         </div>
+        {/* 2026-05 Hall Plan C (C1): percentile is the headline; the absolute
+            `#N` rank is demoted to a muted caption (a giant `#N` reads as a
+            verdict and competes with prediction). No tier badge. */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {rankIcon(result.percentile)}
           <div className="text-right">
-            <p className="text-xl sm:text-2xl font-bold text-primary">#{result.yourRank}</p>
-            <Badge variant="secondary" className="text-xs">
+            <p className="text-xl sm:text-2xl font-bold tabular-nums">
               {t('hall.ranking.topPercentile', { percent: result.percentile })}
-            </Badge>
+            </p>
+            <p className="text-xs text-muted-foreground tabular-nums">#{result.yourRank}</p>
           </div>
         </div>
       </div>
 
+      {smallSample && (
+        <div className="mb-3 flex items-start gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <p className="text-xs text-muted-foreground">
+            {t('hall.ranking.smallSampleCaption', { count: sampleSize })}
+          </p>
+        </div>
+      )}
+
       <CompetitorDistribution result={result} index={index} />
 
-      <AiPanel
-        analysis={aiAnalysis}
-        loading={analysisLoading}
-        onRequest={onRequestAnalysis}
-      />
+      <AiPanel analysis={aiAnalysis} loading={analysisLoading} onRequest={onRequestAnalysis} />
+
+      {/* 2026-05 Hall Plan C (C1): route to the authoritative admission-
+          probability surface — Hall ranking is peer context, not a chance. */}
+      <Link
+        href="/prediction"
+        className="mt-3 flex items-center justify-center gap-1 text-xs font-medium text-primary hover:underline"
+      >
+        {t('hall.ranking.predictionCrossLink')}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
     </motion.div>
   );
 });

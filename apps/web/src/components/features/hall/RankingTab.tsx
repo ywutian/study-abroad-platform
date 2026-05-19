@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { useTargetRanking, useSchoolRanking, useAiAnalysis } from '@/hooks/use-hall-api';
 import { SchoolSelector } from '@/components/features';
 import type { School, AiAnalysisResult } from '@/types/hall';
-import type { CompetitivePosition, SortMode } from './ranking/ranking-shared';
+import type { SortMode } from './ranking/ranking-shared';
 import { SummaryStats, type RankingSummary } from './ranking/SummaryStats';
 import { SchoolPicker } from './ranking/SchoolPicker';
 import { ResultsGrid } from './ranking/ResultsGrid';
@@ -67,20 +67,9 @@ export function RankingTab() {
       0
     );
     const best = allRankings.reduce((a, b) => (a.percentile >= b.percentile ? a : b));
-    const positionCounts: Record<CompetitivePosition, number> = {
-      strong: 0,
-      moderate: 0,
-      challenging: 0,
-    };
-    for (const r of allRankings) {
-      const p = r.competitivePosition;
-      if (p && p in positionCounts) positionCounts[p as CompetitivePosition]++;
-    }
-    const overallPosition = (Object.entries(positionCounts).sort(
-      (a, b) => b[1] - a[1]
-    )[0]?.[0] || 'moderate') as CompetitivePosition;
-
-    return { avgPercentile, totalCompetitors, bestSchool: best.schoolName, overallPosition };
+    // 2026-05 Hall Plan C (C1): the strong/moderate/challenging tally was
+    // removed — `competitivePosition` no longer exists.
+    return { avgPercentile, totalCompetitors, bestSchool: best.schoolName };
   }, [allRankings]);
 
   const handleFetchRanking = () => {
