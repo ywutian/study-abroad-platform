@@ -31,6 +31,7 @@ import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import {
   createFallbackWorkbench,
+  deriveStage,
   type DashboardData,
   type DashboardPriorityItem,
 } from './_components/dashboard-workbench-model';
@@ -212,6 +213,23 @@ export default function DashboardPage() {
     [effectivePending, stableDashboard, t]
   );
 
+  // 2026-05 dashboard redesign batch 4: derive the application stage from
+  // real pipeline data. Only `stage.parallel` is consumed by the UI (a
+  // calm "other tracks in progress" hint in the CommandCenter hero) — the
+  // 5-stage `primary` label is intentionally NOT rendered as a chip
+  // (redundant with the focus card; a behaviour-derived label reads as a
+  // judgement). See the deferred-items debate.
+  const stage = useMemo(
+    () =>
+      deriveStage({
+        targetSchoolCount: schoolCount,
+        essayCount: stableDashboard?.profile.essayCount ?? 0,
+        completeness,
+        pipeline: workbench.pipeline,
+      }),
+    [schoolCount, stableDashboard?.profile.essayCount, completeness, workbench.pipeline]
+  );
+
   return (
     // 2026-05 dashboard redesign batch 2: `variant="admin"` (fluid, max
     // 1600px). Replaces the `variant="tool" maxWidth="fluid"
@@ -308,6 +326,8 @@ export default function DashboardPage() {
                 casesCount={casesCount}
                 // 2026-05 Phase 2.7 #28: drives grade-aware rhythm message.
                 grade={stableDashboard?.profile.grade}
+                // 2026-05 batch 4: only `stage.parallel` is consumed.
+                stage={stage}
               />
             </div>
 

@@ -242,7 +242,7 @@
         "description": "Start by completing your profile — Lumni will then calibrate your predictions and recommend schools tailored to you.",
         "cta": "Complete profile"
       },
-      "contributionHint": "Each item below contributes a slice to your readiness score (sum = total).",
+      "contributionHint": "Each area below is one part of getting your application set up.",
       "tools": {
         "title": "More tools",
         "assessment": "Assessment",
@@ -347,6 +347,8 @@
       "due30": "Due in 30 days",
       "timelineGaps": "Timeline gaps",
       "readiness": "Readiness map",
+      "setupChecklist": "Setup checklist",
+      "setupProgress": "{ready} of {total} ready",
       "priorityQueue": "Priority queue",
       "deadlineStream": "Deadline stream",
       "balanced": "Balanced list",
@@ -364,6 +366,13 @@
       "deadlineSegmentUrgent": "Urgent · next 7 days",
       "deadlineSegmentUpcoming": "Upcoming",
       "moreCritical": "{count, plural, one {+# more urgent item} other {+# more urgent items}}",
+      "parallel": {
+        "accepted": "An offer is in — your other applications are still moving",
+        "waitlisted": "A waitlist is pending — a Letter of Continued Interest can still help",
+        "submittedAndInProgress": "Some applications are submitted; others are still in progress",
+        "submitted": "Your applications are submitted — tracking results from here",
+        "inProgress": "Applications are in progress across several schools"
+      },
       "status": {
         "blocked": "Blocked",
         "attention": "Needs attention",

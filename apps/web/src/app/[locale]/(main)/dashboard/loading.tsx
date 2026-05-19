@@ -85,13 +85,14 @@ export default function DashboardLoading() {
                     </div>
                     <Skeleton className="h-9 w-32 shrink-0" />
                   </div>
-                  {/* Readiness header */}
+                  {/* Setup-checklist header: title + (QuickAdd + count).
+                      Batch 4 dropped the score number + verdict badge —
+                      header is now 2 elements, not 3. */}
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-28" />
                     <div className="flex items-center gap-2">
                       <Skeleton className="h-7 w-20" />
-                      <Skeleton className="h-5 w-16" />
-                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-4 w-16" />
                     </div>
                   </div>
                   <Skeleton className="mb-3 h-1.5 w-full" />

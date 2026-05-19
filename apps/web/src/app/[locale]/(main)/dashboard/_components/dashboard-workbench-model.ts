@@ -14,13 +14,16 @@ export type {
   DashboardReadinessStatus,
   DashboardRecentDecision,
   DashboardSeverity,
+  DashboardStage,
   DashboardSummary,
   // 2026-05 Phase 2.5c: unified visual tone — collapses
   // DashboardSeverity + DashboardReadinessStatus to 4 colors.
   DashboardTone,
   DashboardWorkbench,
+  // 2026-05 batch 4: application-stage selector result.
+  DeriveStageResult,
 } from '@study-abroad/shared';
-export { toneFromReadinessStatus, toneFromSeverity } from '@study-abroad/shared';
+export { deriveStage, toneFromReadinessStatus, toneFromSeverity } from '@study-abroad/shared';
 
 import type {
   DashboardData,

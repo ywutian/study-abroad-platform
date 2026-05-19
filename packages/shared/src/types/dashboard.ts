@@ -109,7 +109,16 @@ export interface DashboardPriorityItem {
 
 export interface DashboardDeadlineItem {
   id: string;
-  type: 'school' | 'event' | 'task';
+  /**
+   * `school` / `event` / `task` are real, dated items the user owns.
+   * `prep` (2026-05 batch 4) is a SYNTHETIC, advisory row the dashboard
+   * derives algorithmically by subtracting a fixed lead-time offset from
+   * a real application deadline (e.g. "ask recommenders 6 weeks early").
+   * It has no per-user completion state — it is a calendar nudge, not a
+   * tracked task. Consumers may render `prep` rows with a lighter,
+   * "suggested" visual treatment to distinguish them from hard deadlines.
+   */
+  type: 'school' | 'event' | 'task' | 'prep';
   title: string;
   subtitle: string;
   dueAt: string;
@@ -219,6 +228,7 @@ export interface DeriveStageResult {
 export function deriveStage(input: DeriveStageInput): DeriveStageResult {
   const p = input.pipeline;
   const inProgress = p?.inProgress ?? 0;
+  const notStarted = p?.notStarted ?? 0;
   const submitted = p?.submitted ?? 0;
   const accepted = p?.accepted ?? 0;
   const rejected = p?.rejected ?? 0;
@@ -234,9 +244,17 @@ export function deriveStage(input: DeriveStageInput): DeriveStageResult {
   // Priority high→low — take the latest application phase as `primary`.
   // Each branch only sets `primary`; `parallel` always carries the rest.
 
-  // 1. decision — any real result arrived (accepted / waitlisted / rejected).
-  //    `withdrawn` does not count: a user-initiated drop is not "a result".
-  if (accepted > 0 || waitlisted > 0 || rejected > 0) {
+  // 1. decision — an acceptance ALWAYS reframes the dashboard: a real
+  //    choice (commit / compare aid) now exists, regardless of remaining
+  //    RD work. A lone rejection/waitlist, by contrast, only counts as
+  //    `decision` once the cycle has wound down — nothing left `inProgress`
+  //    and nothing `notStarted`. Otherwise a single ED rejection in
+  //    December would flip a student mid-RD-crunch to "results are in",
+  //    burying their highest-stakes unsubmitted work. `withdrawn` never
+  //    counts — a user-initiated drop is not "a result".
+  const anyResult = accepted > 0 || waitlisted > 0 || rejected > 0;
+  const cycleWoundDown = inProgress === 0 && notStarted === 0;
+  if (accepted > 0 || (anyResult && cycleWoundDown)) {
     return { primary: 'decision', parallel };
   }
   // 2. submitting — submitted some, still writing others (parallel crunch).

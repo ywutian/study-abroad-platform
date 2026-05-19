@@ -15,6 +15,7 @@ import {
   ClipboardList,
   FileText,
   Gauge,
+  Layers,
   ListChecks,
   School,
   Sparkles,
@@ -29,6 +30,7 @@ import {
   type DashboardPriorityItem,
   type DashboardTone,
   type DashboardWorkbench,
+  type DeriveStageResult,
 } from './dashboard-workbench-model';
 
 interface DashboardCommandCenterProps {
@@ -62,6 +64,14 @@ interface DashboardCommandCenterProps {
    * rhythm when grade is null/missing/unknown.
    */
   grade?: string | null;
+  /**
+   * 2026-05 batch 4: derived application-stage signal. Only `stage.parallel`
+   * is consumed here — a calm one-line "other tracks in progress" hint in
+   * the hero. `stage.primary` (the 5-stage label) is intentionally NOT
+   * rendered as a chip: it is redundant with the focus card and a
+   * behaviour-derived label reads as a judgement to an anxious applicant.
+   */
+  stage?: DeriveStageResult;
 }
 
 // 2026-05 Phase 2.7 #28: well-known Profile.grade values. Anything outside
@@ -185,6 +195,7 @@ export function DashboardCommandCenter({
   predictionsCount = 0,
   casesCount = 0,
   grade: applicantGrade,
+  stage,
 }: DashboardCommandCenterProps) {
   const t = useTranslations('dashboard.workbench');
   const tCenter = useTranslations('dashboard.commandCenter');
@@ -235,6 +246,38 @@ export function DashboardCommandCenter({
   // the section-level "view timeline" link is the see-everything path.
   const urgentDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft <= 7);
   const upcomingDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft > 7);
+  // 2026-05 dashboard redesign batch 4: the readiness section is reframed
+  // as a non-scored "setup checklist". The headline NN/100 score and the
+  // ready/attention/blocked verdict badge were REMOVED — a /100 score with
+  // a colored verdict, sitting next to the prediction tool, risks being
+  // read as an admit-chance proxy, which contradicts ai-system.md
+  // (prediction is the only probability/tier authority). The progress bar
+  // and the count now reflect a plain, auditable "N of 5 ready" tally that
+  // the 5 item cards below verify directly. `workbench.readiness.score` /
+  // `.status` stay in the contract (still computed) but are no longer
+  // rendered here.
+  const readyCount = workbench.readiness.items.filter((item) => item.status === 'ready').length;
+  const totalReadinessItems = workbench.readiness.items.length;
+  const readyPercent =
+    totalReadinessItems > 0 ? Math.round((readyCount / totalReadinessItems) * 100) : 0;
+  // 2026-05 dashboard redesign batch 4: parallel-tracks hint. Application
+  // season runs in parallel — the hero focus card shows ONE next action,
+  // but the student may also have submitted apps, a pending waitlist, etc.
+  // Surface the single most advanced parallel track as one calm line
+  // (precedence pick, not a row of status pills). Only `stage.parallel` is
+  // used; the 5-stage `primary` label is deliberately never rendered.
+  const parallel = stage?.parallel;
+  const parallelHintKey = parallel?.hasAccepted
+    ? 'accepted'
+    : parallel?.hasWaitlisted
+      ? 'waitlisted'
+      : parallel?.hasSubmitted && parallel?.hasInProgress
+        ? 'submittedAndInProgress'
+        : parallel?.hasSubmitted
+          ? 'submitted'
+          : parallel?.hasInProgress
+            ? 'inProgress'
+            : null;
 
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
@@ -312,6 +355,15 @@ export function DashboardCommandCenter({
                           {t('moreCritical', { count: criticalCount - 1 })}
                         </Badge>
                       )}
+                      {/* 2026-05 batch 4: parallel-tracks hint — one calm
+                          line acknowledging that the focus card is 1 of
+                          several application tracks in flight. */}
+                      {parallelHintKey && (
+                        <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span className="min-w-0">{t(`parallel.${parallelHintKey}`)}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -338,7 +390,7 @@ export function DashboardCommandCenter({
 
             <div className="mt-5">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold">{t('readiness')}</h3>
+                <h3 className="text-sm font-semibold">{t('setupChecklist')}</h3>
                 <div className="flex items-center gap-2">
                   {/* 2026-05: Quick Add School inline. Compresses the
                       previous 5-click "open schools page → search →
@@ -347,24 +399,12 @@ export function DashboardCommandCenter({
                       readiness header (not on the schools row) to avoid
                       nesting a button inside the row's Link. */}
                   <DashboardQuickAddSchool />
-                  <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-                    {workbench.readiness.score}
-                    <span className="text-xs">/100</span>
+                  <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                    {t('setupProgress', { ready: readyCount, total: totalReadinessItems })}
                   </span>
-                  <Badge
-                    variant={
-                      workbench.readiness.status === 'ready'
-                        ? 'success'
-                        : workbench.readiness.status === 'attention'
-                          ? 'warning'
-                          : 'destructive'
-                    }
-                  >
-                    {t(`status.${workbench.readiness.status}`)}
-                  </Badge>
                 </div>
               </div>
-              <Progress value={workbench.readiness.score} className="h-1.5" />
+              <Progress value={readyPercent} className="h-1.5" />
               <p className="mt-1.5 text-xs text-muted-foreground">{tCenter('contributionHint')}</p>
               {/*
                 2026-05 dashboard redesign batch 2: readiness grid
@@ -461,14 +501,21 @@ export function DashboardCommandCenter({
                             </div>
                           )}
                         </div>
+                        {/* 2026-05 dashboard redesign batch 4: the per-item
+                            value shows a categorical state word (Ready /
+                            Needs attention / Blocked), not the old "32/40"
+                            contribution fraction. With the headline /100
+                            score gone, a bare fraction was an orphaned
+                            fragment of the weighted-score system the user
+                            can't act on. The state word + the card's tone
+                            border are one signal in two reinforcing
+                            channels (WCAG 1.4.1 — colour is not the only
+                            cue). `item.value` stays in the contract. */}
                         <span
-                          className="shrink-0 text-sm font-semibold tabular-nums"
-                          // 2026-05 Phase 1 design piggyback #12: a11y —
-                          // bare "10/10" is hard for screen readers to
-                          // interpret without context.
-                          aria-label={`${item.label}: ${item.value}`}
+                          className={cn('shrink-0 text-2xs font-medium', meta.text)}
+                          aria-label={`${item.label}: ${t(`status.${item.status}`)}`}
                         >
-                          {item.value}
+                          {t(`status.${item.status}`)}
                         </span>
                       </div>
                     </Link>

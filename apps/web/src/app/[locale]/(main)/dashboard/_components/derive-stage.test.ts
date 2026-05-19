@@ -63,7 +63,7 @@ describe('deriveStage', () => {
     expect(r.primary).toBe('submitting');
   });
 
-  it('decision — any real result (accepted/waitlisted/rejected) wins', () => {
+  it('decision — an acceptance always wins, even with RD work in progress', () => {
     expect(
       deriveStage({
         targetSchoolCount: 8,
@@ -72,14 +72,68 @@ describe('deriveStage', () => {
         pipeline: pipeline({ accepted: 1 }),
       }).primary
     ).toBe('decision');
+    // an acceptance reframes the dashboard regardless of remaining work
+    expect(
+      deriveStage({
+        targetSchoolCount: 9,
+        essayCount: 6,
+        completeness: 90,
+        pipeline: pipeline({ accepted: 1, inProgress: 5, rejected: 1 }),
+      }).primary
+    ).toBe('decision');
+  });
+
+  it('decision — a lone rejection/waitlist counts once the cycle has wound down', () => {
+    // nothing inProgress, nothing notStarted → the cycle is over → decision
     expect(
       deriveStage({
         targetSchoolCount: 8,
         essayCount: 6,
         completeness: 90,
-        pipeline: pipeline({ waitlisted: 1 }),
+        pipeline: pipeline({ waitlisted: 1, submitted: 7 }),
       }).primary
     ).toBe('decision');
+    expect(
+      deriveStage({
+        targetSchoolCount: 8,
+        essayCount: 6,
+        completeness: 90,
+        pipeline: pipeline({ rejected: 2, submitted: 6 }),
+      }).primary
+    ).toBe('decision');
+  });
+
+  it('decision — a lone ED rejection while RD work is in progress is NOT decision', () => {
+    // the headline guarantee: one early result must never bury active RD work
+    const r = deriveStage({
+      targetSchoolCount: 9,
+      essayCount: 6,
+      completeness: 88,
+      pipeline: pipeline({ rejected: 1, submitted: 3, inProgress: 5 }),
+    });
+    expect(r.primary).toBe('submitting');
+    expect(r.parallel.hasInProgress).toBe(true);
+  });
+
+  it('decision — a lone waitlist while RD work is in progress is NOT decision', () => {
+    const r = deriveStage({
+      targetSchoolCount: 9,
+      essayCount: 6,
+      completeness: 88,
+      pipeline: pipeline({ waitlisted: 1, submitted: 2, inProgress: 6 }),
+    });
+    expect(r.primary).toBe('submitting');
+  });
+
+  it('decision — a result with schools still not-started is NOT a wound-down cycle', () => {
+    // notStarted schools mean real application work still remains
+    const r = deriveStage({
+      targetSchoolCount: 5,
+      essayCount: 2,
+      completeness: 70,
+      pipeline: pipeline({ rejected: 1, notStarted: 4 }),
+    });
+    expect(r.primary).not.toBe('decision');
   });
 
   it('withdrawn alone is NOT a decision result', () => {
