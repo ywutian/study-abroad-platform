@@ -30,52 +30,65 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    name: '1/11  Main seed (schools / competitions / deadlines / teams)',
+    // Main seed already builds the FULL unified US catalog: prisma/seed.ts
+    // imports buildUnifiedCollegeCatalog() (scripts/lib/college-catalog.ts),
+    // which merges all 7 committed school payloads — seed-top100,
+    // seed-more-schools, seed-more-us-schools, seed-us-schools-141-200,
+    // seed-uc-schools, seed-more-schools-expanded, seed-final-schools.
+    // Those 300 raw entries dedup on nameNorm to 240 unique US schools, so the
+    // standalone scripts add zero new rows here (verified: 0 created on a fresh
+    // re-run). 300 is NOT reachable from committed data without fabricating
+    // schools, so the catalog stays at 240 — see verify-seed.ts School (US).
+    name: 'Main seed — full unified US catalog (240 schools) + competitions / deadlines / teams',
     cmd: 'npx tsx prisma/seed.ts',
   },
   {
-    name: '2/11  Prediction closure (School / HighSchool CDS fields)',
+    name: 'Prediction closure (School / HighSchool CDS fields)',
     cmd: 'npx tsx prisma/seeds/seed-prediction-closure.ts',
   },
   {
-    name: '3/11  CDS admit bands — build merged payload',
+    name: 'CDS admit bands — build merged payload',
     cmd: 'npx tsx prisma/seeds/build-cds-admit-bands.ts',
   },
   {
-    name: '3/11  CDS admit bands — apply (SchoolCdsAdmitBand)',
+    name: 'CDS admit bands — apply (SchoolCdsAdmitBand)',
     cmd: 'npx tsx scripts/load-cds-bands.ts --file prisma/seeds/data/cds-admit-bands.json --apply',
   },
   {
-    name: '4/11  World rankings — QS / THE / ARWU / FORBES / WSJ (SchoolRanking)',
+    name: 'World rankings — QS / THE / ARWU / FORBES / WSJ (SchoolRanking)',
     cmd: 'npx tsx scripts/closure-agents/collect-school-rankings.ts',
   },
   {
-    name: '5/11  US_NEWS ranking-list backfill (SchoolRanking)',
+    name: 'US_NEWS ranking-list backfill (SchoolRanking)',
     cmd: 'npx tsx scripts/backfill-school-ranking-lists.ts',
   },
   {
-    name: '6/11  High schools (~150 reference HighSchool rows)',
+    name: 'High schools (~150 reference HighSchool rows)',
     cmd: 'npx tsx prisma/seed-high-schools.ts',
   },
   {
-    name: '7/11  School programs — all US schools (SchoolProgram)',
+    name: 'School programs — all US schools (SchoolProgram)',
     cmd: 'npx tsx scripts/seed-school-programs.ts --all',
   },
   {
-    name: '8/11  Essay prompts — top-50 (EssayPrompt)',
+    name: 'Essay prompts — top-50 (EssayPrompt)',
     cmd: 'npx tsx prisma/seed-essay-prompts-v2.ts',
   },
   {
-    name: '9/11  Activity templates (ActivityTemplate)',
+    name: 'Activity templates (ActivityTemplate)',
     cmd: 'npx tsx prisma/seed-activity-templates.ts',
   },
   {
-    name: '10/11 Closure targets — scan DB (ClosureTarget)',
+    name: 'Closure targets — scan DB (ClosureTarget)',
     cmd: 'npx tsx scripts/closure-agents/seed-closure-targets.ts',
   },
   {
-    name: '11/11 Top-school admission cases (AdmissionCase)',
+    name: 'Top-school admission cases (AdmissionCase)',
     cmd: 'npx tsx prisma/seeds/load-top-cases.ts',
+  },
+  {
+    name: 'Assessment question banks — MBTI / HOLLAND / STRENGTH (Assessment)',
+    cmd: 'npx tsx prisma/seed-assessment.ts',
   },
 ];
 

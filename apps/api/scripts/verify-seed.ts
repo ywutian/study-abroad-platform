@@ -31,6 +31,7 @@ async function main() {
     competitionCount,
     closureTargetCount,
     admissionCaseCount,
+    assessmentCount,
     edAcceptanceRateCount,
     gpaDistributionCount,
     // Team / competition assertions (legacy — kept)
@@ -51,6 +52,7 @@ async function main() {
     prisma.competition.count(),
     prisma.closureTarget.count(),
     prisma.admissionCase.count(),
+    prisma.assessment.count(),
     prisma.school.count({ where: { edAcceptanceRate: { not: null } } }),
     prisma.school.count({
       where: { gpaDistribution: { not: Prisma.DbNull } },
@@ -124,9 +126,17 @@ async function main() {
   const checks: Check[] = [
     // ─── Tier-1 US-data coverage (hard gate) ───
     {
+      // Phase B target was ~300. Investigated: prisma/seed.ts already builds
+      // the FULL unified catalog via buildUnifiedCollegeCatalog(), merging all
+      // 7 committed school payloads (seed-top100 / seed-more-schools /
+      // seed-more-us-schools / seed-us-schools-141-200 / seed-uc-schools /
+      // seed-more-schools-expanded / seed-final-schools). Those 300 raw rows
+      // dedup on nameNorm to 240 unique US schools — re-running every script
+      // standalone creates 0 new rows. 300 is unreachable from committed data
+      // without fabricating schools, which is forbidden. Real number = 240.
       label: 'School (US)',
       actual: usSchoolCount,
-      expected: '>= 240',
+      expected: '>= 240 (full committed catalog; 300 needs fabrication)',
       pass: usSchoolCount >= 240,
     },
     {
@@ -193,6 +203,15 @@ async function main() {
       actual: admissionCaseCount,
       expected: '> 0',
       pass: admissionCaseCount > 0,
+    },
+    {
+      // seed-assessment.ts upserts exactly one Assessment row per
+      // AssessmentType (MBTI / HOLLAND / STRENGTH) — keyed on the unique
+      // `type` column, so the count is a hard, idempotent 3.
+      label: 'Assessment',
+      actual: assessmentCount,
+      expected: '== 3 (MBTI / HOLLAND / STRENGTH)',
+      pass: assessmentCount === 3,
     },
     {
       label: 'School.edAcceptanceRate non-null',
