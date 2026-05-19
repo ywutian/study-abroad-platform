@@ -6,15 +6,16 @@ Swipe interface for studying real admission cases — a learning loop: browse a
 real case, guess the outcome, see the AI debrief. De-gamified (Plan C C3): no
 badges, streaks, daily challenge or leaderboard.
 
+> Hall §7 Decision B: the `review` tab (peer-feedback experience) was
+> retired — `ReviewTab` and the `review/` directory were deleted. The Hall
+> IA is now 3 tabs: verified, ranking, path.
+
 ## Components
 
 - SwipeCard — draggable case card with applicant stats (framer-motion gestures)
 - SwipeStack — manages card deck with accept/reject swipe logic
 - SwipeResultOverlay — shows correct/wrong + the real outcome after a swipe
 - TinderTab — main swipe interface tab + a private calibration-accuracy stat
-- ReviewTab — re-export shim for `review/ReviewTab` (stable import path)
-- review/ — qualitative peer-feedback experience (Plan C C2: numeric scoring
-  removed): ReviewTab orchestrator + QualitativeReviewForm + review-shared
 - RankingTab — thin orchestrator (data + state)
 - ranking/ — RankingTab sub-components: SummaryStats, SchoolPicker, ResultsGrid
   (RankingCard), CompetitorDistribution, AiPanel + ranking-shared (POSITION_CONFIG)
@@ -31,8 +32,6 @@ badges, streaks, daily challenge or leaderboard.
 
 - Framer Motion for drag gestures and card animations
 - Shared swipe physics: `lib/hooks/useSwipeGesture.ts` (x/y/rotate/opacity + drag-end classifier)
-- Tab-based page split (TinderTab, ReviewTab, RankingTab, ListsTab)
-- Review is single-track and qualitative-only: ReviewTab orchestrator → select
-  profile → QualitativeReviewForm (written feedback, no scores) → one submit
+- Tab-based page split (TinderTab, RankingTab, ListsTab)
 - Calibration accuracy (total/correct/accuracy) is private — visible only to the
   user, never aggregated into a leaderboard

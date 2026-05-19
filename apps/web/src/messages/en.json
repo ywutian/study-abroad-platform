@@ -1445,7 +1445,7 @@
       "assessment": "Personality and career interest assessments",
       "timeline": "Track application deadlines and tasks",
       "cases": "Explore real admission outcomes and application stories",
-      "hall": "Verified admit data, peer reviews and rank comparison",
+      "hall": "Verified admit data and applicant competitiveness comparison",
       "essayGallery": "Browse excellent admission essay examples",
       "chat": "Real-time chat with verified users",
       "vault": "Securely store sensitive information and passwords",
@@ -2965,7 +2965,6 @@
     "description": "Verified admit data, peer reviews, rank comparison and case study",
     "tabs": {
       "tinder": "Prediction Game",
-      "review": "Peer Pulse",
       "ranking": "Rank Comparison",
       "lists": "User Lists",
       "challenge": "Community Challenge",
@@ -2973,7 +2972,6 @@
       "path": "Alumni Journey",
       "verifiedDesc": "Verified admit data: China admit counts, difficulty signals, ED vs RD",
       "rankingDesc": "Where your stats sit vs the historical applicant pool at your targets",
-      "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
       "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
     },
     "path": {
@@ -3032,58 +3030,6 @@
       "description": "How often your guesses match the real outcome — visible only to you",
       "accuracyLabel": "accuracy",
       "correctOf": "{correct} of {total} guessed correctly"
-    },
-    "review": {
-      "submitSuccess": "Feedback submitted successfully",
-      "submitError": "Submit failed, please try again",
-      "title": "Peer Feedback",
-      "submitReview": "Submit Feedback",
-      "selectProfile": "Select Profile",
-      "selectProfileDesc": "Choose a public profile to give feedback on",
-      "activitiesCount": "{count} activities total",
-      "awardsCount": "{count} awards total",
-      "processing": "Submitting...",
-      "noMajor": "Undeclared",
-      "tags": "Quick Tags (optional)",
-      "generalComment": "Overall Feedback",
-      "generalCommentHint": "Share your overall impression of this applicant — what stands out, and what they could strengthen...",
-      "dimension": {
-        "academic": "Academic / GPA",
-        "test": "Test Scores",
-        "activity": "Extracurriculars",
-        "award": "Awards & Honors"
-      },
-      "dimensionDesc": {
-        "academic": "Evaluate academic performance and GPA",
-        "test": "Evaluate SAT/ACT/TOEFL and other test scores",
-        "activity": "Evaluate breadth and depth of extracurriculars",
-        "award": "Evaluate awards and competition achievements"
-      },
-      "commentHint": {
-        "academic": "What stood out about their academics, and where could they go further?",
-        "test": "How do their test scores read — any context worth noting?",
-        "activity": "What did you find compelling or thin about their activities?",
-        "award": "How do their awards and honors come across?"
-      },
-      "helpful": "Helpful",
-      "insightful": "Insightful",
-      "markedHelpful": "Marked as helpful",
-      "markedInsightful": "Marked as insightful",
-      "quickTag": {
-        "well-rounded": "Well-rounded",
-        "strong-stem": "Strong STEM",
-        "high-gpa": "High GPA",
-        "leadership": "Leadership",
-        "creative": "Creative",
-        "community-impact": "Community impact",
-        "research-oriented": "Research-oriented",
-        "athletic": "Athletic"
-      },
-      "disclaimer": "Feedback reflects the personal perspective of another member — it is not professional admissions advice.",
-      "generalCommentMin": "Please write at least {min} characters of overall feedback.",
-      "dimensionFeedback": "Your written feedback (optional)",
-      "overallFeedback": "Overall Feedback",
-      "overallFeedbackDesc": "Tag any standout strengths and write your overall thoughts."
     },
     "ranking": {
       "title": "Rank Comparison",
@@ -3216,13 +3162,11 @@
       "replay": "Replay the intro",
       "steps": {
         "welcomeTitle": "Welcome to the Alumni Square",
-        "welcomeBody": "A community space where applicants compare positioning, get peer reviews, and learn from verified admit cases.",
+        "welcomeBody": "A community space where applicants compare positioning and learn from verified admit cases.",
         "learnTitle": "Learn from real cases",
         "learnBody": "Predict the outcome of real applicant profiles, then get an AI debrief explaining what shaped each admission decision.",
         "verifiedTitle": "Verified admission data",
-        "verifiedBody": "Browse a curated center of verified admit records — real scores, schools and majors you can use to ground your own positioning.",
-        "privacyTitle": "You are in control",
-        "privacyBody": "Peer reviews are opt-in and your profile is always anonymized. Manage this anytime in Settings."
+        "verifiedBody": "Browse a curated center of verified admit records — real scores, schools and majors you can use to ground your own positioning."
       }
     }
   },
@@ -3267,9 +3211,7 @@
       "privacyPolicy": "Privacy Policy",
       "logout": "Logout",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data",
-      "peerReview": "Peer Reviews",
-      "peerReviewDesc": "Control whether others can review your profile"
+      "deleteAccountDesc": "Permanently delete your account and data"
     },
     "comingSoonHint": "This feature is coming soon",
     "dialogs": {
@@ -10394,7 +10336,6 @@
       "forum": "Forum",
       "reports": "Reports",
       "chat": "Chat",
-      "reviews": "Reviews",
       "forumPosts": "Forum Posts",
       "search": "Search...",
       "author": "Author",
@@ -10430,20 +10371,9 @@
       "sender": "Sender",
       "content": "Content",
       "sentAt": "Sent At",
-      "reviewList": "Review List",
-      "reviewer": "Reviewer",
-      "rating": "Rating",
       "status": "Status",
       "visible": "Visible",
       "hidden": "Hidden",
-      "hideReview": "Hide",
-      "unhideReview": "Show",
-      "deleteReview": "Delete",
-      "reviewHidden": "Review hidden",
-      "reviewShown": "Review shown",
-      "reviewDeleted": "Review deleted",
-      "noReviews": "No reviews",
-      "noReviewsDesc": "No reviews match the current filters",
       "confirmDelete": "Confirm Delete",
       "confirmDeleteDesc": "This action cannot be undone. Are you sure?",
       "cancel": "Cancel",
@@ -11472,31 +11402,5 @@
   },
   "activityForm": {
     "linkedToTemplate": "Linked to template"
-  },
-  "peerReviewSettings": {
-    "title": "Peer Review Privacy",
-    "description": "Decide whether Alumni Square members can review your application profile",
-    "toggleCardTitle": "Accept peer reviews",
-    "toggleCardDesc": "When on, your anonymized profile may appear in the review pool",
-    "toggleLabel": "Allow others to review my profile",
-    "toggleHint": "Other members give scores and suggestions on your academics, tests, activities and awards.",
-    "minorBlocked": "Peer reviews are unavailable for members under 16. This setting will unlock automatically once you turn 16.",
-    "guardianAdvisory": "You are under 18. Please confirm with a parent or guardian before turning this on.",
-    "explainTitle": "How peer review works",
-    "explainWhat": "Members of the Alumni Square can view a desensitized snapshot of your profile and offer scores, tags and written suggestions to help you improve.",
-    "explainPrivacy": "Your real name, contact details and sensitive identifiers are never shared. Reviewers see only an anonymized academic snapshot.",
-    "explainControl": "You can turn this off at any time. Turning it off removes you from the review pool going forward; reviews already received remain visible only to you.",
-    "badgeAnonymized": "Anonymized snapshot",
-    "badgeReversible": "Reversible anytime",
-    "toast": {
-      "enabled": "Peer reviews enabled",
-      "disabled": "Peer reviews disabled",
-      "error": "Could not update this setting. Please try again."
-    },
-    "consentDialog": {
-      "title": "Guardian consent",
-      "description": "You are between 16 and 18 years old. By continuing, you confirm a parent or guardian agrees to your profile being reviewed by other members.",
-      "confirm": "I confirm — enable"
-    }
   }
 }

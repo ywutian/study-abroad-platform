@@ -1429,7 +1429,7 @@
       "assessment": "性格与职业兴趣测评",
       "timeline": "追踪申请截止日期与任务",
       "cases": "浏览真实录取结果与申请故事",
-      "hall": "认证录取数据、同伴锐评与排名对比",
+      "hall": "认证录取数据与申请竞争力对比",
       "essayGallery": "浏览优秀录取文书案例",
       "chat": "与认证用户实时聊天交流",
       "vault": "安全存储敏感信息与密码",
@@ -2949,7 +2949,6 @@
     "description": "认证录取数据、同伴锐评、排名对比与案例研习",
     "tabs": {
       "tinder": "预测游戏",
-      "review": "同伴反馈",
       "ranking": "排名对比",
       "lists": "用户榜单",
       "challenge": "社区挑战",
@@ -2957,7 +2956,6 @@
       "path": "学长之路",
       "verifiedDesc": "已认证录取案例数据墙：中国大陆录取人数、难度信号、ED/RD 对比",
       "rankingDesc": "对照目标学校，看你的硬件在历史申请池中的位置",
-      "reviewDesc": "同伴 Tinder 滑评，帮你看清档案在群体直觉中的样子",
       "pathDesc": "学长之路：研究真实申请档案，AI 复盘帮你建立招生官思维"
     },
     "path": {
@@ -3016,58 +3014,6 @@
       "description": "你的判断与真实结果吻合的比例 —— 仅你自己可见",
       "accuracyLabel": "准确率",
       "correctOf": "{total} 次判断中对了 {correct} 次"
-    },
-    "review": {
-      "submitSuccess": "反馈提交成功",
-      "submitError": "提交失败，请重试",
-      "title": "同伴反馈",
-      "submitReview": "提交反馈",
-      "selectProfile": "选择档案",
-      "selectProfileDesc": "选择一个公开档案，给出你的反馈",
-      "activitiesCount": "共 {count} 项活动",
-      "awardsCount": "共 {count} 项奖项",
-      "processing": "提交中...",
-      "noMajor": "未定专业",
-      "tags": "快捷标签（可选）",
-      "generalComment": "整体反馈",
-      "generalCommentHint": "写下你对这位申请者的整体印象——有哪些亮点，又有哪些可以进一步加强...",
-      "dimension": {
-        "academic": "学术 / GPA",
-        "test": "标化成绩",
-        "activity": "课外活动",
-        "award": "奖项荣誉"
-      },
-      "dimensionDesc": {
-        "academic": "评估学术表现与 GPA",
-        "test": "评估 SAT/ACT/TOEFL 等标化成绩",
-        "activity": "评估课外活动的广度与深度",
-        "award": "评估获奖情况与竞赛表现"
-      },
-      "commentHint": {
-        "academic": "学术方面有哪些亮点，又有哪些可以更进一步的地方？",
-        "test": "标化成绩读起来如何，有哪些值得补充的背景？",
-        "activity": "课外活动中哪些让你印象深刻，哪些还略显单薄？",
-        "award": "获奖与荣誉给你的整体感受如何？"
-      },
-      "helpful": "有帮助",
-      "insightful": "有见地",
-      "markedHelpful": "已标记有帮助",
-      "markedInsightful": "已标记有见地",
-      "quickTag": {
-        "well-rounded": "全面发展",
-        "strong-stem": "理工强",
-        "high-gpa": "GPA 优秀",
-        "leadership": "领导力",
-        "creative": "富有创造力",
-        "community-impact": "社区影响力",
-        "research-oriented": "研究导向",
-        "athletic": "体育特长"
-      },
-      "disclaimer": "反馈是其他成员的个人观点，不构成专业的招生建议。",
-      "generalCommentMin": "整体反馈至少需要 {min} 个字。",
-      "dimensionFeedback": "你的书面反馈（可选）",
-      "overallFeedback": "整体反馈",
-      "overallFeedbackDesc": "标记任何突出的优势，并写下你的整体想法。"
     },
     "ranking": {
       "title": "排名对比",
@@ -3200,13 +3146,11 @@
       "replay": "重看引导",
       "steps": {
         "welcomeTitle": "欢迎来到校友广场",
-        "welcomeBody": "在这里，申请者可以对比定位、获得同伴锐评，并向已认证的录取案例学习。",
+        "welcomeBody": "一个申请者交流定位、从已验证录取案例中学习的社区空间。",
         "learnTitle": "从真实案例中学习",
         "learnBody": "预测真实申请者档案的录取结果，再获得 AI 复盘，解析每个录取决定背后的关键因素。",
         "verifiedTitle": "已认证的录取数据",
-        "verifiedBody": "浏览精选的已认证录取记录中心——真实的成绩、学校和专业，帮你为自己的定位找到依据。",
-        "privacyTitle": "一切由你掌控",
-        "privacyBody": "同伴锐评需主动开启，你的档案始终匿名。可随时在设置中管理。"
+        "verifiedBody": "浏览精选的已认证录取记录中心——真实的成绩、学校和专业，帮你为自己的定位找到依据。"
       }
     }
   },
@@ -3251,9 +3195,7 @@
       "privacyPolicy": "隐私政策",
       "logout": "退出登录",
       "deleteAccount": "删除账户",
-      "deleteAccountDesc": "永久删除您的账户和数据",
-      "peerReview": "锐评隐私",
-      "peerReviewDesc": "控制其他成员是否可以锐评你的档案"
+      "deleteAccountDesc": "永久删除您的账户和数据"
     },
     "comingSoonHint": "此功能即将上线",
     "dialogs": {
@@ -10373,7 +10315,6 @@
       "forum": "论坛",
       "reports": "举报",
       "chat": "聊天",
-      "reviews": "评价",
       "forumPosts": "论坛帖子",
       "search": "搜索...",
       "author": "作者",
@@ -10409,20 +10350,9 @@
       "sender": "发送者",
       "content": "内容",
       "sentAt": "发送时间",
-      "reviewList": "评价列表",
-      "reviewer": "评价者",
-      "rating": "评分",
       "status": "状态",
       "visible": "可见",
       "hidden": "已隐藏",
-      "hideReview": "隐藏",
-      "unhideReview": "显示",
-      "deleteReview": "删除",
-      "reviewHidden": "评价已隐藏",
-      "reviewShown": "评价已显示",
-      "reviewDeleted": "评价已删除",
-      "noReviews": "暂无评价",
-      "noReviewsDesc": "没有符合条件的评价",
       "confirmDelete": "确认删除",
       "confirmDeleteDesc": "此操作不可撤销，确定吗？",
       "cancel": "取消",
@@ -11451,31 +11381,5 @@
   },
   "activityForm": {
     "linkedToTemplate": "已关联模板"
-  },
-  "peerReviewSettings": {
-    "title": "锐评隐私设置",
-    "description": "决定校友广场成员是否可以锐评你的申请档案",
-    "toggleCardTitle": "接受同伴锐评",
-    "toggleCardDesc": "开启后，你的脱敏档案可能出现在锐评池中",
-    "toggleLabel": "允许其他成员锐评我的档案",
-    "toggleHint": "其他成员会对你的学术、标化、活动和奖项打分并给出建议。",
-    "minorBlocked": "未满 16 岁的成员暂不能开启锐评。年满 16 岁后此设置将自动解锁。",
-    "guardianAdvisory": "你尚未满 18 岁，开启前请先与家长或监护人确认。",
-    "explainTitle": "锐评如何运作",
-    "explainWhat": "校友广场的成员可以查看你档案的脱敏快照，并给出分数、标签和文字建议，帮助你改进。",
-    "explainPrivacy": "你的真实姓名、联系方式和敏感身份信息绝不会被分享，评审者只能看到匿名的学术快照。",
-    "explainControl": "你可以随时关闭此设置。关闭后你将不再进入锐评池；已收到的评价仍仅对你本人可见。",
-    "badgeAnonymized": "匿名快照",
-    "badgeReversible": "可随时关闭",
-    "toast": {
-      "enabled": "已开启同伴锐评",
-      "disabled": "已关闭同伴锐评",
-      "error": "设置更新失败，请重试。"
-    },
-    "consentDialog": {
-      "title": "监护人同意",
-      "description": "你的年龄在 16 至 18 岁之间。继续即表示你确认家长或监护人同意你的档案被其他成员锐评。",
-      "confirm": "我已确认，开启"
-    }
   }
 }

@@ -58,22 +58,6 @@ export interface RankingResult {
   // percentile, explicitly framed as rough peer context.
 }
 
-export interface PublicProfileResponse {
-  id: string;
-  userId: string;
-  grade?: string | null;
-  // 2026-05 Hall Plan C (security B3): precise `gpa` / `gpaScale` are NOT
-  // exposed — this is a public profile-picker surface; leaking another
-  // user's exact GPA is a PII leak. Counts + grade + major only.
-  targetMajor?: string | null;
-  visibility: string;
-  _count: {
-    testScores: number;
-    activities: number;
-    awards: number;
-  };
-}
-
 @Injectable()
 export class HallRankingService {
   private readonly logger = new Logger(HallRankingService.name);
@@ -94,60 +78,6 @@ export class HallRankingService {
           10,
       ) / 10;
     return { p25: at(0.25), p50: at(0.5), p75: at(0.75) };
-  }
-
-  async getPublicProfiles(
-    search?: string,
-    page = 1,
-    pageSize = 20,
-  ): Promise<{
-    data: PublicProfileResponse[];
-    total: number;
-    page: number;
-    pageSize: number;
-  }> {
-    const where: any = {
-      visibility: { in: ['ANONYMOUS', 'VERIFIED_ONLY'] },
-    };
-
-    if (search) {
-      where.targetMajor = { contains: search, mode: 'insensitive' };
-    }
-
-    const safePage = Math.max(1, page);
-    const safePageSize = Math.min(Math.max(1, pageSize), 100);
-
-    const [profiles, total] = await Promise.all([
-      this.prisma.profile.findMany({
-        where,
-        select: {
-          id: true,
-          userId: true,
-          grade: true,
-          targetMajor: true,
-          visibility: true,
-          _count: {
-            select: {
-              testScores: true,
-              activities: true,
-              awards: true,
-            },
-          },
-        },
-        take: safePageSize,
-        skip: (safePage - 1) * safePageSize,
-        orderBy: { updatedAt: 'desc' },
-      }),
-      this.prisma.profile.count({ where }),
-    ]);
-
-    const result = profiles.map((p) => ({
-      ...p,
-      userId:
-        p.visibility === 'ANONYMOUS' ? `anon-${p.id.slice(0, 8)}` : p.userId,
-    }));
-
-    return { data: result, total, page: safePage, pageSize: safePageSize };
   }
 
   async getBatchRanking(

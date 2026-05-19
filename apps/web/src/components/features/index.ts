@@ -15,7 +15,8 @@ export { EducationForm } from './education-form';
 export { TestScoreForm } from './test-score-form';
 
 // Selector components
-export { ProfileSelector } from './profile-selector';
+// Hall §7 Decision B: ProfileSelector removed — its only consumer was the
+// retired Hall review tab.
 export { SchoolSelector } from './school-selector';
 
 // UI components
@@ -99,7 +100,6 @@ export {
   SwipeResultOverlay,
   // Tab components (from hall/page.tsx refactor)
   TinderTab,
-  ReviewTab,
   RankingTab,
   ListsTab,
 } from './hall';

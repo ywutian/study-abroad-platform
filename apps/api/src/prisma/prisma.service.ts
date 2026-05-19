@@ -150,7 +150,6 @@ export class PrismaService
       this.userListVote.deleteMany(),
       this.userList.deleteMany(),
       this.report.deleteMany(),
-      this.review.deleteMany(),
       this.message.deleteMany(),
       this.conversationParticipant.deleteMany(),
       this.conversation.deleteMany(),

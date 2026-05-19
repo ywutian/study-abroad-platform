@@ -20,11 +20,11 @@ function renderOnboarding() {
 }
 
 // Real copy from messages/en.json → hall.onboarding.steps.*
+// Hall §7 Decision B: the "You are in control" privacy step was removed.
 const STEP_TITLES = [
   'Welcome to the Alumni Square',
   'Learn from real cases',
   'Verified admission data',
-  'You are in control',
 ];
 
 describe('HallOnboarding', () => {

@@ -3,11 +3,13 @@
 /**
  * Hall — 校友广场 (refactored Stage 3)
  *
- * IA: 4 tabs in order of value to the user
+ * IA: 3 tabs in order of value to the user
  *   verified  — China Admit Dashboard (default, highest decision value)
  *   ranking   — competitive position vs target schools
- *   review    — peer reviews (Tinder-style + classic) for self-improvement
  *   path      — 学长之路 (TinderTab + ChallengeTab merged with sub-toggle)
+ *
+ * Hall §7 Decision B: the `review` tab (peer review) was removed when the
+ * peer-review subsystem was retired.
  *
  * Backwards compatible: `?tab=tinder` / `?tab=challenge` / `?tab=lists`
  * auto-redirect to the new structure so old bookmarks/emails keep working.
@@ -22,14 +24,7 @@ import { apiClient } from '@/lib/api';
 import { API_ROUTES } from '@study-abroad/shared';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { cn } from '@/lib/utils';
-import {
-  Award,
-  BadgeCheck,
-  BarChart3,
-  MessageSquare,
-  GraduationCap,
-  HelpCircle,
-} from 'lucide-react';
+import { Award, BadgeCheck, BarChart3, GraduationCap, HelpCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { HallOnboarding } from '@/components/features/hall/HallOnboarding';
@@ -42,16 +37,12 @@ const RankingTab = dynamic(
   () => import('@/components/features/hall/RankingTab').then((m) => ({ default: m.RankingTab })),
   { ssr: false }
 );
-const ReviewTab = dynamic(
-  () => import('@/components/features/hall/ReviewTab').then((m) => ({ default: m.ReviewTab })),
-  { ssr: false }
-);
 const PathTab = dynamic(
   () => import('@/components/features/hall/PathTab').then((m) => ({ default: m.PathTab })),
   { ssr: false }
 );
 
-type HallTabV2 = 'verified' | 'ranking' | 'review' | 'path';
+type HallTabV2 = 'verified' | 'ranking' | 'path';
 
 // Tab config with i18n keys, icons, and 1-line descriptions for hover tooltips
 const TAB_CONFIG: Array<{
@@ -75,13 +66,6 @@ const TAB_CONFIG: Array<{
     descriptionKey: 'hall.tabs.rankingDesc',
     icon: BarChart3,
     color: 'bg-amber-500',
-  },
-  {
-    value: 'review',
-    labelKey: 'hall.tabs.review',
-    descriptionKey: 'hall.tabs.reviewDesc',
-    icon: MessageSquare,
-    color: 'bg-violet-500',
   },
   {
     value: 'path',
@@ -201,7 +185,7 @@ export default function HallPage() {
           brand risk for the paying parent. Hall is a data + learning
           surface, not an arcade. */}
 
-      {/* Tab 切换器 — 4 tabs, all min-w-0 inside grid for overflow safety */}
+      {/* Tab 切换器 — 3 tabs, all min-w-0 inside grid for overflow safety */}
       <div className="mb-4 sm:mb-8">
         <div
           className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-1 px-1"
@@ -242,7 +226,6 @@ export default function HallPage() {
       <AnimatePresence mode="wait">
         {activeTab === 'verified' && <VerifiedTab />}
         {activeTab === 'ranking' && <RankingTab />}
-        {activeTab === 'review' && <ReviewTab />}
         {activeTab === 'path' && <PathTab />}
       </AnimatePresence>
     </PageContainer>
