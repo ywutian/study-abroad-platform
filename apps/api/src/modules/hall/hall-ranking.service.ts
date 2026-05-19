@@ -62,8 +62,9 @@ export interface PublicProfileResponse {
   id: string;
   userId: string;
   grade?: string | null;
-  gpa?: number;
-  gpaScale?: number;
+  // 2026-05 Hall Plan C (security B3): precise `gpa` / `gpaScale` are NOT
+  // exposed — this is a public profile-picker surface; leaking another
+  // user's exact GPA is a PII leak. Counts + grade + major only.
   targetMajor?: string | null;
   visibility: string;
   _count: {
@@ -123,8 +124,6 @@ export class HallRankingService {
           id: true,
           userId: true,
           grade: true,
-          gpa: true,
-          gpaScale: true,
           targetMajor: true,
           visibility: true,
           _count: {
@@ -146,8 +145,6 @@ export class HallRankingService {
       ...p,
       userId:
         p.visibility === 'ANONYMOUS' ? `anon-${p.id.slice(0, 8)}` : p.userId,
-      gpa: p.gpa ? Number(p.gpa) : undefined,
-      gpaScale: p.gpaScale ? Number(p.gpaScale) : undefined,
     }));
 
     return { data: result, total, page: safePage, pageSize: safePageSize };

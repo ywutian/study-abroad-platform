@@ -229,14 +229,13 @@ describe('HallService', () => {
       );
     });
 
-    it('should handle profiles with null gpa gracefully', async () => {
+    // 2026-05 Hall Plan C (security B3): precise gpa is no longer exposed.
+    it('does not expose precise gpa/gpaScale on public profiles', async () => {
       mockPrisma.profile.findMany.mockResolvedValue([
         {
           id: 'p-1',
           userId: 'u-1',
           grade: null,
-          gpa: null,
-          gpaScale: null,
           targetMajor: null,
           visibility: 'VERIFIED_ONLY',
           _count: { testScores: 0, activities: 0, awards: 0 },
@@ -245,8 +244,8 @@ describe('HallService', () => {
       mockPrisma.profile.count.mockResolvedValue(1);
 
       const result = await service.getPublicProfiles();
-      expect(result.data[0].gpa).toBeUndefined();
-      expect(result.data[0].gpaScale).toBeUndefined();
+      expect(result.data[0]).not.toHaveProperty('gpa');
+      expect(result.data[0]).not.toHaveProperty('gpaScale');
     });
   });
 

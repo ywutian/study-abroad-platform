@@ -56,7 +56,6 @@ const SWIPE_CASE_INCLUDE = {
         select: {
           grade: true,
           currentSchoolType: true,
-          nationality: true,
           targetMajor: true,
           activities: {
             select: { category: true },
@@ -64,8 +63,12 @@ const SWIPE_CASE_INCLUDE = {
           awards: {
             select: { level: true },
           },
+          // 2026-05 Hall Plan C (security B3): `nationality` and the raw
+          // test `score` are NOT selected. Swipe is a public surface; it
+          // only needs coarse aggregate signal (counts by type/level),
+          // never an applicant's precise score or nationality.
           testScores: {
-            select: { type: true, score: true },
+            select: { type: true },
           },
         },
       },
@@ -679,7 +682,8 @@ export class SwipeService {
         gpa: cases[0]?.gpaRange,
         sat: cases[0]?.satRange,
         toefl: cases[0]?.toeflRange,
-        nationality: profile?.nationality || undefined,
+        // 2026-05 Hall Plan C (security B3): nationality removed — never
+        // surfaced on the public swipe/challenge surface.
         targetMajor: profile?.targetMajor || undefined,
         ...aggregated,
       },
