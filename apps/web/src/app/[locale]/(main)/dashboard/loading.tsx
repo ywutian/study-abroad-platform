@@ -111,8 +111,15 @@ export default function DashboardLoading() {
                       <Skeleton key={i} className="h-24 rounded-[var(--theme-radius-card)]" />
                     ))}
                   </div>
+                  {/* Two-segment deadline strip — section header, then a
+                      segment label + a couple of rows (batch 3). */}
                   <Skeleton className="mb-3 mt-5 h-5 w-28" />
-                  <Skeleton className="h-20 rounded-[var(--theme-radius-card)]" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-24" />
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <Skeleton key={i} className="h-12 rounded-[var(--theme-radius-card)]" />
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>

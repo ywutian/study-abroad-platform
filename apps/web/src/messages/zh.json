@@ -361,6 +361,9 @@
       "deadlineOverdue": "已逾期 {count} 天",
       "deadlineToday": "今天截止",
       "deadlineDays": "{count} 天",
+      "deadlineSegmentUrgent": "紧急 · 7 天内",
+      "deadlineSegmentUpcoming": "即将到来",
+      "moreCritical": "另有 {count} 项紧急事项",
       "status": {
         "blocked": "阻塞",
         "attention": "需关注",
@@ -443,7 +446,6 @@
       "profileCompletion": "档案完成度",
       "schoolList": "选校清单",
       "pendingTasks": "待办任务",
-      "profileScore": "档案评分",
       "essayCount": "文书数",
       "followers": "粉丝",
       "points": "积分",

@@ -18,15 +18,14 @@ import {
   ListChecks,
   School,
   Sparkles,
-  TrendingUp,
   User,
 } from 'lucide-react';
 
 import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
 import {
-  getProfileGrade,
   toneFromReadinessStatus,
   toneFromSeverity,
+  type DashboardDeadlineItem,
   type DashboardPriorityItem,
   type DashboardTone,
   type DashboardWorkbench,
@@ -144,6 +143,38 @@ function PriorityKindIcon({
   }
 }
 
+/**
+ * 2026-05 dashboard redesign batch 3: a single deadline row. Extracted
+ * so the two-segment deadline strip (urgent ≤7d / upcoming) renders
+ * identical rows without duplicating the markup. `deadlineLabel` is
+ * passed pre-formatted so this stays a pure presentational component
+ * (no `useTranslations` needed).
+ */
+function DeadlineRow({
+  item,
+  deadlineLabel,
+}: {
+  item: DashboardDeadlineItem;
+  deadlineLabel: string;
+}) {
+  const meta = toneMeta[toneFromSeverity(item.severity)];
+  return (
+    <Link
+      href={item.href}
+      className="flex items-center gap-3 rounded-[var(--theme-radius-card)] border border-border px-3 py-2 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]"
+    >
+      <CircleAlert className={cn('h-4 w-4 shrink-0', meta.text)} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{item.title}</p>
+        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+      </div>
+      <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+        {deadlineLabel}
+      </span>
+    </Link>
+  );
+}
+
 export function DashboardCommandCenter({
   workbench,
   completingTaskId,
@@ -160,7 +191,6 @@ export function DashboardCommandCenter({
   const tStats = useTranslations('dashboard.stats');
   const topAction = workbench.priorityQueue[0];
   const topSeverity = toneMeta[topAction ? toneFromSeverity(topAction.severity) : 'neutral'];
-  const grade = getProfileGrade(completeness);
   // 2026-05 Phase 2.7 #28: grade-aware rhythm message. When the user's
   // Profile.grade is a known value, swap the generic rhythm subtitle for
   // a grade-specific one ("Submission season" for SENIOR vs "Long-term
@@ -185,6 +215,26 @@ export function DashboardCommandCenter({
     if (daysLeft === 0) return t('deadlineToday');
     return t('deadlineDays', { count: daysLeft });
   };
+  // 2026-05 dashboard redesign batch 3: multi-critical signal. The hero
+  // only renders priorityQueue[0]; when several critical items exist the
+  // others are visually demoted into the queue body below. Surface the
+  // count so a stressed user knows there are N fires, not 1. The queue
+  // is sorted critical-first, so any critical means [0] is critical —
+  // `criticalCount > 1` ⟺ topAction critical AND there are more.
+  const criticalCount = workbench.priorityQueue.filter(
+    (item) => item.severity === 'critical'
+  ).length;
+  // 2026-05 dashboard redesign batch 3: two-segment deadline strip. The
+  // old flat `.slice(0, 5)` list let an 8–30-day deadline ("you should
+  // START this essay now") fall off the bottom behind nearer items —
+  // the "deadline black hole". Partition into an urgent (≤7d, includes
+  // overdue) band and an everything-later band so mid-range deadlines
+  // always get a labelled home and a visible "act now" cue. Both bands
+  // render in full (no client slice): `deadlineStream` is already
+  // server-capped at 8 items, so there is nothing to silently truncate;
+  // the section-level "view timeline" link is the see-everything path.
+  const urgentDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft <= 7);
+  const upcomingDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft > 7);
 
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
@@ -252,6 +302,16 @@ export function DashboardCommandCenter({
                       <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
                         {topAction?.description ?? t('emptyDescription')}
                       </p>
+                      {/* 2026-05 batch 3: multi-critical cue — tell the
+                          user the hero is 1 of N fires, not the whole
+                          story. The other criticals render in the queue
+                          immediately below this card section. */}
+                      {criticalCount > 1 && (
+                        <Badge variant="destructive" className="mt-2">
+                          <CircleAlert className="h-3.5 w-3.5" />
+                          {t('moreCritical', { count: criticalCount - 1 })}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 )}
@@ -359,21 +419,17 @@ export function DashboardCommandCenter({
                               {t('runNow')}
                             </Badge>
                           )}
-                          {/* Profile row: surface the Profile Grade letter
-                              (independent signal from the contribution score). */}
-                          {item.key === 'profile' && (
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                'mt-2 px-1.5 py-0 text-2xs',
-                                grade.color,
-                                grade.bgColor
-                              )}
-                            >
-                              <TrendingUp className="h-3 w-3" />
-                              {tStats('profileScore')}: {grade.grade}
-                            </Badge>
-                          )}
+                          {/* 2026-05 dashboard redesign batch 3: the
+                              profile letter-grade chip (A–D, from
+                              getProfileGrade) was REMOVED. It was a third
+                              encoding of profile completeness — the same
+                              number already shown as `profileContribution/40`
+                              on this row and as a % in the onboarding
+                              banner. A letter grade on a completeness
+                              metric also reads like an academic transcript
+                              grade ("the platform gave my kid a C"), an
+                              emotional misfire for anxious applicants. One
+                              honest signal per number. */}
                           {/* Schools row: surface tier breakdown when at
                               least one school is listed. */}
                           {item.key === 'schools' && schoolCount > 0 && (
@@ -523,27 +579,36 @@ export function DashboardCommandCenter({
                   {t('viewTimeline')}
                 </Link>
               </div>
-              {workbench.deadlineStream.length > 0 ? (
-                <div className="space-y-2">
-                  {workbench.deadlineStream.slice(0, 5).map((item) => {
-                    const meta = toneMeta[toneFromSeverity(item.severity)];
-                    return (
-                      <Link
-                        key={`${item.type}-${item.id}`}
-                        href={item.href}
-                        className="flex items-center gap-3 rounded-[var(--theme-radius-card)] border border-border px-3 py-2 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]"
-                      >
-                        <CircleAlert className={cn('h-4 w-4 shrink-0', meta.text)} />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{item.title}</p>
-                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                        </div>
-                        <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                          {formatDeadline(item.daysLeft)}
-                        </span>
-                      </Link>
-                    );
-                  })}
+              {urgentDeadlines.length > 0 || upcomingDeadlines.length > 0 ? (
+                <div className="space-y-4">
+                  {urgentDeadlines.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-2xs font-semibold uppercase tracking-wide text-destructive">
+                        {t('deadlineSegmentUrgent')}
+                      </p>
+                      {urgentDeadlines.map((item) => (
+                        <DeadlineRow
+                          key={`${item.type}-${item.id}`}
+                          item={item}
+                          deadlineLabel={formatDeadline(item.daysLeft)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {upcomingDeadlines.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {t('deadlineSegmentUpcoming')}
+                      </p>
+                      {upcomingDeadlines.map((item) => (
+                        <DeadlineRow
+                          key={`${item.type}-${item.id}`}
+                          item={item}
+                          deadlineLabel={formatDeadline(item.daysLeft)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-[var(--theme-radius-card)] border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
