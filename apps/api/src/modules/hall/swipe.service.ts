@@ -120,6 +120,12 @@ export class SwipeService {
         ...CASE_REVIEW_APPROVED_WHERE,
         userId: { not: userId }, // 不显示自己的案例
         swipes: { none: { userId } }, // 未被该用户滑动过
+        // 2026-05 Hall Plan C (C3): exclude `deferred` cases from the
+        // guess-the-outcome deck. Deferred (early round → moved to RD,
+        // still pending) is NOT admit/reject/waitlist — there is no
+        // correct swipe for it, and mapping it to waitlist mis-grades
+        // the user and corrupts the calibration stat.
+        result: { in: ['ADMITTED', 'REJECTED', 'WAITLISTED'] },
       },
       include: SWIPE_CASE_INCLUDE,
       take: count * 2, // 多取一些用于随机打乱
@@ -604,11 +610,14 @@ export class SwipeService {
     prediction: SwipePrediction,
     actualResult: string,
   ): boolean {
+    // 2026-05 Hall Plan C (C3): `deferred` is intentionally NOT mapped.
+    // Deferred ≠ waitlisted — they are distinct admission states. Deferred
+    // cases are excluded from the deck (see getNextCases / getChallengeCase),
+    // so this map only ever sees the three real, guessable outcomes.
     const resultMap: Record<string, SwipePrediction> = {
       admitted: SwipePrediction.ADMIT,
       rejected: SwipePrediction.REJECT,
       waitlisted: SwipePrediction.WAITLIST,
-      deferred: SwipePrediction.WAITLIST, // 延期算候补
     };
 
     return resultMap[actualResult] === prediction;
@@ -665,6 +674,9 @@ export class SwipeService {
         userId: randomApplicant.userId,
         visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
         ...CASE_REVIEW_APPROVED_WHERE,
+        // 2026-05 Hall Plan C (C3): no `deferred` cases in the challenge
+        // deck — deferred is not a guessable admit/reject/waitlist outcome.
+        result: { in: ['ADMITTED', 'REJECTED', 'WAITLISTED'] },
       },
       include: SWIPE_CASE_INCLUDE,
       take: 10,

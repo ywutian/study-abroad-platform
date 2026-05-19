@@ -505,7 +505,10 @@ describe('SwipeService', () => {
       expect(result.isCorrect).toBe(true);
     });
 
-    it('should treat DEFERRED as WAITLIST', async () => {
+    // 2026-05 Hall Plan C (C3): deferred ≠ waitlisted — they are distinct
+    // admission states. Deferred cases are excluded from the deck and a
+    // WAITLIST guess on one no longer counts as correct.
+    it('does not treat DEFERRED as a correct WAITLIST guess', async () => {
       mockPrisma.admissionCase.findFirst.mockResolvedValue({
         ...mockCase,
         result: 'DEFERRED',
@@ -514,7 +517,7 @@ describe('SwipeService', () => {
         caseId: 'case-1',
         prediction: SwipePrediction.WAITLIST,
       });
-      expect(result.isCorrect).toBe(true);
+      expect(result.isCorrect).toBe(false);
     });
   });
 

@@ -226,13 +226,14 @@ export class HallVerifiedDashboardService {
         };
         grouped.set(c.schoolId, entry);
       }
-      const round = (c.round ?? '').toUpperCase();
-      // ED / EA / REA all count as the binding/early bucket for this view
-      if (
-        round.includes('ED') ||
-        round.includes('EA') ||
-        round.includes('REA')
-      ) {
+      const round = (c.round ?? '').toUpperCase().trim();
+      // 2026-05 Hall Plan C (C4): only BINDING Early Decision (ED / ED1 /
+      // ED2 / EDII) counts toward the `ed` bucket. EA / REA / SCEA are
+      // NON-binding — lumping them in overstated the "ED admit advantage"
+      // a Chinese family weighs when deciding whether to apply ED. A
+      // binding commitment is the real signal; a non-binding early app is
+      // not. Non-binding rounds fall to the `rd` bucket.
+      if (round.startsWith('ED')) {
         entry.ed += 1;
       } else {
         entry.rd += 1;
