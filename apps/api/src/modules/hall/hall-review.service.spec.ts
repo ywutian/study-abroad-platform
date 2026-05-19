@@ -300,11 +300,11 @@ describe('HallReviewService', () => {
 
       const result = await service.getReviewStats('user-1');
 
+      // 2026-05 Hall Plan C (C2b): numeric `averages` removed — only a
+      // count + qualitative top tags are surfaced.
       expect(result).not.toBeNull();
       expect(result!.reviewCount).toBe(2);
-      expect(result!.averages.academic).toBe(7);
-      expect(result!.averages.test).toBe(8);
-      expect(result!.averages.overall).toBe(7.5);
+      expect(result).not.toHaveProperty('averages');
       expect(result!.topTags[0]).toBe('strong-academic');
     });
   });

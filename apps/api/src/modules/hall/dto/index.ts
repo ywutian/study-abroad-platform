@@ -28,30 +28,34 @@ export class CreateReviewDto {
     minimum: 1,
     maximum: 10,
   })
+  // 2026-05 Hall Plan C (C2b): numeric scores are retired — optional now.
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(10)
-  academicScore: number;
+  academicScore?: number;
 
   @ApiProperty({
     description: 'Standardized test score (1-10)',
     minimum: 1,
     maximum: 10,
   })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(10)
-  testScore: number;
+  testScore?: number;
 
   @ApiProperty({
     description: 'Activity score (1-10)',
     minimum: 1,
     maximum: 10,
   })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(10)
-  activityScore: number;
+  activityScore?: number;
 
   @ApiProperty({
     description: 'Award score (1-10)',
@@ -59,16 +63,18 @@ export class CreateReviewDto {
     maximum: 10,
     default: 5,
   })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(10)
-  awardScore: number;
+  awardScore?: number;
 
   @ApiProperty({ description: 'Overall score (1-10)', minimum: 1, maximum: 10 })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(10)
-  overallScore: number;
+  overallScore?: number;
 
   @ApiPropertyOptional({ description: 'General comment (max 50000 chars)' })
   @IsOptional()

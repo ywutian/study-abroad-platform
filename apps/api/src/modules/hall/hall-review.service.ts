@@ -89,11 +89,16 @@ export class HallReviewService {
     }
 
     const reviewData = {
-      academicScore: data.academicScore,
-      testScore: data.testScore,
-      activityScore: data.activityScore,
-      awardScore: data.awardScore,
-      overallScore: data.overallScore,
+      // 2026-05 Hall Plan C (C2b): numeric scores are retired. The DTO
+      // fields are now optional; default missing values to a neutral 5 so
+      // the (still NOT NULL) Review columns write. Scores are no longer
+      // surfaced anywhere — getReviewStats dropped `averages`, the UI
+      // collects only qualitative feedback. The columns are dropped in C6.
+      academicScore: data.academicScore ?? 5,
+      testScore: data.testScore ?? 5,
+      activityScore: data.activityScore ?? 5,
+      awardScore: data.awardScore ?? 5,
+      overallScore: data.overallScore ?? 5,
       comment: data.comment,
       academicComment: data.academicComment,
       testComment: data.testComment,
@@ -288,8 +293,6 @@ export class HallReviewService {
 
     if (reviews.length === 0) return null;
 
-    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
-
     const tagCount: Record<string, number> = {};
     for (const r of reviews) {
       for (const tag of r.tags) {
@@ -301,16 +304,11 @@ export class HallReviewService {
       .slice(0, 5)
       .map(([tag]) => tag);
 
+    // 2026-05 Hall Plan C (C2b): `averages` removed. Untrained peers
+    // numerically grading each other produced a second, unreliable
+    // competitiveness authority that competed with prediction. The被评者
+    // now sees only a count + qualitative tags, never a "6.2/10" verdict.
     return {
-      averages: {
-        academic:
-          Math.round(avg(reviews.map((r) => r.academicScore)) * 10) / 10,
-        test: Math.round(avg(reviews.map((r) => r.testScore)) * 10) / 10,
-        activity:
-          Math.round(avg(reviews.map((r) => r.activityScore)) * 10) / 10,
-        award: Math.round(avg(reviews.map((r) => r.awardScore)) * 10) / 10,
-        overall: Math.round(avg(reviews.map((r) => r.overallScore)) * 10) / 10,
-      },
       reviewCount: reviews.length,
       topTags,
     };
@@ -474,20 +472,15 @@ export class HallReviewService {
 
     try {
       const tagStr = data.tags?.length ? `，标签：${data.tags.join('、')}` : '';
+      // 2026-05 Hall Plan C (C2b): record only that qualitative peer
+      // feedback was given — no numeric scores (they are retired).
       await this.memoryManager.remember(reviewerId, {
         type: MemoryType.DECISION,
         category: 'review_activity',
-        content: `用户对他人档案进行了锐评：学术${data.academicScore}分、标化${data.testScore}分、活动${data.activityScore}分、奖项${data.awardScore}分、综合${data.overallScore}分${tagStr}`,
+        content: `用户对他人档案给出了同伴反馈${tagStr}`,
         importance: 0.6,
         metadata: {
           profileUserId: data.profileUserId,
-          scores: {
-            academic: data.academicScore,
-            test: data.testScore,
-            activity: data.activityScore,
-            award: data.awardScore,
-            overall: data.overallScore,
-          },
           tags: data.tags,
           source: 'hall_review',
         },
