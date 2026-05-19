@@ -7,6 +7,7 @@ export {
   getDisplayRankings,
   getRankingListLabelKey,
   getRankingSourceLabel,
+  groupRankingsBySource,
   normalizeRankingListSelection,
   normalizeRankingSource,
   type RankingListOption,

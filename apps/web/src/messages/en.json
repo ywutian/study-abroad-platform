@@ -94,7 +94,12 @@
       "performingArts": "Performing Arts",
       "engineering": "Engineering",
       "cs": "CS",
-      "business": "Business"
+      "business": "Business",
+      "qsWorld": "World",
+      "theWorld": "World",
+      "arwuWorld": "World",
+      "forbesAmerica": "America",
+      "wsjUs": "US"
     },
     "rankingTooltip": "{source} {year} verified ranking",
     "rankingTooltipOverall": "US News undergraduate core view combines National Universities and Liberal Arts Colleges. It is a product default, not a single official overall list.",
@@ -6698,6 +6703,13 @@
     "supplemental": {
       "title": "Supplemental Information",
       "description": "Traceable non-official data sources and supplemental rankings"
+    },
+    "rankings": {
+      "title": "University Rankings",
+      "description": "Best result per ranking system. Global rankings (QS, THE, ARWU) cover research universities; liberal-arts and arts colleges may not appear.",
+      "empty": "No published rankings available for this school yet.",
+      "year": "{year}",
+      "sourceLink": "View {source} ranking source"
     },
     "supplementalRanking": "Supplemental ranking",
     "supplementalCampusLife": "Supplemental campus-life grades",

@@ -32,6 +32,7 @@
     "db:seed:competitions": "ts-node prisma/seed-competitions.ts",
     "db:seed:teams": "ts-node prisma/seed-teams.ts",
     "db:seed:theme-styles": "tsx scripts/seed-theme-style-library.ts",
+    "db:seed:rankings": "tsx scripts/closure-agents/collect-school-rankings.ts",
     "db:verify:seed": "tsx scripts/verify-seed.ts",
     "verify:school-facts": "ts-node --transpile-only scripts/verify-school-facts.ts",
     "gold:generate": "ts-node --transpile-only scripts/generate-application-analysis-gold-cases.ts",

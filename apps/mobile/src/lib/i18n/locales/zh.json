@@ -344,6 +344,7 @@
     "detail": {
       "overview": "学校概况",
       "rankings": "排名信息",
+      "rankingsEmpty": "暂无已发布的排名。",
       "admissions": "录取数据",
       "requirements": "申请要求",
       "deadlines": "申请截止日期",

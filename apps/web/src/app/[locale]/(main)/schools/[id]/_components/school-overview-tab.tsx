@@ -29,8 +29,8 @@ import {
   isSupplementalFieldSource,
 } from '@/components/features/schools/school-display-utils';
 import { TrustBadge } from '@/components/features/schools/TrustBadge';
-import { RankingBadge } from '@/components/ui/ranking-badge';
 import { SchoolCommunityRatingCard } from './school-community-rating-card';
+import { SchoolRankingsPanel } from './school-rankings-panel';
 import type { SchoolDetail } from './types';
 import { getSourceUrl } from './source-utils';
 
@@ -895,10 +895,12 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
       : null,
   ].filter(Boolean) as Array<{ label: string; source?: SchoolFieldSource }>;
 
+  const hasAnyRanking = Boolean(
+    school.usNewsRank || school.qsRank || (school.rankings?.length ?? 0) > 0
+  );
+
   const hasSupplementalSection =
-    Boolean(school.usNewsRank || school.qsRank) ||
-    supplementalMetricRows.length > 0 ||
-    supplementalBadges.length > 0;
+    hasAnyRanking || supplementalMetricRows.length > 0 || supplementalBadges.length > 0;
 
   return (
     <div className="space-y-6">
@@ -1191,31 +1193,11 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
             <CardDescription>{t('school.supplemental.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            {(school.usNewsRank || school.qsRank) && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{t('school.supplementalRanking')}</Badge>
-                </div>
-                {(school.rankings?.length || school.usNewsRank != null) && (
-                  <div className="flex items-center justify-between gap-3 py-2">
-                    <span className="text-sm text-muted-foreground">{t('school.usNewsRank')}</span>
-                    <RankingBadge rankings={school.rankings} usNewsRank={school.usNewsRank} />
-                  </div>
-                )}
-                {school.qsRank != null && (
-                  <StatRow
-                    label={t('school.qsRank')}
-                    value={`#${school.qsRank}`}
-                    source={getSchoolFieldSource(school, 'qsRank')}
-                    sourceUrl={getFieldSourceUrl(getSchoolFieldSource(school, 'qsRank'), school)}
-                  />
-                )}
-              </div>
-            )}
+            {hasAnyRanking && <SchoolRankingsPanel school={school} />}
 
             {supplementalMetricRows.length > 0 && (
               <>
-                {(school.usNewsRank || school.qsRank) && <Separator />}
+                {hasAnyRanking && <Separator />}
                 <div className="space-y-4">
                   {supplementalMetricRows.map((row, index) => (
                     <div key={row.label}>
@@ -1236,9 +1218,7 @@ export function SchoolOverviewTab({ school }: SchoolOverviewTabProps) {
 
             {supplementalBadges.length > 0 && (
               <>
-                {(school.usNewsRank || school.qsRank || supplementalMetricRows.length > 0) && (
-                  <Separator />
-                )}
+                {(hasAnyRanking || supplementalMetricRows.length > 0) && <Separator />}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Globe2 className="h-4 w-4 text-muted-foreground" />

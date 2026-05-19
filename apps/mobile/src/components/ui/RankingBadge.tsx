@@ -17,7 +17,17 @@ const LABELS: Record<string, string> = {
   artDesign: 'Art & Design',
   music: 'Music',
   engineering: 'Engineering',
+  qsWorld: 'World',
+  theWorld: 'World',
+  arwuWorld: 'World',
+  forbesAmerica: 'America',
+  wsjUs: 'US',
 };
+
+/** Shared list-label lookup for the multi-source rankings list. */
+export function getRankingListShortLabel(list: string): string {
+  return LABELS[getRankingListLabelKey(list)] ?? list;
+}
 
 interface RankingBadgeProps {
   rankings?: SchoolRanking[] | null;
