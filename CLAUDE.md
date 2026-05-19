@@ -142,14 +142,15 @@ Zod schema in `common/config/env.validation.ts`. Required in prod: `DATABASE_URL
 
 ## Skills (`.claude/skills/`)
 
-| Skill               | Purpose                                                                       |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `/review`           | Post-generation sensor — runs relevant agents on changed files                |
-| `/create-module`    | Scaffold NestJS module (controller + service + dto + BRIEF.md)                |
-| `/add-endpoint`     | Add REST endpoint (DTO, throttle, swagger, tests)                             |
-| `/feedback-triage`  | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release) |
-| `/audit-drift`      | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                 |
-| `/workflow-receipt` | Generate structured audit receipt after agent workflow                        |
+| Skill                 | Purpose                                                                       |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `/review`             | Post-generation sensor — runs relevant agents on changed files                |
+| `/create-module`      | Scaffold NestJS module (controller + service + dto + BRIEF.md)                |
+| `/add-endpoint`       | Add REST endpoint (DTO, throttle, swagger, tests)                             |
+| `/feedback-triage`    | 5-stage feedback pipeline (triage -> batch -> implement -> verify -> release) |
+| `/audit-drift`        | BRIEF.md vs code drift, rules accuracy, CLAUDE.md consistency                 |
+| `/workflow-receipt`   | Generate structured audit receipt after agent workflow                        |
+| `/multi-agent-debate` | Big/ambiguous change: parallel agent debate → batch → plan/implement/accept   |
 
 ## Rules Index
 
