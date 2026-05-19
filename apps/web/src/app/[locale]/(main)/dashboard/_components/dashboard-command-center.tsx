@@ -278,6 +278,14 @@ export function DashboardCommandCenter({
           : parallel?.hasInProgress
             ? 'inProgress'
             : null;
+  // 2026-05 batch 4 polish: when the hero already carries a multi-critical
+  // alarm ("+N more urgent items"), suppress the calm "applications are
+  // moving" hints (inProgress / submitted) — they read as contradictory
+  // next to a wall of fires. `accepted` / `waitlisted` still show: a real
+  // result is worth surfacing even amid open criticals.
+  const showParallelHint =
+    parallelHintKey != null &&
+    (criticalCount <= 1 || parallelHintKey === 'accepted' || parallelHintKey === 'waitlisted');
 
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
@@ -357,8 +365,10 @@ export function DashboardCommandCenter({
                       )}
                       {/* 2026-05 batch 4: parallel-tracks hint — one calm
                           line acknowledging that the focus card is 1 of
-                          several application tracks in flight. */}
-                      {parallelHintKey && (
+                          several application tracks in flight. Suppressed
+                          for the calm hints when a multi-critical alarm
+                          is already showing (see showParallelHint). */}
+                      {showParallelHint && parallelHintKey && (
                         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                           <span className="min-w-0">{t(`parallel.${parallelHintKey}`)}</span>

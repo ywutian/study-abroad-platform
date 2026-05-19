@@ -375,7 +375,7 @@
       },
       "status": {
         "blocked": "Blocked",
-        "attention": "Needs attention",
+        "attention": "Attention",
         "ready": "Ready"
       },
       "severity": {
