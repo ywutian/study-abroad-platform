@@ -59,7 +59,6 @@ describe('HallController', () => {
             getNextCases: jest.fn(),
             submitSwipe: jest.fn(),
             getStats: jest.fn(),
-            getLeaderboard: jest.fn(),
           },
         },
         {
@@ -472,17 +471,6 @@ describe('HallController', () => {
     const result = await controller.getSwipeStats(mockUser);
 
     expect(swipeService.getStats).toHaveBeenCalledWith('user-1');
-    expect(result).toEqual(expected);
-  });
-
-  it('GET /swipe/leaderboard should call swipeService.getLeaderboard with user.id and limit', async () => {
-    const query = { limit: 10 } as any;
-    const expected = { entries: [], userRank: 5 };
-    (swipeService.getLeaderboard as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.getLeaderboard(mockUser, query);
-
-    expect(swipeService.getLeaderboard).toHaveBeenCalledWith('user-1', 10);
     expect(result).toEqual(expected);
   });
 });

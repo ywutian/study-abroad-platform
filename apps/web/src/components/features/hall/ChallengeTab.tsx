@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   XCircle,
   GraduationCap,
-  Trophy,
   Award,
   BookOpen,
   Globe,
@@ -330,22 +329,19 @@ export function ChallengeTab() {
         })}
       </div>
 
-      {/* Result Summary */}
+      {/* Result Summary — 2026-05 Hall Plan C (C3): de-gamified. A plain
+          "how many you read correctly" debrief, no trophy/gradient framing. */}
       {result && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <Card className="border-amber-500/30 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20">
-            <CardContent className="flex items-center justify-between py-6 px-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg">
-                  <Trophy className="h-7 w-7" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{result.accuracy}%</p>
-                  <p className="text-sm text-muted-foreground">
-                    {result.correct}/{result.total} {t('challenge.correct')}
-                  </p>
-                </div>
-              </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card>
+            <CardContent className="flex items-center gap-3 py-5 px-6">
+              <Target className="h-5 w-5 shrink-0 text-emerald-500" />
+              <p className="text-sm text-muted-foreground">
+                {t('challenge.summary', {
+                  correct: result.correct,
+                  total: result.total,
+                })}
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -357,7 +353,7 @@ export function ChallengeTab() {
           <Button
             onClick={() => submitMutation.mutate(guesses)}
             disabled={!allGuessed || submitMutation.isPending}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1"
           >
             <Target className="h-4 w-4 mr-2" />
             {submitMutation.isPending ? t('challenge.submitting') : t('challenge.submit')}

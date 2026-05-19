@@ -238,24 +238,19 @@ export function ChallengeMode() {
         );
       })}
 
-      {/* Result summary or submit */}
+      {/* Result summary or submit — 2026-05 Hall Plan C (C3): de-gamified.
+          Plain "how many you read correctly" debrief, no reward line. */}
       {result ? (
         <Animated.View
           entering={FadeInUp.springify()}
-          style={[S.resultCard, { backgroundColor: c.primary + '12', borderColor: c.primary }]}
+          style={[S.resultCard, { backgroundColor: c.card, borderColor: c.border }]}
         >
-          <Text style={[S.resultAccuracy, { color: c.primary }]}>
-            {t('hall.challenge.accuracy', {
+          <Text style={[S.resultAccuracy, { color: c.foreground }]}>
+            {t('hall.challenge.summary', {
               correct: result.correct,
               total: result.total,
-              accuracy: result.accuracy,
             })}
           </Text>
-          {result.rewardEarned > 0 ? (
-            <Text style={[S.resultReward, { color: c.success }]}>
-              {t('hall.challenge.reward', { points: result.rewardEarned })}
-            </Text>
-          ) : null}
           <AnimatedButton onPress={startNew} style={{ marginTop: spacing.md }}>
             {t('hall.challenge.newChallenge')}
           </AnimatedButton>
@@ -372,12 +367,8 @@ const S = StyleSheet.create({
     alignItems: 'center',
   },
   resultAccuracy: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  resultReward: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: fontWeight.semibold,
-    marginTop: spacing.xs,
+    textAlign: 'center',
   },
 });

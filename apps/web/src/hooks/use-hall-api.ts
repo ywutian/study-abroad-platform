@@ -8,11 +8,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  hallRoutes,
-  pointsRedemptionRoutes,
-  API_ROUTES,
-} from '@study-abroad/shared';
+import { hallRoutes, pointsRedemptionRoutes, API_ROUTES } from '@study-abroad/shared';
 import type {
   HallOverviewPayload,
   AggregatedReviewPayload,
@@ -28,7 +24,6 @@ import type {
   SwipeBatchResponse,
   SwipeStats,
   SwipeResult,
-  LeaderboardResponse,
   RankingResult,
   AiAnalysisResult,
 } from '@/types/hall';
@@ -40,7 +35,6 @@ export const hallKeys = {
   all: ['hall'] as const,
   swipeCases: () => [...hallKeys.all, 'swipeCases'] as const,
   swipeStats: () => [...hallKeys.all, 'swipeStats'] as const,
-  leaderboard: () => [...hallKeys.all, 'leaderboard'] as const,
   targetRanking: () => [...hallKeys.all, 'targetRanking'] as const,
   ranking: (schoolIds: string[]) => [...hallKeys.all, 'ranking', ...schoolIds] as const,
   publicLists: () => [...hallKeys.all, 'publicLists'] as const,
@@ -79,15 +73,6 @@ export function useSwipeStats(enabled: boolean) {
   });
 }
 
-/** 获取排行榜 */
-export function useLeaderboard(enabled: boolean) {
-  return useQuery({
-    queryKey: hallKeys.leaderboard(),
-    queryFn: () => apiClient.get<LeaderboardResponse>(`${hallRoutes.swipe()}/leaderboard?limit=20`),
-    enabled,
-  });
-}
-
 /** 提交滑动预测 */
 export function useSwipeMutation() {
   const queryClient = useQueryClient();
@@ -97,7 +82,6 @@ export function useSwipeMutation() {
       apiClient.post<SwipeResult>(`${hallRoutes.swipe()}/predict`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hallKeys.swipeStats() });
-      queryClient.invalidateQueries({ queryKey: hallKeys.leaderboard() });
     },
   });
 }
@@ -154,9 +138,7 @@ export interface ReviewSwipeData {
   directionsPerStep: Partial<
     Record<'academic' | 'test' | 'activity' | 'award', ReviewSwipeDirection>
   >;
-  confidencePerStep?: Partial<
-    Record<'academic' | 'test' | 'activity' | 'award', number>
-  >;
+  confidencePerStep?: Partial<Record<'academic' | 'test' | 'activity' | 'award', number>>;
 }
 
 export interface SubmitReviewInput {
@@ -269,9 +251,7 @@ export function useReviewAggregate(profileUserId: string, enabled = true) {
   return useQuery({
     queryKey: hallKeys.reviewAggregate(profileUserId),
     queryFn: () =>
-      apiClient.get<AggregatedReviewPayload>(
-        hallRoutes.reviewAggregate(profileUserId),
-      ),
+      apiClient.get<AggregatedReviewPayload>(hallRoutes.reviewAggregate(profileUserId)),
     enabled: !!profileUserId && enabled,
     staleTime: 60_000,
   });
@@ -280,11 +260,7 @@ export function useReviewAggregate(profileUserId: string, enabled = true) {
 /** Report a review (sends to admin moderation queue via central Report table). */
 export function useReportReview() {
   return useMutation({
-    mutationFn: (data: {
-      reviewId: string;
-      reason: string;
-      detail?: string;
-    }) =>
+    mutationFn: (data: { reviewId: string; reason: string; detail?: string }) =>
       apiClient.post(hallRoutes.reviewReport(data.reviewId), {
         reason: data.reason,
         detail: data.detail,
@@ -358,9 +334,7 @@ export function useRedemptionCatalog(enabled = true) {
   return useQuery({
     queryKey: hallKeys.redemptionCatalog(),
     queryFn: () =>
-      apiClient.get<RedemptionCatalogItem[]>(
-        pointsRedemptionRoutes.redemptionsCatalog(),
-      ),
+      apiClient.get<RedemptionCatalogItem[]>(pointsRedemptionRoutes.redemptionsCatalog()),
     enabled,
     staleTime: 5 * 60_000,
   });
@@ -369,8 +343,7 @@ export function useRedemptionCatalog(enabled = true) {
 export function useRedemptionHistory(enabled = true) {
   return useQuery({
     queryKey: hallKeys.redemptionHistory(),
-    queryFn: () =>
-      apiClient.get(pointsRedemptionRoutes.redemptions() + '?limit=20'),
+    queryFn: () => apiClient.get(pointsRedemptionRoutes.redemptions() + '?limit=20'),
     enabled,
   });
 }
@@ -378,10 +351,7 @@ export function useRedemptionHistory(enabled = true) {
 export function useRedeem() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      type: RedemptionType;
-      metadata?: Record<string, unknown>;
-    }) =>
+    mutationFn: (data: { type: RedemptionType; metadata?: Record<string, unknown> }) =>
       apiClient.post<RedemptionResult>(pointsRedemptionRoutes.redemptions(), data),
     onSuccess: () => {
       // Balance changed; refresh overview + history.
@@ -404,7 +374,7 @@ export function useChinaAdmitTrend(schoolIds: string[] = [], years = 4) {
     queryKey: hallKeys.chinaAdmitTrend(schoolIds, years),
     queryFn: () =>
       apiClient.get<ChinaAdmitTrendResponse>(
-        `${hallRoutes.verifiedChinaAdmitTrend()}?${qs.toString()}`,
+        `${hallRoutes.verifiedChinaAdmitTrend()}?${qs.toString()}`
       ),
     staleTime: 5 * 60_000,
   });
@@ -418,7 +388,7 @@ export function useDifficultySignal(schoolIds: string[] = []) {
     queryKey: hallKeys.difficultySignal(schoolIds),
     queryFn: () =>
       apiClient.get<DifficultySignalEntry[]>(
-        `${hallRoutes.verifiedDifficultySignal()}${qs.toString() ? `?${qs}` : ''}`,
+        `${hallRoutes.verifiedDifficultySignal()}${qs.toString() ? `?${qs}` : ''}`
       ),
     staleTime: 5 * 60_000,
   });

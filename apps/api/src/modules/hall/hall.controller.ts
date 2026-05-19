@@ -67,8 +67,6 @@ import {
   SwipeBatchResultDto,
   SwipeResultDto,
   SwipeStatsDto,
-  LeaderboardDto,
-  LeaderboardQueryDto,
 } from './swipe-dto';
 
 @ApiTags('hall')
@@ -546,17 +544,6 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<SwipeStatsDto> {
     return this.swipeService.getStats(user.id);
-  }
-
-  @Get('swipe/leaderboard')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get leaderboard' })
-  @ApiResponse({ status: 200, type: LeaderboardDto })
-  async getLeaderboard(
-    @CurrentUser() user: CurrentUserPayload,
-    @Query() query: LeaderboardQueryDto,
-  ): Promise<LeaderboardDto> {
-    return this.swipeService.getLeaderboard(user.id, query.limit ?? 20);
   }
 
   // ============================================

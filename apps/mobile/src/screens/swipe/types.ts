@@ -1,8 +1,7 @@
 /**
- * Shared types, constants, and helpers for the Swipe Prediction Game.
+ * Shared types, constants, and helpers for the case study loop.
  */
 import { Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { spacing } from '@/utils/theme';
 
@@ -43,43 +42,20 @@ export interface SwipeBatchResultDto {
   meta: SwipeBatchMetaDto;
 }
 
+// 2026-05 Hall Plan C (C3): de-gamified. SwipeResult / SwipeStats no longer
+// carry points / streak / badge / dailyChallenge fields, and the leaderboard
+// types were removed entirely.
 export interface SwipeResultDto {
   caseId: string;
   prediction: 'admit' | 'reject' | 'waitlist';
   actualResult: string;
   isCorrect: boolean;
-  currentStreak: number;
-  pointsEarned: number;
-  badgeUpgraded: boolean;
-  currentBadge: string;
 }
 
 export interface SwipeStatsDto {
   totalSwipes: number;
   correctCount: number;
   accuracy: number;
-  currentStreak: number;
-  bestStreak: number;
-  badge: string;
-  toNextBadge: number;
-  dailyChallengeCount: number;
-  dailyChallengeTarget: number;
-}
-
-export interface LeaderboardEntryDto {
-  rank: number;
-  userId: string;
-  userName?: string;
-  accuracy: number;
-  totalSwipes: number;
-  correctCount?: number;
-  badge: string;
-  isCurrentUser?: boolean;
-}
-
-export interface LeaderboardDto {
-  entries: LeaderboardEntryDto[];
-  currentUserEntry?: LeaderboardEntryDto;
 }
 
 export type PredictionType = 'admit' | 'reject' | 'waitlist';
@@ -96,30 +72,6 @@ export const CARD_WIDTH = SCREEN_WIDTH - spacing.lg * 2;
 export const CARD_HEIGHT = SCREEN_HEIGHT * 0.52;
 export const BATCH_SIZE = 5;
 export const RELOAD_THRESHOLD = 2;
-
-export const BADGE_COLORS: Record<string, string> = {
-  bronze: '#CD7F32',
-  silver: '#C0C0C0',
-  gold: '#FFD700',
-  platinum: '#E5E4E2',
-  diamond: '#B9F2FF',
-};
-
-export const BADGE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  bronze: 'shield-outline',
-  silver: 'shield-half-outline',
-  gold: 'shield',
-  platinum: 'diamond-outline',
-  diamond: 'diamond',
-};
-
-export const BADGE_THRESHOLDS: Record<string, number> = {
-  bronze: 0,
-  silver: 100,
-  gold: 500,
-  platinum: 2000,
-  diamond: 5000,
-};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -141,17 +93,4 @@ export function getTierBgColor(rank?: number): string {
   if (rank <= 50) return '#6f7b58' + '10';
   if (rank <= 100) return '#f59e0b' + '10';
   return '#64748b' + '10';
-}
-
-export function getNextBadge(badge: string): string {
-  const normalized = normalizeBadge(badge);
-  const order = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
-  const idx = order.indexOf(normalized);
-  if (idx < order.length - 1) return order[idx + 1];
-  return normalized;
-}
-
-export function normalizeBadge(badge?: string | null): string {
-  if (!badge) return 'bronze';
-  return badge.toLowerCase();
 }

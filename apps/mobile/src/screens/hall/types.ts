@@ -11,11 +11,8 @@ import { useColors } from '@/utils/theme';
 export type {
   HallOverviewPayload,
   HallOverviewPoints,
-  HallOverviewSwipe,
-  HallOverviewDailyChallenge,
   HallOverviewReviewer,
   HallActivityEntry,
-  SwipeBadgeTier,
   ReviewerLevel,
   ReviewSwipeDirection,
   ReviewSwipeData,

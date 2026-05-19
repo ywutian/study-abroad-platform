@@ -273,8 +273,8 @@ Acceptance rate: ${clampPercentRate(admissionCase.school.acceptanceRate) != null
       const stats = await this.swipeService.getStats(userId);
 
       const systemPrompt = isZh
-        ? `你是数据分析师。根据用户的案例预测游戏统计数据，分析其预测能力和改进建议。`
-        : `You are a data analyst. Analyze the user's prediction game statistics and provide insights and improvement suggestions.`;
+        ? `你是数据分析师。根据用户的录取案例判断校准统计，分析其判断能力和改进建议。`
+        : `You are a data analyst. Analyze the user's admission-case calibration statistics and provide insights and improvement suggestions.`;
 
       const analysis = await this.llmService.chatSimple(
         [
@@ -283,25 +283,19 @@ Acceptance rate: ${clampPercentRate(admissionCase.school.acceptanceRate) != null
             role: 'user',
             content: isZh
               ? `
-用户预测统计：
-- 总预测次数：${stats.totalSwipes}
+用户判断校准统计：
+- 总判断次数：${stats.totalSwipes}
 - 正确次数：${stats.correctCount}
 - 准确率：${stats.accuracy}%
-- 当前连胜：${stats.currentStreak}
-- 最佳连胜：${stats.bestStreak}
-- 等级：${stats.badge}
 
-请分析用户的预测能力特点，并给出提高准确率的建议。`
+请分析用户的判断能力特点，并给出提高准确率的建议。`
               : `
-User prediction statistics:
-- Total predictions: ${stats.totalSwipes}
+User calibration statistics:
+- Total judgements: ${stats.totalSwipes}
 - Correct: ${stats.correctCount}
 - Accuracy: ${stats.accuracy}%
-- Current streak: ${stats.currentStreak}
-- Best streak: ${stats.bestStreak}
-- Badge: ${stats.badge}
 
-Analyze the user's prediction strengths and provide tips to improve accuracy.`,
+Analyze the user's judgement strengths and provide tips to improve accuracy.`,
           },
         ],
         { temperature: 0.5 },
@@ -310,9 +304,8 @@ Analyze the user's prediction strengths and provide tips to improve accuracy.`,
       return {
         stats: {
           totalSwipes: stats.totalSwipes,
+          correctCount: stats.correctCount,
           accuracy: stats.accuracy,
-          bestStreak: stats.bestStreak,
-          badge: stats.badge,
         },
         analysis,
       };

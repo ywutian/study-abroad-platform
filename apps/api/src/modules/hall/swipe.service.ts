@@ -8,12 +8,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { fireAndForget } from '../../common/utils/async.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import {
-  Prisma,
-  Visibility,
-  MemoryType,
-  DataReviewStatus,
-} from '@prisma/client';
+import { Prisma, Visibility, MemoryType } from '@prisma/client';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import { ERR } from '../../common/constants/error-messages';
 import {
@@ -22,30 +17,9 @@ import {
   SwipeResultDto,
   SwipeStatsDto,
   SwipeBatchResultDto,
-  LeaderboardDto,
-  LeaderboardEntryDto,
   SwipePrediction,
-  SwipeBadge,
 } from './swipe-dto';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { PointsService, PointAction } from '../points/incentive.service';
-import { PointsConfigService } from '../points/points-config.service';
-
-// 徽章升级阈值
-const BADGE_THRESHOLDS = {
-  bronze: 0,
-  silver: 20,
-  gold: 50,
-  platinum: 100,
-  diamond: 200,
-};
-
-// 每日挑战目标
-const DAILY_CHALLENGE_TARGET = 10;
-
-// Streak bonus multiplier
-const POINTS_STREAK_BONUS = 2;
-const MAX_POINTS_PER_SWIPE = 20;
 
 // Prisma include 类型定义 — 含学校 + 用户档案 (活动、奖项、成绩)
 const SWIPE_CASE_INCLUDE = {
@@ -95,8 +69,6 @@ export class SwipeService {
 
   constructor(
     private prisma: PrismaService,
-    private pointsService: PointsService,
-    private pointsConfig: PointsConfigService,
     @Optional()
     private memoryManager?: MemoryManagerService,
   ) {}
@@ -184,36 +156,14 @@ export class SwipeService {
     const isCorrect = this.checkPrediction(dto.prediction, actualResult);
 
     // 获取或创建统计（upsert 消除竞态条件）
-    const stats = await this.prisma.swipeStats.upsert({
+    // 2026-05 Hall Plan C (C3): de-gamified. We keep only the private
+    // calibration counters (totalSwipes / correctCount) — no streak, no
+    // badge, no daily challenge, no points award.
+    await this.prisma.swipeStats.upsert({
       where: { userId },
       create: { userId },
       update: {},
     });
-
-    // 计算更新值
-    const today = this.getUtcDateString();
-    const statsToday = stats.dailyChallengeDate
-      ? this.getUtcDateString(stats.dailyChallengeDate)
-      : null;
-    const isNewDay = statsToday !== today;
-
-    const newStreak = isCorrect ? stats.streak + 1 : 0;
-    const newBestStreak = Math.max(stats.bestStreak, newStreak);
-    const newCorrectCount = stats.correctCount + (isCorrect ? 1 : 0);
-    const newBadge = this.calculateBadge(newCorrectCount);
-    const badgeUpgraded = newBadge !== stats.badge;
-
-    // 计算积分 (base value from config)
-    const baseSwipePoints = await this.pointsConfig.getPointValue(
-      PointAction.SWIPE_CORRECT,
-    );
-    let pointsEarned = 0;
-    if (isCorrect) {
-      pointsEarned =
-        baseSwipePoints +
-        (newStreak > 1 ? POINTS_STREAK_BONUS * (newStreak - 1) : 0);
-      pointsEarned = Math.min(pointsEarned, MAX_POINTS_PER_SWIPE);
-    }
 
     // 事务更新（直接 create，用 P2002 catch 处理重复提交）
     try {
@@ -228,34 +178,15 @@ export class SwipeService {
             isCorrect,
           },
         }),
-        // 更新统计
+        // 更新统计（仅累加 totalSwipes / correctCount）
         this.prisma.swipeStats.update({
           where: { userId },
           data: {
             totalSwipes: { increment: 1 },
-            correctCount: newCorrectCount,
-            streak: newStreak,
-            bestStreak: newBestStreak,
-            badge: newBadge,
-            dailyChallengeDate: new Date(),
-            dailyChallengeCount: isNewDay ? 1 : { increment: 1 },
+            correctCount: isCorrect ? { increment: 1 } : undefined,
           },
         }),
       ]);
-
-      // Award points outside transaction via centralized service
-      if (pointsEarned > 0) {
-        fireAndForget(
-          this.pointsService.adjustPoints(
-            userId,
-            PointAction.SWIPE_CORRECT,
-            { caseId: dto.caseId, streak: newStreak },
-            pointsEarned,
-          ),
-          this.logger,
-          'Failed to award swipe points',
-        );
-      }
     } catch (error) {
       // P2002: 唯一约束冲突 — 用户已对此案例提交过预测
       if (
@@ -272,10 +203,6 @@ export class SwipeService {
       prediction: dto.prediction,
       actualResult,
       isCorrect,
-      currentStreak: newStreak,
-      pointsEarned,
-      badgeUpgraded,
-      currentBadge: newBadge as SwipeBadge,
     };
 
     // 记录到记忆系统（异步，不阻塞响应）
@@ -286,7 +213,6 @@ export class SwipeService {
         dto.prediction,
         actualResult,
         isCorrect,
-        newStreak,
       ),
       this.logger,
       'Failed to save swipe to memory',
@@ -299,6 +225,10 @@ export class SwipeService {
 
   /**
    * 获取用户统计
+   *
+   * 2026-05 Hall Plan C (C3): de-gamified. Returns only the private,
+   * self-only calibration accuracy (total / correct / accuracy). This stat
+   * is visible to the user alone and is never aggregated into a leaderboard.
    *
    * 使用 upsert 替代 find-then-create，消除竞态条件
    */
@@ -314,131 +244,10 @@ export class SwipeService {
         ? Math.round((stats.correctCount / stats.totalSwipes) * 100)
         : 0;
 
-    const toNextBadge = this.getToNextBadge(stats.correctCount, stats.badge);
-
-    // 检查今日挑战（使用 UTC 日期，避免时区问题）
-    const today = this.getUtcDateString();
-    const dailyCount =
-      stats.dailyChallengeDate &&
-      this.getUtcDateString(stats.dailyChallengeDate) === today
-        ? stats.dailyChallengeCount
-        : 0;
-
     return {
       totalSwipes: stats.totalSwipes,
       correctCount: stats.correctCount,
       accuracy,
-      currentStreak: stats.streak,
-      bestStreak: stats.bestStreak,
-      badge: stats.badge as SwipeBadge,
-      toNextBadge,
-      dailyChallengeCount: dailyCount,
-      dailyChallengeTarget: DAILY_CHALLENGE_TARGET,
-    };
-  }
-
-  // ============ 排行榜 ============
-
-  /**
-   * 获取排行榜
-   *
-   * 隐私保护: userId 脱敏，userName 仅显示首字符 + **
-   */
-  async getLeaderboard(
-    userId: string,
-    limit: number = 20,
-  ): Promise<LeaderboardDto> {
-    const topUsers = await this.prisma.swipeStats.findMany({
-      where: { totalSwipes: { gte: 10 } }, // 至少 10 次滑动才能上榜
-      orderBy: [
-        { correctCount: 'desc' },
-        { totalSwipes: 'asc' }, // 同正确数时，滑动次数少的优先
-      ],
-      take: limit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            profile: {
-              select: { realName: true },
-            },
-          },
-        },
-      },
-    });
-
-    const entries: LeaderboardEntryDto[] = topUsers.map((stats, index) => {
-      const isCurrentUser = stats.userId === userId;
-      return {
-        rank: index + 1,
-        userId: isCurrentUser ? stats.userId : this.maskUserId(stats.userId),
-        userName: isCurrentUser
-          ? stats.user.profile?.realName || `用户${stats.userId.slice(-4)}`
-          : this.maskUserName(stats.user.profile?.realName, stats.userId),
-        accuracy:
-          stats.totalSwipes > 0
-            ? Math.round((stats.correctCount / stats.totalSwipes) * 100)
-            : 0,
-        totalSwipes: stats.totalSwipes,
-        correctCount: stats.correctCount,
-        badge: stats.badge as SwipeBadge,
-        isCurrentUser,
-      };
-    });
-
-    // 获取当前用户排名
-    let currentUserEntry: LeaderboardEntryDto | undefined;
-    const currentUserInTop = entries.find((e) => e.isCurrentUser);
-
-    if (!currentUserInTop) {
-      const userStats = await this.prisma.swipeStats.findUnique({
-        where: { userId },
-        include: {
-          user: {
-            select: {
-              profile: { select: { realName: true } },
-            },
-          },
-        },
-      });
-
-      if (userStats && userStats.totalSwipes >= 10) {
-        // 计算用户排名
-        const rankAbove = await this.prisma.swipeStats.count({
-          where: {
-            OR: [
-              { correctCount: { gt: userStats.correctCount } },
-              {
-                correctCount: userStats.correctCount,
-                totalSwipes: { lt: userStats.totalSwipes },
-              },
-            ],
-            totalSwipes: { gte: 10 },
-          },
-        });
-
-        currentUserEntry = {
-          rank: rankAbove + 1,
-          userId,
-          userName:
-            userStats.user.profile?.realName || `用户${userId.slice(-4)}`,
-          accuracy:
-            userStats.totalSwipes > 0
-              ? Math.round(
-                  (userStats.correctCount / userStats.totalSwipes) * 100,
-                )
-              : 0,
-          totalSwipes: userStats.totalSwipes,
-          correctCount: userStats.correctCount,
-          badge: userStats.badge as SwipeBadge,
-          isCurrentUser: true,
-        };
-      }
-    }
-
-    return {
-      entries,
-      currentUserEntry: currentUserInTop || currentUserEntry,
     };
   }
 
@@ -446,6 +255,10 @@ export class SwipeService {
 
   /**
    * 保存滑动预测到记忆系统
+   *
+   * 2026-05 Hall Plan C (C3): de-gamified. Only the substantive learning
+   * signal — a wrong guess — is recorded, to help the AI agent understand
+   * where the user mis-calibrates. No streak / achievement memory writes.
    */
   private async saveSwipeToMemory(
     userId: string,
@@ -453,55 +266,38 @@ export class SwipeService {
     prediction: SwipePrediction,
     actualResult: string,
     isCorrect: boolean,
-    streak: number,
   ): Promise<void> {
     if (!this.memoryManager) return;
+    if (isCorrect) return;
 
-    // 记录用户的判断决策（仅在连胜达到一定程度或判断错误时记录）
-    if (!isCorrect || streak >= 5) {
-      const predictionText =
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-        prediction === 'admit'
-          ? '录取'
-          : // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-            prediction === 'reject'
-            ? '拒绝'
-            : '候补';
-      const actualText =
-        actualResult === 'admitted'
-          ? '录取'
-          : actualResult === 'rejected'
-            ? '拒绝'
-            : '候补';
+    const predictionText =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+      prediction === 'admit'
+        ? '录取'
+        : // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+          prediction === 'reject'
+          ? '拒绝'
+          : '候补';
+    const actualText =
+      actualResult === 'admitted'
+        ? '录取'
+        : actualResult === 'rejected'
+          ? '拒绝'
+          : '候补';
 
-      await this.memoryManager.remember(userId, {
-        type: MemoryType.DECISION,
-        category: 'swipe_prediction',
-        content: isCorrect
-          ? `案例预测游戏：连续正确 ${streak} 次！用户对录取判断能力较强`
-          : `案例预测游戏：预测为${predictionText}，实际${actualText}。${admissionCase.major ? `专业：${admissionCase.major}` : ''}`,
-        importance: isCorrect ? 0.5 : 0.6,
-        metadata: {
-          caseId: admissionCase.id,
-          prediction,
-          actualResult,
-          isCorrect,
-          streak,
-          source: 'swipe_service',
-        },
-      });
-    }
-
-    // 徽章升级时记录
-    if (streak > 0 && streak % 10 === 0) {
-      await this.memoryManager.remember(userId, {
-        type: MemoryType.FACT,
-        category: 'achievement',
-        content: `案例预测游戏达成 ${streak} 连胜成就`,
-        importance: 0.4,
-        metadata: { streak, source: 'swipe_service' },
-      });
-    }
+    await this.memoryManager.remember(userId, {
+      type: MemoryType.DECISION,
+      category: 'swipe_prediction',
+      content: `案例预测：预测为${predictionText}，实际${actualText}。${admissionCase.major ? `专业：${admissionCase.major}` : ''}`,
+      importance: 0.6,
+      metadata: {
+        caseId: admissionCase.id,
+        prediction,
+        actualResult,
+        isCorrect,
+        source: 'swipe_service',
+      },
+    });
   }
 
   // ============ Helper Methods ============
@@ -584,28 +380,6 @@ export class SwipeService {
     return arr;
   }
 
-  /** 获取 UTC 日期字符串 (YYYY-MM-DD)，避免时区问题 */
-  private getUtcDateString(date?: Date): string {
-    const d = date ?? new Date();
-    return d.toISOString().split('T')[0];
-  }
-
-  /** 脱敏用户 ID: 仅保留最后 4 位 */
-  private maskUserId(userId: string): string {
-    return `****${userId.slice(-4)}`;
-  }
-
-  /** 脱敏用户名: 首字符 + ** */
-  private maskUserName(
-    realName: string | null | undefined,
-    userId: string,
-  ): string {
-    if (realName && realName.length > 0) {
-      return `${realName.charAt(0)}**`;
-    }
-    return `用户${userId.slice(-4)}`;
-  }
-
   private checkPrediction(
     prediction: SwipePrediction,
     actualResult: string,
@@ -621,27 +395,6 @@ export class SwipeService {
     };
 
     return resultMap[actualResult] === prediction;
-  }
-
-  private calculateBadge(correctCount: number): string {
-    if (correctCount >= BADGE_THRESHOLDS.diamond) return 'diamond';
-    if (correctCount >= BADGE_THRESHOLDS.platinum) return 'platinum';
-    if (correctCount >= BADGE_THRESHOLDS.gold) return 'gold';
-    if (correctCount >= BADGE_THRESHOLDS.silver) return 'silver';
-    return 'bronze';
-  }
-
-  private getToNextBadge(correctCount: number, currentBadge: string): number {
-    const badgeOrder = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
-    const currentIndex = badgeOrder.indexOf(currentBadge);
-
-    if (currentIndex === badgeOrder.length - 1) return 0;
-
-    const nextBadge = badgeOrder[currentIndex + 1];
-    return (
-      BADGE_THRESHOLDS[nextBadge as keyof typeof BADGE_THRESHOLDS] -
-      correctCount
-    );
   }
 
   // ============ Community Challenge ============
@@ -746,15 +499,14 @@ export class SwipeService {
       cases.length > 0 ? Math.round((correct / cases.length) * 100) : 0;
 
     // ============================================================
-    // Hall refactor Phase 1: persist the attempt + award daily reward
-    // (previously this method only returned in-memory results — no
-    //  persistence, no leaderboard, no challenge history possible)
+    // 2026-05 Hall Plan C (C3): de-gamified. The attempt is still
+    // persisted (full per-school debrief history is genuinely useful),
+    // but no points are awarded — `submitChallenge` no longer reads or
+    // writes PointHistory / PointsService.
     // ============================================================
     let attemptId: string | null = null;
-    let rewardEarned = 0;
     const applicantUserId = cases[0]?.userId;
     if (applicantUserId && cases.length > 0) {
-      // Persist regardless of reward (we want full attempt history).
       const attempt = await this.prisma.challengeAttempt.create({
         data: {
           userId,
@@ -767,69 +519,12 @@ export class SwipeService {
         },
       });
       attemptId = attempt.id;
-
-      // Daily limit: reward CHALLENGE_COMPLETE at most once per UTC day.
-      const todayStart = new Date();
-      todayStart.setUTCHours(0, 0, 0, 0);
-      const alreadyRewardedToday = await this.prisma.pointHistory.findFirst({
-        where: {
-          userId,
-          action: PointAction.CHALLENGE_COMPLETE,
-          createdAt: { gte: todayStart },
-        },
-        select: { id: true },
-      });
-      if (!alreadyRewardedToday) {
-        // Read configured value so the response can show the expected reward
-        // even though we write via fireAndForget. If admin set this to 0 the
-        // client will simply skip the "+N points" toast.
-        rewardEarned = await this.pointsConfig.getPointValue(
-          PointAction.CHALLENGE_COMPLETE,
-        );
-        // fireAndForget so a points failure never blocks the response.
-        fireAndForget(
-          this.pointsService.adjustPoints(
-            userId,
-            PointAction.CHALLENGE_COMPLETE,
-            {
-              attemptId,
-              applicantUserId,
-              correct,
-              total: cases.length,
-              accuracy,
-            },
-          ),
-          this.logger,
-          'Failed to award challenge points',
-        );
-      }
-    }
-
-    // Memory integration: record challenge results
-    if (this.memoryManager) {
-      try {
-        await this.memoryManager.remember(userId, {
-          type: MemoryType.DECISION,
-          category: 'challenge_prediction',
-          content: `社区挑战：${correct}/${cases.length} 正确 (${accuracy}%)`,
-          importance: accuracy >= 80 ? 0.6 : 0.4,
-          metadata: {
-            correct,
-            total: cases.length,
-            accuracy,
-            source: 'challenge',
-          },
-        });
-      } catch (err) {
-        this.logger.warn('Failed to save challenge memory', err);
-      }
     }
 
     // Shape matches shared `ChallengeAttemptResult` so web/mobile can rely
-    // on `attemptId` for deep-links and `rewardEarned` for "+N points" toasts.
+    // on `attemptId` for deep-links.
     return {
       attemptId,
-      rewardEarned,
       results,
       correct,
       total: cases.length,

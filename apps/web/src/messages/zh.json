@@ -2960,27 +2960,6 @@
       "reviewDesc": "同伴 Tinder 滑评，帮你看清档案在群体直觉中的样子",
       "pathDesc": "学长之路：研究真实申请档案，AI 复盘帮你建立招生官思维"
     },
-    "hero": {
-      "points": "积分",
-      "today": "今日 +{count}",
-      "streak": "连胜",
-      "best": "{badge} · 最佳 {count}",
-      "reviewer": "评审者",
-      "credit": "信用 {count}",
-      "dailyChallenge": "每日挑战",
-      "badges": {
-        "bronze": "青铜",
-        "silver": "白银",
-        "gold": "黄金",
-        "platinum": "铂金",
-        "diamond": "钻石"
-      },
-      "reviewerLevels": {
-        "L1": "学习者",
-        "L2": "同侪",
-        "L3": "资深"
-      }
-    },
     "path": {
       "modes": {
         "single": {
@@ -3011,7 +2990,7 @@
       "schools": "所学校",
       "selectResult": "选择结果...",
       "yourGuess": "你的猜测",
-      "correct": "正确",
+      "summary": "你判断对了 {total} 个结果中的 {correct} 个。",
       "submit": "提交预测",
       "submitting": "提交中...",
       "newChallenge": "新挑战",
@@ -3023,10 +3002,8 @@
       }
     },
     "tinder": {
-      "title": "案例预测",
-      "description": "猜测申请者的录取结果，赢取积分",
-      "correctToast": "预测正确！+{points} 积分",
-      "incorrectToast": "预测错误，实际结果：{result}",
+      "title": "案例判断",
+      "description": "阅读真实申请者的档案，先判断录取结果，再和真实结果对照",
       "emptyPool": "暂无更多申请者",
       "emptyPoolDesc": "稍后再来查看新的申请者",
       "emptyPoolAction": "刷新",
@@ -3034,14 +3011,11 @@
       "allSwipedDesc": "你已经评估了所有申请者",
       "restart": "重新开始"
     },
-    "stats": {
-      "accuracy": "准确率",
-      "accuracyCompact": "{value}% 准确率",
-      "correctOf": "{correct}/{total} 次正确",
-      "currentStreak": "当前连胜",
-      "bestStreak": "最佳连胜",
-      "totalPredictions": "总预测",
-      "correctPredictions": "正确预测"
+    "calibration": {
+      "title": "你的判断校准",
+      "description": "你的判断与真实结果吻合的比例 —— 仅你自己可见",
+      "accuracyLabel": "准确率",
+      "correctOf": "{total} 次判断中对了 {correct} 次"
     },
     "review": {
       "submitSuccess": "锐评提交成功",
@@ -3330,30 +3304,8 @@
     "result": {
       "correct": "判断正确",
       "wrong": "判断错误",
-      "actual": "实际结果",
-      "points": "积分",
-      "streak": "连胜"
+      "actual": "实际结果"
     },
-    "leaderboard": {
-      "title": "排行榜",
-      "you": "你",
-      "yourRank": "你的排名",
-      "predictions": "预测次数",
-      "correct": "正确次数",
-      "accuracy": "准确率",
-      "empty": "暂无数据",
-      "emptyDesc": "还没有人参与排行",
-      "userFallback": "匿名用户"
-    },
-    "dailyChallenge": {
-      "title": "每日挑战",
-      "progress": "进度",
-      "remaining": "剩余",
-      "completed": "已完成",
-      "challengeComplete": "挑战完成！",
-      "keepItUp": "继续保持！"
-    },
-    "badgeProgress": "徽章进度",
     "noTestScores": "暂无标化成绩",
     "scoreLabel": "分数",
     "noAwards": "暂无获奖经历",

@@ -1,6 +1,10 @@
 /**
- * StatsView — Full-screen stats and leaderboard view.
- * Shows badge hero, stats grid, daily challenge progress, and leaderboard.
+ * StatsView — private calibration-accuracy view for the case study loop.
+ *
+ * 2026-05 Hall Plan C (C3): de-gamified. The badge hero, streak cards, daily
+ * challenge progress and leaderboard were removed. What remains is the
+ * private calibration stat (total / correct / accuracy) — visible only to
+ * the user, never aggregated into a leaderboard.
  */
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
@@ -11,23 +15,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Loading, ProgressBar } from '@/components/ui';
+import { Loading } from '@/components/ui';
 import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
 
-import {
-  SwipeStatsDto,
-  LeaderboardDto,
-  LeaderboardEntryDto,
-  SCREEN_WIDTH,
-  BADGE_COLORS,
-  BADGE_ICONS,
-  BADGE_THRESHOLDS,
-  getNextBadge,
-  normalizeBadge,
-} from './types';
-import LeaderboardItem from './LeaderboardItem';
+import { SwipeStatsDto, SCREEN_WIDTH } from './types';
 
 interface StatsViewProps {
   onBack: () => void;
@@ -43,29 +36,6 @@ export default function StatsView({ onBack }: StatsViewProps) {
     queryFn: () => apiClient.get<SwipeStatsDto>(`${API_ROUTES.HALLS}/swipe/stats`),
     staleTime: 30_000,
   });
-
-  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardDto>({
-    queryKey: ['swipe', 'leaderboard'],
-    queryFn: () =>
-      apiClient.get<LeaderboardDto>(`${API_ROUTES.HALLS}/swipe/leaderboard`, {
-        params: { limit: 20 },
-      }),
-    staleTime: 60_000,
-  });
-
-  const badge = normalizeBadge(stats?.badge);
-  const badgeColor = BADGE_COLORS[badge] || BADGE_COLORS.bronze;
-  const badgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.bronze;
-  const nextBadgeName = getNextBadge(badge);
-  const nextBadgeThreshold = BADGE_THRESHOLDS[nextBadgeName] || 0;
-  const currentThreshold = BADGE_THRESHOLDS[badge] || 0;
-  const progressToNext = stats
-    ? Math.min(
-        ((stats.totalSwipes - currentThreshold) / (nextBadgeThreshold - currentThreshold || 1)) *
-          100,
-        100
-      )
-    : 0;
 
   return (
     <ScrollView
@@ -90,32 +60,23 @@ export default function StatsView({ onBack }: StatsViewProps) {
 
       {statsLoading ? (
         <Loading text={t('swipe.loading')} />
-      ) : stats ? (
+      ) : stats && stats.totalSwipes > 0 ? (
         <>
-          {/* Badge hero */}
+          {/* Calibration hero */}
           <Animated.View
             entering={FadeInDown.duration(400).springify()}
-            style={[styles.badgeHero, { backgroundColor: badgeColor + '12' }]}
+            style={[styles.calibrationHero, { backgroundColor: c.card, borderColor: c.border }]}
           >
-            <Ionicons name={badgeIcon} size={56} color={badgeColor} />
-            <Text style={[styles.badgeName, { color: badgeColor }]}>
-              {t(`swipe.badges.${badge.toLowerCase()}`)}
+            <Ionicons name="locate-outline" size={40} color={c.success} />
+            <Text style={[styles.calibrationValue, { color: c.foreground }]}>
+              {Math.round(stats.accuracy)}%
             </Text>
-            {badge !== 'diamond' && (
-              <View style={styles.badgeProgress}>
-                <ProgressBar
-                  value={progressToNext}
-                  max={100}
-                  color={BADGE_COLORS[nextBadgeName]}
-                  label={`${t(`swipe.badges.${badge.toLowerCase()}`)} → ${t(`swipe.badges.${nextBadgeName.toLowerCase()}`)}`}
-                  showValue
-                  size="md"
-                />
-                <Text style={[styles.badgeProgressHint, { color: c.foregroundMuted }]}>
-                  {t('swipe.toNextBadge', { count: stats.toNextBadge })}
-                </Text>
-              </View>
-            )}
+            <Text style={[styles.calibrationLabel, { color: c.foregroundMuted }]}>
+              {t('swipe.calibration.title')}
+            </Text>
+            <Text style={[styles.calibrationHint, { color: c.foregroundMuted }]}>
+              {t('swipe.calibration.description')}
+            </Text>
           </Animated.View>
 
           {/* Stats grid */}
@@ -128,86 +89,21 @@ export default function StatsView({ onBack }: StatsViewProps) {
             </View>
             <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
               <Text style={[styles.statsCardValue, { color: c.success }]}>
-                {Math.round(stats.accuracy)}%
+                {stats.correctCount}
               </Text>
               <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
-                {t('swipe.accuracy')}
+                {t('swipe.correctCount')}
               </Text>
             </View>
-            <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: c.warning }]}>
-                {stats.currentStreak}
-              </Text>
-              <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
-                {t('swipe.streak')}
-              </Text>
-            </View>
-            <View style={[styles.statsCard, { backgroundColor: c.card, borderColor: c.border }]}>
-              <Text style={[styles.statsCardValue, { color: c.violet }]}>{stats.bestStreak}</Text>
-              <Text style={[styles.statsCardLabel, { color: c.foregroundMuted }]}>
-                {t('swipe.bestStreak')}
-              </Text>
-            </View>
-          </Animated.View>
-
-          {/* Daily challenge */}
-          <Animated.View
-            entering={FadeInUp.delay(200).springify()}
-            style={[styles.dailyChallenge, { backgroundColor: c.card, borderColor: c.border }]}
-          >
-            <View style={styles.dailyChallengeHeader}>
-              <Ionicons name="today-outline" size={20} color={c.primary} />
-              <Text style={[styles.dailyChallengeTitle, { color: c.foreground }]}>
-                {t('swipe.dailyChallenge')}
-              </Text>
-            </View>
-            <ProgressBar
-              value={stats.dailyChallengeCount}
-              max={stats.dailyChallengeTarget}
-              color={
-                stats.dailyChallengeCount >= stats.dailyChallengeTarget ? c.success : c.primary
-              }
-              label={`${stats.dailyChallengeCount} / ${stats.dailyChallengeTarget}`}
-              showValue
-              size="lg"
-            />
-            {stats.dailyChallengeCount >= stats.dailyChallengeTarget && (
-              <View style={styles.challengeComplete}>
-                <Ionicons name="checkmark-circle" size={18} color={c.success} />
-                <Text style={[styles.challengeCompleteText, { color: c.success }]}>
-                  {t('swipe.challengeComplete')}
-                </Text>
-              </View>
-            )}
-          </Animated.View>
-
-          {/* Leaderboard */}
-          <Animated.View entering={FadeInUp.delay(300).springify()}>
-            <View style={styles.leaderboardHeader}>
-              <Ionicons name="podium-outline" size={20} color={c.foreground} />
-              <Text style={[styles.leaderboardTitle, { color: c.foreground }]}>
-                {t('swipe.leaderboard')}
-              </Text>
-            </View>
-
-            {leaderboardLoading ? (
-              <Loading text={t('swipe.loading')} />
-            ) : leaderboard?.entries?.length ? (
-              <View style={styles.leaderboardList}>
-                {leaderboard.entries.map((entry) => (
-                  <LeaderboardItem key={entry.userId} entry={entry} />
-                ))}
-              </View>
-            ) : (
-              <View style={styles.emptyLeaderboard}>
-                <Text style={[styles.emptyLeaderboardText, { color: c.foregroundMuted }]}>
-                  {t('swipe.noLeaderboard')}
-                </Text>
-              </View>
-            )}
           </Animated.View>
         </>
-      ) : null}
+      ) : (
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyStateText, { color: c.foregroundMuted }]}>
+            {t('swipe.calibration.empty')}
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -234,27 +130,27 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
   },
-  badgeHero: {
+  calibrationHero: {
     borderRadius: borderRadius.xl,
+    borderWidth: 1,
     padding: spacing['2xl'],
     alignItems: 'center',
     marginBottom: spacing.xl,
-  },
-  badgeName: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    marginTop: spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  badgeProgress: {
-    width: '100%',
-    marginTop: spacing.lg,
     gap: spacing.xs,
   },
-  badgeProgressHint: {
+  calibrationValue: {
+    fontSize: fontSize['3xl'],
+    fontWeight: fontWeight.bold,
+    marginTop: spacing.sm,
+  },
+  calibrationLabel: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+  },
+  calibrationHint: {
     fontSize: fontSize.xs,
     textAlign: 'center',
+    marginTop: spacing.xs,
   },
   statsCardGrid: {
     flexDirection: 'row',
@@ -278,49 +174,12 @@ const styles = StyleSheet.create({
   statsCardLabel: {
     fontSize: fontSize.xs,
   },
-  dailyChallenge: {
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.lg,
-    marginBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  dailyChallengeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  dailyChallengeTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  challengeComplete: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  challengeCompleteText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  leaderboardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  leaderboardTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  leaderboardList: {
-    gap: spacing.sm,
-  },
-  emptyLeaderboard: {
+  emptyState: {
     padding: spacing['2xl'],
     alignItems: 'center',
   },
-  emptyLeaderboardText: {
+  emptyStateText: {
     fontSize: fontSize.sm,
+    textAlign: 'center',
   },
 });

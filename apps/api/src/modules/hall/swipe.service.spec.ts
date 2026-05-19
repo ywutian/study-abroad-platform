@@ -2,8 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SwipeService } from './swipe.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
-import { PointsService } from '../points/incentive.service';
-import { PointsConfigService } from '../points/points-config.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma, Visibility } from '@prisma/client';
 import { SwipePrediction } from './swipe-dto';
@@ -62,16 +60,13 @@ describe('SwipeService', () => {
     },
   };
 
+  // 2026-05 Hall Plan C (C3): de-gamified. SwipeStats now only carries the
+  // private calibration counters — no streak / badge / dailyChallenge.
   const mockStats = {
     id: 'stats-1',
     userId: 'user-1',
     totalSwipes: 10,
     correctCount: 7,
-    streak: 3,
-    bestStreak: 5,
-    badge: 'bronze',
-    dailyChallengeCount: 2,
-    dailyChallengeDate: new Date(),
     updatedAt: new Date(),
   };
 
@@ -114,21 +109,6 @@ describe('SwipeService', () => {
           provide: MemoryManagerService,
           useValue: {
             remember: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-        {
-          provide: PointsService,
-          useValue: {
-            adjustPoints: jest.fn().mockResolvedValue({
-              success: true,
-              newBalance: 0,
-            }),
-          },
-        },
-        {
-          provide: PointsConfigService,
-          useValue: {
-            getPointValue: jest.fn().mockResolvedValue(5),
           },
         },
       ],
@@ -253,8 +233,7 @@ describe('SwipeService', () => {
       });
 
       expect(result.isCorrect).toBe(true);
-      expect(result.pointsEarned).toBeGreaterThan(0);
-      expect(result.currentStreak).toBe(mockStats.streak + 1);
+      expect(result.actualResult).toBe('admitted');
     });
 
     it('should handle incorrect prediction', async () => {
@@ -268,8 +247,24 @@ describe('SwipeService', () => {
       });
 
       expect(result.isCorrect).toBe(false);
-      expect(result.pointsEarned).toBe(0);
-      expect(result.currentStreak).toBe(0);
+    });
+
+    // 2026-05 Hall Plan C (C3): de-gamified — the result no longer carries
+    // points / streak / badge fields.
+    it('returns a de-gamified result with no points/streak/badge fields', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
+      mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
+      mockPrisma.$transaction.mockResolvedValue(undefined);
+
+      const result = await service.submitSwipe('user-1', {
+        caseId: 'case-1',
+        prediction: SwipePrediction.ADMIT,
+      });
+
+      expect(result).not.toHaveProperty('pointsEarned');
+      expect(result).not.toHaveProperty('currentStreak');
+      expect(result).not.toHaveProperty('badgeUpgraded');
+      expect(result).not.toHaveProperty('currentBadge');
     });
 
     it('should throw NotFoundException when case does not exist', async () => {
@@ -320,20 +315,6 @@ describe('SwipeService', () => {
       ).rejects.toThrow('DB connection lost');
     });
 
-    it('should cap points at 20 per swipe', async () => {
-      const highStreakStats = { ...mockStats, streak: 20 };
-      mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
-      mockPrisma.swipeStats.upsert.mockResolvedValue(highStreakStats);
-      mockPrisma.$transaction.mockResolvedValue(undefined);
-
-      const result = await service.submitSwipe('user-1', {
-        caseId: 'case-1',
-        prediction: SwipePrediction.ADMIT,
-      });
-
-      expect(result.pointsEarned).toBeLessThanOrEqual(20);
-    });
-
     it('should use upsert for stats instead of find-then-create', async () => {
       mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
@@ -355,7 +336,9 @@ describe('SwipeService', () => {
   // ============ getStats ============
 
   describe('getStats', () => {
-    it('should return stats with upsert', async () => {
+    // 2026-05 Hall Plan C (C3): de-gamified — getStats returns only the
+    // private calibration counters (total / correct / accuracy).
+    it('should return de-gamified calibration stats with upsert', async () => {
       mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
 
       const result = await service.getStats('user-1');
@@ -363,9 +346,10 @@ describe('SwipeService', () => {
       expect(result.totalSwipes).toBe(10);
       expect(result.correctCount).toBe(7);
       expect(result.accuracy).toBe(70);
-      expect(result.currentStreak).toBe(3);
-      expect(result.bestStreak).toBe(5);
-      expect(result.badge).toBe('bronze');
+      expect(result).not.toHaveProperty('currentStreak');
+      expect(result).not.toHaveProperty('bestStreak');
+      expect(result).not.toHaveProperty('badge');
+      expect(result).not.toHaveProperty('dailyChallengeCount');
     });
 
     it('should return 0 accuracy for zero swipes', async () => {
@@ -375,89 +359,6 @@ describe('SwipeService', () => {
       const result = await service.getStats('user-1');
 
       expect(result.accuracy).toBe(0);
-    });
-
-    it('should reset daily challenge count on new day', async () => {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const oldDateStats = {
-        ...mockStats,
-        dailyChallengeDate: yesterday,
-        dailyChallengeCount: 5,
-      };
-      mockPrisma.swipeStats.upsert.mockResolvedValue(oldDateStats);
-
-      const result = await service.getStats('user-1');
-
-      expect(result.dailyChallengeCount).toBe(0);
-    });
-
-    it('should show current daily challenge count for today', async () => {
-      const todayStats = {
-        ...mockStats,
-        dailyChallengeDate: new Date(),
-        dailyChallengeCount: 5,
-      };
-      mockPrisma.swipeStats.upsert.mockResolvedValue(todayStats);
-
-      const result = await service.getStats('user-1');
-
-      expect(result.dailyChallengeCount).toBe(5);
-    });
-  });
-
-  // ============ getLeaderboard ============
-
-  describe('getLeaderboard', () => {
-    it('should return leaderboard with masked user info', async () => {
-      mockPrisma.swipeStats.findMany.mockResolvedValue([
-        {
-          ...mockStats,
-          userId: 'other-user-abc123',
-          user: { id: 'other-user-abc123', profile: { realName: '张三' } },
-        },
-      ]);
-      mockPrisma.swipeStats.findUnique.mockResolvedValue(null);
-
-      const result = await service.getLeaderboard('user-1', 20);
-
-      expect(result.entries).toHaveLength(1);
-      // 非当前用户应该脱敏
-      expect(result.entries[0].userId).toBe('****c123');
-      expect(result.entries[0].userName).toBe('张**');
-      expect(result.entries[0].isCurrentUser).toBe(false);
-    });
-
-    it('should show full info for current user', async () => {
-      mockPrisma.swipeStats.findMany.mockResolvedValue([
-        {
-          ...mockStats,
-          userId: 'user-1',
-          user: { id: 'user-1', profile: { realName: '李四' } },
-        },
-      ]);
-
-      const result = await service.getLeaderboard('user-1', 20);
-
-      expect(result.entries[0].userId).toBe('user-1');
-      expect(result.entries[0].userName).toBe('李四');
-      expect(result.entries[0].isCurrentUser).toBe(true);
-    });
-
-    it('should include current user rank when not in top N', async () => {
-      mockPrisma.swipeStats.findMany.mockResolvedValue([]);
-      mockPrisma.swipeStats.findUnique.mockResolvedValue({
-        ...mockStats,
-        userId: 'user-1',
-        user: { id: 'user-1', profile: { realName: '李四' } },
-      });
-      mockPrisma.swipeStats.count.mockResolvedValue(5);
-
-      const result = await service.getLeaderboard('user-1', 20);
-
-      expect(result.currentUserEntry).toBeDefined();
-      expect(result.currentUserEntry?.rank).toBe(6);
-      expect(result.currentUserEntry?.isCurrentUser).toBe(true);
     });
   });
 
@@ -521,49 +422,45 @@ describe('SwipeService', () => {
     });
   });
 
-  // ============ calculateBadge (private, tested via badge upgrade detection) ============
+  // ============ calibration counters (de-gamified, Plan C C3) ============
 
-  describe('badge calculation (via submitSwipe)', () => {
-    it('should upgrade badge when threshold is reached', async () => {
-      const statsAt19 = {
-        ...mockStats,
-        correctCount: 19,
-        streak: 0,
-        badge: 'bronze',
-      };
+  describe('calibration counters (via submitSwipe)', () => {
+    it('increments only totalSwipes / correctCount — no streak/badge writes', async () => {
       mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
-      mockPrisma.swipeStats.upsert.mockResolvedValue(statsAt19);
+      mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
-      const result = await service.submitSwipe('user-1', {
+      await service.submitSwipe('user-1', {
         caseId: 'case-1',
         prediction: SwipePrediction.ADMIT,
       });
 
-      // correctCount goes from 19 to 20, should upgrade to silver
-      expect(result.badgeUpgraded).toBe(true);
-      expect(result.currentBadge).toBe('silver');
+      expect(mockPrisma.swipeStats.update).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        data: {
+          totalSwipes: { increment: 1 },
+          correctCount: { increment: 1 },
+        },
+      });
     });
 
-    it('should not upgrade badge when below threshold', async () => {
-      const statsAt18 = {
-        ...mockStats,
-        correctCount: 18,
-        streak: 0,
-        badge: 'bronze',
-      };
+    it('does not increment correctCount on a wrong guess', async () => {
       mockPrisma.admissionCase.findFirst.mockResolvedValue(mockCase);
-      mockPrisma.swipeStats.upsert.mockResolvedValue(statsAt18);
+      mockPrisma.swipeStats.upsert.mockResolvedValue(mockStats);
       mockPrisma.$transaction.mockResolvedValue(undefined);
 
-      const result = await service.submitSwipe('user-1', {
+      await service.submitSwipe('user-1', {
         caseId: 'case-1',
-        prediction: SwipePrediction.ADMIT,
+        prediction: SwipePrediction.REJECT,
       });
 
-      // correctCount goes from 18 to 19, still bronze
-      expect(result.badgeUpgraded).toBe(false);
-      expect(result.currentBadge).toBe('bronze');
+      expect(mockPrisma.swipeStats.update).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        data: {
+          totalSwipes: { increment: 1 },
+          correctCount: undefined,
+        },
+      });
     });
   });
 });

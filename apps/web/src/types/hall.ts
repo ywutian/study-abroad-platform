@@ -2,15 +2,12 @@
 // 集中管理所有 Hall 页面相关的接口和类型
 
 import type { SwipeCaseData } from '@/components/features/hall/SwipeCard';
-import type { SwipeBadge } from '@/components/features/hall/BadgeDisplay';
 import type { SchoolRanking } from '@/lib/utils/ranking';
-
-type BadgeType = SwipeBadge;
 
 // ============================================
 // Re-export component types
 // ============================================
-export type { SwipeCaseData, SwipeBadge, BadgeType };
+export type { SwipeCaseData };
 
 // ============================================
 // Public Profile (Review Mode)
@@ -99,39 +96,23 @@ export interface AiAnalysisResult {
 }
 
 // ============================================
-// Swipe Stats & Leaderboard
+// Swipe Stats — private calibration accuracy
+// 2026-05 Hall Plan C (C3): de-gamified. Only the private total/correct/
+// accuracy counters remain — no streak, badge, daily challenge.
 // ============================================
 export interface SwipeStats {
   totalSwipes: number;
   correctCount: number;
   accuracy: number;
-  currentStreak: number;
-  bestStreak: number;
-  badge: BadgeType;
-  toNextBadge: number;
-  dailyChallengeCount: number;
-  dailyChallengeTarget: number;
-}
-
-export interface LeaderboardEntry {
-  rank: number;
-  userId: string;
-  userName?: string;
-  accuracy: number;
-  totalSwipes: number;
-  correctCount: number;
-  badge: BadgeType;
-  isCurrentUser: boolean;
 }
 
 // ============================================
 // Swipe Result (Prediction feedback)
+// 2026-05 Hall Plan C (C3): de-gamified — no points, no streak.
 // ============================================
 export interface SwipeResult {
   isCorrect: boolean;
   actualResult: string;
-  pointsEarned: number;
-  currentStreak: number;
 }
 
 // ============================================
@@ -146,14 +127,6 @@ export interface SwipeBatchMeta {
 export interface SwipeBatchResponse {
   cases: SwipeCaseData[];
   meta: SwipeBatchMeta;
-}
-
-// ============================================
-// Leaderboard Response
-// ============================================
-export interface LeaderboardResponse {
-  entries: LeaderboardEntry[];
-  currentUserEntry?: LeaderboardEntry;
 }
 
 // ============================================

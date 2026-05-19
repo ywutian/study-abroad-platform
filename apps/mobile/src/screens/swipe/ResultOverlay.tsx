@@ -1,6 +1,9 @@
 /**
- * ResultOverlay — Shown after a swipe prediction, indicating correct/incorrect
- * with points, streak, and badge upgrade info.
+ * ResultOverlay — shown after a swipe prediction: correct/incorrect + the
+ * real outcome.
+ *
+ * 2026-05 Hall Plan C (C3): de-gamified. The points / streak reward pills
+ * and the badge-upgrade banner were removed.
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -10,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
 
-import { SwipeResultDto, BADGE_COLORS, normalizeBadge, CARD_WIDTH } from './types';
+import { SwipeResultDto, CARD_WIDTH } from './types';
 
 interface ResultOverlayProps {
   result: SwipeResultDto;
@@ -21,10 +24,8 @@ export default function ResultOverlay({ result }: ResultOverlayProps) {
   const c = useColors();
 
   const isCorrect = result.isCorrect;
-  const bgColor = isCorrect ? c.success + '20' : c.error + '20';
   const fgColor = isCorrect ? c.success : c.error;
   const icon = isCorrect ? 'checkmark-circle' : 'close-circle';
-  const currentBadge = normalizeBadge(result.currentBadge);
   const predictedLabel = t(`swipe.${result.prediction}`);
   const localizedActualResult = t(`cases.result.${result.actualResult.toLowerCase()}`, {
     defaultValue: result.actualResult,
@@ -83,40 +84,9 @@ export default function ResultOverlay({ result }: ResultOverlayProps) {
           </View>
         </View>
 
-        {isCorrect ? (
-          <View style={styles.rewardRow}>
-            <View style={[styles.rewardPill, { backgroundColor: c.success + '12' }]}>
-              <Ionicons name="sparkles-outline" size={14} color={c.success} />
-              <Text style={[styles.rewardText, { color: c.success }]}>
-                {t('swipe.points', { points: result.pointsEarned })}
-              </Text>
-            </View>
-
-            <View style={[styles.rewardPill, { backgroundColor: c.warning + '12' }]}>
-              <Ionicons name="flame" size={14} color={c.warning} />
-              <Text style={[styles.rewardText, { color: c.warning }]}>
-                {t('swipe.streakValue', { count: result.currentStreak })}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {result.badgeUpgraded ? (
-          <View
-            style={[styles.badgeUpgrade, { backgroundColor: BADGE_COLORS[currentBadge] + '16' }]}
-          >
-            <Ionicons name="arrow-up-circle" size={16} color={BADGE_COLORS[currentBadge]} />
-            <Text style={[styles.badgeUpgradeText, { color: BADGE_COLORS[currentBadge] }]}>
-              {t('swipe.badgeUpgrade', {
-                badge: t(`swipe.badges.${currentBadge}`),
-              })}
-            </Text>
-          </View>
-        ) : (
-          <Text style={[styles.resultHint, { color: c.foregroundMuted }]}>
-            {t('swipe.nextCardHint')}
-          </Text>
-        )}
+        <Text style={[styles.resultHint, { color: c.foregroundMuted }]}>
+          {t('swipe.nextCardHint')}
+        </Text>
       </View>
     </Animated.View>
   );
@@ -183,38 +153,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.semibold,
     marginTop: spacing.xs,
     textAlign: 'center',
-  },
-  rewardRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  rewardPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  rewardText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
-  badgeUpgrade: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    marginTop: spacing.lg,
-  },
-  badgeUpgradeText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
   },
   resultHint: {
     fontSize: fontSize.sm,

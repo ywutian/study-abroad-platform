@@ -19,7 +19,6 @@ import { useTranslation } from 'react-i18next';
 import { Segment } from '@/components/ui';
 import { useColors, spacing } from '@/utils/theme';
 import type { TabKey } from '@/screens/hall/types';
-import { HallHeroBar } from '@/screens/hall/HallHeroBar';
 import { VerifiedTab } from '@/screens/hall/VerifiedTab';
 import { RankingTab } from '@/screens/hall/RankingTab';
 import { ReviewSwipeTab } from '@/screens/hall/ReviewSwipeTab';
@@ -47,7 +46,6 @@ export default function HallPage() {
 
       <View style={[S.container, { backgroundColor: c.background }]}>
         <View style={S.header}>
-          <HallHeroBar />
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <Segment
               segments={segments}

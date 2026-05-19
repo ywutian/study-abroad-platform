@@ -2976,27 +2976,6 @@
       "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
       "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
     },
-    "hero": {
-      "points": "Points",
-      "today": "+{count} today",
-      "streak": "Streak",
-      "best": "{badge} · best {count}",
-      "reviewer": "Reviewer",
-      "credit": "Credit {count}",
-      "dailyChallenge": "Daily Challenge",
-      "badges": {
-        "bronze": "Bronze",
-        "silver": "Silver",
-        "gold": "Gold",
-        "platinum": "Platinum",
-        "diamond": "Diamond"
-      },
-      "reviewerLevels": {
-        "L1": "Learner",
-        "L2": "Peer",
-        "L3": "Senior"
-      }
-    },
     "path": {
       "modes": {
         "single": {
@@ -3027,7 +3006,7 @@
       "schools": "schools",
       "selectResult": "Select result...",
       "yourGuess": "Your guess",
-      "correct": "correct",
+      "summary": "You read {correct} of {total} outcomes correctly.",
       "submit": "Submit Predictions",
       "submitting": "Submitting...",
       "newChallenge": "New Challenge",
@@ -3040,9 +3019,7 @@
     },
     "tinder": {
       "title": "Case Prediction",
-      "description": "Guess applicant outcomes and earn points",
-      "correctToast": "Correct! +{points} points",
-      "incorrectToast": "Wrong, actual result: {result}",
+      "description": "Read a real applicant's profile, guess the outcome, then compare with reality",
       "emptyPool": "No More Applicants",
       "emptyPoolDesc": "Check back later for new applicants",
       "emptyPoolAction": "Refresh",
@@ -3050,14 +3027,11 @@
       "allSwipedDesc": "You have reviewed all applicants",
       "restart": "Restart"
     },
-    "stats": {
-      "accuracy": "Accuracy",
-      "accuracyCompact": "{value}% accuracy",
-      "correctOf": "{correct}/{total} correct",
-      "currentStreak": "Current Streak",
-      "bestStreak": "Best Streak",
-      "totalPredictions": "Total Predictions",
-      "correctPredictions": "Correct Predictions"
+    "calibration": {
+      "title": "Your Calibration",
+      "description": "How often your guesses match the real outcome — visible only to you",
+      "accuracyLabel": "accuracy",
+      "correctOf": "{correct} of {total} guessed correctly"
     },
     "review": {
       "submitSuccess": "Review submitted successfully",
@@ -3346,30 +3320,8 @@
     "result": {
       "correct": "Correct",
       "wrong": "Wrong",
-      "actual": "Actual Result",
-      "points": "Points",
-      "streak": "Streak"
+      "actual": "Actual Result"
     },
-    "leaderboard": {
-      "title": "Leaderboard",
-      "you": "You",
-      "yourRank": "Your Rank",
-      "predictions": "Predictions",
-      "correct": "Correct",
-      "accuracy": "Accuracy",
-      "empty": "No Data",
-      "emptyDesc": "No one has participated yet",
-      "userFallback": "Anonymous"
-    },
-    "dailyChallenge": {
-      "title": "Daily Challenge",
-      "progress": "Progress",
-      "remaining": "Remaining",
-      "completed": "Completed",
-      "challengeComplete": "Challenge Complete!",
-      "keepItUp": "Keep it up!"
-    },
-    "badgeProgress": "Badge Progress",
     "noTestScores": "No Test Scores",
     "scoreLabel": "Score",
     "noAwards": "No Awards",

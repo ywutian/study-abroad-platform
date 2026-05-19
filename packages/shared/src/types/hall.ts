@@ -7,13 +7,6 @@
  * data — keep these in sync.
  */
 
-export type SwipeBadgeTier =
-  | 'bronze'
-  | 'silver'
-  | 'gold'
-  | 'platinum'
-  | 'diamond';
-
 /**
  * Hall reviewer permission tier (mirrors Prisma ReviewerLevel enum).
  * - L1: any registered user — vote-only on existing reviews
@@ -48,21 +41,6 @@ export interface HallOverviewPoints {
   todayEarned: number;
 }
 
-export interface HallOverviewSwipe {
-  badge: SwipeBadgeTier | string;
-  totalSwipes: number;
-  correctCount: number;
-  accuracy: number; // 0-100 integer
-  currentStreak: number;
-  bestStreak: number;
-}
-
-export interface HallOverviewDailyChallenge {
-  count: number;
-  target: number; // default 10
-  completed: boolean;
-}
-
 export interface HallOverviewReviewer {
   level: ReviewerLevel;
   credit: number; // 0-100, starts at 100, drops on confirmed reports
@@ -78,10 +56,13 @@ export interface HallActivityEntry {
   createdAt: string; // ISO timestamp
 }
 
+/**
+ * 2026-05 Hall Plan C (C3): de-gamified. The `swipe` (badge/streak) and
+ * `dailyChallenge` fields were removed — the path tab no longer surfaces a
+ * casino layer. `points` is retained solely for the Points Center balance.
+ */
 export interface HallOverviewPayload {
   points: HallOverviewPoints;
-  swipe: HallOverviewSwipe;
-  dailyChallenge: HallOverviewDailyChallenge;
   reviewer: HallOverviewReviewer;
   recentActivity: HallActivityEntry[];
 }
@@ -184,13 +165,16 @@ export interface AggregatedReviewPayload {
  * Challenge attempt persistence payload (Hall 学长之路 multi-school predictions).
  * Returned by `POST /halls/swipe/challenge` after persisting to
  * `ChallengeAttempt` table.
+ *
+ * 2026-05 Hall Plan C (C3): de-gamified. `rewardEarned` was removed — the
+ * challenge no longer awards points. The attempt is still persisted so the
+ * per-school debrief history stays available.
  */
 export interface ChallengeAttemptResult {
   attemptId: string;
   correct: number;
   total: number;
   accuracy: number; // 0-100 integer
-  rewardEarned: number; // 0 if daily limit already hit
   results: Array<{
     caseId: string;
     schoolName?: string;

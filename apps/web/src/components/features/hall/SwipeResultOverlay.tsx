@@ -3,13 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, XCircle, Flame, Lightbulb } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 interface SwipeResultData {
   isCorrect: boolean;
   actualResult: string;
-  pointsEarned: number;
-  currentStreak: number;
 }
 
 interface SwipeResultOverlayProps {
@@ -18,9 +16,11 @@ interface SwipeResultOverlayProps {
 }
 
 /**
- * Reusable swipe result feedback overlay.
- * Displays correct/wrong animation, points earned, and streak counter.
- * Auto-dismisses via parent's setTimeout on the result state.
+ * Swipe result feedback overlay.
+ *
+ * 2026-05 Hall Plan C (C3): de-gamified. Shows only whether the guess was
+ * right and — when wrong — the real outcome. No points line, no streak,
+ * no celebration copy.
  */
 export function SwipeResultOverlay({ result, className }: SwipeResultOverlayProps) {
   const t = useTranslations('hall.result');
@@ -68,19 +68,6 @@ export function SwipeResultOverlay({ result, className }: SwipeResultOverlayProp
               {result.isCorrect ? t('correct') : t('wrong')}
             </motion.p>
 
-            {/* Points */}
-            {result.isCorrect && result.pointsEarned > 0 && (
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="text-sm sm:text-base font-semibold flex items-center justify-center gap-1"
-              >
-                <Lightbulb className="h-4 w-4" />
-                {t('points', { points: result.pointsEarned })}
-              </motion.p>
-            )}
-
             {/* Actual result for wrong */}
             {!result.isCorrect && (
               <motion.p
@@ -91,19 +78,6 @@ export function SwipeResultOverlay({ result, className }: SwipeResultOverlayProp
               >
                 {t('actual', { result: result.actualResult })}
               </motion.p>
-            )}
-
-            {/* Streak */}
-            {result.isCorrect && result.currentStreak >= 2 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.35, type: 'spring', damping: 12 }}
-                className="mt-2 flex items-center justify-center gap-1 text-sm font-medium"
-              >
-                <Flame className="h-4 w-4" />
-                {t('streak', { count: result.currentStreak })}
-              </motion.div>
             )}
           </div>
         </motion.div>

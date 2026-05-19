@@ -96,11 +96,6 @@ export { DataExportDialog } from './export/data-export';
 export {
   SwipeCard,
   SwipeStack,
-  BadgeDisplay,
-  BadgeProgress,
-  StatsPanel,
-  DailyChallenge,
-  LeaderboardList,
   ModuleSelector,
   ReviewModuleCard,
   SwipeResultOverlay,
@@ -110,7 +105,7 @@ export {
   RankingTab,
   ListsTab,
 } from './hall';
-export type { SwipeCaseData, SwipeBadge } from './hall';
+export type { SwipeCaseData } from './hall';
 
 // Landing page components
 export * from './landing';
