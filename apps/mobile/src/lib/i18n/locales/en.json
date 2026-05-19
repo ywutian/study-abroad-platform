@@ -807,7 +807,6 @@
     "tabs": {
       "verified": "Verified",
       "ranking": "Ranking",
-      "review": "Peer Review",
       "path": "Alumni Path"
     },
     "stats": {
@@ -815,49 +814,6 @@
       "topSchools": "Top Schools",
       "avgGpa": "Avg GPA",
       "successRate": "Success Rate"
-    },
-    "review": {
-      "title": "Peer Feedback",
-      "noProfiles": "No profiles to review",
-      "noProfilesDesc": "Check back later for more public profiles.",
-      "next": "Next Profile",
-      "submit": "Submit Feedback",
-      "submitting": "Submitting...",
-      "created": "Feedback submitted!",
-      "emptyDesc": "You have reviewed every available profile",
-      "targetMajor": "Target Major",
-      "unknownMajor": "Undeclared",
-      "stepProgress": "Profile {{current}} / {{total}}",
-      "helpful": "Helpful",
-      "insightful": "Insightful",
-      "dimensionFeedback": "Your written feedback (optional)",
-      "tags": "Quick Tags (optional)",
-      "generalComment": "Overall Feedback",
-      "generalCommentHint": "Share your overall impression — what stands out, and what they could strengthen...",
-      "generalCommentMin": "Please write at least {{min}} characters of overall feedback.",
-      "disclaimer": "Feedback reflects the personal perspective of another member — it is not professional admissions advice.",
-      "steps": {
-        "academic": "Academic Background",
-        "test": "Test Scores",
-        "activity": "Extracurriculars",
-        "award": "Awards & Honors"
-      },
-      "commentHint": {
-        "academic": "What stood out about their academics, and where could they go further?",
-        "test": "How do their test scores read — any context worth noting?",
-        "activity": "What did you find compelling or thin about their activities?",
-        "award": "How do their awards and honors come across?"
-      },
-      "quickTag": {
-        "well-rounded": "Well-rounded",
-        "strong-stem": "Strong STEM",
-        "high-gpa": "High GPA",
-        "leadership": "Leadership",
-        "creative": "Creative",
-        "community-impact": "Community impact",
-        "research-oriented": "Research-oriented",
-        "athletic": "Athletic"
-      }
     },
     "ranking": {
       "rank": "Rank",
@@ -920,10 +876,6 @@
     "empty": {
       "title": "No data yet",
       "description": "Be the first to join Alumni Square!"
-    },
-    "card": {
-      "scores": "Scores",
-      "undergrad": "Undergrad"
     },
     "challenge": {
       "title": "Batch Challenge",

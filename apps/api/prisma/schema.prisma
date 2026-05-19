@@ -605,9 +605,6 @@ model User {
   recruitmentMemberProfiles TeamRecruitmentMemberProfile[]
   recruitmentSwipesActed    TeamRecruitmentSwipe[]
   customRankings            CustomRanking[]
-  reviewsGiven              Review[]                       @relation("Reviewer")
-  reviewsReceived           Review[]                       @relation("ReviewedProfile")
-  reviewReactions           ReviewReaction[]
   reports                   Report[]
   assignedReports           Report[]                       @relation("ReportAssignee")
   admissionCases            AdmissionCase[]
@@ -650,10 +647,10 @@ model User {
   peerAvgRating   Float?
   peerReviewCount Int    @default(0)
 
-  // Hall 锐评者权限与隐私 (Stage 1 L1/L2/L3 三层权限模型)
-  // Hall §7 Decision C — opt-OUT by default (PIPL consent fix). The 锐评 pool
-  // is affirmative-consent only; new users are never auto-enrolled.
-  acceptPeerReview    Boolean       @default(false) // 是否接受 Hall 锐评（隐私开关）
+  // Hall 锐评者权限 (Stage 1 L1/L2/L3 三层权限模型)
+  // Hall §7 Decision B — the peer-review subsystem was retired. These columns
+  // are now orphaned; a later non-Hall cleanup migration drops them. Left in
+  // place here deliberately to keep this migration scoped to the Review model.
   reviewerLevel       ReviewerLevel @default(L1) // 评审者等级
   reviewerCredit      Int           @default(100) // 信用分（被举报扣分，<50 限制）
   reviewerQualifiedAt DateTime? // L2 资质测试通过时间
@@ -2844,75 +2841,11 @@ model MessageAttachment {
 // Feature Hall
 // ============================================
 
-model Review {
-  id            String @id @default(cuid())
-  reviewerId    String
-  reviewer      User   @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
-  profileUserId String
-  profileUser   User   @relation("ReviewedProfile", fields: [profileUserId], references: [id], onDelete: Cascade)
-
-  // 评分维度 (1-10)
-  academicScore Int // 学术/GPA
-  testScore     Int @default(5) // 标化成绩 (原 essayScore，语义修正)
-  activityScore Int // 课外活动
-  awardScore    Int @default(5) // 奖项荣誉 (新增独立维度)
-  overallScore  Int // 综合评分
-
-  // 按模块评语
-  comment         String? @db.Text // 总评
-  academicComment String? @db.Text // 学术评语
-  testComment     String? @db.Text // 标化评语
-  activityComment String? @db.Text // 活动评语
-  awardComment    String? @db.Text // 奖项评语
-
-  // 元数据
-  status       ReviewStatus @default(PUBLISHED)
-  tags         String[] // 评审标签: well-rounded, strong-stem 等
-  helpfulCount Int          @default(0) // 缓存: 被标记有帮助的次数
-
-  // Tinder-style 锐评升级 (Stage 1; nullable 保持向后兼容)
-  swipeData          Json? // { directionsPerStep: { academic|test|activity|award: 'left'|'right'|'up' }, ... }
-  reviewMethod       ReviewMethod @default(CLASSIC) // CLASSIC = 旧 slider, SWIPE = 新 Tinder UI
-  reviewerConfidence Int? // 1-100 信心度 (由拖拽距离派生)
-  quickTags          String[]     @default([]) // 强弱点标签 (strong_academics 等)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  reactions ReviewReaction[]
-
-  @@unique([reviewerId, profileUserId])
-  @@index([profileUserId, status, createdAt])
-  @@index([reviewerId])
-  @@index([reviewMethod])
-}
-
-// 评审互动反应
-model ReviewReaction {
-  id       String @id @default(cuid())
-  reviewId String
-  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type     String // "helpful" | "insightful"
-
-  createdAt DateTime @default(now())
-
-  @@unique([reviewId, userId, type])
-  @@index([reviewId])
-}
-
-enum ReviewStatus {
-  DRAFT
-  PUBLISHED
-  HIDDEN
-}
-
-// 锐评模式（Stage 1 Tinder 风格升级）
-enum ReviewMethod {
-  CLASSIC // 旧 4 维 slider 评审
-  SWIPE // 新 Tinder 风格滑动评审
-}
+// Hall §7 Decision B — the peer-review subsystem (`Review`, `ReviewReaction`,
+// `ReviewStatus`, `ReviewMethod`) was retired and dropped here. The
+// `ReviewerLevel` enum below is intentionally KEPT: `User.reviewerLevel` /
+// `reviewerCredit` / `reviewerQualifiedAt` remain as orphan columns to be
+// cleaned up by a later, separate non-Hall migration.
 
 // 评审者权限等级（Stage 1 三层权限模型）
 enum ReviewerLevel {
@@ -3639,18 +3572,12 @@ model SwipeStats {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  totalSwipes         Int       @default(0)
-  correctCount        Int       @default(0)
-  streak              Int       @default(0)
-  bestStreak          Int       @default(0)
-  badge               String    @default("bronze")
-  dailyChallengeCount Int       @default(0)
-  dailyChallengeDate  DateTime?
+  totalSwipes  Int @default(0)
+  correctCount Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([badge])
   @@index([correctCount])
 }
 

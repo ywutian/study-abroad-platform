@@ -43,7 +43,7 @@ describe('AdminService', () => {
       dataImportStaging: {
         count: jest.fn(),
       },
-      review: {
+      peerReview: {
         count: jest.fn(),
       },
       forumPost: {
@@ -157,7 +157,8 @@ describe('AdminService', () => {
         .mockResolvedValueOnce(30) // totalCases
         .mockResolvedValueOnce(4); // pendingCasesCount
       (prisma.report.count as jest.Mock).mockResolvedValue(5);
-      (prisma.review.count as jest.Mock).mockResolvedValue(200);
+      // Hall §7 Decision B: `totalReviews` now counts PeerReview rows.
+      (prisma.peerReview.count as jest.Mock).mockResolvedValue(200);
       (prisma.forumPost.count as jest.Mock).mockResolvedValue(120);
       (prisma.conversation.count as jest.Mock).mockResolvedValue(45);
       (prisma.message.count as jest.Mock).mockResolvedValue(560);
@@ -292,13 +293,27 @@ describe('AdminService', () => {
 
   describe('getUsers', () => {
     it('should return paginated users', async () => {
-      const mockUsers = [{ id: 'u1', email: 'test@test.com' }];
+      const mockUsers = [
+        {
+          id: 'u1',
+          email: 'test@test.com',
+          // Prisma always returns `_count` when selected; getUsers maps
+          // `peerReviewsGiven` → the stable `reviewsGiven` UI key.
+          _count: { admissionCases: 2, peerReviewsGiven: 5 },
+        },
+      ];
       (prisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
       (prisma.user.count as jest.Mock).mockResolvedValue(1);
 
       const result = await service.getUsers(undefined, undefined, 1, 20);
 
-      expect(result.data).toEqual(mockUsers);
+      expect(result.data).toEqual([
+        {
+          id: 'u1',
+          email: 'test@test.com',
+          _count: { admissionCases: 2, reviewsGiven: 5 },
+        },
+      ]);
       expect(result.total).toBe(1);
     });
 

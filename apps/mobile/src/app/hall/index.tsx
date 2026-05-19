@@ -1,15 +1,13 @@
 /**
  * Hall — 校友广场 / Alumni Square (refactored Stage 4)
  *
- * 4 tabs in order of value to the user (mirrors the web IA):
+ * 3 tabs in order of value to the user (mirrors the web IA):
  *   verified — China Admit Dashboard (default, highest decision value)
  *   ranking  — competitive position vs target schools
- *   review   — qualitative peer feedback (Plan C / C2: numeric scoring removed)
  *   path     — 学长之路 (single-case swipe + batch challenge)
  *
- * The legacy 6-tab structure (reviews / ranking / lists / verified / …) and
- * the orphan `HallOfFameScreen` were removed in Stage 4. Lists are gone:
- * curation moved server-side.
+ * Hall §7 Decision B: the `review` tab (qualitative peer feedback) was
+ * removed when the peer-review subsystem was retired.
  */
 import React, { useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
@@ -21,7 +19,6 @@ import { useColors, spacing } from '@/utils/theme';
 import type { TabKey } from '@/screens/hall/types';
 import { VerifiedTab } from '@/screens/hall/VerifiedTab';
 import { RankingTab } from '@/screens/hall/RankingTab';
-import { ReviewFeedbackTab } from '@/screens/hall/ReviewFeedbackTab';
 import { PathTab } from '@/screens/hall/PathTab';
 
 export default function HallPage() {
@@ -34,7 +31,6 @@ export default function HallPage() {
     () => [
       { key: 'verified', label: t('hall.tabs.verified') },
       { key: 'ranking', label: t('hall.tabs.ranking') },
-      { key: 'review', label: t('hall.tabs.review') },
       { key: 'path', label: t('hall.tabs.path') },
     ],
     [t]
@@ -58,7 +54,6 @@ export default function HallPage() {
         <View style={[S.content, { flex: 1 }]}>
           {activeTab === 'verified' && <VerifiedTab />}
           {activeTab === 'ranking' && <RankingTab />}
-          {activeTab === 'review' && <ReviewFeedbackTab />}
           {activeTab === 'path' && <PathTab />}
         </View>
       </View>

@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Put,
-  Patch,
   Delete,
   Body,
   Param,
@@ -22,27 +21,16 @@ import {
   HallOverviewService,
   type HallOverviewPayload,
 } from './hall-overview.service';
-import {
-  ReviewerQualificationService,
-  type QualificationQuestion,
-  type QualificationResult,
-} from './reviewer-qualification.service';
-import { ReviewCoachService } from './review-coach.service';
 import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
-import type { ReviewerInsight } from './review-coach.prompts';
-import { PrismaService } from '../../prisma/prisma.service';
-import { ReportTargetType } from '@prisma/client';
 import { CurrentUser, Public, Roles } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { Role } from '@prisma/client';
 import {
   ThrottleRelaxed,
   ThrottleAI,
-  ThrottleSensitive,
 } from '../../common/decorators/throttle.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
-  CreateReviewDto,
   CreateUserListDto,
   UpdateUserListDto,
   VoteListDto,
@@ -50,12 +38,8 @@ import {
   VerifiedRankingQueryDto,
   VerifiedDashboardQueryDto,
   VerifiedRankingResponseDto,
-  HallReactionDto,
   RankingAnalysisDto,
   ChallengeGuessesDto,
-  ReportReviewDto,
-  SubmitQualificationDto,
-  ReviewCoachRequestDto,
 } from './dto';
 import {
   SwipeActionDto,
@@ -73,10 +57,7 @@ export class HallController {
     private readonly hallService: HallService,
     private readonly swipeService: SwipeService,
     private readonly hallOverviewService: HallOverviewService,
-    private readonly qualificationService: ReviewerQualificationService,
-    private readonly reviewCoachService: ReviewCoachService,
     private readonly verifiedDashboardService: HallVerifiedDashboardService,
-    private readonly prisma: PrismaService,
   ) {}
 
   // ============================================
@@ -96,119 +77,11 @@ export class HallController {
   }
 
   // ============================================
-  // Stage 2: Review reporting, reviewer qualification
-  //
-  // 2026-05 Hall Plan C (C2b): the `reviews/:profileUserId/aggregate`
-  // endpoint and HallReviewAggregatorService were removed. Numeric review
-  // scoring was retired from the UI, and serving aggregate dimension
-  // means/medians made the API a second competitiveness authority — at
-  // odds with the de-gamified, qualitative peer-feedback model.
-  // ============================================
-
-  @Post('reviews/:reviewId/report')
-  @ThrottleSensitive()
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Report a review (reuses central Report queue for admin triage)',
-  })
-  async reportReview(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('reviewId') reviewId: string,
-    @Body() body: ReportReviewDto,
-  ) {
-    // Sanity: don't allow reporting your own review
-    const review = await this.prisma.review.findUnique({
-      where: { id: reviewId },
-      select: { id: true, reviewerId: true },
-    });
-    if (!review) {
-      return { success: false, message: 'Review not found' };
-    }
-    if (review.reviewerId === user.id) {
-      return { success: false, message: 'Cannot report your own review' };
-    }
-    const report = await this.prisma.report.create({
-      data: {
-        reporterId: user.id,
-        targetType: ReportTargetType.REVIEW,
-        targetId: reviewId,
-        reason: body.reason?.slice(0, 200) ?? 'unspecified',
-        detail: body.detail?.slice(0, 5000),
-      },
-    });
-    return { success: true, reportId: report.id };
-  }
-
-  @Get('reviewer/qualification')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get the L1→L2 reviewer qualification quiz (3 questions)',
-  })
-  async getReviewerQualificationQuiz(
-    @CurrentUser() user: CurrentUserPayload,
-  ): Promise<QualificationQuestion[]> {
-    return this.qualificationService.getQuestions(user.id);
-  }
-
-  @Post('reviewer/qualification')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Submit qualification quiz answers (60% to promote L1→L2)',
-  })
-  async submitReviewerQualification(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() body: SubmitQualificationDto,
-  ): Promise<QualificationResult> {
-    return this.qualificationService.submitAnswers(user.id, body.answers ?? []);
-  }
-
-  // ============================================
-  // Stage 5: AI Review Coach (gentle reflective feedback)
-  // ============================================
-
-  @Post('reviewer/coach')
-  @ThrottleAI()
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary:
-      'AI Review Coach: reflective insight on reviewer style (gated by reviewer aiCoachConsent)',
-  })
-  async getReviewerCoachInsight(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() body: ReviewCoachRequestDto,
-  ): Promise<{ insight: ReviewerInsight | null; fallback: boolean }> {
-    const insight = await this.reviewCoachService.generateInsight(
-      user.id,
-      (body?.locale ?? user.locale === 'en') ? 'en' : 'zh',
-    );
-    // Graceful degradation: AI failures never block the review flow.
-    return { insight, fallback: insight === null };
-  }
-
-  // ============================================
-  // Public Profiles
-  // ============================================
-
-  @Get('public-profiles')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get public profiles for review' })
-  @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number })
-  async getPublicProfiles(
-    @Query('search') search?: string,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-  ) {
-    return this.hallService.getPublicProfiles(
-      search,
-      page ? parseInt(page) : undefined,
-      pageSize ? parseInt(pageSize) : undefined,
-    );
-  }
-
-  // ============================================
   // Batch Ranking
+  //
+  // Hall §7 Decision B: the peer-review subsystem (review CRUD, reactions,
+  // reviewer qualification quiz, AI review coach, the public-profile picker)
+  // was retired entirely. Those routes and their services were removed.
   // ============================================
 
   @Post('ranking')
@@ -223,97 +96,6 @@ export class HallController {
       data.schoolIds,
       user.locale,
     );
-  }
-
-  // ============================================
-  // Reviews (锐评模式)
-  // ============================================
-
-  @Post('reviews')
-  @ThrottleSensitive()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create or update a review' })
-  async createReview(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() data: CreateReviewDto,
-  ) {
-    return this.hallService.createReview(user.id, data);
-  }
-
-  @Patch('reviews/:reviewId')
-  @ThrottleSensitive()
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update an existing review' })
-  async updateReview(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('reviewId') reviewId: string,
-    @Body() data: CreateReviewDto,
-  ) {
-    return this.hallService.updateReview(reviewId, user.id, data);
-  }
-
-  @Delete('reviews/:reviewId')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a review' })
-  async deleteReview(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('reviewId') reviewId: string,
-  ) {
-    return this.hallService.deleteReview(reviewId, user.id);
-  }
-
-  @Get('reviews/me')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get reviews I have written' })
-  async getMyReviews(@CurrentUser() user: CurrentUserPayload) {
-    return this.hallService.getMyReviews(user.id);
-  }
-
-  @Get('reviews/:profileUserId')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get reviews for a user profile (paginated)' })
-  async getReviewsForUser(
-    @Param('profileUserId') profileUserId: string,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
-    @Query('sortBy') sortBy?: 'createdAt' | 'overallScore' | 'helpfulCount',
-    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
-  ) {
-    return this.hallService.getReviewsForUser(profileUserId, {
-      page: page ? parseInt(page) : undefined,
-      pageSize: pageSize ? parseInt(pageSize) : undefined,
-      sortBy,
-      sortOrder,
-    });
-  }
-
-  @Get('reviews/:profileUserId/stats')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get review statistics for a user' })
-  async getReviewStats(@Param('profileUserId') profileUserId: string) {
-    return this.hallService.getReviewStats(profileUserId);
-  }
-
-  @Post('reviews/:reviewId/react')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'React to a review (helpful/insightful)' })
-  async reactToReview(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('reviewId') reviewId: string,
-    @Body() body: HallReactionDto,
-  ) {
-    return this.hallService.reactToReview(reviewId, user.id, body.type);
-  }
-
-  @Delete('reviews/:reviewId/react')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Remove reaction from a review' })
-  async removeReaction(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('reviewId') reviewId: string,
-    @Query('type') type: string,
-  ) {
-    return this.hallService.removeReaction(reviewId, user.id, type);
   }
 
   // ============================================

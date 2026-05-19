@@ -3,19 +3,20 @@
 /**
  * HallOnboarding — lightweight first-visit walkthrough for the Alumni Square.
  *
- * 4 short steps (what you can do / learn from real cases / verified admit data
- * / privacy), gated on a localStorage "seen" flag so it shows exactly once per
+ * 3 short steps (what you can do / learn from real cases / verified admit
+ * data), gated on a localStorage "seen" flag so it shows exactly once per
  * browser. Rendered by `hall/page.tsx`. Pass `replayNonce` to replay it on
  * demand (the "?" button in the page header).
  *
  * Plan C (2026-05): the old "how points work" and "leaderboard" steps were
- * removed — Hall no longer ranks applicants against each other. The steps now
- * describe the case-study learning loop and the verified admission-data center.
+ * removed — Hall no longer ranks applicants against each other.
+ * Hall §7 Decision B: the "privacy" step (peer-review opt-in) was removed
+ * when the peer-review subsystem was retired.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Compass, Lightbulb, BadgeCheck, ShieldCheck, ChevronLeft } from 'lucide-react';
+import { Compass, Lightbulb, BadgeCheck, ChevronLeft } from 'lucide-react';
 
 import {
   Dialog,
@@ -36,7 +37,6 @@ const STEPS = [
   { icon: Compass, titleKey: 'steps.welcomeTitle', bodyKey: 'steps.welcomeBody' },
   { icon: Lightbulb, titleKey: 'steps.learnTitle', bodyKey: 'steps.learnBody' },
   { icon: BadgeCheck, titleKey: 'steps.verifiedTitle', bodyKey: 'steps.verifiedBody' },
-  { icon: ShieldCheck, titleKey: 'steps.privacyTitle', bodyKey: 'steps.privacyBody' },
 ] as const;
 
 function hasSeenOnboarding(): boolean {

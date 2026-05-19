@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ReviewerLevel } from '@prisma/client';
 import type { HallOverviewPayload } from '@study-abroad/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PointsService } from '../points/incentive.service';
@@ -12,15 +11,15 @@ export type { HallOverviewPayload };
 /**
  * Hall refactor Phase 1 — BFF aggregation endpoint.
  *
- * Returns a single payload powering the Points Center + reviewer status:
+ * Returns a single payload powering the Points Center:
  *   - points balance + today's earnings
- *   - reviewer status (L1/L2/L3 + credit)
- *   - acceptPeerReview privacy flag
  *   - recent activity (last 20 PointHistory rows)
  *
  * 2026-05 Hall Plan C (C3): de-gamified. The swipe (badge/streak) and daily
  * challenge sections were removed — the path tab no longer has a casino
- * layer. The remaining `points` block exists only for the Points Center.
+ * layer. Hall §7 Decision B: the `reviewer` block was removed when the
+ * peer-review subsystem was retired. The remaining `points` block exists
+ * only for the Points Center.
  *
  * Cache via React Query staleTime, not BFF side, so admin tuning of point
  * values is reflected promptly.
@@ -43,14 +42,7 @@ export class HallOverviewService {
     const [user, balance, recentActivity, todayPointSum] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          reviewerLevel: true,
-          reviewerCredit: true,
-          acceptPeerReview: true,
-          hallAvgRating: true,
-          hallReviewCount: true,
-        },
+        select: { id: true },
       }),
       this.pointsService.getUserPoints(userId),
       this.pointsService.getPointHistory(userId, 20),
@@ -72,13 +64,6 @@ export class HallOverviewService {
         balance,
         todayEarned: todayPointSum._sum.points ?? 0,
       },
-      reviewer: {
-        level: user.reviewerLevel,
-        credit: user.reviewerCredit,
-        acceptPeerReview: user.acceptPeerReview,
-        hallAvgRating: user.hallAvgRating,
-        hallReviewCount: user.hallReviewCount,
-      },
       recentActivity: recentActivity.map((row) => ({
         action: row.action,
         points: row.points,
@@ -91,12 +76,5 @@ export class HallOverviewService {
 
 const EMPTY_PAYLOAD: HallOverviewPayload = {
   points: { balance: 0, todayEarned: 0 },
-  reviewer: {
-    level: ReviewerLevel.L1,
-    credit: 100,
-    acceptPeerReview: true,
-    hallAvgRating: null,
-    hallReviewCount: 0,
-  },
   recentActivity: [],
 };

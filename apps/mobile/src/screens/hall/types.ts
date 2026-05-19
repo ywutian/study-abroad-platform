@@ -2,18 +2,20 @@
  * Shared types, constants, and helpers for the Hall (校友广场) feature.
  *
  * Stage 4 — payload-shaped types (HallOverviewPayload, ChinaAdmitTrendEntry,
- * DifficultySignalEntry, ReviewSwipeData, …) are imported from
- * `@study-abroad/shared` and re-exported here so screen code has a single
- * import surface. Mobile-only view types stay local.
+ * DifficultySignalEntry, …) are imported from `@study-abroad/shared` and
+ * re-exported here so screen code has a single import surface. Mobile-only
+ * view types stay local.
+ *
+ * Hall §7 Decision B: the review types (HallOverviewReviewer, ReviewerLevel,
+ * Review, ReviewsResponse, CreateReviewDto, ReviewProfileCard, ReviewStep,
+ * REVIEW_*) were removed when the peer-review subsystem was retired.
  */
 import { useColors } from '@/utils/theme';
 
 export type {
   HallOverviewPayload,
   HallOverviewPoints,
-  HallOverviewReviewer,
   HallActivityEntry,
-  ReviewerLevel,
   ChinaAdmitTrendEntry,
   ChinaAdmitTrendResponse,
   DifficultySignal,
@@ -24,80 +26,6 @@ export type {
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export interface ReviewUser {
-  id: string;
-  nickname: string;
-  avatarUrl?: string | null;
-}
-
-/**
- * A peer review record.
- *
- * Plan C / C2: numeric 1-10 scoring was removed — peer review is qualitative.
- * Score fields are kept optional for backward compatibility with rows created
- * before the migration; new reviews carry written feedback only and the
- * reviewee never sees a numeric average.
- */
-export interface Review {
-  id: string;
-  profileUser: ReviewUser;
-  reviewer: ReviewUser;
-  comment?: string;
-  academicComment?: string;
-  testComment?: string;
-  activityComment?: string;
-  awardComment?: string;
-  tags?: string[];
-  helpfulCount: number;
-  insightfulCount: number;
-  myReaction?: 'helpful' | 'insightful' | null;
-  createdAt: string;
-}
-
-export interface ReviewsResponse {
-  items: Review[];
-  total: number;
-}
-
-/**
- * Payload for `POST /halls/reviews`.
- *
- * Plan C / C2: numeric score fields removed — the form submits per-dimension
- * and overall written feedback plus optional quick tags.
- */
-export interface CreateReviewDto {
-  profileUserId: string;
-  comment?: string;
-  academicComment?: string;
-  testComment?: string;
-  activityComment?: string;
-  awardComment?: string;
-  tags?: string[];
-  quickTags?: string[];
-}
-
-/**
- * Desensitized public profile presented in the Tinder-style review deck.
- * Returned by `GET /halls/public-profiles`.
- */
-export interface ReviewProfileCard {
-  userId: string;
-  nickname: string;
-  avatarUrl?: string | null;
-  grade?: string | null;
-  targetMajor?: string | null;
-  region?: string | null;
-  gpaRange?: string | null;
-  satRange?: string | null;
-  actRange?: string | null;
-  toeflRange?: string | null;
-  activityCount: number;
-  activityCategories?: string[];
-  awardCount: number;
-  topAwardTier?: string | null;
-  curriculumType?: string | null;
-}
 
 export interface RankingResult {
   schoolId: string;
@@ -139,35 +67,18 @@ export interface VerifiedRankingResponse {
   };
 }
 
-/** 4-tab IA (Stage 4): verified default / ranking / review / path. */
-export type TabKey = 'verified' | 'ranking' | 'review' | 'path';
+/**
+ * 3-tab IA: verified default / ranking / path.
+ * Hall §7 Decision B: the `review` tab was removed.
+ */
+export type TabKey = 'verified' | 'ranking' | 'path';
 export type RankingFilter = 'all' | 'admitted' | 'top20' | 'ivy';
-
-/** The four qualitative feedback dimensions, in form order. */
-export type ReviewStep = 'academic' | 'test' | 'activity' | 'award';
 
 export type Colors = ReturnType<typeof useColors>;
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-export const REVIEW_STEPS: ReviewStep[] = ['academic', 'test', 'activity', 'award'];
-
-/** Optional strength/quality quick tags (i18n key suffix = the raw value). */
-export const REVIEW_TAGS = [
-  'well-rounded',
-  'strong-stem',
-  'high-gpa',
-  'leadership',
-  'creative',
-  'community-impact',
-  'research-oriented',
-  'athletic',
-] as const;
-
-/** Minimum length the overall written feedback must reach before submit. */
-export const MIN_FEEDBACK_LENGTH = 20;
 
 export const PERCENTILE_COLORS = {
   top10: '#6f7b58',

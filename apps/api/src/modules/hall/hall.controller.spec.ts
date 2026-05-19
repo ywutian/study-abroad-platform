@@ -3,10 +3,7 @@ import { HallController } from './hall.controller';
 import { HallService } from './hall.service';
 import { SwipeService } from './swipe.service';
 import { HallOverviewService } from './hall-overview.service';
-import { ReviewerQualificationService } from './reviewer-qualification.service';
-import { ReviewCoachService } from './review-coach.service';
 import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
-import { PrismaService } from '../../prisma/prisma.service';
 
 describe('HallController', () => {
   let controller: HallController;
@@ -27,16 +24,7 @@ describe('HallController', () => {
         {
           provide: HallService,
           useValue: {
-            getPublicProfiles: jest.fn(),
             getBatchRanking: jest.fn(),
-            createReview: jest.fn(),
-            updateReview: jest.fn(),
-            deleteReview: jest.fn(),
-            getMyReviews: jest.fn(),
-            getReviewsForUser: jest.fn(),
-            getReviewStats: jest.fn(),
-            reactToReview: jest.fn(),
-            removeReaction: jest.fn(),
             getTargetSchoolRanking: jest.fn(),
             getProfileRanking: jest.fn(),
             getRankingAnalysis: jest.fn(),
@@ -67,32 +55,6 @@ describe('HallController', () => {
           },
         },
         {
-          provide: ReviewerQualificationService,
-          useValue: {
-            getQuestions: jest.fn().mockResolvedValue([]),
-            submitAnswers: jest.fn().mockResolvedValue({
-              correct: 0,
-              total: 3,
-              passed: false,
-              promotedTo: null,
-              breakdown: [],
-            }),
-          },
-        },
-        {
-          provide: PrismaService,
-          useValue: {
-            review: { findUnique: jest.fn() },
-            report: { create: jest.fn() },
-          },
-        },
-        {
-          provide: ReviewCoachService,
-          useValue: {
-            generateInsight: jest.fn().mockResolvedValue(null),
-          },
-        },
-        {
           provide: HallVerifiedDashboardService,
           useValue: {
             getChinaAdmitTrend: jest
@@ -117,24 +79,6 @@ describe('HallController', () => {
   });
 
   // ============================================
-  // Public Profiles
-  // ============================================
-
-  it('GET /public-profiles should call getPublicProfiles with search', async () => {
-    const expected = [{ id: 'p-1', name: 'Alice' }];
-    (hallService.getPublicProfiles as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.getPublicProfiles('Alice');
-
-    expect(hallService.getPublicProfiles).toHaveBeenCalledWith(
-      'Alice',
-      undefined,
-      undefined,
-    );
-    expect(result).toEqual(expected);
-  });
-
-  // ============================================
   // Batch Ranking
   // ============================================
 
@@ -149,121 +93,6 @@ describe('HallController', () => {
       'user-1',
       ['s-1', 's-2'],
       'zh',
-    );
-    expect(result).toEqual(expected);
-  });
-
-  // ============================================
-  // Reviews
-  // ============================================
-
-  it('POST /reviews should call createReview with user.id and data', async () => {
-    const data = { profileUserId: 'u-2', overallScore: 8 } as any;
-    const expected = { id: 'rev-1' };
-    (hallService.createReview as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.createReview(mockUser, data);
-
-    expect(hallService.createReview).toHaveBeenCalledWith('user-1', data);
-    expect(result).toEqual(expected);
-  });
-
-  it('PATCH /reviews/:reviewId should call updateReview with reviewId, user.id, data', async () => {
-    const data = { overallScore: 9 } as any;
-    const expected = { id: 'rev-1', overallScore: 9 };
-    (hallService.updateReview as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.updateReview(mockUser, 'rev-1', data);
-
-    expect(hallService.updateReview).toHaveBeenCalledWith(
-      'rev-1',
-      'user-1',
-      data,
-    );
-    expect(result).toEqual(expected);
-  });
-
-  it('DELETE /reviews/:reviewId should call deleteReview with reviewId and user.id', async () => {
-    const expected = { deleted: true };
-    (hallService.deleteReview as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.deleteReview(mockUser, 'rev-1');
-
-    expect(hallService.deleteReview).toHaveBeenCalledWith('rev-1', 'user-1');
-    expect(result).toEqual(expected);
-  });
-
-  it('GET /reviews/me should call getMyReviews with user.id', async () => {
-    const expected = [{ id: 'rev-1' }];
-    (hallService.getMyReviews as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.getMyReviews(mockUser);
-
-    expect(hallService.getMyReviews).toHaveBeenCalledWith('user-1');
-    expect(result).toEqual(expected);
-  });
-
-  it('GET /reviews/:profileUserId should call getReviewsForUser with pagination', async () => {
-    const expected = { data: [], total: 0 };
-    (hallService.getReviewsForUser as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.getReviewsForUser(
-      'target-user',
-      '1',
-      '10',
-      'createdAt',
-      'desc',
-    );
-
-    expect(hallService.getReviewsForUser).toHaveBeenCalledWith('target-user', {
-      page: 1,
-      pageSize: 10,
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
-    });
-    expect(result).toEqual(expected);
-  });
-
-  it('GET /reviews/:profileUserId/stats should call getReviewStats', async () => {
-    const expected = { averageScore: 8.5, totalReviews: 10 };
-    (hallService.getReviewStats as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.getReviewStats('target-user');
-
-    expect(hallService.getReviewStats).toHaveBeenCalledWith('target-user');
-    expect(result).toEqual(expected);
-  });
-
-  it('POST /reviews/:reviewId/react should call reactToReview', async () => {
-    const expected = { success: true };
-    (hallService.reactToReview as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.reactToReview(mockUser, 'rev-1', {
-      type: 'helpful',
-    });
-
-    expect(hallService.reactToReview).toHaveBeenCalledWith(
-      'rev-1',
-      'user-1',
-      'helpful',
-    );
-    expect(result).toEqual(expected);
-  });
-
-  it('DELETE /reviews/:reviewId/react should call removeReaction', async () => {
-    const expected = { success: true };
-    (hallService.removeReaction as jest.Mock).mockResolvedValue(expected);
-
-    const result = await controller.removeReaction(
-      mockUser,
-      'rev-1',
-      'helpful',
-    );
-
-    expect(hallService.removeReaction).toHaveBeenCalledWith(
-      'rev-1',
-      'user-1',
-      'helpful',
     );
     expect(result).toEqual(expected);
   });

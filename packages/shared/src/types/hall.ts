@@ -7,26 +7,11 @@
  * data — keep these in sync.
  */
 
-/**
- * Hall reviewer permission tier (mirrors Prisma ReviewerLevel enum).
- * - L1: any registered user — vote-only on existing reviews
- * - L2: completed own profile ≥80% + passed 3-question qualification quiz
- * - L3: VERIFIED user (admitted to Top 50) — vote weight ×3
+/*
+ * Hall §7 Decision B: the peer-review subsystem was retired. The review-only
+ * shared types (`ReviewerLevel`, `ReviewSwipeDirection`, `ReviewMethod`,
+ * `ReviewSwipeData`) were removed along with it.
  */
-export type ReviewerLevel = 'L1' | 'L2' | 'L3';
-
-/**
- * Tinder-style swipe direction for review steps.
- * `up` = unsure (excluded from aggregation to avoid bias).
- */
-export type ReviewSwipeDirection = 'left' | 'right' | 'up';
-
-/**
- * Review interaction mode (mirrors Prisma ReviewMethod enum).
- * - CLASSIC: legacy 4-dim slider review (kept for backward compat)
- * - SWIPE: new Tinder-style swipe review
- */
-export type ReviewMethod = 'CLASSIC' | 'SWIPE';
 
 /**
  * China Admit Dashboard verification tier (mirrors Prisma VerificationLevel).
@@ -41,14 +26,6 @@ export interface HallOverviewPoints {
   todayEarned: number;
 }
 
-export interface HallOverviewReviewer {
-  level: ReviewerLevel;
-  credit: number; // 0-100, starts at 100, drops on confirmed reports
-  acceptPeerReview: boolean;
-  hallAvgRating: number | null;
-  hallReviewCount: number;
-}
-
 export interface HallActivityEntry {
   action: string; // PointAction enum value (string-erased for transport)
   points: number;
@@ -59,28 +36,13 @@ export interface HallActivityEntry {
 /**
  * 2026-05 Hall Plan C (C3): de-gamified. The `swipe` (badge/streak) and
  * `dailyChallenge` fields were removed — the path tab no longer surfaces a
- * casino layer. `points` is retained solely for the Points Center balance.
+ * casino layer. Hall §7 Decision B: the `reviewer` block was removed when
+ * the peer-review subsystem was retired. `points` is retained solely for
+ * the Points Center balance.
  */
 export interface HallOverviewPayload {
   points: HallOverviewPoints;
-  reviewer: HallOverviewReviewer;
   recentActivity: HallActivityEntry[];
-}
-
-/**
- * Swipe-mode review metadata captured on the client and persisted to
- * `Review.swipeData` as JSONB.
- */
-export interface ReviewSwipeData {
-  directionsPerStep: {
-    academic?: ReviewSwipeDirection;
-    test?: ReviewSwipeDirection;
-    activity?: ReviewSwipeDirection;
-    award?: ReviewSwipeDirection;
-  };
-  // Optional client-side context for debugging / future analytics
-  totalSteps?: number;
-  durationMs?: number;
 }
 
 /**
