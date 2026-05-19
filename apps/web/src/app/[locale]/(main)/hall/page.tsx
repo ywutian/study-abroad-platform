@@ -29,7 +29,6 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { HallHeroBar } from '@/components/features/hall/HallHeroBar';
 import { HallOnboarding } from '@/components/features/hall/HallOnboarding';
 
 const VerifiedTab = dynamic(
@@ -159,8 +158,12 @@ export default function HallPage() {
           the "?" header button replays it via the nonce. */}
       <HallOnboarding replayNonce={onboardingReplayNonce} />
 
-      {/* Stage 3 — Hero bar with overview from /halls/me/overview BFF */}
-      <HallHeroBar />
+      {/* 2026-05 Hall Plan C (C3): the HallHeroBar — a points / streak /
+          badge / daily-challenge scoreboard shown on every tab — was
+          removed. A gamification scoreboard frames a high-stakes,
+          high-anxiety college-prep tool as a points game, which is a
+          brand risk for the paying parent. Hall is a data + learning
+          surface, not an arcade. */}
 
       {/* Tab 切换器 — 4 tabs, all min-w-0 inside grid for overflow safety */}
       <div className="mb-4 sm:mb-8">
