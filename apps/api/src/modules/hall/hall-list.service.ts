@@ -127,7 +127,10 @@ export class HallListService {
         take: pageSize,
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { id: true, email: true } },
+          // 2026-05 Hall Plan C (security): the list creator's email is
+          // PII and these are public-facing list endpoints — expose only
+          // the opaque id, never the email.
+          user: { select: { id: true } },
           _count: { select: { votes: true } },
         },
       }),
