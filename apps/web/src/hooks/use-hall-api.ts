@@ -36,7 +36,6 @@ export const hallKeys = {
   swipeStats: () => [...hallKeys.all, 'swipeStats'] as const,
   targetRanking: () => [...hallKeys.all, 'targetRanking'] as const,
   ranking: (schoolIds: string[]) => [...hallKeys.all, 'ranking', ...schoolIds] as const,
-  publicLists: () => [...hallKeys.all, 'publicLists'] as const,
   // Hall refactor Stage 1-7 — new query keys
   overview: () => [...hallKeys.all, 'overview'] as const,
   redemptionCatalog: () => [...hallKeys.all, 'redemptionCatalog'] as const,
@@ -118,25 +117,13 @@ export function useAiAnalysis() {
 }
 
 // ============================================
-// Lists Mode Hooks
+// Hall refactor Stage 1 — BFF Overview hook
 //
 // Hall §7 Decision B: the Review Mode hooks (useSubmitReview, useReviews,
 // useReviewStats, useReactToReview, reviewKeys, …) were removed when the
-// peer-review subsystem was retired.
-// ============================================
-
-/** 获取公开榜单列表 */
-export function usePublicLists(enabled: boolean) {
-  return useQuery({
-    queryKey: hallKeys.publicLists(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queryFn: () => apiClient.get<{ items: any[] }>(hallRoutes.lists()),
-    enabled,
-  });
-}
-
-// ============================================
-// Hall refactor Stage 1 — BFF Overview hook
+// peer-review subsystem was retired. The curated-lists hook (usePublicLists)
+// was removed when the dead ListsTab component was deleted — the `lists`
+// tab had already been folded into `verified`.
 // ============================================
 
 /**
