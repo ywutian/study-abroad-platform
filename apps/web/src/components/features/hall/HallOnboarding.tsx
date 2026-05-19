@@ -3,15 +3,19 @@
 /**
  * HallOnboarding — lightweight first-visit walkthrough for the Alumni Square.
  *
- * 4 short steps (what you can do / how points work / leaderboard / privacy),
- * gated on a localStorage "seen" flag so it shows exactly once per browser.
- * Rendered by `hall/page.tsx`. Pass `forceShow` to replay it on demand
- * (the "?" button in the page header).
+ * 4 short steps (what you can do / learn from real cases / verified admit data
+ * / privacy), gated on a localStorage "seen" flag so it shows exactly once per
+ * browser. Rendered by `hall/page.tsx`. Pass `replayNonce` to replay it on
+ * demand (the "?" button in the page header).
+ *
+ * Plan C (2026-05): the old "how points work" and "leaderboard" steps were
+ * removed — Hall no longer ranks applicants against each other. The steps now
+ * describe the case-study learning loop and the verified admission-data center.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Compass, Coins, BarChart3, ShieldCheck, ChevronLeft } from 'lucide-react';
+import { Compass, Lightbulb, BadgeCheck, ShieldCheck, ChevronLeft } from 'lucide-react';
 
 import {
   Dialog,
@@ -30,8 +34,8 @@ const STORAGE_KEY = 'hall-onboarding-seen-v1';
 // step) live directly under `hall.onboarding.*` — keep the `steps.` prefix here.
 const STEPS = [
   { icon: Compass, titleKey: 'steps.welcomeTitle', bodyKey: 'steps.welcomeBody' },
-  { icon: Coins, titleKey: 'steps.pointsTitle', bodyKey: 'steps.pointsBody' },
-  { icon: BarChart3, titleKey: 'steps.leaderboardTitle', bodyKey: 'steps.leaderboardBody' },
+  { icon: Lightbulb, titleKey: 'steps.learnTitle', bodyKey: 'steps.learnBody' },
+  { icon: BadgeCheck, titleKey: 'steps.verifiedTitle', bodyKey: 'steps.verifiedBody' },
   { icon: ShieldCheck, titleKey: 'steps.privacyTitle', bodyKey: 'steps.privacyBody' },
 ] as const;
 

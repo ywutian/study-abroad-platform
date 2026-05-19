@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 import { AnimatedCard, CardContent, Badge, Avatar } from '@/components/ui';
@@ -19,7 +18,6 @@ interface VerifiedItemProps {
 // between applicants — the rank badge is dropped; this is now a neutral
 // verified-record card.
 export const VerifiedItem = memo(function VerifiedItem({ item, colors: c }: VerifiedItemProps) {
-  const { t } = useTranslation();
   const resultVariant = RESULT_BADGE_VARIANT[item.result] || ('secondary' as const);
 
   return (
@@ -51,13 +49,6 @@ export const VerifiedItem = memo(function VerifiedItem({ item, colors: c }: Veri
                 </View>
               )}
             </View>
-          </View>
-
-          <View style={S.pointsBox}>
-            <Text style={[S.pointsValue, { color: c.primary }]}>{item.pointsTotal}</Text>
-            <Text style={[S.pointsLabel, { color: c.foregroundMuted }]}>
-              {t('hall.verified.points')}
-            </Text>
           </View>
         </View>
       </CardContent>
@@ -105,16 +96,5 @@ const S = StyleSheet.create({
   gpaBadgeText: {
     fontSize: 10,
     fontWeight: fontWeight.semibold,
-  },
-  pointsBox: {
-    alignItems: 'center',
-    minWidth: 44,
-  },
-  pointsValue: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-  },
-  pointsLabel: {
-    fontSize: 10,
   },
 });

@@ -3,7 +3,6 @@ import { HallController } from './hall.controller';
 import { HallService } from './hall.service';
 import { SwipeService } from './swipe.service';
 import { HallOverviewService } from './hall-overview.service';
-import { HallReviewAggregatorService } from './hall-review-aggregator.service';
 import { ReviewerQualificationService } from './reviewer-qualification.service';
 import { ReviewCoachService } from './review-coach.service';
 import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
@@ -65,12 +64,6 @@ describe('HallController', () => {
           provide: HallOverviewService,
           useValue: {
             getOverview: jest.fn().mockResolvedValue({}),
-          },
-        },
-        {
-          provide: HallReviewAggregatorService,
-          useValue: {
-            aggregateForApplicant: jest.fn().mockResolvedValue(null),
           },
         },
         {

@@ -6,7 +6,6 @@ import { HallListService } from './hall-list.service';
 import { HallVerifiedService } from './hall-verified.service';
 import { HallVerifiedDashboardService } from './hall-verified-dashboard.service';
 import { HallOverviewService } from './hall-overview.service';
-import { HallReviewAggregatorService } from './hall-review-aggregator.service';
 import { ReviewerQualificationService } from './reviewer-qualification.service';
 import { ReviewCoachService } from './review-coach.service';
 import { SwipeService } from './swipe.service';
@@ -34,7 +33,6 @@ import { NotificationModule } from '../notification/notification.module';
     HallVerifiedService,
     HallVerifiedDashboardService,
     HallOverviewService,
-    HallReviewAggregatorService,
     ReviewerQualificationService,
     ReviewCoachService,
     HallService,
@@ -44,7 +42,6 @@ import { NotificationModule } from '../notification/notification.module';
     HallService,
     SwipeService,
     HallOverviewService,
-    HallReviewAggregatorService,
     ReviewerQualificationService,
     ReviewCoachService,
   ],

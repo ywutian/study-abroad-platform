@@ -167,7 +167,10 @@ export class HallVerifiedService {
 
   async getAvailableYears(): Promise<number[]> {
     const cases = await this.prisma.admissionCase.findMany({
-      where: { ...VERIFIED_CASE_WHERE },
+      // Use PUBLIC_CASE_WHERE (not the bare VERIFIED_CASE_WHERE) so the
+      // visibility narrowing applies — a PRIVATE-only year must never
+      // surface in the public year filter.
+      where: { ...this.PUBLIC_CASE_WHERE },
       select: { year: true },
       distinct: ['year'],
       orderBy: { year: 'desc' },

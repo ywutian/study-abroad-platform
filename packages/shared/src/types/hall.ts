@@ -132,34 +132,13 @@ export interface RedemptionResult {
   status: RedemptionStatus;
 }
 
-/**
- * Stage 2 — Aggregated review payload for "I received reviews" UI.
+/*
+ * 2026-05 Hall Plan C (C2b): `ReviewDimensionAggregate` and
+ * `AggregatedReviewPayload` were removed. Numeric review scoring was retired
+ * from the UI, so serving aggregate dimension means/medians made the API a
+ * second competitiveness authority — removed along with the
+ * `/halls/reviews/:profileUserId/aggregate` endpoint.
  */
-export interface ReviewDimensionAggregate {
-  dimension: 'academic' | 'test' | 'activity' | 'award' | 'overall';
-  mean: number;
-  weightedMean: number;
-  trimmedMean: number;
-  median: number;
-  sampleSize: number;
-}
-
-export interface AggregatedReviewPayload {
-  reviewCount: number;
-  inProgress: boolean;
-  progressTarget: number;
-  acceptingReviews: boolean;
-  dimensions: {
-    academic: ReviewDimensionAggregate;
-    test: ReviewDimensionAggregate;
-    activity: ReviewDimensionAggregate;
-    award: ReviewDimensionAggregate;
-    overall: ReviewDimensionAggregate;
-  };
-  distribution: Record<string, number[]>;
-  topTags: Array<{ tag: string; count: number }>;
-  methodBreakdown: Record<ReviewMethod, number>;
-}
 
 /**
  * Challenge attempt persistence payload (Hall 学长之路 multi-school predictions).

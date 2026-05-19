@@ -23,10 +23,6 @@ import {
   type HallOverviewPayload,
 } from './hall-overview.service';
 import {
-  HallReviewAggregatorService,
-  type AggregatedReviewPayload,
-} from './hall-review-aggregator.service';
-import {
   ReviewerQualificationService,
   type QualificationQuestion,
   type QualificationResult,
@@ -77,7 +73,6 @@ export class HallController {
     private readonly hallService: HallService,
     private readonly swipeService: SwipeService,
     private readonly hallOverviewService: HallOverviewService,
-    private readonly aggregatorService: HallReviewAggregatorService,
     private readonly qualificationService: ReviewerQualificationService,
     private readonly reviewCoachService: ReviewCoachService,
     private readonly verifiedDashboardService: HallVerifiedDashboardService,
@@ -101,20 +96,14 @@ export class HallController {
   }
 
   // ============================================
-  // Stage 2: Review aggregation, reporting, reviewer qualification
+  // Stage 2: Review reporting, reviewer qualification
+  //
+  // 2026-05 Hall Plan C (C2b): the `reviews/:profileUserId/aggregate`
+  // endpoint and HallReviewAggregatorService were removed. Numeric review
+  // scoring was retired from the UI, and serving aggregate dimension
+  // means/medians made the API a second competitiveness authority — at
+  // odds with the de-gamified, qualitative peer-feedback model.
   // ============================================
-
-  @Get('reviews/:profileUserId/aggregate')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary:
-      'Aggregate of reviews for an applicant (returns inProgress=true below 7-review threshold)',
-  })
-  async aggregateReviews(
-    @Param('profileUserId') profileUserId: string,
-  ): Promise<AggregatedReviewPayload | null> {
-    return this.aggregatorService.aggregateForApplicant(profileUserId);
-  }
 
   @Post('reviews/:reviewId/report')
   @ThrottleSensitive()

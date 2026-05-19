@@ -154,7 +154,10 @@ export class HallListService {
     const list = await this.prisma.userList.findUnique({
       where: { id: listId },
       include: {
-        user: { select: { id: true, email: true } },
+        // 2026-05 Hall Plan C (security): the list creator's email is PII
+        // and this is a public-facing list endpoint — expose only the
+        // opaque id, never the email.
+        user: { select: { id: true } },
         _count: { select: { votes: true } },
       },
     });

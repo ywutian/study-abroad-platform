@@ -73,7 +73,10 @@ interface ChallengeResult {
   accuracy: number;
 }
 
-const RESULT_OPTIONS = ['ACCEPTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'];
+// 2026-05 Hall Plan C (C2b): the backend challenge deck filters cases to
+// ['ADMITTED','REJECTED','WAITLISTED'] only — DEFERRED was removed because a
+// DEFERRED guess can never match a real outcome. Keep this list in sync.
+const RESULT_OPTIONS = ['ACCEPTED', 'REJECTED', 'WAITLISTED'];
 
 export function ChallengeTab() {
   const t = useTranslations('hall');
@@ -266,8 +269,8 @@ export function ChallengeTab() {
               className={
                 schoolResult
                   ? schoolResult.isCorrect
-                    ? 'border-green-500/50 bg-green-50/30 dark:bg-green-950/10'
-                    : 'border-red-500/50 bg-red-50/30 dark:bg-red-950/10'
+                    ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/10'
+                    : 'border-destructive/50 bg-destructive/5'
                   : ''
               }
             >
@@ -287,9 +290,9 @@ export function ChallengeTab() {
                   {schoolResult ? (
                     <div className="flex items-center gap-2">
                       {schoolResult.isCorrect ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
+                        <XCircle className="h-5 w-5 text-destructive" />
                       )}
                       <div className="text-xs">
                         <p className="font-medium">

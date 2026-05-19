@@ -3217,10 +3217,10 @@
       "steps": {
         "welcomeTitle": "Welcome to the Alumni Square",
         "welcomeBody": "A community space where applicants compare positioning, get peer reviews, and learn from verified admit cases.",
-        "pointsTitle": "Earn points by contributing",
-        "pointsBody": "Reviewing peers, completing challenges and sharing outcomes earns points you can redeem in the Points Center.",
-        "leaderboardTitle": "See where you stand",
-        "leaderboardBody": "The ranking tab shows your competitive position against applicants targeting the same schools.",
+        "learnTitle": "Learn from real cases",
+        "learnBody": "Predict the outcome of real applicant profiles, then get an AI debrief explaining what shaped each admission decision.",
+        "verifiedTitle": "Verified admission data",
+        "verifiedBody": "Browse a curated center of verified admit records — real scores, schools and majors you can use to ground your own positioning.",
         "privacyTitle": "You are in control",
         "privacyBody": "Peer reviews are opt-in and your profile is always anonymized. Manage this anytime in Settings."
       }

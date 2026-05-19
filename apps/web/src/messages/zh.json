@@ -3201,10 +3201,10 @@
       "steps": {
         "welcomeTitle": "欢迎来到校友广场",
         "welcomeBody": "在这里，申请者可以对比定位、获得同伴锐评，并向已认证的录取案例学习。",
-        "pointsTitle": "贡献内容赚取积分",
-        "pointsBody": "锐评同伴、完成挑战和分享录取结果都能赚取积分，可在积分中心兑换。",
-        "leaderboardTitle": "了解你的位置",
-        "leaderboardBody": "排行榜标签会显示你在同目标校申请者中的竞争位置。",
+        "learnTitle": "从真实案例中学习",
+        "learnBody": "预测真实申请者档案的录取结果，再获得 AI 复盘，解析每个录取决定背后的关键因素。",
+        "verifiedTitle": "已认证的录取数据",
+        "verifiedBody": "浏览精选的已认证录取记录中心——真实的成绩、学校和专业，帮你为自己的定位找到依据。",
         "privacyTitle": "一切由你掌控",
         "privacyBody": "同伴锐评需主动开启，你的档案始终匿名。可随时在设置中管理。"
       }

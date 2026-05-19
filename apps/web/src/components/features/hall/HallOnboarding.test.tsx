@@ -22,8 +22,8 @@ function renderOnboarding() {
 // Real copy from messages/en.json → hall.onboarding.steps.*
 const STEP_TITLES = [
   'Welcome to the Alumni Square',
-  'Earn points by contributing',
-  'See where you stand',
+  'Learn from real cases',
+  'Verified admission data',
   'You are in control',
 ];
 

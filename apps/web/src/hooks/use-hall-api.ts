@@ -11,7 +11,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { hallRoutes, pointsRedemptionRoutes, API_ROUTES } from '@study-abroad/shared';
 import type {
   HallOverviewPayload,
-  AggregatedReviewPayload,
   ChallengeAttemptResult,
   RedemptionType,
   RedemptionResult,
@@ -40,8 +39,6 @@ export const hallKeys = {
   publicLists: () => [...hallKeys.all, 'publicLists'] as const,
   // Hall refactor Stage 1-7 — new query keys
   overview: () => [...hallKeys.all, 'overview'] as const,
-  reviewAggregate: (profileUserId: string) =>
-    [...hallKeys.all, 'reviewAggregate', profileUserId] as const,
   redemptionCatalog: () => [...hallKeys.all, 'redemptionCatalog'] as const,
   redemptionHistory: () => [...hallKeys.all, 'redemptionHistory'] as const,
   // Hall refactor Stage 3 — Verified China Admit Dashboard
@@ -234,22 +231,11 @@ export function useHallOverview(enabled = true) {
 }
 
 // ============================================
-// Hall refactor Stage 2 — Review aggregate + report + qualification
+// Hall refactor Stage 2 — Review report + qualification
+//
+// 2026-05 Hall Plan C (C2b): `useReviewAggregate` was removed — the numeric
+// review-score aggregation endpoint it called was retired.
 // ============================================
-
-/**
- * Aggregated reviews for an applicant. Returns inProgress=true below 7-review
- * threshold so UI can show progress, not data.
- */
-export function useReviewAggregate(profileUserId: string, enabled = true) {
-  return useQuery({
-    queryKey: hallKeys.reviewAggregate(profileUserId),
-    queryFn: () =>
-      apiClient.get<AggregatedReviewPayload>(hallRoutes.reviewAggregate(profileUserId)),
-    enabled: !!profileUserId && enabled,
-    staleTime: 60_000,
-  });
-}
 
 /** Report a review (sends to admin moderation queue via central Report table). */
 export function useReportReview() {
