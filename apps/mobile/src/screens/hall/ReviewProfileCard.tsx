@@ -1,22 +1,20 @@
 /**
- * ReviewProfileCard — single step of the Tinder-style peer review deck.
+ * ReviewProfileCard — desensitized public profile summary for peer feedback.
  *
- * Each card shows ONE review dimension (academic / test / activity / award)
- * of a desensitized public profile. The reviewer swipes:
- *   right = strong · left = weak · up = unsure
- *
- * Pure presentational — all gesture/animation lives in ReviewSwipeTab.
- * Mirrors `apps/mobile/src/screens/swipe/CaseCard.tsx` styling conventions.
+ * Plan C / C2: numeric scoring was removed. This card is now purely a read-only
+ * summary of the applicant across all four dimensions (academic / test /
+ * activity / award) — the reviewer reads it, then writes qualitative feedback
+ * in `ReviewFeedbackTab`. No swipe overlays, no step counter.
  */
 import React from 'react';
-import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Avatar } from '@/components/ui';
-import { useColors, spacing, fontSize, fontWeight, borderRadius } from '@/utils/theme';
+import { useColors, spacing, fontSize, fontWeight, borderRadius, withOpacity } from '@/utils/theme';
 import type { ReviewProfileCard as ReviewProfileCardData, ReviewStep, Colors } from './types';
+import { REVIEW_STEPS } from './types';
 
 const STEP_ICON: Record<ReviewStep, keyof typeof Ionicons.glyphMap> = {
   academic: 'school-outline',
@@ -44,30 +42,14 @@ function DimensionRow({ c, label, value }: DimensionRowProps) {
 
 interface ReviewProfileCardProps {
   profile: ReviewProfileCardData;
-  step: ReviewStep;
-  stepIndex: number;
-  totalSteps: number;
-  isTop: boolean;
-  strongOverlayStyle?: AnimatedStyle<ViewStyle>;
-  weakOverlayStyle?: AnimatedStyle<ViewStyle>;
-  unsureOverlayStyle?: AnimatedStyle<ViewStyle>;
 }
 
-export default function ReviewProfileCard({
-  profile,
-  step,
-  stepIndex,
-  totalSteps,
-  isTop,
-  strongOverlayStyle,
-  weakOverlayStyle,
-  unsureOverlayStyle,
-}: ReviewProfileCardProps) {
+export default function ReviewProfileCard({ profile }: ReviewProfileCardProps) {
   const { t } = useTranslation();
   const c = useColors();
   const dash = '—';
 
-  const stepBody = (): React.ReactNode => {
+  const sectionBody = (step: ReviewStep): React.ReactNode => {
     switch (step) {
       case 'academic':
         return (
@@ -135,46 +117,22 @@ export default function ReviewProfileCard({
             {[profile.grade, profile.region].filter(Boolean).join(' · ') || dash}
           </Text>
         </View>
-        <Text style={[S.stepCounter, { color: c.foregroundMuted }]}>
-          {stepIndex + 1}/{totalSteps}
-        </Text>
       </View>
 
-      {/* Step body — the dimension under review */}
+      {/* All four dimensions, read-only */}
       <View style={S.body}>
-        <View style={[S.stepBadge, { backgroundColor: c.primary + '15' }]}>
-          <Ionicons name={STEP_ICON[step]} size={16} color={c.primary} />
-          <Text style={[S.stepTitle, { color: c.primary }]}>{t(`hall.review.steps.${step}`)}</Text>
-        </View>
-        <Text style={[S.stepDesc, { color: c.foregroundMuted }]}>
-          {t(`hall.review.stepDesc.${step}`)}
-        </Text>
-        <View style={S.dimList}>{stepBody()}</View>
-        <Text style={[S.swipeHint, { color: c.foregroundMuted }]}>
-          {t('hall.review.swipeHint')}
-        </Text>
+        {REVIEW_STEPS.map((step) => (
+          <View key={step} style={S.section}>
+            <View style={[S.stepBadge, { backgroundColor: withOpacity(c.primary, 0.1) }]}>
+              <Ionicons name={STEP_ICON[step]} size={16} color={c.primary} />
+              <Text style={[S.stepTitle, { color: c.primary }]}>
+                {t(`hall.review.steps.${step}`)}
+              </Text>
+            </View>
+            <View style={S.dimList}>{sectionBody(step)}</View>
+          </View>
+        ))}
       </View>
-
-      {/* Directional swipe overlays — only on the top card */}
-      {isTop && (
-        <>
-          <Animated.View
-            style={[S.overlay, S.overlayRight, { borderColor: c.success }, strongOverlayStyle]}
-          >
-            <Text style={[S.overlayText, { color: c.success }]}>{t('hall.review.swipeRight')}</Text>
-          </Animated.View>
-          <Animated.View
-            style={[S.overlay, S.overlayLeft, { borderColor: c.error }, weakOverlayStyle]}
-          >
-            <Text style={[S.overlayText, { color: c.error }]}>{t('hall.review.swipeLeft')}</Text>
-          </Animated.View>
-          <Animated.View
-            style={[S.overlay, S.overlayUp, { borderColor: c.warning }, unsureOverlayStyle]}
-          >
-            <Text style={[S.overlayText, { color: c.warning }]}>{t('hall.review.swipeUp')}</Text>
-          </Animated.View>
-        </>
-      )}
     </View>
   );
 }
@@ -204,13 +162,12 @@ const S = StyleSheet.create({
     fontSize: fontSize.xs,
     marginTop: 2,
   },
-  stepCounter: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-  },
   body: {
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
+  },
+  section: {
+    gap: spacing.sm,
   },
   stepBadge: {
     flexDirection: 'row',
@@ -224,10 +181,6 @@ const S = StyleSheet.create({
   stepTitle: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.semibold,
-  },
-  stepDesc: {
-    fontSize: fontSize.sm,
-    lineHeight: fontSize.sm * 1.4,
   },
   dimList: {
     gap: spacing.sm,
@@ -248,36 +201,5 @@ const S = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     textAlign: 'right',
-  },
-  swipeHint: {
-    fontSize: fontSize.xs,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-  },
-  overlay: {
-    position: 'absolute',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderWidth: 3,
-    borderRadius: borderRadius.md,
-  },
-  overlayRight: {
-    top: spacing.xl,
-    left: spacing.xl,
-    transform: [{ rotate: '-18deg' }],
-  },
-  overlayLeft: {
-    top: spacing.xl,
-    right: spacing.xl,
-    transform: [{ rotate: '18deg' }],
-  },
-  overlayUp: {
-    top: spacing.xl,
-    alignSelf: 'center',
-  },
-  overlayText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    textTransform: 'uppercase',
   },
 });

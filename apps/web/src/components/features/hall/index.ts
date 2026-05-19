@@ -1,7 +1,6 @@
 // Hall 组件
 export { SwipeCard, type SwipeCaseData } from './SwipeCard';
 export { SwipeStack } from './SwipeStack';
-export { ModuleSelector, ReviewModuleCard } from './ReviewModuleCard';
 export { SwipeResultOverlay } from './SwipeResultOverlay';
 export { HallOnboarding } from './HallOnboarding';
 

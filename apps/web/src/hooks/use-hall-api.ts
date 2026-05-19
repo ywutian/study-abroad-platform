@@ -143,11 +143,6 @@ export interface ReviewSwipeData {
 
 export interface SubmitReviewInput {
   profileUserId: string;
-  academicScore: number;
-  testScore: number;
-  activityScore: number;
-  awardScore: number;
-  overallScore: number;
   comment?: string;
   academicComment?: string;
   testComment?: string;
@@ -155,11 +150,10 @@ export interface SubmitReviewInput {
   awardComment?: string;
   tags?: string[];
   status?: 'DRAFT' | 'PUBLISHED';
-  // Hall refactor Stage 3 — Tinder swipe review fields (backend CreateReviewDto).
-  reviewMethod?: 'CLASSIC' | 'SWIPE';
-  swipeData?: ReviewSwipeData;
-  reviewerConfidence?: number;
   quickTags?: string[];
+  // Plan C / C2: numeric 1-10 scoring removed — peer review is qualitative-only.
+  // The backend `CreateReviewDto` score fields are now optional (defaulted to a
+  // neutral value server-side); the frontend simply stops sending them.
 }
 
 /** 提交评审 */

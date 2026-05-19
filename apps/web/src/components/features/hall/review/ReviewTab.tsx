@@ -1,16 +1,14 @@
 'use client';
 
 /**
- * ReviewTab — 同伴反馈标签页 orchestrator.
+ * ReviewTab — 同伴反馈 (peer feedback) tab orchestrator.
  *
- * Flow:
+ * Plan C / batch C2: numeric scoring was removed. The flow is now two stages:
  *   1. Select a public profile (ProfileSelector).
- *   2. Pick a review mode — Swipe (Tinder) or Classic (slider).
- *   3. Run the chosen wizard; both accumulate into the same score shape and
- *      submit through a single `useSubmitReview` call.
+ *   2. Write qualitative feedback (QualitativeReviewForm) and submit.
  *
- * Replaces the legacy double-track design (ReviewTab + SwipeReviewMode overlay):
- * one orchestrator, two interchangeable wizards, one submit path.
+ * The legacy `choose-mode` stage (Swipe vs Classic wizard) is gone — there is
+ * one qualitative form, one submit path, and no score fields.
  */
 
 import { useState, useCallback } from 'react';
@@ -20,81 +18,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Users, GraduationCap, Layers, Sparkles, ArrowLeft } from 'lucide-react';
+import { Users, GraduationCap, ArrowLeft } from 'lucide-react';
 import { useSubmitReview } from '@/hooks/use-hall-api';
 import { ProfileSelector } from '@/components/features';
-import { cn } from '@/lib/utils';
 import type { PublicProfile } from '@/types/hall';
-import { ClassicReviewWizard, type ClassicReviewSubmitPayload } from './ClassicReviewWizard';
-import { SwipeReviewWizard, type SwipeReviewSubmitPayload } from './SwipeReviewWizard';
+import {
+  QualitativeReviewForm,
+  type QualitativeReviewSubmitPayload,
+} from './QualitativeReviewForm';
 
-type ReviewMode = 'swipe' | 'classic';
-type Stage = 'select-profile' | 'choose-mode' | 'review';
+type Stage = 'select-profile' | 'write-review';
 
 export function ReviewTab() {
   const t = useTranslations();
 
   const [stage, setStage] = useState<Stage>('select-profile');
   const [profile, setProfile] = useState<PublicProfile | null>(null);
-  const [mode, setMode] = useState<ReviewMode>('swipe');
 
   const submitReview = useSubmitReview();
 
   const reset = useCallback(() => {
     setStage('select-profile');
     setProfile(null);
-    setMode('swipe');
   }, []);
 
-  const handleClassicSubmit = useCallback(
-    (payload: ClassicReviewSubmitPayload) => {
+  const handleSubmit = useCallback(
+    (payload: QualitativeReviewSubmitPayload) => {
       if (!profile) return;
-      const { scores, comments, tags } = payload;
+      const { comments, tags } = payload;
       submitReview.mutate(
         {
           profileUserId: profile.userId,
-          academicScore: scores.academic,
-          testScore: scores.test,
-          activityScore: scores.activity,
-          awardScore: scores.award,
-          overallScore: scores.overall,
-          comment: comments.general || undefined,
+          comment: comments.general,
           academicComment: comments.academic || undefined,
           testComment: comments.test || undefined,
           activityComment: comments.activity || undefined,
           awardComment: comments.award || undefined,
-          tags: tags.length > 0 ? tags : undefined,
-          reviewMethod: 'CLASSIC',
-          status: 'PUBLISHED',
-        },
-        {
-          onSuccess: () => {
-            toast.success(t('hall.review.submitSuccess'));
-            reset();
-          },
-        }
-      );
-    },
-    [profile, submitReview, t, reset]
-  );
-
-  const handleSwipeSubmit = useCallback(
-    (payload: SwipeReviewSubmitPayload) => {
-      if (!profile) return;
-      const { scores, rationale, tags, swipeData, reviewerConfidence } = payload;
-      submitReview.mutate(
-        {
-          profileUserId: profile.userId,
-          academicScore: scores.academic,
-          testScore: scores.test,
-          activityScore: scores.activity,
-          awardScore: scores.award,
-          overallScore: scores.overall,
-          comment: rationale,
-          reviewMethod: 'SWIPE',
-          swipeData,
-          reviewerConfidence,
           quickTags: tags.length > 0 ? tags : undefined,
+          tags: tags.length > 0 ? tags : undefined,
           status: 'PUBLISHED',
         },
         {
@@ -135,7 +96,7 @@ export function ReviewTab() {
             <ProfileSelector
               onSelect={(p) => {
                 setProfile(p);
-                setStage('choose-mode');
+                setStage('write-review');
               }}
               selectedProfileId={undefined}
             />
@@ -143,8 +104,8 @@ export function ReviewTab() {
         </Card>
       )}
 
-      {/* Stage 2 — mode selection */}
-      {stage === 'choose-mode' && profile && (
+      {/* Stage 2 — qualitative feedback form */}
+      {stage === 'write-review' && profile && (
         <div className="space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -176,101 +137,9 @@ export function ReviewTab() {
             </Button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <ModeCard
-              active={mode === 'swipe'}
-              icon={Sparkles}
-              title={t('hall.review.mode.swipeTitle')}
-              description={t('hall.review.mode.swipeDesc')}
-              badge={t('hall.review.mode.recommended')}
-              onSelect={() => setMode('swipe')}
-            />
-            <ModeCard
-              active={mode === 'classic'}
-              icon={Layers}
-              title={t('hall.review.mode.classicTitle')}
-              description={t('hall.review.mode.classicDesc')}
-              onSelect={() => setMode('classic')}
-            />
-          </div>
-
-          <div className="flex justify-end">
-            <Button onClick={() => setStage('review')} className="gap-2">
-              {t('hall.review.startReview')}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Stage 3 — the chosen wizard */}
-      {stage === 'review' && profile && (
-        <div className="space-y-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setStage('choose-mode')}
-            className="gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('hall.review.changeMode')}
-          </Button>
-          {mode === 'swipe' ? (
-            <SwipeReviewWizard
-              profile={profile}
-              onSubmit={handleSwipeSubmit}
-              onCancel={() => setStage('choose-mode')}
-              isSubmitting={submitReview.isPending}
-            />
-          ) : (
-            <ClassicReviewWizard
-              onSubmit={handleClassicSubmit}
-              isSubmitting={submitReview.isPending}
-            />
-          )}
+          <QualitativeReviewForm onSubmit={handleSubmit} isSubmitting={submitReview.isPending} />
         </div>
       )}
     </motion.div>
-  );
-}
-
-interface ModeCardProps {
-  active: boolean;
-  icon: typeof Sparkles;
-  title: string;
-  description: string;
-  badge?: string;
-  onSelect: () => void;
-}
-
-function ModeCard({ active, icon: Icon, title, description, badge, onSelect }: ModeCardProps) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        'flex flex-col gap-2 rounded-xl border p-4 text-left transition-all min-w-0',
-        active
-          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-          : 'border-border hover:border-primary/40 hover:bg-muted/40'
-      )}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div
-          className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-            active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-          )}
-        >
-          <Icon className="h-4 w-4" />
-        </div>
-        {badge && (
-          <Badge variant="secondary" className="text-2xs">
-            {badge}
-          </Badge>
-        )}
-      </div>
-      <p className="font-semibold">{title}</p>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </button>
   );
 }

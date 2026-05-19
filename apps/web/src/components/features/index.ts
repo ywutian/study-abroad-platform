@@ -96,8 +96,6 @@ export { DataExportDialog } from './export/data-export';
 export {
   SwipeCard,
   SwipeStack,
-  ModuleSelector,
-  ReviewModuleCard,
   SwipeResultOverlay,
   // Tab components (from hall/page.tsx refactor)
   TinderTab,

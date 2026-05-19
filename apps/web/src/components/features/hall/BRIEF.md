@@ -13,14 +13,13 @@ badges, streaks, daily challenge or leaderboard.
 - SwipeResultOverlay — shows correct/wrong + the real outcome after a swipe
 - TinderTab — main swipe interface tab + a private calibration-accuracy stat
 - ReviewTab — re-export shim for `review/ReviewTab` (stable import path)
-- review/ — peer-review experience: ReviewTab orchestrator + ClassicReviewWizard
-  (slider fallback) + SwipeReviewWizard (Tinder-style 4-step swipe) + review-shared
+- review/ — qualitative peer-feedback experience (Plan C C2: numeric scoring
+  removed): ReviewTab orchestrator + QualitativeReviewForm + review-shared
 - RankingTab — thin orchestrator (data + state)
 - ranking/ — RankingTab sub-components: SummaryStats, SchoolPicker, ResultsGrid
   (RankingCard), CompetitorDistribution, AiPanel + ranking-shared (POSITION_CONFIG)
 - ListsTab — curated case lists
 - VerifiedTab / ChallengeTab — verified cases and multi-school batch prediction
-- ReviewModuleCard — module/topic selector for focused review
 
 ## Data Flow
 
@@ -33,6 +32,7 @@ badges, streaks, daily challenge or leaderboard.
 - Framer Motion for drag gestures and card animations
 - Shared swipe physics: `lib/hooks/useSwipeGesture.ts` (x/y/rotate/opacity + drag-end classifier)
 - Tab-based page split (TinderTab, ReviewTab, RankingTab, ListsTab)
-- Review is single-track: one ReviewTab orchestrator → choose swipe/classic wizard → one submit
+- Review is single-track and qualitative-only: ReviewTab orchestrator → select
+  profile → QualitativeReviewForm (written feedback, no scores) → one submit
 - Calibration accuracy (total/correct/accuracy) is private — visible only to the
   user, never aggregated into a leaderboard

@@ -817,50 +817,46 @@
       "successRate": "成功率"
     },
     "review": {
-      "title": "同伴锐评",
-      "intro": "滑动模式",
-      "introDesc": "逐维度评价同伴档案 —— 滑动打分。",
-      "popular": "热门",
-      "mine": "我的评价",
-      "empty": "暂无评价",
-      "emptyDesc": "来写下第一条评价吧！",
-      "noProfiles": "暂无可评价的档案",
+      "title": "同伴反馈",
+      "noProfiles": "暂无可反馈的档案",
       "noProfilesDesc": "稍后再来查看更多公开档案。",
-      "start": "开始评价",
       "next": "下一份档案",
-      "submit": "提交评价",
+      "submit": "提交反馈",
       "submitting": "提交中...",
-      "created": "评价已提交！",
-      "swipeHint": "右滑 = 强 · 左滑 = 弱 · 上滑 = 不确定",
-      "swipeLeft": "偏弱",
-      "swipeRight": "突出",
-      "swipeUp": "不确定",
-      "comment": "评论",
-      "commentPlaceholder": "分享你的看法...",
-      "applicantProfile": "申请者档案",
+      "created": "反馈已提交！",
+      "emptyDesc": "你已浏览完所有可反馈的档案",
       "targetMajor": "目标专业",
       "unknownMajor": "未定专业",
-      "stepProgress": "第 {{current}} / {{total}} 步",
+      "stepProgress": "第 {{current}} / {{total}} 份",
       "helpful": "有帮助",
       "insightful": "有见解",
-      "scores": {
-        "academic": "学术",
-        "test": "考试",
-        "activity": "活动",
-        "award": "奖项",
-        "overall": "综合"
-      },
+      "dimensionFeedback": "你的书面反馈（可选）",
+      "tags": "快捷标签（可选）",
+      "generalComment": "整体反馈",
+      "generalCommentHint": "写下你的整体印象——有哪些亮点，又有哪些可以进一步加强...",
+      "generalCommentMin": "整体反馈至少需要 {{min}} 个字。",
+      "disclaimer": "反馈是其他成员的个人观点，不构成专业的招生建议。",
       "steps": {
         "academic": "学术背景",
         "test": "标化成绩",
         "activity": "课外活动",
         "award": "奖项荣誉"
       },
-      "stepDesc": {
-        "academic": "学术记录是否突出？",
-        "test": "标化成绩是否有竞争力？",
-        "activity": "活动是否有深度和意义？",
-        "award": "奖项是否含金量高？"
+      "commentHint": {
+        "academic": "学术方面有哪些亮点，又有哪些可以更进一步的地方？",
+        "test": "标化成绩读起来如何，有哪些值得补充的背景？",
+        "activity": "课外活动中哪些让你印象深刻，哪些还略显单薄？",
+        "award": "获奖与荣誉给你的整体感受如何？"
+      },
+      "quickTag": {
+        "well-rounded": "全面发展",
+        "strong-stem": "理工强",
+        "high-gpa": "GPA 优秀",
+        "leadership": "领导力",
+        "creative": "富有创造力",
+        "community-impact": "社区影响力",
+        "research-oriented": "研究导向",
+        "athletic": "体育特长"
       }
     },
     "ranking": {

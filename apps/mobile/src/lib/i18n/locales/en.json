@@ -817,50 +817,46 @@
       "successRate": "Success Rate"
     },
     "review": {
-      "title": "Peer Review",
-      "intro": "Swipe Mode",
-      "introDesc": "Review a peer profile dimension by dimension — swipe to score.",
-      "popular": "Popular",
-      "mine": "My Reviews",
-      "empty": "No reviews yet",
-      "emptyDesc": "Be the first to write a review!",
+      "title": "Peer Feedback",
       "noProfiles": "No profiles to review",
       "noProfilesDesc": "Check back later for more public profiles.",
-      "start": "Start Review",
       "next": "Next Profile",
-      "submit": "Submit Review",
+      "submit": "Submit Feedback",
       "submitting": "Submitting...",
-      "created": "Review submitted!",
-      "swipeHint": "Swipe right = strong · left = weak · up = unsure",
-      "swipeLeft": "Weak",
-      "swipeRight": "Strong",
-      "swipeUp": "Unsure",
-      "comment": "Comment",
-      "commentPlaceholder": "Share your thoughts...",
-      "applicantProfile": "Applicant Profile",
+      "created": "Feedback submitted!",
+      "emptyDesc": "You have reviewed every available profile",
       "targetMajor": "Target Major",
       "unknownMajor": "Undeclared",
-      "stepProgress": "Step {{current}} / {{total}}",
+      "stepProgress": "Profile {{current}} / {{total}}",
       "helpful": "Helpful",
       "insightful": "Insightful",
-      "scores": {
-        "academic": "Academic",
-        "test": "Test",
-        "activity": "Activity",
-        "award": "Award",
-        "overall": "Overall"
-      },
+      "dimensionFeedback": "Your written feedback (optional)",
+      "tags": "Quick Tags (optional)",
+      "generalComment": "Overall Feedback",
+      "generalCommentHint": "Share your overall impression — what stands out, and what they could strengthen...",
+      "generalCommentMin": "Please write at least {{min}} characters of overall feedback.",
+      "disclaimer": "Feedback reflects the personal perspective of another member — it is not professional admissions advice.",
       "steps": {
         "academic": "Academic Background",
         "test": "Test Scores",
         "activity": "Extracurriculars",
         "award": "Awards & Honors"
       },
-      "stepDesc": {
-        "academic": "Is the academic record strong?",
-        "test": "Are the test scores competitive?",
-        "activity": "Are the activities deep and meaningful?",
-        "award": "Are the awards prestigious?"
+      "commentHint": {
+        "academic": "What stood out about their academics, and where could they go further?",
+        "test": "How do their test scores read — any context worth noting?",
+        "activity": "What did you find compelling or thin about their activities?",
+        "award": "How do their awards and honors come across?"
+      },
+      "quickTag": {
+        "well-rounded": "Well-rounded",
+        "strong-stem": "Strong STEM",
+        "high-gpa": "High GPA",
+        "leadership": "Leadership",
+        "creative": "Creative",
+        "community-impact": "Community impact",
+        "research-oriented": "Research-oriented",
+        "athletic": "Athletic"
       }
     },
     "ranking": {
