@@ -27,6 +27,7 @@ import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 // Above-the-fold surfaces stay statically imported — they're always
 // visible and we don't want a chunk-fetch delay before paint.
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import {
   createFallbackWorkbench,
@@ -35,15 +36,14 @@ import {
 } from './_components/dashboard-workbench-model';
 
 /*
- * 2026-05 Phase 5 #41: Lazy-load the 5 below-the-fold surfaces.
+ * 2026-05 Phase 5 #41: Lazy-load the below-the-fold surfaces.
  *
  * Why each is a great splitting candidate:
  *   - DashboardEssayCoach   → renders null when no essay AI runs exist
  *   - DashboardDecisionPanel→ renders null until user has decided schools
  *                             (Stage G — most users haven't reached it)
- *   - DashboardStats        → 9 tile rows; never above the fold
+ *   - DashboardStats        → 9 tile rows; collapsed by default
  *   - DashboardWorkspaceHub → 13 lucide-react icons + 12 nav rows; large
- *   - DashboardActivity     → bottom of page; rarely the first scroll target
  *
  * `ssr: true` (default) is kept so the components still pre-render with
  * `undefined` data (matching their existing SSR behaviour). The chunk
@@ -51,7 +51,7 @@ import {
  *
  * No loading placeholder is set; each component already gracefully
  * handles its own undefined-data + empty-state cases (DecisionPanel /
- * EssayCoach return null; Hub/Stats/Activity render an empty list).
+ * EssayCoach return null; Hub/Stats render collapsed).
  */
 const DashboardEssayCoach = dynamic(() =>
   import('./_components/dashboard-essay-coach').then((m) => ({
@@ -71,11 +71,6 @@ const DashboardStats = dynamic(() =>
 const DashboardWorkspaceHub = dynamic(() =>
   import('./_components/dashboard-workspace-hub').then((m) => ({
     default: m.DashboardWorkspaceHub,
-  }))
-);
-const DashboardActivity = dynamic(() =>
-  import('./_components/dashboard-activity').then((m) => ({
-    default: m.DashboardActivity,
   }))
 );
 
@@ -292,6 +287,19 @@ export default function DashboardPage() {
         </motion.div>
 
         {/*
+          2026-05 dashboard redesign batch 1: Pipeline strip extracted
+          from CommandCenter to its own block. Renders null unless at
+          least one school is past IN_PROGRESS.
+        */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.03 }}
+        >
+          <DashboardPipelineStrip pipeline={workbench.pipeline} />
+        </motion.div>
+
+        {/*
           2026-05 Phase 2c: Latest essay AI feedback inline. Renders only
           when there's at least one AI run (data === null otherwise).
           Brings AI Layer 3 (essay feedback) into the dashboard as a
@@ -353,14 +361,6 @@ export default function DashboardPage() {
           data-tour="dashboard-hub"
         >
           <DashboardWorkspaceHub />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <DashboardActivity activities={stableDashboard?.recentActivity ?? []} />
         </motion.div>
       </div>
     </PageContainer>

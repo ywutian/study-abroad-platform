@@ -5,6 +5,7 @@ import {
   BarChart3,
   BookOpen,
   Calendar,
+  ChevronDown,
   ClipboardList,
   Compass,
   FileText,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Link } from '@/lib/i18n/navigation';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
@@ -158,22 +160,30 @@ export function DashboardWorkspaceHub() {
   // navigation only: Research / Social / Tools — 3 cols instead of 4.
 
   return (
-    <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
-      <CardContent className="p-4 sm:p-5">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h3 className="text-base font-semibold">{t('title')}</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">{t('subtitle')}</p>
-          </div>
-        </div>
+    // 2026-05 dashboard redesign batch 1: the Hub mirrors the global
+    // Header nav — keep it reachable but collapsed by default so it does
+    // not compete with the CommandCenter for first-screen attention.
+    <Collapsible defaultOpen={false}>
+      <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
+        <CardContent className="p-4 sm:p-5">
+          <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 text-left">
+            <span className="block">
+              <span className="block text-base font-semibold">{t('title')}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">{t('subtitle')}</span>
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+          </CollapsibleTrigger>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <HubColumn title={t('sections.research')} links={research} />
-          <HubColumn title={t('sections.social')} links={social} />
-          <HubColumn title={t('sections.tools')} links={tools} />
-        </div>
-      </CardContent>
-    </Card>
+          <CollapsibleContent>
+            <div className="mt-3 grid gap-4 lg:grid-cols-3">
+              <HubColumn title={t('sections.research')} links={research} />
+              <HubColumn title={t('sections.social')} links={social} />
+              <HubColumn title={t('sections.tools')} links={tools} />
+            </div>
+          </CollapsibleContent>
+        </CardContent>
+      </Card>
+    </Collapsible>
   );
 }
 

@@ -6,26 +6,26 @@ import { Skeleton } from '@/components/ui/skeleton';
  * Dashboard loading skeleton — must match the real page layout to
  * minimize Cumulative Layout Shift (CLS).
  *
- * Real layout (current — post PRs #186-200):
+ * Real layout:
  *   PageHeader
  *   → QuickAsk
  *   → CommandCenter (2-col xl: readiness left / priority queue right)
+ *   → [DashboardPipelineStrip] (conditional, no skeleton — see note)
  *   → [DashboardEssayCoach]    (conditional, no skeleton — see note)
  *   → [DashboardDecisionPanel] (conditional, no skeleton — see note)
- *   → DashboardStats (Phase 2.5b — 9-tile snapshot)
- *   → WorkspaceHub (3-col Research / Community / Tools — Phase 2.5b)
- *   → DashboardActivity
+ *   → DashboardStats        (collapsed by default — header-only skeleton)
+ *   → DashboardWorkspaceHub (collapsed by default — header-only skeleton)
  *
- * Conditional surfaces (EssayCoach, DecisionPanel) intentionally have
- * NO skeleton entry: they render null when the user has no data, so
- * reserving space for them would CAUSE the layout shift this file
- * exists to prevent.
+ * Conditional surfaces (PipelineStrip, EssayCoach, DecisionPanel)
+ * intentionally have NO skeleton entry: they render null when the user
+ * has no data, so reserving space for them would CAUSE the layout shift
+ * this file exists to prevent.
  *
  * History:
  * - 2026-05 Phase 1.5 #16: rewritten from legacy "4 stat cards" stub
- * - 2026-05 Phase 1.5 #16 v2 (this update): synced with Phase 2.5a
- *   (readiness 2-col → 5-col), Phase 2.5b (Hub 4-col → 3-col + new
- *   Stats card insertion), to eliminate post-load reflow.
+ * - 2026-05 dashboard redesign batch 1: dropped the Activity skeleton,
+ *   extracted PipelineStrip, and reduced Stats/Hub to header-only
+ *   skeletons now that both are collapsed by default.
  */
 export default function DashboardLoading() {
   return (
@@ -56,7 +56,7 @@ export default function DashboardLoading() {
         {/* CommandCenter skeleton (2-col on xl, single col below) */}
         <Card className="overflow-hidden rounded-[var(--theme-radius-card)]">
           <CardContent className="p-0">
-            <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_390px]">
+            <div className="grid min-w-0 gap-0 xl:grid-cols-[minmax(0,1fr)_390px]">
               {/* Left column: hero + readiness items + pipeline */}
               <div className="min-w-0 border-b border-border p-4 sm:p-5 xl:border-b-0 xl:border-r">
                 {/* Hero */}
@@ -100,67 +100,28 @@ export default function DashboardLoading() {
           </CardContent>
         </Card>
 
-        {/*
-          Stats snapshot — Phase 2.5b extracted this from the Hub. 9
-          compact tiles in a 2/3/5-col responsive grid.
-        */}
+        {/* Stats snapshot — collapsed by default; header-only skeleton. */}
         <Card className="rounded-[var(--theme-radius-card)]">
           <CardContent className="p-4 sm:p-5">
-            <div className="mb-3 space-y-1">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-3 w-40" />
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 rounded-[var(--theme-radius-control,0.5rem)]" />
-              ))}
+            <div className="flex items-center justify-between gap-2">
+              <div className="space-y-1">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+              <Skeleton className="h-4 w-4 shrink-0" />
             </div>
           </CardContent>
         </Card>
 
-        {/*
-          WorkspaceHub — Phase 2.5b reduced this to 3 nav columns
-          (Research / Community / Tools). Stats was extracted above.
-        */}
+        {/* WorkspaceHub — collapsed by default; header-only skeleton. */}
         <Card className="rounded-[var(--theme-radius-card)]">
           <CardContent className="p-4 sm:p-5">
-            <div className="mb-3 space-y-1">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-3 w-40" />
-            </div>
-            <div className="grid gap-4 lg:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, col) => (
-                <div key={col}>
-                  <Skeleton className="mb-2 h-3 w-20" />
-                  <div className="space-y-1.5">
-                    {Array.from({ length: 4 }).map((_, row) => (
-                      <Skeleton
-                        key={row}
-                        className="h-10 rounded-[var(--theme-radius-control,0.5rem)]"
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Activity stream skeleton */}
-        <Card className="rounded-[var(--theme-radius-card)] py-0">
-          <CardContent className="px-4 py-4">
-            <Skeleton className="mb-3 h-5 w-32" />
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-start gap-3 border-b py-2 last:border-0">
-                  <Skeleton className="h-8 w-8 shrink-0 rounded-[var(--theme-radius-card)]" />
-                  <div className="flex-1 space-y-1">
-                    <Skeleton className="h-4 w-3/5" />
-                    <Skeleton className="h-3 w-2/5" />
-                  </div>
-                  <Skeleton className="h-4 w-16 shrink-0" />
-                </div>
-              ))}
+            <div className="flex items-center justify-between gap-2">
+              <div className="space-y-1">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+              <Skeleton className="h-4 w-4 shrink-0" />
             </div>
           </CardContent>
         </Card>

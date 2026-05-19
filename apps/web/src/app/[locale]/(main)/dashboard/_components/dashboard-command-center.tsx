@@ -22,7 +22,6 @@ import {
   User,
 } from 'lucide-react';
 
-import { DashboardPipelineStrip } from './dashboard-pipeline-strip';
 import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
 import {
   getProfileGrade,
@@ -405,15 +404,6 @@ export function DashboardCommandCenter({
                 })}
               </div>
             </div>
-
-            {/*
-              2026-05: Pipeline strip — closes the lifecycle gap where
-              dashboards forgot about a school the moment the user marked
-              it SUBMITTED. Renders only when at least one school is past
-              IN_PROGRESS, so brand-new users don't see "0 submitted, 0
-              accepted, 0 rejected" noise.
-            */}
-            <DashboardPipelineStrip pipeline={workbench.pipeline} />
           </div>
 
           <div className="min-w-0 p-4 sm:p-5" data-tour="dashboard-priority-queue">
