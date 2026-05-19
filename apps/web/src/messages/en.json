@@ -2966,7 +2966,6 @@
     "tabs": {
       "tinder": "Prediction Game",
       "ranking": "Rank Comparison",
-      "lists": "User Lists",
       "challenge": "Community Challenge",
       "verified": "China Admit Dashboard",
       "path": "Alumni Journey",
@@ -3070,14 +3069,6 @@
       "aboveMedian": "Above median",
       "belowMedian": "Below median",
       "middle50": "Middle 50%: {low}-{high}"
-    },
-    "lists": {
-      "title": "User Lists",
-      "createList": "Create List",
-      "vote": "Vote",
-      "emptyTitle": "No lists yet",
-      "emptyDesc": "Create your first list",
-      "byAuthor": "By"
     },
     "swipeCard": {
       "applicantProfile": "Applicant Profile",

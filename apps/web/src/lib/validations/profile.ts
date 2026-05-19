@@ -8,7 +8,6 @@ export {
   createRecommendationLetterSchema,
   createSubmitCaseSchema,
   createEducationSchema,
-  createListSchema,
   type ProfileFormValues,
   type TestScoreFormValues,
   type ActivityFormValues,
@@ -17,5 +16,4 @@ export {
   type RecommendationLetterFormValues,
   type SubmitCaseFormValues,
   type EducationFormValues,
-  type ListFormValues,
 } from '@study-abroad/shared/schemas';

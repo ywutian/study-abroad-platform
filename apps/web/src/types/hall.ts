@@ -111,8 +111,6 @@ export interface SwipeBatchResponse {
   meta: SwipeBatchMeta;
 }
 
-// ============================================
-// Tab configuration type
-// Hall §7 Decision B: the `review` tab and `ReviewModuleType` were removed.
-// ============================================
-export type HallTab = 'tinder' | 'ranking' | 'lists' | 'challenge' | 'verified';
+// Note: the live Hall page owns its own tab union (`HallTabV2` in
+// hall/page.tsx — verified / ranking / path). The old `HallTab` string
+// union here was stale, unused dead code and was removed.

@@ -2950,7 +2950,6 @@
     "tabs": {
       "tinder": "预测游戏",
       "ranking": "排名对比",
-      "lists": "用户榜单",
       "challenge": "社区挑战",
       "verified": "中国大陆录取数据",
       "path": "学长之路",
@@ -3054,14 +3053,6 @@
       "aboveMedian": "高于中位数",
       "belowMedian": "低于中位数",
       "middle50": "中间 50%: {low}-{high}"
-    },
-    "lists": {
-      "title": "用户榜单",
-      "createList": "创建榜单",
-      "vote": "投票",
-      "emptyTitle": "暂无榜单",
-      "emptyDesc": "创建你的第一个榜单",
-      "byAuthor": "作者"
     },
     "swipeCard": {
       "applicantProfile": "申请者档案",

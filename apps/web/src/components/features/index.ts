@@ -23,7 +23,6 @@ export { SchoolSelector } from './school-selector';
 export { ProbabilityRing } from './probability-ring';
 export { MilestoneCelebration } from './milestone-celebration';
 export { OnboardingGuide } from './onboarding-guide';
-export { CreateListDialog } from './create-list-dialog';
 
 // Dashboard page now uses page-local _components instead of a shared
 // features/dashboard barrel. Removed 2026-05 alongside the rebuild that
@@ -101,7 +100,6 @@ export {
   // Tab components (from hall/page.tsx refactor)
   TinderTab,
   RankingTab,
-  ListsTab,
 } from './hall';
 export type { SwipeCaseData } from './hall';
 

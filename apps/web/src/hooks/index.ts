@@ -15,6 +15,7 @@ export { useDebounce } from './useDebounce';
 
 // Hall 模块
 // Hall §7 Decision B: useSubmitReview removed (peer-review subsystem retired).
+// usePublicLists removed with the dead ListsTab component.
 export {
   hallKeys,
   useSwipeCases,
@@ -23,7 +24,6 @@ export {
   useTargetRanking,
   useSchoolRanking,
   useAiAnalysis,
-  usePublicLists,
 } from './use-hall-api';
 
 // Essay AI

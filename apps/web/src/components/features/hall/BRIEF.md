@@ -19,8 +19,8 @@ badges, streaks, daily challenge or leaderboard.
 - RankingTab — thin orchestrator (data + state)
 - ranking/ — RankingTab sub-components: SummaryStats, SchoolPicker, ResultsGrid
   (RankingCard), CompetitorDistribution, AiPanel + ranking-shared (POSITION_CONFIG)
-- ListsTab — curated case lists
-- VerifiedTab / ChallengeTab — verified cases and multi-school batch prediction
+- PathTab — 学长之路: merges the swipe learning loop + ChallengeTab (multi-school batch prediction)
+- VerifiedTab — China-mainland verified admission records + ChinaAdmitDashboard
 
 ## Data Flow
 
@@ -32,6 +32,6 @@ badges, streaks, daily challenge or leaderboard.
 
 - Framer Motion for drag gestures and card animations
 - Shared swipe physics: `lib/hooks/useSwipeGesture.ts` (x/y/rotate/opacity + drag-end classifier)
-- Tab-based page split (TinderTab, RankingTab, ListsTab)
+- Tab-based page split — 3-tab IA: VerifiedTab, RankingTab, PathTab
 - Calibration accuracy (total/correct/accuracy) is private — visible only to the
   user, never aggregated into a leaderboard
