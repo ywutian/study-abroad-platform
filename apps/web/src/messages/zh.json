@@ -2995,7 +2995,7 @@
       "submitting": "提交中...",
       "newChallenge": "新挑战",
       "results": {
-        "ACCEPTED": "录取",
+        "ADMITTED": "录取",
         "REJECTED": "拒绝",
         "WAITLISTED": "候补",
         "DEFERRED": "延期"

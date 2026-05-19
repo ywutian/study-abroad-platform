@@ -3011,7 +3011,7 @@
       "submitting": "Submitting...",
       "newChallenge": "New Challenge",
       "results": {
-        "ACCEPTED": "Accepted",
+        "ADMITTED": "Admitted",
         "REJECTED": "Rejected",
         "WAITLISTED": "Waitlisted",
         "DEFERRED": "Deferred"

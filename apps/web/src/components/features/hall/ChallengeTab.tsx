@@ -73,10 +73,12 @@ interface ChallengeResult {
   accuracy: number;
 }
 
-// 2026-05 Hall Plan C (C2b): the backend challenge deck filters cases to
-// ['ADMITTED','REJECTED','WAITLISTED'] only — DEFERRED was removed because a
-// DEFERRED guess can never match a real outcome. Keep this list in sync.
-const RESULT_OPTIONS = ['ACCEPTED', 'REJECTED', 'WAITLISTED'];
+// 2026-05 Hall Plan C: these guess values are compared verbatim against the
+// AdmissionCase `result` enum server-side (`guess === actual`), so they MUST
+// be the exact enum values — ADMITTED (not "ACCEPTED"), REJECTED, WAITLISTED.
+// The backend deck filters cases to exactly these three (DEFERRED excluded —
+// it can never match a guess). Keep this list in sync with that filter.
+const RESULT_OPTIONS = ['ADMITTED', 'REJECTED', 'WAITLISTED'];
 
 export function ChallengeTab() {
   const t = useTranslations('hall');
