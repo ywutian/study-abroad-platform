@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma, AdmissionResult } from '@prisma/client';
+import { Prisma, AdmissionResult, Visibility } from '@prisma/client';
 import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
 import {
   VerifiedRankingQueryDto,
@@ -27,6 +27,19 @@ export class HallVerifiedService {
     'University of Chicago',
   ];
 
+  /**
+   * 2026-05 Hall Plan C (security B4): the base filter for every PUBLIC
+   * verified-case surface. `getVerifiedRanking` is `@Public()`, so it must
+   * NEVER include PRIVATE-visibility cases — only ANONYMOUS / VERIFIED_ONLY.
+   * Previously the queries filtered `isVerified` + review status but had
+   * no `visibility` filter, leaking private cases to logged-out visitors.
+   */
+  private readonly PUBLIC_CASE_WHERE = {
+    isVerified: true,
+    ...CASE_REVIEW_APPROVED_WHERE,
+    visibility: { in: [Visibility.ANONYMOUS, Visibility.VERIFIED_ONLY] },
+  } satisfies Prisma.AdmissionCaseWhereInput;
+
   constructor(private prisma: PrismaService) {}
 
   async getVerifiedRanking(
@@ -40,10 +53,7 @@ export class HallVerifiedService {
       offset = 0,
     } = query;
 
-    const where: Prisma.AdmissionCaseWhereInput = {
-      isVerified: true,
-      ...CASE_REVIEW_APPROVED_WHERE,
-    };
+    const where: Prisma.AdmissionCaseWhereInput = { ...this.PUBLIC_CASE_WHERE };
 
     if (year) {
       where.year = year;
@@ -72,18 +82,12 @@ export class HallVerifiedService {
     const [cases, total] = await Promise.all([
       this.prisma.admissionCase.findMany({
         where,
+        // 2026-05 Hall Plan C (security B4): `realName` is NOT selected —
+        // this is a `@Public()` endpoint; the user is shown as a masked
+        // label only. Never join applicant identity onto a public surface.
         include: {
           school: true,
-          user: {
-            select: {
-              id: true,
-              profile: {
-                select: {
-                  realName: true,
-                },
-              },
-            },
-          },
+          user: { select: { id: true } },
         },
         orderBy: [{ school: { usNewsRank: 'asc' } }, { verifiedAt: 'desc' }],
         skip: offset,
@@ -98,7 +102,8 @@ export class HallVerifiedService {
       rank: offset + index + 1,
       caseId: c.id,
       userId: c.userId,
-      userName: c.user.profile?.realName || `用户${c.userId.slice(-4)}`,
+      // 2026-05 Hall Plan C (security B4): masked label, never realName.
+      userName: `用户${c.userId.slice(-4)}`,
       gpaRange: c.gpaRange || undefined,
       satRange: c.satRange || undefined,
       actRange: c.actRange || undefined,
@@ -126,27 +131,24 @@ export class HallVerifiedService {
     const [totalVerified, totalAdmitted, topSchoolsCount, ivyCount] =
       await Promise.all([
         this.prisma.admissionCase.count({
-          where: { isVerified: true, ...CASE_REVIEW_APPROVED_WHERE },
+          where: { ...this.PUBLIC_CASE_WHERE },
         }),
         this.prisma.admissionCase.count({
           where: {
-            isVerified: true,
-            ...CASE_REVIEW_APPROVED_WHERE,
+            ...this.PUBLIC_CASE_WHERE,
             result: AdmissionResult.ADMITTED,
           },
         }),
         this.prisma.admissionCase.count({
           where: {
-            isVerified: true,
-            ...CASE_REVIEW_APPROVED_WHERE,
+            ...this.PUBLIC_CASE_WHERE,
             result: AdmissionResult.ADMITTED,
             school: { usNewsRank: { lte: 20 } },
           },
         }),
         this.prisma.admissionCase.count({
           where: {
-            isVerified: true,
-            ...CASE_REVIEW_APPROVED_WHERE,
+            ...this.PUBLIC_CASE_WHERE,
             result: AdmissionResult.ADMITTED,
             school: { name: { in: this.IVY_PLUS_SCHOOLS } },
           },

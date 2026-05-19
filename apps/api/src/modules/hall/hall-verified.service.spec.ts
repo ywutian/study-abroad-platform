@@ -79,7 +79,10 @@ describe('HallVerifiedService', () => {
       expect(result.users).toHaveLength(1);
       expect(result.users[0].rank).toBe(1);
       expect(result.users[0].schoolName).toBe('MIT');
-      expect(result.users[0].userName).toBe('John Doe');
+      // 2026-05 Hall Plan C (security B4): realName must NEVER reach this
+      // public surface — the user is shown as a masked label only.
+      expect(result.users[0].userName).not.toBe('John Doe');
+      expect(result.users[0].userName).toMatch(/^用户/);
       expect(result.stats.totalVerified).toBe(100);
       expect(result.stats.totalAdmitted).toBe(80);
       expect(result.total).toBe(50);
