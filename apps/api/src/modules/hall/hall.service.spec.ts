@@ -87,6 +87,7 @@ describe('HallService', () => {
       }),
     },
     user: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
     admissionCase: {
@@ -131,6 +132,14 @@ describe('HallService', () => {
 
     service = module.get<HallService>(HallService);
     _prisma = module.get<PrismaService>(PrismaService);
+
+    // 2026-05 Hall Plan C (C2): the peer-review consent + age gate reads
+    // `user.findUnique`. Default to a consenting adult so the review tests
+    // exercise the happy path.
+    mockPrisma.user.findUnique.mockResolvedValue({
+      acceptPeerReview: true,
+      profile: { birthday: null },
+    });
   });
 
   afterEach(() => {

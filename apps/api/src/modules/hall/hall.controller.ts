@@ -42,6 +42,7 @@ import { Role } from '@prisma/client';
 import {
   ThrottleRelaxed,
   ThrottleAI,
+  ThrottleSensitive,
 } from '../../common/decorators/throttle.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
@@ -118,6 +119,7 @@ export class HallController {
   }
 
   @Post('reviews/:reviewId/report')
+  @ThrottleSensitive()
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Report a review (reuses central Report queue for admin triage)',
@@ -241,6 +243,7 @@ export class HallController {
   // ============================================
 
   @Post('reviews')
+  @ThrottleSensitive()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create or update a review' })
   async createReview(
@@ -251,6 +254,7 @@ export class HallController {
   }
 
   @Patch('reviews/:reviewId')
+  @ThrottleSensitive()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing review' })
   async updateReview(

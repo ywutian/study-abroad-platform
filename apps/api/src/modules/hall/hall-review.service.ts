@@ -2,10 +2,19 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   Optional,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { deriveAge } from '../../common/utils/age.util';
+
+/**
+ * 2026-05 Hall Plan C (C2): peer review is gated below this age. Because
+ * `User.acceptPeerReview` defaults to `true` (opt-out), the toggle does
+ * NOT protect existing minors — this hard age floor does.
+ */
+const MIN_REVIEWABLE_AGE = 16;
 import {
   NotificationService,
   NotificationType,
@@ -42,6 +51,10 @@ export class HallReviewService {
     if (reviewerId === data.profileUserId) {
       throw new BadRequestException('Cannot review yourself');
     }
+
+    // 2026-05 Hall Plan C (C2 / security B1): a review may only be written
+    // for a user who has opted in to peer review AND is not a minor.
+    await this.assertCanReceiveReview(data.profileUserId);
 
     // Hall refactor Stage 2: content moderation gate.
     // Combine all user-supplied text and run through the @Global() ContentModerationService.
@@ -168,6 +181,13 @@ export class HallReviewService {
       throw new NotFoundException('Review not found');
     }
 
+    // 2026-05 Hall Plan C (C2 / security B1): re-check consent + age when a
+    // review is (re-)published — a target may have opted out since the
+    // draft was written.
+    if (data.status === 'PUBLISHED') {
+      await this.assertCanReceiveReview(review.profileUserId);
+    }
+
     return this.prisma.review.update({
       where: { id: reviewId },
       data: {
@@ -230,6 +250,13 @@ export class HallReviewService {
     } = options || {};
     const skip = (page - 1) * pageSize;
 
+    // 2026-05 Hall Plan C (C2 / security B2): never serve a user's reviews
+    // once they have opted out of peer review. Return an empty page (not a
+    // 403) so the endpoint is not an enumeration oracle.
+    if (!(await this.isAcceptingReviews(profileUserId))) {
+      return createPaginatedResponse([], 0, page, pageSize);
+    }
+
     const where = { profileUserId, status: 'PUBLISHED' as const };
 
     const [reviews, total] = await Promise.all([
@@ -252,6 +279,9 @@ export class HallReviewService {
   }
 
   async getReviewStats(profileUserId: string) {
+    // 2026-05 Hall Plan C (C2 / security B2): opt-out users expose no stats.
+    if (!(await this.isAcceptingReviews(profileUserId))) return null;
+
     const reviews = await this.prisma.review.findMany({
       where: { profileUserId, status: 'PUBLISHED' },
     });
@@ -365,6 +395,9 @@ export class HallReviewService {
   }
 
   async getReviewsForUserLegacy(profileUserId: string): Promise<Review[]> {
+    // 2026-05 Hall Plan C (C2 / security B2): respect the opt-out here too.
+    if (!(await this.isAcceptingReviews(profileUserId))) return [];
+
     return this.prisma.review.findMany({
       where: { profileUserId, status: 'PUBLISHED' },
       include: {
@@ -389,6 +422,48 @@ export class HallReviewService {
   /** @deprecated Use getReviewStats instead */
   async getAverageScores(profileUserId: string) {
     return this.getReviewStats(profileUserId);
+  }
+
+  /**
+   * 2026-05 Hall Plan C (C2 / security B1): consent + age gate for the
+   * WRITE path. A review may only target a user who has opted in to peer
+   * review and is not a minor. Throws — callers are create/publish flows.
+   */
+  private async assertCanReceiveReview(profileUserId: string): Promise<void> {
+    const target = await this.prisma.user.findUnique({
+      where: { id: profileUserId },
+      select: {
+        acceptPeerReview: true,
+        profile: { select: { birthday: true } },
+      },
+    });
+    if (!target) {
+      throw new NotFoundException('Target user not found');
+    }
+    if (!target.acceptPeerReview) {
+      throw new ForbiddenException(
+        'This user has not opted in to peer review.',
+      );
+    }
+    const age = deriveAge(target.profile?.birthday ?? null);
+    if (age !== null && age < MIN_REVIEWABLE_AGE) {
+      throw new ForbiddenException(
+        `Cannot review a user under ${MIN_REVIEWABLE_AGE}.`,
+      );
+    }
+  }
+
+  /**
+   * 2026-05 Hall Plan C (C2 / security B2): consent check for the READ
+   * path. Returns `true` only when the target still accepts peer review;
+   * callers return an empty result (not a 403) when this is false.
+   */
+  private async isAcceptingReviews(profileUserId: string): Promise<boolean> {
+    const target = await this.prisma.user.findUnique({
+      where: { id: profileUserId },
+      select: { acceptPeerReview: true },
+    });
+    return target?.acceptPeerReview === true;
   }
 
   private async recordReviewToMemory(
