@@ -7,13 +7,6 @@
  * data — keep these in sync.
  */
 
-export type SwipeBadgeTier =
-  | 'bronze'
-  | 'silver'
-  | 'gold'
-  | 'platinum'
-  | 'diamond';
-
 /**
  * Hall reviewer permission tier (mirrors Prisma ReviewerLevel enum).
  * - L1: any registered user — vote-only on existing reviews
@@ -48,21 +41,6 @@ export interface HallOverviewPoints {
   todayEarned: number;
 }
 
-export interface HallOverviewSwipe {
-  badge: SwipeBadgeTier | string;
-  totalSwipes: number;
-  correctCount: number;
-  accuracy: number; // 0-100 integer
-  currentStreak: number;
-  bestStreak: number;
-}
-
-export interface HallOverviewDailyChallenge {
-  count: number;
-  target: number; // default 10
-  completed: boolean;
-}
-
 export interface HallOverviewReviewer {
   level: ReviewerLevel;
   credit: number; // 0-100, starts at 100, drops on confirmed reports
@@ -78,10 +56,13 @@ export interface HallActivityEntry {
   createdAt: string; // ISO timestamp
 }
 
+/**
+ * 2026-05 Hall Plan C (C3): de-gamified. The `swipe` (badge/streak) and
+ * `dailyChallenge` fields were removed — the path tab no longer surfaces a
+ * casino layer. `points` is retained solely for the Points Center balance.
+ */
 export interface HallOverviewPayload {
   points: HallOverviewPoints;
-  swipe: HallOverviewSwipe;
-  dailyChallenge: HallOverviewDailyChallenge;
   reviewer: HallOverviewReviewer;
   recentActivity: HallActivityEntry[];
 }
@@ -151,46 +132,28 @@ export interface RedemptionResult {
   status: RedemptionStatus;
 }
 
-/**
- * Stage 2 — Aggregated review payload for "I received reviews" UI.
+/*
+ * 2026-05 Hall Plan C (C2b): `ReviewDimensionAggregate` and
+ * `AggregatedReviewPayload` were removed. Numeric review scoring was retired
+ * from the UI, so serving aggregate dimension means/medians made the API a
+ * second competitiveness authority — removed along with the
+ * `/halls/reviews/:profileUserId/aggregate` endpoint.
  */
-export interface ReviewDimensionAggregate {
-  dimension: 'academic' | 'test' | 'activity' | 'award' | 'overall';
-  mean: number;
-  weightedMean: number;
-  trimmedMean: number;
-  median: number;
-  sampleSize: number;
-}
-
-export interface AggregatedReviewPayload {
-  reviewCount: number;
-  inProgress: boolean;
-  progressTarget: number;
-  acceptingReviews: boolean;
-  dimensions: {
-    academic: ReviewDimensionAggregate;
-    test: ReviewDimensionAggregate;
-    activity: ReviewDimensionAggregate;
-    award: ReviewDimensionAggregate;
-    overall: ReviewDimensionAggregate;
-  };
-  distribution: Record<string, number[]>;
-  topTags: Array<{ tag: string; count: number }>;
-  methodBreakdown: Record<ReviewMethod, number>;
-}
 
 /**
  * Challenge attempt persistence payload (Hall 学长之路 multi-school predictions).
  * Returned by `POST /halls/swipe/challenge` after persisting to
  * `ChallengeAttempt` table.
+ *
+ * 2026-05 Hall Plan C (C3): de-gamified. `rewardEarned` was removed — the
+ * challenge no longer awards points. The attempt is still persisted so the
+ * per-school debrief history stays available.
  */
 export interface ChallengeAttemptResult {
   attemptId: string;
   correct: number;
   total: number;
   accuracy: number; // 0-100 integer
-  rewardEarned: number; // 0 if daily limit already hit
   results: Array<{
     caseId: string;
     schoolName?: string;
@@ -240,7 +203,12 @@ export interface DifficultySignalEntry {
   schoolName: string;
   schoolNameZh?: string;
   signal: DifficultySignal;
-  /** Percentage change in admit count across the compared window. */
+  /**
+   * Change in admit RATE across the compared window, in percentage POINTS
+   * (e.g. 42% → 30% = -12). Hall Plan C (C4): previously this was a change
+   * in raw admit count, which was dominated by how many cases were
+   * submitted that year — a sampling artifact, not real selectivity.
+   */
   changePct: number;
   sampleSize: number;
 }

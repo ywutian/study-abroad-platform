@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   XCircle,
   GraduationCap,
-  Trophy,
   Award,
   BookOpen,
   Globe,
@@ -74,7 +73,12 @@ interface ChallengeResult {
   accuracy: number;
 }
 
-const RESULT_OPTIONS = ['ACCEPTED', 'REJECTED', 'WAITLISTED', 'DEFERRED'];
+// 2026-05 Hall Plan C: these guess values are compared verbatim against the
+// AdmissionCase `result` enum server-side (`guess === actual`), so they MUST
+// be the exact enum values — ADMITTED (not "ACCEPTED"), REJECTED, WAITLISTED.
+// The backend deck filters cases to exactly these three (DEFERRED excluded —
+// it can never match a guess). Keep this list in sync with that filter.
+const RESULT_OPTIONS = ['ADMITTED', 'REJECTED', 'WAITLISTED'];
 
 export function ChallengeTab() {
   const t = useTranslations('hall');
@@ -267,8 +271,8 @@ export function ChallengeTab() {
               className={
                 schoolResult
                   ? schoolResult.isCorrect
-                    ? 'border-green-500/50 bg-green-50/30 dark:bg-green-950/10'
-                    : 'border-red-500/50 bg-red-50/30 dark:bg-red-950/10'
+                    ? 'border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/10'
+                    : 'border-destructive/50 bg-destructive/5'
                   : ''
               }
             >
@@ -288,9 +292,9 @@ export function ChallengeTab() {
                   {schoolResult ? (
                     <div className="flex items-center gap-2">
                       {schoolResult.isCorrect ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
+                        <XCircle className="h-5 w-5 text-destructive" />
                       )}
                       <div className="text-xs">
                         <p className="font-medium">
@@ -330,22 +334,19 @@ export function ChallengeTab() {
         })}
       </div>
 
-      {/* Result Summary */}
+      {/* Result Summary — 2026-05 Hall Plan C (C3): de-gamified. A plain
+          "how many you read correctly" debrief, no trophy/gradient framing. */}
       {result && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <Card className="border-amber-500/30 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20">
-            <CardContent className="flex items-center justify-between py-6 px-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg">
-                  <Trophy className="h-7 w-7" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{result.accuracy}%</p>
-                  <p className="text-sm text-muted-foreground">
-                    {result.correct}/{result.total} {t('challenge.correct')}
-                  </p>
-                </div>
-              </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card>
+            <CardContent className="flex items-center gap-3 py-5 px-6">
+              <Target className="h-5 w-5 shrink-0 text-emerald-500" />
+              <p className="text-sm text-muted-foreground">
+                {t('challenge.summary', {
+                  correct: result.correct,
+                  total: result.total,
+                })}
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -357,7 +358,7 @@ export function ChallengeTab() {
           <Button
             onClick={() => submitMutation.mutate(guesses)}
             disabled={!allGuessed || submitMutation.isPending}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1"
           >
             <Target className="h-4 w-4 mr-2" />
             {submitMutation.isPending ? t('challenge.submitting') : t('challenge.submit')}

@@ -4,7 +4,11 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
 import { MemoryManagerService } from '../ai-agent/memory/memory-manager.service';
 import { PointsService } from '../points/incentive.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('HallReviewService', () => {
   let service: HallReviewService;
@@ -29,6 +33,7 @@ describe('HallReviewService', () => {
       }),
     },
     user: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
   };
@@ -60,6 +65,14 @@ describe('HallReviewService', () => {
     }).compile();
 
     service = module.get<HallReviewService>(HallReviewService);
+
+    // 2026-05 Hall Plan C (C2): the peer-review consent + age gate reads
+    // `user.findUnique`. Default to a consenting adult so existing tests
+    // exercise the happy path; gate-specific tests override per-case.
+    mockPrisma.user.findUnique.mockResolvedValue({
+      acceptPeerReview: true,
+      profile: { birthday: null },
+    });
   });
 
   afterEach(() => {
@@ -287,11 +300,11 @@ describe('HallReviewService', () => {
 
       const result = await service.getReviewStats('user-1');
 
+      // 2026-05 Hall Plan C (C2b): numeric `averages` removed — only a
+      // count + qualitative top tags are surfaced.
       expect(result).not.toBeNull();
       expect(result!.reviewCount).toBe(2);
-      expect(result!.averages.academic).toBe(7);
-      expect(result!.averages.test).toBe(8);
-      expect(result!.averages.overall).toBe(7.5);
+      expect(result).not.toHaveProperty('averages');
       expect(result!.topTags[0]).toBe('strong-academic');
     });
   });
@@ -390,6 +403,67 @@ describe('HallReviewService', () => {
           where: { reviewerId: 'user-1' },
         }),
       );
+    });
+  });
+
+  // ============================================
+  // 2026-05 Hall Plan C (C2): peer-review consent + age gate (security B1/B2)
+  // ============================================
+
+  describe('peer-review consent + age gate', () => {
+    const data = {
+      profileUserId: 'target-user',
+      academicScore: 8,
+      testScore: 8,
+      activityScore: 8,
+      awardScore: 8,
+      overallScore: 8,
+      status: 'PUBLISHED' as const,
+    };
+
+    it('blocks createReview when the target has opted out of peer review', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        acceptPeerReview: false,
+        profile: { birthday: null },
+      });
+
+      await expect(service.createReview('reviewer-1', data)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockPrisma.review.create).not.toHaveBeenCalled();
+    });
+
+    it('blocks createReview when the target is under 16', async () => {
+      const birthday = new Date();
+      birthday.setFullYear(birthday.getFullYear() - 14);
+      mockPrisma.user.findUnique.mockResolvedValue({
+        acceptPeerReview: true,
+        profile: { birthday },
+      });
+
+      await expect(service.createReview('reviewer-1', data)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(mockPrisma.review.create).not.toHaveBeenCalled();
+    });
+
+    it('getReviewsForUser returns an empty page when the target opted out', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ acceptPeerReview: false });
+
+      const result = await service.getReviewsForUser('target-user');
+
+      expect(result.items).toEqual([]);
+      expect(result.total).toBe(0);
+      expect(mockPrisma.review.findMany).not.toHaveBeenCalled();
+    });
+
+    it('getReviewStats returns null when the target opted out', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ acceptPeerReview: false });
+
+      const result = await service.getReviewStats('target-user');
+
+      expect(result).toBeNull();
+      expect(mockPrisma.review.findMany).not.toHaveBeenCalled();
     });
   });
 });

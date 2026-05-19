@@ -690,9 +690,8 @@
     "noFollowers": "暂无粉丝"
   },
   "swipe": {
-    "title": "Swipe 游戏",
+    "title": "案例研习",
     "accuracy": "准确率",
-    "streak": "连胜",
     "acceptanceRate": "录取率",
     "activities": "{{count}} 个课外活动",
     "awards": "{{count}} 项获奖",
@@ -705,45 +704,7 @@
     "actualResultLabel": "实际结果",
     "yourPrediction": "你的选择：{{result}}",
     "yourPredictionLabel": "你的选择",
-    "points": "+{{points}} 分",
-    "streakValue": "{{count}} 连胜",
-    "badgeUpgrade": "已解锁 {{badge}}",
     "nextCardHint": "正在加载下一张卡片...",
-    "stats": {
-      "title": "统计",
-      "totalSwipes": "总滑动数",
-      "accuracy": "准确率",
-      "currentStreak": "当前连胜",
-      "bestStreak": "最佳连胜",
-      "badge": "徽章",
-      "nextBadge": "下一徽章",
-      "dailyChallenge": "每日挑战",
-      "completed": "已完成！"
-    },
-    "leaderboard": "排行榜",
-    "badges": {
-      "bronze": "青铜",
-      "silver": "白银",
-      "gold": "黄金",
-      "platinum": "铂金",
-      "diamond": "钻石",
-      "BRONZE": "青铜",
-      "SILVER": "白银",
-      "GOLD": "黄金",
-      "PLATINUM": "铂金",
-      "DIAMOND": "钻石"
-    },
-    "card": {
-      "rank": "排名 #{{rank}}",
-      "gpa": "GPA",
-      "sat": "SAT",
-      "act": "ACT",
-      "toefl": "TOEFL",
-      "ap": "AP",
-      "activities": "课外活动",
-      "awards": "获奖",
-      "verified": "已认证"
-    },
     "empty": {
       "title": "暂无更多案例",
       "description": "稍后再来看看吧！"
@@ -751,17 +712,15 @@
     "noMoreCards": "暂无更多卡片",
     "noMoreCardsDesc": "稍后再来查看更多申请案例。",
     "loadMore": "加载更多",
-    "anonymous": "匿名用户",
-    "you": "你",
-    "swipesCount": "{{count}} 次滑动",
-    "statsTitle": "刷卡统计",
+    "statsTitle": "你的判断校准",
     "loading": "加载中...",
-    "toNextBadge": "距离下个徽章还差 {{count}} 次",
-    "totalSwipes": "总滑动次数",
-    "bestStreak": "最佳连胜",
-    "dailyChallenge": "每日挑战",
-    "challengeComplete": "挑战完成",
-    "noLeaderboard": "暂无排行榜数据"
+    "totalSwipes": "总判断次数",
+    "correctCount": "判断正确",
+    "calibration": {
+      "title": "判断校准准确率",
+      "description": "你的判断与真实结果吻合的比例 —— 仅你自己可见",
+      "empty": "研习几个案例后即可看到你的判断校准准确率。"
+    }
   },
   "essays": {
     "title": "我的文书",
@@ -858,50 +817,46 @@
       "successRate": "成功率"
     },
     "review": {
-      "title": "同伴锐评",
-      "intro": "滑动模式",
-      "introDesc": "逐维度评价同伴档案 —— 滑动打分。",
-      "popular": "热门",
-      "mine": "我的评价",
-      "empty": "暂无评价",
-      "emptyDesc": "来写下第一条评价吧！",
-      "noProfiles": "暂无可评价的档案",
+      "title": "同伴反馈",
+      "noProfiles": "暂无可反馈的档案",
       "noProfilesDesc": "稍后再来查看更多公开档案。",
-      "start": "开始评价",
       "next": "下一份档案",
-      "submit": "提交评价",
+      "submit": "提交反馈",
       "submitting": "提交中...",
-      "created": "评价已提交！",
-      "swipeHint": "右滑 = 强 · 左滑 = 弱 · 上滑 = 不确定",
-      "swipeLeft": "偏弱",
-      "swipeRight": "突出",
-      "swipeUp": "不确定",
-      "comment": "评论",
-      "commentPlaceholder": "分享你的看法...",
-      "applicantProfile": "申请者档案",
+      "created": "反馈已提交！",
+      "emptyDesc": "你已浏览完所有可反馈的档案",
       "targetMajor": "目标专业",
       "unknownMajor": "未定专业",
-      "stepProgress": "第 {{current}} / {{total}} 步",
+      "stepProgress": "第 {{current}} / {{total}} 份",
       "helpful": "有帮助",
       "insightful": "有见解",
-      "scores": {
-        "academic": "学术",
-        "test": "考试",
-        "activity": "活动",
-        "award": "奖项",
-        "overall": "综合"
-      },
+      "dimensionFeedback": "你的书面反馈（可选）",
+      "tags": "快捷标签（可选）",
+      "generalComment": "整体反馈",
+      "generalCommentHint": "写下你的整体印象——有哪些亮点，又有哪些可以进一步加强...",
+      "generalCommentMin": "整体反馈至少需要 {{min}} 个字。",
+      "disclaimer": "反馈是其他成员的个人观点，不构成专业的招生建议。",
       "steps": {
         "academic": "学术背景",
         "test": "标化成绩",
         "activity": "课外活动",
         "award": "奖项荣誉"
       },
-      "stepDesc": {
-        "academic": "学术记录是否突出？",
-        "test": "标化成绩是否有竞争力？",
-        "activity": "活动是否有深度和意义？",
-        "award": "奖项是否含金量高？"
+      "commentHint": {
+        "academic": "学术方面有哪些亮点，又有哪些可以更进一步的地方？",
+        "test": "标化成绩读起来如何，有哪些值得补充的背景？",
+        "activity": "课外活动中哪些让你印象深刻，哪些还略显单薄？",
+        "award": "获奖与荣誉给你的整体感受如何？"
+      },
+      "quickTag": {
+        "well-rounded": "全面发展",
+        "strong-stem": "理工强",
+        "high-gpa": "GPA 优秀",
+        "leadership": "领导力",
+        "creative": "富有创造力",
+        "community-impact": "社区影响力",
+        "research-oriented": "研究导向",
+        "athletic": "体育特长"
       }
     },
     "ranking": {
@@ -946,10 +901,11 @@
           "D": "暂无核实案例"
         },
         "signal": {
-          "stable": "稳定",
-          "declining": "难度下降",
-          "surging": "明显变难"
-        }
+          "stable": "录取率平稳",
+          "declining": "录取率走低",
+          "surging": "录取率明显下滑"
+        },
+        "changePctUnit": " 个百分点"
       }
     },
     "path": {
@@ -983,8 +939,7 @@
       "submit": "提交预测",
       "submitting": "提交中...",
       "newChallenge": "新挑战",
-      "accuracy": "{{correct}}/{{total}} 正确（{{accuracy}}%）",
-      "reward": "获得 +{{points}} 积分",
+      "summary": "你判断对了 {{total}} 个结果中的 {{correct}} 个。",
       "yourGuess": "你的预测",
       "actual": "实际",
       "results": {
@@ -993,28 +948,6 @@
         "REJECTED": "拒绝",
         "WAITLISTED": "候补",
         "DEFERRED": "延迟"
-      }
-    },
-    "hero": {
-      "points": "积分",
-      "today": "今日 +{{count}}",
-      "streak": "连胜",
-      "best": "最佳 {{count}}",
-      "reviewer": "评审",
-      "credit": "信用 {{count}}",
-      "dailyChallenge": "每日挑战",
-      "dailyProgress": "{{count}}/{{target}} 次",
-      "badges": {
-        "bronze": "青铜",
-        "silver": "白银",
-        "gold": "黄金",
-        "platinum": "铂金",
-        "diamond": "钻石"
-      },
-      "levels": {
-        "L1": "学习者",
-        "L2": "同行",
-        "L3": "学长"
       }
     }
   },

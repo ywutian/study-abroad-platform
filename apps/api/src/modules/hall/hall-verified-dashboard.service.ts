@@ -10,7 +10,7 @@ import type {
   EdRdComparisonEntry,
 } from '@study-abroad/shared';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CASE_REVIEW_APPROVED_WHERE } from '../../common/constants/prisma-selects';
+import { VERIFIED_CASE_WHERE } from './hall.constants';
 
 /**
  * Hall refactor Stage 3 — Verified China Admit Dashboard aggregation.
@@ -36,10 +36,19 @@ export class HallVerifiedDashboardService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Dashboard filter = the shared {@link VERIFIED_CASE_WHERE} trust predicate
+   * (C4: one source of truth) + two dashboard-specific narrowings:
+   *  - `verificationLevel ∈ {L2,L3}` (L1 self-reported is excluded);
+   *  - `nationality ∈ CHINA_NATIONALITIES` (mainland-China applicants only).
+   *
+   * The trust predicate itself is no longer redefined here — so this surface
+   * and the public ranking can never silently disagree on what "verified"
+   * means; they only differ by these explicit, intentional narrowings.
+   */
   private baseWhere(): Prisma.AdmissionCaseWhereInput {
     return {
-      isVerified: true,
-      ...CASE_REVIEW_APPROVED_WHERE,
+      ...VERIFIED_CASE_WHERE,
       verificationLevel: {
         in: HallVerifiedDashboardService.TRUSTED_LEVELS,
       },
@@ -136,39 +145,63 @@ export class HallVerifiedDashboardService {
   }
 
   /**
+   * Minimum cases SUBMITTED for a year for that year's admit RATE to be
+   * trustworthy enough to enter the difficulty comparison. Years below this
+   * are dropped from the rate series — a 1/1 = 100% year is noise, not signal.
+   */
+  private static readonly MIN_YEAR_TOTAL = 3;
+
+  /**
    * Year-over-year admission difficulty signal per school.
-   *  declining → cumulative drop > 20% across the window
-   *  surging   → single-year drop > 30% (admission got materially harder)
-   *  stable    → otherwise, or sample too small to judge
+   *
+   * 2026-05 Hall Plan C (C4): this used to compute "difficulty" from the
+   * year-over-year ADMIT COUNT. That number is dominated by how many cases
+   * users happened to submit that year — a sampling artifact, not a real
+   * change in selectivity. A school looking "harder" usually just meant
+   * fewer people uploaded cases.
+   *
+   * Fixed: the signal is now derived from the admit RATE (admitted / total),
+   * and only years with at least {@link MIN_YEAR_TOTAL} submitted cases enter
+   * the comparison. `changePct` is the change in admit-rate percentage POINTS
+   * across the window. When too few years clear the gate, the signal stays
+   * `stable` (insufficient evidence) — the DataReliability rating still
+   * gates whether the frontend renders any of this at all.
+   *
+   *  declining → admit rate dropped > 15 points across the window
+   *  surging   → single-year admit-rate drop > 25 points
+   *  stable    → otherwise, or not enough rate-eligible years to judge
    */
   async getDifficultySignal(
     schoolIds: string[],
   ): Promise<DifficultySignalEntry[]> {
     const trend = await this.getChinaAdmitTrend(schoolIds, 3);
+    const MIN = HallVerifiedDashboardService.MIN_YEAR_TOTAL;
 
     return trend.schools.map((s): DifficultySignalEntry => {
-      const series = s.yearly.filter((y) => y.year);
+      // Keep only years with enough submitted cases for a meaningful rate.
+      const series = s.yearly
+        .filter((y) => y.total >= MIN)
+        .map((y) => ({ year: y.year, rate: y.admitted / y.total }))
+        .sort((a, b) => a.year - b.year);
+
       let signal: DifficultySignal = 'stable';
       let changePct = 0;
 
-      if (s.sampleSize >= 3 && series.length >= 2) {
-        const first = series[0].admitted;
-        const last = series[series.length - 1].admitted;
-        if (first > 0) {
-          changePct = Math.round(((last - first) / first) * 100);
-        }
-        // single-year sharpest drop
+      if (series.length >= 2) {
+        const first = series[0].rate;
+        const last = series[series.length - 1].rate;
+        // Change in admit-rate percentage POINTS (not a count ratio).
+        changePct = Math.round((last - first) * 100);
+
+        // Sharpest single-year admit-rate drop, in percentage points.
         let worstYoY = 0;
         for (let i = 1; i < series.length; i++) {
-          const prev = series[i - 1].admitted;
-          const cur = series[i].admitted;
-          if (prev > 0) {
-            const yoy = Math.round(((cur - prev) / prev) * 100);
-            if (yoy < worstYoY) worstYoY = yoy;
-          }
+          const yoy = Math.round((series[i].rate - series[i - 1].rate) * 100);
+          if (yoy < worstYoY) worstYoY = yoy;
         }
-        if (worstYoY < -30) signal = 'surging';
-        else if (changePct < -20) signal = 'declining';
+
+        if (worstYoY < -25) signal = 'surging';
+        else if (changePct < -15) signal = 'declining';
       }
 
       return {
@@ -226,13 +259,14 @@ export class HallVerifiedDashboardService {
         };
         grouped.set(c.schoolId, entry);
       }
-      const round = (c.round ?? '').toUpperCase();
-      // ED / EA / REA all count as the binding/early bucket for this view
-      if (
-        round.includes('ED') ||
-        round.includes('EA') ||
-        round.includes('REA')
-      ) {
+      const round = (c.round ?? '').toUpperCase().trim();
+      // 2026-05 Hall Plan C (C4): only BINDING Early Decision (ED / ED1 /
+      // ED2 / EDII) counts toward the `ed` bucket. EA / REA / SCEA are
+      // NON-binding — lumping them in overstated the "ED admit advantage"
+      // a Chinese family weighs when deciding whether to apply ED. A
+      // binding commitment is the real signal; a non-binding early app is
+      // not. Non-binding rounds fall to the `rd` bucket.
+      if (round.startsWith('ED')) {
         entry.ed += 1;
       } else {
         entry.rd += 1;

@@ -52,13 +52,6 @@ export const RankingItem = memo(function RankingItem({ item, colors: c }: Rankin
             </Text>
             <Text style={[S.rankValue, { color: c.foreground }]}>{item.yourScore}</Text>
           </View>
-          <View style={[S.rankDivider, { backgroundColor: c.border }]} />
-          <View style={S.rankBox}>
-            <Text style={[S.rankLabel, { color: c.foregroundMuted }]}>
-              {t('hall.ranking.position')}
-            </Text>
-            <Text style={[S.positionText, { color: pColor }]}>{item.competitivePosition}</Text>
-          </View>
         </View>
 
         {breakdownKeys.length > 0 && (
@@ -132,10 +125,6 @@ const S = StyleSheet.create({
   rankDivider: {
     width: 1,
     height: 32,
-  },
-  positionText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
   },
   breakdownContainer: {
     borderTopWidth: 1,

@@ -690,9 +690,8 @@
     "noFollowers": "No followers yet"
   },
   "swipe": {
-    "title": "Swipe Game",
+    "title": "Case Study",
     "accuracy": "Accuracy",
-    "streak": "Streak",
     "acceptanceRate": "Acceptance Rate",
     "activities": "Activities",
     "awards": "Awards",
@@ -705,45 +704,7 @@
     "actualResultLabel": "Actual",
     "yourPrediction": "Your pick: {{result}}",
     "yourPredictionLabel": "Your Pick",
-    "points": "+{{points}} pts",
-    "streakValue": "{{count}} streak",
-    "badgeUpgrade": "Unlocked {{badge}}",
     "nextCardHint": "Loading the next case...",
-    "stats": {
-      "title": "Statistics",
-      "totalSwipes": "Total Swipes",
-      "accuracy": "Accuracy",
-      "currentStreak": "Current Streak",
-      "bestStreak": "Best Streak",
-      "badge": "Badge",
-      "nextBadge": "Next Badge",
-      "dailyChallenge": "Daily Challenge",
-      "completed": "Completed!"
-    },
-    "leaderboard": "Leaderboard",
-    "badges": {
-      "bronze": "Bronze",
-      "silver": "Silver",
-      "gold": "Gold",
-      "platinum": "Platinum",
-      "diamond": "Diamond",
-      "BRONZE": "Bronze",
-      "SILVER": "Silver",
-      "GOLD": "Gold",
-      "PLATINUM": "Platinum",
-      "DIAMOND": "Diamond"
-    },
-    "card": {
-      "rank": "Rank #{{rank}}",
-      "gpa": "GPA",
-      "sat": "SAT",
-      "act": "ACT",
-      "toefl": "TOEFL",
-      "ap": "AP",
-      "activities": "Activities",
-      "awards": "Awards",
-      "verified": "Verified"
-    },
     "empty": {
       "title": "No more cases",
       "description": "Check back later for more!"
@@ -751,17 +712,15 @@
     "noMoreCards": "No more cards",
     "noMoreCardsDesc": "Check back later for more application cases.",
     "loadMore": "Load more",
-    "anonymous": "Anonymous",
-    "you": "You",
-    "swipesCount": "{{count}} swipes",
-    "statsTitle": "Swipe Stats",
+    "statsTitle": "Your Calibration",
     "loading": "Loading...",
-    "toNextBadge": "{{count}} to next badge",
-    "totalSwipes": "Total swipes",
-    "bestStreak": "Best streak",
-    "dailyChallenge": "Daily challenge",
-    "challengeComplete": "Challenge complete",
-    "noLeaderboard": "No leaderboard data yet"
+    "totalSwipes": "Total judgements",
+    "correctCount": "Correct",
+    "calibration": {
+      "title": "Calibration accuracy",
+      "description": "How often your guesses match the real outcome — visible only to you",
+      "empty": "Study a few cases to see your calibration accuracy."
+    }
   },
   "essays": {
     "title": "My Essays",
@@ -858,50 +817,46 @@
       "successRate": "Success Rate"
     },
     "review": {
-      "title": "Peer Review",
-      "intro": "Swipe Mode",
-      "introDesc": "Review a peer profile dimension by dimension — swipe to score.",
-      "popular": "Popular",
-      "mine": "My Reviews",
-      "empty": "No reviews yet",
-      "emptyDesc": "Be the first to write a review!",
+      "title": "Peer Feedback",
       "noProfiles": "No profiles to review",
       "noProfilesDesc": "Check back later for more public profiles.",
-      "start": "Start Review",
       "next": "Next Profile",
-      "submit": "Submit Review",
+      "submit": "Submit Feedback",
       "submitting": "Submitting...",
-      "created": "Review submitted!",
-      "swipeHint": "Swipe right = strong · left = weak · up = unsure",
-      "swipeLeft": "Weak",
-      "swipeRight": "Strong",
-      "swipeUp": "Unsure",
-      "comment": "Comment",
-      "commentPlaceholder": "Share your thoughts...",
-      "applicantProfile": "Applicant Profile",
+      "created": "Feedback submitted!",
+      "emptyDesc": "You have reviewed every available profile",
       "targetMajor": "Target Major",
       "unknownMajor": "Undeclared",
-      "stepProgress": "Step {{current}} / {{total}}",
+      "stepProgress": "Profile {{current}} / {{total}}",
       "helpful": "Helpful",
       "insightful": "Insightful",
-      "scores": {
-        "academic": "Academic",
-        "test": "Test",
-        "activity": "Activity",
-        "award": "Award",
-        "overall": "Overall"
-      },
+      "dimensionFeedback": "Your written feedback (optional)",
+      "tags": "Quick Tags (optional)",
+      "generalComment": "Overall Feedback",
+      "generalCommentHint": "Share your overall impression — what stands out, and what they could strengthen...",
+      "generalCommentMin": "Please write at least {{min}} characters of overall feedback.",
+      "disclaimer": "Feedback reflects the personal perspective of another member — it is not professional admissions advice.",
       "steps": {
         "academic": "Academic Background",
         "test": "Test Scores",
         "activity": "Extracurriculars",
         "award": "Awards & Honors"
       },
-      "stepDesc": {
-        "academic": "Is the academic record strong?",
-        "test": "Are the test scores competitive?",
-        "activity": "Are the activities deep and meaningful?",
-        "award": "Are the awards prestigious?"
+      "commentHint": {
+        "academic": "What stood out about their academics, and where could they go further?",
+        "test": "How do their test scores read — any context worth noting?",
+        "activity": "What did you find compelling or thin about their activities?",
+        "award": "How do their awards and honors come across?"
+      },
+      "quickTag": {
+        "well-rounded": "Well-rounded",
+        "strong-stem": "Strong STEM",
+        "high-gpa": "High GPA",
+        "leadership": "Leadership",
+        "creative": "Creative",
+        "community-impact": "Community impact",
+        "research-oriented": "Research-oriented",
+        "athletic": "Athletic"
       }
     },
     "ranking": {
@@ -946,10 +901,11 @@
           "D": "No verified case"
         },
         "signal": {
-          "stable": "Stable",
-          "declining": "Declining",
-          "surging": "Sharply harder"
-        }
+          "stable": "Admit rate steady",
+          "declining": "Admit rate trending down",
+          "surging": "Admit rate dropped sharply"
+        },
+        "changePctUnit": "pt"
       }
     },
     "path": {
@@ -983,8 +939,7 @@
       "submit": "Submit Predictions",
       "submitting": "Submitting...",
       "newChallenge": "New Challenge",
-      "accuracy": "{{correct}}/{{total}} correct ({{accuracy}}%)",
-      "reward": "+{{points}} pts earned",
+      "summary": "You read {{correct}} of {{total}} outcomes correctly.",
       "yourGuess": "Your guess",
       "actual": "Actual",
       "results": {
@@ -993,28 +948,6 @@
         "REJECTED": "Rejected",
         "WAITLISTED": "Waitlisted",
         "DEFERRED": "Deferred"
-      }
-    },
-    "hero": {
-      "points": "Points",
-      "today": "+{{count}} today",
-      "streak": "Streak",
-      "best": "best {{count}}",
-      "reviewer": "Reviewer",
-      "credit": "Credit {{count}}",
-      "dailyChallenge": "Daily Challenge",
-      "dailyProgress": "{{count}}/{{target}} done",
-      "badges": {
-        "bronze": "Bronze",
-        "silver": "Silver",
-        "gold": "Gold",
-        "platinum": "Platinum",
-        "diamond": "Diamond"
-      },
-      "levels": {
-        "L1": "Learner",
-        "L2": "Peer",
-        "L3": "Senior"
       }
     }
   },

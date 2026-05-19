@@ -11,14 +11,9 @@ import { useColors } from '@/utils/theme';
 export type {
   HallOverviewPayload,
   HallOverviewPoints,
-  HallOverviewSwipe,
-  HallOverviewDailyChallenge,
   HallOverviewReviewer,
   HallActivityEntry,
-  SwipeBadgeTier,
   ReviewerLevel,
-  ReviewSwipeDirection,
-  ReviewSwipeData,
   ChinaAdmitTrendEntry,
   ChinaAdmitTrendResponse,
   DifficultySignal,
@@ -36,16 +31,23 @@ export interface ReviewUser {
   avatarUrl?: string | null;
 }
 
+/**
+ * A peer review record.
+ *
+ * Plan C / C2: numeric 1-10 scoring was removed — peer review is qualitative.
+ * Score fields are kept optional for backward compatibility with rows created
+ * before the migration; new reviews carry written feedback only and the
+ * reviewee never sees a numeric average.
+ */
 export interface Review {
   id: string;
   profileUser: ReviewUser;
   reviewer: ReviewUser;
-  academicScore: number;
-  testScore: number;
-  activityScore: number;
-  awardScore: number;
-  overallScore: number;
   comment?: string;
+  academicComment?: string;
+  testComment?: string;
+  activityComment?: string;
+  awardComment?: string;
   tags?: string[];
   helpfulCount: number;
   insightfulCount: number;
@@ -58,17 +60,21 @@ export interface ReviewsResponse {
   total: number;
 }
 
+/**
+ * Payload for `POST /halls/reviews`.
+ *
+ * Plan C / C2: numeric score fields removed — the form submits per-dimension
+ * and overall written feedback plus optional quick tags.
+ */
 export interface CreateReviewDto {
   profileUserId: string;
-  academicScore: number;
-  testScore: number;
-  activityScore: number;
-  awardScore: number;
-  overallScore: number;
   comment?: string;
+  academicComment?: string;
+  testComment?: string;
+  activityComment?: string;
+  awardComment?: string;
   tags?: string[];
-  method?: 'CLASSIC' | 'SWIPE';
-  swipeData?: import('@study-abroad/shared').ReviewSwipeData;
+  quickTags?: string[];
 }
 
 /**
@@ -101,7 +107,9 @@ export interface RankingResult {
   yourScore: number;
   percentile: number;
   breakdown: Record<string, number>;
-  competitivePosition: string;
+  // 2026-05 Hall Plan C (C1): `competitivePosition` removed — the
+  // strong/moderate/challenging tier collided with prediction's
+  // reach/match/safety. Ranking shows a relative percentile only.
 }
 
 export interface VerifiedUserDto {
@@ -135,7 +143,7 @@ export interface VerifiedRankingResponse {
 export type TabKey = 'verified' | 'ranking' | 'review' | 'path';
 export type RankingFilter = 'all' | 'admitted' | 'top20' | 'ivy';
 
-/** Tinder-style review swipe step dimensions (overall is derived). */
+/** The four qualitative feedback dimensions, in form order. */
 export type ReviewStep = 'academic' | 'test' | 'activity' | 'award';
 
 export type Colors = ReturnType<typeof useColors>;
@@ -144,9 +152,22 @@ export type Colors = ReturnType<typeof useColors>;
 // Constants
 // ---------------------------------------------------------------------------
 
-export const SCORE_LABELS = ['academic', 'test', 'activity', 'award', 'overall'] as const;
-
 export const REVIEW_STEPS: ReviewStep[] = ['academic', 'test', 'activity', 'award'];
+
+/** Optional strength/quality quick tags (i18n key suffix = the raw value). */
+export const REVIEW_TAGS = [
+  'well-rounded',
+  'strong-stem',
+  'high-gpa',
+  'leadership',
+  'creative',
+  'community-impact',
+  'research-oriented',
+  'athletic',
+] as const;
+
+/** Minimum length the overall written feedback must reach before submit. */
+export const MIN_FEEDBACK_LENGTH = 20;
 
 export const PERCENTILE_COLORS = {
   top10: '#6f7b58',
@@ -164,16 +185,6 @@ export const RESULT_BADGE_VARIANT: Record<string, 'success' | 'error' | 'warning
   DEFERRED: 'secondary',
 };
 
-/**
- * Swipe direction → 1-10 score mapping for the Tinder review deck.
- *  right = strong (9) · left = weak (3) · up = unsure (excluded from average).
- */
-export const SWIPE_SCORE: Record<'left' | 'right' | 'up', number> = {
-  left: 3,
-  right: 9,
-  up: 5,
-};
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -183,19 +194,4 @@ export function getPercentileColor(percentile: number): string {
   if (percentile >= 75) return PERCENTILE_COLORS.top25;
   if (percentile >= 50) return PERCENTILE_COLORS.top50;
   return PERCENTILE_COLORS.bottom;
-}
-
-export function averageScore(r: Review): number {
-  return (
-    Math.round(
-      ((r.academicScore + r.testScore + r.activityScore + r.awardScore + r.overallScore) / 5) * 10
-    ) / 10
-  );
-}
-
-export function getScoreColor(score: number): string {
-  if (score >= 8) return '#6f7b58';
-  if (score >= 6) return '#3b82f6';
-  if (score >= 4) return '#f59e0b';
-  return '#ef4444';
 }

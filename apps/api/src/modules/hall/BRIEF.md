@@ -12,11 +12,11 @@ Public profile showcase: community rankings, reviews, user-curated school lists,
 - `hall-review.service.ts` — User reviews of public profiles
 - `hall-list.service.ts` — User-curated lists (create, vote, manage)
 - `hall-verified.service.ts` — Verified applicant rankings with analysis
-- `swipe.service.ts` — Tinder-style profile discovery with like/pass/super-like
+- `swipe.service.ts` — Case study loop: browse real cases, guess the outcome, debrief
 
 ## Data Model
 
-Review (reviewerId, profileUserId, academicScore/testScore/activityScore/awardScore/overallScore, comments, tags, status, helpfulCount), ReviewReaction (reviewId, userId, type), UserList (title, items[]), UserListVote, CaseSwipe (userId, caseId, prediction), SwipeStats (per-user aggregates + badge). References: User, Profile, School, AdmissionCase.
+Review (reviewerId, profileUserId, academicScore/testScore/activityScore/awardScore/overallScore, comments, tags, status, helpfulCount), ReviewReaction (reviewId, userId, type), UserList (title, items[]), UserListVote, CaseSwipe (userId, caseId, prediction), SwipeStats (per-user `totalSwipes`/`correctCount` only — Plan C C3 de-gamified; streak/badge/dailyChallenge columns retained in schema but no longer written, dropped in C6). References: User, Profile, School, AdmissionCase.
 
 ## Dependencies
 
@@ -26,7 +26,9 @@ HallRankingService, HallReviewService, HallListService, HallVerifiedService, Swi
 
 - Public profiles browsable without auth; reviews require auth
 - Verified rankings restricted to verified users' data
-- Swipe actions: LIKE, PASS, SUPER_LIKE with leaderboard
+- Swipe loop is de-gamified (Plan C C3): no points, streak, badge, daily
+  challenge or leaderboard. `getStats` returns only private calibration
+  accuracy (total/correct/accuracy), visible to the user alone.
 - User lists support community voting
 - `@ThrottleRelaxed()` on entire controller
 

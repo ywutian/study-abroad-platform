@@ -87,6 +87,7 @@ describe('HallService', () => {
       }),
     },
     user: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
     admissionCase: {
@@ -131,6 +132,14 @@ describe('HallService', () => {
 
     service = module.get<HallService>(HallService);
     _prisma = module.get<PrismaService>(PrismaService);
+
+    // 2026-05 Hall Plan C (C2): the peer-review consent + age gate reads
+    // `user.findUnique`. Default to a consenting adult so the review tests
+    // exercise the happy path.
+    mockPrisma.user.findUnique.mockResolvedValue({
+      acceptPeerReview: true,
+      profile: { birthday: null },
+    });
   });
 
   afterEach(() => {
@@ -220,14 +229,13 @@ describe('HallService', () => {
       );
     });
 
-    it('should handle profiles with null gpa gracefully', async () => {
+    // 2026-05 Hall Plan C (security B3): precise gpa is no longer exposed.
+    it('does not expose precise gpa/gpaScale on public profiles', async () => {
       mockPrisma.profile.findMany.mockResolvedValue([
         {
           id: 'p-1',
           userId: 'u-1',
           grade: null,
-          gpa: null,
-          gpaScale: null,
           targetMajor: null,
           visibility: 'VERIFIED_ONLY',
           _count: { testScores: 0, activities: 0, awards: 0 },
@@ -236,8 +244,8 @@ describe('HallService', () => {
       mockPrisma.profile.count.mockResolvedValue(1);
 
       const result = await service.getPublicProfiles();
-      expect(result.data[0].gpa).toBeUndefined();
-      expect(result.data[0].gpaScale).toBeUndefined();
+      expect(result.data[0]).not.toHaveProperty('gpa');
+      expect(result.data[0]).not.toHaveProperty('gpaScale');
     });
   });
 
@@ -494,11 +502,10 @@ describe('HallService', () => {
 
       const result = await service.getReviewStats('user-1');
 
+      // 2026-05 Hall Plan C (C2b): numeric `averages` removed.
       expect(result).not.toBeNull();
       expect(result!.reviewCount).toBe(2);
-      expect(result!.averages.academic).toBe(7);
-      expect(result!.averages.test).toBe(8);
-      expect(result!.averages.overall).toBe(7.5);
+      expect(result).not.toHaveProperty('averages');
       expect(result!.topTags[0]).toBe('strong-academic');
     });
   });
@@ -946,7 +953,6 @@ describe('HallService', () => {
       expect(result.analysis).toContain('AI');
       expect(result.strengths).toEqual([]);
       expect(result.improvements).toEqual([]);
-      expect(result.competitivePosition).toBe('unknown');
     });
   });
 });

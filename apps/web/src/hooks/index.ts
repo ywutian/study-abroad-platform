@@ -18,7 +18,6 @@ export {
   hallKeys,
   useSwipeCases,
   useSwipeStats,
-  useLeaderboard,
   useSwipeMutation,
   useTargetRanking,
   useSchoolRanking,

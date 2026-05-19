@@ -2,31 +2,29 @@
 
 ## Purpose
 
-Tinder-style swipe interface for reviewing real admission cases — gamified learning with badges, leaderboards, and challenges.
+Swipe interface for studying real admission cases — a learning loop: browse a
+real case, guess the outcome, see the AI debrief. De-gamified (Plan C C3): no
+badges, streaks, daily challenge or leaderboard.
 
 ## Components
 
 - SwipeCard — draggable case card with applicant stats (framer-motion gestures)
 - SwipeStack — manages card deck with accept/reject swipe logic
-- SwipeResultOverlay — shows result after swipe decision
-- TinderTab — main swipe interface tab
+- SwipeResultOverlay — shows correct/wrong + the real outcome after a swipe
+- TinderTab — main swipe interface tab + a private calibration-accuracy stat
 - ReviewTab — re-export shim for `review/ReviewTab` (stable import path)
-- review/ — peer-review experience: ReviewTab orchestrator + ClassicReviewWizard
-  (slider fallback) + SwipeReviewWizard (Tinder-style 4-step swipe) + review-shared
+- review/ — qualitative peer-feedback experience (Plan C C2: numeric scoring
+  removed): ReviewTab orchestrator + QualitativeReviewForm + review-shared
 - RankingTab — thin orchestrator (data + state)
 - ranking/ — RankingTab sub-components: SummaryStats, SchoolPicker, ResultsGrid
   (RankingCard), CompetitorDistribution, AiPanel + ranking-shared (POSITION_CONFIG)
 - ListsTab — curated case lists
-- VerifiedTab / ChallengeTab — verified cases and daily challenges
-- BadgeDisplay — achievement badges with progress tracking
-- StatsPanel — swipe accuracy and streak stats
-- DailyChallenge — daily prediction challenge prompt
-- LeaderboardList — ranked user list
-- ReviewModuleCard — module/topic selector for focused review
+- VerifiedTab / ChallengeTab — verified cases and multi-school batch prediction
 
 ## Data Flow
 
-- API: `/hall/cases`, `/hall/swipe`, `/hall/leaderboard`, `/hall/badges`
+- API: `/halls/swipe/batch`, `/halls/swipe/predict`, `/halls/swipe/stats`,
+  `/halls/swipe/challenge`
 - SwipeCaseData includes school info, GPA, test scores, activities, admission result
 
 ## Patterns
@@ -34,5 +32,7 @@ Tinder-style swipe interface for reviewing real admission cases — gamified lea
 - Framer Motion for drag gestures and card animations
 - Shared swipe physics: `lib/hooks/useSwipeGesture.ts` (x/y/rotate/opacity + drag-end classifier)
 - Tab-based page split (TinderTab, ReviewTab, RankingTab, ListsTab)
-- Review is single-track: one ReviewTab orchestrator → choose swipe/classic wizard → one submit
-- Gamification: badges, streaks, daily challenges, leaderboard
+- Review is single-track and qualitative-only: ReviewTab orchestrator → select
+  profile → QualitativeReviewForm (written feedback, no scores) → one submit
+- Calibration accuracy (total/correct/accuracy) is private — visible only to the
+  user, never aggregated into a leaderboard

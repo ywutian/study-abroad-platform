@@ -1,14 +1,15 @@
 'use client';
 
 /**
- * TinderTab — 预测游戏标签页
+ * TinderTab — 案例判断学习闭环。
  *
- * 从 hall/page.tsx 拆分而来，负责：
- * - 滑动案例栈 (SwipeStack)
- * - 预测结果动画 (SwipeResultOverlay)
- * - 统计面板 (StatsPanel)
- * - 每日挑战 (DailyChallenge)
- * - 排行榜 (LeaderboardList)
+ * 2026-05 Hall Plan C (C3): de-gamified. The casino layer (streaks, badges,
+ * daily challenge, points toasts, leaderboard) was removed. What remains is
+ * the genuine learning loop:
+ *   - browse real admission cases (SwipeStack)
+ *   - guess the outcome (swipe)
+ *   - see whether you were right + the real result (SwipeResultOverlay)
+ *   - a private cumulative accuracy stat, visible only to the user.
  */
 
 import { useState, useCallback } from 'react';
@@ -16,19 +17,10 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
-import { toast } from 'sonner';
-import { Zap } from 'lucide-react';
-import {
-  useSwipeCases,
-  useSwipeStats,
-  useLeaderboard,
-  useSwipeMutation,
-} from '@/hooks/use-hall-api';
+import { Target } from 'lucide-react';
+import { useSwipeCases, useSwipeStats, useSwipeMutation } from '@/hooks/use-hall-api';
 import { SwipeStack } from './SwipeStack';
 import { SwipeResultOverlay } from './SwipeResultOverlay';
-import { StatsPanel } from './StatsPanel';
-import { DailyChallenge } from './DailyChallenge';
-import { LeaderboardList } from './LeaderboardList';
 import type { SwipeResult } from '@/types/hall';
 
 export function TinderTab() {
@@ -43,8 +35,7 @@ export function TinderTab() {
     isLoading: casesLoading,
     refetch: refetchCases,
   } = useSwipeCases(true);
-  const { data: swipeStatsData, isLoading: statsLoading } = useSwipeStats(true);
-  const { data: leaderboardData, isLoading: leaderboardLoading } = useLeaderboard(true);
+  const { data: swipeStatsData } = useSwipeStats(true);
 
   const swipeMutation = useSwipeMutation();
 
@@ -71,17 +62,12 @@ export function TinderTab() {
         {
           onSuccess: (response) => {
             setSwipeResult(response);
-            if (response.isCorrect) {
-              toast.success(t('hall.tinder.correctToast', { points: response.pointsEarned }));
-            } else {
-              toast.error(t('hall.tinder.incorrectToast', { result: response.actualResult }));
-            }
             setTimeout(() => setSwipeResult(null), 2000);
           },
         }
       );
     },
-    [swipeMutation, t]
+    [swipeMutation]
   );
 
   return (
@@ -95,16 +81,10 @@ export function TinderTab() {
       {/* 滑动案例栈 */}
       <div className="lg:col-span-2 order-1">
         <Card className="overflow-hidden">
-          <div className="h-1.5 bg-gradient-to-r from-pink-500 via-rose-500 to-red-500" />
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 text-white">
-                <Zap className="h-5 w-5" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">{t('hall.tinder.title')}</CardTitle>
-                <CardDescription>{t('hall.tinder.description')}</CardDescription>
-              </div>
+            <div>
+              <CardTitle>{t('hall.tinder.title')}</CardTitle>
+              <CardDescription>{t('hall.tinder.description')}</CardDescription>
             </div>
           </CardHeader>
           <CardContent className="relative">
@@ -126,31 +106,34 @@ export function TinderTab() {
         </Card>
       </div>
 
-      {/* 侧边栏：统计 + 排行榜 */}
+      {/* 侧边栏：私有判断校准准确率（仅自己可见，不上榜） */}
       <div className="space-y-4 sm:space-y-6 order-2">
-        {/* 每日挑战 */}
-        {swipeStatsData && (
-          <DailyChallenge
-            currentCount={swipeStatsData.dailyChallengeCount}
-            targetCount={swipeStatsData.dailyChallengeTarget}
-          />
-        )}
-
-        {/* 统计面板 */}
-        {statsLoading ? (
-          <LoadingState variant="card" count={1} />
-        ) : swipeStatsData ? (
-          <StatsPanel stats={swipeStatsData} />
-        ) : null}
-
-        {/* 排行榜 */}
-        {leaderboardLoading ? (
-          <LoadingState variant="card" count={1} />
-        ) : leaderboardData ? (
-          <LeaderboardList
-            entries={leaderboardData.entries}
-            currentUserEntry={leaderboardData.currentUserEntry}
-          />
+        {swipeStatsData && swipeStatsData.totalSwipes > 0 ? (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-emerald-500" />
+                <CardTitle className="text-base">{t('hall.calibration.title')}</CardTitle>
+              </div>
+              <CardDescription>{t('hall.calibration.description')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold tabular-nums text-foreground">
+                  {swipeStatsData.accuracy}%
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {t('hall.calibration.accuracyLabel')}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('hall.calibration.correctOf', {
+                  correct: swipeStatsData.correctCount,
+                  total: swipeStatsData.totalSwipes,
+                })}
+              </p>
+            </CardContent>
+          </Card>
         ) : null}
       </div>
     </motion.div>

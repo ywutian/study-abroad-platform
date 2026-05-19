@@ -2976,27 +2976,6 @@
       "reviewDesc": "Peer swipe reviews: see your profile through 100 admit-officer lenses",
       "pathDesc": "Study real applicant profiles with AI reflection — build admit-officer intuition"
     },
-    "hero": {
-      "points": "Points",
-      "today": "+{count} today",
-      "streak": "Streak",
-      "best": "{badge} · best {count}",
-      "reviewer": "Reviewer",
-      "credit": "Credit {count}",
-      "dailyChallenge": "Daily Challenge",
-      "badges": {
-        "bronze": "Bronze",
-        "silver": "Silver",
-        "gold": "Gold",
-        "platinum": "Platinum",
-        "diamond": "Diamond"
-      },
-      "reviewerLevels": {
-        "L1": "Learner",
-        "L2": "Peer",
-        "L3": "Senior"
-      }
-    },
     "path": {
       "modes": {
         "single": {
@@ -3027,12 +3006,12 @@
       "schools": "schools",
       "selectResult": "Select result...",
       "yourGuess": "Your guess",
-      "correct": "correct",
+      "summary": "You read {correct} of {total} outcomes correctly.",
       "submit": "Submit Predictions",
       "submitting": "Submitting...",
       "newChallenge": "New Challenge",
       "results": {
-        "ACCEPTED": "Accepted",
+        "ADMITTED": "Admitted",
         "REJECTED": "Rejected",
         "WAITLISTED": "Waitlisted",
         "DEFERRED": "Deferred"
@@ -3040,9 +3019,7 @@
     },
     "tinder": {
       "title": "Case Prediction",
-      "description": "Guess applicant outcomes and earn points",
-      "correctToast": "Correct! +{points} points",
-      "incorrectToast": "Wrong, actual result: {result}",
+      "description": "Read a real applicant's profile, guess the outcome, then compare with reality",
       "emptyPool": "No More Applicants",
       "emptyPoolDesc": "Check back later for new applicants",
       "emptyPoolAction": "Refresh",
@@ -3050,88 +3027,26 @@
       "allSwipedDesc": "You have reviewed all applicants",
       "restart": "Restart"
     },
-    "stats": {
-      "accuracy": "Accuracy",
-      "accuracyCompact": "{value}% accuracy",
-      "correctOf": "{correct}/{total} correct",
-      "currentStreak": "Current Streak",
-      "bestStreak": "Best Streak",
-      "totalPredictions": "Total Predictions",
-      "correctPredictions": "Correct Predictions"
+    "calibration": {
+      "title": "Your Calibration",
+      "description": "How often your guesses match the real outcome — visible only to you",
+      "accuracyLabel": "accuracy",
+      "correctOf": "{correct} of {total} guessed correctly"
     },
     "review": {
-      "submitSuccess": "Review submitted successfully",
+      "submitSuccess": "Feedback submitted successfully",
       "submitError": "Submit failed, please try again",
-      "applicantProfile": "Applicant Profile",
-      "targetMajor": "Target Major",
-      "notDetermined": "Not Determined",
-      "unknownGrade": "Unknown Grade",
-      "swipeToStart": "Swipe left or right to start review",
-      "academicBackground": "Academic Background",
-      "testScores": "Test Scores",
-      "finalVerdict": "Final Verdict",
-      "scores": "Scores",
-      "title": "Peer Review",
-      "academic": "Academic",
-      "academicDesc": "Evaluate academic ability",
-      "activity": "Activities",
-      "activityDesc": "Evaluate activity quality",
-      "test": "Test Scores",
-      "testDesc": "Evaluate standardized test performance",
-      "award": "Awards & Honors",
-      "awardDesc": "Evaluate awards and competition performance",
-      "overall": "Overall",
-      "overallDesc": "Overall score",
-      "comment": "Comment",
-      "commentPlaceholder": "Enter your comment...",
-      "submitReview": "Submit Review",
+      "title": "Peer Feedback",
+      "submitReview": "Submit Feedback",
       "selectProfile": "Select Profile",
-      "selectProfileDesc": "Select a public profile to review",
-      "selectFirst": "Please select a profile first",
-      "selectFirstDesc": "Select a public profile from the left to start reviewing",
-      "selectProfileFirst": "Please select a profile first",
-      "immersiveMode": "Immersive Mode",
-      "tryImmersive": "Try Immersive Admissions Mode",
-      "tryImmersiveDesc": "Full-screen swipe review, experience the real admissions officer perspective",
-      "start": "Start",
-      "startReview": "Start Review",
-      "academicBg": "Academic Background",
-      "weakLeft": "← Weak",
-      "excellentRight": "Excellent →",
-      "noTestScores": "No test scores",
-      "activities": "Extracurricular Activities",
+      "selectProfileDesc": "Choose a public profile to give feedback on",
       "activitiesCount": "{count} activities total",
-      "noActivities": "No activities recorded",
-      "averageLeft": "← Average",
-      "excellentAct": "Excellent →",
-      "awards": "Awards",
       "awardsCount": "{count} awards total",
-      "noAwards": "No awards recorded",
-      "finalScore": "Final Score (1-10)",
-      "reviewComment": "Review Comment (Optional)",
-      "processing": "Processing...",
-      "back": "Back",
-      "close": "Close review",
-      "enterFullscreen": "Enter fullscreen",
-      "exitFullscreen": "Exit fullscreen",
-      "dislike": "Mark as not ready",
-      "like": "Mark as strong",
-      "evaluating": "Evaluating {major} application",
-      "unknownMajor": "Undeclared",
+      "processing": "Submitting...",
       "noMajor": "Undeclared",
-      "evaluateHint": "Rate based on applicant background",
-      "selectModule": "Select Review Module",
-      "score": "Score",
-      "weak": "Weak",
-      "average": "Average",
-      "excellent": "Excellent",
-      "moduleComment": "Module Comment (Optional)",
-      "summary": "Review Summary",
-      "summaryDesc": "Confirm scores and submit your review",
-      "suggestedScore": "Suggested overall: {score}",
-      "tags": "Review Tags",
-      "generalComment": "General Comment (Optional)",
-      "generalCommentHint": "Write your overall evaluation of this applicant...",
+      "tags": "Quick Tags (optional)",
+      "generalComment": "Overall Feedback",
+      "generalCommentHint": "Share your overall impression of this applicant — what stands out, and what they could strengthen...",
       "dimension": {
         "academic": "Academic / GPA",
         "test": "Test Scores",
@@ -3145,46 +3060,15 @@
         "award": "Evaluate awards and competition achievements"
       },
       "commentHint": {
-        "academic": "Your evaluation of academic performance...",
-        "test": "Your evaluation of test scores...",
-        "activity": "Your evaluation of extracurricular activities...",
-        "award": "Your evaluation of awards and honors..."
-      },
-      "steps": {
-        "intro": "Applicant Overview",
-        "academic": "Academic Background",
-        "scores": "Test Scores",
-        "activities": "Extracurriculars",
-        "awards": "Awards & Honors",
-        "verdict": "Final Verdict"
+        "academic": "What stood out about their academics, and where could they go further?",
+        "test": "How do their test scores read — any context worth noting?",
+        "activity": "What did you find compelling or thin about their activities?",
+        "award": "How do their awards and honors come across?"
       },
       "helpful": "Helpful",
       "insightful": "Insightful",
       "markedHelpful": "Marked as helpful",
       "markedInsightful": "Marked as insightful",
-      "changeMode": "Change review mode",
-      "mode": {
-        "recommended": "Recommended",
-        "swipeTitle": "Swipe Review",
-        "swipeDesc": "Tinder-style: swipe each dimension card to score it fast.",
-        "classicTitle": "Classic Review",
-        "classicDesc": "Slider + comment for each dimension — full control."
-      },
-      "swipe": {
-        "verdictTitle": "Final Verdict",
-        "verdictDesc": "Add your rationale and submit your review.",
-        "rationale": "Your rationale",
-        "rationaleHint": "Explain why you scored this applicant the way you did...",
-        "rationaleMin": "At least {min} characters required.",
-        "quickTags": "Quick tags (optional)",
-        "dragHint": "Drag the card — left, up, or right",
-        "stepCounter": "Step {current} of {total}",
-        "direction": {
-          "notEnough": "Not enough",
-          "unsure": "Unsure",
-          "impressive": "Impressive"
-        }
-      },
       "quickTag": {
         "well-rounded": "Well-rounded",
         "strong-stem": "Strong STEM",
@@ -3195,7 +3079,11 @@
         "research-oriented": "Research-oriented",
         "athletic": "Athletic"
       },
-      "disclaimer": "Reviews are personal opinions from other members, not professional admissions advice."
+      "disclaimer": "Feedback reflects the personal perspective of another member — it is not professional admissions advice.",
+      "generalCommentMin": "Please write at least {min} characters of overall feedback.",
+      "dimensionFeedback": "Your written feedback (optional)",
+      "overallFeedback": "Overall Feedback",
+      "overallFeedbackDesc": "Tag any standout strengths and write your overall thoughts."
     },
     "ranking": {
       "title": "Rank Comparison",
@@ -3222,11 +3110,9 @@
       "summaryTitle": "Ranking Overview",
       "avgPercentile": "Avg Percentile",
       "totalCompetitors": "Total Competitors",
-      "overallPosition": "Overall Position",
       "bestSchool": "Best Ranking",
-      "strong": "Strong",
-      "moderate": "Moderate",
-      "challenging": "Needs Improvement",
+      "smallSampleCaption": "Based on {count} platform users who target this school — a small, self-selected sample, not the real applicant pool. Use as rough peer context only.",
+      "predictionCrossLink": "Want a real admissions probability? See your prediction",
       "median": "Median",
       "average": "Average",
       "competitorsCount": "{count} competitors",
@@ -3246,60 +3132,6 @@
       "emptyTitle": "No lists yet",
       "emptyDesc": "Create your first list",
       "byAuthor": "By"
-    },
-    "modules": {
-      "standardized": "Test Scores",
-      "standardizedDesc": "Evaluate standardized test scores (SAT/ACT/TOEFL, etc.)",
-      "honors": "Awards & Honors",
-      "honorsDesc": "Evaluate competition awards and honors",
-      "activities": "Extracurriculars",
-      "activitiesDesc": "Evaluate depth and breadth of extracurricular activities",
-      "noTestScores": "No Test Scores",
-      "scoreLabel": "Score",
-      "noAwards": "No Awards",
-      "awardsTotal": "{count} total",
-      "awardsScoreLabel": "Awards Score",
-      "hoursPerWeek": "hrs/wk",
-      "weeksPerYear": "wks/yr",
-      "noActivities": "No Activities",
-      "activitiesTotal": "{count} total",
-      "activitiesScoreLabel": "Activities Score",
-      "moduleReview": {
-        "commentLabel": "Comment",
-        "commentPlaceholder": "Enter your comment...",
-        "back": "Back",
-        "submitScore": "Submit Score"
-      }
-    },
-    "moduleReview": {
-      "noTestScores": "No test scores available",
-      "scoreLabel": "Test Score Rating",
-      "noAwards": "No awards recorded",
-      "awardsTotal": "{count} awards total",
-      "awardsScoreLabel": "Awards & Honors Rating",
-      "noActivities": "No activities recorded",
-      "hoursPerWeek": "{hours} hrs/week",
-      "weeksPerYear": "{weeks} weeks/year",
-      "activitiesTotal": "{count} activities total",
-      "activitiesScoreLabel": "Extracurriculars Rating",
-      "commentLabel": "Review Comment",
-      "commentPlaceholder": "Enter your evaluation for this module...",
-      "back": "Back",
-      "submitScore": "Submit Score",
-      "moduleReview": {
-        "commentLabel": "Comment",
-        "commentPlaceholder": "Enter your comment...",
-        "back": "Back",
-        "submitScore": "Submit Score"
-      },
-      "modules": {
-        "standardized": "Standardized Tests",
-        "standardizedDesc": "SAT, ACT, TOEFL scores and more",
-        "honors": "Honors & Awards",
-        "honorsDesc": "Competitions, academic awards and achievements",
-        "activities": "Extracurricular Activities",
-        "activitiesDesc": "Clubs, volunteer work, internships, etc."
-      }
     },
     "swipeCard": {
       "applicantProfile": "Applicant Profile",
@@ -3348,30 +3180,8 @@
     "result": {
       "correct": "Correct",
       "wrong": "Wrong",
-      "actual": "Actual Result",
-      "points": "Points",
-      "streak": "Streak"
+      "actual": "Actual Result"
     },
-    "leaderboard": {
-      "title": "Leaderboard",
-      "you": "You",
-      "yourRank": "Your Rank",
-      "predictions": "Predictions",
-      "correct": "Correct",
-      "accuracy": "Accuracy",
-      "empty": "No Data",
-      "emptyDesc": "No one has participated yet",
-      "userFallback": "Anonymous"
-    },
-    "dailyChallenge": {
-      "title": "Daily Challenge",
-      "progress": "Progress",
-      "remaining": "Remaining",
-      "completed": "Completed",
-      "challengeComplete": "Challenge Complete!",
-      "keepItUp": "Keep it up!"
-    },
-    "badgeProgress": "Badge Progress",
     "noTestScores": "No Test Scores",
     "scoreLabel": "Score",
     "noAwards": "No Awards",
@@ -3407,10 +3217,10 @@
       "steps": {
         "welcomeTitle": "Welcome to the Alumni Square",
         "welcomeBody": "A community space where applicants compare positioning, get peer reviews, and learn from verified admit cases.",
-        "pointsTitle": "Earn points by contributing",
-        "pointsBody": "Reviewing peers, completing challenges and sharing outcomes earns points you can redeem in the Points Center.",
-        "leaderboardTitle": "See where you stand",
-        "leaderboardBody": "The ranking tab shows your competitive position against applicants targeting the same schools.",
+        "learnTitle": "Learn from real cases",
+        "learnBody": "Predict the outcome of real applicant profiles, then get an AI debrief explaining what shaped each admission decision.",
+        "verifiedTitle": "Verified admission data",
+        "verifiedBody": "Browse a curated center of verified admit records — real scores, schools and majors you can use to ground your own positioning.",
         "privacyTitle": "You are in control",
         "privacyBody": "Peer reviews are opt-in and your profile is always anonymized. Manage this anytime in Settings."
       }
@@ -6890,6 +6700,7 @@
   },
   "verifiedRanking": {
     "title": "Verified Ranking",
+    "listTitle": "Verified admission records",
     "description": "View admission rankings of verified users",
     "filtersLabel": "Filters",
     "totalRecords": "{count} verified records",
@@ -6935,10 +6746,12 @@
         "D": "No verified case"
       },
       "signal": {
-        "stable": "Stable",
-        "declining": "Declining",
-        "surging": "Sharply harder"
+        "stable": "Admit rate steady",
+        "declining": "Admit rate trending down",
+        "surging": "Admit rate dropped sharply"
       },
+      "signalNote": "Trend is computed from the verified admit rate (admitted ÷ total) in our sample, not a raw count.",
+      "changePctUnit": "pt",
       "disclaimer": "Past admit results do not predict future odds. Data is shared by users and cannot be fully verified."
     },
     "crossLink": {

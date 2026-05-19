@@ -116,11 +116,10 @@ export const hallRoutes = {
   // Hall refactor Phase 1 — new endpoints
   meOverview: () => `${API_ROUTES.HALLS}/me/overview`,
   challengeSubmit: () => `${API_ROUTES.HALLS}/swipe/challenge`,
-  // Hall refactor Stage 2 — aggregate, report, reviewer qualification
-  reviewAggregate: (profileUserId: string) =>
-    `${API_ROUTES.HALLS}/reviews/${profileUserId}/aggregate`,
-  reviewReport: (reviewId: string) =>
-    `${API_ROUTES.HALLS}/reviews/${reviewId}/report`,
+  // Hall refactor Stage 2 — report, reviewer qualification
+  // (2026-05 Plan C C2b: `reviewAggregate` removed — numeric review-score
+  // aggregation endpoint retired.)
+  reviewReport: (reviewId: string) => `${API_ROUTES.HALLS}/reviews/${reviewId}/report`,
   reviewerQualification: () => `${API_ROUTES.HALLS}/reviewer/qualification`,
   // Hall refactor Stage 5 — AI review coach
   reviewerCoach: () => `${API_ROUTES.HALLS}/reviewer/coach`,

@@ -1,11 +1,6 @@
 // Hall 组件
 export { SwipeCard, type SwipeCaseData } from './SwipeCard';
 export { SwipeStack } from './SwipeStack';
-export { BadgeDisplay, BadgeProgress, type SwipeBadge } from './BadgeDisplay';
-export { StatsPanel } from './StatsPanel';
-export { DailyChallenge } from './DailyChallenge';
-export { LeaderboardList } from './LeaderboardList';
-export { ModuleSelector, ReviewModuleCard } from './ReviewModuleCard';
 export { SwipeResultOverlay } from './SwipeResultOverlay';
 export { HallOnboarding } from './HallOnboarding';
 

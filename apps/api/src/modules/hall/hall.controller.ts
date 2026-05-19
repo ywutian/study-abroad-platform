@@ -23,10 +23,6 @@ import {
   type HallOverviewPayload,
 } from './hall-overview.service';
 import {
-  HallReviewAggregatorService,
-  type AggregatedReviewPayload,
-} from './hall-review-aggregator.service';
-import {
   ReviewerQualificationService,
   type QualificationQuestion,
   type QualificationResult,
@@ -42,6 +38,7 @@ import { Role } from '@prisma/client';
 import {
   ThrottleRelaxed,
   ThrottleAI,
+  ThrottleSensitive,
 } from '../../common/decorators/throttle.decorator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import {
@@ -66,8 +63,6 @@ import {
   SwipeBatchResultDto,
   SwipeResultDto,
   SwipeStatsDto,
-  LeaderboardDto,
-  LeaderboardQueryDto,
 } from './swipe-dto';
 
 @ApiTags('hall')
@@ -78,7 +73,6 @@ export class HallController {
     private readonly hallService: HallService,
     private readonly swipeService: SwipeService,
     private readonly hallOverviewService: HallOverviewService,
-    private readonly aggregatorService: HallReviewAggregatorService,
     private readonly qualificationService: ReviewerQualificationService,
     private readonly reviewCoachService: ReviewCoachService,
     private readonly verifiedDashboardService: HallVerifiedDashboardService,
@@ -102,22 +96,17 @@ export class HallController {
   }
 
   // ============================================
-  // Stage 2: Review aggregation, reporting, reviewer qualification
+  // Stage 2: Review reporting, reviewer qualification
+  //
+  // 2026-05 Hall Plan C (C2b): the `reviews/:profileUserId/aggregate`
+  // endpoint and HallReviewAggregatorService were removed. Numeric review
+  // scoring was retired from the UI, and serving aggregate dimension
+  // means/medians made the API a second competitiveness authority — at
+  // odds with the de-gamified, qualitative peer-feedback model.
   // ============================================
 
-  @Get('reviews/:profileUserId/aggregate')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary:
-      'Aggregate of reviews for an applicant (returns inProgress=true below 7-review threshold)',
-  })
-  async aggregateReviews(
-    @Param('profileUserId') profileUserId: string,
-  ): Promise<AggregatedReviewPayload | null> {
-    return this.aggregatorService.aggregateForApplicant(profileUserId);
-  }
-
   @Post('reviews/:reviewId/report')
+  @ThrottleSensitive()
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Report a review (reuses central Report queue for admin triage)',
@@ -241,6 +230,7 @@ export class HallController {
   // ============================================
 
   @Post('reviews')
+  @ThrottleSensitive()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create or update a review' })
   async createReview(
@@ -251,6 +241,7 @@ export class HallController {
   }
 
   @Patch('reviews/:reviewId')
+  @ThrottleSensitive()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing review' })
   async updateReview(
@@ -542,17 +533,6 @@ export class HallController {
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<SwipeStatsDto> {
     return this.swipeService.getStats(user.id);
-  }
-
-  @Get('swipe/leaderboard')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get leaderboard' })
-  @ApiResponse({ status: 200, type: LeaderboardDto })
-  async getLeaderboard(
-    @CurrentUser() user: CurrentUserPayload,
-    @Query() query: LeaderboardQueryDto,
-  ): Promise<LeaderboardDto> {
-    return this.swipeService.getLeaderboard(user.id, query.limit ?? 20);
   }
 
   // ============================================

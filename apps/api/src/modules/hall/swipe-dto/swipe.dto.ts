@@ -16,14 +16,6 @@ export enum SwipePrediction {
   WAITLIST = 'waitlist',
 }
 
-export enum SwipeBadge {
-  BRONZE = 'bronze',
-  SILVER = 'silver',
-  GOLD = 'gold',
-  PLATINUM = 'platinum',
-  DIAMOND = 'diamond',
-}
-
 // ============ Request DTOs ============
 
 export class SwipeActionDto {
@@ -50,21 +42,6 @@ export class SwipeBatchQueryDto {
   @Min(1)
   @Max(20)
   count?: number;
-}
-
-export class LeaderboardQueryDto {
-  @ApiPropertyOptional({
-    description: 'Number of leaderboard entries',
-    default: 20,
-    minimum: 1,
-    maximum: 50,
-  })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(50)
-  limit?: number;
 }
 
 // ============ Response DTOs ============
@@ -182,6 +159,10 @@ export class SwipeBatchResultDto {
   meta: SwipeBatchMetaDto;
 }
 
+/**
+ * 2026-05 Hall Plan C (C3): de-gamified. The swipe result is now a plain
+ * "right/wrong + the real outcome" debrief — no points, no streak, no badge.
+ */
 export class SwipeResultDto {
   @ApiProperty()
   caseId: string;
@@ -194,20 +175,13 @@ export class SwipeResultDto {
 
   @ApiProperty()
   isCorrect: boolean;
-
-  @ApiProperty({ description: 'Current streak' })
-  currentStreak: number;
-
-  @ApiProperty({ description: 'Points earned' })
-  pointsEarned: number;
-
-  @ApiProperty({ description: 'Whether badge was upgraded' })
-  badgeUpgraded: boolean;
-
-  @ApiProperty({ enum: SwipeBadge, description: 'Current badge' })
-  currentBadge: SwipeBadge;
 }
 
+/**
+ * 2026-05 Hall Plan C (C3): de-gamified. Keeps only the private, self-only
+ * calibration counters (total / correct / accuracy) — no streak, no badge,
+ * no daily challenge. Never surfaced on a leaderboard.
+ */
 export class SwipeStatsDto {
   @ApiProperty()
   totalSwipes: number;
@@ -217,59 +191,4 @@ export class SwipeStatsDto {
 
   @ApiProperty({ description: 'Accuracy 0-100' })
   accuracy: number;
-
-  @ApiProperty()
-  currentStreak: number;
-
-  @ApiProperty()
-  bestStreak: number;
-
-  @ApiProperty({ enum: SwipeBadge })
-  badge: SwipeBadge;
-
-  @ApiProperty({ description: 'Correct answers needed for next badge' })
-  toNextBadge: number;
-
-  @ApiProperty({ description: 'Daily challenge completions' })
-  dailyChallengeCount: number;
-
-  @ApiProperty({ description: 'Daily challenge target' })
-  dailyChallengeTarget: number;
-}
-
-export class LeaderboardEntryDto {
-  @ApiProperty()
-  rank: number;
-
-  @ApiProperty()
-  userId: string;
-
-  @ApiProperty()
-  userName?: string;
-
-  @ApiProperty()
-  accuracy: number;
-
-  @ApiProperty()
-  totalSwipes: number;
-
-  @ApiProperty()
-  correctCount: number;
-
-  @ApiProperty({ enum: SwipeBadge })
-  badge: SwipeBadge;
-
-  @ApiProperty()
-  isCurrentUser: boolean;
-}
-
-export class LeaderboardDto {
-  @ApiProperty({ type: [LeaderboardEntryDto] })
-  entries: LeaderboardEntryDto[];
-
-  @ApiProperty({
-    type: LeaderboardEntryDto,
-    description: 'Current user ranking',
-  })
-  currentUserEntry?: LeaderboardEntryDto;
 }

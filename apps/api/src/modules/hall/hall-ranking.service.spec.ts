@@ -324,7 +324,6 @@ describe('HallRankingService', () => {
 
       expect(result.strengths).toEqual([]);
       expect(result.improvements).toEqual([]);
-      expect(result.competitivePosition).toBe('unknown');
     });
 
     it('should return profile-not-found message when no profile', async () => {
@@ -337,7 +336,6 @@ describe('HallRankingService', () => {
       );
 
       expect(result.analysis).toContain('profile');
-      expect(result.competitivePosition).toBe('unknown');
     });
 
     it('should return school-not-found message when school does not exist', async () => {
@@ -385,7 +383,6 @@ describe('HallRankingService', () => {
 
       expect(result.analysis).toContain('unavailable');
       expect(result.strengths).toEqual([]);
-      expect(result.competitivePosition).toBe('unknown');
     });
   });
 });

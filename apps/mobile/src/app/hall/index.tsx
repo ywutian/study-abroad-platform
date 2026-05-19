@@ -4,7 +4,7 @@
  * 4 tabs in order of value to the user (mirrors the web IA):
  *   verified — China Admit Dashboard (default, highest decision value)
  *   ranking  — competitive position vs target schools
- *   review   — Tinder-style peer review
+ *   review   — qualitative peer feedback (Plan C / C2: numeric scoring removed)
  *   path     — 学长之路 (single-case swipe + batch challenge)
  *
  * The legacy 6-tab structure (reviews / ranking / lists / verified / …) and
@@ -19,10 +19,9 @@ import { useTranslation } from 'react-i18next';
 import { Segment } from '@/components/ui';
 import { useColors, spacing } from '@/utils/theme';
 import type { TabKey } from '@/screens/hall/types';
-import { HallHeroBar } from '@/screens/hall/HallHeroBar';
 import { VerifiedTab } from '@/screens/hall/VerifiedTab';
 import { RankingTab } from '@/screens/hall/RankingTab';
-import { ReviewSwipeTab } from '@/screens/hall/ReviewSwipeTab';
+import { ReviewFeedbackTab } from '@/screens/hall/ReviewFeedbackTab';
 import { PathTab } from '@/screens/hall/PathTab';
 
 export default function HallPage() {
@@ -47,7 +46,6 @@ export default function HallPage() {
 
       <View style={[S.container, { backgroundColor: c.background }]}>
         <View style={S.header}>
-          <HallHeroBar />
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <Segment
               segments={segments}
@@ -60,7 +58,7 @@ export default function HallPage() {
         <View style={[S.content, { flex: 1 }]}>
           {activeTab === 'verified' && <VerifiedTab />}
           {activeTab === 'ranking' && <RankingTab />}
-          {activeTab === 'review' && <ReviewSwipeTab />}
+          {activeTab === 'review' && <ReviewFeedbackTab />}
           {activeTab === 'path' && <PathTab />}
         </View>
       </View>

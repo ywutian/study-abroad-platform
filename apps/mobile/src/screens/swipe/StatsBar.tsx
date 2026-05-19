@@ -1,6 +1,8 @@
 /**
- * StatsBar — Compact stats bar shown above the card stack in game view.
- * Displays accuracy, streak, badge, and a toggle to switch to stats view.
+ * StatsBar — compact bar shown above the card stack in game view.
+ *
+ * 2026-05 Hall Plan C (C3): de-gamified. Shows only the private calibration
+ * accuracy and a toggle to the full stats view — no streak, no badge.
  */
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
@@ -14,7 +16,7 @@ import { API_ROUTES } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useColors, spacing, fontSize, fontWeight, borderRadius, shadows } from '@/utils/theme';
 
-import { SwipeStatsDto, BADGE_COLORS, BADGE_ICONS, normalizeBadge } from './types';
+import { SwipeStatsDto } from './types';
 
 interface StatsBarProps {
   onShowStats: () => void;
@@ -29,10 +31,6 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
     queryFn: () => apiClient.get<SwipeStatsDto>(`${API_ROUTES.HALLS}/swipe/stats`),
     staleTime: 30_000,
   });
-
-  const badge = normalizeBadge(stats?.badge);
-  const badgeColor = BADGE_COLORS[badge] || BADGE_COLORS.bronze;
-  const badgeIcon = BADGE_ICONS[badge] || BADGE_ICONS.bronze;
 
   return (
     <Animated.View
@@ -49,19 +47,11 @@ export default function StatsBar({ onShowStats }: StatsBarProps) {
       <View style={[styles.statDivider, { backgroundColor: c.border }]} />
 
       <View style={styles.statItem}>
-        <View style={styles.streakRow}>
-          <Ionicons name="flame" size={16} color={c.warning} />
-          <Text style={[styles.statValue, { color: c.warning }]}>{stats?.currentStreak ?? 0}</Text>
-        </View>
-        <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>{t('swipe.streak')}</Text>
-      </View>
-
-      <View style={[styles.statDivider, { backgroundColor: c.border }]} />
-
-      <View style={styles.statItem}>
-        <Ionicons name={badgeIcon} size={22} color={badgeColor} />
-        <Text style={[styles.statLabel, { color: badgeColor, fontWeight: fontWeight.semibold }]}>
-          {t(`swipe.badges.${badge.toLowerCase()}`)}
+        <Text style={[styles.statValue, { color: c.foreground }]}>
+          {stats ? `${stats.correctCount}/${stats.totalSwipes}` : '--'}
+        </Text>
+        <Text style={[styles.statLabel, { color: c.foregroundMuted }]}>
+          {t('swipe.correctCount')}
         </Text>
       </View>
 
@@ -105,11 +95,6 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 28,
-  },
-  streakRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
   },
   statsToggle: {
     width: 36,
