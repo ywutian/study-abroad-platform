@@ -242,7 +242,7 @@
         "description": "先完善你的档案，Lumni 会基于此校准录取预测、并按你的画像推荐选校。",
         "cta": "完善档案"
       },
-      "contributionHint": "下方每一项都为整体就绪度贡献一部分分数（相加 = 总分）。",
+      "contributionHint": "下方每一项都是申请准备的一部分。",
       "tools": {
         "title": "更多工具",
         "assessment": "性格测评",
@@ -347,6 +347,8 @@
       "due30": "30 天内截止",
       "timelineGaps": "时间线缺口",
       "readiness": "准备度地图",
+      "setupChecklist": "准备清单",
+      "setupProgress": "已就绪 {ready} / {total}",
       "priorityQueue": "优先队列",
       "deadlineStream": "截止流",
       "balanced": "选校均衡",
@@ -361,6 +363,16 @@
       "deadlineOverdue": "已逾期 {count} 天",
       "deadlineToday": "今天截止",
       "deadlineDays": "{count} 天",
+      "deadlineSegmentUrgent": "紧急 · 7 天内",
+      "deadlineSegmentUpcoming": "即将到来",
+      "moreCritical": "另有 {count} 项紧急事项",
+      "parallel": {
+        "accepted": "已有录取结果，其他申请仍在推进",
+        "waitlisted": "有学校进入候补 — 可补交一封 Letter of Continued Interest 争取",
+        "submittedAndInProgress": "部分申请已提交，其余仍在进行中",
+        "submitted": "申请已提交，正在跟进结果",
+        "inProgress": "多所学校的申请正在并行推进"
+      },
       "status": {
         "blocked": "阻塞",
         "attention": "需关注",
@@ -443,7 +455,6 @@
       "profileCompletion": "档案完成度",
       "schoolList": "选校清单",
       "pendingTasks": "待办任务",
-      "profileScore": "档案评分",
       "essayCount": "文书数",
       "followers": "粉丝",
       "points": "积分",

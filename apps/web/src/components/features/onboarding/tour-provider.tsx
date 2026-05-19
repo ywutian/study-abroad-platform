@@ -393,9 +393,13 @@ export function getDashboardTourSteps(t: TourT): TourStep[] {
       id: 'dashboard-priority-queue',
       element: '[data-tour="dashboard-priority-queue"]',
       popover: {
+        // 2026-05 dashboard redesign batch 2: the priority queue is now
+        // a full-width section in the lower half of the flattened
+        // CommandCenter (was the right sub-column). `side: 'top'` —
+        // there is no longer room to anchor the popover to its left.
         title: t('dashboard.priorityQueue'),
         description: t('dashboard.priorityQueueDesc'),
-        side: 'left',
+        side: 'top',
         align: 'start',
       },
     },

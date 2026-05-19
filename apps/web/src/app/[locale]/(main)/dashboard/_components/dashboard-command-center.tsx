@@ -15,22 +15,22 @@ import {
   ClipboardList,
   FileText,
   Gauge,
+  Layers,
   ListChecks,
   School,
   Sparkles,
-  TrendingUp,
   User,
 } from 'lucide-react';
 
-import { DashboardPipelineStrip } from './dashboard-pipeline-strip';
 import { DashboardQuickAddSchool } from './dashboard-quick-add-school';
 import {
-  getProfileGrade,
   toneFromReadinessStatus,
   toneFromSeverity,
+  type DashboardDeadlineItem,
   type DashboardPriorityItem,
   type DashboardTone,
   type DashboardWorkbench,
+  type DeriveStageResult,
 } from './dashboard-workbench-model';
 
 interface DashboardCommandCenterProps {
@@ -64,6 +64,14 @@ interface DashboardCommandCenterProps {
    * rhythm when grade is null/missing/unknown.
    */
   grade?: string | null;
+  /**
+   * 2026-05 batch 4: derived application-stage signal. Only `stage.parallel`
+   * is consumed here — a calm one-line "other tracks in progress" hint in
+   * the hero. `stage.primary` (the 5-stage label) is intentionally NOT
+   * rendered as a chip: it is redundant with the focus card and a
+   * behaviour-derived label reads as a judgement to an anxious applicant.
+   */
+  stage?: DeriveStageResult;
 }
 
 // 2026-05 Phase 2.7 #28: well-known Profile.grade values. Anything outside
@@ -145,6 +153,38 @@ function PriorityKindIcon({
   }
 }
 
+/**
+ * 2026-05 dashboard redesign batch 3: a single deadline row. Extracted
+ * so the two-segment deadline strip (urgent ≤7d / upcoming) renders
+ * identical rows without duplicating the markup. `deadlineLabel` is
+ * passed pre-formatted so this stays a pure presentational component
+ * (no `useTranslations` needed).
+ */
+function DeadlineRow({
+  item,
+  deadlineLabel,
+}: {
+  item: DashboardDeadlineItem;
+  deadlineLabel: string;
+}) {
+  const meta = toneMeta[toneFromSeverity(item.severity)];
+  return (
+    <Link
+      href={item.href}
+      className="flex items-center gap-3 rounded-[var(--theme-radius-card)] border border-border px-3 py-2 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]"
+    >
+      <CircleAlert className={cn('h-4 w-4 shrink-0', meta.text)} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{item.title}</p>
+        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+      </div>
+      <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+        {deadlineLabel}
+      </span>
+    </Link>
+  );
+}
+
 export function DashboardCommandCenter({
   workbench,
   completingTaskId,
@@ -155,13 +195,13 @@ export function DashboardCommandCenter({
   predictionsCount = 0,
   casesCount = 0,
   grade: applicantGrade,
+  stage,
 }: DashboardCommandCenterProps) {
   const t = useTranslations('dashboard.workbench');
   const tCenter = useTranslations('dashboard.commandCenter');
   const tStats = useTranslations('dashboard.stats');
   const topAction = workbench.priorityQueue[0];
   const topSeverity = toneMeta[topAction ? toneFromSeverity(topAction.severity) : 'neutral'];
-  const grade = getProfileGrade(completeness);
   // 2026-05 Phase 2.7 #28: grade-aware rhythm message. When the user's
   // Profile.grade is a known value, swap the generic rhythm subtitle for
   // a grade-specific one ("Submission season" for SENIOR vs "Long-term
@@ -186,12 +226,84 @@ export function DashboardCommandCenter({
     if (daysLeft === 0) return t('deadlineToday');
     return t('deadlineDays', { count: daysLeft });
   };
+  // 2026-05 dashboard redesign batch 3: multi-critical signal. The hero
+  // only renders priorityQueue[0]; when several critical items exist the
+  // others are visually demoted into the queue body below. Surface the
+  // count so a stressed user knows there are N fires, not 1. The queue
+  // is sorted critical-first, so any critical means [0] is critical —
+  // `criticalCount > 1` ⟺ topAction critical AND there are more.
+  const criticalCount = workbench.priorityQueue.filter(
+    (item) => item.severity === 'critical'
+  ).length;
+  // 2026-05 dashboard redesign batch 3: two-segment deadline strip. The
+  // old flat `.slice(0, 5)` list let an 8–30-day deadline ("you should
+  // START this essay now") fall off the bottom behind nearer items —
+  // the "deadline black hole". Partition into an urgent (≤7d, includes
+  // overdue) band and an everything-later band so mid-range deadlines
+  // always get a labelled home and a visible "act now" cue. Both bands
+  // render in full (no client slice): `deadlineStream` is already
+  // server-capped at 8 items, so there is nothing to silently truncate;
+  // the section-level "view timeline" link is the see-everything path.
+  const urgentDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft <= 7);
+  const upcomingDeadlines = workbench.deadlineStream.filter((item) => item.daysLeft > 7);
+  // 2026-05 dashboard redesign batch 4: the readiness section is reframed
+  // as a non-scored "setup checklist". The headline NN/100 score and the
+  // ready/attention/blocked verdict badge were REMOVED — a /100 score with
+  // a colored verdict, sitting next to the prediction tool, risks being
+  // read as an admit-chance proxy, which contradicts ai-system.md
+  // (prediction is the only probability/tier authority). The progress bar
+  // and the count now reflect a plain, auditable "N of 5 ready" tally that
+  // the 5 item cards below verify directly. `workbench.readiness.score` /
+  // `.status` stay in the contract (still computed) but are no longer
+  // rendered here.
+  const readyCount = workbench.readiness.items.filter((item) => item.status === 'ready').length;
+  const totalReadinessItems = workbench.readiness.items.length;
+  const readyPercent =
+    totalReadinessItems > 0 ? Math.round((readyCount / totalReadinessItems) * 100) : 0;
+  // 2026-05 dashboard redesign batch 4: parallel-tracks hint. Application
+  // season runs in parallel — the hero focus card shows ONE next action,
+  // but the student may also have submitted apps, a pending waitlist, etc.
+  // Surface the single most advanced parallel track as one calm line
+  // (precedence pick, not a row of status pills). Only `stage.parallel` is
+  // used; the 5-stage `primary` label is deliberately never rendered.
+  const parallel = stage?.parallel;
+  const parallelHintKey = parallel?.hasAccepted
+    ? 'accepted'
+    : parallel?.hasWaitlisted
+      ? 'waitlisted'
+      : parallel?.hasSubmitted && parallel?.hasInProgress
+        ? 'submittedAndInProgress'
+        : parallel?.hasSubmitted
+          ? 'submitted'
+          : parallel?.hasInProgress
+            ? 'inProgress'
+            : null;
+  // 2026-05 batch 4 polish: when the hero already carries a multi-critical
+  // alarm ("+N more urgent items"), suppress the calm "applications are
+  // moving" hints (inProgress / submitted) — they read as contradictory
+  // next to a wall of fires. `accepted` / `waitlisted` still show: a real
+  // result is worth surfacing even amid open criticals.
+  const showParallelHint =
+    parallelHintKey != null &&
+    (criticalCount <= 1 || parallelHintKey === 'accepted' || parallelHintKey === 'waitlisted');
 
   return (
     <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
       <CardContent className="p-0">
-        <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="min-w-0 border-b border-border p-4 sm:p-5 xl:border-b-0 xl:border-r">
+        {/*
+          2026-05 dashboard redesign batch 2: CommandCenter is now a
+          single vertical column (hero + readiness on top, priority
+          queue + deadline stream below the divider). The previous
+          internal xl two-column split (1fr main + 390px fixed) was
+          REMOVED because the card now lives inside the page-level
+          two-column workbench grid — nesting a 2-col card inside a
+          2-col page produced a ~437px left sub-column at xl that
+          crushed the 5-up readiness grid to ~87px/cell. One nesting
+          level only: the page grid owns the horizontal split, this
+          card owns the vertical flow.
+        */}
+        <div className="min-w-0">
+          <div className="min-w-0 border-b border-border p-4 sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -241,6 +353,27 @@ export function DashboardCommandCenter({
                       <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
                         {topAction?.description ?? t('emptyDescription')}
                       </p>
+                      {/* 2026-05 batch 3: multi-critical cue — tell the
+                          user the hero is 1 of N fires, not the whole
+                          story. The other criticals render in the queue
+                          immediately below this card section. */}
+                      {criticalCount > 1 && (
+                        <Badge variant="destructive" className="mt-2">
+                          <CircleAlert className="h-3.5 w-3.5" />
+                          {t('moreCritical', { count: criticalCount - 1 })}
+                        </Badge>
+                      )}
+                      {/* 2026-05 batch 4: parallel-tracks hint — one calm
+                          line acknowledging that the focus card is 1 of
+                          several application tracks in flight. Suppressed
+                          for the calm hints when a multi-critical alarm
+                          is already showing (see showParallelHint). */}
+                      {showParallelHint && parallelHintKey && (
+                        <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          <span className="min-w-0">{t(`parallel.${parallelHintKey}`)}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -267,7 +400,7 @@ export function DashboardCommandCenter({
 
             <div className="mt-5">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold">{t('readiness')}</h3>
+                <h3 className="text-sm font-semibold">{t('setupChecklist')}</h3>
                 <div className="flex items-center gap-2">
                   {/* 2026-05: Quick Add School inline. Compresses the
                       previous 5-click "open schools page → search →
@@ -276,35 +409,27 @@ export function DashboardCommandCenter({
                       readiness header (not on the schools row) to avoid
                       nesting a button inside the row's Link. */}
                   <DashboardQuickAddSchool />
-                  <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-                    {workbench.readiness.score}
-                    <span className="text-xs">/100</span>
+                  <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                    {t('setupProgress', { ready: readyCount, total: totalReadinessItems })}
                   </span>
-                  <Badge
-                    variant={
-                      workbench.readiness.status === 'ready'
-                        ? 'success'
-                        : workbench.readiness.status === 'attention'
-                          ? 'warning'
-                          : 'destructive'
-                    }
-                  >
-                    {t(`status.${workbench.readiness.status}`)}
-                  </Badge>
                 </div>
               </div>
-              <Progress value={workbench.readiness.score} className="h-1.5" />
+              <Progress value={readyPercent} className="h-1.5" />
               <p className="mt-1.5 text-xs text-muted-foreground">{tCenter('contributionHint')}</p>
               {/*
-                2026-05 Phase 2.5a: 5 readiness items in equal-width columns
-                at lg+ (5 cols matches the 5 items, eliminating the previous
-                lg:grid-cols-2 layout that produced an awkward 2-2-1 trailing
-                row). Below lg, stay 2-col on sm tablets and 1-col on phones
-                so the row content (label + value) remains legible. Inner
-                card uses truncate + shrink-0 + flex-wrap badge area so it
-                handles the narrower (≈170-280px) cells cleanly.
+                2026-05 dashboard redesign batch 2: readiness grid
+                breakpoints re-keyed to the page-level two-column
+                workbench. CommandCenter now sits in the MAIN column
+                (1fr after a ~21rem sidebar), so the old `lg:grid-cols-5`
+                crushed the 5 items to ~109px/cell at lg. New ladder:
+                1-col phones → 2-col sm (≈285px/cell at lg viewport) →
+                3-col xl (≈264px/cell) → 5-col only at 2xl where the
+                main column is genuinely wide. Inner card uses truncate
+                + shrink-0 + flex-wrap badges so it stays legible.
+                The matching skeleton in loading.tsx uses this exact
+                breakpoint string — keep them in sync (CLS).
               */}
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
                 {workbench.readiness.items.map((item) => {
                   const meta = toneMeta[toneFromReadinessStatus(item.status)];
                   // 2026-05: When the prediction row is in the "attention"
@@ -344,21 +469,17 @@ export function DashboardCommandCenter({
                               {t('runNow')}
                             </Badge>
                           )}
-                          {/* Profile row: surface the Profile Grade letter
-                              (independent signal from the contribution score). */}
-                          {item.key === 'profile' && (
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                'mt-2 px-1.5 py-0 text-2xs',
-                                grade.color,
-                                grade.bgColor
-                              )}
-                            >
-                              <TrendingUp className="h-3 w-3" />
-                              {tStats('profileScore')}: {grade.grade}
-                            </Badge>
-                          )}
+                          {/* 2026-05 dashboard redesign batch 3: the
+                              profile letter-grade chip (A–D, from
+                              getProfileGrade) was REMOVED. It was a third
+                              encoding of profile completeness — the same
+                              number already shown as `profileContribution/40`
+                              on this row and as a % in the onboarding
+                              banner. A letter grade on a completeness
+                              metric also reads like an academic transcript
+                              grade ("the platform gave my kid a C"), an
+                              emotional misfire for anxious applicants. One
+                              honest signal per number. */}
                           {/* Schools row: surface tier breakdown when at
                               least one school is listed. */}
                           {item.key === 'schools' && schoolCount > 0 && (
@@ -390,14 +511,21 @@ export function DashboardCommandCenter({
                             </div>
                           )}
                         </div>
+                        {/* 2026-05 dashboard redesign batch 4: the per-item
+                            value shows a categorical state word (Ready /
+                            Needs attention / Blocked), not the old "32/40"
+                            contribution fraction. With the headline /100
+                            score gone, a bare fraction was an orphaned
+                            fragment of the weighted-score system the user
+                            can't act on. The state word + the card's tone
+                            border are one signal in two reinforcing
+                            channels (WCAG 1.4.1 — colour is not the only
+                            cue). `item.value` stays in the contract. */}
                         <span
-                          className="shrink-0 text-sm font-semibold tabular-nums"
-                          // 2026-05 Phase 1 design piggyback #12: a11y —
-                          // bare "10/10" is hard for screen readers to
-                          // interpret without context.
-                          aria-label={`${item.label}: ${item.value}`}
+                          className={cn('shrink-0 text-2xs font-medium', meta.text)}
+                          aria-label={`${item.label}: ${t(`status.${item.status}`)}`}
                         >
-                          {item.value}
+                          {t(`status.${item.status}`)}
                         </span>
                       </div>
                     </Link>
@@ -405,15 +533,6 @@ export function DashboardCommandCenter({
                 })}
               </div>
             </div>
-
-            {/*
-              2026-05: Pipeline strip — closes the lifecycle gap where
-              dashboards forgot about a school the moment the user marked
-              it SUBMITTED. Renders only when at least one school is past
-              IN_PROGRESS, so brand-new users don't see "0 submitted, 0
-              accepted, 0 rejected" noise.
-            */}
-            <DashboardPipelineStrip pipeline={workbench.pipeline} />
           </div>
 
           <div className="min-w-0 p-4 sm:p-5" data-tour="dashboard-priority-queue">
@@ -431,8 +550,8 @@ export function DashboardCommandCenter({
 
             <div className="mt-3 space-y-2">
               {/*
-                Skip index 0 — it's already shown as the hero in the left
-                column. Showing it twice in one card was one of the explicit
+                Skip index 0 — it's already shown as the hero above.
+                Showing it twice in one card was one of the explicit
                 redundancies users complained about.
               */}
               {/*
@@ -517,27 +636,36 @@ export function DashboardCommandCenter({
                   {t('viewTimeline')}
                 </Link>
               </div>
-              {workbench.deadlineStream.length > 0 ? (
-                <div className="space-y-2">
-                  {workbench.deadlineStream.slice(0, 5).map((item) => {
-                    const meta = toneMeta[toneFromSeverity(item.severity)];
-                    return (
-                      <Link
-                        key={`${item.type}-${item.id}`}
-                        href={item.href}
-                        className="flex items-center gap-3 rounded-[var(--theme-radius-card)] border border-border px-3 py-2 transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]"
-                      >
-                        <CircleAlert className={cn('h-4 w-4 shrink-0', meta.text)} />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{item.title}</p>
-                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                        </div>
-                        <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                          {formatDeadline(item.daysLeft)}
-                        </span>
-                      </Link>
-                    );
-                  })}
+              {urgentDeadlines.length > 0 || upcomingDeadlines.length > 0 ? (
+                <div className="space-y-4">
+                  {urgentDeadlines.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-2xs font-semibold uppercase tracking-wide text-destructive">
+                        {t('deadlineSegmentUrgent')}
+                      </p>
+                      {urgentDeadlines.map((item) => (
+                        <DeadlineRow
+                          key={`${item.type}-${item.id}`}
+                          item={item}
+                          deadlineLabel={formatDeadline(item.daysLeft)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {upcomingDeadlines.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {t('deadlineSegmentUpcoming')}
+                      </p>
+                      {upcomingDeadlines.map((item) => (
+                        <DeadlineRow
+                          key={`${item.type}-${item.id}`}
+                          item={item}
+                          deadlineLabel={formatDeadline(item.daysLeft)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-[var(--theme-radius-card)] border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">

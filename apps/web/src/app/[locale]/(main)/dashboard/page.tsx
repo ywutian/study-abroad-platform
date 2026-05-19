@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,6 +15,7 @@ import {
 } from '@/components/features/onboarding/tour-provider';
 import { PageContainer, PageHeader } from '@/components/layout';
 import { Button } from '@/components/ui/button';
+import { FadeInView } from '@/components/ui/motion';
 import { Progress } from '@/components/ui/progress';
 import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
@@ -27,23 +27,27 @@ import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
 // Above-the-fold surfaces stay statically imported — they're always
 // visible and we don't want a chunk-fetch delay before paint.
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
+import { DashboardPipelineStrip } from './_components/dashboard-pipeline-strip';
 import { DashboardQuickAsk } from './_components/dashboard-quick-ask';
 import {
   createFallbackWorkbench,
+  deriveStage,
   type DashboardData,
   type DashboardPriorityItem,
 } from './_components/dashboard-workbench-model';
 
 /*
- * 2026-05 Phase 5 #41: Lazy-load the 5 below-the-fold surfaces.
+ * 2026-05 Phase 5 #41: Lazy-load the below-the-fold surfaces.
  *
  * Why each is a great splitting candidate:
  *   - DashboardEssayCoach   → renders null when no essay AI runs exist
  *   - DashboardDecisionPanel→ renders null until user has decided schools
  *                             (Stage G — most users haven't reached it)
- *   - DashboardStats        → 9 tile rows; never above the fold
- *   - DashboardWorkspaceHub → 13 lucide-react icons + 12 nav rows; large
- *   - DashboardActivity     → bottom of page; rarely the first scroll target
+ *   - DashboardStats        → 9 counter tiles; in the batch-2 workbench
+ *                             sidebar it renders default-open for
+ *                             accounts with data, collapsed for brand-new
+ *                             (empty-onboarding) accounts
+ *   - DashboardWorkspaceHub → 13 lucide-react icons + 13 nav rows; large
  *
  * `ssr: true` (default) is kept so the components still pre-render with
  * `undefined` data (matching their existing SSR behaviour). The chunk
@@ -51,7 +55,8 @@ import {
  *
  * No loading placeholder is set; each component already gracefully
  * handles its own undefined-data + empty-state cases (DecisionPanel /
- * EssayCoach return null; Hub/Stats/Activity render an empty list).
+ * EssayCoach return null; Hub renders collapsed, Stats renders per the
+ * caller-supplied `defaultOpen`).
  */
 const DashboardEssayCoach = dynamic(() =>
   import('./_components/dashboard-essay-coach').then((m) => ({
@@ -71,11 +76,6 @@ const DashboardStats = dynamic(() =>
 const DashboardWorkspaceHub = dynamic(() =>
   import('./_components/dashboard-workspace-hub').then((m) => ({
     default: m.DashboardWorkspaceHub,
-  }))
-);
-const DashboardActivity = dynamic(() =>
-  import('./_components/dashboard-activity').then((m) => ({
-    default: m.DashboardActivity,
   }))
 );
 
@@ -213,8 +213,30 @@ export default function DashboardPage() {
     [effectivePending, stableDashboard, t]
   );
 
+  // 2026-05 dashboard redesign batch 4: derive the application stage from
+  // real pipeline data. Only `stage.parallel` is consumed by the UI (a
+  // calm "other tracks in progress" hint in the CommandCenter hero) — the
+  // 5-stage `primary` label is intentionally NOT rendered as a chip
+  // (redundant with the focus card; a behaviour-derived label reads as a
+  // judgement). See the deferred-items debate.
+  const stage = useMemo(
+    () =>
+      deriveStage({
+        targetSchoolCount: schoolCount,
+        essayCount: stableDashboard?.profile.essayCount ?? 0,
+        completeness,
+        pipeline: workbench.pipeline,
+      }),
+    [schoolCount, stableDashboard?.profile.essayCount, completeness, workbench.pipeline]
+  );
+
   return (
-    <PageContainer variant="tool" maxWidth="fluid" className="max-w-[1500px]">
+    // 2026-05 dashboard redesign batch 2: `variant="admin"` (fluid, max
+    // 1600px). Replaces the `variant="tool" maxWidth="fluid"
+    // className="max-w-[1500px]"` combo — overriding max-width via
+    // className is the anti-pattern apps/web/CLAUDE.md explicitly calls
+    // out (depends on tw-merge priority; semantically backwards).
+    <PageContainer variant="admin">
       <PageHeader
         title={t(isEmptyOnboarding ? 'dashboard.welcomeFirst' : 'dashboard.welcome', {
           name: displayName,
@@ -248,19 +270,24 @@ export default function DashboardPage() {
         </Link>
       )}
 
-      <div className="space-y-6">
+      {/*
+        2026-05 dashboard redesign batch 2: a single `FadeInView` around
+        the whole body replaces the previous 7 per-surface `motion.div`s
+        with hand-tuned staggered delays (0.03–0.05, not even monotonic).
+        One calm entrance, no cascade. FadeInView also honours
+        `prefers-reduced-motion` — the raw motion.divs did not, so this
+        also fixes an a11y regression. `data-tour` anchors moved onto
+        plain wrapper divs so the first-visit tour still finds its
+        targets (driver.js silently skips missing selectors).
+      */}
+      <FadeInView direction="up" className="space-y-6">
         {/*
           Quick Ask AI — collapses 3 clicks (icon → wait → type) into 1.
           Submitting opens the global FloatingChat with the message
-          prefilled. Full-width strip just under the page header makes
-          AI the default action surface, addressing the "everything
-          requires too many clicks" feedback.
+          prefilled. Full-width strip ABOVE the two-column workbench grid
+          — it's a page-wide action bar, not a column.
         */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          data-tour="dashboard-quick-ask"
-        >
+        <div data-tour="dashboard-quick-ask">
           {/* 2026-05 Phase 1.5 #17: QuickAsk wraps an AI feature (the
               FloatingChat bridge). An AI failure should NOT crash the
               entire dashboard, so wrap with AIErrorBoundary like every
@@ -270,99 +297,89 @@ export default function DashboardPage() {
               personalizedSuggestions={stableDashboard?.quickAskSuggestions ?? null}
             />
           </AIErrorBoundary>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          data-tour="dashboard-command-center"
-        >
-          <DashboardCommandCenter
-            workbench={workbench}
-            completingTaskId={completingTaskId}
-            onCompleteTask={(item) => toggleTimelineTask.mutate(item)}
-            completeness={completeness}
-            schoolTiers={schoolTiers}
-            schoolCount={schoolCount}
-            predictionsCount={predictionsCount}
-            casesCount={casesCount}
-            // 2026-05 Phase 2.7 #28: drives grade-aware rhythm message.
-            grade={stableDashboard?.profile.grade}
-          />
-        </motion.div>
+        </div>
 
         {/*
-          2026-05 Phase 2c: Latest essay AI feedback inline. Renders only
-          when there's at least one AI run (data === null otherwise).
-          Brings AI Layer 3 (essay feedback) into the dashboard as a
-          1-click path back to continued essay work — matches Cialfo's
-          best practice in the 22-product competitor research.
+          2026-05 dashboard redesign batch 2: two-column workbench.
+          MAIN column (1fr) holds the "what do I do next" surfaces; the
+          de-ranked SIDEBAR (~21rem) holds reference + navigation. Below
+          `lg` the grid collapses to one column — MAIN first, sidebar
+          last. `min-w-0` on the grid container AND both children
+          prevents a long string in either column from clipping the
+          other at the viewport edge (the PR #214/#215/#217 incident).
         */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.04 }}
-        >
-          <DashboardEssayCoach data={stableDashboard?.essayCoach} />
-        </motion.div>
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_clamp(19rem,22vw,21rem)]">
+          {/* MAIN column — tier 1+2: next-action surfaces. The three
+              conditional surfaces below render null when the user has
+              no data; a null grid/flex child collapses cleanly, so a
+              new user simply sees CommandCenter alone (no empty hole). */}
+          <div className="min-w-0 space-y-6">
+            <div data-tour="dashboard-command-center">
+              <DashboardCommandCenter
+                workbench={workbench}
+                completingTaskId={completingTaskId}
+                onCompleteTask={(item) => toggleTimelineTask.mutate(item)}
+                completeness={completeness}
+                schoolTiers={schoolTiers}
+                schoolCount={schoolCount}
+                predictionsCount={predictionsCount}
+                casesCount={casesCount}
+                // 2026-05 Phase 2.7 #28: drives grade-aware rhythm message.
+                grade={stableDashboard?.profile.grade}
+                // 2026-05 batch 4: only `stage.parallel` is consumed.
+                stage={stage}
+              />
+            </div>
 
-        {/*
-          2026-05 Phase 2a: Decision Hub (Stage G). Renders only when
-          the user has ≥1 decided school (ACCEPTED/WAITLISTED/REJECTED/
-          WITHDRAWN). Reuses the same `pipeline.recentDecisions` data
-          as PipelineStrip but presents it as a fuller decision-phase
-          surface (per-status tiles + celebratory framing + waitlist
-          coaching hint). 22-product research showed 0/22 platforms
-          handle this stage well — Lumni's differentiator.
-        */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.045 }}
-        >
-          <DashboardDecisionPanel pipeline={stableDashboard?.workbench.pipeline ?? null} />
-        </motion.div>
+            {/*
+              Pipeline strip — renders null unless at least one school
+              is past IN_PROGRESS (extracted from CommandCenter in batch 1).
+            */}
+            <DashboardPipelineStrip pipeline={workbench.pipeline} />
 
-        {/*
-          2026-05 Phase 2.5b: Dashboard Stats — "where am I" numbers
-          (followers / cases / predictions / points + Phase 2b signals:
-          assessment / recommendations / verification / chat unread).
-          Sits BEFORE Workspace Hub so the user sees their state first,
-          then chooses navigation. Previously this lived inside the Hub
-          as a 4th column, which mixed nav with data display.
-        */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.04 }}
-        >
-          <DashboardStats dashboard={stableDashboard} />
-        </motion.div>
+            {/*
+              Latest essay AI feedback inline. Renders only when there's
+              at least one AI run (data === null otherwise). Brings AI
+              Layer 3 into the dashboard as a 1-click path back to essay
+              work — matches Cialfo's best practice (22-product research).
+            */}
+            <DashboardEssayCoach data={stableDashboard?.essayCoach} />
 
-        {/*
-          Workspace Hub — surfaces all 12 user-facing navigation
-          destinations (Forum, Hall, Teams, Followers, Vault, Resume,
-          Assessment, etc.) so users don't have to hunt in the global
-          Header. 3 columns mirror Header's taxonomy: Research / Social
-          / Tools. (Stats column was extracted in 2.5b — see above.)
-        */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          data-tour="dashboard-hub"
-        >
-          <DashboardWorkspaceHub />
-        </motion.div>
+            {/*
+              Decision Hub (Stage G). Renders only when the user has ≥1
+              decided school (ACCEPTED/WAITLISTED/REJECTED/WITHDRAWN).
+              22-product research showed 0/22 platforms handle this stage
+              well — Lumni's differentiator.
+            */}
+            {/* Pass the resolved `workbench.pipeline` (always defined —
+                see the useMemo fallback above) rather than reaching into
+                `stableDashboard?.workbench.pipeline`, which would throw if
+                `stableDashboard` existed but `workbench` was undefined. */}
+            <DashboardDecisionPanel pipeline={workbench.pipeline} />
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <DashboardActivity activities={stableDashboard?.recentActivity ?? []} />
-        </motion.div>
-      </div>
+          {/*
+            SIDEBAR column — tier 3: de-ranked reference + navigation.
+            No tinted container wrapper: a card-on-`bg-muted` nesting
+            collapses in dark mode (the two tones are near-neighbours on
+            the OKLCH dark scale). The narrow column + collapsed
+            accordions already read as secondary. DashboardStats renders
+            default-OPEN for accounts that have data, so the sidebar
+            shows a real "where am I" snapshot instead of two empty
+            collapsed bars — but stays COLLAPSED for brand-new
+            (empty-onboarding) accounts, so the redesign's zero-
+            suppression isn't undone by a sidebar wall of `0`/`—`. The
+            Hub stays collapsed (secondary navigation). On mobile the
+            whole column stacks below MAIN.
+          */}
+          <aside className="min-w-0 space-y-4">
+            <DashboardStats dashboard={stableDashboard} defaultOpen={!isEmptyOnboarding} />
+            <div data-tour="dashboard-hub">
+              <DashboardWorkspaceHub />
+            </div>
+          </aside>
+        </div>
+      </FadeInView>
     </PageContainer>
   );
 }

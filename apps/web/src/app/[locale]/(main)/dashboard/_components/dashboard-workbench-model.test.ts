@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  createFallbackWorkbench,
-  getProfileGrade,
-  type DashboardData,
-} from './dashboard-workbench-model';
+import { createFallbackWorkbench, type DashboardData } from './dashboard-workbench-model';
 
 const fallbackCopy = {
   profile: 'Profile',
@@ -54,39 +50,9 @@ function makeDashboard(overrides: Partial<DashboardData> = {}): DashboardData {
 }
 
 describe('dashboard workbench model', () => {
-  // 2026-05 Phase 2.5f: refined 6-letter scale (+ '—' neutral).
-  // Lower tiers were softened from destructive (red) to warning (amber)
-  // because profile completeness is a coaching signal, not a fail-state.
-  it('maps profile completeness to the refined enterprise grade scale', () => {
-    // Neutral zero — unevaluated, not graded
-    expect(getProfileGrade(0).grade).toBe('—');
-    expect(getProfileGrade(0).color).toBe('text-muted-foreground');
-    // Bottom of the scale (1-19): warning, encouraging — NOT destructive
-    expect(getProfileGrade(5).grade).toBe('D');
-    expect(getProfileGrade(19).grade).toBe('D');
-    expect(getProfileGrade(5).color).toBe('text-warning');
-    // New intermediate tier (20-39): warning C-
-    expect(getProfileGrade(20).grade).toBe('C-');
-    expect(getProfileGrade(39).grade).toBe('C-');
-    expect(getProfileGrade(20).color).toBe('text-warning');
-    // 40-59: upgraded from warning to primary (no longer reads as risk)
-    expect(getProfileGrade(40).grade).toBe('C');
-    expect(getProfileGrade(40).color).toBe('text-primary');
-    // 60-74: B primary (unchanged)
-    expect(getProfileGrade(60).grade).toBe('B');
-    expect(getProfileGrade(74).grade).toBe('B');
-    // 75-89: B+ primary (unchanged)
-    expect(getProfileGrade(75).grade).toBe('B+');
-    expect(getProfileGrade(89).grade).toBe('B+');
-    // 90+: A success (unchanged)
-    expect(getProfileGrade(90).grade).toBe('A');
-    expect(getProfileGrade(100).grade).toBe('A');
-    // Destructive is no longer used anywhere on the grade scale.
-    for (const pct of [0, 5, 19, 20, 39, 40, 60, 75, 90, 100]) {
-      expect(getProfileGrade(pct).color).not.toBe('text-destructive');
-      expect(getProfileGrade(pct).bgColor).not.toBe('bg-destructive/10');
-    }
-  });
+  // 2026-05 dashboard redesign batch 3: the `getProfileGrade` test block
+  // was removed alongside the function — the profile letter grade was a
+  // redundant third encoding of `profile.completeness`.
 
   it('prioritizes profile work when fallback data has low readiness', () => {
     const dashboard = makeDashboard({

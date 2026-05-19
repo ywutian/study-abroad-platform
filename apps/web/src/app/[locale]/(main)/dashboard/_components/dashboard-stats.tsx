@@ -1,8 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { ChevronDown } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Link } from '@/lib/i18n/navigation';
 import { DASHBOARD_EVENTS, trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
@@ -11,6 +13,15 @@ import type { DashboardData } from './dashboard-workbench-model';
 
 interface DashboardStatsProps {
   dashboard: DashboardData | undefined;
+  /**
+   * 2026-05 dashboard redesign batch 2: when DashboardStats lives in the
+   * de-ranked right sidebar of the two-column workbench, it renders
+   * default-OPEN — a sidebar holding only collapsed bars reads as empty
+   * clutter, whereas an open "where am I" snapshot earns the column's
+   * footprint. In the legacy single-column stack it stayed collapsed.
+   * Defaults to `false` (collapsed) to preserve the old behaviour.
+   */
+  defaultOpen?: boolean;
 }
 
 interface StatTile {
@@ -39,7 +50,7 @@ interface StatTile {
  * identifier; survives label translation). Preserved verbatim to avoid
  * funnel discontinuity after the move.
  */
-export function DashboardStats({ dashboard }: DashboardStatsProps) {
+export function DashboardStats({ dashboard, defaultOpen = false }: DashboardStatsProps) {
   const t = useTranslations('dashboard.hub');
   const tStats = useTranslations('dashboard.stats');
 
@@ -78,44 +89,58 @@ export function DashboardStats({ dashboard }: DashboardStatsProps) {
   ];
 
   return (
-    <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
-      <CardContent className="p-4 sm:p-5">
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h3 className="text-base font-semibold">{tStats('snapshotTitle')}</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">{tStats('snapshotSubtitle')}</p>
-          </div>
-        </div>
+    // 2026-05 dashboard redesign batch 1: snapshot stats are a
+    // "where am I" reference surface, not a next action.
+    // Batch 2: open state is now caller-controlled — collapsed in the
+    // legacy stack, default-open in the two-column workbench sidebar.
+    <Collapsible defaultOpen={defaultOpen}>
+      <Card className="overflow-hidden rounded-[var(--theme-radius-card)] border-border bg-[color:var(--theme-card-bg)] shadow-[var(--theme-card-shadow)]">
+        <CardContent className="p-4 sm:p-5">
+          <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 text-left">
+            <span className="block">
+              <span className="block text-base font-semibold">{tStats('snapshotTitle')}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {tStats('snapshotSubtitle')}
+              </span>
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+          </CollapsibleTrigger>
 
-        {/* 2026-05 Phase 2.5b: Grid scales 2 → 3 → 5 cols with viewport.
-            Inner Link uses tabular-nums on the value side so numbers stay
-            aligned column-down. */}
-        <ul role="list" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {tiles.map((tile) => (
-            <li key={tile.label}>
-              <Link
-                href={tile.href}
-                aria-label={`${tile.label}: ${tile.value}`}
-                onClick={() =>
-                  // Preserve the existing hubStatClicked event — funnel
-                  // continuity across the 2.5b refactor (href is stable).
-                  trackEvent(DASHBOARD_EVENTS.hubStatClicked, { href: tile.href })
-                }
-                className={cn(
-                  'flex h-full flex-col items-start justify-between gap-1 rounded-[var(--theme-radius-control,0.5rem)]',
-                  'border border-border bg-[color:var(--theme-control-bg)] px-3 py-2',
-                  'transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]'
-                )}
-              >
-                <span className="text-2xs uppercase tracking-wide text-muted-foreground">
-                  {tile.label}
-                </span>
-                <span className="text-lg font-semibold tabular-nums">{tile.value}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+          {/* 2026-05 dashboard redesign batch 2: fixed 2-col grid. This
+              card now lives in the ~21rem workbench sidebar, so the old
+              viewport-keyed `sm:grid-cols-3 lg:grid-cols-5` ladder would
+              crush 9 tiles to ~52px each at lg+. 2-col → 5 rows fits the
+              narrow column cleanly. Inner Link uses tabular-nums so
+              numbers stay aligned column-down. */}
+          <CollapsibleContent>
+            <ul role="list" className="mt-3 grid grid-cols-2 gap-2">
+              {tiles.map((tile) => (
+                <li key={tile.label}>
+                  <Link
+                    href={tile.href}
+                    aria-label={`${tile.label}: ${tile.value}`}
+                    onClick={() =>
+                      // Preserve the existing hubStatClicked event — funnel
+                      // continuity across the 2.5b refactor (href is stable).
+                      trackEvent(DASHBOARD_EVENTS.hubStatClicked, { href: tile.href })
+                    }
+                    className={cn(
+                      'flex h-full flex-col items-start justify-between gap-1 rounded-[var(--theme-radius-control,0.5rem)]',
+                      'border border-border bg-[color:var(--theme-control-bg)] px-3 py-2',
+                      'transition-colors hover:border-primary/35 hover:bg-[color:var(--theme-control-hover-bg)]'
+                    )}
+                  >
+                    <span className="text-2xs uppercase tracking-wide text-muted-foreground">
+                      {tile.label}
+                    </span>
+                    <span className="text-lg font-semibold tabular-nums">{tile.value}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </CollapsibleContent>
+        </CardContent>
+      </Card>
+    </Collapsible>
   );
 }

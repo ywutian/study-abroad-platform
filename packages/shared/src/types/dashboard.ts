@@ -109,7 +109,16 @@ export interface DashboardPriorityItem {
 
 export interface DashboardDeadlineItem {
   id: string;
-  type: 'school' | 'event' | 'task';
+  /**
+   * `school` / `event` / `task` are real, dated items the user owns.
+   * `prep` (2026-05 batch 4) is a SYNTHETIC, advisory row the dashboard
+   * derives algorithmically by subtracting a fixed lead-time offset from
+   * a real application deadline (e.g. "ask recommenders 6 weeks early").
+   * It has no per-user completion state — it is a calendar nudge, not a
+   * tracked task. Consumers may render `prep` rows with a lighter,
+   * "suggested" visual treatment to distinguish them from hard deadlines.
+   */
+  type: 'school' | 'event' | 'task' | 'prep';
   title: string;
   subtitle: string;
   dueAt: string;
@@ -167,6 +176,101 @@ export interface DashboardWorkbench {
   priorityQueue: DashboardPriorityItem[];
   deadlineStream: DashboardDeadlineItem[];
   pipeline?: DashboardPipeline;
+}
+
+/**
+ * Dashboard application-stage selector.
+ *
+ * `/dashboard` is a stable workbench — its layout is constant for every
+ * user. `deriveStage` does NOT drive layout structure; it only answers
+ * "what should the focus card say / which sidebar tab opens by default /
+ * what tone the copy uses".
+ *
+ * Real application season is structurally parallel (writing RD essays +
+ * waiting on EA results + handling a waitlist, all at once). `primary`
+ * only picks the focus card's subject; `parallel` explicitly carries
+ * every other in-flight track so no application line is ever dropped
+ * behind a single stage label.
+ */
+export type DashboardStage = 'onboarding' | 'planning' | 'executing' | 'submitting' | 'decision';
+
+export interface DeriveStageInput {
+  /** profile.targetSchoolCount */
+  targetSchoolCount: number;
+  /** profile.essayCount */
+  essayCount: number;
+  /** profile.completeness (0-100) */
+  completeness: number;
+  /** workbench.pipeline — optional; undefined is treated as all-zero. */
+  pipeline?: DashboardPipeline | null;
+}
+
+export interface DeriveStageResult {
+  /** Drives the focus card subject, default sidebar tab, and copy tone. */
+  primary: DashboardStage;
+  /**
+   * Tracks running *in addition to* `primary`. The focus card renders an
+   * "N other things in progress" hint from this, so the parallel reality
+   * of application season is never hidden behind one stage label.
+   */
+  parallel: {
+    hasInProgress: boolean;
+    hasSubmitted: boolean;
+    hasWaitlisted: boolean;
+    hasAccepted: boolean;
+  };
+}
+
+/**
+ * Pure stage selector — zero side effects, safe to call on every render.
+ * Pairs with `toneFromSeverity` as a dashboard-contract helper.
+ */
+export function deriveStage(input: DeriveStageInput): DeriveStageResult {
+  const p = input.pipeline;
+  const inProgress = p?.inProgress ?? 0;
+  const notStarted = p?.notStarted ?? 0;
+  const submitted = p?.submitted ?? 0;
+  const accepted = p?.accepted ?? 0;
+  const rejected = p?.rejected ?? 0;
+  const waitlisted = p?.waitlisted ?? 0;
+
+  const parallel = {
+    hasInProgress: inProgress > 0,
+    hasSubmitted: submitted > 0,
+    hasWaitlisted: waitlisted > 0,
+    hasAccepted: accepted > 0,
+  };
+
+  // Priority high→low — take the latest application phase as `primary`.
+  // Each branch only sets `primary`; `parallel` always carries the rest.
+
+  // 1. decision — an acceptance ALWAYS reframes the dashboard: a real
+  //    choice (commit / compare aid) now exists, regardless of remaining
+  //    RD work. A lone rejection/waitlist, by contrast, only counts as
+  //    `decision` once the cycle has wound down — nothing left `inProgress`
+  //    and nothing `notStarted`. Otherwise a single ED rejection in
+  //    December would flip a student mid-RD-crunch to "results are in",
+  //    burying their highest-stakes unsubmitted work. `withdrawn` never
+  //    counts — a user-initiated drop is not "a result".
+  const anyResult = accepted > 0 || waitlisted > 0 || rejected > 0;
+  const cycleWoundDown = inProgress === 0 && notStarted === 0;
+  if (accepted > 0 || (anyResult && cycleWoundDown)) {
+    return { primary: 'decision', parallel };
+  }
+  // 2. submitting — submitted some, still writing others (parallel crunch).
+  if (submitted > 0 && inProgress > 0) {
+    return { primary: 'submitting', parallel };
+  }
+  // 3. executing — already working materials (timelines or essays started).
+  if (inProgress > 0 || submitted > 0 || input.essayCount > 0) {
+    return { primary: 'executing', parallel };
+  }
+  // 4. planning — has target schools but has not started any materials.
+  if (input.targetSchoolCount > 0) {
+    return { primary: 'planning', parallel };
+  }
+  // 5. onboarding — fallback: brand-new account.
+  return { primary: 'onboarding', parallel };
 }
 
 /**

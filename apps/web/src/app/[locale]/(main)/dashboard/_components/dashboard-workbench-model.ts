@@ -14,13 +14,16 @@ export type {
   DashboardReadinessStatus,
   DashboardRecentDecision,
   DashboardSeverity,
+  DashboardStage,
   DashboardSummary,
   // 2026-05 Phase 2.5c: unified visual tone — collapses
   // DashboardSeverity + DashboardReadinessStatus to 4 colors.
   DashboardTone,
   DashboardWorkbench,
+  // 2026-05 batch 4: application-stage selector result.
+  DeriveStageResult,
 } from '@study-abroad/shared';
-export { toneFromReadinessStatus, toneFromSeverity } from '@study-abroad/shared';
+export { deriveStage, toneFromReadinessStatus, toneFromSeverity } from '@study-abroad/shared';
 
 import type {
   DashboardData,
@@ -28,52 +31,13 @@ import type {
   DashboardWorkbench,
 } from '@study-abroad/shared';
 
-/**
- * Map profile completeness % → grade label + Tailwind color classes.
- *
- * 2026-05 Phase 2.5f: Refined from 5 → 6 letter tiers (+ '—' neutral)
- * with a softer color ramp. The previous scale was visually punishing:
- *   - 0 was muted (good — neutral), but
- *   - 1-39 jumped straight to red "D" (destructive)
- *   - 40-59 was amber "C" (warning)
- * A user at 15% had barely started yet was rendered in the same red
- * tone reserved for "blocked / error" elsewhere on the dashboard.
- *
- * New scale (lowest → highest):
- *   completeness | grade | color (Tailwind)
- *   -------------|-------|------------------
- *   0            | —     | text-muted-foreground   (Phase 1, unchanged)
- *   1-19         | D     | text-warning            (NEW — was 'D' destructive)
- *   20-39        | C-    | text-warning            (NEW intermediate tier)
- *   40-59        | C     | text-primary            (upgraded from warning — not blocking)
- *   60-74        | B     | text-primary            (unchanged)
- *   75-89        | B+    | text-primary            (unchanged)
- *   90-100       | A     | text-success            (unchanged)
- *
- * Destructive color is no longer used for grade — red is reserved for
- * blocking/error states elsewhere on the dashboard (overdue, rejected,
- * orphan-data integrity errors). Profile completeness is a coaching
- * signal, not a fail-state.
- */
-export function getProfileGrade(completeness: number): {
-  grade: string;
-  color: string;
-  bgColor: string;
-} {
-  if (completeness === 0) {
-    return { grade: '—', color: 'text-muted-foreground', bgColor: 'bg-muted/40' };
-  }
-  if (completeness >= 90) {
-    return { grade: 'A', color: 'text-success', bgColor: 'bg-success/10' };
-  }
-  if (completeness >= 75) return { grade: 'B+', color: 'text-primary', bgColor: 'bg-primary/10' };
-  if (completeness >= 60) return { grade: 'B', color: 'text-primary', bgColor: 'bg-primary/10' };
-  if (completeness >= 40) return { grade: 'C', color: 'text-primary', bgColor: 'bg-primary/10' };
-  // Phase 2.5f: split former destructive "D" (1-39) into 'C-' (20-39)
-  // and 'D' (1-19), both warning-toned — encouragement, not failure.
-  if (completeness >= 20) return { grade: 'C-', color: 'text-warning', bgColor: 'bg-warning/10' };
-  return { grade: 'D', color: 'text-warning', bgColor: 'bg-warning/10' };
-}
+// 2026-05 dashboard redesign batch 3: `getProfileGrade` (profile
+// completeness → A–D letter grade) was REMOVED. It was a third encoding
+// of `profile.completeness` — already surfaced as `profileContribution/40`
+// on the readiness row and as a % in the onboarding-progress banner.
+// A letter grade on a completeness metric also reads like an academic
+// transcript grade, an emotional misfire for anxious applicants. The
+// dashboard now keeps one honest representation per number.
 
 // 2026-05: `buildTodoList` and `TodoItem` were removed. Their consumer
 // (DashboardDeadlines card) is deleted; deadline display now lives in
@@ -140,6 +104,10 @@ export function createFallbackWorkbench(
   // a passable profile. If those preconditions aren't met, the row should
   // signal "blocked by upstream signals" rather than "go run prediction".
   const predictionEligible = schoolCount > 0 && completeness >= 40;
+  // Fallback (used only when the API didn't return a workbench) has no
+  // timeline-task data, so the if/else chain below pushes at most one
+  // item — the API's severity-then-deadline sort in buildPriorityQueue
+  // has no analogue to mirror here.
   const priorityQueue: DashboardPriorityItem[] = [];
 
   if (completeness < 75) {
