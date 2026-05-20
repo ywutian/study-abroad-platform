@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { parseEssayProvenance } from '@study-abroad/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EssayAiService, PARAGRAPH_PROMPT_VERSION } from './essay-ai.service';
 import { PointsService, PointAction } from '../points/incentive.service';
@@ -136,19 +137,31 @@ export class EssayGalleryService {
     ]);
 
     // 处理返回数据
-    const essays = cases.map((c) => ({
-      id: c.id,
-      year: c.year,
-      result: c.result,
-      essayType: c.essayType,
-      promptNumber: c.promptNumber,
-      prompt: c.essayPrompt,
-      preview: c.essayContent ? c.essayContent.slice(0, 200) + '...' : null,
-      wordCount: c.essayContent ? c.essayContent.split(/\s+/).length : 0,
-      school: c.school,
-      tags: c.tags,
-      isVerified: c.isVerified,
-    }));
+    const essays = cases.map((c) => {
+      const provenance = this.resolveProvenance(c);
+      return {
+        id: c.id,
+        year: c.year,
+        result: c.result,
+        essayType: c.essayType,
+        promptNumber: c.promptNumber,
+        prompt: c.essayPrompt,
+        preview: c.essayContent ? c.essayContent.slice(0, 200) + '...' : null,
+        wordCount: c.essayContent ? c.essayContent.split(/\s+/).length : 0,
+        school: c.school,
+        tags: c.tags,
+        isVerified: c.isVerified,
+        sourceArchive: provenance.archive,
+        sourceUrl: provenance.url,
+        sourceAuthor: provenance.author,
+      };
+    });
+
+    // Best-effort backfill: hot-write the parsed provenance into the
+    // dedicated columns when they were null on the DB row. Future reads
+    // skip the parse step. Failures are silently swallowed — the response
+    // already carries the resolved values.
+    void this.backfillProvenance(cases);
 
     return {
       items: essays,
@@ -158,6 +171,133 @@ export class EssayGalleryService {
       totalPages: Math.ceil(total / pageSize),
       stats,
     };
+  }
+
+  /**
+   * Find the published rejected/waitlisted essays for the "文书避雷" tab.
+   *
+   * Editorial rule (enforced upstream in seed scripts + import paths):
+   *   - Only self-uploaded rejected essays land here — we never harvest.
+   *   - At launch this query returns ~0 rows; the empty state in the UI
+   *     invites learners to submit.
+   */
+  async getRejectedEssays(filters: { page: number; pageSize: number }) {
+    const { page, pageSize } = filters;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.AdmissionCaseWhereInput = {
+      ...CASE_PUBLIC_WHERE,
+      result: { in: ['REJECTED', 'WAITLISTED'] },
+    };
+
+    const [cases, total] = await Promise.all([
+      this.prisma.admissionCase.findMany({
+        where,
+        select: GALLERY_LIST_SELECT,
+        skip,
+        take: pageSize,
+        orderBy: [
+          { isVerified: 'desc' as const },
+          { createdAt: 'desc' as const },
+        ],
+      }),
+      this.prisma.admissionCase.count({ where }),
+    ]);
+
+    const essays = cases.map((c) => {
+      const provenance = this.resolveProvenance(c);
+      return {
+        id: c.id,
+        year: c.year,
+        result: c.result,
+        essayType: c.essayType,
+        promptNumber: c.promptNumber,
+        prompt: c.essayPrompt,
+        preview: c.essayContent ? c.essayContent.slice(0, 200) + '...' : null,
+        wordCount: c.essayContent ? c.essayContent.split(/\s+/).length : 0,
+        school: c.school,
+        tags: c.tags,
+        isVerified: c.isVerified,
+        sourceArchive: provenance.archive,
+        sourceUrl: provenance.url,
+        sourceAuthor: provenance.author,
+      };
+    });
+
+    return {
+      items: essays,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  /**
+   * Pull provenance from the dedicated columns first, fall back to parsing
+   * the `tags` array (legacy rows). Always returns a structured triple
+   * (any field can be null) so callers don't have to guard each property.
+   */
+  private resolveProvenance(c: {
+    sourceArchive?: string | null;
+    sourceUrl?: string | null;
+    sourceAuthor?: string | null;
+    tags: string[];
+  }): { archive: string | null; url: string | null; author: string | null } {
+    if (c.sourceArchive || c.sourceUrl) {
+      return {
+        archive: c.sourceArchive ?? null,
+        url: c.sourceUrl ?? null,
+        author: c.sourceAuthor ?? null,
+      };
+    }
+    return parseEssayProvenance(c.tags);
+  }
+
+  /**
+   * Write parsed provenance into the dedicated columns. Best-effort: any
+   * write error is logged and silently dropped — the served response
+   * already carries the resolved values.
+   *
+   * We only update rows where:
+   *   - The provenance columns are currently null, AND
+   *   - The tag parser actually found a URL (no point writing an empty row).
+   *
+   * Run inside an `updateMany` batched-by-id loop, capped at the page size,
+   * so a single gallery list query at worst writes 50 rows.
+   */
+  private async backfillProvenance(
+    cases: Array<{
+      id: string;
+      sourceArchive?: string | null;
+      sourceUrl?: string | null;
+      sourceAuthor?: string | null;
+      tags: string[];
+    }>,
+  ): Promise<void> {
+    const updates = cases
+      .filter((c) => !c.sourceArchive && !c.sourceUrl)
+      .map((c) => ({ id: c.id, parsed: parseEssayProvenance(c.tags) }))
+      .filter((u) => u.parsed.url !== null);
+
+    if (updates.length === 0) return;
+
+    try {
+      await Promise.all(
+        updates.map((u) =>
+          this.prisma.admissionCase.update({
+            where: { id: u.id },
+            data: {
+              sourceArchive: u.parsed.archive,
+              sourceUrl: u.parsed.url,
+              sourceAuthor: u.parsed.author,
+            },
+          }),
+        ),
+      );
+    } catch (err) {
+      this.logger.warn(`Provenance backfill failed: ${(err as Error).message}`);
+    }
   }
 
   /**
@@ -216,6 +356,11 @@ export class EssayGalleryService {
       throw new NotFoundException('Essay not found or not public');
     }
 
+    const provenance = this.resolveProvenance(admissionCase);
+    // Best-effort write-through to the dedicated columns. See note on
+    // backfillProvenance — never throws to the user.
+    void this.backfillProvenance([admissionCase]);
+
     return {
       id: admissionCase.id,
       year: admissionCase.year,
@@ -232,6 +377,10 @@ export class EssayGalleryService {
       tags: admissionCase.tags,
       isVerified: admissionCase.isVerified,
       isAnonymous: admissionCase.visibility === 'ANONYMOUS',
+      sourceArchive: provenance.archive,
+      sourceUrl: provenance.url,
+      sourceAuthor: provenance.author,
+      selfReflection: admissionCase.selfReflection ?? null,
     };
   }
 

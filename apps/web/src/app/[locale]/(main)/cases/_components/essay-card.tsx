@@ -2,7 +2,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FileText, CheckCircle2 } from 'lucide-react';
+import { FileText, CheckCircle2, Archive } from 'lucide-react';
+import { getArchiveLabel } from '@study-abroad/shared';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,14 @@ export interface GalleryEssay {
   } | null;
   tags: string[];
   isVerified: boolean;
+  /**
+   * Provenance — Mom-persona trust signal. Null when the essay was
+   * self-uploaded (no public archive to cite); rendered as an archive
+   * chip on the card and as the "本文来源 · 查看原文" footer on detail.
+   */
+  sourceArchive?: string | null;
+  sourceUrl?: string | null;
+  sourceAuthor?: string | null;
 }
 
 interface EssayCardProps {
@@ -120,6 +129,26 @@ export function EssayCard({
             )}
             <span className="text-xs text-muted-foreground">{essay.year}</span>
           </div>
+
+          {/*
+           * Archive provenance chip — Mom-persona's killer trust signal.
+           * Shown ONLY when we have a verifiable source archive (harvested
+           * essays); self-uploaded essays have null sourceArchive and the
+           * chip is suppressed. Locale-aware label, fallback to bare host.
+           */}
+          {essay.sourceArchive && (
+            <div className="mb-2">
+              <Badge
+                variant="outline"
+                className="text-2xs h-4 px-1.5 gap-1 border-indigo-200 bg-indigo-50/60 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300"
+              >
+                <Archive className="h-2.5 w-2.5" />
+                <span className="truncate max-w-[180px]">
+                  {getArchiveLabel(essay.sourceArchive, locale === 'zh' ? 'zh' : 'en')}
+                </span>
+              </Badge>
+            </div>
+          )}
 
           {/* Preview */}
           {essay.preview && (

@@ -30,6 +30,7 @@ import {
   User,
   UserPlus,
   Users,
+  Briefcase,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -410,6 +411,25 @@ function HeaderActions() {
                   <Link href="/admin" className="flex items-center gap-2.5 px-2 py-1.5">
                     <Shield className="h-4 w-4 text-muted-foreground" />
                     <span>{t('nav.adminPanel')}</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {/*
+               * Counselor workbench — PR 2 §D. Visible only to COUNSELOR
+               * and admin tiers. Non-counselor roles never render this
+               * link (no DOM presence; no SEO discovery; matches the
+               * `noindex` route metadata).
+               */}
+              {(user.role === 'COUNSELOR' ||
+                user.role === 'ADMIN' ||
+                user.role === 'SUPER_ADMIN') && (
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/counselor/patterns"
+                    className="flex items-center gap-2.5 px-2 py-1.5"
+                  >
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span>{t('nav.counselorWorkbench')}</span>
                   </Link>
                 </DropdownMenuItem>
               )}

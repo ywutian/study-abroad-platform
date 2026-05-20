@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/lib/i18n/navigation';
 import dynamic from 'next/dynamic';
-import { BookOpen, FileText, BadgeCheck, ArrowRight } from 'lucide-react';
+import { BookOpen, FileText, BadgeCheck, ArrowRight, AlertTriangle } from 'lucide-react';
 
 import { Link } from '@/lib/i18n/navigation';
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -19,13 +19,22 @@ const EssaysTab = dynamic(
   () => import('./_components/essays-tab').then((m) => ({ default: m.EssaysTab })),
   { ssr: false }
 );
+const RejectedEssaysTab = dynamic(
+  () =>
+    import('./_components/rejected-essays-tab').then((m) => ({
+      default: m.RejectedEssaysTab,
+    })),
+  { ssr: false }
+);
 
-const VALID_TABS = ['cases', 'essays'] as const;
+// "rejected" is the new blue-ocean tab (PR 2 · §C — 文书避雷).
+const VALID_TABS = ['cases', 'essays', 'rejected'] as const;
 type CasesPageTab = (typeof VALID_TABS)[number];
 
 const TAB_CONFIG = [
   { value: 'cases' as const, icon: BookOpen, labelKey: 'cases.tabs.cases' },
   { value: 'essays' as const, icon: FileText, labelKey: 'cases.tabs.essays' },
+  { value: 'rejected' as const, icon: AlertTriangle, labelKey: 'cases.tabs.rejected' },
 ];
 
 export default function CasesPage() {
@@ -89,6 +98,9 @@ export default function CasesPage() {
         </TabsContent>
         <TabsContent value="essays">
           <EssaysTab />
+        </TabsContent>
+        <TabsContent value="rejected">
+          <RejectedEssaysTab />
         </TabsContent>
       </Tabs>
     </PageContainer>

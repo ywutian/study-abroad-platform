@@ -1409,6 +1409,7 @@
     "ai": "AI 助手",
     "dashboard": "仪表盘",
     "adminPanel": "管理后台",
+    "counselorWorkbench": "顾问工具",
     "schools": "学校库",
     "essays": "我的文书",
     "resume": "简历制作",
@@ -2755,7 +2756,8 @@
     "description": "查看往届录取者的申请背景、标化成绩、课外活动和文书",
     "tabs": {
       "cases": "案例",
-      "essays": "优秀文书"
+      "essays": "优秀文书",
+      "rejected": "文书避雷"
     },
     "shareCase": "分享案例",
     "searchPlaceholder": "搜索案例...",
@@ -6011,7 +6013,8 @@
       "uc": "UC 文书",
       "supplemental": "补充文书",
       "whySchool": "Why School 文书",
-      "why_school": "Why School 文书"
+      "why_school": "Why School 文书",
+      "other": "其他"
     },
     "yearFilter": "申请年份",
     "allYears": "全部年份",
@@ -6091,6 +6094,10 @@
       "writeWithPrompt": "以此题目写文书",
       "copyEssay": "复制文书",
       "yearLabel": "年份",
+      "sourcePrefix": "本文来源：",
+      "viewOriginal": "查看原文",
+      "readThenWritePrompt": "读完了？现在用同一题目，写出属于你的版本。",
+      "selfReflectionTitle": "作者反思",
       "tabs": {
         "original": "文书原文",
         "aiReview": "AI逐段点评"
@@ -6105,7 +6112,10 @@
         "analyzing": "分析中...",
         "startAnalysis": "开始分析 (20积分)",
         "analysisError": "分析失败，请稍后重试",
-        "cachedHint": "已分析 · 秒级响应"
+        "cachedHint": "已分析 · 秒级响应",
+        "privacyHelpLabel": "查看数据使用说明",
+        "privacyTitle": "你的数据如何使用",
+        "privacyBody": "本次分析仅在当前会话使用，不会用于训练任何模型；我们也不会保留你与系统的对话历史。如未来上线对话功能，将提供「删除我的对话历史」入口。"
       },
       "analysis": {
         "overallScore": "总分",
@@ -6126,6 +6136,58 @@
       "top20": "Top 20",
       "uc": "UC 文书",
       "verified": "已认证"
+    },
+    "rejected": {
+      "bannerTitle": "本档案仅收录学长姐主动提交的拒信案例",
+      "bannerBody": "我们永远不会抓取拒信故事 — 每一篇都必须附作者自己的反思。这是我们对申请者的承诺。",
+      "shareYours": "分享你的拒信故事 →",
+      "emptyTitle": "首批拒信档案征集中",
+      "emptyDescription": "学长姐主动投稿、附自我反思，把弯路变成下一届的明灯。",
+      "emptyCta": "我也想分享 →"
+    }
+  },
+  "counselor": {
+    "patterns": {
+      "title": "文书模式工作台",
+      "description": "跨案例搜索文书结构、勾子写法与录取结果的关联（仅顾问可见）",
+      "savedQueries": "已保存查询",
+      "exportLessonPlan": "导出课程包",
+      "exportPdfStub": "课程包导出功能即将上线，请联系顾问销售开通",
+      "phase2Hint": "下一阶段上线",
+      "loading": "加载中...",
+      "loadError": "加载失败，请稍后重试",
+      "resultsCount": "共 {count} 条记录",
+      "empty": "暂无匹配结果，调整筛选条件试试。",
+      "prev": "上一页",
+      "next": "下一页",
+      "viewDetail": "查看",
+      "filters": {
+        "schoolPlaceholder": "搜索学校...",
+        "result": "录取结果",
+        "allResults": "全部结果",
+        "admitted": "录取",
+        "rejected": "拒信",
+        "waitlisted": "候补",
+        "essayType": "文书类型",
+        "allTypes": "全部类型",
+        "archive": "来源档案",
+        "allArchives": "全部来源",
+        "clear": "清除"
+      },
+      "columns": {
+        "school": "学校",
+        "year": "年份",
+        "result": "结果",
+        "essayType": "类型",
+        "prompt": "题目摘要",
+        "hook": "开头摘录",
+        "actions": "操作"
+      },
+      "forbidden": {
+        "title": "无访问权限",
+        "body": "顾问工作台仅向认证顾问开放。如需开通，请联系平台销售。",
+        "cta": "返回首页"
+      }
     }
   },
   "followers": {

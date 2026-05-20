@@ -29,6 +29,15 @@ export class CreateEssayDto {
   @IsString()
   @MaxLength(200)
   essayPromptId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Gallery → Workbench attribution: the AdmissionCase this draft was seeded from',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  inspirationCaseId?: string;
 }
 
 export class UpdateEssayDto {

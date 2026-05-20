@@ -57,6 +57,9 @@ export const API_ROUTES = {
 
   // Admin
   ADMIN: '/admin',
+
+  // Counselor B2B workbench (gated by COUNSELOR/ADMIN role; noindex)
+  COUNSELOR: '/counselor',
 } as const;
 
 export type ApiRoutePrefix = (typeof API_ROUTES)[keyof typeof API_ROUTES];
@@ -216,8 +219,18 @@ export const essayAiRoutes = {
   rewriteParagraph: () => `${API_ROUTES.ESSAY_AI}/rewrite-paragraph`,
   activityDescription: () => `${API_ROUTES.ESSAY_AI}/activity-description`,
   gallery: () => `${API_ROUTES.ESSAY_AI}/gallery`,
+  // Rejected/waitlisted feed for the "文书避雷" tab — self-uploaded only.
+  galleryRejected: () => `${API_ROUTES.ESSAY_AI}/gallery/rejected`,
   galleryItem: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}`,
   galleryAnalyze: (id: string) => `${API_ROUTES.ESSAY_AI}/gallery/${id}/analyze`,
+};
+
+export const counselorRoutes = {
+  /**
+   * Tabular cross-essay pattern search for the /counselor/patterns workbench.
+   * Gated by `@Roles(COUNSELOR, ADMIN, SUPER_ADMIN)` on the backend.
+   */
+  essayPatterns: () => `${API_ROUTES.COUNSELOR}/essay-patterns`,
 };
 
 export const resumeRoutes = {

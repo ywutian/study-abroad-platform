@@ -17,6 +17,10 @@ const ROLE_HIERARCHY: Record<Role, number> = {
   [Role.USER]: 0,
   [Role.VERIFIED]: 1,
   [Role.OPERATOR]: 2,
+  // COUNSELOR sits at 2.5 — see common/guards/roles.guard.ts for the
+  // full reasoning. Keeps OPERATOR from leaking into counselor-only
+  // surfaces while still letting ADMIN override.
+  [Role.COUNSELOR]: 2.5,
   [Role.ADMIN]: 3,
   [Role.SUPER_ADMIN]: 4,
 };

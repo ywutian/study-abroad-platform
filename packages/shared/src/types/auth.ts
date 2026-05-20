@@ -3,6 +3,10 @@
 export enum Role {
   USER = 'USER',
   VERIFIED = 'VERIFIED',
+  // COUNSELOR is the B2B sibling of OPERATOR — both are elevated
+  // non-admin roles. Granted to verified counselors so they can access
+  // the `/counselor/*` workbench surfaces.
+  COUNSELOR = 'COUNSELOR',
   OPERATOR = 'OPERATOR',
   ADMIN = 'ADMIN',
   SUPER_ADMIN = 'SUPER_ADMIN',

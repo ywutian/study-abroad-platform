@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +19,8 @@ import {
   Type,
   ExternalLink,
   PenTool,
+  Archive,
+  HelpCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from '@/lib/i18n/navigation';
@@ -31,8 +33,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CompactScore } from '@/components/ui/score-item';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { apiClient } from '@/lib/api/client';
-import { essayAiRoutes } from '@study-abroad/shared';
+import { essayAiRoutes, getArchiveLabel } from '@study-abroad/shared';
 import { type SchoolRanking } from '@/lib/utils/ranking';
 import { cn, getSchoolName } from '@/lib/utils';
 import { getResultBadgeClass, getResultLabel, VERIFIED_BADGE_CLASS } from '@/lib/utils/admission';
@@ -59,6 +62,14 @@ interface EssayDetail {
   tags: string[];
   isVerified: boolean;
   isAnonymous: boolean;
+  // Provenance — Mom-persona trust signal (PR 2). Null when the essay is
+  // a self-upload that has no public source archive to link out to.
+  sourceArchive?: string | null;
+  sourceUrl?: string | null;
+  sourceAuthor?: string | null;
+  // Self-reflection — only meaningful for rejected/waitlisted self-uploads
+  // in the "文书避雷" tab. Null on every harvested essay.
+  selfReflection?: string | null;
 }
 
 interface ParagraphComment {
@@ -129,9 +140,21 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
   const t = useTranslations('essayGallery');
   const tc = useTranslations('cases');
   const locale = useLocale();
+  const localeForArchive: 'zh' | 'en' = locale === 'zh' ? 'zh' : 'en';
   const [activeTab, setActiveTab] = useState('content');
   const [useSerif, setUseSerif] = useState(false);
   const [copied, setCopied] = useState(false);
+  /**
+   * Scroll-gated CTA visibility — debate hard rule: NO sticky banner,
+   * NO scroll-triggered overlay. The "用此 prompt 写一篇" button is
+   * inline at the bottom of the prose and fades in only after the user
+   * has read ≥80% of the content. An IntersectionObserver on a sentinel
+   * placed at the 80% mark flips this once and never resets per render.
+   * Switching tabs / scrolling back up keeps the CTA visible — once
+   * they've read it, the affordance stays available.
+   */
+  const [ctaVisible, setCtaVisible] = useState(false);
+  const ctaSentinelRef = useRef<HTMLDivElement | null>(null);
   const { accessToken } = useAuthStore();
   const router = useRouter();
 
@@ -176,6 +199,9 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
       params.set('create', 'true');
       params.set('prompt', essay.prompt);
       if (essay.school?.id) params.set('schoolId', essay.school.id);
+      // Gallery → Workbench attribution: pass the source AdmissionCase id
+      // so the workbench can stamp `Essay.inspirationCaseId` on create.
+      params.set('inspirationId', essayId);
       router.push(`/essays?${params.toString()}`);
       return;
     }
@@ -188,6 +214,7 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
           essayId,
           prompt: essay.prompt,
           schoolId: essay.school?.id ?? null,
+          inspirationId: essayId,
         })
       );
     } catch {
@@ -202,7 +229,12 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
   // flag so a clean direct visit never auto-redirects.
   useEffect(() => {
     if (!accessToken || !essay?.prompt) return;
-    let stashed: { essayId?: string; prompt?: string; schoolId?: string | null } | null = null;
+    let stashed: {
+      essayId?: string;
+      prompt?: string;
+      schoolId?: string | null;
+      inspirationId?: string | null;
+    } | null = null;
     try {
       const raw = sessionStorage.getItem(PENDING_CTA_KEY);
       if (raw) stashed = JSON.parse(raw);
@@ -219,11 +251,49 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
     params.set('create', 'true');
     params.set('prompt', stashed.prompt || essay.prompt);
     if (stashed.schoolId) params.set('schoolId', stashed.schoolId);
+    // Preserve attribution across the login round-trip.
+    params.set('inspirationId', essayId);
     router.push(`/essays?${params.toString()}`);
     // We intentionally only depend on `accessToken` + `essayId` + the prompt
     // text; including `router` triggers re-fires on route ref churn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, essayId, essay?.prompt]);
+
+  /**
+   * Reveal the bottom-of-prose CTA once the reader has gotten through
+   * ≥80% of the essay. The sentinel is rendered at the 80% mark inside
+   * the prose block; the observer flips state once and disconnects so
+   * jumping back up doesn't re-hide the button.
+   *
+   * The 0.5 threshold (rather than 1.0) plus a top rootMargin keeps the
+   * trigger from missing very short essays where the sentinel can be on
+   * screen before the user scrolls at all — that's intentional. The
+   * point is to avoid a hard-sell at the top, not to gate the CTA
+   * behind a perfect scroll arc.
+   */
+  useEffect(() => {
+    const node = ctaSentinelRef.current;
+    if (!node || ctaVisible) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      // Fallback for environments without the API — just reveal.
+      setCtaVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setCtaVisible(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ctaVisible, essay?.content]);
 
   if (isLoading) {
     return (
@@ -290,6 +360,36 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
           <ExternalLink className="h-3 w-3" />
           {t('detail.viewFullCase')}
         </Link>
+
+        {/*
+         * ── 文书出处（Mom-persona 信任信号 / PR 2）──
+         * Surfaces ONLY when we have a verifiable source archive. Self-
+         * uploaded essays have null `sourceArchive` and this block is
+         * suppressed entirely — empty space is more honest than a
+         * fake-confident "verified" pill. Link opens in a new tab with
+         * `rel="noreferrer"` so the originating archive can't track us.
+         */}
+        {essay.sourceArchive && essay.sourceUrl && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
+            <Archive className="h-3 w-3 text-indigo-500 shrink-0" />
+            <span className="truncate">
+              {t('detail.sourcePrefix')}
+              <span className="font-medium text-foreground">
+                {getArchiveLabel(essay.sourceArchive, localeForArchive)}
+              </span>
+              {essay.sourceAuthor && ` · ${essay.sourceAuthor}`}
+            </span>
+            <a
+              href={essay.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex shrink-0 items-center gap-0.5 text-primary hover:underline"
+            >
+              {t('detail.viewOriginal')}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        )}
       </div>
 
       {/* ── 可滚动内容区（min-h-0 + overflow-hidden 让 flex 子元素可收缩从而出现滚动） ── */}
@@ -312,22 +412,13 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                     {t('detail.essayPrompt')}
                   </p>
-                  <p className="text-sm leading-relaxed mb-2">{essay.prompt}</p>
+                  <p className="text-sm leading-relaxed">{essay.prompt}</p>
                   {/*
-                   * Show the CTA to cold leads too — gating it behind login
-                   * was hiding the highest-intent conversion window (PR 1
-                   * fix #3). Click handler routes unauthed users through
-                   * /login?callbackUrl=... then auto-resumes via the effect.
+                   * The "用此 prompt 写一篇" CTA moved to the bottom of the
+                   * prose body (PR 2 · §F) and is gated on ≥80% scroll. This
+                   * keeps the prompt block a quiet reference rather than a
+                   * sales surface — Khan/Quill/Modern Love red-team rule.
                    */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 h-7 text-xs"
-                    onClick={handleWriteWithPrompt}
-                  >
-                    <PenTool className="h-3 w-3" />
-                    {t('detail.writeWithPrompt')}
-                  </Button>
                 </div>
               </div>
             )}
@@ -385,12 +476,72 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                     useSerif && 'font-serif'
                   )}
                 >
-                  {paragraphs.map((p, i) => (
-                    <p key={i} className="mb-6 last:mb-0 text-base leading-[1.8]">
-                      {p}
-                    </p>
-                  ))}
+                  {(() => {
+                    /*
+                     * Position the IntersectionObserver sentinel after
+                     * the 80%-mark paragraph. Math.floor handles short
+                     * essays gracefully (e.g. 5 paragraphs → sentinel
+                     * after paragraph 4). For single-paragraph essays
+                     * the sentinel sits under the lone paragraph; the
+                     * observer's `threshold: 0.5` still keeps it from
+                     * firing on the initial render.
+                     */
+                    const sentinelAfter =
+                      paragraphs.length === 0
+                        ? -1
+                        : Math.max(0, Math.floor(paragraphs.length * 0.8) - 1);
+                    return paragraphs.map((p, i) => (
+                      <div key={i}>
+                        <p className="mb-6 last:mb-0 text-base leading-[1.8]">{p}</p>
+                        {i === sentinelAfter && (
+                          <div
+                            ref={ctaSentinelRef}
+                            aria-hidden
+                            className="h-px w-full"
+                            data-testid="essay-cta-sentinel"
+                          />
+                        )}
+                      </div>
+                    ));
+                  })()}
                 </div>
+
+                {/* ── 写作 CTA — 80% 滚动后渐显（PR 2 · §F） ── */}
+                {essay.prompt && (
+                  <div
+                    className={cn(
+                      'mx-auto mt-6 max-w-[68ch] transition-opacity duration-500',
+                      ctaVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+                    )}
+                  >
+                    <div className="rounded-xl border border-dashed bg-muted/30 p-5 text-center">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {t('detail.readThenWritePrompt')}
+                      </p>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={handleWriteWithPrompt}
+                      >
+                        <PenTool className="h-3.5 w-3.5" />
+                        {t('detail.writeWithPrompt')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── 拒信案例：作者自我反思（仅当存在时显示）── */}
+                {essay.selfReflection && (
+                  <div className="mx-auto mt-6 max-w-[68ch] rounded-xl border border-rose-200 bg-rose-50/50 p-5 dark:border-rose-900 dark:bg-rose-950/30">
+                    <p className="text-xs font-medium uppercase tracking-wider text-rose-700 dark:text-rose-300 mb-2">
+                      {t('detail.selfReflectionTitle')}
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
+                      {essay.selfReflection}
+                    </p>
+                  </div>
+                )}
               </TabsContent>
 
               {/* ── AI 分析 Tab ── */}
@@ -432,23 +583,48 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                       <p className="text-sm text-muted-foreground mb-4">
                         {t('detail.ai.description')}
                       </p>
-                      <Button
-                        onClick={() => analyzeMutation.mutate()}
-                        disabled={analyzeMutation.isPending}
-                        className="gap-2 bg-primary dark:bg-primary hover:opacity-90"
-                      >
-                        {analyzeMutation.isPending ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                            {t('detail.ai.analyzing')}
-                          </>
-                        ) : (
-                          <>
-                            <ClipboardCheck className="h-4 w-4" />
-                            {t('detail.ai.startAnalysis')}
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          onClick={() => analyzeMutation.mutate()}
+                          disabled={analyzeMutation.isPending}
+                          className="gap-2 bg-primary dark:bg-primary hover:opacity-90"
+                        >
+                          {analyzeMutation.isPending ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                              {t('detail.ai.analyzing')}
+                            </>
+                          ) : (
+                            <>
+                              <ClipboardCheck className="h-4 w-4" />
+                              {t('detail.ai.startAnalysis')}
+                            </>
+                          )}
+                        </Button>
+                        {/*
+                         * Privacy "?" — Khan/Quill red-team requirement. We
+                         * don't pretend to "delete" what we never stored;
+                         * this just states the data-handling principle.
+                         * Phase 2 will surface a real delete endpoint once
+                         * conversation-memory writes land.
+                         */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0"
+                              aria-label={t('detail.ai.privacyHelpLabel')}
+                            >
+                              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent side="top" className="max-w-xs text-xs leading-relaxed">
+                            <p className="font-medium mb-1">{t('detail.ai.privacyTitle')}</p>
+                            <p className="text-muted-foreground">{t('detail.ai.privacyBody')}</p>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </CardContent>
                   </Card>
                 )}

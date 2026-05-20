@@ -23,6 +23,7 @@ import { EssayAiController } from './essay-ai.controller';
 import { EssayPromptController } from './essay-prompt.controller';
 import { EssayPromptAdminController } from './essay-prompt-admin.controller';
 import { EssayScraperController } from './essay-scraper.controller';
+import { CounselorEssayController } from './counselor-essay.controller';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { EssayScraperController } from './essay-scraper.controller';
     EssayPromptController,
     EssayPromptAdminController,
     EssayScraperController,
+    CounselorEssayController,
   ],
   providers: [
     EssayAiService,

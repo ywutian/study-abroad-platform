@@ -1425,6 +1425,7 @@
     "ai": "AI Assistant",
     "dashboard": "Dashboard",
     "adminPanel": "Admin Panel",
+    "counselorWorkbench": "Counselor Workbench",
     "schools": "Schools",
     "essays": "My Essays",
     "resume": "Resume Builder",
@@ -2771,7 +2772,8 @@
     "description": "Explore real admission profiles, test scores, activities, and winning essays from accepted students",
     "tabs": {
       "cases": "Cases",
-      "essays": "Winning Essays"
+      "essays": "Winning Essays",
+      "rejected": "Rejected Essays"
     },
     "shareCase": "Share Case",
     "searchPlaceholder": "Search cases...",
@@ -6032,7 +6034,8 @@
       "uc": "UC Essays",
       "supplemental": "Supplemental",
       "whySchool": "Why School",
-      "why_school": "Why School"
+      "why_school": "Why School",
+      "other": "Other"
     },
     "yearFilter": "Application Year",
     "allYears": "All Years",
@@ -6112,6 +6115,10 @@
       "writeWithPrompt": "Write with this prompt",
       "copyEssay": "Copy essay",
       "yearLabel": "Year",
+      "sourcePrefix": "Source: ",
+      "viewOriginal": "View original",
+      "readThenWritePrompt": "Finished reading? Now write your own version of this prompt.",
+      "selfReflectionTitle": "Author's reflection",
       "tabs": {
         "original": "Original Essay",
         "aiReview": "AI Paragraph Review"
@@ -6126,7 +6133,10 @@
         "analyzing": "Analyzing...",
         "startAnalysis": "Start Analysis (20 points)",
         "analysisError": "Analysis failed, please try again later",
-        "cachedHint": "Analyzed · Instant response"
+        "cachedHint": "Analyzed · Instant response",
+        "privacyHelpLabel": "How we use your data",
+        "privacyTitle": "Your data, this session",
+        "privacyBody": "This analysis is used only for the current session — never to train a model. We do not retain conversation history. If we add chat features in the future, you'll see an explicit 'delete my conversation history' control."
       },
       "analysis": {
         "overallScore": "Overall Score",
@@ -6147,6 +6157,58 @@
       "top20": "Top 20",
       "uc": "UC Essays",
       "verified": "Verified"
+    },
+    "rejected": {
+      "bannerTitle": "Only learner-submitted rejection essays — never scraped",
+      "bannerBody": "Every rejection essay here comes with the author's own reflection. We do not harvest rejection stories. This is our promise to applicants.",
+      "shareYours": "Share your own rejection story →",
+      "emptyTitle": "Inaugural rejection archive — open for submissions",
+      "emptyDescription": "Past applicants submit voluntarily, with their own retrospective. Turn detours into lighthouses for the next cohort.",
+      "emptyCta": "I want to share →"
+    }
+  },
+  "counselor": {
+    "patterns": {
+      "title": "Essay Pattern Workbench",
+      "description": "Search published essays across structure, hooks, and outcomes (counselor access only)",
+      "savedQueries": "Saved queries",
+      "exportLessonPlan": "Export lesson plan",
+      "exportPdfStub": "Lesson-plan export coming soon — contact your counselor success manager to enable.",
+      "phase2Hint": "Available in the next phase",
+      "loading": "Loading...",
+      "loadError": "Failed to load, please try again",
+      "resultsCount": "{count} matching essays",
+      "empty": "No matches. Try loosening the filters.",
+      "prev": "Previous",
+      "next": "Next",
+      "viewDetail": "View",
+      "filters": {
+        "schoolPlaceholder": "Search schools...",
+        "result": "Result",
+        "allResults": "All results",
+        "admitted": "Admitted",
+        "rejected": "Rejected",
+        "waitlisted": "Waitlisted",
+        "essayType": "Essay type",
+        "allTypes": "All types",
+        "archive": "Source archive",
+        "allArchives": "All archives",
+        "clear": "Clear"
+      },
+      "columns": {
+        "school": "School",
+        "year": "Year",
+        "result": "Result",
+        "essayType": "Type",
+        "prompt": "Prompt excerpt",
+        "hook": "Hook excerpt",
+        "actions": "Actions"
+      },
+      "forbidden": {
+        "title": "Access restricted",
+        "body": "The Counselor Workbench is available to verified counselors only. Contact our team to enable access for your organization.",
+        "cta": "Back to home"
+      }
     }
   },
   "followers": {
