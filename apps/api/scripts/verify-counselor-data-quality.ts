@@ -17,7 +17,7 @@ import { resolveMajorToCip } from '@study-abroad/shared/scoring';
 
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 const REPORT_DIR = resolve(REPO_ROOT, 'verification-report', 'phase-c');
-const EXPECTED_US_SCHOOL_COUNT = 240;
+const EXPECTED_US_SCHOOL_COUNT = 241;
 const MANUAL_REVIEW_FILE = 'manual-review.json';
 const CLASSIFICATIONS_FILE = resolve(
   __dirname,
