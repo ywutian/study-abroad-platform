@@ -25,7 +25,27 @@ import type {
 } from '@/types/essay';
 import { toast } from 'sonner';
 
-export function useEssayManager(initialSchoolId?: string | null, initialPromptId?: string | null) {
+export function useEssayManager(
+  initialSchoolId?: string | null,
+  initialPromptId?: string | null,
+  /**
+   * Gallery → Workbench attribution (PR 2 · §E). When the user clicks
+   * "用此 prompt 写一篇" on a gallery essay, the source `AdmissionCase.id`
+   * is passed here and stamped onto the `Essay.inspirationCaseId` FK on
+   * create. Cross-stage links (gallery cohort dashboards in Phase 2)
+   * read this field. Only honoured on the first create — intentionally
+   * not threaded into updateMutation.
+   */
+  initialInspirationId?: string | null,
+  /**
+   * Plain-text prompt prefill from the gallery CTA. When set, we open
+   * the create form with the prompt pre-populated AND skip the prompt
+   * picker — the user already chose a prompt by clicking on a gallery
+   * essay. Distinct from `initialPromptId`, which links to a verified
+   * EssayPrompt row by id.
+   */
+  initialPromptText?: string | null
+) {
   const t = useTranslations();
   const queryClient = useQueryClient();
 
@@ -54,6 +74,19 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
       setIsFormOpen(true);
     }
   }, [initialSchoolId, initialPromptId]);
+
+  // Gallery → Workbench deep-link: when arriving with `?prompt=<text>`
+  // (and optionally `inspirationId=<caseId>`), open the create form with
+  // the prompt prefilled. We intentionally don't auto-submit — the user
+  // still needs to draft content. Runs once on mount; if the user later
+  // navigates away and back without these params, we leave things alone.
+  useEffect(() => {
+    if (initialPromptText && !initialPromptId) {
+      setIsFormOpen(true);
+      essayForm.setValue('prompt', initialPromptText);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [essayToDelete, setEssayToDelete] = useState<string | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -141,6 +174,7 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
       prompt?: string;
       content: string;
       essayPromptId?: string;
+      inspirationCaseId?: string;
     }) => apiClient.post<Essay>(profileRoutes.essays(), data),
     onSuccess: (createdEssay) => {
       queryClient.invalidateQueries({ queryKey: ['essays'] });
@@ -250,7 +284,13 @@ export function useEssayManager(initialSchoolId?: string | null, initialPromptId
     if (selectedEssay) {
       updateMutation.mutate({ id: selectedEssay.id, data });
     } else {
-      createMutation.mutate(data);
+      // Gallery → Workbench attribution (PR 2 · §E). Only set on first
+      // create; the inspiration is a creation-time fact and we don't
+      // retroactively rewrite it on update.
+      createMutation.mutate({
+        ...data,
+        inspirationCaseId: initialInspirationId || undefined,
+      });
     }
   });
 

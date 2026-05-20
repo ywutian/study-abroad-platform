@@ -14,6 +14,7 @@ datasource db {
 enum Role {
   USER
   VERIFIED
+  COUNSELOR // 顾问 (B2B): pattern-search workbench access (/counselor/*)
   OPERATOR // 数据录入/审核（实习生）
   ADMIN // 管理员
   SUPER_ADMIN // 超级管理员（全权）
@@ -1244,6 +1245,13 @@ model Essay {
   essayPromptId String?
   linkedPrompt  EssayPrompt? @relation(fields: [essayPromptId], references: [id], onDelete: SetNull)
 
+  // Gallery → Workbench attribution (PR 2). Set when the user clicks
+  // "用此 prompt 写一篇" from a gallery essay; lets us tell counselors
+  // which archival essay seeded a student's draft (and lets the cohort
+  // dashboard surface "this prompt inspired N essays").
+  inspirationCaseId String?
+  inspirationCase   AdmissionCase? @relation(name: "EssayInspiration", fields: [inspirationCaseId], references: [id], onDelete: SetNull)
+
   // AI results
   aiResults   EssayAIResult[]
   revisions   EssayRevision[]
@@ -1254,6 +1262,7 @@ model Essay {
 
   @@index([profileId])
   @@index([essayPromptId])
+  @@index([inspirationCaseId])
 }
 
 model EssayRevision {
@@ -2650,6 +2659,20 @@ model AdmissionCase {
   essayContent String?    @db.Text // Essay content
   promptNumber Int? // Common App: 1-7, UC PIQ: 1-4
 
+  // Provenance — Mom-persona trust signal (PR 2). Lets the gallery surface
+  // "本文来源：JHU 公开档案 · 查看原文 →" so readers can verify the essay
+  // wasn't fabricated. Parsed at write-time from the `source:<url>#<author>`
+  // tag convention used by the harvest scripts; nullable so legacy rows
+  // and self-uploads (which never link out) stay valid.
+  sourceArchive String? // e.g. "apply.jhu.edu" / "hamilton.edu" / "collegevine.com"
+  sourceUrl     String? // Canonical URL on the originating archive
+  sourceAuthor  String? // Public byline / pseudonym if the archive published one
+
+  // Reflection — only meaningful for rejected/waitlisted self-uploads in the
+  // "文书避雷" tab. The editorial rule is that learners submit these along
+  // with their own retrospective; we never scrape rejection essays.
+  selfReflection String? @db.Text
+
   // Precomputed paragraph-analysis result, keyed by locale.
   // Shape: { [locale]: { promptVersion, model, generatedAt, payload } }
   // Bypassed when caller supplies a `schoolName` override (custom-fit run).
@@ -2684,6 +2707,9 @@ model AdmissionCase {
 
   // Case views
   views CaseView[]
+
+  // Reverse — student essays that cite this case as their starting point.
+  inspiredEssays Essay[] @relation(name: "EssayInspiration")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -128,6 +128,130 @@ describe('EssayGalleryService', () => {
 
       expect(result.totalPages).toBe(3);
     });
+
+    // ── PR 2 · §B — Provenance backfill from `tags` ──────────────────
+    //
+    // The harvest pipeline stamps `source:<url>#<author>` on each case;
+    // legacy rows pre-date the dedicated `sourceArchive/Url/Author`
+    // columns. On read, the service resolves provenance from the column
+    // first, falls back to parsing the tag — and write-backs into the
+    // columns so the next read hits the hot path. We verify both the
+    // resolution AND the write-back here.
+    it('should resolve provenance from tags and write-back into the dedicated columns', async () => {
+      const mockCases = [
+        {
+          id: 'case-1',
+          year: 2025,
+          result: 'ADMITTED',
+          essayType: 'COMMON_APP',
+          promptNumber: 1,
+          essayPrompt: 'Prompt',
+          essayContent: 'Words words words.',
+          school: { id: 's1', name: 'JHU', nameZh: 'JHU', usNewsRank: 9 },
+          tags: [
+            'source:https://apply.jhu.edu/hopkins-insider/korean-sticky-notes/#Nancy',
+            'jhu',
+            'essays-that-worked',
+          ],
+          isVerified: true,
+          sourceArchive: null,
+          sourceUrl: null,
+          sourceAuthor: null,
+        },
+      ];
+      mockPrisma.admissionCase.findMany.mockResolvedValue(mockCases);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+      mockPrisma.admissionCase.groupBy.mockResolvedValue([]);
+
+      const result = await service.getGalleryEssays({
+        page: 1,
+        pageSize: 10,
+      });
+
+      // Resolved provenance is on the response without requiring the
+      // dedicated columns to already be populated.
+      expect(result.items[0].sourceArchive).toBe('apply.jhu.edu');
+      expect(result.items[0].sourceUrl).toBe(
+        'https://apply.jhu.edu/hopkins-insider/korean-sticky-notes/',
+      );
+      expect(result.items[0].sourceAuthor).toBe('Nancy');
+
+      // Write-back fires on the next event-loop tick because we
+      // `void`-ignore the promise. Yield once before asserting.
+      await new Promise((r) => setImmediate(r));
+      expect(mockPrisma.admissionCase.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'case-1' },
+          data: expect.objectContaining({
+            sourceArchive: 'apply.jhu.edu',
+            sourceAuthor: 'Nancy',
+          }),
+        }),
+      );
+    });
+
+    it('should leave provenance null when no source tag is present', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([
+        {
+          id: 'case-anon',
+          year: 2024,
+          result: 'ADMITTED',
+          essayType: 'COMMON_APP',
+          promptNumber: 1,
+          essayPrompt: 'Prompt',
+          essayContent: 'Self-uploaded.',
+          school: { id: 's2', name: 'Yale', nameZh: 'Yale' },
+          tags: ['stem', 'research'],
+          isVerified: false,
+          sourceArchive: null,
+          sourceUrl: null,
+          sourceAuthor: null,
+        },
+      ]);
+      mockPrisma.admissionCase.count.mockResolvedValue(1);
+      mockPrisma.admissionCase.groupBy.mockResolvedValue([]);
+
+      const result = await service.getGalleryEssays({
+        page: 1,
+        pageSize: 10,
+      });
+
+      expect(result.items[0].sourceArchive).toBeNull();
+      expect(result.items[0].sourceUrl).toBeNull();
+      expect(result.items[0].sourceAuthor).toBeNull();
+    });
+  });
+
+  // ── PR 2 · §C — Rejected-essay tab ───────────────────────────────────
+  describe('getRejectedEssays', () => {
+    it('should filter to REJECTED / WAITLISTED only', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([]);
+      mockPrisma.admissionCase.count.mockResolvedValue(0);
+
+      await service.getRejectedEssays({ page: 1, pageSize: 20 });
+
+      expect(mockPrisma.admissionCase.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            result: { in: ['REJECTED', 'WAITLISTED'] },
+          }),
+        }),
+      );
+    });
+
+    it('should return empty items + total 0 for the launch case', async () => {
+      mockPrisma.admissionCase.findMany.mockResolvedValue([]);
+      mockPrisma.admissionCase.count.mockResolvedValue(0);
+
+      const result = await service.getRejectedEssays({
+        page: 1,
+        pageSize: 20,
+      });
+
+      expect(result.items).toEqual([]);
+      expect(result.total).toBe(0);
+      expect(result.totalPages).toBe(0);
+    });
   });
 
   describe('getGalleryEssayDetail', () => {

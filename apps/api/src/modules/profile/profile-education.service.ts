@@ -503,6 +503,10 @@ export class ProfileEducationService {
         wordCount,
         schoolId: data.schoolId,
         essayPromptId: data.essayPromptId,
+        // Gallery → Workbench attribution (PR 2). Only set on first create;
+        // intentionally NOT mirrored to UpdateEssayDto — the inspiration is
+        // a creation-time fact, not something to retroactively edit.
+        inspirationCaseId: data.inspirationCaseId,
       },
     });
 

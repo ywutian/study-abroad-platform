@@ -15,7 +15,10 @@ export default function EssaysPage() {
   const searchParams = useSearchParams();
   const schoolId = searchParams.get('schoolId');
   const promptId = searchParams.get('promptId');
-  const mgr = useEssayManager(schoolId, promptId);
+  // Gallery → Workbench attribution (PR 2 · §E).
+  const inspirationId = searchParams.get('inspirationId');
+  const promptText = searchParams.get('prompt');
+  const mgr = useEssayManager(schoolId, promptId, inspirationId, promptText);
 
   return (
     <PageContainer maxWidth="full">

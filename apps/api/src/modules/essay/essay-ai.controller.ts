@@ -256,6 +256,29 @@ export class EssayAiController {
     });
   }
 
+  /**
+   * Rejected/Waitlisted essay feed for the "文书避雷" tab.
+   *
+   * Editorial rule: only self-uploaded rejected essays land here — the
+   * harvest pipeline never touches rejections. At launch this is expected
+   * to return 0 items; the frontend shows the empty-state CTA inviting
+   * learners to submit their own retrospective.
+   */
+  @Get('gallery/rejected')
+  @Public()
+  @ApiOperation({ summary: 'Get self-uploaded rejected/waitlisted essays' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'pageSize', required: false })
+  async getRejectedGalleryEssays(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.essayGalleryService.getRejectedEssays({
+      page: page ? parseInt(page, 10) : 1,
+      pageSize: pageSize ? Math.min(parseInt(pageSize, 10), 50) : 20,
+    });
+  }
+
   @Get('gallery/:essayId')
   @Public()
   @ApiOperation({ summary: 'Get single public essay details' })
