@@ -58,23 +58,37 @@ function anonymizeEssay(text: string): string {
 async function main() {
   console.log(`Loaded ${ALL_ESSAYS.length} essay records in memory`);
 
-  // Build clean US school lookup (only cmpb8h prefix = original seed, excludes Reddit pollution).
+  // School lookup: ALL US schools. The earlier `id: { startsWith: 'cmpb8h' }`
+  // filter was a dev-DB-specific guard against "Reddit-pollution" rows that
+  // shared a different cuid prefix. On any other database (staging, prod,
+  // fresh dev), no rows match that prefix — so the seed silently inserts
+  // ZERO essays. (Root cause of: prod gallery stuck at 5 after PR #246/#247.)
+  // We still scope to country='US' since every harvested essay is to a US
+  // school. Name normalization in findSchoolId handles ambiguous matches.
   const schools = await prisma.school.findMany({
-    where: { id: { startsWith: 'cmpb8h' }, country: 'US' },
+    where: { country: 'US' },
     select: { id: true, name: true },
   });
-  console.log(`Found ${schools.length} clean US schools`);
+  console.log(`Found ${schools.length} US schools`);
 
   function findSchoolId(name: string, aliases: string[] = []): string | null {
     const candidates = [name, ...aliases].map((n) => n.toLowerCase().trim());
+    // Pass 1: exact match on any candidate.
     for (const cand of candidates) {
       const exact = schools.find((s) => s.name.toLowerCase() === cand);
       if (exact) return exact.id;
-      const partial = schools.find(
-        (s) =>
-          s.name.toLowerCase().includes(cand) ||
-          cand.includes(s.name.toLowerCase()),
-      );
+    }
+    // Pass 2: partial match, but require both strings to be at least 8
+    // chars long to avoid pathological matches (e.g. "USC" ⊂
+    // "University of Southern California" is fine, but "MIT" ⊂ "MIT
+    // Lincoln Laboratory" is not).
+    for (const cand of candidates) {
+      if (cand.length < 8) continue;
+      const partial = schools.find((s) => {
+        const sn = s.name.toLowerCase();
+        if (sn.length < 8) return false;
+        return sn.includes(cand) || cand.includes(sn);
+      });
       if (partial) return partial.id;
     }
     return null;
