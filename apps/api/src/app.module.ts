@@ -30,6 +30,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { VerificationModule } from './modules/verification/verification.module';
 import { EssayModule } from './modules/essay/essay.module';
+import { EssayDebateModule } from './modules/essay-debate/essay-debate.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
 import { TimelineModule } from './modules/timeline/timeline.module';
 import { AssessmentModule } from './modules/assessment/assessment.module';
@@ -107,6 +108,7 @@ import { FeatureFlagGuard } from './common/feature-flags';
     SubscriptionModule,
     VerificationModule,
     EssayModule,
+    EssayDebateModule,
     RecommendationModule,
     TimelineModule,
     AssessmentModule,

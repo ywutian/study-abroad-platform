@@ -37,6 +37,9 @@ export enum PointAction {
   AI_ESSAY_GALLERY = 'AI_ESSAY_GALLERY',
   AI_SCHOOL_RECOMMENDATION = 'AI_SCHOOL_RECOMMENDATION',
   AI_ACTIVITY_REFINE = 'AI_ACTIVITY_REFINE',
+  // Phase 2 V1 (PR1) — one user "argue back" turn against AI essay feedback.
+  // Skeleton ships at cost 0; real LLM integration + pricing land in PR2.
+  AI_ESSAY_DEBATE_TURN = 'AI_ESSAY_DEBATE_TURN',
 }
 
 export interface PointRule {
@@ -226,6 +229,14 @@ const POINT_ACTION_REGISTRY: Record<
     settingKey: SETTING_KEYS.POINTS_ACTION_AI_ACTIVITY_REFINE,
     defaultPoints: -15,
     description: 'AI活动描述精简',
+    type: 'spend',
+  },
+  [PointAction.AI_ESSAY_DEBATE_TURN]: {
+    settingKey: SETTING_KEYS.POINTS_ACTION_AI_ESSAY_DEBATE_TURN,
+    // Skeleton ships at 0 — PR2 sets the real value after we measure
+    // per-turn token cost against the $40/day system cap.
+    defaultPoints: 0,
+    description: '文书反驳一轮',
     type: 'spend',
   },
 };

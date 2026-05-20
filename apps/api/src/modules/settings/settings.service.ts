@@ -43,6 +43,7 @@ export const SETTING_KEYS = {
   POINTS_ACTION_AI_SCHOOL_RECOMMENDATION:
     'points_action_AI_SCHOOL_RECOMMENDATION',
   POINTS_ACTION_AI_ACTIVITY_REFINE: 'points_action_AI_ACTIVITY_REFINE',
+  POINTS_ACTION_AI_ESSAY_DEBATE_TURN: 'points_action_AI_ESSAY_DEBATE_TURN',
   // Subscription pricing
   SUBSCRIPTION_PRO_PRICE: 'subscription_pro_price',
   SUBSCRIPTION_PREMIUM_PRICE: 'subscription_premium_price',
@@ -234,6 +235,12 @@ const DEFAULT_SETTINGS: Record<
   [SETTING_KEYS.POINTS_ACTION_AI_ACTIVITY_REFINE]: {
     value: '-15',
     description: 'Points consumed for AI activity description refinement',
+    category: 'points',
+  },
+  [SETTING_KEYS.POINTS_ACTION_AI_ESSAY_DEBATE_TURN]: {
+    value: '0',
+    description:
+      'Points consumed per essay debate turn (Phase 2 V1 PR1 skeleton — PR2 will tune after measuring real token cost)',
     category: 'points',
   },
   // Subscription pricing defaults

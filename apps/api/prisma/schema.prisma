@@ -704,6 +704,9 @@ model User {
   // Permissions (per-user overrides)
   userPermissions UserPermission[]
 
+  // Essay Debate (Phase 2 V1) — sessions where this user is arguing back
+  essayDebateSessions EssayDebateSession[]
+
   // Referral system
   referralCode String? @unique
   referredById String?
@@ -1256,6 +1259,9 @@ model Essay {
   aiResults   EssayAIResult[]
   revisions   EssayRevision[]
   suggestions EssaySuggestion[]
+
+  // Phase 2 V1 — debate sessions against AI feedback on this draft.
+  debateSessions EssayDebateSession[] @relation(name: "EssayDebates")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2710,6 +2716,9 @@ model AdmissionCase {
 
   // Reverse — student essays that cite this case as their starting point.
   inspiredEssays Essay[] @relation(name: "EssayInspiration")
+
+  // Phase 2 V1 — debate sessions against this case's AI paragraph commentary.
+  debateSessions EssayDebateSession[] @relation(name: "AdmissionCaseDebates")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4969,4 +4978,56 @@ model EntityRelationship {
   @@index([userId, sourceEntityId])
   @@index([userId, relationType])
   @@map("entity_relationships")
+}
+
+// ============================================
+// Essay Debate (Phase 2 V1 PR1 — Day 1-2)
+// ============================================
+// The "essay debate" feature lets a user argue back against the existing AI
+// paragraph commentary (`AdmissionCase.aiAnalysisCache` from PR #253) or
+// against AI feedback on their own draft (`Essay`). Each turn injects 6
+// context classes — see apps/api/src/modules/essay-debate/CONTEXT_AUDIT.md.
+//
+// Red-team verdict: NO `concedes` field. Response shape is strictly
+// { rebuttal, evidence[], openQuestion } — never let the AI capitulate.
+//
+// All FKs nullable for zero-downtime. Turns stored as a JSON array (not a
+// separate table) because they're always read together and the per-user
+// 30/day cap keeps the array bounded.
+model EssayDebateSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Exactly one of these is set — the FK we're debating about.
+  admissionCaseId String?
+  admissionCase   AdmissionCase? @relation(name: "AdmissionCaseDebates", fields: [admissionCaseId], references: [id], onDelete: SetNull)
+  essayId         String?
+  essay           Essay?         @relation(name: "EssayDebates", fields: [essayId], references: [id], onDelete: SetNull)
+
+  // Which paragraph (0-indexed) the debate is scoped to. Null = whole essay.
+  paragraphIndex Int?
+
+  // Persistent JSON array of turns. Shape per turn:
+  //   { id: string, role: 'user'|'ai', text: string,
+  //     evidence?: Array<{quote, source, paragraphIndex}>,
+  //     openQuestion?: string, tokensUsed?: number, createdAt: string }
+  turns Json @default("[]")
+
+  status      EssayDebateStatus @default(ACTIVE)
+  // Denormalized for cheap rate-limit + budget checks (avoid JSON aggregation).
+  totalTurns  Int               @default(0)
+  totalTokens Int               @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([admissionCaseId])
+  @@index([essayId])
+}
+
+enum EssayDebateStatus {
+  ACTIVE
+  CLOSED
 }
