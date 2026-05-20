@@ -40,6 +40,8 @@ export const API_ROUTES = {
   // Essays & AI
   ESSAY_AI: '/essay-ai',
   ESSAY_PROMPTS: '/essay-prompts',
+  // Phase 2 V1 — essay debate (user argues back against AI feedback).
+  ESSAY_DEBATE: '/essay-debate',
   AI_AGENT: '/ai-agent',
   AI: '/ai',
 
@@ -168,6 +170,12 @@ export const recommendationRoutes = {
   generate: () => API_ROUTES.RECOMMENDATIONS,
   history: () => `${API_ROUTES.RECOMMENDATIONS}/history`,
   preflight: () => `${API_ROUTES.RECOMMENDATIONS}/preflight`,
+};
+
+// Phase 2 V1 — essay debate (user argues back against AI feedback).
+export const essayDebateRoutes = {
+  turn: () => `${API_ROUTES.ESSAY_DEBATE}/turn`,
+  latest: (sessionId: string) => `${API_ROUTES.ESSAY_DEBATE}/${sessionId}/latest`,
 };
 
 export const assessmentRoutes = {
