@@ -196,7 +196,9 @@ Only include actual essay prompts, not instructions, tips, or general admissions
           },
         ],
         {
-          maxTokens: 2000,
+          // gpt-5/o-series reasoning models consume completion tokens on hidden
+          // reasoning; a low budget truncates JSON output. Keep this generous.
+          maxTokens: 8000,
           temperature: 0.1,
           providerOptions: { response_format: { type: 'json_object' } },
         },

@@ -87,6 +87,15 @@ const STEPS: Step[] = [
     cmd: 'npx tsx prisma/seeds/load-top-cases.ts',
   },
   {
+    // Phase C — public-archive essay gallery: imports ~185 anonymized essays
+    // from committed data-*.ts files (JHU / Hamilton / MIT / Harvard /
+    // PrepMaven / CollegeVine / Stanford / USC / CollegeEssayGuy / Shemmassian)
+    // as AdmissionCase rows with visibility=ANONYMOUS, reviewStatus=APPROVED.
+    // Idempotent: dedups on tag `source:<url>#<author>`.
+    name: 'Essay gallery — public archive AdmissionCase import',
+    cmd: 'npx tsx scripts/essay-harvest/import-essays.ts',
+  },
+  {
     name: 'Assessment question banks — MBTI / HOLLAND / STRENGTH (Assessment)',
     cmd: 'npx tsx prisma/seed-assessment.ts',
   },
