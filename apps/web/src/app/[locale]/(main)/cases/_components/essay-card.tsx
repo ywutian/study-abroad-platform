@@ -7,6 +7,7 @@ import { FileText, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RankingBadge } from '@/components/ui/ranking-badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn, getSchoolName } from '@/lib/utils';
 import {
   getResultBarColor,
@@ -59,8 +60,15 @@ export function EssayCard({
   const resultBadgeClass = getResultBadgeClass(essay.result);
   const typeBadgeClass = essay.essayType ? getEssayTypeBadgeClass(essay.essayType) : '';
 
+  const schoolDisplayName = getSchoolName(essay.school, locale) || t('unknownSchool');
+
   return (
     <motion.div
+      // `min-w-0` on the grid item: without it, the outer flex/grid container
+      // gives this card `min-width: auto`, and a long school name then pushes
+      // the cell past its allotted width — defeating the inner `truncate`.
+      // See PR #214/#215/#217 layout-robustness rules.
+      className="min-w-0"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.32) }}
@@ -74,17 +82,30 @@ export function EssayCard({
           {/* School + Result */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <div className="flex items-center gap-1.5 min-w-0">
-              <h3 className="font-semibold text-sm truncate">
-                {getSchoolName(essay.school, locale) || t('unknownSchool')}
-              </h3>
+              {/* TooltipProvider is already mounted at the app root, but
+                  the `no-tooltip-without-provider` quality rule is per-file.
+                  Nested providers are a no-op in Radix, so the local one is
+                  cheap insurance + appeases the lint. */}
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3 className="font-semibold text-sm truncate cursor-default">
+                      {schoolDisplayName}
+                    </h3>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start">
+                    {schoolDisplayName}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <RankingBadge
                 rankings={essay.school?.rankings}
                 usNewsRank={essay.school?.usNewsRank}
                 variant="amber"
-                className="text-[10px] h-5"
+                className="text-2xs h-5"
               />
             </div>
-            <Badge className={cn('shrink-0 text-[11px]', resultBadgeClass)}>
+            <Badge className={cn('shrink-0 text-2xs', resultBadgeClass)}>
               {getResultLabel(essay.result)}
             </Badge>
           </div>
@@ -92,7 +113,7 @@ export function EssayCard({
           {/* Type + Year */}
           <div className="flex items-center gap-1.5 mb-2">
             {essay.essayType && (
-              <Badge variant="outline" className={cn('text-[10px] h-5', typeBadgeClass)}>
+              <Badge variant="outline" className={cn('text-2xs h-5', typeBadgeClass)}>
                 {getTypeLabel(essay.essayType)}
                 {essay.promptNumber && ` #${essay.promptNumber}`}
               </Badge>
@@ -116,7 +137,7 @@ export function EssayCard({
             {essay.isVerified && (
               <Badge
                 variant="secondary"
-                className={cn('gap-0.5 text-[10px] px-1.5 py-0', VERIFIED_BADGE_CLASS)}
+                className={cn('gap-0.5 text-2xs px-1.5 py-0', VERIFIED_BADGE_CLASS)}
               >
                 <CheckCircle2 className="h-3 w-3" />
                 {t('detail.verified')}

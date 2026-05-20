@@ -2650,6 +2650,14 @@ model AdmissionCase {
   essayContent String?    @db.Text // Essay content
   promptNumber Int? // Common App: 1-7, UC PIQ: 1-4
 
+  // Precomputed paragraph-analysis result, keyed by locale.
+  // Shape: { [locale]: { promptVersion, model, generatedAt, payload } }
+  // Bypassed when caller supplies a `schoolName` override (custom-fit run).
+  // Populated by scripts/precompute-gallery-analysis.ts — NOT migrate.sh
+  // (Cloud Run task has a 300s ceiling; 190 essays × 2 locales × ~5-10s each
+  // would time out and silently leave us in the slow path again).
+  aiAnalysisCache Json?
+
   // Visibility
   visibility Visibility @default(PRIVATE)
 

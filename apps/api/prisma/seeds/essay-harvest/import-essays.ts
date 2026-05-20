@@ -147,6 +147,9 @@ async function main() {
             essayType: rec.essayType as EssayType,
             visibility: Visibility.ANONYMOUS,
             reviewStatus: DataReviewStatus.APPROVED,
+            // Backfill on re-run: schema default is false, but these rows
+            // are L2-verified public-archive imports — surface the badge.
+            isVerified: true,
           },
         });
         updated++;
@@ -170,6 +173,11 @@ async function main() {
           qualityScore: 85,
           verificationLevel: VerificationLevel.L2,
           verifiedBy: 'public_aggregation',
+          // Without this flag (schema default = false), the gallery card never
+          // renders the verified badge — even though qualityScore=85 and
+          // verificationLevel=L2 say otherwise. Without it the trust signal
+          // is silently dropped for all 190 public-archive imports.
+          isVerified: true,
         },
       });
       inserted++;

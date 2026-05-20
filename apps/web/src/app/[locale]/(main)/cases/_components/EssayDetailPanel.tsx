@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,7 +83,21 @@ interface AnalysisResult {
   };
   summary: string;
   tokenUsed: number;
+  /**
+   * Backend signal: result served from `aiAnalysisCache[locale]` precompute
+   * rather than a fresh LLM round-trip. We surface this so users understand
+   * why the response was instant; the 20-point cost still applies per spec.
+   */
+  cached?: boolean;
+  generatedAt?: string;
 }
+
+/**
+ * sessionStorage key for the "auto-fire writeWithPrompt CTA after login" flow.
+ * Cold leads hit the prompt CTA → bounce to login → return to the essay page;
+ * we drop a flag so the CTA effect re-arms once `accessToken` lands.
+ */
+const PENDING_CTA_KEY = 'essay-gallery:pending-cta';
 
 const STATUS_STYLES = {
   excellent: {
@@ -147,6 +161,69 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  /**
+   * Cold-lead conversion: route through register/login then return.
+   * - Authed → straight to /essays with the prompt prefilled.
+   * - Unauthed → /login?callbackUrl=<current path>, after which the effect
+   *   below picks up the sessionStorage flag and auto-fires the CTA.
+   */
+  const handleWriteWithPrompt = () => {
+    if (!essay?.prompt) return;
+
+    if (accessToken) {
+      const params = new URLSearchParams();
+      params.set('create', 'true');
+      params.set('prompt', essay.prompt);
+      if (essay.school?.id) params.set('schoolId', essay.school.id);
+      router.push(`/essays?${params.toString()}`);
+      return;
+    }
+
+    // Cold-lead path: stash the intent + bounce to login.
+    try {
+      sessionStorage.setItem(
+        PENDING_CTA_KEY,
+        JSON.stringify({
+          essayId,
+          prompt: essay.prompt,
+          schoolId: essay.school?.id ?? null,
+        })
+      );
+    } catch {
+      // Ignore SSR / privacy-mode failures — login → manual click is fine.
+    }
+    const callbackUrl = `/cases/essays/${essayId}?cta=true`;
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
+
+  // Once the user finishes login and lands back here with `accessToken` set,
+  // re-fire the CTA they originally clicked. Guarded by the sessionStorage
+  // flag so a clean direct visit never auto-redirects.
+  useEffect(() => {
+    if (!accessToken || !essay?.prompt) return;
+    let stashed: { essayId?: string; prompt?: string; schoolId?: string | null } | null = null;
+    try {
+      const raw = sessionStorage.getItem(PENDING_CTA_KEY);
+      if (raw) stashed = JSON.parse(raw);
+    } catch {
+      // ignore
+    }
+    if (!stashed || stashed.essayId !== essayId) return;
+    try {
+      sessionStorage.removeItem(PENDING_CTA_KEY);
+    } catch {
+      // ignore
+    }
+    const params = new URLSearchParams();
+    params.set('create', 'true');
+    params.set('prompt', stashed.prompt || essay.prompt);
+    if (stashed.schoolId) params.set('schoolId', stashed.schoolId);
+    router.push(`/essays?${params.toString()}`);
+    // We intentionally only depend on `accessToken` + `essayId` + the prompt
+    // text; including `router` triggers re-fires on route ref churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, essayId, essay?.prompt]);
 
   if (isLoading) {
     return (
@@ -236,23 +313,21 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                     {t('detail.essayPrompt')}
                   </p>
                   <p className="text-sm leading-relaxed mb-2">{essay.prompt}</p>
-                  {accessToken && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5 h-7 text-xs"
-                      onClick={() => {
-                        const params = new URLSearchParams();
-                        params.set('create', 'true');
-                        params.set('prompt', essay.prompt!);
-                        if (essay.school?.id) params.set('schoolId', essay.school.id);
-                        router.push(`/essays?${params.toString()}`);
-                      }}
-                    >
-                      <PenTool className="h-3 w-3" />
-                      {t('detail.writeWithPrompt')}
-                    </Button>
-                  )}
+                  {/*
+                   * Show the CTA to cold leads too — gating it behind login
+                   * was hiding the highest-intent conversion window (PR 1
+                   * fix #3). Click handler routes unauthed users through
+                   * /login?callbackUrl=... then auto-resumes via the effect.
+                   */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 h-7 text-xs"
+                    onClick={handleWriteWithPrompt}
+                  >
+                    <PenTool className="h-3 w-3" />
+                    {t('detail.writeWithPrompt')}
+                  </Button>
                 </div>
               </div>
             )}
@@ -334,11 +409,19 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                     </CardContent>
                   </Card>
                 ) : analyzeMutation.data ? (
-                  <AnalysisResultView
-                    analysis={analyzeMutation.data}
-                    paragraphs={paragraphs}
-                    t={t}
-                  />
+                  <>
+                    {analyzeMutation.data.cached && (
+                      <div className="mb-3 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>{t('detail.ai.cachedHint')}</span>
+                      </div>
+                    )}
+                    <AnalysisResultView
+                      analysis={analyzeMutation.data}
+                      paragraphs={paragraphs}
+                      t={t}
+                    />
+                  </>
                 ) : (
                   <Card className="border-dashed">
                     <CardContent className="py-8 text-center">
