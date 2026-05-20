@@ -6149,7 +6149,8 @@
         "paragraph": "Paragraph {num}",
         "score": "Score",
         "highlights": "Highlights",
-        "suggestions": "Suggestions"
+        "suggestions": "Suggestions",
+        "disagreeButton": "Disagree? Tell me why →"
       }
     },
     "quickTags": {
@@ -6165,6 +6166,33 @@
       "emptyTitle": "Inaugural rejection archive — open for submissions",
       "emptyDescription": "Past applicants submit voluntarily, with their own retrospective. Turn detours into lighthouses for the next cohort.",
       "emptyCta": "I want to share →"
+    }
+  },
+  "essayDebate": {
+    "dialog": {
+      "title": "Push back on the AI",
+      "description": "Disagree with a piece of the AI's paragraph feedback? Tell it why — the response will be grounded in your essay text."
+    },
+    "inputPlaceholder": "Type your rebuttal here — the more specific, the better…",
+    "submit": "Send",
+    "thinking": "AI is thinking…",
+    "remaining": "Remaining debate turns today: {count}/{max}",
+    "disagreeButton": "Disagree? Tell me why →",
+    "emptyState": "Disagree with a piece of the AI's paragraph feedback? Tell it why — the response will be grounded in your essay text.",
+    "userTurnTag": "re: paragraph {index}",
+    "errors": {
+      "userCap": "You've used your debate turns for today. Try again tomorrow.",
+      "systemCap": "The system is busy today. Please try again tomorrow.",
+      "llmError": "The AI couldn't respond. Please retry once."
+    },
+    "evidence": {
+      "clickToScroll": "Click to scroll to this paragraph",
+      "source": {
+        "essay": "essay",
+        "priorCommentary": "prior commentary",
+        "profile": "applicant profile",
+        "school": "school context"
+      }
     }
   },
   "counselor": {
