@@ -986,10 +986,32 @@ jobs:
             gcloud run jobs create study-abroad-migrate "${JOB_ARGS[@]}"
           fi
 
-          gcloud run jobs execute study-abroad-migrate \
+          # Capture execution name so we can pull its logs in the next step.
+          EXEC_NAME=$(gcloud run jobs execute study-abroad-migrate \
             --region="$REGION" \
             --wait \
-            --quiet
+            --format='value(metadata.name)' \
+            2>&1 | tee /tmp/migrate-exec.log | tail -n1)
+          echo "exec_name=$EXEC_NAME" >> $GITHUB_ENV
+          cat /tmp/migrate-exec.log
+
+      - name: Print migrate-job logs (Cloud Logging)
+        if: always()
+        run: |
+          # Pull the migrate-job stdout/stderr from Cloud Logging so we can
+          # actually see WHICH seed step ran and which silently failed —
+          # the GH Actions `jobs execute` output does not include the
+          # container stdout.
+          echo "=== migrate-job logs ==="
+          # Read the last 15 minutes of logs for the study-abroad-migrate job.
+          # textPayload contains stdout; severity ERROR contains stderr/crash.
+          gcloud logging read \
+            'resource.type="cloud_run_job" AND resource.labels.job_name="study-abroad-migrate"' \
+            --limit=500 \
+            --freshness=30m \
+            --format='value(timestamp,severity,textPayload)' \
+            --order=asc \
+            || echo "::warning::Could not pull Cloud Logging entries (non-fatal)"
 
       - name: Deploy canary (no traffic)
         if: success()
