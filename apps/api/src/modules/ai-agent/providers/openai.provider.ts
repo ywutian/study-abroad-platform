@@ -165,18 +165,40 @@ export class OpenAIProvider implements ILLMProvider {
 
   // ── Private helpers ──────────────────────────────────────
 
+  /**
+   * gpt-5-class and o-series models reject the legacy `max_tokens` parameter
+   * (require `max_completion_tokens`) and only support the default temperature.
+   */
+  private usesCompletionTokenParam(model: string): boolean {
+    return (
+      /^gpt-5/.test(model) ||
+      model.startsWith('o1') ||
+      model.startsWith('o3') ||
+      model.startsWith('o4')
+    );
+  }
+
   private buildRequestBody(
     request: LLMChatRequest,
     stream: boolean,
   ): Record<string, unknown> {
     const messages = this.convertMessages(request);
+    const newGenModel = this.usesCompletionTokenParam(request.model);
     const body: Record<string, unknown> = {
       model: request.model,
       messages,
-      temperature: request.temperature ?? 0.7,
-      max_tokens: request.maxTokens ?? 4000,
       stream,
     };
+    if (newGenModel) {
+      body.max_completion_tokens = request.maxTokens ?? 4000;
+      // gpt-5/o-series only accept the default temperature (1); omit overrides.
+      if (request.temperature !== undefined && request.temperature !== 1) {
+        // intentionally not sent — API rejects non-default temperature
+      }
+    } else {
+      body.temperature = request.temperature ?? 0.7;
+      body.max_tokens = request.maxTokens ?? 4000;
+    }
 
     if (request.tools?.length) {
       body.tools = request.tools.map((t) => ({

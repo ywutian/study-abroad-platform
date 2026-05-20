@@ -102,6 +102,24 @@ export const EXPANDED_SCHOOLS: SeedSchoolData[] = [
       '韦尔斯利学院是顶尖女子学院，以培养领导者闻名，可在MIT跨校选课。',
   },
   {
+    name: 'Connecticut College',
+    nameZh: '康涅狄格学院',
+    state: 'CT',
+    city: 'New London',
+    usNewsRank: 30,
+    acceptanceRate: 36.0,
+    tuition: 66795,
+    satAvg: 1380,
+    actAvg: 31,
+    studentCount: 1850,
+    graduationRate: 86,
+    website: 'https://www.conncoll.edu',
+    description:
+      'Connecticut College is a private liberal arts college in New London, known for its Connections curriculum and strong interdisciplinary programs.',
+    descriptionZh:
+      '康涅狄格学院是一所位于新伦敦的私立文理学院，以其 Connections 课程体系和跨学科项目闻名。',
+  },
+  {
     name: 'Bowdoin College',
     nameZh: '鲍登学院',
     state: 'ME',

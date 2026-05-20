@@ -1,6 +1,6 @@
 #!/usr/bin/env -S ts-node --transpile-only
 /**
- * Counselor 240 x 13 coverage verifier.
+ * Counselor 241 x 13 coverage verifier.
  *
  * Boots the counselor engine in-process, runs every US school against a fixed
  * archetype matrix, validates numeric Tier 1-3 outputs, and writes reports to
@@ -19,7 +19,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import type { ProfileInput } from '../src/modules/prediction/prediction.prompts';
 
 const EPSILON = 1e-6;
-const EXPECTED_US_SCHOOL_COUNT = 240;
+const EXPECTED_US_SCHOOL_COUNT = 241;
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 const REPORT_DIR = resolve(REPO_ROOT, 'verification-report', 'phase-b');
 const PROFILE_SIGNAL_REPORT_DIR = resolve(
