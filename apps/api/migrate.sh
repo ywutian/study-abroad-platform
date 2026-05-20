@@ -76,3 +76,34 @@ run_seed "ranking-lists-backfill" ./prisma/seeds/backfill-school-ranking-lists.j
 run_seed "assessment-banks" ./prisma/seed-assessment.js
 
 echo "=== All Seed Steps Complete ==="
+
+# ----------------------------------------------------------------------------
+# Final sanity check: count essay-gallery-visible cases. If the essay-harvest
+# step truly inserted, this should be >= 150. If it's still in the single
+# digits (the original demo seed set), we want the migrate-job to EXIT
+# NON-ZERO so the workflow surfaces a clear failure rather than the deploy
+# silently proceeding — even though the underlying Cloud Run job stdout is
+# not readable by the deploy SA (which lacks logging.viewer).
+# ----------------------------------------------------------------------------
+echo "=== Sanity check: gallery-visible admission cases ==="
+GALLERY_COUNT=$(node -e "
+const {PrismaClient}=require('@prisma/client');
+const p=new PrismaClient();
+(async()=>{
+  const n = await p.admissionCase.count({where:{
+    visibility:{in:['PUBLIC','ANONYMOUS']},
+    essayContent:{not:null},
+    reviewStatus:{in:['AUTO_APPROVED','APPROVED']},
+  }});
+  console.log(n);
+  await p.\$disconnect();
+})().catch(e=>{console.error('count failed:',e.message);process.exit(1)});
+" 2>&1 | tail -n1)
+echo "Gallery-visible admission cases: ${GALLERY_COUNT}"
+if [ "${GALLERY_COUNT}" -lt 50 ] 2>/dev/null; then
+  echo "ERROR: gallery count ${GALLERY_COUNT} is below threshold (50)."
+  echo "       The essay-harvest seed step likely failed silently."
+  echo "       See above seed step output for the root cause."
+  exit 42
+fi
+echo "✓ Gallery count OK (>= 50)."

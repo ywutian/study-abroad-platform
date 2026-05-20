@@ -30,7 +30,7 @@ import { SHEMMASSIAN_ESSAYS } from './data-shemmassian';
 
 const prisma = new PrismaClient();
 
-const SYSTEM_USER_ID = 'cmpcmnz0o0000bz4aj811imep'; // top-cases@system.local
+const SYSTEM_USER_EMAIL = 'top-cases@system.local';
 const IMPORT_BATCH_ID = `essay-archive-import-${new Date().toISOString().slice(0, 10)}`;
 
 const ALL_ESSAYS: EssayRecord[] = [
@@ -57,6 +57,23 @@ function anonymizeEssay(text: string): string {
 
 async function main() {
   console.log(`Loaded ${ALL_ESSAYS.length} essay records in memory`);
+
+  // Look up the system user that owns committed seed cases — its cuid is
+  // generated fresh per database, so we cannot hardcode it. `load-top-cases.ts`
+  // is the orchestrator step that upserts this user before us; if it hasn't
+  // run yet, upsert defensively here so we are order-independent.
+  const systemUser = await prisma.user.upsert({
+    where: { email: SYSTEM_USER_EMAIL },
+    update: {},
+    create: {
+      email: SYSTEM_USER_EMAIL,
+      passwordHash: 'seed-no-login',
+      role: 'USER',
+    },
+    select: { id: true },
+  });
+  const SYSTEM_USER_ID = systemUser.id;
+  console.log(`System user id: ${SYSTEM_USER_ID}`);
 
   // School lookup: ALL US schools. The earlier `id: { startsWith: 'cmpb8h' }`
   // filter was a dev-DB-specific guard against "Reddit-pollution" rows that
@@ -97,69 +114,79 @@ async function main() {
   let inserted = 0;
   let skipped = 0;
   let updated = 0;
+  let errored = 0;
 
   for (const rec of ALL_ESSAYS) {
-    const schoolId = findSchoolId(rec.schoolName);
-    if (!schoolId) {
-      console.warn(`SKIP — no school match: ${rec.schoolName}`);
-      skipped++;
-      continue;
-    }
-    const cleanedContent = anonymizeEssay(rec.essayContent);
-    if (cleanedContent.length < 200) {
-      console.warn(
-        `SKIP — too short (${cleanedContent.length} chars) ${rec.schoolName}`,
-      );
-      skipped++;
-      continue;
-    }
+    try {
+      const schoolId = findSchoolId(rec.schoolName);
+      if (!schoolId) {
+        console.warn(`SKIP — no school match: ${rec.schoolName}`);
+        skipped++;
+        continue;
+      }
+      const cleanedContent = anonymizeEssay(rec.essayContent);
+      if (cleanedContent.length < 200) {
+        console.warn(
+          `SKIP — too short (${cleanedContent.length} chars) ${rec.schoolName}`,
+        );
+        skipped++;
+        continue;
+      }
 
-    const sourceTag = `source:${rec.sourceUrl}#${rec.authorFirstName || 'anon'}`;
-    const existing = await prisma.admissionCase.findFirst({
-      where: { schoolId, tags: { has: sourceTag } },
-      select: { id: true },
-    });
-    if (existing) {
-      await prisma.admissionCase.update({
-        where: { id: existing.id },
+      const sourceTag = `source:${rec.sourceUrl}#${rec.authorFirstName || 'anon'}`;
+      const existing = await prisma.admissionCase.findFirst({
+        where: { schoolId, tags: { has: sourceTag } },
+        select: { id: true },
+      });
+      if (existing) {
+        await prisma.admissionCase.update({
+          where: { id: existing.id },
+          data: {
+            essayContent: cleanedContent,
+            essayPrompt: rec.essayPrompt || null,
+            essayType: rec.essayType as EssayType,
+            visibility: Visibility.ANONYMOUS,
+            reviewStatus: DataReviewStatus.APPROVED,
+          },
+        });
+        updated++;
+        continue;
+      }
+
+      await prisma.admissionCase.create({
         data: {
-          essayContent: cleanedContent,
-          essayPrompt: rec.essayPrompt || null,
+          userId: SYSTEM_USER_ID,
+          schoolId,
+          year: rec.year,
+          result: rec.result as AdmissionResult,
           essayType: rec.essayType as EssayType,
+          essayPrompt: rec.essayPrompt || null,
+          essayContent: cleanedContent,
           visibility: Visibility.ANONYMOUS,
           reviewStatus: DataReviewStatus.APPROVED,
+          source: 'public_essay_archive',
+          importBatchId: IMPORT_BATCH_ID,
+          tags: [sourceTag, ...(rec.tags || [])],
+          qualityScore: 85,
+          verificationLevel: VerificationLevel.L2,
+          verifiedBy: 'public_aggregation',
         },
       });
-      updated++;
-      continue;
+      inserted++;
+    } catch (err) {
+      // Don't abort the whole import on a single bad row — log loud and
+      // continue. The final summary counts surface any systemic issue.
+      errored++;
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`ERR  — ${rec.schoolName} (${rec.sourceUrl}): ${msg}`);
     }
-
-    await prisma.admissionCase.create({
-      data: {
-        userId: SYSTEM_USER_ID,
-        schoolId,
-        year: rec.year,
-        result: rec.result as AdmissionResult,
-        essayType: rec.essayType as EssayType,
-        essayPrompt: rec.essayPrompt || null,
-        essayContent: cleanedContent,
-        visibility: Visibility.ANONYMOUS,
-        reviewStatus: DataReviewStatus.APPROVED,
-        source: 'public_essay_archive',
-        importBatchId: IMPORT_BATCH_ID,
-        tags: [sourceTag, ...(rec.tags || [])],
-        qualityScore: 85,
-        verificationLevel: VerificationLevel.L2,
-        verifiedBy: 'public_aggregation',
-      },
-    });
-    inserted++;
   }
 
   console.log(`\n=== Import complete ===`);
   console.log(`Inserted: ${inserted}`);
   console.log(`Updated:  ${updated}`);
   console.log(`Skipped:  ${skipped}`);
+  console.log(`Errored:  ${errored}`);
   console.log(`Batch ID: ${IMPORT_BATCH_ID}`);
 
   // Final visibility check
