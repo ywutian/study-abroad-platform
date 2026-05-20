@@ -52,15 +52,15 @@ const STEPS: Step[] = [
   },
   {
     name: 'CDS admit bands — apply (SchoolCdsAdmitBand)',
-    cmd: 'npx tsx scripts/load-cds-bands.ts --file prisma/seeds/data/cds-admit-bands.json --apply',
+    cmd: 'npx tsx prisma/seeds/load-cds-bands.ts --file prisma/seeds/data/cds-admit-bands.json --apply',
   },
   {
     name: 'World rankings — QS / THE / ARWU / FORBES / WSJ (SchoolRanking)',
-    cmd: 'npx tsx scripts/closure-agents/collect-school-rankings.ts',
+    cmd: 'npx tsx prisma/seeds/closure-agents/collect-school-rankings.ts',
   },
   {
     name: 'US_NEWS ranking-list backfill (SchoolRanking)',
-    cmd: 'npx tsx scripts/backfill-school-ranking-lists.ts',
+    cmd: 'npx tsx prisma/seeds/backfill-school-ranking-lists.ts',
   },
   {
     name: 'High schools (~150 reference HighSchool rows)',
@@ -68,7 +68,7 @@ const STEPS: Step[] = [
   },
   {
     name: 'School programs — all US schools (SchoolProgram)',
-    cmd: 'npx tsx scripts/seed-school-programs.ts --all',
+    cmd: 'npx tsx prisma/seeds/seed-school-programs.ts --all',
   },
   {
     name: 'Essay prompts — top-50 (EssayPrompt)',
@@ -80,7 +80,7 @@ const STEPS: Step[] = [
   },
   {
     name: 'Closure targets — scan DB (ClosureTarget)',
-    cmd: 'npx tsx scripts/closure-agents/seed-closure-targets.ts',
+    cmd: 'npx tsx prisma/seeds/closure-agents/seed-closure-targets.ts',
   },
   {
     name: 'Top-school admission cases (AdmissionCase)',
@@ -93,7 +93,7 @@ const STEPS: Step[] = [
     // as AdmissionCase rows with visibility=ANONYMOUS, reviewStatus=APPROVED.
     // Idempotent: dedups on tag `source:<url>#<author>`.
     name: 'Essay gallery — public archive AdmissionCase import',
-    cmd: 'npx tsx scripts/essay-harvest/import-essays.ts',
+    cmd: 'npx tsx prisma/seeds/essay-harvest/import-essays.ts',
   },
   {
     name: 'Assessment question banks — MBTI / HOLLAND / STRENGTH (Assessment)',

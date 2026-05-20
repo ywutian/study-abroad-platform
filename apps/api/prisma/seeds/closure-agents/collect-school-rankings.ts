@@ -22,14 +22,20 @@
  *   cd apps/api && pnpm exec tsx scripts/closure-agents/collect-school-rankings.ts
  *   ... --dry-run     # match + report, no writes
  */
-import 'dotenv/config';
+// Fail-soft dotenv: dev only. See load-top-cases.ts for rationale.
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('dotenv/config');
+} catch {
+  /* dotenv absent in prod runner — skip */
+}
 import * as fs from 'fs';
 import * as path from 'path';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const DATA_DIR = path.join(__dirname, '../../prisma/seeds/data/world-rankings');
+const DATA_DIR = path.join(__dirname, '../data/world-rankings');
 
 interface RankingEntry {
   name: string;

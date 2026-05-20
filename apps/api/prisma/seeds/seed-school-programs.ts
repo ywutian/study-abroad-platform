@@ -6,7 +6,13 @@
  * rates. They make counselor major modifiers serviceable while official
  * program-level admit rates continue to override them when available.
  */
-import 'dotenv/config';
+// Fail-soft dotenv: dev only. See load-top-cases.ts for rationale.
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('dotenv/config');
+} catch {
+  /* dotenv absent in prod runner — skip */
+}
 
 import { Prisma, PrismaClient } from '@prisma/client';
 
@@ -247,7 +253,7 @@ function deepMerge(
   const out: Record<string, unknown> = { ...base };
   for (const [key, value] of Object.entries(patch)) {
     if (isRecord(out[key]) && isRecord(value)) {
-      out[key] = deepMerge(out[key] as Record<string, unknown>, value);
+      out[key] = deepMerge(out[key], value);
     } else {
       out[key] = value;
     }

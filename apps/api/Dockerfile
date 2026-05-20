@@ -31,12 +31,51 @@ RUN pnpm --filter @study-abroad/shared build
 # Build API
 RUN pnpm --filter api build
 
-# Compile the prediction-closure seeder to plain CommonJS JS so it can run in
-# the production image with `node` (tsx is a devDependency, absent from --prod).
-# Output lands in prisma/seeds/, copied wholesale into the runner stage below.
-RUN cd apps/api && npx tsc prisma/seeds/seed-prediction-closure.ts \
+# Compile every seed-orchestrator data step into plain CommonJS JS so they can
+# run in the production image with `node` (tsx is a devDependency, absent
+# from --prod). Every script listed here is invoked by apps/api/migrate.sh
+# on each Cloud Run deploy — fail-soft, idempotent. The compiled .js files
+# land next to their .ts sources; prisma/ is copied wholesale into the
+# runner stage below so they ship intact.
+#
+# Two passes: (1) prisma/seeds/**/*.ts (preserves the closure-agents/
+# and essay-harvest/ subdirectory layout under prisma/seeds/),
+# (2) the four top-level prisma/seed-*.ts files.
+RUN cd apps/api && npx tsc \
+    prisma/seeds/seed-prediction-closure.ts \
+    prisma/seeds/load-cds-bands.ts \
+    prisma/seeds/load-top-cases.ts \
+    prisma/seeds/seed-school-programs.ts \
+    prisma/seeds/backfill-school-ranking-lists.ts \
+    prisma/seeds/closure-agents/seed-closure-targets.ts \
+    prisma/seeds/closure-agents/collect-school-rankings.ts \
+    prisma/seeds/essay-harvest/import-essays.ts \
+    prisma/seeds/essay-harvest/data-jhu.ts \
+    prisma/seeds/essay-harvest/data-jhu2.ts \
+    prisma/seeds/essay-harvest/data-jhu3.ts \
+    prisma/seeds/essay-harvest/data-jhu4.ts \
+    prisma/seeds/essay-harvest/data-hamilton.ts \
+    prisma/seeds/essay-harvest/data-hamilton2.ts \
+    prisma/seeds/essay-harvest/data-hamilton3.ts \
+    prisma/seeds/essay-harvest/data-mit-harvard.ts \
+    prisma/seeds/essay-harvest/data-prepmaven.ts \
+    prisma/seeds/essay-harvest/data-collegevine.ts \
+    prisma/seeds/essay-harvest/data-stanford-usc.ts \
+    prisma/seeds/essay-harvest/data-final.ts \
+    prisma/seeds/essay-harvest/data-collegeessayguy.ts \
+    prisma/seeds/essay-harvest/data-shemmassian.ts \
     --module commonjs --target es2022 --moduleResolution node \
-    --esModuleInterop --skipLibCheck --outDir prisma/seeds
+    --esModuleInterop --skipLibCheck --resolveJsonModule \
+    --rootDir prisma/seeds --outDir prisma/seeds
+
+RUN cd apps/api && npx tsc \
+    prisma/seed-essay-prompts-v2.ts \
+    prisma/seed-high-schools.ts \
+    prisma/seed-activity-templates.ts \
+    prisma/seed-assessment.ts \
+    --module commonjs --target es2022 --moduleResolution node \
+    --esModuleInterop --skipLibCheck --resolveJsonModule \
+    --rootDir prisma --outDir prisma
 
 # Deploy to /prod with all dependencies (pnpm deploy creates standalone package)
 RUN pnpm --filter api deploy /prod --prod --legacy

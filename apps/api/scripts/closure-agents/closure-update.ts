@@ -30,17 +30,24 @@ const reopenStale = process.argv.includes('--reopen-stale');
 const freshnessDays = Number(process.env.CLOSURE_FRESHNESS_DAYS) || 365;
 const here = path.dirname(new URL(import.meta.url).pathname);
 
-function run(label: string, script: string) {
+function run(label: string, scriptPath: string) {
   if (!asJson) console.log(`\n=== ${label} ===`);
-  execSync(`pnpm exec tsx ${path.join(here, script)}`, {
+  execSync(`pnpm exec tsx ${scriptPath}`, {
     stdio: asJson ? 'pipe' : 'inherit',
     cwd: path.resolve(here, '../..'),
   });
 }
 
 async function main() {
-  // 1. SYNC
-  run('1/4 SYNC queue', 'seed-closure-targets.ts');
+  // 1. SYNC — seed-closure-targets.ts lives in prisma/seeds/closure-agents/
+  // (relocated so it ships into the prod Docker image — see migrate.sh).
+  run(
+    '1/4 SYNC queue',
+    path.resolve(
+      here,
+      '../../prisma/seeds/closure-agents/seed-closure-targets.ts',
+    ),
+  );
 
   // 2. REOPEN stale
   let reopened = 0;
@@ -58,7 +65,7 @@ async function main() {
   }
 
   // 3. STATUS
-  run('3/4 STATUS', 'closure-status.ts');
+  run('3/4 STATUS', path.resolve(here, 'closure-status.ts'));
 
   // 4. NEXT ACTIONS
   const pending = await prisma.closureTarget.groupBy({

@@ -3,7 +3,7 @@
  * load-top-cases.ts
  *
  * Idempotent loader for the committed top-school admission-case library
- * (`scripts/top50-cases.json`, ~933 cases). Part of the Tier-1 seed
+ * (`prisma/seeds/data/top50-cases.json`, ~933 cases). Part of the Tier-1 seed
  * orchestrator.
  *
  * The JSON ships each case with a stable `id` (a real cuid). We use that `id`
@@ -18,7 +18,14 @@
  * Usage:
  *   cd apps/api && pnpm exec tsx prisma/seeds/load-top-cases.ts
  */
-import 'dotenv/config';
+// Fail-soft dotenv: present in dev workspace, may be absent from --prod
+// Docker image. Production gets env from Cloud Run, not a .env file.
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('dotenv/config');
+} catch {
+  /* dotenv not installed (prod runner) — skip */
+}
 import { existsSync, readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { PrismaClient, type AdmissionResult } from '@prisma/client';
@@ -26,7 +33,7 @@ import { normalizeSchoolName } from '@study-abroad/shared';
 
 const prisma = new PrismaClient();
 
-const CASES_FILE = path.join(__dirname, '../../scripts/top50-cases.json');
+const CASES_FILE = path.join(__dirname, 'data/top50-cases.json');
 const IMPORT_BATCH_ID = 'tier1-top50-cases';
 const SYSTEM_USER_EMAIL = 'top-cases@system.local';
 
