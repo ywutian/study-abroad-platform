@@ -11,9 +11,10 @@ export class DebateEvidenceDto {
 
   @ApiProperty({
     description:
-      'Where the quote came from — typically "essay" or a context class name.',
+      'Which of the 6 context classes the quote was taken from. PR2 emits one of these four; future classes may extend the union.',
+    enum: ['essay', 'prior_commentary', 'profile', 'school'],
   })
-  source!: string;
+  source!: 'essay' | 'prior_commentary' | 'profile' | 'school';
 
   @ApiPropertyOptional({
     description: '0-indexed paragraph in the essay (if source = essay).',

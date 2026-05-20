@@ -41,6 +41,7 @@ import { cn, getSchoolName } from '@/lib/utils';
 import { getResultBadgeClass, getResultLabel, VERIFIED_BADGE_CLASS } from '@/lib/utils/admission';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/auth';
+import { EssayDebateDialog } from '@/components/features/essay-debate';
 
 interface EssayDetail {
   id: string;
@@ -157,6 +158,20 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
   const ctaSentinelRef = useRef<HTMLDivElement | null>(null);
   const { accessToken } = useAuthStore();
   const router = useRouter();
+
+  // ── Essay Debate (Phase 2 V1 PR2) ────────────────────────────────────
+  // One session per essay; pivoting paragraphs reuses the same session.
+  const [debateOpen, setDebateOpen] = useState(false);
+  const [debateParagraphIdx, setDebateParagraphIdx] = useState<number | undefined>();
+  const [debateSessionId, setDebateSessionId] = useState<string | null>(null);
+  const paragraphRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const openDebateForParagraph = (idx: number) => {
+    setDebateParagraphIdx(idx);
+    setDebateOpen(true);
+  };
+  const scrollToParagraph = (idx: number) => {
+    paragraphRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   // 获取文书详情
   const { data: essay, isLoading } = useQuery({
@@ -571,6 +586,8 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                       analysis={analyzeMutation.data}
                       paragraphs={paragraphs}
                       t={t}
+                      onDebateParagraph={openDebateForParagraph}
+                      paragraphRefs={paragraphRefs}
                     />
                   </>
                 ) : (
@@ -633,6 +650,22 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
           </div>
         </ScrollArea>
       </div>
+
+      {/*
+       * Phase 2 V1 PR2 — debate dialog. Sibling, not a child of the
+       * paragraph cards, so the modal portals to <body> and the user
+       * can pivot to a different paragraph mid-conversation without
+       * the dialog unmounting.
+       */}
+      <EssayDebateDialog
+        open={debateOpen}
+        onOpenChange={setDebateOpen}
+        sessionId={debateSessionId}
+        admissionCaseId={essayId}
+        paragraphIndex={debateParagraphIdx}
+        onSessionCreated={setDebateSessionId}
+        onScrollToParagraph={scrollToParagraph}
+      />
     </div>
   );
 }
@@ -643,10 +676,22 @@ function AnalysisResultView({
   analysis,
   paragraphs,
   t,
+  onDebateParagraph,
+  paragraphRefs,
 }: {
   analysis: AnalysisResult;
   paragraphs: string[];
   t: ReturnType<typeof useTranslations>;
+  /**
+   * PR2 — opens the EssayDebateDialog scoped to one paragraph. The parent
+   * owns the dialog state so the same session continues across paragraphs.
+   */
+  onDebateParagraph?: (paragraphIndex: number) => void;
+  /**
+   * Refs into the paragraph cards so the debate dialog's evidence chips
+   * can scroll the user back to a quoted paragraph.
+   */
+  paragraphRefs?: React.MutableRefObject<Array<HTMLDivElement | null>>;
 }) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
@@ -767,6 +812,11 @@ function AnalysisResultView({
           return (
             <motion.div
               key={index}
+              ref={(el) => {
+                // PR2 — paragraphRefs lets the debate dialog's evidence
+                // chips scroll the user back to the quoted paragraph.
+                if (paragraphRefs) paragraphRefs.current[index] = el;
+              }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -863,6 +913,24 @@ function AnalysisResultView({
                               </li>
                             ))}
                           </ul>
+                        </div>
+                      )}
+
+                      {/*
+                       * Phase 2 V1 PR2 — per-paragraph "不同意" entry point.
+                       * The button opens EssayDebateDialog scoped to this
+                       * paragraph index. Hidden when the parent didn't
+                       * wire onDebateParagraph (e.g. mobile reuse later).
+                       */}
+                      {onDebateParagraph && (
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={() => onDebateParagraph(index)}
+                            className="text-xs font-medium text-primary hover:underline underline-offset-2"
+                          >
+                            {t('detail.analysis.disagreeButton')}
+                          </button>
                         </div>
                       )}
                     </div>

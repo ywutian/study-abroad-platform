@@ -6128,7 +6128,8 @@
         "paragraph": "第 {num} 段",
         "score": "分",
         "highlights": "亮点",
-        "suggestions": "建议"
+        "suggestions": "建议",
+        "disagreeButton": "不同意？告诉我为什么 →"
       }
     },
     "quickTags": {
@@ -6144,6 +6145,33 @@
       "emptyTitle": "首批拒信档案征集中",
       "emptyDescription": "学长姐主动投稿、附自我反思，把弯路变成下一届的明灯。",
       "emptyCta": "我也想分享 →"
+    }
+  },
+  "essayDebate": {
+    "dialog": {
+      "title": "反驳 AI 评价",
+      "description": "对 AI 的某段评价不服气？输入你的反驳，我们会基于你的 essay 原文给出更扎实的回应。"
+    },
+    "inputPlaceholder": "把你的反驳写在这里，越具体越好…",
+    "submit": "发送",
+    "thinking": "AI 正在思考…",
+    "remaining": "今日剩余反驳次数 {count}/{max}",
+    "disagreeButton": "不同意？告诉我为什么 →",
+    "emptyState": "对 AI 的某段评价不服气？输入你的反驳，我们会基于你的 essay 原文给出更扎实的回应。",
+    "userTurnTag": "针对第 {index} 段",
+    "errors": {
+      "userCap": "今天的反驳轮次用完了，明天再来。",
+      "systemCap": "系统今日繁忙，明天再来。",
+      "llmError": "AI 暂时回应不出来，请重试一次。"
+    },
+    "evidence": {
+      "clickToScroll": "点击跳转到该段落",
+      "source": {
+        "essay": "essay 原文",
+        "priorCommentary": "之前的段评",
+        "profile": "申请人画像",
+        "school": "学校信息"
+      }
     }
   },
   "counselor": {
