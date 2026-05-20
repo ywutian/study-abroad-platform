@@ -497,7 +497,7 @@ export class EssayGalleryService {
       const newEntry: CachedAnalysisEntry = {
         promptVersion: PARAGRAPH_PROMPT_VERSION,
         generatedAt: new Date().toISOString(),
-        payload: analysis as unknown,
+        payload: analysis,
       };
       const nextCache = this.mergeCacheEntry(cacheBlob, locale, newEntry);
       try {
@@ -585,9 +585,9 @@ export class EssayGalleryService {
     // honest while preserving any sibling locales we've already cached.
     const base: Record<string, CachedAnalysisEntry> =
       cacheBlob && typeof cacheBlob === 'object' && !Array.isArray(cacheBlob)
-        ? ({
+        ? {
             ...(cacheBlob as unknown as Record<string, CachedAnalysisEntry>),
-          } as Record<string, CachedAnalysisEntry>)
+          }
         : {};
     base[locale] = entry;
     return base;
