@@ -9,7 +9,7 @@ describe('CaseBatchService', () => {
   let service: CaseBatchService;
   let prisma: PrismaService;
 
-  const mockPrisma = {
+  const mockPrisma: any = {
     admissionCase: {
       findUnique: jest.fn(),
       findMany: jest.fn(),

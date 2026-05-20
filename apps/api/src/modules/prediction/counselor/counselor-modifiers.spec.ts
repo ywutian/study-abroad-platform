@@ -188,8 +188,8 @@ describe('counselor modifiers launch guards', () => {
         baseSchool({
           sat25: 1080,
           sat75: 1320,
-          act25: null,
-          act75: null,
+          act25: null as any,
+          act75: null as any,
         }),
       );
 

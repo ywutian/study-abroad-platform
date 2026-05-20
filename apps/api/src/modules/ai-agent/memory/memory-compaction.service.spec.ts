@@ -8,7 +8,12 @@ import { SummarizerService } from './summarizer.service';
 describe('MemoryCompactionService', () => {
   let service: MemoryCompactionService;
   let prisma: {
-    memory: { findMany: jest.Mock; count: jest.Mock; update: jest.Mock };
+    memory: {
+      findMany: jest.Mock;
+      count: jest.Mock;
+      update: jest.Mock;
+      groupBy: jest.Mock;
+    };
     $executeRaw: jest.Mock;
     $transaction: jest.Mock;
   };

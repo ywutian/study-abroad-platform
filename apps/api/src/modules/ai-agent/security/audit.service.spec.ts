@@ -66,7 +66,7 @@ describe('AuditService', () => {
       status: AuditStatus.SUCCESS,
       userId: 'user-1',
       details: { message: 'test' },
-    });
+    } as any);
     // Should not throw
   });
 

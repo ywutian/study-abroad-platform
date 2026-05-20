@@ -10,7 +10,7 @@ describe('AdminReviewService', () => {
   let service: AdminReviewService;
   let prisma: PrismaService;
 
-  const mockPrisma = {
+  const mockPrisma: any = {
     dataImportStaging: {
       findUnique: jest.fn(),
       findMany: jest.fn(),

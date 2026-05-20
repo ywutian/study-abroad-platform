@@ -21,7 +21,7 @@ describe('ForumUploadService', () => {
         provider: 'local',
       }),
     };
-    service = new ForumUploadService(storage as StorageService);
+    service = new ForumUploadService(storage as unknown as StorageService);
   });
 
   it('uploads valid forum images', async () => {

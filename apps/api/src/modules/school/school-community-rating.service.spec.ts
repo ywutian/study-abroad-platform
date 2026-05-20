@@ -194,7 +194,7 @@ describe('SchoolCommunityRatingService', () => {
 
     const result = await service.hideRating('rating-1', 'admin-1', 'spam');
 
-    expect(result.isHidden).toBe(true);
+    expect(result!.isHidden).toBe(true);
     expect(mockAuditLogService.log).toHaveBeenCalledWith({
       userId: 'admin-1',
       action: AuditAction.ADMIN_ACTION,

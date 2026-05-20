@@ -15,9 +15,9 @@ function pngHeader(width: number, height: number): Buffer {
 }
 
 function response(
-  overrides: Partial<Response> & { body?: string | Buffer },
+  overrides: Omit<Partial<Response>, 'body'> & { body?: string | Buffer },
 ): Response {
-  const body = overrides.body;
+  const { body, ...rest } = overrides;
   return {
     ok: true,
     status: 200,
@@ -37,7 +37,7 @@ function response(
             )
           : new ArrayBuffer(0),
       ),
-    ...overrides,
+    ...rest,
   } as Response;
 }
 
