@@ -41,6 +41,14 @@ import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 
+/**
+ * Versions the gallery `aiAnalysisCache[locale]` payload. Bump this when
+ * `buildParagraphAnalysisSystemPrompt` / `validateParagraphAnalysis` change
+ * shape — cached rows with a stale version are silently bypassed and lazily
+ * refreshed by the precompute script.
+ */
+export const PARAGRAPH_PROMPT_VERSION = 'v1';
+
 @Injectable()
 export class EssayAiService {
   private readonly logger = new Logger(EssayAiService.name);

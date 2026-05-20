@@ -82,7 +82,8 @@
     "sync:scorecard": "tsx scripts/sync-scorecard-comprehensive.ts",
     "sync:scorecard:dry": "tsx scripts/sync-scorecard-comprehensive.ts --dry-run",
     "sync:niche": "tsx scripts/fetch-niche-grades-tavily.ts",
-    "sync:niche:dry": "tsx scripts/fetch-niche-grades-tavily.ts --dry-run"
+    "sync:niche:dry": "tsx scripts/fetch-niche-grades-tavily.ts --dry-run",
+    "precompute:gallery-analysis": "ts-node --transpile-only -r tsconfig-paths/register scripts/precompute-gallery-analysis.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.972.0",

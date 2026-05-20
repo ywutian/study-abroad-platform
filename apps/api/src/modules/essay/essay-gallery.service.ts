@@ -4,8 +4,9 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { EssayAiService } from './essay-ai.service';
+import { EssayAiService, PARAGRAPH_PROMPT_VERSION } from './essay-ai.service';
 import { PointsService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
 import {
@@ -13,6 +14,17 @@ import {
   GALLERY_LIST_SELECT,
   GALLERY_DETAIL_SELECT,
 } from './constants/essay-gallery.constants';
+
+/**
+ * Shape of `AdmissionCase.aiAnalysisCache[locale]`. Stored as a `Json?` column
+ * (Prisma sees it as `Prisma.JsonValue`), validated narrowly here before use.
+ */
+interface CachedAnalysisEntry {
+  promptVersion: string;
+  model?: string;
+  generatedAt: string;
+  payload: unknown;
+}
 
 @Injectable()
 export class EssayGalleryService {
@@ -225,6 +237,16 @@ export class EssayGalleryService {
 
   /**
    * 逐段分析公开文书
+   *
+   * Decision tree (PR 1 fix #4 — gallery analysis cache):
+   *   1. Caller passed a custom `schoolName` that differs from the canonical
+   *      school name? → custom-fit run: bypass cache, fresh LLM call, no
+   *      cache write. (Still charges points — same behaviour as before.)
+   *   2. Canonical run + cache hit for this locale + version matches? → serve
+   *      from `aiAnalysisCache[locale]` immediately. Returns `cached: true`.
+   *      Points still charged (per product spec — keep cost at 20).
+   *   3. Cache miss / stale version → fresh LLM call, conditional JSON merge
+   *      into `aiAnalysisCache[locale]` so the next caller gets the hot path.
    */
   async analyzeGalleryEssay(
     userId: string,
@@ -234,9 +256,25 @@ export class EssayGalleryService {
   ) {
     await this.pointsService.charge(userId, PointAction.AI_ESSAY_GALLERY);
 
-    const essay = await this.getGalleryEssayDetail(caseId);
+    const essay = await this.prisma.admissionCase.findFirst({
+      where: {
+        id: caseId,
+        ...CASE_PUBLIC_WHERE,
+      },
+      select: GALLERY_DETAIL_SELECT,
+    });
 
-    if (!essay.content) {
+    if (!essay) {
+      await safeRefund(
+        this.pointsService,
+        userId,
+        PointAction.AI_ESSAY_GALLERY,
+        this.logger,
+      );
+      throw new NotFoundException('Essay not found or not public');
+    }
+
+    if (!essay.essayContent) {
       await safeRefund(
         this.pointsService,
         userId,
@@ -246,18 +284,96 @@ export class EssayGalleryService {
       throw new BadRequestException('Essay content is empty');
     }
 
+    const canonicalSchoolName = essay.school?.name;
+    const isCustomFit = Boolean(
+      schoolName && canonicalSchoolName && schoolName !== canonicalSchoolName,
+    );
+
+    // ── Path 1: custom-fit run — bypass cache entirely ────────────────────
+    if (isCustomFit) {
+      try {
+        const analysis = await this.essayAiService.analyzeEssayParagraphs(
+          essay.essayContent,
+          essay.essayPrompt || undefined,
+          schoolName,
+          locale,
+        );
+        return {
+          essayId: caseId,
+          ...analysis,
+          tokenUsed: this.estimateTokens(essay.essayContent),
+          cached: false,
+        };
+      } catch (error) {
+        await safeRefund(
+          this.pointsService,
+          userId,
+          PointAction.AI_ESSAY_GALLERY,
+          this.logger,
+        );
+        this.logger.error('Gallery essay analysis (custom-fit) failed', error);
+        throw new BadRequestException('Failed to analyze essay');
+      }
+    }
+
+    // ── Path 2: canonical run — try cache ─────────────────────────────────
+    const cacheBlob = essay.aiAnalysisCache;
+    const cachedEntry = this.readCacheEntry(cacheBlob, locale);
+    if (cachedEntry && cachedEntry.promptVersion === PARAGRAPH_PROMPT_VERSION) {
+      this.logger.debug(
+        `Gallery analysis cache HIT case=${caseId} locale=${locale}`,
+      );
+      return {
+        essayId: caseId,
+        ...(cachedEntry.payload as Record<string, unknown>),
+        tokenUsed: this.estimateTokens(essay.essayContent),
+        cached: true,
+        generatedAt: cachedEntry.generatedAt,
+      };
+    }
+
+    // ── Path 3: cache miss — fresh LLM call + write-through ───────────────
     try {
       const analysis = await this.essayAiService.analyzeEssayParagraphs(
-        essay.content,
-        essay.prompt || undefined,
-        schoolName || essay.school?.name,
+        essay.essayContent,
+        essay.essayPrompt || undefined,
+        canonicalSchoolName,
         locale,
       );
+
+      // Write-through: merge the new entry into aiAnalysisCache[locale].
+      // Use a conditional JSON merge so concurrent writers don't clobber
+      // each other's locales. The cache key is `<caseId, locale>`; we never
+      // overwrite a sibling locale.
+      const newEntry: CachedAnalysisEntry = {
+        promptVersion: PARAGRAPH_PROMPT_VERSION,
+        generatedAt: new Date().toISOString(),
+        payload: analysis as unknown,
+      };
+      const nextCache = this.mergeCacheEntry(cacheBlob, locale, newEntry);
+      try {
+        await this.prisma.admissionCase.update({
+          where: { id: caseId },
+          // Cast through `unknown` because `CachedAnalysisEntry` is a private
+          // app-side shape; Prisma's `InputJsonValue` is a recursive structural
+          // type and TS can't see the mapping without the double cast.
+          data: {
+            aiAnalysisCache: nextCache as unknown as Prisma.InputJsonValue,
+          },
+        });
+      } catch (writeErr) {
+        // Cache write is best-effort. If it fails, the user still gets their
+        // analysis result; the next caller just takes the slow path again.
+        this.logger.warn(
+          `Failed to persist gallery analysis cache for case=${caseId} locale=${locale}: ${(writeErr as Error).message}`,
+        );
+      }
 
       return {
         essayId: caseId,
         ...analysis,
-        tokenUsed: this.estimateTokens(essay.content),
+        tokenUsed: this.estimateTokens(essay.essayContent),
+        cached: false,
       };
     } catch (error) {
       await safeRefund(
@@ -269,6 +385,63 @@ export class EssayGalleryService {
       this.logger.error('Gallery essay analysis failed', error);
       throw new BadRequestException('Failed to analyze essay');
     }
+  }
+
+  /**
+   * Narrowly validate a cache entry pulled out of the JSON column before we
+   * trust it. Anything that doesn't fit the shape is treated as a miss.
+   */
+  private readCacheEntry(
+    cacheBlob: Prisma.JsonValue | null | undefined,
+    locale: string,
+  ): CachedAnalysisEntry | null {
+    if (
+      !cacheBlob ||
+      typeof cacheBlob !== 'object' ||
+      Array.isArray(cacheBlob)
+    ) {
+      return null;
+    }
+    const entry = (cacheBlob as Record<string, unknown>)[locale];
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return null;
+    }
+    const e = entry as Record<string, unknown>;
+    if (
+      typeof e.promptVersion !== 'string' ||
+      typeof e.generatedAt !== 'string' ||
+      e.payload == null
+    ) {
+      return null;
+    }
+    return {
+      promptVersion: e.promptVersion,
+      model: typeof e.model === 'string' ? e.model : undefined,
+      generatedAt: e.generatedAt,
+      payload: e.payload,
+    };
+  }
+
+  /**
+   * Produce the next value for `aiAnalysisCache` with the new entry merged
+   * under `locale`. Never blows away other locales.
+   */
+  private mergeCacheEntry(
+    cacheBlob: Prisma.JsonValue | null | undefined,
+    locale: string,
+    entry: CachedAnalysisEntry,
+  ): Record<string, CachedAnalysisEntry> {
+    // We only narrow the runtime shape — Prisma's `JsonObject` is structurally
+    // wider than `CachedAnalysisEntry`, so route through `unknown` to keep TS
+    // honest while preserving any sibling locales we've already cached.
+    const base: Record<string, CachedAnalysisEntry> =
+      cacheBlob && typeof cacheBlob === 'object' && !Array.isArray(cacheBlob)
+        ? ({
+            ...(cacheBlob as unknown as Record<string, CachedAnalysisEntry>),
+          } as Record<string, CachedAnalysisEntry>)
+        : {};
+    base[locale] = entry;
+    return base;
   }
 
   private estimateTokens(text: string): number {

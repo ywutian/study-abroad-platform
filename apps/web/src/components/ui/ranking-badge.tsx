@@ -45,8 +45,14 @@ export function RankingBadge({
     preferredRankingList
   );
 
+  // `amber` is an inline marker badge that sits next to truncating text
+  // (e.g. school name + ranking row). The WCAG 2.5.5 tap-target floor
+  // applies to interactive controls; this badge is non-interactive, so
+  // dropping the min-w/min-h on amber lets the parent `truncate` chain
+  // actually shrink. The default variant keeps the floor.
   const badgeClassName = cn(
-    'min-h-10 min-w-10 shrink-0 gap-0.5 text-xs sm:min-h-8 sm:min-w-8',
+    'shrink-0 gap-0.5 text-xs',
+    variant !== 'amber' && 'min-h-10 min-w-10 sm:min-h-8 sm:min-w-8',
     variant === 'amber' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
     className
   );

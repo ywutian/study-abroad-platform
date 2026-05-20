@@ -39,5 +39,9 @@ export const GALLERY_DETAIL_SELECT = {
   tags: true,
   isVerified: true,
   visibility: true,
+  // Carry the precomputed analysis cache through so analyzeGalleryEssay can
+  // serve a hot read instantly when the caller didn't pass a schoolName
+  // override. See essay-gallery.service.ts.
+  aiAnalysisCache: true,
   school: { select: SCHOOL_NAME_RANK_SELECT },
 } as const satisfies Prisma.AdmissionCaseSelect;

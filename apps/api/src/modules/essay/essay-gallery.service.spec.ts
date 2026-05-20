@@ -20,6 +20,9 @@ describe('EssayGalleryService', () => {
       findFirst: jest.fn(),
       count: jest.fn(),
       groupBy: jest.fn(),
+      // Cache write-through in analyzeGalleryEssay (PR 1 fix #4) calls
+      // `admissionCase.update` after a fresh LLM analysis lands.
+      update: jest.fn().mockResolvedValue({}),
     },
   };
 
@@ -216,12 +219,17 @@ describe('EssayGalleryService', () => {
         summary: 'Good essay',
       });
 
-      const result = await service.analyzeGalleryEssay(
+      const result = (await service.analyzeGalleryEssay(
         'user-1',
         'case-1',
         undefined,
         'en',
-      );
+      )) as {
+        essayId: string;
+        overallScore: number;
+        tokenUsed: number;
+        cached: boolean;
+      };
 
       expect(mockIncentiveService.charge).toHaveBeenCalledWith(
         'user-1',
@@ -230,6 +238,121 @@ describe('EssayGalleryService', () => {
       expect(result.essayId).toBe('case-1');
       expect(result.overallScore).toBe(80);
       expect(result.tokenUsed).toBeGreaterThan(0);
+      // First-time analysis: cache miss → fresh LLM round-trip + write-through.
+      expect(result.cached).toBe(false);
+      expect(mockPrisma.admissionCase.update).toHaveBeenCalled();
+    });
+
+    it('should return cached payload on cache hit without calling LLM', async () => {
+      // Canonical run (no schoolName override) + cache hit + version matches
+      // → must bypass LLM and serve cached payload. Points still charged
+      // (per spec — see mama-persona feedback).
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-cache',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Why?',
+        essayContent: 'Cached essay content',
+        gpaRange: null,
+        satRange: null,
+        school: { id: 's1', name: 'MIT', usNewsRank: 1 },
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: {
+          en: {
+            promptVersion: 'v1',
+            generatedAt: '2026-05-01T00:00:00.000Z',
+            payload: {
+              paragraphs: [],
+              overallScore: 88,
+              structure: {
+                hasStrongOpening: true,
+                hasClarity: true,
+                hasGoodConclusion: true,
+                feedback: 'Solid',
+              },
+              summary: 'Cached summary',
+            },
+          },
+        },
+      });
+
+      const result = (await service.analyzeGalleryEssay(
+        'user-1',
+        'case-cache',
+        undefined,
+        'en',
+      )) as {
+        essayId: string;
+        overallScore: number;
+        cached: boolean;
+        tokenUsed: number;
+      };
+
+      expect(result.essayId).toBe('case-cache');
+      expect(result.overallScore).toBe(88);
+      expect(result.cached).toBe(true);
+      // LLM must NOT have been called on a cache hit.
+      expect(mockEssayAiService.analyzeEssayParagraphs).not.toHaveBeenCalled();
+      // Points are still charged on cache hit — spec keeps cost at 20.
+      expect(mockIncentiveService.charge).toHaveBeenCalled();
+    });
+
+    it('should bypass cache when caller supplies a custom schoolName', async () => {
+      mockPrisma.admissionCase.findFirst.mockResolvedValue({
+        id: 'case-custom',
+        year: 2025,
+        round: 'EA',
+        result: 'ADMITTED',
+        essayType: 'COMMON_APP',
+        promptNumber: 1,
+        essayPrompt: 'Why?',
+        essayContent: 'Custom-fit essay content',
+        gpaRange: null,
+        satRange: null,
+        school: { id: 's1', name: 'MIT', usNewsRank: 1 },
+        tags: [],
+        isVerified: true,
+        visibility: 'PUBLIC',
+        aiAnalysisCache: {
+          en: {
+            promptVersion: 'v1',
+            generatedAt: '2026-05-01T00:00:00.000Z',
+            payload: { overallScore: 88 },
+          },
+        },
+      });
+      mockEssayAiService.analyzeEssayParagraphs.mockResolvedValue({
+        paragraphs: [],
+        overallScore: 70,
+        structure: {
+          hasStrongOpening: true,
+          hasClarity: true,
+          hasGoodConclusion: false,
+          feedback: 'Custom fit',
+        },
+        summary: 'Custom run',
+      });
+
+      // schoolName !== canonical 'MIT' → custom-fit path → fresh LLM, no cache
+      // write, cached: false.
+      const result = (await service.analyzeGalleryEssay(
+        'user-1',
+        'case-custom',
+        'Stanford',
+        'en',
+      )) as { overallScore: number; cached: boolean };
+
+      expect(result.overallScore).toBe(70);
+      expect(result.cached).toBe(false);
+      expect(mockEssayAiService.analyzeEssayParagraphs).toHaveBeenCalled();
+      // Custom-fit run MUST NOT write to the cache (would poison canonical
+      // entries with a school-specific take).
+      expect(mockPrisma.admissionCase.update).not.toHaveBeenCalled();
     });
 
     it('should refund and throw when essay content is empty', async () => {

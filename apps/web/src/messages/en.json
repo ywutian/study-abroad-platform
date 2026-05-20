@@ -6125,7 +6125,8 @@
         "description": "Analyzes each paragraph from admissions officer perspective with specific improvement suggestions",
         "analyzing": "Analyzing...",
         "startAnalysis": "Start Analysis (20 points)",
-        "analysisError": "Analysis failed, please try again later"
+        "analysisError": "Analysis failed, please try again later",
+        "cachedHint": "Analyzed · Instant response"
       },
       "analysis": {
         "overallScore": "Overall Score",

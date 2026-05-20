@@ -6104,7 +6104,8 @@
         "description": "招生官视角分析每个段落，给出具体改进建议",
         "analyzing": "分析中...",
         "startAnalysis": "开始分析 (20积分)",
-        "analysisError": "分析失败，请稍后重试"
+        "analysisError": "分析失败，请稍后重试",
+        "cachedHint": "已分析 · 秒级响应"
       },
       "analysis": {
         "overallScore": "总分",
