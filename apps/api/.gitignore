@@ -5,3 +5,11 @@ node_modules
 /generated/prisma
 scripts/cds-data/*-ledger-*.json
 scripts/cds-data/*-worklist-*.json
+
+# Compiled JS for seed scripts — built in Docker, never committed
+prisma/seed-*.js
+prisma/seed-*.js.map
+prisma/seed-*.d.ts
+prisma/seeds/**/*.js
+prisma/seeds/**/*.js.map
+prisma/seeds/**/*.d.ts

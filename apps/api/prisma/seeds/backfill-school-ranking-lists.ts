@@ -1,16 +1,51 @@
 #!/usr/bin/env tsx
 
-import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
-import {
+// Fail-soft dotenv: dev only. See load-top-cases.ts for rationale.
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('dotenv/config');
+} catch {
+  /* dotenv absent in prod runner — skip */
+}
+import * as path from 'node:path';
+import { InstitutionType, PrismaClient } from '@prisma/client';
+
+// Lives in apps/api/prisma/seeds/. Dev (tsx) loads from src/; prod (compiled
+// .js, no src/) loads the built .js from dist/. See load-cds-bands.ts for the
+// same pattern + rationale.
+type CatalogRankingList = string;
+function loadRankingCatalog(): {
+  CATALOG_RANKING_LISTS: readonly string[];
+  getInstitutionTypeForRankingList: (list: string) => InstitutionType;
+  getPrivateDefaultForRankingList: (list: string) => boolean | null;
+  getRankingListSourceUrl: (list: string) => string;
+  isCatalogRankingList: (list: string) => boolean;
+  resolveFallbackRankingList: (school: any) => CatalogRankingList;
+} {
+  const srcPath = path.resolve(
+    __dirname,
+    '../../src/modules/school/school-ranking-catalog',
+  );
+  const distPath = path.resolve(
+    __dirname,
+    '../../dist/modules/school/school-ranking-catalog',
+  );
+
+  const req = require;
+  try {
+    return req(srcPath);
+  } catch {
+    return req(distPath);
+  }
+}
+const {
   CATALOG_RANKING_LISTS,
   getInstitutionTypeForRankingList,
   getPrivateDefaultForRankingList,
   getRankingListSourceUrl,
   isCatalogRankingList,
   resolveFallbackRankingList,
-  type CatalogRankingList,
-} from '../src/modules/school/school-ranking-catalog';
+} = loadRankingCatalog();
 
 const prisma = new PrismaClient();
 

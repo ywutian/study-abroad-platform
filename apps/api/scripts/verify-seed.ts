@@ -242,7 +242,7 @@ async function main() {
       pass: admissionCaseCount >= 2000,
     },
     {
-      // Phase C — scripts/essay-harvest/import-essays.ts imports ~185 public
+      // Phase C — prisma/seeds/essay-harvest/import-essays.ts imports ~185 public
       // archive essays into AdmissionCase.essayContent. Achieved 189.
       label: 'AdmissionCase with essayContent',
       actual: admissionCaseWithEssayCount,
