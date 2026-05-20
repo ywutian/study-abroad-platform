@@ -995,23 +995,55 @@ jobs:
           echo "exec_name=$EXEC_NAME" >> $GITHUB_ENV
           cat /tmp/migrate-exec.log
 
-      - name: Print migrate-job logs (Cloud Logging)
+      - name: Try gcloud alpha/beta run jobs executions logs read
+        if: always()
+        continue-on-error: true
+        run: |
+          REGION="${{ secrets.GCP_REGION }}"
+          EXEC="${exec_name}"
+          echo "=== try alpha ==="
+          gcloud alpha run jobs executions logs read "${EXEC}" --region="$REGION" 2>&1 | head -200 || true
+          echo "=== try beta ==="
+          gcloud beta run jobs executions logs read "${EXEC}" --region="$REGION" 2>&1 | head -200 || true
+          echo "=== try main ==="
+          gcloud run jobs executions logs read "${EXEC}" --region="$REGION" 2>&1 | head -200 || true
+          echo "=== end ==="
+
+      - name: Compare migrate DATABASE_URL host with API DATABASE_URL host
         if: always()
         run: |
-          # Pull the migrate-job stdout/stderr from Cloud Logging so we can
-          # actually see WHICH seed step ran and which silently failed —
-          # the GH Actions `jobs execute` output does not include the
-          # container stdout.
-          echo "=== migrate-job logs ==="
-          # Read the last 15 minutes of logs for the study-abroad-migrate job.
-          # textPayload contains stdout; severity ERROR contains stderr/crash.
-          gcloud logging read \
-            'resource.type="cloud_run_job" AND resource.labels.job_name="study-abroad-migrate"' \
-            --limit=500 \
-            --freshness=30m \
-            --format='value(timestamp,severity,textPayload)' \
-            --order=asc \
-            || echo "::warning::Could not pull Cloud Logging entries (non-fatal)"
+          # The migrate-job uses `database-url:latest` while the API service
+          # uses `database-url-proxy:latest`. Sanity-check they point at the
+          # same Cloud SQL instance — if not, the migrate is writing to a
+          # different DB entirely, which would perfectly explain why prod
+          # gallery shows 5 essays despite `migrate.sh` succeeding.
+          set +e
+          MIGRATE_URL=$(gcloud secrets versions access latest --secret=database-url 2>/dev/null)
+          API_URL=$(gcloud secrets versions access latest --secret=database-url-proxy 2>/dev/null)
+          set -e
+
+          # Strip credentials so we never log them; keep host + db name only.
+          sanitize() {
+            # postgresql://user:pass@host:port/db?... → host:port/db
+            printf '%s' "$1" | sed -E 's#postgresql://[^@]+@([^?]+).*#\1#'
+          }
+          M_HOST=$(sanitize "$MIGRATE_URL")
+          A_HOST=$(sanitize "$API_URL")
+          echo "migrate host/db: ${M_HOST:-<empty>}"
+          echo "api host/db    : ${A_HOST:-<empty>}"
+          # Strip the path/host part for direct comparison ignoring port differences
+          # since proxy uses a unix socket and direct uses an IP.
+          # We compare just the database name (last path segment before ?).
+          db_name() { printf '%s' "$1" | sed -E 's#.*/([^/?]+)([?].*)?$#\1#'; }
+          M_DB=$(db_name "$M_HOST")
+          A_DB=$(db_name "$A_HOST")
+          echo "migrate DB name: ${M_DB:-<empty>}"
+          echo "api DB name    : ${A_DB:-<empty>}"
+          if [ "$M_DB" != "$A_DB" ] && [ -n "$M_DB" ] && [ -n "$A_DB" ]; then
+            echo "::error::Migrate job and API service connect to DIFFERENT databases: '$M_DB' vs '$A_DB'"
+          else
+            echo "✓ Same DB name on both sides."
+          fi
 
       - name: Deploy canary (no traffic)
         if: success()
@@ -1102,6 +1134,27 @@ jobs:
           done
           echo "::error::Health check failed after 5 attempts"
           exit 1
+
+      - name: Probe prod essay gallery count
+        if: always()
+        continue-on-error: true
+        run: |
+          # Direct user-visible signal: how many essays did the migrate
+          # actually load? Hits the public, no-auth endpoint with the
+          # full v1 prefix (gallery returns total in response.data.total).
+          URL="https://www.lumniedu.com/api/v1/essay-ai/gallery?page=1&pageSize=1"
+          RESPONSE=$(curl -fsS "$URL" --max-time 15 || echo '{"data":{"total":-1}}')
+          TOTAL=$(printf '%s' "$RESPONSE" | node -e "
+            let s='';process.stdin.on('data',c=>s+=c).on('end',()=>{
+              try{console.log(JSON.parse(s).data.total)}catch(e){console.log('parse_error')}
+            });
+          ")
+          echo "Prod gallery total = ${TOTAL}"
+          if [ "$TOTAL" -lt 150 ] 2>/dev/null; then
+            echo "::warning::Essay gallery total is ${TOTAL} (expected >= 150)"
+          else
+            echo "✓ Essay gallery total is ${TOTAL} (>= 150)"
+          fi
 
       - name: Rollback on failure
         if: failure() && steps.prev.outputs.revision != ''
