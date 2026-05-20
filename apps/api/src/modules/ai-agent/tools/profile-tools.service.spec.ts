@@ -46,14 +46,17 @@ describe('ProfileToolsService', () => {
 
   it('should return empty profile message when profile is null', async () => {
     profileLoader.loadProfile.mockResolvedValue(null);
-    const result = await service.getProfile('user-1', 'en');
+    const result = (await service.getProfile('user-1', 'en')) as any;
     expect(result).toHaveProperty('message');
     expect(result.message).toContain('empty');
   });
 
   it('should return profile data when it exists', async () => {
-    profileLoader.loadProfile.mockResolvedValue({ gpa: '3.9', name: 'Test' });
+    profileLoader.loadProfile.mockResolvedValue({
+      gpa: 3.9,
+      name: 'Test',
+    } as any);
     const result = await service.getProfile('user-1', 'en');
-    expect(result).toEqual({ gpa: '3.9', name: 'Test' });
+    expect(result).toEqual({ gpa: 3.9, name: 'Test' });
   });
 });

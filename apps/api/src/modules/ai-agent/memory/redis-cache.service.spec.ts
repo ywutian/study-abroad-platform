@@ -56,7 +56,7 @@ describe('RedisCacheService', () => {
       updatedAt: new Date(),
     };
 
-    await service.cacheConversation(meta as any);
+    await service.cacheConversation('conv-1', meta as any);
     const cached = await service.getConversationMeta('conv-1');
     // In fallback mode it should store in memory
     expect(cached).toBeDefined();

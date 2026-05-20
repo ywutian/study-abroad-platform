@@ -65,7 +65,10 @@ describe('CaseToolsService', () => {
 
   it('should return empty results when no cases found', async () => {
     prisma.admissionCase.findMany.mockResolvedValue([]);
-    const result = await service.searchCases({ query: 'Stanford' }, 'en');
+    const result = await service.searchCases(
+      { schoolName: 'Stanford' } as any,
+      'en',
+    );
     expect(result).toBeDefined();
   });
 });

@@ -152,7 +152,7 @@ describe('CounselorEngineService', () => {
     it('returns insufficientData sentinel when school has no acceptanceRate', async () => {
       const result = await service.compute(
         profile(),
-        school({ acceptanceRate: null }),
+        school({ acceptanceRate: null as any }),
       );
 
       expect(result.tier).toBe(4);

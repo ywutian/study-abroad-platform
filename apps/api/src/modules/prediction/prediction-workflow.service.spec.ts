@@ -1485,14 +1485,14 @@ describe('PredictionWorkflowService', () => {
   describe('createPolicyVersion', () => {
     it('should create policy in DRAFT status', async () => {
       await service.createPolicyVersion(ACTOR_ID, {
-        version: 2,
+        version: '2',
         name: 'V2 Policy',
       });
 
       expect(prisma.predictionPolicyVersion.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           status: 'DRAFT',
-          version: 2,
+          version: '2',
           name: 'V2 Policy',
           policyKey: 'default',
         }),
@@ -1501,7 +1501,7 @@ describe('PredictionWorkflowService', () => {
 
     it('should use provided policyKey', async () => {
       await service.createPolicyVersion(ACTOR_ID, {
-        version: 1,
+        version: '1',
         name: 'Custom',
         policyKey: 'experimental',
       });
@@ -1515,7 +1515,7 @@ describe('PredictionWorkflowService', () => {
 
     it('should normalize thresholds with defaults', async () => {
       await service.createPolicyVersion(ACTOR_ID, {
-        version: 1,
+        version: '1',
         name: 'Test',
         thresholds: { minShadowPredictions: 500 },
       });
@@ -1532,7 +1532,7 @@ describe('PredictionWorkflowService', () => {
 
     it('should append created-by tag to notes', async () => {
       await service.createPolicyVersion(ACTOR_ID, {
-        version: 1,
+        version: '1',
         name: 'Test',
         notes: 'Initial version',
       });
@@ -1546,7 +1546,7 @@ describe('PredictionWorkflowService', () => {
 
     it('should write audit log', async () => {
       await service.createPolicyVersion(ACTOR_ID, {
-        version: 1,
+        version: '1',
         name: 'Test',
       });
 
@@ -1873,7 +1873,7 @@ describe('PredictionWorkflowService', () => {
 
       await service.listObservations({
         status: 'RAW',
-        sourceType: 'CDS',
+        sourceType: 'CDS' as any,
         schoolId: 'school-1',
         policyVersionId: 'policy-1',
       });
@@ -2225,11 +2225,12 @@ describe('PredictionWorkflowService', () => {
 
       const result = await service.getTrainingReadiness();
 
-      expect(result.perSchoolCoverage.schoolsWithAtLeast10Samples).toBe(3);
-      expect(result.perSchoolCoverage.schoolsWithAtLeast20Samples).toBe(2);
-      expect(result.perSchoolCoverage.schoolsWithAtLeast50Samples).toBe(1);
-      expect(result.perSchoolCoverage.schoolsWithAtLeast100Samples).toBe(0);
-      expect(result.perSchoolCoverage.totalSchoolsWithAnySample).toBe(4);
+      const perSchoolCoverage = result.perSchoolCoverage as any;
+      expect(perSchoolCoverage.schoolsWithAtLeast10Samples).toBe(3);
+      expect(perSchoolCoverage.schoolsWithAtLeast20Samples).toBe(2);
+      expect(perSchoolCoverage.schoolsWithAtLeast50Samples).toBe(1);
+      expect(perSchoolCoverage.schoolsWithAtLeast100Samples).toBe(0);
+      expect(perSchoolCoverage.totalSchoolsWithAnySample).toBe(4);
     });
   });
 

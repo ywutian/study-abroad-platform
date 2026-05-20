@@ -14,7 +14,7 @@ describe('AdminRoleService', () => {
   let service: AdminRoleService;
   let prisma: PrismaService;
 
-  const mockPrisma = {
+  const mockPrisma: any = {
     rolePermission: {
       findMany: jest.fn(),
       upsert: jest.fn(),

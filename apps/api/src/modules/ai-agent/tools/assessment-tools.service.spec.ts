@@ -45,9 +45,11 @@ describe('AssessmentToolsService', () => {
   });
 
   it('should fetch assessment results', async () => {
-    assessmentService.getResults.mockResolvedValue([
-      { id: 'r1', type: 'mbti', result: { type: 'INTJ' } },
-    ] as any);
+    (assessmentService as any).getResults = jest
+      .fn()
+      .mockResolvedValue([
+        { id: 'r1', type: 'mbti', result: { type: 'INTJ' } },
+      ]);
     const result = await service.getAssessmentResults('user-1', 'mbti', 'en');
     expect(result).toBeDefined();
   });

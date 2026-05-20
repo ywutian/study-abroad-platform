@@ -32,31 +32,34 @@ import { Prisma, PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const FETCHED_AT = new Date().toISOString();
 
-/** Real School columns (Decimal/Int/Boolean) keyed by closure field name. */
-const SCHOOL_COLUMN: Record<string, 'number' | 'boolean' | 'json'> = {
-  acceptanceRate: 'number',
-  intlAcceptanceRate: 'number',
-  oosAcceptanceRate: 'number',
-  transferAcceptanceRate: 'number',
-  edAcceptanceRate: 'number',
-  eaAcceptanceRate: 'number',
-  ed2AcceptanceRate: 'number',
-  yieldRate: 'number',
-  sat25: 'number',
-  sat75: 'number',
-  satAvg: 'number',
-  act25: 'number',
-  act75: 'number',
-  actAvg: 'number',
-  graduationRate: 'number',
-  retentionRate: 'number',
-  percentNeedMet: 'number',
-  averageNetPrice: 'number',
-  studentFacultyRatio: 'number',
-  totalEnrollment: 'number',
-  needBlindInternational: 'boolean',
-  gpaDistribution: 'json',
-};
+/** Real School columns (Decimal/Int/Boolean/Text) keyed by closure field name. */
+const SCHOOL_COLUMN: Record<string, 'number' | 'boolean' | 'json' | 'string'> =
+  {
+    acceptanceRate: 'number',
+    intlAcceptanceRate: 'number',
+    oosAcceptanceRate: 'number',
+    transferAcceptanceRate: 'number',
+    edAcceptanceRate: 'number',
+    eaAcceptanceRate: 'number',
+    ed2AcceptanceRate: 'number',
+    yieldRate: 'number',
+    sat25: 'number',
+    sat75: 'number',
+    satAvg: 'number',
+    act25: 'number',
+    act75: 'number',
+    actAvg: 'number',
+    graduationRate: 'number',
+    retentionRate: 'number',
+    percentNeedMet: 'number',
+    averageNetPrice: 'number',
+    studentFacultyRatio: 'number',
+    totalEnrollment: 'number',
+    needBlindInternational: 'boolean',
+    hasRestrictiveEa: 'boolean',
+    gpaDistribution: 'json',
+    nicheOverallGrade: 'string',
+  };
 
 interface Decision {
   targetId: string;
@@ -123,6 +126,8 @@ async function main() {
             if (colKind === 'number' && typeof d.value === 'number') {
               (data as Record<string, unknown>)[d.field] = d.value;
             } else if (colKind === 'boolean' && typeof d.value === 'boolean') {
+              (data as Record<string, unknown>)[d.field] = d.value;
+            } else if (colKind === 'string' && typeof d.value === 'string') {
               (data as Record<string, unknown>)[d.field] = d.value;
             } else if (colKind === 'json') {
               (data as Record<string, unknown>)[d.field] =
