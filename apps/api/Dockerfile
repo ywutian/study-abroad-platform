@@ -68,12 +68,17 @@ RUN cd apps/api && npx tsc \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma/seeds --outDir prisma/seeds
 
+# Pass 2 uses nodenext resolution because seed-high-schools.ts imports
+# `@study-abroad/shared/scoring` (a subpath export from the shared
+# package.json `exports` field, which only `node16` / `nodenext` /
+# `bundler` resolvers honor). Output is still CommonJS at runtime
+# (apps/api has no `"type": "module"`), so `node` runs the files fine.
 RUN cd apps/api && npx tsc \
     prisma/seed-essay-prompts-v2.ts \
     prisma/seed-high-schools.ts \
     prisma/seed-activity-templates.ts \
     prisma/seed-assessment.ts \
-    --module commonjs --target es2022 --moduleResolution node \
+    --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma
 
