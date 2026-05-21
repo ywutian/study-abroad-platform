@@ -1,15 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import {
   BadGatewayException,
   HttpException,
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+
 import { PrismaService } from '../../prisma/prisma.service';
-import { PointsService, PointAction } from '../points/incentive.service';
 import { LLMService } from '../ai-agent/core/llm.service';
+import { PointAction, PointsService } from '../points/incentive.service';
 import { DebateBudgetService } from './debate-budget.service';
 import { DebateContextLoaderService } from './debate-context-loader.service';
+import { buildDebateUserPrompt } from './essay-debate.prompts';
 import { EssayDebateService } from './essay-debate.service';
 
 /**
@@ -176,7 +178,7 @@ describe('EssayDebateService', () => {
     expect(mockPoints.charge).toHaveBeenCalledWith(
       'user-1',
       PointAction.AI_ESSAY_DEBATE_TURN,
-      expect.objectContaining({ sessionId: 'sess-1', promptVersion: 'v1' }),
+      expect.objectContaining({ sessionId: 'sess-1', promptVersion: 'v2' }),
     );
   });
 
@@ -426,5 +428,245 @@ describe('EssayDebateService', () => {
     await expect(service.getLatestSession('user-1', 'missing')).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  // ─── PR6 regression tests ────────────────────────────────────────────────
+
+  describe('PR6 — sycophancy 2.0 + evidence normalize', () => {
+    it('passes through but WARN-logs when rebuttal opens with a banned concession phrase ("你说得对")', async () => {
+      happyBudget();
+      newSessionStub();
+      mockLLM.chatSimple.mockResolvedValue(
+        JSON.stringify({
+          rebuttal:
+            '你说得对，我之前忽略了这一点。但其实段落 1 已经埋了线索 — "My hands trembled when I first picked up the violin at age six" 这句已经预告了后面的张力。',
+          evidence: [
+            {
+              quote:
+                'My hands trembled when I first picked up the violin at age six.',
+              source: 'essay',
+            },
+          ],
+          openQuestion:
+            'If the tension is already foreshadowed, why do you still read the transition as abrupt?',
+        }),
+      );
+
+      const warnSpy = jest
+        .spyOn(
+          (service as unknown as { logger: { warn: jest.Mock } }).logger,
+          'warn',
+        )
+        .mockImplementation();
+
+      const result = await service.createOrContinueTurn('user-1', {
+        admissionCaseId: 'case-1',
+        paragraphIndex: 1,
+        userText: '段落 1 到段落 2 的过渡太突兀。',
+      });
+
+      // The turn is still persisted — we never censor at the schema layer.
+      expect(result.aiTurn.role).toBe('ai');
+      expect(result.aiTurn.text.startsWith('你说得对')).toBe(true);
+      // But we logged the violation for PR7 to measure adherence.
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[sycophancy-2.0]'),
+      );
+      warnSpy.mockRestore();
+    });
+
+    it('builds the user prompt with the prior-commentary structural requirement when priorCommentary is non-null', () => {
+      // Direct prompt-builder unit check — guards against the structural
+      // block silently disappearing.
+      const zhPrompt = buildDebateUserPrompt(
+        {
+          school: null,
+          profile: null,
+          essay: {
+            fullText: ESSAY_TEXT,
+            paragraphs: ESSAY_TEXT.split(/\n\n+/),
+            wordCount: 55,
+            targetedParagraphIndex: 1,
+          },
+          prompt: null,
+          result: null,
+          priorCommentary: {
+            paragraphIndex: 1,
+            score: 7,
+            status: 'good',
+            comment: 'Sensory hook works but the transition feels abrupt.',
+            highlights: ['sensory hook'],
+            suggestions: ['smooth the transition'],
+          },
+          debateHistory: [],
+        },
+        '段落 1 写得很有力。',
+        'zh',
+      );
+      expect(zhPrompt).toContain('[必读 — 反驳结构要求]');
+      expect(zhPrompt).toContain('不可商量');
+      expect(zhPrompt).toContain('quote a SPECIFIC phrase');
+
+      // English variant
+      const enPrompt = buildDebateUserPrompt(
+        {
+          school: null,
+          profile: null,
+          essay: {
+            fullText: ESSAY_TEXT,
+            paragraphs: ESSAY_TEXT.split(/\n\n+/),
+            wordCount: 55,
+            targetedParagraphIndex: 1,
+          },
+          prompt: null,
+          result: null,
+          priorCommentary: {
+            paragraphIndex: 1,
+            score: 7,
+            status: 'good',
+            comment: 'Sensory hook works but the transition feels abrupt.',
+            highlights: ['sensory hook'],
+            suggestions: ['smooth the transition'],
+          },
+          debateHistory: [],
+        },
+        'Paragraph 1 reads strongly.',
+        'en',
+      );
+      expect(enPrompt).toContain(
+        '[REQUIRED — rebuttal structural requirement]',
+      );
+      expect(enPrompt).toContain('non-negotiable');
+    });
+
+    it('omits the structural requirement when priorCommentary is null', () => {
+      const prompt = buildDebateUserPrompt(
+        {
+          school: null,
+          profile: null,
+          essay: {
+            fullText: ESSAY_TEXT,
+            paragraphs: ESSAY_TEXT.split(/\n\n+/),
+            wordCount: 55,
+            targetedParagraphIndex: null,
+          },
+          prompt: null,
+          result: null,
+          priorCommentary: null,
+          debateHistory: [],
+        },
+        '段落 1 写得很有力。',
+        'zh',
+      );
+      expect(prompt).not.toContain('[必读 — 反驳结构要求]');
+      expect(prompt).not.toContain('quote a SPECIFIC phrase');
+    });
+
+    it('accepts case-different verbatim quotes ("it is a profession" vs essay "It is a profession")', async () => {
+      // Yale Q25 / Duke Q13 regression — case drift in the model's quote
+      // string slipped through PR2's case-sensitive substring check.
+      happyBudget();
+      const essayWithCapital =
+        'It is a profession. The last three doctors in our village retired the same winter.';
+      mockContextLoader.loadContext.mockResolvedValueOnce({
+        school: {
+          name: 'Yale University',
+          nameZh: '耶鲁大学',
+          usNewsRank: 5,
+          acceptanceRate: 4.4,
+        },
+        profile: null,
+        essay: {
+          fullText: essayWithCapital,
+          paragraphs: essayWithCapital.split(/\n\n+/),
+          wordCount: 18,
+          targetedParagraphIndex: 0,
+        },
+        prompt: null,
+        result: null,
+        priorCommentary: null,
+        debateHistory: [],
+      });
+      newSessionStub();
+      mockLLM.chatSimple.mockResolvedValue(
+        JSON.stringify({
+          rebuttal:
+            'The opening framing in "it is a profession" carries the entire moral stake — note also "the last three doctors" which grounds it specifically.',
+          evidence: [
+            { quote: 'it is a profession', source: 'essay' },
+            { quote: 'the last three doctors', source: 'essay' },
+          ],
+          openQuestion:
+            'If the moral stake is in the framing, what part of the paragraph do you read as filler?',
+        }),
+      );
+
+      const result = await service.createOrContinueTurn('user-1', {
+        admissionCaseId: 'case-1',
+        paragraphIndex: 0,
+        userText:
+          'The opening line is generic — anyone could say "it is a profession".',
+      });
+
+      expect(result.aiTurn.evidence?.length).toBe(2);
+      expect(result.aiTurn.evidence?.[0].quote).toBe('it is a profession');
+      expect(result.aiTurn.evidence?.[1].quote).toBe('the last three doctors');
+    });
+
+    it('rejects a Harvard Q33-style semantic-substitution fabrication ("life" → "it")', async () => {
+      // Harvard Q33 regression — Chen the verbatim-grep counsellor caught
+      // a real fabrication where the model paraphrased the essay's "it can
+      // disappear..." into "life can disappear..." (subject swapped). The
+      // PR2 substring check should have caught this but didn't — re-test
+      // and confirm PR6's normalisation + fuzzy fallback catches it.
+      happyBudget();
+      const essayWithIt =
+        'My grandfather taught me that it can disappear or change at any time. We never assume tomorrow.';
+      mockContextLoader.loadContext.mockResolvedValueOnce({
+        school: {
+          name: 'Harvard University',
+          nameZh: '哈佛大学',
+          usNewsRank: 3,
+          acceptanceRate: 3.4,
+        },
+        profile: null,
+        essay: {
+          fullText: essayWithIt,
+          paragraphs: essayWithIt.split(/\n\n+/),
+          wordCount: 18,
+          targetedParagraphIndex: 0,
+        },
+        prompt: null,
+        result: null,
+        priorCommentary: null,
+        debateHistory: [],
+      });
+      newSessionStub();
+      mockLLM.chatSimple.mockResolvedValue(
+        JSON.stringify({
+          rebuttal:
+            'The paragraph turns on impermanence — the line "life can disappear or change at any time" is the thematic spine.',
+          evidence: [
+            {
+              quote: 'life can disappear or change at any time',
+              source: 'essay',
+            },
+          ],
+          openQuestion:
+            'If the spine is impermanence, where does the resolution come from?',
+        }),
+      );
+
+      const result = await service.createOrContinueTurn('user-1', {
+        admissionCaseId: 'case-1',
+        paragraphIndex: 0,
+        userText: 'The paragraph has no thematic spine.',
+      });
+
+      // The fabricated quote ("life can disappear...") doesn't exist in
+      // the essay (which has "it can disappear..."). After PR6's
+      // normalisation + fuzzy fallback, it must be stripped.
+      expect(result.aiTurn.evidence?.length).toBe(0);
+    });
   });
 });
