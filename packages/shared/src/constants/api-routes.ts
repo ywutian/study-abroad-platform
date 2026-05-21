@@ -178,6 +178,12 @@ export const essayDebateRoutes = {
   latest: (sessionId: string) => `${API_ROUTES.ESSAY_DEBATE}/${sessionId}/latest`,
 };
 
+// Phase 2 V1 PR3 — admin blind-eval endpoints (Day-6 counsellor rating UI).
+export const adminDebateEvalRoutes = {
+  queue: () => `${API_ROUTES.ADMIN}/debate-eval/queue`,
+  rate: () => `${API_ROUTES.ADMIN}/debate-eval/rate`,
+};
+
 export const assessmentRoutes = {
   start: (type: string) => `${API_ROUTES.ASSESSMENTS}/${type}`,
   submit: () => API_ROUTES.ASSESSMENTS,

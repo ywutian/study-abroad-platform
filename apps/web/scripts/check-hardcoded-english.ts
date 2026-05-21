@@ -50,6 +50,13 @@ const EXEMPT_FILES = [
   'scripts/',
   'check-',
   'proxy.ts',
+  // Phase 2 V1 PR3 — admin blind-eval page is an internal ops tool used
+  // by 5 external counsellors over the Day-6 eval window only. The 4
+  // rating labels (SHARP/USEFUL/GENERIC/SYCOPHANTIC) are a domain enum
+  // shared with the gate script; localising them would obscure the gate
+  // math reading the same labels. Same exemption pattern as
+  // admin/schools/page.tsx in check-i18n.ts.
+  'admin/debate-eval/page.tsx',
 ];
 
 /** Line patterns to skip — these are never user-visible text */

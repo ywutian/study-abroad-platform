@@ -2168,6 +2168,18 @@ async function seedFeatureFlags() {
       enabled: false,
       rules: { percentage: 0 },
     },
+    {
+      // Phase 2 V1 PR3 — Essay Debate feature flag.
+      // Default OFF (`enabled=true` + `percentage: 0`). After Day-7 the
+      // ops team flips this to `{ percentage: 10 }` for canary rollout
+      // — but only if `scripts/debate-eval-gate.ts` exits 0. Frontend
+      // EssayDetailPanel reads via useFeatureFlag('essay_debate_enabled').
+      key: 'essay_debate_enabled',
+      description:
+        'Phase 2 V1 essay-debate feature. When ON, gallery essays surface a "不同意，告诉我为什么" button that opens EssayDebateDialog. Default OFF (percentage: 0); flip to 10% canary after debate-eval-gate.ts passes (Day 7 of the 7-day plan).',
+      enabled: true,
+      rules: { percentage: 0 },
+    },
   ];
 
   for (const flag of flags) {

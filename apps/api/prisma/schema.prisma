@@ -5019,6 +5019,10 @@ model EssayDebateSession {
   totalTurns  Int               @default(0)
   totalTokens Int               @default(0)
 
+  // PR3 — Day 6 blind eval. Counsellor ratings of individual AI turns within
+  // this session. One evaluation per (turn, evaluator) pair.
+  evaluations EssayDebateEvaluation[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -5030,4 +5034,57 @@ model EssayDebateSession {
 enum EssayDebateStatus {
   ACTIVE
   CLOSED
+}
+
+/// Phase 2 V1 PR3 — blind-eval capture.
+///
+/// Each row is one counsellor's rating of one AI turn within an
+/// EssayDebateSession. The same session can be rated by N evaluators, and
+/// each evaluator rates each turn at most once (@@unique enforces idempotency
+/// — the admin UI re-submits the same body on Next-button mash).
+///
+/// Day 7 decision gate reads these rows to compute Cohen's κ, evidence
+/// integrity rate, and SHARP+USEFUL share for lumni vs ChatGPT controls.
+model EssayDebateEvaluation {
+  id String @id @default(cuid())
+
+  sessionId String
+  session   EssayDebateSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  /// 0-indexed turn within session.turns[]. The AI turn we're rating; the
+  /// preceding user turn is implicit context but is not itself rated.
+  turnIndex Int
+
+  /// Free-form evaluator handle, e.g. "counselor-sarah-001". Not a User FK
+  /// because external counsellors don't have accounts on the platform.
+  evaluatorId String
+
+  rating EssayDebateRating
+
+  /// True when this row is rating a ChatGPT control turn (a session whose
+  /// turns were seeded by the operations team as A/B controls). Allows the
+  /// gate script to compute lumni-vs-control SHARP+USEFUL share without a
+  /// schema-level distinction on EssayDebateSession itself.
+  isChatGptControl Boolean @default(false)
+
+  /// Free-form notes from the evaluator.
+  notes String? @db.Text
+
+  /// True iff the evaluator confirms the AI turn's evidence[] array contains
+  /// verbatim quotes that actually appear in the source. Null when the turn
+  /// had no evidence (e.g. ChatGPT control without the structured shape).
+  evidenceIntegrity Boolean?
+
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, turnIndex, evaluatorId])
+  @@index([evaluatorId])
+  @@index([rating])
+}
+
+enum EssayDebateRating {
+  SHARP        // Substantive, specific, would change my mind
+  USEFUL       // Reasonable but unremarkable
+  GENERIC      // Could apply to any essay; AI-slop
+  SYCOPHANTIC  // Empty agreement / mirror
 }
