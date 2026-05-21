@@ -23,7 +23,11 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
-import { AppModule } from '../src/app.module';
+// PR4 fix: use slim PrecomputeModule instead of AppModule. AppModule
+// drags in EmailModule (which fails to instantiate in standalone CLI),
+// ThrottlerModule, global guards, scheduler — none of which scripts need.
+// See scripts/lib/precompute.module.ts for the full rationale.
+import { PrecomputeModule } from './lib/precompute.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import {
   EssayAiService,
@@ -122,7 +126,7 @@ async function main() {
     `Bootstrapping Nest context · cases=${DOGFOOD_CASE_IDS.length} locales=${locales.join(',')} dryRun=${dryRun}`,
   );
 
-  const app = await NestFactory.createApplicationContext(AppModule, {
+  const app = await NestFactory.createApplicationContext(PrecomputeModule, {
     logger: ['error', 'warn', 'log'],
   });
 

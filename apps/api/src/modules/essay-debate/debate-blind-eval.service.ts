@@ -93,10 +93,22 @@ export class DebateBlindEvalService {
       // any session whose first AI turn is the ChatGPT placeholder. The
       // placeholder seed always lands in the pool by design.
       const firstAiTurn = turns.find((t) => t.role === 'ai');
+      // PR4: detect control sessions via two signals (in priority order):
+      //  1. Explicit `source === 'chatgpt-control'` marker on the AI
+      //     turn. This is the canonical marker after
+      //     scripts/generate-chatgpt-control-turns.ts replaces the
+      //     placeholder with real OpenAI output — the placeholder text
+      //     check below would no longer match.
+      //  2. Legacy: the AI turn text still carries the PR3 placeholder
+      //     prefix. This keeps pre-PR4 seeded rows discoverable in case
+      //     the generator hasn't run yet (e.g. fresh dev DB).
       const isControl =
-        firstAiTurn?.text?.startsWith(
+        (firstAiTurn as { source?: string } | undefined)?.source ===
+          'chatgpt-control' ||
+        (firstAiTurn?.text?.startsWith(
           DebateBlindEvalService.CHATGPT_CONTROL_PLACEHOLDER.slice(0, 30),
-        ) ?? false;
+        ) ??
+          false);
       const isInPool =
         isControl ||
         turns.some((t) =>
