@@ -121,7 +121,7 @@ export class DebateContextLoaderService {
         // Class 6 — only present if precompute has run for this case.
         if (ac.aiAnalysisCache) {
           priorCommentary = this.pickParagraphFromCache(
-            ac.aiAnalysisCache as Prisma.JsonValue,
+            ac.aiAnalysisCache,
             locale,
             paragraphIndex,
           );
@@ -300,10 +300,10 @@ export class DebateContextLoaderService {
     const gpaScale = ac.gpaScale ?? null;
 
     const topActivities = this.extractTopActivities(
-      ac.activities as Prisma.JsonValue,
+      ac.activities,
       ac.activityList,
     );
-    const topAward = this.extractTopAward(ac.awards as Prisma.JsonValue);
+    const topAward = this.extractTopAward(ac.awards);
 
     return {
       gpa,

@@ -42,6 +42,7 @@ import { getResultBadgeClass, getResultLabel, VERIFIED_BADGE_CLASS } from '@/lib
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores/auth';
 import { EssayDebateDialog } from '@/components/features/essay-debate';
+import { useFeatureFlag } from '@/hooks/use-feature-flag';
 
 interface EssayDetail {
   id: string;
@@ -161,6 +162,10 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
 
   // ── Essay Debate (Phase 2 V1 PR2) ────────────────────────────────────
   // One session per essay; pivoting paragraphs reuses the same session.
+  // PR3 — gated by the `essay_debate_enabled` feature flag. Default off
+  // (`{ percentage: 0 }`) until the Day-7 decision-gate script passes;
+  // then admin flips to 10% canary via /admin/feature-flags.
+  const { enabled: debateEnabled } = useFeatureFlag('essay_debate_enabled');
   const [debateOpen, setDebateOpen] = useState(false);
   const [debateParagraphIdx, setDebateParagraphIdx] = useState<number | undefined>();
   const [debateSessionId, setDebateSessionId] = useState<string | null>(null);
@@ -586,7 +591,10 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
                       analysis={analyzeMutation.data}
                       paragraphs={paragraphs}
                       t={t}
-                      onDebateParagraph={openDebateForParagraph}
+                      // PR3 — only wire the disagree button when the
+                      // feature flag is on. AnalysisResultView gates the
+                      // button render on the truthiness of this prop.
+                      onDebateParagraph={debateEnabled ? openDebateForParagraph : undefined}
                       paragraphRefs={paragraphRefs}
                     />
                   </>
@@ -656,16 +664,23 @@ export function EssayDetailPanel({ essayId, onClose: _onClose }: EssayDetailPane
        * paragraph cards, so the modal portals to <body> and the user
        * can pivot to a different paragraph mid-conversation without
        * the dialog unmounting.
+       *
+       * PR3 — gated behind `essay_debate_enabled`. Unmounting entirely
+       * (rather than just hiding the trigger) keeps the network panel
+       * clean during the pre-canary window: no /essay-debate/turn calls
+       * fire from any user except those in the feature-flag bucket.
        */}
-      <EssayDebateDialog
-        open={debateOpen}
-        onOpenChange={setDebateOpen}
-        sessionId={debateSessionId}
-        admissionCaseId={essayId}
-        paragraphIndex={debateParagraphIdx}
-        onSessionCreated={setDebateSessionId}
-        onScrollToParagraph={scrollToParagraph}
-      />
+      {debateEnabled && (
+        <EssayDebateDialog
+          open={debateOpen}
+          onOpenChange={setDebateOpen}
+          sessionId={debateSessionId}
+          admissionCaseId={essayId}
+          paragraphIndex={debateParagraphIdx}
+          onSessionCreated={setDebateSessionId}
+          onScrollToParagraph={scrollToParagraph}
+        />
+      )}
     </div>
   );
 }
