@@ -6,6 +6,11 @@ node_modules
 scripts/cds-data/*-ledger-*.json
 scripts/cds-data/*-worklist-*.json
 
+# PR4 — archived OpenAI control-turn responses (model outputs that
+# may shift across runs; kept locally for audit, never committed).
+scripts/data/chatgpt-control-turns-*.json
+scripts/data/synthetic-evals-*.json
+
 # Compiled JS for seed scripts — built in Docker, never committed
 prisma/seed-*.js
 prisma/seed-*.js.map
