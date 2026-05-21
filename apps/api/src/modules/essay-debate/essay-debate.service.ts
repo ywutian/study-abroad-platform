@@ -26,6 +26,7 @@ import {
 } from './dto/debate-turn-response.dto';
 import {
   BANNED_OPENING_PHRASES,
+  BANNED_OPENING_TEMPLATES,
   buildDebateSystemPrompt,
   buildDebateUserPrompt,
   DEBATE_PROMPT_VERSION,
@@ -197,7 +198,11 @@ export class EssayDebateService {
         ],
         {
           temperature: 0.3,
-          maxTokens: 800,
+          // PR8 (v3): bumped 800 → 1200 to fix Q5 Duke truncation
+          // (Sarah flagged session cmpf2vd8v0001 cut off mid-sentence at
+          // "我之前若把它当作仅"). 600-char rebuttal + evidence[] +
+          // openQuestion + JSON wrapping overflowed 800-token budget.
+          maxTokens: 1200,
           userId,
           providerOptions: {
             model: process.env.ANTHROPIC_MODEL || undefined,
@@ -633,6 +638,20 @@ export class EssayDebateService {
         if (head.includes(needle)) {
           this.logger.warn(
             `[sycophancy-2.0] rebuttal opens with banned concession phrase "${needle}" (prompt=${DEBATE_PROMPT_VERSION})`,
+          );
+          return;
+        }
+      }
+      // PR8 (v3): also flag templated openers — Eric's v2 re-eval found
+      // 17/20 turns used one of 6 stock frames ("如果AI认为/最值得商榷..."
+      // etc). Lower severity than sycophancy-2.0: this is mechanical, not
+      // capitulatory. Logged so the eval pipeline can post-hoc score the
+      // rate without blocking the response.
+      for (const tmpl of BANNED_OPENING_TEMPLATES) {
+        const needle = tmpl.toLowerCase().replace(/\s+/g, '').trim();
+        if (head.replace(/\s+/g, '').includes(needle)) {
+          this.logger.warn(
+            `[template-fatigue] rebuttal opens with templated frame "${tmpl}" (prompt=${DEBATE_PROMPT_VERSION})`,
           );
           return;
         }

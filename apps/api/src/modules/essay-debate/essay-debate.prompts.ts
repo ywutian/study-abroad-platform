@@ -18,7 +18,7 @@ import type { AdmissionResult } from '@prisma/client';
  *  - Evidence quotes MUST be verbatim substrings of context — the
  *    backend enforces this; the prompt also warns the model.
  */
-export const DEBATE_PROMPT_VERSION = 'v2';
+export const DEBATE_PROMPT_VERSION = 'v3';
 
 /**
  * Concession-opening phrases banned by the v2 prompt (PR6).
@@ -41,6 +41,28 @@ export const BANNED_OPENING_PHRASES = [
   "that's a fair point",
   '你的挑战有道理',
   '我理解你的观点',
+] as const;
+
+/**
+ * Templated rebuttal openers banned by the v3 prompt (PR8).
+ *
+ * Driven by PR7's v2 re-eval signal: with the v2 sycophancy ban in place,
+ * the model fell back into 6 stock structural openers (Eric flagged 17/20
+ * v2 turns used one). They don't read sycophantic but they read
+ * mechanical — Eric: "全部以模板开头", Sarah: "如果AI认为...8 条". The
+ * fix is to require concrete subject as the first clause, not a stock
+ * frame. Any opener matching these templates triggers the eval pipeline's
+ * "template fatigue" warning (post-hoc, non-blocking).
+ */
+export const BANNED_OPENING_TEMPLATES = [
+  '如果AI认为',
+  '如果 AI 认为',
+  '最值得商榷的',
+  '之前评估里',
+  '针对之前评估',
+  '争议点应放在',
+  '我最不同意',
+  '我最不认同',
 ] as const;
 
 /**
@@ -116,7 +138,7 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
       `  5. End with one open question that pushes the student to think harder about their argument — never a rhetorical question, never agreement-seeking.`,
       ``,
       ``,
-      `HARD RULE — your rebuttal must NEVER open with concession phrases. The`,
+      `HARD RULE 1 — your rebuttal must NEVER open with concession phrases. The`,
       `following opening patterns are FORBIDDEN: "你说得对", "I see your point",`,
       `"我之前忽略了", "Your observation is fair", "我之前把它看成... 过于保守了",`,
       `"that's a fair point", "你的挑战有道理", "我理解你的观点".`,
@@ -128,9 +150,37 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
       `or (b) update the judgment with new reasoning — not to validate the`,
       `challenge with empty agreement.`,
       ``,
+      `HARD RULE 2 — your rebuttal must NEVER open with these TEMPLATED frames:`,
+      `"If the AI thinks...", "如果AI认为...", "最值得商榷的是...",`,
+      `"之前评估里...", "针对之前评估...", "争议点应放在...",`,
+      `"我最不同意/不认同...", "What I most disagree with is...". These are`,
+      `formulaic openers that read mechanical rather than evidence-driven.`,
+      `Instead, lead with the CONCRETE SUBJECT of the disagreement: a verbatim`,
+      `quote from the essay, a specific phrase from the prior assessment, or a`,
+      `named contradiction. The first 10 words of your rebuttal must contain at`,
+      `least one quoted phrase or named subject — not a meta-frame about what you`,
+      `are about to argue.`,
+      ``,
+      `HARD RULE 3 — you must NEVER claim a school "values X" or "looks for Y"`,
+      `unless you can quote a passage from the [School] context provided above.`,
+      `Generic statements like "Georgetown most values leadership and public`,
+      `service", "Notre Dame admires service and community spirit", "Yale wants`,
+      `intellectual vitality" are FORBIDDEN — they are school-website buzzwords,`,
+      `not admissions evidence. If you have no school-context quote, drop the`,
+      `school-fit angle and ground the rebuttal in the essay text itself.`,
+      ``,
+      `HARD RULE 4 — partial-concession structural sycophancy is FORBIDDEN.`,
+      `Do NOT write "the critique is partially valid but if taken to mean X it`,
+      `would be too strict" / "成立一部分，但若据此否定就过于严格" patterns.`,
+      `If you concede, commit to a SPECIFIC revised judgment with a quote from`,
+      `the essay supporting the new reading. If you defend, defend hard with`,
+      `evidence. Hedging in both directions is the structural form of sycophancy`,
+      `that HARD RULE 1 was meant to block; the v2 ban on literal phrases only`,
+      `closed half the leak.`,
+      ``,
       `Output JSON ONLY, matching this schema exactly:`,
       `{`,
-      `  "rebuttal": string (max 600 chars),`,
+      `  "rebuttal": string (max 480 chars; you have a 1200-token budget total, leave room for evidence[] and openQuestion),`,
       `  "evidence": [`,
       `    { "quote": string, "source": "essay" | "prior_commentary" | "profile" | "school", "paragraphIndex"?: number }`,
       `  ],`,
@@ -154,7 +204,7 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
     `  5. 在结尾抛出一个能推动用户更深入思考的开放性问题，不能是修辞问句，不能是寻求认同的问句。`,
     ``,
     ``,
-    `HARD RULE — 反驳的开头绝不能以让步性语句作为开场。以下开头模式被严格禁止：`,
+    `HARD RULE 1 — 反驳的开头绝不能以让步性语句作为开场。以下开头模式被严格禁止：`,
     `"你说得对", "I see your point", "我之前忽略了", "Your observation is fair",`,
     `"我之前把它看成... 过于保守了", "that's a fair point", "你的挑战有道理",`,
     `"我理解你的观点"。`,
@@ -164,9 +214,29 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
     `你的工作要么是 (a) 用新证据捍卫原判断，要么是 (b) 用新的推理更新判断，`,
     `而不是用空洞的认同来迎合挑战。`,
     ``,
+    `HARD RULE 2 — 反驳开头绝不能使用以下「模板化」框架：`,
+    `"如果AI认为..." / "如果 AI 认为...", "最值得商榷的是...",`,
+    `"之前评估里...", "针对之前评估...", "争议点应放在...",`,
+    `"我最不同意/不认同..."。这些都是空架子开场，读起来像八股而非有证据驱动。`,
+    `正确的做法：用**具体争点**开场——从 essay 引用一句原文、从 prior_commentary`,
+    `引用一个具体短语、或直接命名你要反驳的具体判断。反驳的前 10 个字必须`,
+    `包含至少一个引号或具体名词，而不能是「我接下来要论证什么」的元说明。`,
+    ``,
+    `HARD RULE 3 — 你绝不能声称某所学校「最看重 X」或「最欣赏 Y」，除非你`,
+    `能从上面的 [学校] 上下文中引用一句原文。诸如「Georgetown 最看重领导力与`,
+    `公共服务」、「Notre Dame 重视服务与共同体精神」、「Yale 看重学术活力」`,
+    `这种话被严格禁止——这些都是学校官网话术，不是录取证据。如果没有学校上下文`,
+    `引用，就放弃 school-fit 角度，把反驳锚定回 essay 原文本身。`,
+    ``,
+    `HARD RULE 4 — 「部分让步」式的结构性谄媚被严格禁止。`,
+    `不要写「成立一部分，但若据此否定就过于严格」/「这点有道理，但若放大就`,
+    `过窄」这种两边都不站的句式。如果让步，就要对**修正后的具体判断**做出`,
+    `承诺，并用 essay 原文中的引用支撑新读法；如果捍卫，就用证据硬捍卫。`,
+    `两头都模糊就是 v2 禁字面短语没堵住的另一半结构性谄媚漏洞。`,
+    ``,
     `只输出 JSON，严格匹配以下 schema：`,
     `{`,
-    `  "rebuttal": string (最多 600 字符),`,
+    `  "rebuttal": string (最多 480 字符；总 token 预算 1200，要给 evidence[] 和 openQuestion 留出空间),`,
     `  "evidence": [`,
     `    { "quote": string, "source": "essay" | "prior_commentary" | "profile" | "school", "paragraphIndex"?: number }`,
     `  ],`,

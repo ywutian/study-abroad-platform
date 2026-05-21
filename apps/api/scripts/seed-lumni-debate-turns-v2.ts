@@ -100,7 +100,9 @@ const COST_PER_TURN_USD = 0.04;
  * row belongs to. Must NOT collide with `'chatgpt-control'` (PR4) or
  * the un-marked v1 lumni rows (PR5).
  */
-const POOL_SOURCE_MARKER = 'lumni-v2' as const;
+const DEFAULT_POOL_SOURCE_MARKER = 'lumni-v2' as const;
+const VALID_POOL_MARKERS = ['lumni-v2', 'lumni-v3'] as const;
+type PoolMarker = (typeof VALID_POOL_MARKERS)[number];
 
 /**
  * Must match `buildUserChallenge()` in `seed-lumni-debate-turns.ts` (v1)
@@ -143,7 +145,7 @@ function getArg(name: string): string | undefined {
 interface TurnReport {
   caseId: string;
   sessionId: string;
-  turnSource: typeof POOL_SOURCE_MARKER;
+  turnSource: PoolMarker;
   promptVersion: string;
   latencyMs: number;
   tokensUsed: number;
@@ -152,13 +154,25 @@ interface TurnReport {
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
   const onlyCaseId = getArg('case-id');
-
-  // Sanity assert — if PR6 didn't actually bump to v2 something is very
-  // wrong. We're trying to generate v2 turns; refuse to run otherwise.
-  if (DEBATE_PROMPT_VERSION !== 'v2') {
+  const rawMarker = getArg('pool-marker') ?? DEFAULT_POOL_SOURCE_MARKER;
+  if (!(VALID_POOL_MARKERS as readonly string[]).includes(rawMarker)) {
     throw new Error(
-      `DEBATE_PROMPT_VERSION is "${DEBATE_PROMPT_VERSION}", expected "v2" — ` +
-        `did PR6 land? Refusing to run.`,
+      `Invalid --pool-marker "${rawMarker}". Must be one of: ${VALID_POOL_MARKERS.join(', ')}`,
+    );
+  }
+  const POOL_SOURCE_MARKER = rawMarker as PoolMarker;
+
+  // Sanity assert — refuse to run on the legacy v1 prompt. v2 (PR6) and
+  // v3 (PR8) are both acceptable; the seed name says "v2" but the script
+  // is the generic re-seed entry-point and the prompt version is logged
+  // per-turn in the audit blob.
+  if (
+    (DEBATE_PROMPT_VERSION as string) !== 'v2' &&
+    (DEBATE_PROMPT_VERSION as string) !== 'v3'
+  ) {
+    throw new Error(
+      `DEBATE_PROMPT_VERSION is "${DEBATE_PROMPT_VERSION}", expected "v2" or "v3" — ` +
+        `did PR6/PR8 land? Refusing to run.`,
     );
   }
 

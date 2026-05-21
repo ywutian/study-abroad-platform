@@ -11,7 +11,10 @@ import { LLMService } from '../ai-agent/core/llm.service';
 import { PointAction, PointsService } from '../points/incentive.service';
 import { DebateBudgetService } from './debate-budget.service';
 import { DebateContextLoaderService } from './debate-context-loader.service';
-import { buildDebateUserPrompt } from './essay-debate.prompts';
+import {
+  buildDebateUserPrompt,
+  DEBATE_PROMPT_VERSION,
+} from './essay-debate.prompts';
 import { EssayDebateService } from './essay-debate.service';
 
 /**
@@ -178,7 +181,10 @@ describe('EssayDebateService', () => {
     expect(mockPoints.charge).toHaveBeenCalledWith(
       'user-1',
       PointAction.AI_ESSAY_DEBATE_TURN,
-      expect.objectContaining({ sessionId: 'sess-1', promptVersion: 'v2' }),
+      expect.objectContaining({
+        sessionId: 'sess-1',
+        promptVersion: DEBATE_PROMPT_VERSION,
+      }),
     );
   });
 
