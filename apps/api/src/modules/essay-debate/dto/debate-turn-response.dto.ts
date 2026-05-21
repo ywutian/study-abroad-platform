@@ -55,10 +55,10 @@ export class DebateTurnDto {
 
   @ApiPropertyOptional({
     description:
-      'PR4 marker: when set to `chatgpt-control`, this turn was authored by the OpenAI-only control generator (`scripts/generate-chatgpt-control-turns.ts`) for the blind A/B eval, NOT by the lumni debate engine. The blind-eval queue uses this to label sessions in the pool without depending on the placeholder text matching trick used in PR3.',
-    enum: ['chatgpt-control'],
+      'Pool-attribution marker for blind eval. `chatgpt-control` (PR4) = authored by the OpenAI-only control generator (`scripts/generate-chatgpt-control-turns.ts`). `lumni-v2` (PR7) = authored by the lumni debate engine running the v2 prompt (`scripts/seed-lumni-debate-turns-v2.ts`). The PR5 v1-lumni sessions have NO source marker by design. The blind-eval gate uses this field to decode pool membership without trusting placeholder text.',
+    enum: ['chatgpt-control', 'lumni-v2'],
   })
-  source?: 'chatgpt-control';
+  source?: 'chatgpt-control' | 'lumni-v2';
 
   @ApiProperty()
   createdAt!: string;
