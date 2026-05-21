@@ -25,6 +25,7 @@ import {
   DebateTurnResponseDto,
 } from './dto/debate-turn-response.dto';
 import {
+  BANNED_HEDGE_PATTERNS,
   BANNED_OPENING_PHRASES,
   BANNED_OPENING_TEMPLATES,
   buildDebateSystemPrompt,
@@ -654,6 +655,28 @@ export class EssayDebateService {
             `[template-fatigue] rebuttal opens with templated frame "${tmpl}" (prompt=${DEBATE_PROMPT_VERSION})`,
           );
           return;
+        }
+      }
+      // PR9 (v4): scan the WHOLE text (not just head) for hedge patterns
+      // Mrs. Liu flagged in PR8 v3 re-eval — front-pivot concession or
+      // allow-then-counter ("真正可商榷的不是 X 而是 Y" / "说 X 可以，但 Y").
+      // These read as soft sycophancy in the parent-trust persona's eyes
+      // and are higher-priority bans than the structural template list.
+      const fullLower = text.toLowerCase();
+      for (const pat of BANNED_HEDGE_PATTERNS) {
+        try {
+          // Patterns are simple regex (`X.{1,4}Y`) — escape only what's
+          // user-content; the patterns themselves are author-controlled.
+          const re = new RegExp(pat, 'i');
+          if (re.test(fullLower)) {
+            this.logger.warn(
+              `[hedge-sycophancy] rebuttal contains hedge pattern /${pat}/ (prompt=${DEBATE_PROMPT_VERSION})`,
+            );
+            return;
+          }
+        } catch {
+          // Defensive — never crash the response on a regex compile error.
+          continue;
         }
       }
     }

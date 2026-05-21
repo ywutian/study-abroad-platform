@@ -50,6 +50,19 @@ export class BlindEvalQueueItemDto {
       'School this essay was written for (display-only, helps the evaluator gauge context).',
   })
   schoolName?: string;
+
+  @ApiPropertyOptional({
+    description:
+      "PR9: prior AI paragraph commentary for THIS turn's paragraph, loaded from `AdmissionCase.aiAnalysisCache` so blind raters can verify any `source: prior_commentary` quote in the AI rebuttal. Returns null when the case has no precomputed cache or the cached locale is missing. Absence means \"can't verify prior_commentary quotes\" — rater should fall back to essayText verification for those.",
+  })
+  priorCommentary?: {
+    paragraphIndex: number;
+    score: number;
+    status: string;
+    comment: string;
+    highlights: string[];
+    suggestions: string[];
+  } | null;
 }
 
 export class BlindEvalQueueResponseDto {

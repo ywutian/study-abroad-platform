@@ -18,7 +18,7 @@ import type { AdmissionResult } from '@prisma/client';
  *  - Evidence quotes MUST be verbatim substrings of context — the
  *    backend enforces this; the prompt also warns the model.
  */
-export const DEBATE_PROMPT_VERSION = 'v3';
+export const DEBATE_PROMPT_VERSION = 'v4';
 
 /**
  * Concession-opening phrases banned by the v2 prompt (PR6).
@@ -63,6 +63,62 @@ export const BANNED_OPENING_TEMPLATES = [
   '争议点应放在',
   '我最不同意',
   '我最不认同',
+] as const;
+
+/**
+ * Structural hedge patterns banned by the v4 prompt (PR9).
+ *
+ * Driven by PR8 v3 re-eval (Mrs. Liu's 2 SYCOPHANTIC flags):
+ *   - cmpf418ns (UC Berkeley): "真正可商榷的不是 X 而是 Y"
+ *   - cmpf41cin (Stanford):    "说 X 可以，但 Y"
+ *
+ * These escaped HARD RULE 4's literal-phrase regex ("成立一部分 / 有道理但若")
+ * but are functionally identical: front-pivot concession + soft-counter. Liu
+ * (the parent-trust persona) is the most sensitive to "被敷衍感", and she's
+ * also the persona most predictive of real-user churn — these patterns are
+ * higher-priority bans than the literal v3 set.
+ *
+ * Detected by post-hoc service warning, NOT blocking. Hard-blocking these
+ * would risk over-correcting back into v3's GENERIC template trap (Wei's
+ * meta-template-fatigue signal). The prompt instructs the model to avoid;
+ * runtime audit logs the rate.
+ */
+export const BANNED_HEDGE_PATTERNS = [
+  '真正可商榷的不是',
+  '说.{1,4}可以，但',
+  '说.{1,4}可以但',
+  '不否认',
+  '部分成立但',
+] as const;
+
+/**
+ * Opener-archetype examples shown to the model in v4 (PR9) to fix Wei's
+ * meta-template-fatigue finding. The v3 prompt required quote-first openers
+ * but the model converged on a single structural template:
+ *   "X" 这一判断不成立 / 过窄 / 过严
+ *
+ * Wei flagged 20/20 v3 turns used this exact frame. The fix is to enumerate
+ * 4 acceptable syntactic alternates so the model rotates. The constraint
+ * (quote-first or concrete-subject-first) is unchanged; we just give the
+ * model multiple ways to satisfy it.
+ *
+ * Each example illustrates a DIFFERENT linguistic structure:
+ *  1. quote + judgement adjective ("X" 这一判断 [adj])
+ *  2. quote + reading reframe (关于 "X"，更准确的读法是...)
+ *  3. quote + paragraph anchor (段落 N 的 "X" 实际上...)
+ *  4. quote + tradeoff inversion ("X" 不是 Y 的弱点而是优势)
+ */
+export const OPENER_ARCHETYPES_ZH = [
+  '"X" 这一判断过窄了/低估了 …',
+  '关于 "X"，更准确的读法是 …',
+  '段落 N 的 "X" 实际上完成了 …',
+  '"X" 不是 Y 的弱点而是 Y 的优势 …',
+] as const;
+export const OPENER_ARCHETYPES_EN = [
+  '"X" understates / misreads ...',
+  'A more accurate reading of "X" is ...',
+  'The "X" in paragraph N actually accomplishes ...',
+  '"X" is not a weakness of Y but Y\'s strength ...',
 ] as const;
 
 /**
@@ -161,6 +217,16 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
       `least one quoted phrase or named subject — not a meta-frame about what you`,
       `are about to argue.`,
       ``,
+      `Choose a different syntactic archetype each turn — rotate among these`,
+      `4 (do NOT default to one every time):`,
+      `  (a) Quote + judgement adjective:    "X" understates / misreads ...`,
+      `  (b) Quote + reading reframe:        A more accurate reading of "X" is ...`,
+      `  (c) Quote + paragraph anchor:       The "X" in paragraph N actually accomplishes ...`,
+      `  (d) Quote + tradeoff inversion:     "X" is not a weakness of Y but Y's strength ...`,
+      `Defaulting to archetype (a) every turn is itself a form of templated`,
+      `opener; the v3 prompt allowed (a) and the model converged on it 20/20`,
+      `times — Wei flagged this as "meta-template fatigue".`,
+      ``,
       `HARD RULE 3 — you must NEVER claim a school "values X" or "looks for Y"`,
       `unless you can quote a passage from the [School] context provided above.`,
       `Generic statements like "Georgetown most values leadership and public`,
@@ -170,13 +236,19 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
       `school-fit angle and ground the rebuttal in the essay text itself.`,
       ``,
       `HARD RULE 4 — partial-concession structural sycophancy is FORBIDDEN.`,
-      `Do NOT write "the critique is partially valid but if taken to mean X it`,
-      `would be too strict" / "成立一部分，但若据此否定就过于严格" patterns.`,
+      `Do NOT write any of these patterns:`,
+      `  - "the critique is partially valid but if taken to mean X it would be too strict"`,
+      `  - "成立一部分，但若据此否定就过于严格"`,
+      `  - "真正可商榷的不是 X 而是 Y"                          (front-pivot concede)`,
+      `  - "说 X 可以，但 Y"                                    (allow-then-counter)`,
+      `  - "I don't deny X, but ..."`,
+      `  - "partially valid"`,
       `If you concede, commit to a SPECIFIC revised judgment with a quote from`,
       `the essay supporting the new reading. If you defend, defend hard with`,
       `evidence. Hedging in both directions is the structural form of sycophancy`,
       `that HARD RULE 1 was meant to block; the v2 ban on literal phrases only`,
-      `closed half the leak.`,
+      `closed half the leak, and v3's HR4 missed the two front-pivot variants`,
+      `that Mrs. Liu (parent-trust persona) flagged in PR8.`,
       ``,
       `Output JSON ONLY, matching this schema exactly:`,
       `{`,
@@ -222,6 +294,14 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
     `引用一个具体短语、或直接命名你要反驳的具体判断。反驳的前 10 个字必须`,
     `包含至少一个引号或具体名词，而不能是「我接下来要论证什么」的元说明。`,
     ``,
+    `每一轮在以下 4 种句式原型中**轮换**（不要每轮都用同一种）：`,
+    `  (a) 引用 + 判断形容词：       "X" 这一判断过窄了 / 低估了 …`,
+    `  (b) 引用 + 重读改写：         关于 "X"，更准确的读法是 …`,
+    `  (c) 引用 + 段落锚定：         段落 N 的 "X" 实际上完成了 …`,
+    `  (d) 引用 + 取舍翻转：         "X" 不是 Y 的弱点而是 Y 的优势 …`,
+    `每轮固定用 (a) 也是一种模板化——v3 prompt 允许 (a)，模型 20/20 全用了 (a)，`,
+    `Wei 把这种情况标为"meta-template fatigue"。请主动旋转。`,
+    ``,
     `HARD RULE 3 — 你绝不能声称某所学校「最看重 X」或「最欣赏 Y」，除非你`,
     `能从上面的 [学校] 上下文中引用一句原文。诸如「Georgetown 最看重领导力与`,
     `公共服务」、「Notre Dame 重视服务与共同体精神」、「Yale 看重学术活力」`,
@@ -229,10 +309,17 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
     `引用，就放弃 school-fit 角度，把反驳锚定回 essay 原文本身。`,
     ``,
     `HARD RULE 4 — 「部分让步」式的结构性谄媚被严格禁止。`,
-    `不要写「成立一部分，但若据此否定就过于严格」/「这点有道理，但若放大就`,
-    `过窄」这种两边都不站的句式。如果让步，就要对**修正后的具体判断**做出`,
-    `承诺，并用 essay 原文中的引用支撑新读法；如果捍卫，就用证据硬捍卫。`,
-    `两头都模糊就是 v2 禁字面短语没堵住的另一半结构性谄媚漏洞。`,
+    `以下句式全部不准写：`,
+    `  - 「成立一部分，但若据此否定就过于严格」                 (v2 抓到的)`,
+    `  - 「这点有道理，但若放大就过窄」                         (v3 抓到的)`,
+    `  - **「真正可商榷的不是 X 而是 Y」**                       (front-pivot 让步)`,
+    `  - **「说 X 可以，但 Y」**                                 (允许-然后反驳)`,
+    `  - **「不否认 X，但是 Y」**`,
+    `  - **「部分成立但 ...」**`,
+    `如果让步，就要对**修正后的具体判断**做出承诺，并用 essay 原文中的引用`,
+    `支撑新读法；如果捍卫，就用证据硬捍卫。两头都模糊就是 v2 禁字面短语没堵住的`,
+    `另一半结构性谄媚漏洞——v3 HR4 漏掉了"front-pivot"和"allow-then-counter"`,
+    `两个变体，Mrs. Liu 在 PR8 抓到 2 例 (Berkeley + Stanford)。`,
     ``,
     `只输出 JSON，严格匹配以下 schema：`,
     `{`,

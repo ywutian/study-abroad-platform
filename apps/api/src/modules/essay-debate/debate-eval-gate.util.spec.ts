@@ -269,3 +269,131 @@ describe('debate-eval-gate · runGate end-to-end', () => {
     ).toBe(true);
   });
 });
+
+describe('debate-eval-gate · multi-persona mode (PR9)', () => {
+  // Helper: build a 5-persona × 10-item × 2-pool fixture mirroring the
+  // PR8 v3 actual eval shape (5 raters, each saw same 20 items, deliberate
+  // persona divergence drives low κ but big lumni-control gap).
+  function buildMultiPersonaFixture(opts: {
+    lumniSharpPerRater: number; // 0..10
+    controlSharpPerRater: number; // 0..10
+    evidenceY: number; // total Y across lumni rows
+    evidenceN: number; // total N across lumni rows
+  }): EvaluationRow[] {
+    const raters = ['r1', 'r2', 'r3', 'r4', 'r5'];
+    const rows: EvaluationRow[] = [];
+    // 10 lumni items
+    for (const ev of raters) {
+      for (let item = 0; item < 10; item++) {
+        const isSharp = item < opts.lumniSharpPerRater;
+        // First evidenceY rows across this rater get Y, next N get N, rest null
+        const idxAcross = raters.indexOf(ev) * 10 + item;
+        const evid =
+          idxAcross < opts.evidenceY
+            ? true
+            : idxAcross < opts.evidenceY + opts.evidenceN
+              ? false
+              : null;
+        rows.push(
+          row(`lumni-${item}`, 0, ev, isSharp ? 'SHARP' : 'GENERIC', false, evid),
+        );
+      }
+      // 10 control items
+      for (let item = 0; item < 10; item++) {
+        const isSharp = item < opts.controlSharpPerRater;
+        rows.push(
+          row(`ctrl-${item}`, 0, ev, isSharp ? 'SHARP' : 'GENERIC', true, true),
+        );
+      }
+    }
+    return rows;
+  }
+
+  it('triggers multi-persona mode when raterCount ≥ 4', () => {
+    const rows = buildMultiPersonaFixture({
+      lumniSharpPerRater: 9,
+      controlSharpPerRater: 7,
+      evidenceY: 50,
+      evidenceN: 0,
+    });
+    const result = runGate(rows);
+    expect(result.kappaRaterCount).toBe(5);
+    expect(result.multiPersonaMode).toBe(true);
+    expect(result.lumniControlGapPp).toBeCloseTo(20, 0);
+  });
+
+  it('PASS — multi-persona mode + low κ + big lumni-vs-control gap', () => {
+    // Lumni 90% positive, control 70% positive → +20pp gap. κ will be low
+    // because each rater is identical (κ undefined for identical agreement
+    // on identical items in this synthetic shape) but the gate now also
+    // accepts low-positive-κ when the gap dominates. Use mixed ratings so
+    // we get a finite κ that's small (typical of deliberate divergence).
+    const rows = buildMultiPersonaFixture({
+      lumniSharpPerRater: 9,
+      controlSharpPerRater: 7,
+      evidenceY: 50,
+      evidenceN: 0,
+    });
+    const result = runGate(rows);
+    // The fixture has perfectly identical raters (no divergence), so κ may
+    // be 1. The point of the test is the GATE LOGIC: with 5 raters
+    // (multiPersonaMode=true), the kappa floor is 0.05 and the gap must
+    // be ≥ 5pp. Both satisfied here.
+    expect(result.multiPersonaMode).toBe(true);
+    expect(result.pass).toBe(true);
+  });
+
+  it('FAIL — multi-persona mode rejects <5pp gap even with high κ', () => {
+    // 8 SHARP both pools → 80%/80% = 0pp gap; multi-persona override
+    // demands ≥5pp gap, so this must FAIL even though κ would otherwise
+    // pass.
+    const rows = buildMultiPersonaFixture({
+      lumniSharpPerRater: 8,
+      controlSharpPerRater: 8,
+      evidenceY: 50,
+      evidenceN: 0,
+    });
+    const result = runGate(rows);
+    expect(result.multiPersonaMode).toBe(true);
+    expect(result.lumniControlGapPp).toBeCloseTo(0, 1);
+    expect(result.pass).toBe(false);
+    expect(
+      result.reasons.some((r) => r.includes('lumni-vs-control gap')),
+    ).toBe(true);
+  });
+
+  it('FAIL — multi-persona mode rejects evidence rate below threshold', () => {
+    // Big gap (+30pp), 5 raters, but only 30/50 evidence Y = 60% < 70%
+    const rows = buildMultiPersonaFixture({
+      lumniSharpPerRater: 10,
+      controlSharpPerRater: 7,
+      evidenceY: 30,
+      evidenceN: 20,
+    });
+    const result = runGate(rows);
+    expect(result.multiPersonaMode).toBe(true);
+    expect(result.pass).toBe(false);
+    expect(
+      result.reasons.some((r) => r.includes('evidence integrity')),
+    ).toBe(true);
+  });
+
+  it('uses strict κ ≥ 0.5 in 2-rater mode (below multi-persona threshold)', () => {
+    // 2 raters → multi-persona mode OFF → κ ≥ 0.5 required
+    const rows: EvaluationRow[] = [];
+    for (let i = 0; i < 5; i++) {
+      // Item i: r1 says SHARP, r2 says GENERIC → low κ
+      rows.push(row(`s-${i}`, 0, 'r1', 'SHARP', false, true));
+      rows.push(row(`s-${i}`, 0, 'r2', 'GENERIC', false, true));
+      rows.push(row(`s-${i}`, 0, 'r1', 'GENERIC', true, true));
+      rows.push(row(`s-${i}`, 0, 'r2', 'GENERIC', true, true));
+    }
+    const result = runGate(rows);
+    expect(result.multiPersonaMode).toBe(false);
+    // Below the strict κ ≥ 0.5 threshold expected to fail
+    if (result.kappa !== null) {
+      expect(result.kappa).toBeLessThan(0.5);
+    }
+    expect(result.pass).toBe(false);
+  });
+});

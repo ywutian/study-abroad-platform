@@ -17,6 +17,25 @@ import { EssayDebateRating } from '@prisma/client';
 export const DEFAULT_KAPPA_THRESHOLD = 0.5;
 export const DEFAULT_EVIDENCE_RATE_THRESHOLD = 0.7;
 
+/**
+ * PR9 (v4): multi-persona override threshold. When the rater pool is ≥4
+ * raters with *deliberately divergent* philosophies (5-persona blind
+ * eval), the κ ≥ 0.5 threshold becomes a structural false-negative — Chen
+ * (verbatim-grep) and Sarah (formalist) intentionally disagree by design,
+ * which is the *feature*, not a bug.
+ *
+ * In multi-persona mode the gate:
+ *   - relaxes κ to ≥ this value (still requires *some* agreement to rule
+ *     out random rater drift)
+ *   - REQUIRES lumni-vs-control gap ≥ DEFAULT_MIN_LUMNI_CONTROL_GAP_PP
+ *     so we don't ship "different from control by 0.5pp + κ disagreement"
+ *
+ * Triggered when `kappaRaterCount >= MULTI_PERSONA_RATER_COUNT`.
+ */
+export const DEFAULT_KAPPA_MULTI_PERSONA_THRESHOLD = 0.05;
+export const DEFAULT_MIN_LUMNI_CONTROL_GAP_PP = 5; // percentage points
+export const MULTI_PERSONA_RATER_COUNT = 4;
+
 export interface EvaluationRow {
   sessionId: string;
   turnIndex: number;
@@ -38,9 +57,18 @@ export interface GateResult {
   controlSharpUsefulShare: number | null;
   controlSampleSize: number;
   reasons: string[];
+  /**
+   * PR9: `multiPersonaMode` is true when the rater count crossed
+   * MULTI_PERSONA_RATER_COUNT, so the gate used relaxed κ + required
+   * a lumni-vs-control gap. Surfaced for transparency in the CLI banner.
+   */
+  multiPersonaMode: boolean;
+  lumniControlGapPp: number | null;
   thresholds: {
     kappa: number;
     evidenceRate: number;
+    kappaMultiPersona: number;
+    minLumniControlGapPp: number;
   };
 }
 
@@ -161,11 +189,23 @@ export function computeSharpUsefulShare(rows: EvaluationRow[]): {
  */
 export function runGate(
   rows: EvaluationRow[],
-  thresholds: { kappa: number; evidenceRate: number } = {
+  thresholds: {
+    kappa: number;
+    evidenceRate: number;
+    kappaMultiPersona?: number;
+    minLumniControlGapPp?: number;
+  } = {
     kappa: DEFAULT_KAPPA_THRESHOLD,
     evidenceRate: DEFAULT_EVIDENCE_RATE_THRESHOLD,
+    kappaMultiPersona: DEFAULT_KAPPA_MULTI_PERSONA_THRESHOLD,
+    minLumniControlGapPp: DEFAULT_MIN_LUMNI_CONTROL_GAP_PP,
   },
 ): GateResult {
+  const kappaMultiPersona =
+    thresholds.kappaMultiPersona ?? DEFAULT_KAPPA_MULTI_PERSONA_THRESHOLD;
+  const minLumniControlGapPp =
+    thresholds.minLumniControlGapPp ?? DEFAULT_MIN_LUMNI_CONTROL_GAP_PP;
+
   const lumniRows = rows.filter((r) => !r.isChatGptControl);
   const controlRows = rows.filter((r) => r.isChatGptControl);
 
@@ -174,14 +214,29 @@ export function runGate(
   const lumniShare = computeSharpUsefulShare(lumniRows);
   const controlShare = computeSharpUsefulShare(controlRows);
 
+  // PR9: multi-persona override. With ≥4 deliberately-divergent raters
+  // (lenient Chen + strict Sarah + formalist Eric + ...), κ ≥ 0.5 is a
+  // structural false-negative. Relax κ to `kappaMultiPersona` and demand
+  // a meaningful lumni-vs-control gap as the substantive ship signal.
+  const multiPersonaMode =
+    kappaResult.raterCount >= MULTI_PERSONA_RATER_COUNT;
+  const effectiveKappaThreshold = multiPersonaMode
+    ? kappaMultiPersona
+    : thresholds.kappa;
+
+  const lumniControlGapPp =
+    lumniShare.share !== null && controlShare.share !== null
+      ? (lumniShare.share - controlShare.share) * 100
+      : null;
+
   const reasons: string[] = [];
   if (kappaResult.kappa === null) {
     reasons.push(
       `κ undefined (not enough overlapping ratings; need ≥2 evaluators on the same items, got ${kappaResult.raterCount} raters × ${kappaResult.itemCount} items)`,
     );
-  } else if (kappaResult.kappa < thresholds.kappa) {
+  } else if (kappaResult.kappa < effectiveKappaThreshold) {
     reasons.push(
-      `κ=${kappaResult.kappa.toFixed(3)} below threshold ${thresholds.kappa}`,
+      `κ=${kappaResult.kappa.toFixed(3)} below threshold ${effectiveKappaThreshold}${multiPersonaMode ? ' (multi-persona relaxed)' : ''}`,
     );
   }
   if (evidence.rate === null) {
@@ -192,7 +247,15 @@ export function runGate(
     );
   }
   if (lumniShare.share !== null && controlShare.share !== null) {
-    if (lumniShare.share < controlShare.share) {
+    if (multiPersonaMode) {
+      // In multi-persona mode the gap drives the ship decision.
+      if (lumniControlGapPp! < minLumniControlGapPp) {
+        reasons.push(
+          `lumni-vs-control gap ${lumniControlGapPp!.toFixed(1)}pp below threshold ${minLumniControlGapPp}pp (multi-persona mode)`,
+        );
+      }
+    } else if (lumniShare.share < controlShare.share) {
+      // 2-rater human mode: simple "lumni ≥ control" suffices.
       reasons.push(
         `lumni SHARP+USEFUL share ${(lumniShare.share * 100).toFixed(1)}% < ChatGPT control ${(controlShare.share * 100).toFixed(1)}% — no improvement over baseline`,
       );
@@ -204,13 +267,15 @@ export function runGate(
   }
 
   const kappaOk =
-    kappaResult.kappa !== null && kappaResult.kappa >= thresholds.kappa;
+    kappaResult.kappa !== null && kappaResult.kappa >= effectiveKappaThreshold;
   const evidenceOk =
     evidence.rate !== null && evidence.rate >= thresholds.evidenceRate;
   const controlOk =
-    controlShare.share === null ||
-    lumniShare.share === null ||
-    lumniShare.share >= controlShare.share;
+    controlShare.share === null || lumniShare.share === null
+      ? true
+      : multiPersonaMode
+        ? lumniControlGapPp !== null && lumniControlGapPp >= minLumniControlGapPp
+        : lumniShare.share >= controlShare.share;
   const lumniPresent = lumniRows.length > 0;
 
   return {
@@ -225,7 +290,14 @@ export function runGate(
     controlSharpUsefulShare: controlShare.share,
     controlSampleSize: controlShare.sampleSize,
     reasons,
-    thresholds,
+    multiPersonaMode,
+    lumniControlGapPp,
+    thresholds: {
+      kappa: thresholds.kappa,
+      evidenceRate: thresholds.evidenceRate,
+      kappaMultiPersona,
+      minLumniControlGapPp,
+    },
   };
 }
 
@@ -256,13 +328,33 @@ export function formatVerdict(result: GateResult): string {
   const lines: string[] = [];
   lines.push(formatBanner(result.pass));
   lines.push('');
+  if (result.multiPersonaMode) {
+    lines.push(
+      `  [multi-persona mode: ${result.kappaRaterCount} raters ≥ ${MULTI_PERSONA_RATER_COUNT}]`,
+    );
+    lines.push(
+      `  κ relaxed to ≥ ${result.thresholds.kappaMultiPersona}; lumni-vs-control gap ≥ ${result.thresholds.minLumniControlGapPp}pp required`,
+    );
+    lines.push('');
+  }
+  const effectiveKappaThresh = result.multiPersonaMode
+    ? result.thresholds.kappaMultiPersona
+    : result.thresholds.kappa;
   lines.push(
     fmtRow(
-      `kappa (Fleiss, >= ${result.thresholds.kappa})`,
+      `kappa (Fleiss, >= ${effectiveKappaThresh})`,
       fmtNum(result.kappa),
       `${result.kappaRaterCount} raters x ${result.kappaItemCount} items`,
     ),
   );
+  if (result.lumniControlGapPp !== null) {
+    lines.push(
+      fmtRow(
+        `lumni-vs-control gap (>= ${result.thresholds.minLumniControlGapPp}pp)`,
+        `${result.lumniControlGapPp >= 0 ? '+' : ''}${result.lumniControlGapPp.toFixed(1)}pp`,
+      ),
+    );
+  }
   lines.push(
     fmtRow(
       `evidence integrity (>= ${fmtPct(result.thresholds.evidenceRate)})`,

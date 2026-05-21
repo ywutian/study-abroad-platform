@@ -3,6 +3,7 @@ import type { EssayDebateSession, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { DebateContextPayload } from './essay-debate.prompts';
 import type { DebateTurnDto } from './dto/debate-turn-response.dto';
+import { pickPriorCommentary } from './debate-prior-commentary.util';
 
 /**
  * Phase 2 V1 PR2 — assembles the 6 context classes documented in
@@ -23,22 +24,6 @@ import type { DebateTurnDto } from './dto/debate-turn-response.dto';
  * The 6 fetch points are deliberately labelled below — they line up 1:1
  * with the table rows in `CONTEXT_AUDIT.md`.
  */
-
-/** Shape of one entry in `AdmissionCase.aiAnalysisCache[locale]`. */
-interface CachedAnalysisEntry {
-  promptVersion?: string;
-  generatedAt?: string;
-  payload?: {
-    paragraphs?: Array<{
-      paragraphIndex?: number;
-      score?: number;
-      status?: string;
-      comment?: string;
-      highlights?: string[];
-      suggestions?: string[];
-    }>;
-  };
-}
 
 /** Loader output (the prompt builder consumes this directly). */
 export type DebateContext = DebateContextPayload;
@@ -226,51 +211,16 @@ export class DebateContextLoaderService {
   // ── private helpers ────────────────────────────────────────────────────
 
   /**
-   * Map `AdmissionCase.aiAnalysisCache[locale].payload.paragraphs[idx]`
-   * into the prompt's `priorCommentary` shape, picking the requested
-   * paragraph (or the first paragraph if none requested).
+   * PR9: thin wrapper preserving the historical method signature.
+   * Real logic lives in `debate-prior-commentary.util.ts` so the
+   * blind-eval service can reuse it.
    */
   private pickParagraphFromCache(
     cache: Prisma.JsonValue,
     locale: 'zh' | 'en',
     paragraphIndex: number | null,
   ): DebateContext['priorCommentary'] {
-    if (!cache || typeof cache !== 'object' || Array.isArray(cache))
-      return null;
-    const blob = (cache as Record<string, unknown>)[locale] as
-      | CachedAnalysisEntry
-      | undefined;
-    const paragraphsCommentary = blob?.payload?.paragraphs;
-    if (
-      !Array.isArray(paragraphsCommentary) ||
-      paragraphsCommentary.length === 0
-    ) {
-      return null;
-    }
-    const target =
-      paragraphIndex != null
-        ? (paragraphsCommentary.find(
-            (p) => p?.paragraphIndex === paragraphIndex,
-          ) ??
-          paragraphsCommentary[paragraphIndex] ??
-          paragraphsCommentary[0])
-        : paragraphsCommentary[0];
-    if (!target) return null;
-    return {
-      paragraphIndex:
-        typeof target.paragraphIndex === 'number'
-          ? target.paragraphIndex
-          : (paragraphIndex ?? 0),
-      score: typeof target.score === 'number' ? target.score : 5,
-      status: typeof target.status === 'string' ? target.status : 'good',
-      comment: typeof target.comment === 'string' ? target.comment : '',
-      highlights: Array.isArray(target.highlights)
-        ? target.highlights.filter((h): h is string => typeof h === 'string')
-        : [],
-      suggestions: Array.isArray(target.suggestions)
-        ? target.suggestions.filter((s): s is string => typeof s === 'string')
-        : [],
-    };
+    return pickPriorCommentary(cache, locale, paragraphIndex);
   }
 
   /**

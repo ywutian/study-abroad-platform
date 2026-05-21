@@ -101,7 +101,7 @@ const COST_PER_TURN_USD = 0.04;
  * the un-marked v1 lumni rows (PR5).
  */
 const DEFAULT_POOL_SOURCE_MARKER = 'lumni-v2' as const;
-const VALID_POOL_MARKERS = ['lumni-v2', 'lumni-v3'] as const;
+const VALID_POOL_MARKERS = ['lumni-v2', 'lumni-v3', 'lumni-v4'] as const;
 type PoolMarker = (typeof VALID_POOL_MARKERS)[number];
 
 /**
@@ -162,17 +162,15 @@ async function main() {
   }
   const POOL_SOURCE_MARKER = rawMarker as PoolMarker;
 
-  // Sanity assert — refuse to run on the legacy v1 prompt. v2 (PR6) and
-  // v3 (PR8) are both acceptable; the seed name says "v2" but the script
-  // is the generic re-seed entry-point and the prompt version is logged
-  // per-turn in the audit blob.
-  if (
-    (DEBATE_PROMPT_VERSION as string) !== 'v2' &&
-    (DEBATE_PROMPT_VERSION as string) !== 'v3'
-  ) {
+  // Sanity assert — refuse to run on the legacy v1 prompt. v2 (PR6), v3
+  // (PR8), and v4 (PR9) are all acceptable; the seed name says "v2" but
+  // the script is the generic re-seed entry-point and the prompt version
+  // is logged per-turn in the audit blob.
+  const acceptable = ['v2', 'v3', 'v4'];
+  if (!acceptable.includes(DEBATE_PROMPT_VERSION as string)) {
     throw new Error(
-      `DEBATE_PROMPT_VERSION is "${DEBATE_PROMPT_VERSION}", expected "v2" or "v3" — ` +
-        `did PR6/PR8 land? Refusing to run.`,
+      `DEBATE_PROMPT_VERSION is "${DEBATE_PROMPT_VERSION}", expected one of ${acceptable.join(', ')} — ` +
+        `did PR6/PR8/PR9 land? Refusing to run.`,
     );
   }
 
