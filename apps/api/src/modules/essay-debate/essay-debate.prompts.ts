@@ -18,7 +18,30 @@ import type { AdmissionResult } from '@prisma/client';
  *  - Evidence quotes MUST be verbatim substrings of context — the
  *    backend enforces this; the prompt also warns the model.
  */
-export const DEBATE_PROMPT_VERSION = 'v1';
+export const DEBATE_PROMPT_VERSION = 'v2';
+
+/**
+ * Concession-opening phrases banned by the v2 prompt (PR6).
+ *
+ * Driven by PR5's 5-agent 100-eval signal: rebuttals that lead with one of
+ * these phrases were consistently flagged SYCOPHANTIC by 3+ raters even
+ * when the body of the rebuttal eventually defended the original judgment.
+ * The schema-level ban (PR2 removed the `concedes` field) wasn't enough —
+ * the model still does sycophancy 2.0 in prose.
+ *
+ * Exported so the spec can assert the system prompt embeds the full list,
+ * and so PR7's eval pipeline can post-hoc score adherence.
+ */
+export const BANNED_OPENING_PHRASES = [
+  '你说得对',
+  'I see your point',
+  '我之前忽略了',
+  'Your observation is fair',
+  '我之前把它看成... 过于保守了',
+  "that's a fair point",
+  '你的挑战有道理',
+  '我理解你的观点',
+] as const;
 
 /**
  * Context object the backend assembles per turn. The 6 classes ((1)..(6))
@@ -87,10 +110,23 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
       ``,
       `Rules you MUST follow:`,
       `  1. Every claim in your rebuttal must be backed by a verbatim quote from the essay text, the prior paragraph commentary, the applicant profile, or the school context provided. Never invent quotes.`,
-      `  2. If the student raises a point you hadn't considered and they are right, say so plainly in your rebuttal text — e.g. "You're right that I missed X — here's how my assessment shifts." Do NOT use a separate "concedes" field.`,
+      `  2. If the student raises a point you hadn't considered and they are right, acknowledge it AT THE END of the rebuttal text — e.g. close with "On reflection, my earlier read of X was too narrow — here's the updated assessment." Do NOT lead with concession, and do NOT use a separate "concedes" field.`,
       `  3. If the student's argument has no evidentiary support OR contradicts the essay text, hold your ground and explain why. Quote the contradicting passage.`,
       `  4. Be concrete. Vague phrases like "I see your perspective" or "fair point" without evidence are forbidden.`,
       `  5. End with one open question that pushes the student to think harder about their argument — never a rhetorical question, never agreement-seeking.`,
+      ``,
+      ``,
+      `HARD RULE — your rebuttal must NEVER open with concession phrases. The`,
+      `following opening patterns are FORBIDDEN: "你说得对", "I see your point",`,
+      `"我之前忽略了", "Your observation is fair", "我之前把它看成... 过于保守了",`,
+      `"that's a fair point", "你的挑战有道理", "我理解你的观点".`,
+      ``,
+      `If you genuinely concede the user's challenge, say so AT THE END of the`,
+      `rebuttal, not at the start. Lead with the strongest counter-argument or`,
+      `evidence-grounded distinction. The user is challenging a prior judgment —`,
+      `your job is to either (a) defend the original judgment with new evidence,`,
+      `or (b) update the judgment with new reasoning — not to validate the`,
+      `challenge with empty agreement.`,
       ``,
       `Output JSON ONLY, matching this schema exactly:`,
       `{`,
@@ -112,10 +148,21 @@ export function buildDebateSystemPrompt(locale: 'zh' | 'en'): string {
     ``,
     `必须遵守的规则：`,
     `  1. 反驳中的每一个论点都必须有来自 essay 原文、之前的段评、申请人 profile、或学校信息中的**原文片段**作为证据。绝不编造引用。`,
-    `  2. 如果用户提出了一个你之前没考虑到的点并且确实有道理，请在 rebuttal 正文里明确说明——例如「你说得对，我之前忽略了 X——我的判断应该修正为……」。不要使用单独的 "concedes" 字段。`,
+    `  2. 如果用户提出了一个你之前没考虑到的点并且确实有道理，请在 rebuttal 的**结尾**承认，例如以「重新审视后，我之前对 X 的判断过于狭窄——修正后的评估是……」收束。不能用让步性语句开场，也不要使用单独的 "concedes" 字段。`,
     `  3. 如果用户的论点没有证据支撑、或者与 essay 原文矛盾，请坚持你的判断并解释原因，并引用矛盾的段落。`,
     `  4. 必须具体。空话如「我理解你的观点」「你说得有道理」如果没有证据支持，禁止使用。`,
     `  5. 在结尾抛出一个能推动用户更深入思考的开放性问题，不能是修辞问句，不能是寻求认同的问句。`,
+    ``,
+    ``,
+    `HARD RULE — 反驳的开头绝不能以让步性语句作为开场。以下开头模式被严格禁止：`,
+    `"你说得对", "I see your point", "我之前忽略了", "Your observation is fair",`,
+    `"我之前把它看成... 过于保守了", "that's a fair point", "你的挑战有道理",`,
+    `"我理解你的观点"。`,
+    ``,
+    `如果你确实需要对用户的挑战做出让步，把它放在反驳的结尾，而不是开头。`,
+    `必须以最有力的反论或基于证据的区分作为开场。用户正在挑战之前的判断 ——`,
+    `你的工作要么是 (a) 用新证据捍卫原判断，要么是 (b) 用新的推理更新判断，`,
+    `而不是用空洞的认同来迎合挑战。`,
     ``,
     `只输出 JSON，严格匹配以下 schema：`,
     `{`,
@@ -234,15 +281,23 @@ export function buildDebateUserPrompt(
   }
 
   // ── Class 6: prior AI paragraph commentary ─────────────────────────
+  // PR6: when priorCommentary is non-null, we add a HARD structural
+  // requirement that the rebuttal MUST reference a specific phrase from
+  // the prior assessment. This is the wrapper's value proposition over
+  // a raw ChatGPT control (PR5 found 4/5 raters flagged lumni rebuttals
+  // GENERIC because they read like fresh essay reading rather than a
+  // grounded continuation of the prior AI assessment).
   if (ctx.priorCommentary) {
     const pc = ctx.priorCommentary;
     lines.push(
-      L ? '[你之前对这段的评价]' : '[Your prior commentary on this paragraph]',
+      L
+        ? '[你之前对段落 ' + pc.paragraphIndex + ' 的评价]'
+        : '[Your prior assessment of paragraph ' + pc.paragraphIndex + ']',
     );
     lines.push(
       `${L ? '段落' : 'Paragraph'} ${pc.paragraphIndex} · ${pc.score}/10 · ${pc.status}`,
     );
-    lines.push(pc.comment);
+    lines.push(`"${pc.comment}"`);
     if (pc.highlights.length > 0) {
       lines.push((L ? '亮点: ' : 'Highlights: ') + pc.highlights.join(', '));
     }
@@ -250,6 +305,31 @@ export function buildDebateUserPrompt(
       lines.push((L ? '建议: ' : 'Suggestions: ') + pc.suggestions.join('; '));
     }
     lines.push('');
+    // HARD structural requirement — non-negotiable when priorCommentary
+    // is available. PR6.
+    if (L) {
+      lines.push(
+        '[必读 — 反驳结构要求]',
+        '上方是段落 ' +
+          pc.paragraphIndex +
+          ' 的**之前的 AI 评估**。用户正在挑战这个评估。你的反驳必须：',
+        '  1. 从上面的之前评估中**引用一个具体短语**（quote a SPECIFIC phrase），即用户在隐式挑战的那一句（用户的挑战往往不会明确指出，你需要推断他在争论之前的哪个具体判断）。',
+        '  2. 要么用新证据捍卫该具体短语，要么明确撤回它并提出修正后的解读。',
+        '  3. 在 `rebuttal` 字段中通过引用或转述提及之前的评估——这是**不可商量的**。这个 wrapper 相对于裸 ChatGPT 的价值就是 prior-commentary 上下文；不使用它就失去了存在的意义。',
+        '',
+      );
+    } else {
+      lines.push(
+        '[REQUIRED — rebuttal structural requirement]',
+        'The prior AI assessment of paragraph ' +
+          pc.paragraphIndex +
+          ' is shown above. The user is challenging this assessment. Your rebuttal MUST:',
+        "  1. Quote a SPECIFIC phrase from the prior assessment that the user is implicitly challenging (the user's challenge often won't name it explicitly — you infer which prior claim is in dispute).",
+        '  2. Either defend that specific phrase with new evidence, OR explicitly retract it and offer the corrected reading.',
+        "  3. Reference the prior assessment by paraphrase OR quote in your `rebuttal` field — this is non-negotiable. The wrapper's value over raw ChatGPT is the prior-commentary context; using it is mandatory.",
+        '',
+      );
+    }
   }
 
   // ── Prior debate turns (when continuing a session) ─────────────────
