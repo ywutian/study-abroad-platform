@@ -150,10 +150,14 @@ export function ChinaAdmitDashboard() {
                       </span>
                     </div>
 
-                    {/* 4-year mini bar chart */}
-                    {s.reliability === 'D' ? (
-                      <p className="text-xs text-muted-foreground">{t('noChinaData')}</p>
-                    ) : (
+                    {/* Body — three branches in priority order:
+                          1. Verified-China cases ≥1   → mini bar chart
+                          2. CDS official fallback     → school-wide rate row
+                          3. Neither                   → "no data yet" message
+                        The CDS fallback carries an `OFFICIAL_CDS` badge so
+                        users don't confuse it for the China-specific figure
+                        (it's school-wide, not nationality-segmented). */}
+                    {s.reliability !== 'D' ? (
                       <div className="flex items-end gap-1.5">
                         {s.yearly.map((y) => (
                           <div key={y.year} className="flex flex-1 flex-col items-center gap-1">
@@ -172,6 +176,29 @@ export function ChinaAdmitDashboard() {
                           </div>
                         ))}
                       </div>
+                    ) : s.cdsFallback ? (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                            {t('officialCdsBadge')}
+                          </span>
+                          {s.cdsFallback.acceptanceRate != null ? (
+                            <span className="text-sm font-semibold tabular-nums">
+                              {(s.cdsFallback.acceptanceRate * 100).toFixed(1)}%
+                            </span>
+                          ) : null}
+                          {s.cdsFallback.cycleYear ? (
+                            <span className="text-[10px] text-muted-foreground">
+                              · {s.cdsFallback.cycleYear}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-[11px] leading-snug text-muted-foreground">
+                          {t('officialCdsDisclaimer')}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{t('noChinaData')}</p>
                     )}
 
                     {/* Difficulty signal label */}

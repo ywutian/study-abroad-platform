@@ -6998,6 +6998,8 @@
       "emptyTitle": "China admit data is being collected",
       "emptyBody": "Verified mainland-China admission cases will appear here once enough are reviewed.",
       "noChinaData": "No mainland-China-specific data yet",
+      "officialCdsBadge": "Official CDS",
+      "officialCdsDisclaimer": "US-wide admit rate · not mainland-China-specific; verified cases pending",
       "reliability": {
         "A": "High confidence — 5+ verified cases",
         "B": "Medium confidence — 3+ verified cases",

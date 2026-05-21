@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, AdmissionResult, VerificationLevel } from '@prisma/client';
 import type {
+  ChinaAdmitCdsFallback,
   ChinaAdmitTrendResponse,
   ChinaAdmitTrendEntry,
   DataReliability,
@@ -83,6 +84,33 @@ export class HallVerifiedDashboardService {
       },
     });
 
+    // PR · CDS fallback: fetch every target school's school-wide acceptance
+    // rate + its most-recent CDS band cycleYear in one round-trip. This
+    // surfaces an "Official CDS" tier on the card so the panel isn't a dead
+    // end while we wait for verified China-specific cases to accumulate.
+    //
+    // Important: this is NOT Chinese-mainland-specific. The UI MUST label
+    // these numbers with a visible badge so they aren't confused for the
+    // granular figure. The shared type's `ChinaAdmitCdsFallback.dataSource`
+    // = 'OFFICIAL_CDS' carries that semantic; the React component renders
+    // the badge.
+    const schoolMeta = await this.prisma.school.findMany({
+      where: { id: { in: targetSchoolIds } },
+      select: {
+        id: true,
+        name: true,
+        nameZh: true,
+        usNewsRank: true,
+        acceptanceRate: true,
+        cdsAdmitBands: {
+          select: { cycleYear: true, sourceUrl: true },
+          orderBy: { cycleYear: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    const schoolMetaById = new Map(schoolMeta.map((s) => [s.id, s]));
+
     // schoolId → year → { admitted, total }
     const grouped = new Map<
       string,
@@ -114,23 +142,73 @@ export class HallVerifiedDashboardService {
     const schools: ChinaAdmitTrendEntry[] = targetSchoolIds
       .map((schoolId): ChinaAdmitTrendEntry | null => {
         const entry = grouped.get(schoolId);
-        if (!entry) return null;
-        const yearly = Array.from(entry.years.entries())
-          .map(([year, v]) => ({ year, admitted: v.admitted, total: v.total }))
-          .sort((a, b) => a.year - b.year);
+        const meta = schoolMetaById.get(schoolId);
+
+        // PR · CDS fallback: even if no verified-China cases exist for this
+        // school, emit a card when CDS metadata is available. This unblocks
+        // the panel's "0 schools / empty state" trap. The card carries
+        // sampleSize=0 + reliability='D' + cdsFallback populated; the UI
+        // then renders the CDS row with a clearly distinct badge.
+        if (!entry && !meta) return null;
+
+        const yearly = entry
+          ? Array.from(entry.years.entries())
+              .map(([year, v]) => ({
+                year,
+                admitted: v.admitted,
+                total: v.total,
+              }))
+              .sort((a, b) => a.year - b.year)
+          : [];
         const sampleSize = yearly.reduce((s, y) => s + y.admitted, 0);
+
+        // Build the CDS fallback block. Prefer `School.acceptanceRate` as
+        // the primary signal (school-wide, broadly populated); fall back
+        // to inferring presence from `cdsBands` if `acceptanceRate` is
+        // null but bands exist (still surfaces an "OFFICIAL_CDS" badge,
+        // just without a single rate to show — UI handles null rate).
+        const cdsFallback: ChinaAdmitCdsFallback | null = meta
+          ? meta.acceptanceRate != null || meta.cdsAdmitBands.length > 0
+            ? {
+                acceptanceRate:
+                  meta.acceptanceRate != null
+                    ? // `School.acceptanceRate` is stored as a percentage
+                      // (0..100), see the column comment elsewhere in this
+                      // service — normalise to a 0..1 fraction for the
+                      // wire contract so the frontend doesn't need to
+                      // guess the unit.
+                      Number(meta.acceptanceRate) / 100
+                    : null,
+                cycleYear: meta.cdsAdmitBands[0]?.cycleYear ?? null,
+                dataSource: 'OFFICIAL_CDS',
+                sourceUrl: meta.cdsAdmitBands[0]?.sourceUrl ?? undefined,
+              }
+            : null
+          : null;
+
+        const name = entry?.name ?? meta?.name ?? '';
+        const nameZh = entry?.nameZh ?? meta?.nameZh ?? null;
+        const rank = entry?.rank ?? meta?.usNewsRank ?? null;
+
         return {
           schoolId,
-          schoolName: entry.name,
-          schoolNameZh: entry.nameZh ?? undefined,
-          schoolRank: entry.rank ?? undefined,
+          schoolName: name,
+          schoolNameZh: nameZh ?? undefined,
+          schoolRank: rank ?? undefined,
           yearly,
           reliability: HallVerifiedDashboardService.reliability(sampleSize),
           sampleSize,
+          cdsFallback,
         };
       })
       .filter((s): s is ChinaAdmitTrendEntry => s !== null)
-      .sort((a, b) => (a.schoolRank ?? 999) - (b.schoolRank ?? 999));
+      // Surface verified-data schools first (sampleSize > 0), then CDS
+      // fallback schools, both ordered by USNews rank within each group.
+      .sort((a, b) => {
+        if (a.sampleSize > 0 && b.sampleSize === 0) return -1;
+        if (a.sampleSize === 0 && b.sampleSize > 0) return 1;
+        return (a.schoolRank ?? 999) - (b.schoolRank ?? 999);
+      });
 
     return { schools, lastUpdated: new Date().toISOString() };
   }

@@ -6998,6 +6998,8 @@
       "emptyTitle": "中国大陆录取数据采集中",
       "emptyBody": "认证的中国大陆录取案例审核完成后将在此展示。",
       "noChinaData": "暂无中国大陆专属数据",
+      "officialCdsBadge": "官方 CDS",
+      "officialCdsDisclaimer": "全美录取率 · 非中国大陆专属，认证案例采集中",
       "reliability": {
         "A": "高可信 — 5 个及以上认证案例",
         "B": "中可信 — 3 个及以上认证案例",

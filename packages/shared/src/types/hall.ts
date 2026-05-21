@@ -216,6 +216,40 @@ export type DataReliability = 'A' | 'B' | 'C' | 'D';
 /** Year-over-year admission difficulty signal for a school. */
 export type DifficultySignal = 'stable' | 'declining' | 'surging';
 
+/**
+ * Provenance of the admit-rate figure shown on a card.
+ *
+ * - `PLATFORM_VERIFIED`: aggregated from `AdmissionCase` rows with
+ *   `verificationLevel ≥ L2` and `reviewStatus = APPROVED`. The
+ *   high-trust path; only shown when sample size ≥ 1.
+ * - `OFFICIAL_CDS`: pulled from `School.acceptanceRate` (and optionally
+ *   `SchoolCdsAdmitBand` aggregates) — the school's own Common Data Set
+ *   release. Used as a fallback when verified China-specific cases are
+ *   too sparse. **School-wide, not Chinese-mainland-specific.** The UI
+ *   must label this clearly so users don't confuse it for the granular
+ *   verified figure.
+ *
+ * Future Open Doors / IIE enrollment data would add another value here.
+ */
+export type ChinaAdmitDataSource = 'PLATFORM_VERIFIED' | 'OFFICIAL_CDS';
+
+/**
+ * School-wide acceptance fallback shown when verified-China sample size
+ * is below the reliability threshold. The UI MUST render this with a
+ * visible "Official CDS / 全美录取率" badge so users know it's not the
+ * granular Chinese-mainland figure.
+ */
+export interface ChinaAdmitCdsFallback {
+  /** School-wide admit rate, 0..1 fraction (e.g. 0.034 = 3.4%). */
+  acceptanceRate: number | null;
+  /** Cycle year of the CDS number (typically last completed cycle). */
+  cycleYear: number | null;
+  /** Always 'OFFICIAL_CDS' for now; reserved for future Open Doors etc. */
+  dataSource: ChinaAdmitDataSource;
+  /** Optional source URL (school CDS page, USNews) for click-through. */
+  sourceUrl?: string;
+}
+
 /** One school's China-mainland admit count over recent years. */
 export interface ChinaAdmitTrendEntry {
   schoolId: string;
@@ -227,6 +261,14 @@ export interface ChinaAdmitTrendEntry {
   reliability: DataReliability;
   /** Total verified ADMITTED cases backing this card. */
   sampleSize: number;
+  /**
+   * School-wide CDS fallback. Null when neither
+   * `School.acceptanceRate` nor any `SchoolCdsAdmitBand` row exists for
+   * this school. When non-null, the UI surfaces it under a visible
+   * "Official CDS" badge so it can't be mistaken for the granular
+   * Chinese-mainland figure.
+   */
+  cdsFallback?: ChinaAdmitCdsFallback | null;
 }
 
 export interface ChinaAdmitTrendResponse {
