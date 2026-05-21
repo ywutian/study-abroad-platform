@@ -79,6 +79,15 @@ import { ResilienceService } from '../../src/modules/ai-agent/core/resilience.se
 import { TokenTrackerService } from '../../src/modules/ai-agent/core/token-tracker.service';
 import { LLMService } from '../../src/modules/ai-agent/core/llm.service';
 
+// EssayDebate stack — PR5 adds this so seed-lumni-debate-turns.ts can call
+// the real `EssayDebateService.createOrContinueTurn()` end-to-end (real
+// context loader, real evidence-strip, real Redis budget counter). Same
+// useFactory pattern as the rest of this module to dodge the
+// esbuild-strips-decorator-metadata issue.
+import { EssayDebateService } from '../../src/modules/essay-debate/essay-debate.service';
+import { DebateBudgetService } from '../../src/modules/essay-debate/debate-budget.service';
+import { DebateContextLoaderService } from '../../src/modules/essay-debate/debate-context-loader.service';
+
 /**
  * A self-contained Redis sub-module that explicitly wires providers via
  * useFactory, since the production `RedisModule` injects ConfigService
@@ -203,7 +212,41 @@ class CliRedisModule {}
         new EssayAiService(prisma, llm, points /* memoryManager @Optional */),
       inject: [PrismaService, LLMService, PointsService],
     },
+
+    // -- Essay Debate (PR5 — seed-lumni-debate-turns.ts) ----------------
+    // Constructor signatures (verified 2026-05-20):
+    //   DebateBudgetService(redis)
+    //   DebateContextLoaderService(prisma)
+    //   EssayDebateService(prisma, points, budget, contextLoader, llm)
+    {
+      provide: DebateBudgetService,
+      useFactory: (redis: RedisService) => new DebateBudgetService(redis),
+      inject: [RedisService],
+    },
+    {
+      provide: DebateContextLoaderService,
+      useFactory: (prisma: PrismaService) =>
+        new DebateContextLoaderService(prisma),
+      inject: [PrismaService],
+    },
+    {
+      provide: EssayDebateService,
+      useFactory: (
+        prisma: PrismaService,
+        points: PointsService,
+        budget: DebateBudgetService,
+        contextLoader: DebateContextLoaderService,
+        llm: LLMService,
+      ) => new EssayDebateService(prisma, points, budget, contextLoader, llm),
+      inject: [
+        PrismaService,
+        PointsService,
+        DebateBudgetService,
+        DebateContextLoaderService,
+        LLMService,
+      ],
+    },
   ],
-  exports: [EssayAiService, LLMService],
+  exports: [EssayAiService, LLMService, EssayDebateService],
 })
 export class PrecomputeModule {}
