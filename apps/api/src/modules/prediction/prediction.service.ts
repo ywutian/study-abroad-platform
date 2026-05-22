@@ -701,7 +701,11 @@ export class PredictionService {
       locale,
       schoolName,
       probability: counselorResult.probability,
-      probabilityLow: Math.max(0.02, counselorResult.probability - 0.05),
+      // PR · prediction-counselor-fix (2026-05-21): floor now relative to
+      // the engine's own lowerBound (anchor*0.1) — see counselor-engine.service.ts:251.
+      // Absolute 0.02 here was masking reach-school differentiation in the
+      // CI bounds even after the engine itself produced a sub-2% point estimate.
+      probabilityLow: Math.max(0, counselorResult.probability - 0.05),
       probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
       tier,
       confidence: 'medium',
@@ -716,7 +720,11 @@ export class PredictionService {
       schoolId: school.id,
       schoolName,
       probability: counselorResult.probability,
-      probabilityLow: Math.max(0.02, counselorResult.probability - 0.05),
+      // PR · prediction-counselor-fix (2026-05-21): floor now relative to
+      // the engine's own lowerBound (anchor*0.1) — see counselor-engine.service.ts:251.
+      // Absolute 0.02 here was masking reach-school differentiation in the
+      // CI bounds even after the engine itself produced a sub-2% point estimate.
+      probabilityLow: Math.max(0, counselorResult.probability - 0.05),
       probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
       confidence: 'medium',
       tier,

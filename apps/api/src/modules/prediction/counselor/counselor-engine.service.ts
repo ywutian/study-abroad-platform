@@ -1,5 +1,8 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { resolveMajorToCip } from '@study-abroad/shared/scoring';
+import {
+  resolveMajorToCip,
+  resolveMajorToProgramBucket,
+} from '@study-abroad/shared/scoring';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 import { AnchorResolverService } from './anchor-resolver.service';
@@ -248,7 +251,19 @@ export class CounselorEngineService {
     }, academicProduct);
     const raw = anchor * product;
     // Anchored clip: never more than 2.5× or less than 0.3× the school baseline.
-    const lowerBound = Math.max(0.02, anchor * 0.3);
+    //
+    // PR · prediction-counselor-fix (2026-05-21): the previous absolute floor
+    // of 0.02 (i.e. `Math.max(0.02, anchor * 0.3)`) was catastrophic for
+    // top-5 schools — Harvard (3.65%), Princeton (4.42%), MIT (4.55%) all
+    // have `anchor * 0.3 ≈ 0.011-0.014 < 0.02`, so every international-student
+    // profile from the strongest (IMO Silver + 1560 SAT) to the weakest
+    // (1340 SAT + 1 EC) was clamped to the identical 2.0% — making the
+    // prediction profile-blind at exactly the schools users care about most.
+    // Switching to a pure relative floor `anchor * 0.1` lets reach-school
+    // predictions go below 2% when the profile genuinely warrants it, while
+    // still preventing collapse to ~0 on bad inputs. For UCD (41.83%) the
+    // floor is now 4.18%; for Harvard it's 0.365% — both reasonable.
+    const lowerBound = anchor * 0.1;
     const upperBound = Math.min(0.98, anchor * 2.5);
     const probability = Math.max(lowerBound, Math.min(upperBound, raw));
 
@@ -543,8 +558,7 @@ export class CounselorEngineService {
       if (raw > 0) return raw > 1 ? raw / 100 : raw;
     }
 
-    // Fallback: fuzzy name match for unknown aliases or rows whose CIP code is
-    // missing. If no hit, majorMultiplier returns neutral.
+    // Fuzzy name match for unknown aliases or rows whose CIP code is missing.
     const program = await this.prisma.schoolProgram.findFirst({
       where: {
         schoolId: school.id,
@@ -555,10 +569,36 @@ export class CounselorEngineService {
       },
       select: { acceptanceRateEstimate: true },
     });
-    if (!program?.acceptanceRateEstimate) return null;
-    const raw = program.acceptanceRateEstimate.toNumber();
-    if (raw <= 0) return null;
-    return raw > 1 ? raw / 100 : raw;
+    if (program?.acceptanceRateEstimate) {
+      const raw = program.acceptanceRateEstimate.toNumber();
+      if (raw > 0) return raw > 1 ? raw / 100 : raw;
+    }
+
+    // PR · prediction-counselor-fix (2026-05-21): bucket fallback.
+    // `SchoolProgram` only carries 7 coarse CIP buckets (CS, Engineering,
+    // Business, Nursing, Biology, Fine Arts, Liberal Arts). A major like
+    // Economics resolves to CIP 45.0101 which has NO SchoolProgram row, so
+    // the lookups above return null → majorMultiplier NEUTRAL. Meanwhile a
+    // CS applicant DOES match a bucket and gets the data-driven penalty.
+    // That coverage gap produced a monotonicity inversion (PR diagnostic
+    // agent 3). The bucket resolver maps every major to its nearest of the
+    // 7 populated buckets so coverage is uniform — the rate value still
+    // comes from the school's own SchoolProgram row, not a fabricated
+    // constant.
+    const bucketCip = resolveMajorToProgramBucket(profile.targetMajor);
+    if (bucketCip && bucketCip !== cipCode) {
+      const bucketProgram = await this.prisma.schoolProgram.findFirst({
+        where: { schoolId: school.id, cipCode: bucketCip },
+        select: { acceptanceRateEstimate: true },
+      });
+      if (bucketProgram?.acceptanceRateEstimate) {
+        const raw = bucketProgram.acceptanceRateEstimate.toNumber();
+        if (raw > 0) return raw > 1 ? raw / 100 : raw;
+      }
+    }
+
+    // No hit anywhere → majorMultiplier returns neutral.
+    return null;
   }
 
   // ---------------------------------------------------------------------------

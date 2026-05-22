@@ -189,3 +189,93 @@ export function resolveMajorToCip(targetMajor: string): string | null {
 
   return null;
 }
+
+/**
+ * The 7 canonical CIP "buckets" actually populated in `SchoolProgram`
+ * (verified 2026-05-21 — `SELECT DISTINCT cipCode FROM "SchoolProgram"`):
+ *
+ *   26.0101  Biology / Pre-Med Track
+ *   52.0201  Business Administration
+ *   11.0101  Computer Science
+ *   14.0101  Engineering
+ *   50.0701  Fine and Studio Arts
+ *   51.3801  Nursing
+ *   42.0101  Psychology / Liberal Arts
+ *
+ * `resolveMajorToCip` can return finer-grained codes (e.g. Economics →
+ * 45.0101) that have NO `SchoolProgram` row. That used to make
+ * `lookupProgramAcceptanceRate` return null → `majorMultiplier` NEUTRAL,
+ * which created a coverage-driven monotonicity bug: a CS applicant got
+ * the data-driven penalty while an Economics applicant got ×1.0 purely
+ * because Economics wasn't a populated bucket.
+ *
+ * `resolveMajorToProgramBucket` maps ANY CIP code to the nearest of the 7
+ * buckets using its 2-digit CIP family. This is a domain classification
+ * (which of the 7 admissions archetypes the major behaves like), NOT a
+ * fabricated multiplier — the actual acceptance-rate value still comes
+ * from the school's own `SchoolProgram` row.
+ */
+export const SCHOOL_PROGRAM_BUCKETS = {
+  BIOLOGY: '26.0101',
+  BUSINESS: '52.0201',
+  COMPUTER_SCIENCE: '11.0101',
+  ENGINEERING: '14.0101',
+  FINE_ARTS: '50.0701',
+  NURSING: '51.3801',
+  LIBERAL_ARTS: '42.0101',
+} as const;
+
+/**
+ * Map a 2-digit CIP family → one of the 7 SchoolProgram buckets.
+ * Families not listed default to the Liberal Arts bucket — that bucket
+ * is the "rest of Arts & Sciences" archetype and is the safest default
+ * for unclassified majors (its admit rate ≈ the college-wide A&S rate).
+ */
+const CIP_FAMILY_TO_BUCKET: Record<string, string> = {
+  '01': SCHOOL_PROGRAM_BUCKETS.BIOLOGY, // agriculture / natural resources
+  '03': SCHOOL_PROGRAM_BUCKETS.BIOLOGY, // natural resources / conservation
+  '09': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // communication / journalism
+  '10': SCHOOL_PROGRAM_BUCKETS.FINE_ARTS, // communications technologies
+  '11': SCHOOL_PROGRAM_BUCKETS.COMPUTER_SCIENCE, // computer & information sciences
+  '13': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // education
+  '14': SCHOOL_PROGRAM_BUCKETS.ENGINEERING, // engineering
+  '15': SCHOOL_PROGRAM_BUCKETS.ENGINEERING, // engineering technologies
+  '16': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // foreign languages
+  '19': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // family & consumer sciences
+  '22': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // legal professions
+  '23': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // English language & literature
+  '24': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // liberal arts & general studies
+  '26': SCHOOL_PROGRAM_BUCKETS.BIOLOGY, // biological & biomedical sciences
+  '27': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // mathematics & statistics
+  '30': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // multi/interdisciplinary studies
+  '31': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // parks / recreation / fitness
+  '38': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // philosophy & religious studies
+  '40': SCHOOL_PROGRAM_BUCKETS.BIOLOGY, // physical sciences (lab-science A&S)
+  '42': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // psychology
+  '43': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // security & protective services
+  '44': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // public administration / social work
+  '45': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // social sciences (incl. Economics)
+  '50': SCHOOL_PROGRAM_BUCKETS.FINE_ARTS, // visual & performing arts
+  '51': SCHOOL_PROGRAM_BUCKETS.NURSING, // health professions
+  '52': SCHOOL_PROGRAM_BUCKETS.BUSINESS, // business / management / marketing
+  '54': SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS, // history
+};
+
+/**
+ * Resolve a free-text major to one of the 7 populated `SchoolProgram`
+ * CIP buckets. Returns null only when the major cannot be classified at
+ * all (no CIP resolved). Guarantees uniform coverage so `majorMultiplier`
+ * never produces a coverage-driven inversion.
+ */
+export function resolveMajorToProgramBucket(
+  targetMajor: string,
+): string | null {
+  const cip = resolveMajorToCip(targetMajor);
+  if (!cip) return null;
+  // If the resolved CIP is already one of the 7 buckets, use it directly.
+  const buckets = Object.values(SCHOOL_PROGRAM_BUCKETS) as string[];
+  if (buckets.includes(cip)) return cip;
+  // Otherwise map by 2-digit CIP family.
+  const family = cip.split('.')[0];
+  return CIP_FAMILY_TO_BUCKET[family] ?? SCHOOL_PROGRAM_BUCKETS.LIBERAL_ARTS;
+}
