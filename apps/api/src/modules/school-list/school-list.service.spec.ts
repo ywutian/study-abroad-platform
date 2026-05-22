@@ -250,7 +250,7 @@ describe('SchoolListService', () => {
 
       await service.addSchool('user-1', {
         schoolId: 'school-1',
-        tier: 'REACH' as any,
+        tier: 'REACH',
       });
 
       expect(prisma.schoolListItem.create).toHaveBeenCalledWith(
@@ -325,7 +325,7 @@ describe('SchoolListService', () => {
         mockListItem,
       );
 
-      await service.updateItem('user-1', 'item-1', { tier: 'TARGET' as any });
+      await service.updateItem('user-1', 'item-1', { tier: 'TARGET' });
 
       expect(prisma.schoolListItem.update).toHaveBeenCalledWith(
         expect.objectContaining({
