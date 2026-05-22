@@ -4,6 +4,10 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { PredictionTransformerService } from '../prediction-transformer.service';
 import { CounselorEngineService } from './counselor-engine.service';
+import {
+  deriveCounselorConfidence,
+  deriveCounselorInterval,
+} from './counselor-interval.util';
 import type { ProfileInput, SchoolInput } from '../prediction.prompts';
 
 /**
@@ -271,18 +275,27 @@ export class CounselorBackfillService {
         },
       };
 
+      // Honest output (decision record 2026-05-22, Phase 1): confidence
+      // derived from real signals, interval in log-odds space.
+      const counselorConfidence = deriveCounselorConfidence(
+        counselorResult.tier,
+        counselorResult.missingFields?.length ?? 0,
+      );
+      const counselorInterval = deriveCounselorInterval(
+        counselorResult.probability,
+        counselorConfidence,
+      );
+
       try {
         await this.prisma.predictionResult.update({
           where: { id: row.id },
           data: {
             probability: counselorResult.probability,
-            // PR · prediction-counselor-fix: removed absolute 0.02 floor;
-            // see counselor-engine.service.ts:251 + prediction.service.ts.
-            probabilityLow: Math.max(0, counselorResult.probability - 0.05),
-            probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
+            probabilityLow: counselorInterval.low,
+            probabilityHigh: counselorInterval.high,
             factors:
               counselorResult.factors as unknown as Prisma.InputJsonValue,
-            confidence: 'medium',
+            confidence: counselorConfidence,
             confidenceReason:
               "Cold-start rules-of-thumb estimate anchored on the school's published CDS admit rate. Will become more precise as we collect outcome data from your reports.",
             servedTrace: newTrace as Prisma.InputJsonValue,
