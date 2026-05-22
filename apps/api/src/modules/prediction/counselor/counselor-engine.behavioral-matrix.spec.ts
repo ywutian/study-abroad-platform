@@ -54,16 +54,15 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
       urmStatus?: string;
       firstGeneration?: boolean;
     } = {},
-  ): ProfileInput =>
-    ({
-      gpa: 3.7,
-      gpaScale: 4,
-      testScores: [{ type: 'SAT', score: 1400 }],
-      activities: [],
-      awards: [],
-      isInternational: false,
-      ...overrides,
-    }) as ProfileInput;
+  ): ProfileInput => ({
+    gpa: 3.7,
+    gpaScale: 4,
+    testScores: [{ type: 'SAT', score: 1400 }],
+    activities: [],
+    awards: [],
+    isInternational: false,
+    ...overrides,
+  });
 
   const school = (
     overrides: Partial<
@@ -159,7 +158,10 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
       const schoolAward = await probOf(
         profile({
           awards: [
-            { title: 'School Honor', level: 'SCHOOL' } as ProfileInput['awards'][number],
+            {
+              title: 'School Honor',
+              level: 'SCHOOL',
+            } as ProfileInput['awards'][number],
           ],
         }),
         school(),
@@ -223,13 +225,19 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
   describe('E · hooks', () => {
     it('E1 — recruited athlete never lowers probability', async () => {
       const base = await probOf(profile(), school());
-      const athlete = await probOf(profile({ recruitedAthlete: true }), school());
+      const athlete = await probOf(
+        profile({ recruitedAthlete: true }),
+        school(),
+      );
       expect(athlete).toBeGreaterThanOrEqual(base - 1e-9);
     });
 
     it('E2 — first-generation never lowers probability', async () => {
       const base = await probOf(profile(), school());
-      const firstGen = await probOf(profile({ firstGeneration: true }), school());
+      const firstGen = await probOf(
+        profile({ firstGeneration: true }),
+        school(),
+      );
       expect(firstGen).toBeGreaterThanOrEqual(base - 1e-9);
     });
   });
@@ -308,7 +316,13 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
   describe('H · edge cases', () => {
     it('H1 — empty profile (no GPA, no scores) does not crash', async () => {
       const r = await service.compute(
-        { gpaScale: 4, testScores: [], activities: [], awards: [], isInternational: false } as ProfileInput,
+        {
+          gpaScale: 4,
+          testScores: [],
+          activities: [],
+          awards: [],
+          isInternational: false,
+        },
         school(),
       );
       expect(r).toBeDefined();
@@ -319,10 +333,7 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
     });
 
     it('H2 — test-optional applicant (GPA only, no SAT/ACT) does not crash', async () => {
-      const r = await service.compute(
-        profile({ testScores: [] }),
-        school(),
-      );
+      const r = await service.compute(profile({ testScores: [] }), school());
       expect(r).toBeDefined();
       expect(typeof r.probability).toBe('number');
     });
@@ -331,7 +342,10 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
       const oneActivity = await probOf(
         profile({
           activities: [
-            { name: 'Club', role: 'Member' } as ProfileInput['activities'][number],
+            {
+              name: 'Club',
+              role: 'Member',
+            } as ProfileInput['activities'][number],
           ],
         }),
         school(),
@@ -339,9 +353,18 @@ describe('CounselorEngineService — behavioral matrix (OFAT)', () => {
       const richActivity = await probOf(
         profile({
           activities: [
-            { name: 'Research', role: 'Lead' } as ProfileInput['activities'][number],
-            { name: 'Olympiad', role: 'Medalist' } as ProfileInput['activities'][number],
-            { name: 'Government', role: 'President' } as ProfileInput['activities'][number],
+            {
+              name: 'Research',
+              role: 'Lead',
+            } as ProfileInput['activities'][number],
+            {
+              name: 'Olympiad',
+              role: 'Medalist',
+            } as ProfileInput['activities'][number],
+            {
+              name: 'Government',
+              role: 'President',
+            } as ProfileInput['activities'][number],
           ],
         }),
         school(),

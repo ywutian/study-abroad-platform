@@ -1399,6 +1399,31 @@ model School {
   // Used by gpaBandMultiplier to compute applicant's percentile within this school's class
   gpaDistribution Json?
 
+  // CDS Section C7 — "Relative importance of each factor in admission decisions".
+  // The school's OWN published weighting; backbone of the admissions-officer
+  // evaluation lens (docs/PREDICTION_DATA_MANIFEST.md). Shape:
+  //   { "rigor": "VERY_IMPORTANT", "gpa": "VERY_IMPORTANT", "testScores": "CONSIDERED",
+  //     "classRank": "IMPORTANT", "essay": "IMPORTANT", "recommendations": "IMPORTANT",
+  //     "interview": "CONSIDERED", "extracurriculars": "IMPORTANT", "talent": "IMPORTANT",
+  //     "character": "VERY_IMPORTANT", "firstGen": "CONSIDERED", "alumniRelation": "CONSIDERED",
+  //     "geographicResidence": "NOT_CONSIDERED", "stateResidency": "NOT_CONSIDERED",
+  //     "religiousAffiliation": "NOT_CONSIDERED", "volunteerWork": "CONSIDERED",
+  //     "workExperience": "CONSIDERED", "levelOfInterest": "CONSIDERED" }
+  // Each value ∈ VERY_IMPORTANT | IMPORTANT | CONSIDERED | NOT_CONSIDERED.
+  admissionFactors Json?
+
+  // CDS C10 — class-rank distribution of enrolled freshmen.
+  // Shape: { "top10": 0.88, "top25": 0.97, "top50": 1.0, "pctSubmitting": 0.42 }
+  classRankDistribution Json?
+
+  // CDS C9 — share of enrolled freshmen who submitted each test (test-optional
+  // self-selection signal). Shape: { "sat": 0.55, "act": 0.21 }
+  testSubmissionRate Json?
+
+  // CDS C2 — waitlist outcome stats.
+  // Shape: { "offered": 2500, "accepted": 1800, "admitted": 60, "ranked": false }
+  waitlistStats Json?
+
   // Niche Grades (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
   nicheSafetyGrade  String? // Safety/Crime index
   nicheLifeGrade    String? // Student Life/Happiness index

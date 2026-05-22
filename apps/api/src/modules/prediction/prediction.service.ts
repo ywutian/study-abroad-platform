@@ -32,6 +32,10 @@ import { PredictionResultDto } from './dto';
 import { InternalPredictionResult } from './prediction-persistence.service';
 import { FeatureFlagService } from '../../common/feature-flags/feature-flag.service';
 import { CounselorEngineService } from './counselor/counselor-engine.service';
+import {
+  deriveCounselorConfidence,
+  deriveCounselorInterval,
+} from './counselor/counselor-interval.util';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { ProfileInput, SchoolInput } from './prediction.prompts';
 import { classifyMajor, MAJOR_CATEGORY_PROGRAMS } from './prediction.constants';
@@ -652,6 +656,17 @@ export class PredictionService {
       : schoolMetrics;
     const tier = calculateTier(counselorResult.probability, tierSchoolMetrics);
     const profileSignals = counselorResult.profileSignals;
+    // Honest output (decision record 2026-05-22, Phase 1): confidence derived
+    // from real engine signals, interval computed in log-odds space — replaces
+    // the hardcoded 'medium' and the flat ±5pp band.
+    const counselorConfidence = deriveCounselorConfidence(
+      counselorResult.tier,
+      counselorResult.missingFields?.length ?? 0,
+    );
+    const counselorInterval = deriveCounselorInterval(
+      counselorResult.probability,
+      counselorConfidence,
+    );
     const sourceSummary = [
       {
         label: 'Counselor estimate',
@@ -683,7 +698,7 @@ export class PredictionService {
         : []),
     ];
     const confidenceReason = this.generateConfidenceReason(
-      'medium',
+      counselorConfidence,
       profileInput,
       sourceSummary,
       uncertaintyReasons,
@@ -691,7 +706,7 @@ export class PredictionService {
     );
     const suggestions = this.generateSuggestions(
       tier,
-      'medium',
+      counselorConfidence,
       profileInput,
       schoolInput,
       undefined,
@@ -701,14 +716,12 @@ export class PredictionService {
       locale,
       schoolName,
       probability: counselorResult.probability,
-      // PR · prediction-counselor-fix (2026-05-21): floor now relative to
-      // the engine's own lowerBound (anchor*0.1) — see counselor-engine.service.ts:251.
-      // Absolute 0.02 here was masking reach-school differentiation in the
-      // CI bounds even after the engine itself produced a sub-2% point estimate.
-      probabilityLow: Math.max(0, counselorResult.probability - 0.05),
-      probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
+      // Honest interval (decision record 2026-05-22, Phase 1): log-odds band
+      // whose width reflects the derived confidence — replaces the flat ±5pp.
+      probabilityLow: counselorInterval.low,
+      probabilityHigh: counselorInterval.high,
       tier,
-      confidence: 'medium',
+      confidence: counselorConfidence,
       factors: counselorResult.factors,
       suggestions,
       sourceSummary,
@@ -720,13 +733,10 @@ export class PredictionService {
       schoolId: school.id,
       schoolName,
       probability: counselorResult.probability,
-      // PR · prediction-counselor-fix (2026-05-21): floor now relative to
-      // the engine's own lowerBound (anchor*0.1) — see counselor-engine.service.ts:251.
-      // Absolute 0.02 here was masking reach-school differentiation in the
-      // CI bounds even after the engine itself produced a sub-2% point estimate.
-      probabilityLow: Math.max(0, counselorResult.probability - 0.05),
-      probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
-      confidence: 'medium',
+      // Honest interval — see counselor-interval.util.ts (Phase 1).
+      probabilityLow: counselorInterval.low,
+      probabilityHigh: counselorInterval.high,
+      confidence: counselorConfidence,
       tier,
       factors: counselorResult.factors,
       suggestions,
@@ -2197,25 +2207,28 @@ export class PredictionService {
             confidence: result.confidence,
           };
 
-          // Override served output with counselor's
+          // Override served output with counselor's.
+          // Honest output (decision record 2026-05-22, Phase 1): confidence
+          // derived from real signals, interval in log-odds space — replaces
+          // the flat ±5pp band and the hardcoded 'medium'.
+          const counselorConfidence = deriveCounselorConfidence(
+            counselorResult.tier,
+            counselorMissingFields.length,
+          );
+          const counselorInterval = deriveCounselorInterval(
+            counselorResult.probability,
+            counselorConfidence,
+          );
           result.probability = counselorResult.probability;
-          // Tight ±5pp CI (counselor is deterministic; CI reflects rules-of-thumb
-          // uncertainty, not statistical noise)
-          result.probabilityLow = Math.max(
-            0.02,
-            counselorResult.probability - 0.05,
-          );
-          result.probabilityHigh = Math.min(
-            0.98,
-            counselorResult.probability + 0.05,
-          );
+          result.probabilityLow = counselorInterval.low;
+          result.probabilityHigh = counselorInterval.high;
           result.tier = calculateTier(
             counselorResult.probability,
             tierSchoolMetrics,
           );
           result.factors = counselorResult.factors;
           result.engineScores = undefined;
-          result.confidence = 'medium';
+          result.confidence = counselorConfidence;
           result.confidenceReason =
             "Cold-start rules-of-thumb estimate anchored on the school's published CDS admit rate. Will become more precise as we collect outcome data from your reports.";
           result.predictionMethod = 'counselor';
