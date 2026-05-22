@@ -14,9 +14,9 @@ import {
   IsIn,
   MaxLength,
 } from 'class-validator';
-import { SchoolTier } from '@prisma/client';
+import { SchoolTier, TierSource } from '@prisma/client';
 
-export { SchoolTier };
+export { SchoolTier, TierSource };
 
 function applicationRoundTransform({ value }: { value: unknown }) {
   if (typeof value !== 'string') return value;
@@ -72,6 +72,14 @@ export class UpdateSchoolListItemDto {
   @IsString()
   @MaxLength(5000)
   notes?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Drop a previous manual tier override and let the tier follow the live prediction again',
+  })
+  @IsOptional()
+  @IsBoolean()
+  resetTierToPredicted?: boolean;
 }
 
 export class SchoolListItemResponseDto {
@@ -105,8 +113,32 @@ export class SchoolListItemResponseDto {
     media?: SchoolPublicMedia;
   };
 
-  @ApiProperty({ enum: SchoolTier })
+  @ApiProperty({
+    enum: SchoolTier,
+    description:
+      'Effective tier: the live prediction-derived tier when tierSource=PREDICTED, the user-set tier when MANUAL',
+  })
   tier: SchoolTier;
+
+  @ApiProperty({
+    enum: TierSource,
+    description:
+      'Whether `tier` follows the prediction or is a manual override',
+  })
+  tierSource: TierSource;
+
+  @ApiPropertyOptional({
+    enum: SchoolTier,
+    description:
+      'The tier the latest prediction would assign. Lets the UI show a "predicted: 冲刺" hint when tierSource=MANUAL and it differs from `tier`. Null when there is no usable prediction.',
+  })
+  predictedTier?: SchoolTier;
+
+  @ApiProperty({
+    description:
+      'True when `tier` is an unverified default (tierSource=PREDICTED but no usable prediction yet) — the UI should render a neutral "not assessed" state instead of a confident badge',
+  })
+  tierIsEstimated: boolean;
 
   @ApiPropertyOptional()
   round?: string;

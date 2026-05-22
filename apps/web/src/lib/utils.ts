@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { TIER_THRESHOLDS } from '@study-abroad/shared/scoring';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -78,9 +79,9 @@ export function formatProbability(
  * Works with both 0-1 and 0-100 scales.
  */
 export function getProbabilityColorClass(value: number, scale: '0-1' | '0-100' = '0-1'): string {
-  const pct = scale === '0-1' ? value * 100 : value;
-  if (pct >= 60) return 'text-emerald-600 dark:text-emerald-400';
-  if (pct >= 30) return 'text-blue-600 dark:text-blue-400';
+  const prob = scale === '0-1' ? value : value / 100;
+  if (prob >= TIER_THRESHOLDS.SAFETY_MIN) return 'text-emerald-600 dark:text-emerald-400';
+  if (prob >= TIER_THRESHOLDS.MATCH_MIN) return 'text-blue-600 dark:text-blue-400';
   return 'text-rose-600 dark:text-rose-400';
 }
 
@@ -88,11 +89,13 @@ export type TierType = 'reach' | 'match' | 'safety';
 
 /**
  * Derive tier from a probability value.
- * Uses the same thresholds as the backend calculateTier defaults.
+ * Uses `TIER_THRESHOLDS` from the shared package — the single source of truth
+ * shared with the backend `calculateTier`, so the displayed tier never
+ * disagrees across layers.
  */
 export function getProbabilityTier(value: number, scale: '0-1' | '0-100' = '0-1'): TierType {
-  const pct = scale === '0-1' ? value * 100 : value;
-  if (pct >= 60) return 'safety';
-  if (pct >= 30) return 'match';
+  const prob = scale === '0-1' ? value : value / 100;
+  if (prob >= TIER_THRESHOLDS.SAFETY_MIN) return 'safety';
+  if (prob >= TIER_THRESHOLDS.MATCH_MIN) return 'match';
   return 'reach';
 }

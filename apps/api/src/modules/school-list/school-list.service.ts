@@ -12,6 +12,7 @@ import {
   SchoolListItemResponseDto,
   AIRecommendationsResponseDto,
   SchoolTier,
+  TierSource,
 } from './dto/school-list.dto';
 import {
   extractProfileMetrics,
@@ -25,6 +26,8 @@ import {
   SCHOOL_LIST_SCHOOL_SELECT,
   AI_RECOMMENDATION_SCHOOL_SELECT,
   mapSchoolForList,
+  predictionTierToSchoolTier,
+  SCHOOL_TIER_SORT_RANK,
 } from './school-list.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
 
@@ -141,6 +144,50 @@ export class SchoolListService {
   }
 
   /**
+   * Resolve the effective tier fields for a school-list item response.
+   *
+   * - `MANUAL`    — the user-set `tier` wins; `tierIsEstimated` is false.
+   * - `PREDICTED` — the live prediction tier wins when available; otherwise the
+   *   stored `tier` is just the default placeholder and `tierIsEstimated` is
+   *   true (the UI should render a neutral "not assessed" state).
+   */
+  private resolveTierFields(
+    storedTier: SchoolTier,
+    tierSource: TierSource,
+    predictionTier?: string | null,
+  ): {
+    tier: SchoolTier;
+    tierSource: TierSource;
+    predictedTier?: SchoolTier;
+    tierIsEstimated: boolean;
+  } {
+    const predictedTier = predictionTierToSchoolTier(predictionTier);
+    if (tierSource === TierSource.MANUAL) {
+      return {
+        tier: storedTier,
+        tierSource,
+        predictedTier: predictedTier ?? undefined,
+        tierIsEstimated: false,
+      };
+    }
+    // PREDICTED: follow the live prediction when usable, else fall back.
+    if (predictedTier) {
+      return {
+        tier: predictedTier,
+        tierSource,
+        predictedTier,
+        tierIsEstimated: false,
+      };
+    }
+    return {
+      tier: storedTier,
+      tierSource,
+      predictedTier: undefined,
+      tierIsEstimated: true,
+    };
+  }
+
+  /**
    * Get all school list items for a user
    */
   async getUserSchoolList(
@@ -151,7 +198,10 @@ export class SchoolListService {
       include: {
         school: { select: SCHOOL_LIST_SCHOOL_SELECT },
       },
-      orderBy: [{ tier: 'asc' }, { createdAt: 'desc' }],
+      // Sort by createdAt only — the effective tier is resolved in-memory below
+      // (a PREDICTED row's stored `tier` is a stale placeholder, so a DB-level
+      // tier sort would be wrong).
+      orderBy: { createdAt: 'desc' },
     });
 
     // 批量查询预测数据
@@ -268,19 +318,30 @@ export class SchoolListService {
       }
     }
 
-    return items.map((item) => ({
-      id: item.id,
-      schoolId: item.schoolId,
-      school: mapSchoolForList(item.school),
-      tier: item.tier,
-      round: item.round || undefined,
-      notes: item.notes || undefined,
-      isAIRecommended: item.isAIRecommended,
-      prediction: predMap.get(item.schoolId) || undefined,
-      essayPromptCount: essayCountMap.get(item.schoolId) || 0,
-      deadlines: deadlineMap.get(item.schoolId) || [],
-      createdAt: item.createdAt,
-    }));
+    return items
+      .map((item) => ({
+        id: item.id,
+        schoolId: item.schoolId,
+        school: mapSchoolForList(item.school),
+        ...this.resolveTierFields(
+          item.tier,
+          item.tierSource,
+          predMap.get(item.schoolId)?.tier,
+        ),
+        round: item.round || undefined,
+        notes: item.notes || undefined,
+        isAIRecommended: item.isAIRecommended,
+        prediction: predMap.get(item.schoolId) || undefined,
+        essayPromptCount: essayCountMap.get(item.schoolId) || 0,
+        deadlines: deadlineMap.get(item.schoolId) || [],
+        createdAt: item.createdAt,
+      }))
+      .sort((a, b) => {
+        const rankDiff =
+          SCHOOL_TIER_SORT_RANK[a.tier] - SCHOOL_TIER_SORT_RANK[b.tier];
+        if (rankDiff !== 0) return rankDiff;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
   }
 
   /**
@@ -322,12 +383,15 @@ export class SchoolListService {
       await this.validateRound(userId, dto.schoolId, dto.round);
     }
 
-    // Create the item
+    // Create the item. An explicit `dto.tier` is a manual choice (MANUAL);
+    // otherwise the tier follows the live prediction (PREDICTED) and the
+    // stored TARGET is just a placeholder.
     const item = await this.prisma.schoolListItem.create({
       data: {
         userId,
         schoolId: dto.schoolId,
         tier: dto.tier || SchoolTier.TARGET,
+        tierSource: dto.tier ? TierSource.MANUAL : TierSource.PREDICTED,
         round: dto.round,
         notes: dto.notes,
         isAIRecommended: dto.isAIRecommended ?? false,
@@ -351,7 +415,9 @@ export class SchoolListService {
       id: item.id,
       schoolId: item.schoolId,
       school: mapSchoolForList(school),
-      tier: item.tier,
+      // A freshly added school has no prediction yet; getUserSchoolList
+      // resolves the live tier on the next fetch.
+      ...this.resolveTierFields(item.tier, item.tierSource, undefined),
       round: item.round || undefined,
       notes: item.notes || undefined,
       isAIRecommended: item.isAIRecommended,
@@ -384,10 +450,21 @@ export class SchoolListService {
       await this.validateRound(userId, item.schoolId, dto.round, itemId);
     }
 
+    // Tier-source resolution:
+    // - resetTierToPredicted → drop any override, follow the prediction again.
+    // - an explicit `dto.tier` → a manual override (MANUAL).
+    // - neither → leave tier + tierSource untouched.
+    let tierUpdate: { tier?: SchoolTier; tierSource?: TierSource } = {};
+    if (dto.resetTierToPredicted) {
+      tierUpdate = { tierSource: TierSource.PREDICTED };
+    } else if (dto.tier !== undefined) {
+      tierUpdate = { tier: dto.tier, tierSource: TierSource.MANUAL };
+    }
+
     const updated = await this.prisma.schoolListItem.update({
       where: { id: itemId },
       data: {
-        tier: dto.tier,
+        ...tierUpdate,
         round: dto.round,
         notes: dto.notes,
       },
@@ -410,7 +487,8 @@ export class SchoolListService {
       id: updated.id,
       schoolId: updated.schoolId,
       school: mapSchoolForList(updated.school),
-      tier: updated.tier,
+      // getUserSchoolList re-resolves the live tier on the next fetch.
+      ...this.resolveTierFields(updated.tier, updated.tierSource, undefined),
       round: updated.round || undefined,
       notes: updated.notes || undefined,
       isAIRecommended: updated.isAIRecommended,
@@ -513,6 +591,11 @@ export class SchoolListService {
         schoolId: school.id,
         school: mapSchoolForList(school),
         tier: tierEnum,
+        // AI recommendations are tier suggestions derived from the quick-match
+        // estimate — a predicted tier, not a manual choice.
+        tierSource: TierSource.PREDICTED,
+        predictedTier: tierEnum,
+        tierIsEstimated: false,
         isAIRecommended: true,
         createdAt: new Date(),
       };

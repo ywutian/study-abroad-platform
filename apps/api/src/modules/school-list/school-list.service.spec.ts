@@ -43,6 +43,7 @@ describe('SchoolListService', () => {
     userId: 'user-1',
     schoolId: 'school-1',
     tier: 'REACH',
+    tierSource: 'PREDICTED',
     round: 'ED',
     notes: 'Dream school',
     isAIRecommended: false,
@@ -130,6 +131,60 @@ describe('SchoolListService', () => {
       expect(result).toEqual([]);
     });
 
+    it('PREDICTED: derives the effective tier live from the prediction', async () => {
+      // stored tier REACH, but tierSource PREDICTED — the live prediction wins.
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+        { ...mockListItem, tier: 'REACH', tierSource: 'PREDICTED' },
+      ]);
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({ id: 'p-1' });
+      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([
+        {
+          schoolId: 'school-1',
+          probability: 0.5,
+          tier: 'safety',
+          updatedAt: new Date(),
+        },
+      ]);
+
+      const result = await service.getUserSchoolList('user-1');
+      expect(result[0].tier).toBe('SAFETY'); // match→TARGET, safety→SAFETY
+      expect(result[0].predictedTier).toBe('SAFETY');
+      expect(result[0].tierIsEstimated).toBe(false);
+    });
+
+    it('MANUAL: keeps the stored tier and still surfaces the predicted tier', async () => {
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+        { ...mockListItem, tier: 'SAFETY', tierSource: 'MANUAL' },
+      ]);
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({ id: 'p-1' });
+      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([
+        {
+          schoolId: 'school-1',
+          probability: 0.03,
+          tier: 'reach',
+          updatedAt: new Date(),
+        },
+      ]);
+
+      const result = await service.getUserSchoolList('user-1');
+      expect(result[0].tier).toBe('SAFETY'); // manual override wins
+      expect(result[0].predictedTier).toBe('REACH'); // hint for the UI
+      expect(result[0].tierIsEstimated).toBe(false);
+    });
+
+    it('PREDICTED with no/unavailable prediction: falls back and flags tierIsEstimated', async () => {
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+        { ...mockListItem, tier: 'TARGET', tierSource: 'PREDICTED' },
+      ]);
+      (prisma.profile.findUnique as jest.Mock).mockResolvedValue({ id: 'p-1' });
+      (prisma.predictionResult.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getUserSchoolList('user-1');
+      expect(result[0].tier).toBe('TARGET');
+      expect(result[0].predictedTier).toBeUndefined();
+      expect(result[0].tierIsEstimated).toBe(true);
+    });
+
     it('should handle null optional fields gracefully', async () => {
       const itemWithNulls = {
         ...mockListItem,
@@ -186,6 +241,41 @@ describe('SchoolListService', () => {
       );
     });
 
+    it('an explicit tier marks tierSource MANUAL', async () => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+
+      await service.addSchool('user-1', {
+        schoolId: 'school-1',
+        tier: 'REACH' as any,
+      });
+
+      expect(prisma.schoolListItem.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ tierSource: 'MANUAL' }),
+        }),
+      );
+    });
+
+    it('no explicit tier marks tierSource PREDICTED', async () => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+
+      await service.addSchool('user-1', { schoolId: 'school-1' });
+
+      expect(prisma.schoolListItem.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ tierSource: 'PREDICTED' }),
+        }),
+      );
+    });
+
     it('should throw ConflictException if school already in list', async () => {
       (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
       (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(
@@ -225,6 +315,45 @@ describe('SchoolListService', () => {
       await expect(
         service.updateItem('user-1', 'nonexistent', updateDto),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('setting a tier flips tierSource to MANUAL', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+      (prisma.schoolListItem.update as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+
+      await service.updateItem('user-1', 'item-1', { tier: 'TARGET' as any });
+
+      expect(prisma.schoolListItem.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            tier: 'TARGET',
+            tierSource: 'MANUAL',
+          }),
+        }),
+      );
+    });
+
+    it('resetTierToPredicted flips tierSource back to PREDICTED', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+      (prisma.schoolListItem.update as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+
+      await service.updateItem('user-1', 'item-1', {
+        resetTierToPredicted: true,
+      });
+
+      expect(prisma.schoolListItem.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ tierSource: 'PREDICTED' }),
+        }),
+      );
     });
   });
 

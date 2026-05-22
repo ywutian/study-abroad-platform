@@ -88,15 +88,15 @@ function calculateGpaPercentileFromCds(
 ): number | null {
   // CDS bands in ascending GPA order, with threshold = lower bound / 4.0
   const bands: Array<{ key: string; altKey?: string; lo: number; hi: number }> = [
-    { key: '<1.00',     lo: 0.000,  hi: 0.250 },
-    { key: '1.00-1.99', lo: 0.250,  hi: 0.500 },
-    { key: '2.00-2.49', lo: 0.500,  hi: 0.625 },
-    { key: '2.50-2.99', lo: 0.625,  hi: 0.750 },
-    { key: '3.00-3.24', lo: 0.750,  hi: 0.8125 },
+    { key: '<1.00', lo: 0.0, hi: 0.25 },
+    { key: '1.00-1.99', lo: 0.25, hi: 0.5 },
+    { key: '2.00-2.49', lo: 0.5, hi: 0.625 },
+    { key: '2.50-2.99', lo: 0.625, hi: 0.75 },
+    { key: '3.00-3.24', lo: 0.75, hi: 0.8125 },
     { key: '3.25-3.49', lo: 0.8125, hi: 0.875 },
-    { key: '3.50-3.74', lo: 0.875,  hi: 0.9375 },
-    { key: '3.75-3.99', altKey: '3.75-4.00', lo: 0.9375, hi: 1.000 },
-    { key: '4.00',      lo: 1.000,  hi: 1.000 },
+    { key: '3.50-3.74', lo: 0.875, hi: 0.9375 },
+    { key: '3.75-3.99', altKey: '3.75-4.00', lo: 0.9375, hi: 1.0 },
+    { key: '4.00', lo: 1.0, hi: 1.0 },
   ];
 
   // Collect raw values; handle both decimal (0-1) and percentage (0-100) inputs
@@ -117,9 +117,7 @@ function calculateGpaPercentileFromCds(
     if (adjustedGpa4 < effectiveHi) {
       // Student falls in this band — interpolate linearly within the band
       const bandWidth = effectiveHi - b.lo;
-      const posInBand = bandWidth > 0.0001
-        ? Math.max(0, adjustedGpa4 - b.lo) / bandWidth
-        : 0.5;
+      const posInBand = bandWidth > 0.0001 ? Math.max(0, adjustedGpa4 - b.lo) / bandWidth : 0.5;
       return Math.max(0, Math.min(1, cumulativeBelow + pct * posInBand));
     }
     cumulativeBelow += pct;
@@ -163,9 +161,10 @@ export function calculateAcademicScore(
     const gpaDist = school.gpaDistribution;
     if (gpaDist != null && Object.keys(gpaDist).length > 0) {
       const cdsPercentile = calculateGpaPercentileFromCds(adjustedGpa4, gpaDist);
-      gpaScore = cdsPercentile !== null
-        ? cdsPercentile * ACADEMIC_CONFIG.gpaMaxBonus
-        : adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
+      gpaScore =
+        cdsPercentile !== null
+          ? cdsPercentile * ACADEMIC_CONFIG.gpaMaxBonus
+          : adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
     } else {
       gpaScore = adjustedGpa4 * ACADEMIC_CONFIG.gpaMaxBonus;
     }
@@ -668,17 +667,32 @@ export function calculateProbability(
 }
 
 /**
+ * Tier classification thresholds (probability is 0–1).
+ *
+ * Single source of truth — the backend `calculateTier` and the frontend
+ * `getProbabilityTier` MUST both reference these so the displayed tier never
+ * disagrees across layers. `MATCH_MIN` is 0.10 (not 0.30): the counselor
+ * engine clamps top-20 schools near ~10%, so a 0.30 boundary would force
+ * every elite school into `reach` and collapse the `match` tier exactly where
+ * applicants need the distinction. Probabilities are already AR-anchored, so a
+ * 0.10 match floor is meaningful across all selectivity tiers.
+ */
+export const TIER_THRESHOLDS = {
+  /** probability ≥ this → `match` (below → `reach`) */
+  MATCH_MIN: 0.1,
+  /** probability ≥ this → `safety` */
+  SAFETY_MIN: 0.6,
+} as const;
+
+/**
  * 计算 Tier 分类 (reach / match / safety)
  */
 export function calculateTier(
   probability: number,
   _school: SchoolMetrics
 ): 'reach' | 'match' | 'safety' {
-  // Universal thresholds that work correctly with the AR-anchored probability formula.
-  // Since probabilities are already grounded in the school's real acceptance rate,
-  // a single set of thresholds is appropriate across all selectivity tiers.
-  if (probability >= 0.60) return 'safety';
-  if (probability >= 0.10) return 'match';
+  if (probability >= TIER_THRESHOLDS.SAFETY_MIN) return 'safety';
+  if (probability >= TIER_THRESHOLDS.MATCH_MIN) return 'match';
   return 'reach';
 }
 

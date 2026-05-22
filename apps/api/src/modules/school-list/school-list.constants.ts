@@ -1,4 +1,4 @@
-import { Prisma, SchoolMediaType } from '@prisma/client';
+import { Prisma, SchoolMediaType, SchoolTier } from '@prisma/client';
 import type {
   SchoolPublicMedia,
   SchoolPublicMediaAsset,
@@ -94,6 +94,36 @@ export function mapSchoolForList(
     rankings: school.rankings || [],
   };
 }
+
+/**
+ * Map a prediction tier string (`reach` / `match` / `safety`, as produced by
+ * `calculateTier` and stored on `PredictionResult.tier`) to the `SchoolTier`
+ * enum used on `SchoolListItem`.
+ *
+ * Returns `null` for `unavailable`, `undefined`, or any unknown value — the
+ * caller falls back to the stored `SchoolListItem.tier` in that case.
+ */
+export function predictionTierToSchoolTier(
+  predTier: string | undefined | null,
+): SchoolTier | null {
+  switch (predTier) {
+    case 'safety':
+      return SchoolTier.SAFETY;
+    case 'match':
+      return SchoolTier.TARGET;
+    case 'reach':
+      return SchoolTier.REACH;
+    default:
+      return null;
+  }
+}
+
+/** Display sort rank for a tier: reach first, then match, then safety. */
+export const SCHOOL_TIER_SORT_RANK: Record<SchoolTier, number> = {
+  [SchoolTier.REACH]: 0,
+  [SchoolTier.TARGET]: 1,
+  [SchoolTier.SAFETY]: 2,
+};
 
 /**
  * Extended school select for AI recommendations — includes SAT/ACT/graduation metrics

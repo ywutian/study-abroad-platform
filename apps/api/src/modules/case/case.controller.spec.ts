@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CaseController } from './case.controller';
 import { CaseService } from './case.service';
+import { CaseSimilarityService } from './case-similarity.service';
 
 describe('CaseController', () => {
   let controller: CaseController;
   let caseService: CaseService;
+  let caseSimilarityService: CaseSimilarityService;
 
   const mockUser = {
     id: 'user-1',
@@ -44,11 +46,22 @@ describe('CaseController', () => {
             delete: jest.fn().mockResolvedValue(undefined),
           },
         },
+        {
+          provide: CaseSimilarityService,
+          useValue: {
+            findSimilar: jest
+              .fn()
+              .mockResolvedValue({ status: 'INSUFFICIENT_DATA', count: 0 }),
+          },
+        },
       ],
     }).compile();
 
     controller = module.get<CaseController>(CaseController);
     caseService = module.get<CaseService>(CaseService);
+    caseSimilarityService = module.get<CaseSimilarityService>(
+      CaseSimilarityService,
+    );
   });
 
   afterEach(() => {
@@ -102,6 +115,22 @@ describe('CaseController', () => {
 
       expect(caseService.getMyCases).toHaveBeenCalledWith('user-1');
       expect(result).toEqual([mockCase]);
+    });
+  });
+
+  describe('findSimilar', () => {
+    it('delegates to CaseSimilarityService with user id, query and locale', async () => {
+      const result = await controller.findSimilar(mockUser, {
+        schoolId: 'school-1',
+        limit: 8,
+      });
+
+      expect(caseSimilarityService.findSimilar).toHaveBeenCalledWith(
+        'user-1',
+        { schoolId: 'school-1', limit: 8 },
+        'zh',
+      );
+      expect(result).toEqual({ status: 'INSUFFICIENT_DATA', count: 0 });
     });
   });
 
