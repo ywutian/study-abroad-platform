@@ -36,6 +36,12 @@ export interface SchoolApplicationRow {
   schoolId: string;
   schoolName: string;
   tier: 'SAFETY' | 'TARGET' | 'REACH';
+  /** The tier the prediction would assign — shown as a hint when the tier is overridden. */
+  predictedTier?: 'SAFETY' | 'TARGET' | 'REACH';
+  /** True when the user manually set the tier and it differs from the predicted tier. */
+  tierIsOverridden: boolean;
+  /** True when the tier is an unverified default (no usable prediction yet). */
+  tierIsEstimated: boolean;
   round: string;
   deadline?: string;
   daysUntil: number | null;
@@ -249,11 +255,18 @@ export function buildApplicationWorkspaceModel({
       const probability =
         typeof school.prediction?.probability === 'number' ? school.prediction.probability : null;
       const urgency = getUrgency(Boolean(timeline), dayCount, essayCount);
+      const tierIsOverridden =
+        school.tierSource === 'MANUAL' &&
+        school.predictedTier != null &&
+        school.predictedTier !== school.tier;
       const row: SchoolApplicationRow = {
         id: school.id,
         schoolId: school.schoolId,
         schoolName: school.school.nameZh ?? school.school.name,
         tier: school.tier,
+        predictedTier: school.predictedTier,
+        tierIsOverridden,
+        tierIsEstimated: school.tierIsEstimated ?? false,
         round: timeline?.round ?? school.round ?? deadline?.round ?? 'RD',
         deadline: effectiveDeadline,
         daysUntil: dayCount,

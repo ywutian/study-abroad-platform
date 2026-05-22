@@ -42,7 +42,14 @@ export interface AgentResponse {
 export interface SchoolListItem {
   id: string;
   schoolId: string;
+  /** Effective tier: prediction-derived when tierSource=PREDICTED, else the manual override. */
   tier: 'SAFETY' | 'TARGET' | 'REACH';
+  /** Whether `tier` follows the prediction (PREDICTED) or is a manual override (MANUAL). */
+  tierSource?: 'PREDICTED' | 'MANUAL';
+  /** The tier the latest prediction would assign — for a "predicted: …" hint when overridden. */
+  predictedTier?: 'SAFETY' | 'TARGET' | 'REACH';
+  /** True when `tier` is an unverified default (PREDICTED but no usable prediction yet). */
+  tierIsEstimated?: boolean;
   round?: string;
   school: {
     id: string;

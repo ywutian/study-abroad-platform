@@ -26,9 +26,8 @@ import { cn, formatAcceptanceRate } from '@/lib/utils';
 import { AgentType } from '@study-abroad/shared';
 import { Link } from '@/lib/i18n/navigation';
 import { openFloatingAgentChat } from '@/components/features/agent-chat/floating-chat-bridge';
-import { TIER_CONFIG, getProbabilityColor } from './constants';
+import { TIER_CONFIG } from './constants';
 import type { PredictionResult } from './types';
-import { formatPercentValue, resolveContextualBaseline } from './benchmark-utils';
 import { PredictionExplanationStream } from './PredictionExplanationStream';
 
 // Lazy load expanded panels
@@ -61,6 +60,10 @@ const PredictionHistoryPanel = dynamic(
 );
 const RateBreakdownPanel = dynamic(
   () => import('./RateBreakdownPanel').then((m) => ({ default: m.RateBreakdownPanel })),
+  { ssr: false }
+);
+const CaseComparisonPanel = dynamic(
+  () => import('./CaseComparisonPanel').then((m) => ({ default: m.CaseComparisonPanel })),
   { ssr: false }
 );
 
@@ -162,7 +165,6 @@ export const PredictionResultCard = memo(
     const dataSupportLabel =
       publicExplanation?.dataSupportLabel ?? t(`confidence.${result.confidence ?? 'medium'}`);
 
-    const probPercent = isUnavailable ? null : (numericProbability * 100).toFixed(0);
     const normalizedSourceSummary = normalizeSourceSummary(result.sourceSummary);
     const uncertaintyReasons = (result.uncertaintyReasons ?? []).filter(Boolean);
     const hasPredictionContext = Boolean(
@@ -210,14 +212,6 @@ export const PredictionResultCard = memo(
         avgProbability: numericProbability,
       },
     };
-    const contextualBaseline = isUnavailable
-      ? null
-      : resolveContextualBaseline({
-          schoolMeta: result.schoolMeta,
-          isInternational: isInternational ?? false,
-          roundContext: result.roundContext,
-          probability: numericProbability,
-        });
     const isCounselorEstimate = result.predictionMethod === 'counselor';
     const hasExpandedContent =
       result.factors.length > 0 ||
@@ -253,10 +247,6 @@ export const PredictionResultCard = memo(
             <div className="space-y-1.5 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold truncate">{result.schoolName}</span>
-                <Badge className={tierConfig.badge}>
-                  <TierIcon className="h-3 w-3 mr-1" />
-                  {isUnavailable ? 'Unavailable' : t(`tier.${result.tier}`)}
-                </Badge>
                 <Badge variant="outline" className="gap-1 border-primary/20 text-primary">
                   <Database className="h-3 w-3" />
                   {dataSupportLabel}
@@ -302,11 +292,6 @@ export const PredictionResultCard = memo(
                     })}
                   </Badge>
                 )}
-                {probabilityRange && (
-                  <span>
-                    {t('range')}: {probabilityRange}
-                  </span>
-                )}
                 {hasDataQualityWarning && dataQuality && (
                   <Badge variant="outline" className="text-xs py-0 gap-1">
                     <AlertTriangle className="h-3 w-3" />
@@ -339,61 +324,22 @@ export const PredictionResultCard = memo(
               </div>
             </div>
 
-            {/* Probability ring */}
-            <div className="flex flex-col items-center shrink-0">
-              <div className="relative">
-                <svg
-                  className="h-16 w-16 -rotate-90"
-                  viewBox="0 0 64 64"
-                  role="img"
-                  aria-label={
-                    isUnavailable
-                      ? 'Not enough data'
-                      : `${t('estimatedProbabilityLabel')} ${probPercent}%`
-                  }
-                >
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="26"
-                    stroke="currentColor"
-                    strokeWidth="5"
-                    fill="none"
-                    className="text-muted/20"
-                  />
-                  {!isUnavailable && (
-                    <motion.circle
-                      cx="32"
-                      cy="32"
-                      r="26"
-                      stroke="currentColor"
-                      strokeWidth="5"
-                      fill="none"
-                      strokeLinecap="round"
-                      className={tierConfig.text}
-                      initial={{ strokeDasharray: '0 163.36' }}
-                      animate={{ strokeDasharray: `${numericProbability * 163.36} 163.36` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
-                    />
-                  )}
-                </svg>
-                <span
-                  className={cn(
-                    'absolute inset-0 flex items-center justify-center text-lg font-bold text-metric rotate-0',
-                    isUnavailable ? tierConfig.text : getProbabilityColor(numericProbability)
-                  )}
-                >
-                  {isUnavailable ? <AlertTriangle className="h-5 w-5" /> : `${probPercent}%`}
+            {/* Tier verdict — the headline of the prediction */}
+            <div className="flex flex-col items-end shrink-0 text-right">
+              <div className={cn('flex items-center gap-1.5', tierConfig.text)}>
+                <TierIcon className="h-6 w-6 shrink-0" />
+                <span className="text-2xl font-bold leading-tight">
+                  {isUnavailable ? t('tier.unavailable') : t(`tier.${result.tier}`)}
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground mt-1">
-                {isUnavailable ? 'Not enough data' : t('estimatedProbabilityLabel')}
-              </span>
-              {contextualBaseline && (
-                <span className="text-2xs text-muted-foreground mt-0.5">
-                  {t('rateBreakdown.contextualBaselineShort', {
-                    rate: formatPercentValue(contextualBaseline.rate),
-                  })}
+              {!isUnavailable && probabilityRange && (
+                <span className="mt-1 text-xs text-muted-foreground">
+                  {t('rangeLine', { range: probabilityRange })}
+                </span>
+              )}
+              {isUnavailable && (
+                <span className="mt-1 max-w-[12rem] text-xs text-muted-foreground">
+                  {t('insufficientDataReason')}
                 </span>
               )}
               {hasExpandedContent && (
@@ -464,9 +410,7 @@ export const PredictionResultCard = memo(
                 <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium">{t('hallLink.title')}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {t('hallLink.body')}
-                  </span>
+                  <span className="block text-xs text-muted-foreground">{t('hallLink.body')}</span>
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
               </Link>
@@ -723,18 +667,14 @@ export const PredictionResultCard = memo(
                               </div>
                             )}
                             <div className="text-center p-2 rounded-lg bg-primary/5 border border-primary/10">
-                              <p className="text-xs text-muted-foreground">
-                                {t('estimatedProbabilityLabel')}
-                              </p>
+                              <p className="text-xs text-muted-foreground">{t('rangeLabel')}</p>
                               <p
                                 className={cn(
                                   'font-semibold text-sm',
-                                  isUnavailable
-                                    ? 'text-muted-foreground'
-                                    : getProbabilityColor(numericProbability)
+                                  isUnavailable ? 'text-muted-foreground' : tierConfig.text
                                 )}
                               >
-                                {isUnavailable ? 'Unavailable' : `${probPercent}%`}
+                                {isUnavailable ? t('tier.unavailable') : (probabilityRange ?? '—')}
                               </p>
                             </div>
                           </div>
@@ -795,6 +735,11 @@ export const PredictionResultCard = memo(
                       {result.comparison && <ComparisonPanel comparison={result.comparison} />}
                     </PredictionDetailSection>
                   )}
+
+                  {/* Similar real cases — "students like you who got in / were rejected" */}
+                  <PredictionDetailSection title={t('detailSections.realCases')}>
+                    <CaseComparisonPanel schoolId={result.schoolId} />
+                  </PredictionDetailSection>
 
                   {/* Suggestions */}
                   {result.suggestions.length > 0 && (
