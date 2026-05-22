@@ -93,8 +93,10 @@ export const CaseComparisonPanel = memo(function CaseComparisonPanel({
     return <p className="text-sm text-muted-foreground">{t('comparisonLoadError')}</p>;
   }
 
-  // Honest empty / insufficient state — never render a verdict from a tiny sample.
-  if (data.status === 'INSUFFICIENT_DATA') {
+  // Honest empty / insufficient state — never render a verdict from a tiny
+  // sample. Also covers a malformed/empty response (status not 'OK' or no
+  // breakdown) so a bad payload degrades gracefully instead of crashing.
+  if (data.status !== 'OK' || !data.breakdown) {
     return (
       <div className="flex items-start gap-2.5 rounded-lg border border-dashed bg-muted/30 p-3">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -112,7 +114,8 @@ export const CaseComparisonPanel = memo(function CaseComparisonPanel({
 
   const { breakdown, count } = data;
   const total = breakdown.admitted + breakdown.rejected + breakdown.waitlisted || 1;
-  const visibleCases = showAll ? data.cases : data.cases.slice(0, 5);
+  const allCases = data.cases ?? [];
+  const visibleCases = showAll ? allCases : allCases.slice(0, 5);
 
   return (
     <div className="min-w-0 space-y-3">

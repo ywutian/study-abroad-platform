@@ -55,7 +55,9 @@ export function CaseComparisonPanel({ schoolId }: { schoolId: string }) {
     );
   }
 
-  if (data.status === 'INSUFFICIENT_DATA') {
+  // Insufficient sample OR a malformed/empty payload — degrade gracefully
+  // (never render a verdict, never crash on a missing breakdown).
+  if (data.status !== 'OK' || !data.breakdown) {
     return (
       <EmptyState
         icon="information-circle-outline"
@@ -116,7 +118,7 @@ export function CaseComparisonPanel({ schoolId }: { schoolId: string }) {
         </Text>
       )}
 
-      {data.cases.slice(0, 6).map((c) => (
+      {(data.cases ?? []).slice(0, 6).map((c) => (
         <View key={c.id} style={[styles.row, { borderColor: colors.border }]}>
           <View style={styles.rowHead}>
             <Text style={[styles.stats, { color: colors.foregroundMuted }]} numberOfLines={1}>
