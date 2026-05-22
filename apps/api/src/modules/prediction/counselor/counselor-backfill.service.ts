@@ -276,7 +276,9 @@ export class CounselorBackfillService {
           where: { id: row.id },
           data: {
             probability: counselorResult.probability,
-            probabilityLow: Math.max(0.02, counselorResult.probability - 0.05),
+            // PR · prediction-counselor-fix: removed absolute 0.02 floor;
+            // see counselor-engine.service.ts:251 + prediction.service.ts.
+            probabilityLow: Math.max(0, counselorResult.probability - 0.05),
             probabilityHigh: Math.min(0.98, counselorResult.probability + 0.05),
             factors:
               counselorResult.factors as unknown as Prisma.InputJsonValue,

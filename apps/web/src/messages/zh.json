@@ -2468,8 +2468,12 @@
       "reach": "冲刺",
       "match": "匹配",
       "safety": "保底",
-      "unknown": "未知"
+      "unknown": "未知",
+      "unavailable": "数据不足"
     },
+    "rangeLine": "录取概率区间 {range}",
+    "rangeLabel": "概率区间",
+    "insufficientDataReason": "样本数据不足，暂时无法给出可靠判断",
     "ucOneClick": "UC 一键预测",
     "ucOneClickUnavailable": "暂无法获取 UC 学校列表",
     "ucExpandedDesc": "因为你选了 UC 学校，我们自动加入了全部 9 所 UC 校区进行对比。UC 各校使用同一套申请系统，这样你可以看到哪些校区最有可能录取你。",
@@ -2488,7 +2492,8 @@
       "assessment": "综合判断",
       "why": "为什么是这个结果",
       "improve": "提升录取机会",
-      "understanding": "如何理解概率"
+      "understanding": "如何理解概率",
+      "realCases": "相似案例对比"
     },
     "decisionSignals": "关键判断",
     "nextAction": "下一步",
@@ -2754,6 +2759,14 @@
   "cases": {
     "title": "案例库",
     "description": "查看往届录取者的申请背景、标化成绩、课外活动和文书",
+    "comparisonLoadError": "加载相似案例失败",
+    "insufficientTitle": "案例不足，无法对比",
+    "insufficientDesc": "暂时没有相似背景的真实案例",
+    "insufficientDescWithCount": "仅 {count} 例相似案例，样本太小，无法给出可靠对比",
+    "comparisonSummary": "{admitted} 录取 · {waitlisted} 候补 · {rejected} 拒绝",
+    "crossNationalityNote": "同国籍案例不足，已纳入其他国籍申请者，仅供参考",
+    "viewAll": "查看全部 {count} 例",
+    "viewLess": "收起",
     "tabs": {
       "cases": "案例",
       "essays": "优秀文书",
@@ -4382,6 +4395,7 @@
         "noEssayData": "待确认",
         "estimate": "预测",
         "noEstimate": "待测算",
+        "predictedHint": "预测：{tier}",
         "deadline": "截止",
         "deadlineMissing": "待确认",
         "overdue": "已过期 {days} 天",

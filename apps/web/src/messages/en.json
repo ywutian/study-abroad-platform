@@ -2484,8 +2484,12 @@
       "reach": "Reach",
       "match": "Match",
       "safety": "Safety",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "unavailable": "Insufficient data"
     },
+    "rangeLine": "Admission range {range}",
+    "rangeLabel": "Probability range",
+    "insufficientDataReason": "Not enough data for a reliable verdict yet",
     "ucOneClick": "UC One-Click Prediction",
     "ucOneClickUnavailable": "UC school list is not available",
     "ucExpandedDesc": "Since you selected a UC school, we automatically included all 9 UC campuses for comparison. UC schools share the same application system, so you can see which campuses are most likely to admit you.",
@@ -2504,7 +2508,8 @@
       "assessment": "Assessment",
       "why": "Why this result",
       "improve": "Improve chances",
-      "understanding": "Understanding your chances"
+      "understanding": "Understanding your chances",
+      "realCases": "Similar real cases"
     },
     "decisionSignals": "Key read",
     "nextAction": "Next action",
@@ -2770,6 +2775,14 @@
   "cases": {
     "title": "Case Library",
     "description": "Explore real admission profiles, test scores, activities, and winning essays from accepted students",
+    "comparisonLoadError": "Failed to load similar cases",
+    "insufficientTitle": "Not enough cases to compare",
+    "insufficientDesc": "No similar real cases yet",
+    "insufficientDescWithCount": "Only {count} similar case(s) — too small a sample for a reliable comparison",
+    "comparisonSummary": "{admitted} admitted · {waitlisted} waitlisted · {rejected} rejected",
+    "crossNationalityNote": "Too few same-nationality cases — applicants of other nationalities are included; interpret with caution",
+    "viewAll": "View all {count} cases",
+    "viewLess": "Show less",
     "tabs": {
       "cases": "Cases",
       "essays": "Winning Essays",
@@ -4398,6 +4411,7 @@
         "noEssayData": "Needs review",
         "estimate": "Estimate",
         "noEstimate": "Not run",
+        "predictedHint": "Predicted: {tier}",
         "deadline": "Deadline",
         "deadlineMissing": "Needs date",
         "overdue": "{days} days overdue",

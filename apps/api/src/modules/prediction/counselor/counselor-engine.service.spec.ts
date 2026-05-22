@@ -186,12 +186,15 @@ describe('CounselorEngineService', () => {
       expect(result.probability).toBeLessThanOrEqual(0.2 * 2.5 + 0.001);
     });
 
-    it('floors at 0.3× anchor even when modifiers stack low', async () => {
-      // Far-below-25th GPA + far-below test + intl need-aware at a highly-
-      // selective school would push very low; clamp floors at 0.3×.
-      // Note: anchor must be < 0.2 to keep the intl penalty at 0.4× under
-      // the new selectivity-aware logic (4/26 PR-8 fix). Less-selective
-      // schools intentionally don't pile on intl penalties.
+    it('floors at 0.1× anchor (relative floor) when modifiers stack low', async () => {
+      // PR · prediction-counselor-fix (2026-05-21): floor relaxed from
+      // anchor*0.3 / 0.02-absolute to a pure anchor*0.1 relative floor
+      // (see counselor-engine.service.ts:251). This test now verifies the
+      // new looser floor — at 0.1 anchor, floor is 0.01 (1.0%) instead of
+      // the old 0.03 (3.0%). The semantic intent is unchanged: bad
+      // applicants at hard schools land at the relative floor, just at a
+      // value calibrated to the school's true difficulty rather than a
+      // one-size-fits-all 0.02 absolute.
       const result = await service.compute(
         profile({
           gpa: 2.0,
@@ -206,16 +209,27 @@ describe('CounselorEngineService', () => {
         }),
       );
 
-      expect(result.probability).toBeGreaterThanOrEqual(0.1 * 0.3 - 0.001);
+      // anchor=0.1 → floor = 0.01
+      expect(result.probability).toBeGreaterThanOrEqual(0.1 * 0.1 - 0.001);
+      // The pre-existing scale (≤ anchor × 2.5) is preserved
+      expect(result.probability).toBeLessThanOrEqual(0.1 * 2.5);
     });
 
-    it('respects absolute floor of 0.02 even if anchor is tiny', async () => {
+    it('respects relative floor of anchor*0.1 even if profile is weak', async () => {
+      // PR · prediction-counselor-fix (2026-05-21): floor is now relative
+      // (anchor × 0.1) instead of absolute 0.02 — see
+      // counselor-engine.service.ts:251 for why. For anchor=0.02 the floor
+      // is 0.002 (0.2%). For anchor=0.5 the floor is 0.05 (5%). Behaviour
+      // for very-tiny-anchor schools is gentler now.
       const result = await service.compute(
         profile({ gpa: 2.0, testScores: [{ type: 'SAT', score: 800 }] }),
         school({ acceptanceRate: 0.02, sat25: 1500 }),
       );
 
-      expect(result.probability).toBeGreaterThanOrEqual(0.02);
+      // anchor=0.02 → floor = 0.002
+      expect(result.probability).toBeGreaterThanOrEqual(0.002);
+      // Still bounded sanely from above by anchor × 2.5 = 0.05
+      expect(result.probability).toBeLessThanOrEqual(0.05);
     });
 
     it('respects absolute ceiling of 0.98 even if anchor × 2.5 exceeds 1', async () => {
@@ -473,6 +487,12 @@ describe('CounselorEngineService', () => {
       );
 
       expect(result.modifierResults.geo.label).toContain('school data');
+      // NOTE (2026-05-21): UC mid-selectivity campuses genuinely admit
+      // out-of-state applicants at HIGHER rates than the overall pool —
+      // they recruit non-residents for tuition revenue and the OOS pool is
+      // more self-selected. So oosRate (0.573) > overallRate (0.418) is a
+      // REAL pattern, not corruption. The geo modifier's ratio clamp caps
+      // the resulting boost at ×1.3.
       expect(result.modifierResults.geo.multiplier).toBeCloseTo(1.3, 2);
     });
 

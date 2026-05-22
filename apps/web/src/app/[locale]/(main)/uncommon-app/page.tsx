@@ -470,6 +470,13 @@ function ApplicationSchoolRow({
                   <TierIcon className="h-3 w-3" />
                   {t(`tier.${row.tier.toLowerCase()}`)}
                 </Badge>
+                {row.tierIsOverridden && row.predictedTier && (
+                  <Badge variant="outline" className="gap-1 text-2xs">
+                    {t('workspace.schoolBoard.predictedHint', {
+                      tier: t(`tier.${row.predictedTier.toLowerCase()}`),
+                    })}
+                  </Badge>
+                )}
                 <span>{row.round}</span>
                 <span>{deadlineLabel(t, row)}</span>
               </div>
@@ -511,7 +518,7 @@ function ApplicationSchoolRow({
               value={
                 row.predictionProbability === null
                   ? t('workspace.schoolBoard.noEstimate')
-                  : `${Math.round(row.predictionProbability * 100)}%`
+                  : t(`tier.${row.tier.toLowerCase()}`)
               }
               status={row.predictionProbability === null ? 'warning' : 'good'}
             />

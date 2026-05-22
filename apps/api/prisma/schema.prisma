@@ -2416,6 +2416,12 @@ enum SchoolTier {
   REACH // 冲刺校
 }
 
+// Whether a SchoolListItem.tier reflects a live prediction or a user override.
+enum TierSource {
+  PREDICTED // tier derived live from the latest PredictionResult.tier
+  MANUAL // user explicitly overrode the tier
+}
+
 model SchoolListItem {
   id       String @id @default(cuid())
   userId   String
@@ -2424,6 +2430,9 @@ model SchoolListItem {
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   tier            SchoolTier @default(TARGET)
+  // PREDICTED: `tier` is a placeholder; the effective tier is read live from
+  // the latest PredictionResult. MANUAL: the user set `tier` explicitly and it wins.
+  tierSource      TierSource @default(PREDICTED)
   notes           String?    @db.Text
   round           String? // ED, EA, RD, etc.
   isAIRecommended Boolean    @default(false)

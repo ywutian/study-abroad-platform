@@ -47,6 +47,7 @@ import {
 } from '@study-abroad/shared';
 import { apiClient } from '@/lib/api/client';
 import { useAuthStore } from '@/stores';
+import { CaseComparisonPanel } from '@/components/prediction/CaseComparisonPanel';
 
 interface PredictionResultItem {
   schoolId: string;
@@ -502,23 +503,20 @@ export default function PredictionScreen() {
                       </Badge>
                     </View>
                     <View style={styles.rateContainer}>
-                      {prediction.probability == null ? (
-                        <Text
-                          style={[styles.rate, { color: getRecommendationColor(prediction.tier) }]}
-                        >
-                          --
-                        </Text>
-                      ) : (
-                        <AnimatedCounter
-                          value={Math.round(prediction.probability * 100)}
-                          suffix="%"
-                          style={[styles.rate, { color: getRecommendationColor(prediction.tier) }]}
-                        />
-                      )}
+                      <Text
+                        style={[
+                          styles.tierVerdict,
+                          { color: getRecommendationColor(prediction.tier) },
+                        ]}
+                      >
+                        {prediction.probability == null
+                          ? t('prediction.tierUnavailable')
+                          : getRecommendationLabel(prediction.tier)}
+                      </Text>
                       <Text style={[styles.rateLabel, { color: colors.foregroundMuted }]}>
                         {prediction.probability == null
-                          ? 'Not enough data'
-                          : t('prediction.probability')}
+                          ? t('prediction.insufficientDataReason')
+                          : t('prediction.tierVerdictLabel')}
                       </Text>
                       {prediction.contextualBaseline && (
                         <>
@@ -671,6 +669,14 @@ export default function PredictionScreen() {
                       ))}
                     </View>
                   )}
+
+                  {/* Similar real cases */}
+                  <View style={styles.similarCasesSection}>
+                    <Text style={[styles.insightTitle, { color: colors.foreground }]}>
+                      {t('prediction.similarCasesTitle')}
+                    </Text>
+                    <CaseComparisonPanel schoolId={prediction.schoolId} />
+                  </View>
 
                   <View style={styles.cardFooter}>
                     <Text style={[styles.confidence, { color: colors.foregroundMuted }]}>
@@ -1020,6 +1026,11 @@ const styles = StyleSheet.create({
     fontSize: fontSize['2xl'],
     fontWeight: fontWeight.bold,
   },
+  tierVerdict: {
+    fontSize: fontSize['2xl'],
+    fontWeight: fontWeight.bold,
+    textAlign: 'right',
+  },
   rateLabel: {
     fontSize: fontSize.xs,
   },
@@ -1067,6 +1078,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
   },
   factors: {
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  similarCasesSection: {
     gap: spacing.sm,
     marginBottom: spacing.md,
   },

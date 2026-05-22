@@ -11,12 +11,14 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CaseService } from './case.service';
+import { CaseSimilarityService } from './case-similarity.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { CaseQueryDto } from './dto/case-query.dto';
 import { CreateCaseDto } from './dto/create-case.dto';
 import { UpdateCaseDto } from './dto/update-case.dto';
+import { SimilarCasesQueryDto } from './dto/similar-cases-query.dto';
 import { Role } from '@prisma/client';
 
 @ApiTags('cases')
@@ -24,7 +26,10 @@ import { Role } from '@prisma/client';
 @ThrottleRelaxed()
 @Controller('cases')
 export class CaseController {
-  constructor(private readonly caseService: CaseService) {}
+  constructor(
+    private readonly caseService: CaseService,
+    private readonly caseSimilarityService: CaseSimilarityService,
+  ) {}
 
   @Get()
   @Public()
@@ -76,6 +81,23 @@ export class CaseController {
   @ApiOperation({ summary: 'Get my cases' })
   async getMyCases(@CurrentUser() user: CurrentUserPayload) {
     return this.caseService.getMyCases(user.id);
+  }
+
+  // NOTE: must stay declared before `@Get(':id')` or `/cases/similar` would
+  // be captured by the `:id` route.
+  @Get('similar')
+  @ApiOperation({
+    summary: "Find admission cases similar to the current user's profile",
+  })
+  async findSimilar(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: SimilarCasesQueryDto,
+  ) {
+    return this.caseSimilarityService.findSimilar(
+      user.id,
+      { schoolId: query.schoolId, limit: query.limit },
+      user.locale || 'zh',
+    );
   }
 
   @Get(':id')
