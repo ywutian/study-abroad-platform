@@ -423,10 +423,11 @@ function validateRow(
   if (row.counselorTier === 4) return;
   if (row.probability == null || !Number.isFinite(row.probability)) {
     row.anomalies.push('probability_not_finite');
-  } else if (
-    row.probability < 0.02 - EPSILON ||
-    row.probability > 0.98 + EPSILON
-  ) {
+  } else if (row.probability < -EPSILON || row.probability > 0.98 + EPSILON) {
+    // Valid range is (0, 0.98]. The counselor floor is the RELATIVE
+    // `anchor * 0.1` (see counselor-engine.service.ts), not an absolute 0.02 —
+    // a top-5 school can legitimately predict well below 2%, so only a
+    // negative probability is genuinely out of range.
     row.anomalies.push('probability_out_of_range');
   }
 
@@ -440,7 +441,9 @@ function validateRow(
     }
   }
 
-  const lower = Math.max(0.02, row.anchor * 0.3);
+  // Must mirror the engine's anchored clip in counselor-engine.service.ts:
+  // `lowerBound = anchor * 0.1`, `upperBound = min(0.98, anchor * 2.5)`.
+  const lower = row.anchor * 0.1;
   const upper = Math.min(0.98, row.anchor * 2.5);
   if (
     row.probability != null &&
