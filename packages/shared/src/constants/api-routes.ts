@@ -147,6 +147,18 @@ export const predictionRoutes = {
     `${API_ROUTES.PREDICTIONS}/${predictionResultId}/feedback`,
 };
 
+// M6: Outcome reporting routes
+export const outcomeRoutes = {
+  submit: () => `${API_ROUTES.PREDICTIONS}/outcomes`,
+  myList: () => `${API_ROUTES.PREDICTIONS}/outcomes/me`,
+  myStats: () => `${API_ROUTES.PREDICTIONS}/outcomes/me/stats`,
+  pendingDecisions: () => `${API_ROUTES.PREDICTIONS}/outcomes/pending-decisions`,
+  uploadEvidence: (outcomeId: string) => `${API_ROUTES.PREDICTIONS}/outcomes/${outcomeId}/evidence`,
+  adminPendingVerification: () => `${API_ROUTES.ADMIN}/predictions/outcomes/pending-verification`,
+  adminVerify: (outcomeId: string) =>
+    `${API_ROUTES.ADMIN}/predictions/outcomes/${outcomeId}/verify`,
+};
+
 export const recommendationRoutes = {
   generate: () => API_ROUTES.RECOMMENDATIONS,
   history: () => `${API_ROUTES.RECOMMENDATIONS}/history`,
@@ -287,6 +299,7 @@ export const notificationRoutes = {
   delete: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}`,
   deleteAll: () => API_ROUTES.NOTIFICATIONS,
   pushToken: () => `${API_ROUTES.NOTIFICATIONS}/push-token`,
+  preferences: () => `${API_ROUTES.NOTIFICATIONS}/preferences`,
   markRead: (id: string) => `${API_ROUTES.NOTIFICATIONS}/${id}/read`,
   readAll: () => `${API_ROUTES.NOTIFICATIONS}/read-all`,
 };
@@ -517,6 +530,7 @@ export const adminRoutes = {
   dataSyncTrigger: () => `${API_ROUTES.ADMIN}/data-sync/trigger`,
   schoolsDataCoverage: () => `${API_ROUTES.ADMIN}/schools/data-coverage`,
   schoolsDataHealth: () => `${API_ROUTES.ADMIN}/schools/data-health`,
+  profileReadinessDeliveryPackage: () => `${API_ROUTES.ADMIN}/profile-readiness/delivery-package`,
   schoolsSyncIpedsAdmissions: () => `${API_ROUTES.ADMIN}/schools/sync/ipeds-admissions`,
   schoolsImportIpedsCsv: () => `${API_ROUTES.ADMIN}/schools/import/ipeds-csv`,
   schoolsCdsDiscover: () => `${API_ROUTES.ADMIN}/schools/cds/discover`,

@@ -384,6 +384,9 @@ export class PredictionService {
       satAvg: school.satAvg ?? undefined,
       sat25: school.sat25 ?? undefined,
       sat75: school.sat75 ?? undefined,
+      act25: school.act25 ?? undefined,
+      act75: school.act75 ?? undefined,
+      testingPolicy: school.testingPolicy ?? undefined,
       dataQuality: this.buildSchoolDataQuality(school),
     };
   }

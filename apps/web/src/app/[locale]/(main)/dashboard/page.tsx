@@ -15,6 +15,8 @@ import { useOnboardingProgress } from '@/hooks/use-onboarding-progress';
 import { apiClient } from '@/lib/api';
 import { Link } from '@/lib/i18n/navigation';
 
+import { OutcomePendingBanner } from '@/components/features/outcome/outcome-pending-banner';
+
 import { DashboardActivity } from './_components/dashboard-activity';
 import { DashboardCommandCenter } from './_components/dashboard-command-center';
 import { DashboardDeadlines } from './_components/dashboard-deadlines';
@@ -156,6 +158,11 @@ export default function DashboardPage() {
       )}
 
       <div className="space-y-6">
+        {/* M6: Outcome reporting prompt — only shows if user has unreported predictions */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <OutcomePendingBanner />
+        </motion.div>
+
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <DashboardCommandCenter
             workbench={workbench}

@@ -169,6 +169,9 @@ export interface PredictionResult {
     satAvg?: number;
     sat25?: number;
     sat75?: number;
+    act25?: number;
+    act75?: number;
+    testingPolicy?: SchoolTestingPolicy;
     dataQuality?: SchoolPredictionDataQuality;
   };
   majorBreakdown?: MajorBreakdown;

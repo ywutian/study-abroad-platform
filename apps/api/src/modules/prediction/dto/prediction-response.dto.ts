@@ -393,6 +393,9 @@ export class PredictionResultDto {
     satAvg?: number;
     sat25?: number;
     sat75?: number;
+    act25?: number;
+    act75?: number;
+    testingPolicy?: 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
     dataQuality?: {
       officialFields: string[];
       heuristicFields: string[];
