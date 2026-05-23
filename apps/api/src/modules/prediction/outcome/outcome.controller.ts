@@ -131,34 +131,3 @@ export class OutcomeController {
     return this.outcomeService.getMyStats(user.id);
   }
 }
-
-@ApiTags('Admin: Prediction Outcomes')
-@ApiBearerAuth()
-@Controller('admin/predictions/outcomes')
-@Roles(Role.ADMIN, Role.SUPER_ADMIN)
-export class AdminOutcomeController {
-  constructor(private readonly outcomeService: OutcomeService) {}
-
-  @Get('pending-verification')
-  @ThrottleRelaxed()
-  @ApiOperation({
-    summary: 'Admin queue: outcomes pending COUNSELOR/DOCUMENT verification',
-  })
-  async pendingVerification() {
-    return this.outcomeService.listPendingVerification();
-  }
-
-  @Post(':id/verify')
-  @ThrottleSensitive()
-  @ApiOperation({
-    summary:
-      'Admin upgrades an outcome to COUNSELOR_VERIFIED or DOCUMENT_VERIFIED',
-  })
-  async verify(
-    @Param('id') id: string,
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() dto: VerifyOutcomeDto,
-  ) {
-    return this.outcomeService.verify(id, user.id, dto);
-  }
-}

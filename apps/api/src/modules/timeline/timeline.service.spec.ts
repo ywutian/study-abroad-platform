@@ -103,6 +103,9 @@ describe('TimelineService', () => {
               findUnique: jest.fn(),
               findMany: jest.fn(),
             },
+            essayPrompt: {
+              findMany: jest.fn().mockResolvedValue([]),
+            },
           },
         },
       ],
@@ -199,6 +202,12 @@ describe('TimelineService', () => {
                 : new Date().getFullYear(),
             essayPrompts: null,
             essayCount: null,
+            // Required for isSourceBackedCurrentYearDeadline filter — added
+            // when the timeline action board rebuild (#155) introduced
+            // source-backed verification (`source !== 'MANUAL'` + URL in notes).
+            source: 'CDS',
+            notes: 'https://example.edu/cds/2027',
+            interviewRequired: false,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
