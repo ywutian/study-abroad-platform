@@ -562,10 +562,14 @@ export class PredictionTransformerService {
         (school as any).yieldRate,
         (value) => clampPercentRate(toNumber(value)) as any,
       ),
-      institutionType: captureField(
-        'institutionType',
-        (school as any).institutionType,
-      ),
+      // institutionType is a structural classification (ART_DESIGN /
+      // MUSIC_CONSERVATORY / etc.) used by CounselorEngine.isAuditionOrPortfolioSchool
+      // to route to tier 4 (unavailable). It must NOT be filtered by trust-tier
+      // provenance because (a) it's categorical, not a stat to weight, and
+      // (b) most schools lack explicit metadata.provenance.institutionType
+      // entries. Pass the raw value through. Caught by
+      // verify-prediction-launch's tier4 fixture when this was wrong.
+      institutionType: (school as any).institutionType ?? undefined,
       gpaDistribution: captureField(
         'gpaDistribution',
         (school as any).gpaDistribution,
