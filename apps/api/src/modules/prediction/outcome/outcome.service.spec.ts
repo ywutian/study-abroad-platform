@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { OutcomeService } from './outcome.service';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { CaseIncentiveService } from '../../points/incentive.service';
+import { PointsService } from '../../points/incentive.service';
 
 const mockPrisma = {
   predictionResult: {
@@ -31,7 +31,7 @@ const mockPrisma = {
 };
 
 const mockIncentive = {
-  reward: jest.fn().mockResolvedValue({ newBalance: 100 }),
+  adjustPoints: jest.fn().mockResolvedValue({ success: true, newBalance: 100 }),
 };
 
 describe('OutcomeService', () => {
@@ -43,7 +43,7 @@ describe('OutcomeService', () => {
       providers: [
         OutcomeService,
         { provide: PrismaService, useValue: mockPrisma },
-        { provide: CaseIncentiveService, useValue: mockIncentive },
+        { provide: PointsService, useValue: mockIncentive },
       ],
     }).compile();
     service = module.get<OutcomeService>(OutcomeService);
@@ -97,7 +97,7 @@ describe('OutcomeService', () => {
         }),
       );
       // First-time report should award points
-      expect(mockIncentive.reward).toHaveBeenCalledWith(
+      expect(mockIncentive.adjustPoints).toHaveBeenCalledWith(
         'user1',
         'SUBMIT_CASE',
         expect.objectContaining({ source: 'outcome-report' }),
@@ -171,7 +171,7 @@ describe('OutcomeService', () => {
         mockPrisma.predictionOutcomeLabelRecord.create,
       ).not.toHaveBeenCalled();
       // Re-submit should NOT award points again (anti-spam)
-      expect(mockIncentive.reward).not.toHaveBeenCalled();
+      expect(mockIncentive.adjustPoints).not.toHaveBeenCalled();
     });
   });
 
@@ -223,7 +223,7 @@ describe('OutcomeService', () => {
         }),
       );
       // Verification should award CASE_VERIFIED points
-      expect(mockIncentive.reward).toHaveBeenCalledWith(
+      expect(mockIncentive.adjustPoints).toHaveBeenCalledWith(
         'user1',
         'CASE_VERIFIED',
         expect.objectContaining({ source: 'outcome-verification' }),

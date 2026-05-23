@@ -10,10 +10,7 @@ import {
   PredictionOutcomeLabelStatus,
 } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import {
-  CaseIncentiveService,
-  PointAction,
-} from '../../points/incentive.service';
+import { PointsService, PointAction } from '../../points/incentive.service';
 import {
   ListMyOutcomesDto,
   SubmitOutcomeDto,
@@ -83,7 +80,7 @@ export class OutcomeService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly incentive: CaseIncentiveService,
+    private readonly incentive: PointsService,
   ) {}
 
   /**
@@ -156,7 +153,7 @@ export class OutcomeService {
     // Award points only on first-time report (not on idempotent re-submit)
     if (!existing) {
       try {
-        await this.incentive.reward(userId, PointAction.SUBMIT_CASE, {
+        await this.incentive.adjustPoints(userId, PointAction.SUBMIT_CASE, {
           source: 'outcome-report',
           predictionResultId: dto.predictionResultId,
           outcomeId: record.id,
@@ -350,7 +347,7 @@ export class OutcomeService {
         ? PointAction.VERIFICATION_APPROVED // higher reward
         : PointAction.CASE_VERIFIED;
       try {
-        await this.incentive.reward(record.reportedBy, action, {
+        await this.incentive.adjustPoints(record.reportedBy, action, {
           source: 'outcome-verification',
           outcomeId,
           finalStatus: dto.status,
