@@ -21,6 +21,8 @@ import {
   type BenchmarkRunDetail,
   type BenchmarkTestResult,
   type BenchmarkCaseReplay,
+  type BenchmarkSchoolAnchorSnapshot,
+  type BenchmarkProfileSnapshot,
 } from '@study-abroad/shared';
 
 import { PageContainer, PageHeader } from '@/components/layout';
@@ -39,6 +41,221 @@ const runQK = (id: string) => ['admin', 'prediction-benchmark', 'run', id] as co
 
 function pct(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
+}
+
+/**
+ * Visual indicator for data-quality tier. The whole point of this surface
+ * is so admins can spot MEDIUM-tier (Claude-inferred) values at a glance
+ * and question them. Hence the strong color contrast.
+ */
+function TierBadge({ tier }: { tier: 'HIGH' | 'MEDIUM' | 'LOW' | null }) {
+  const t = useTranslations('PredictionBenchmark');
+  if (!tier) {
+    return (
+      <Badge variant="outline" className="text-2xs">
+        {t('tier.unflagged')}
+      </Badge>
+    );
+  }
+  const styles: Record<string, string> = {
+    HIGH: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800',
+    MEDIUM:
+      'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800',
+    LOW: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700',
+  };
+  return (
+    <Badge variant="outline" className={cn('text-2xs', styles[tier])}>
+      {t(`tier.${tier}`)}
+    </Badge>
+  );
+}
+
+/**
+ * Renders the applicant profile that was fed into the M3 engine for this
+ * case. Co-reviewers use this to question "is this profile realistic for
+ * Stanford REA?" etc.
+ */
+function ProfileSnapshotView({ snap }: { snap: BenchmarkProfileSnapshot }) {
+  const t = useTranslations('PredictionBenchmark');
+  const fmtNum = (v: number | null, suffix = '') => (v === null ? '—' : `${v}${suffix}`);
+  return (
+    <div className="space-y-2 rounded-md border bg-muted/20 p-3 text-xs">
+      <div className="flex items-center justify-between">
+        <p className="font-semibold">{t('inputs.profile')}</p>
+        <Badge variant={snap.source === 'real-user' ? 'outline' : 'secondary'} className="text-2xs">
+          {t(`inputs.profileSource.${snap.source}`)}
+        </Badge>
+      </div>
+      <dl className="grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-3">
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.gpa')}</dt>
+          <dd className="font-mono">
+            {fmtNum(snap.gpa)} / {fmtNum(snap.gpaScale)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.sat')}</dt>
+          <dd className="font-mono">{fmtNum(snap.satTotal)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.act')}</dt>
+          <dd className="font-mono">{fmtNum(snap.actComposite)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.round')}</dt>
+          <dd className="font-mono">{snap.applicationRound ?? '—'}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.major')}</dt>
+          <dd className="font-mono">{snap.targetMajor ?? '—'}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.gpaTrend')}</dt>
+          <dd className="font-mono">{snap.gpaTrend ?? '—'}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.activities')}</dt>
+          <dd className="font-mono">{snap.activityCount}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.awards')}</dt>
+          <dd className="font-mono">
+            {snap.awardCount}
+            {snap.topAwardLevel ? ` · ${snap.topAwardLevel}` : ''}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('inputs.apCount')}</dt>
+          <dd className="font-mono">{fmtNum(snap.apCount)}</dd>
+        </div>
+      </dl>
+      <div className="flex flex-wrap gap-1.5 pt-1">
+        {snap.isInternational && (
+          <Badge variant="outline" className="text-2xs">
+            {t('inputs.flag.international')}
+          </Badge>
+        )}
+        {snap.isFirstGeneration && (
+          <Badge variant="outline" className="text-2xs">
+            {t('inputs.flag.firstGen')}
+          </Badge>
+        )}
+        {snap.isRecruitedAthlete && (
+          <Badge variant="outline" className="text-2xs">
+            {t('inputs.flag.athlete')}
+          </Badge>
+        )}
+        {snap.legacyAtSchools.length > 0 && (
+          <Badge variant="outline" className="text-2xs">
+            {t('inputs.flag.legacy', { count: snap.legacyAtSchools.length })}
+          </Badge>
+        )}
+        {snap.testOptional && (
+          <Badge variant="outline" className="text-2xs">
+            {t('inputs.flag.testOptional')}
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Renders the school anchor data the M3 engine actually read. The tier
+ * badge is the headline — MEDIUM = Claude-inferred, scrutinize. Each
+ * field also shows whether it was present (number) or missing (—).
+ */
+function SchoolAnchorSnapshotView({ snap }: { snap: BenchmarkSchoolAnchorSnapshot }) {
+  const t = useTranslations('PredictionBenchmark');
+  const fmtPct = (v: number | null) => (v === null ? '—' : pct(v));
+  const fmtNum = (v: number | null) => (v === null ? '—' : String(v));
+  const fmtMult = (v: number | null) => (v === null ? '—' : `×${v}`);
+  return (
+    <div className="space-y-2 rounded-md border bg-muted/20 p-3 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-semibold">{t('inputs.schoolAnchor')}</p>
+        <TierBadge tier={snap.admitProfileConfidenceTier} />
+      </div>
+      <dl className="grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-2">
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.acceptanceRate')}</dt>
+          <dd className="font-mono">
+            {fmtPct(snap.acceptanceRate ? snap.acceptanceRate / 100 : null)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.edRate')}</dt>
+          <dd className="font-mono">
+            {fmtPct(snap.edAcceptanceRate ? snap.edAcceptanceRate / 100 : null)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.eaRate')}</dt>
+          <dd className="font-mono">
+            {fmtPct(snap.eaAcceptanceRate ? snap.eaAcceptanceRate / 100 : null)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.intlRate')}</dt>
+          <dd className="font-mono">
+            {fmtPct(snap.intlAcceptanceRate ? snap.intlAcceptanceRate / 100 : null)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.sat')}</dt>
+          <dd className="font-mono">
+            {fmtNum(snap.sat25)}–{fmtNum(snap.sat75)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.act')}</dt>
+          <dd className="font-mono">
+            {fmtNum(snap.act25)}–{fmtNum(snap.act75)}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.gpaDistribution')}</dt>
+          <dd className="font-mono">{snap.hasGpaDistribution ? '✓' : '—'}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.cdsBands')}</dt>
+          <dd className="font-mono">{snap.cdsBandCount}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.legacyClassPct')}</dt>
+          <dd className="font-mono">{fmtPct(snap.legacyClassPct)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.legacyMult')}</dt>
+          <dd className="font-mono">{fmtMult(snap.legacyAdmitMultiplier)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.athleteClassPct')}</dt>
+          <dd className="font-mono">{fmtPct(snap.athleteClassPct)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.athleteMult')}</dt>
+          <dd className="font-mono">{fmtMult(snap.athleteAdmitMultiplier)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.firstGenClassPct')}</dt>
+          <dd className="font-mono">{fmtPct(snap.firstGenClassPct)}</dd>
+        </div>
+        <div className="flex justify-between gap-2">
+          <dt className="text-muted-foreground">{t('anchor.cycleYear')}</dt>
+          <dd className="font-mono">{fmtNum(snap.admitProfileCycleYear)}</dd>
+        </div>
+      </dl>
+      {snap.admitProfileSource && (
+        <div className="border-t pt-1.5">
+          <p className="text-2xs uppercase tracking-wide text-muted-foreground">
+            {t('anchor.source')}
+          </p>
+          <p className="mt-0.5 whitespace-pre-wrap text-2xs">{snap.admitProfileSource}</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function formatDateTime(iso: string): string {
@@ -232,7 +449,15 @@ function CaseCard({ caseItem, comments, anchor, onComment }: CaseCardProps) {
         </button>
 
         {expanded && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 space-y-3">
+            {/* Test inputs — surfaced for co-review. The profile may be
+                synthetic (Claude-generated) and the school anchor may be
+                MEDIUM tier (also Claude-inferred). Reviewers question both. */}
+            {caseItem.profileSnapshot && <ProfileSnapshotView snap={caseItem.profileSnapshot} />}
+            {caseItem.schoolAnchorSnapshot && (
+              <SchoolAnchorSnapshotView snap={caseItem.schoolAnchorSnapshot} />
+            )}
+
             <p className="text-xs font-medium text-muted-foreground">{t('case.contributions')}</p>
             <div className="space-y-1 rounded-md bg-muted/40 p-3 text-xs">
               {caseItem.contributions.length === 0 ? (
@@ -499,6 +724,60 @@ export default function PredictionBenchmarkPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Data Sources breakdown — surfaces what fraction of school
+              anchors used real (HIGH) vs Claude-inferred (MEDIUM) vs
+              global fallback (LOW) data. This is the most important
+              signal for the team: "should I trust this run?". */}
+          {run.summary.dataSources && (
+            <Card className="mb-4 border-l-4 border-l-indigo-400">
+              <CardContent className="p-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-sm font-semibold">{t('dataSources.title')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('dataSources.subtitle', {
+                      schoolsUsed: run.summary.dataSources.schoolsUsed,
+                    })}
+                  </p>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+                  <div className="rounded-md bg-emerald-50 p-2 dark:bg-emerald-950/30">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                      {t('tier.HIGH')}
+                    </p>
+                    <p className="text-2xl font-semibold text-emerald-800 dark:text-emerald-300">
+                      {run.summary.dataSources.byTier.HIGH}
+                    </p>
+                    <p className="text-2xs text-muted-foreground">{t('dataSources.highHint')}</p>
+                  </div>
+                  <div className="rounded-md bg-amber-50 p-2 dark:bg-amber-950/30">
+                    <p className="text-xs text-amber-700 dark:text-amber-400">{t('tier.MEDIUM')}</p>
+                    <p className="text-2xl font-semibold text-amber-800 dark:text-amber-300">
+                      {run.summary.dataSources.byTier.MEDIUM}
+                    </p>
+                    <p className="text-2xs text-muted-foreground">{t('dataSources.mediumHint')}</p>
+                  </div>
+                  <div className="rounded-md bg-slate-100 p-2 dark:bg-slate-900">
+                    <p className="text-xs text-muted-foreground">{t('tier.LOW')}</p>
+                    <p className="text-2xl font-semibold">{run.summary.dataSources.byTier.LOW}</p>
+                    <p className="text-2xs text-muted-foreground">{t('dataSources.lowHint')}</p>
+                  </div>
+                  <div className="rounded-md bg-muted/40 p-2">
+                    <p className="text-xs text-muted-foreground">{t('dataSources.cdsBands')}</p>
+                    <p className="text-2xl font-semibold">
+                      {run.summary.dataSources.cdsBandsAvailable}
+                    </p>
+                    <p className="text-2xs text-muted-foreground">
+                      {t('dataSources.globalBaselines', {
+                        count: run.summary.dataSources.globalBaselinesUsed,
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">{t('dataSources.warning')}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {run.notes && (
             <Card className="mb-4 border-l-4 border-l-amber-400">
