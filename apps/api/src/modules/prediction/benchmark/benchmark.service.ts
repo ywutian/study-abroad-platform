@@ -73,6 +73,12 @@ export interface BenchmarkRunWithComments extends BenchmarkRunDetail {
  * outside the request/response cycle (benchmarks read the local CDS/School
  * tables which the production API process doesn't have direct access to in
  * the same shape the standalone script expects).
+ *
+ * A single `PredictionBenchmarkRun.tests` array now contains both the 7
+ * structural property tests and the 20 L0 golden fixtures (added 2026-05-23).
+ * Fixture entries are prefixed `Fixture X.Y (...)` so reviewers can tell them
+ * apart in the existing UI list. See `docs/PREDICTION_BENCHMARK_TEST_SPEC.md`
+ * for the full spec.
  */
 @Injectable()
 export class PredictionBenchmarkService {
@@ -134,7 +140,7 @@ export class PredictionBenchmarkService {
     if (!run) {
       throw new NotFoundException(`Benchmark run ${id} not found`);
     }
-    return run as BenchmarkRunWithComments;
+    return run;
   }
 
   async addComment(
