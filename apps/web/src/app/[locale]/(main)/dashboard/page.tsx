@@ -23,6 +23,7 @@ import { apiClient } from '@/lib/api';
 import { Link } from '@/lib/i18n/navigation';
 
 import { AIErrorBoundary } from '@/components/features/ai-error-boundary';
+import { OutcomePendingBanner } from '@/components/features/outcome/outcome-pending-banner';
 
 // Above-the-fold surfaces stay statically imported — they're always
 // visible and we don't want a chunk-fetch delay before paint.
@@ -281,6 +282,10 @@ export default function DashboardPage() {
         targets (driver.js silently skips missing selectors).
       */}
       <FadeInView direction="up" className="space-y-6">
+        {/* M6: Outcome reporting prompt — renders null when the user has
+            no unreported predictions, so it doesn't add empty space. */}
+        <OutcomePendingBanner />
+
         {/*
           Quick Ask AI — collapses 3 clicks (icon → wait → type) into 1.
           Submitting opens the global FloatingChat with the message

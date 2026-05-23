@@ -89,6 +89,22 @@ describe('PredictionTransformerService', () => {
   });
 
   describe('schoolToInput', () => {
+    const schoolWithAcceptanceRate = (
+      provenance?: Record<string, unknown>,
+    ): any => ({
+      id: 'school-1',
+      name: 'MIT',
+      acceptanceRate: 4,
+      metadata:
+        provenance === undefined
+          ? {}
+          : {
+              provenance: {
+                acceptanceRate: provenance,
+              },
+            },
+    });
+
     it('should include trust weights for prediction-eligible provenance fields', () => {
       const input = service.schoolToInput({
         id: 'school-1',
@@ -122,6 +138,68 @@ describe('PredictionTransformerService', () => {
           input.fieldTrustWeights!.satAvg) /
           2,
       );
+    });
+
+    it('should pass official school anchor values with prediction weights', () => {
+      const input = service.schoolToInput(
+        schoolWithAcceptanceRate({
+          tier: 'OFFICIAL',
+          source: 'COLLEGE_SCORECARD',
+          fetchedAt: '2026-04-01T00:00:00.000Z',
+        }),
+      );
+
+      expect(input.acceptanceRate).toBe(4);
+      expect(input.fieldTrustWeights?.acceptanceRate).toBe(1);
+      expect(input.averagePredictionWeight).toBe(1);
+    });
+
+    it('should exclude school anchor values when provenance is missing', () => {
+      const input = service.schoolToInput(schoolWithAcceptanceRate());
+
+      expect(input.acceptanceRate).toBeUndefined();
+      expect(input.fieldTrustWeights?.acceptanceRate).toBeUndefined();
+    });
+
+    it('should exclude inferred heuristic school anchor values', () => {
+      const input = service.schoolToInput(
+        schoolWithAcceptanceRate({
+          tier: 'INFERRED',
+          source: 'HEURISTIC:PR-15',
+          fetchedAt: '2026-04-01T00:00:00.000Z',
+          confidence: 0.55,
+        }),
+      );
+
+      expect(input.acceptanceRate).toBeUndefined();
+      expect(input.fieldTrustWeights?.acceptanceRate).toBeUndefined();
+    });
+
+    it('should exclude stale school anchor values', () => {
+      const input = service.schoolToInput(
+        schoolWithAcceptanceRate({
+          tier: 'OFFICIAL',
+          source: 'COLLEGE_SCORECARD',
+          fetchedAt: '2024-01-01T00:00:00.000Z',
+        }),
+      );
+
+      expect(input.acceptanceRate).toBeUndefined();
+      expect(input.fieldTrustWeights?.acceptanceRate).toBeUndefined();
+    });
+
+    it('should exclude manual-review school anchor values', () => {
+      const input = service.schoolToInput(
+        schoolWithAcceptanceRate({
+          tier: 'UNAVAILABLE',
+          source: 'MANUAL_REVIEW:needs-source-check',
+          fetchedAt: '2026-04-01T00:00:00.000Z',
+          realDataStatus: 'MANUAL_REVIEW',
+        }),
+      );
+
+      expect(input.acceptanceRate).toBeUndefined();
+      expect(input.fieldTrustWeights?.acceptanceRate).toBeUndefined();
     });
   });
 
