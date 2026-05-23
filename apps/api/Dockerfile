@@ -78,6 +78,8 @@ RUN cd apps/api && npx tsc \
     prisma/seed-high-schools.ts \
     prisma/seed-activity-templates.ts \
     prisma/seed-assessment.ts \
+    prisma/seed-hook-stats.ts \
+    prisma/seed-global-admit-baselines.ts \
     --module nodenext --target es2022 --moduleResolution nodenext \
     --esModuleInterop --skipLibCheck --resolveJsonModule \
     --rootDir prisma --outDir prisma
