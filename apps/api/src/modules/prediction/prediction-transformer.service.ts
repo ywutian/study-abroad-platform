@@ -437,19 +437,20 @@ export class PredictionTransformerService {
       return resolved.value;
     };
 
-    const capturedTestingPolicy = captureField(
-      'testingPolicy',
-      (school as any).testingPolicy,
-    );
-    const capturedTestOptional = captureField(
-      'testOptional',
-      (school as any).testOptional,
-    );
+    // testingPolicy + testOptional are structural classification fields used
+    // to route admission policy display ('BLIND'/'OPTIONAL'/'REQUIRED') and
+    // by CounselorEngine modifiers. They must NOT go through the trust-tier
+    // filter — most schools lack explicit metadata.provenance entries for
+    // these fields, which would otherwise downgrade them to UNKNOWN and
+    // break the application-analysis golden render fixtures (E2E
+    // application-analysis-render expects 'BLIND' for Berkeley etc.).
+    const rawTestingPolicy = (school as any).testingPolicy ?? undefined;
+    const rawTestOptional = (school as any).testOptional ?? undefined;
     const testingPolicy =
-      capturedTestingPolicy ??
+      rawTestingPolicy ??
       resolveSchoolTestingPolicyValue({
-        testingPolicy: capturedTestingPolicy,
-        testOptional: capturedTestOptional,
+        testingPolicy: rawTestingPolicy,
+        testOptional: rawTestOptional,
       });
 
     return {
@@ -521,7 +522,7 @@ export class PredictionTransformerService {
       testingPolicy,
       testOptional: toLegacyTestOptionalFlag({
         testingPolicy,
-        testOptional: capturedTestOptional,
+        testOptional: rawTestOptional,
       }),
       hasEarlyDecision: captureField(
         'hasEarlyDecision',
