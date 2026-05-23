@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-05-22T11:00:00.000Z",
+  "purpose": "P(category | apply) baselines for Bayesian update denominators per V2 design Section 4",
+  "tier": "LOW",
+  "sources": [
+    "Common App 2023-24 End-of-Season Report (https://www.commonapp.org/files/FY_application_trends_end_season_report_23-24.pdf)",
+    "Common App 2024-25 End-of-Season Report",
+    "Various industry reports (Ivy Coach, BestColleges, IHEP)"
+  ],
+  "applicationPoolBaselines": {
+    "totalFirstYearApplicants_2023_24": {
+      "value": 1425083,
+      "source": "Common App End-of-Season Report 2023-24",
+      "note": "Distinct applicants, up 7% YoY"
+    },
+    "totalFirstYearApplicants_2024_25": {
+      "value": 1500000,
+      "approximate": true,
+      "source": "Common App End-of-Season Report 2024-25 — 10.2M apps, est ~1.5M unique applicants",
+      "note": "Apps per applicant ~6.80"
+    },
+    "avgAppsPerApplicant": { "value": 6.8, "year": "2024-25" }
+  },
+  "hookPrevalenceInApplicantPool": {
+    "comment": "P(category | apply) — estimates used as denominators in Bayesian update at selective schools",
+    "legacy": {
+      "value": 0.05,
+      "tier": "LOW",
+      "range": "0.05-0.07",
+      "note": "Estimated baseline at non-selective schools. At highly selective, applicants pool has higher legacy concentration"
+    },
+    "recruitedAthlete": {
+      "value": 0.015,
+      "tier": "LOW",
+      "range": "0.01-0.02",
+      "note": "Recruited athletes filtered upstream; in general applicant pool quite rare"
+    },
+    "firstGen": {
+      "value": 0.2,
+      "tier": "MEDIUM",
+      "source": "Common App reports first-gen ~20% of applicants",
+      "range": "0.18-0.22"
+    },
+    "international": {
+      "value": 0.13,
+      "tier": "MEDIUM",
+      "note": "Common App: ~13% of applicants international, varies by school selectivity"
+    },
+    "nationalLevelAward": {
+      "value": 0.08,
+      "tier": "LOW",
+      "note": "Estimate — Common App's data shows leadership/award reporting disparities; assumed national+ ~8% of selective school applicants"
+    }
+  },
+  "industryBenchmarks": {
+    "legacy_at_selective_schools_consideration_pct": 0.53,
+    "legacy_at_highly_selective_schools_consideration_pct": 0.8,
+    "harvard_legacy_class_pct_2001_2015": 0.15,
+    "harvard_legacy_admit_rate": 0.33,
+    "harvard_athlete_class_pct": 0.1,
+    "harvard_athlete_admit_rate": 0.83,
+    "stanford_legacy_class_pct": 0.16,
+    "princeton_legacy_admit_rate_2009": 0.417,
+    "ivy_athlete_class_pct_max": 0.2
+  }
+}
