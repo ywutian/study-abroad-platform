@@ -2,10 +2,8 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationModule } from '../../notification/notification.module';
 import { PointsModule } from '../../points/points.module';
-import {
-  AdminOutcomeController,
-  OutcomeController,
-} from './outcome.controller';
+import { AdminOutcomeController } from './admin-outcome.controller';
+import { OutcomeController } from './outcome.controller';
 import { OutcomeReminderService } from './outcome-reminder.service';
 import { OutcomeService } from './outcome.service';
 

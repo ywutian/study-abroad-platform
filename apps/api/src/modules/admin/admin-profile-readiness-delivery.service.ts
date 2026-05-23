@@ -2,13 +2,16 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 
-type DeliveryQueue = 'user_prompt' | 'operator_review' | 'system_generation';
-type DeliveryStatus =
+export type DeliveryQueue =
+  | 'user_prompt'
+  | 'operator_review'
+  | 'system_generation';
+export type DeliveryStatus =
   | 'ready_for_in_app_admin_delivery'
   | 'ready_for_operator_review'
   | 'ready_for_system_generation'
   | 'blocked_missing_copy';
-type DeliverySeverity = 'critical' | 'warning' | 'info';
+export type DeliverySeverity = 'critical' | 'warning' | 'info';
 
 interface DeliveryPackage {
   generatedAt: string;
@@ -25,7 +28,9 @@ interface DeliveryPackage {
   rows: DeliveryRow[];
 }
 
-interface DeliveryRow {
+// Exported so controllers consuming `getLatestPackage()` can name the
+// inferred return type (Nest TS4053 requires named types on public methods).
+export interface DeliveryRow {
   queue: DeliveryQueue;
   status: DeliveryStatus;
   recipientKey: string;
@@ -46,7 +51,7 @@ interface DeliveryRow {
   schoolName?: string;
 }
 
-interface DeliveryQuery {
+export interface DeliveryQuery {
   queue?: DeliveryQueue;
   status?: DeliveryStatus;
   severity?: DeliverySeverity;
