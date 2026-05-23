@@ -166,6 +166,16 @@ export const predictionRoutes = {
     `${API_ROUTES.PREDICTIONS}/${predictionResultId}/feedback`,
 };
 
+// Admin: M3 prediction benchmark co-review surface
+export const predictionBenchmarkRoutes = {
+  listRuns: () => `${API_ROUTES.ADMIN}/prediction-benchmarks/runs`,
+  latestRun: () => `${API_ROUTES.ADMIN}/prediction-benchmarks/runs/latest`,
+  run: (id: string) => `${API_ROUTES.ADMIN}/prediction-benchmarks/runs/${id}`,
+  addComment: (id: string) => `${API_ROUTES.ADMIN}/prediction-benchmarks/runs/${id}/comments`,
+  deleteComment: (commentId: string) =>
+    `${API_ROUTES.ADMIN}/prediction-benchmarks/comments/${commentId}`,
+};
+
 // M6: Outcome reporting routes
 export const outcomeRoutes = {
   submit: () => `${API_ROUTES.PREDICTIONS}/outcomes`,

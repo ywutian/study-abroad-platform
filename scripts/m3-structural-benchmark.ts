@@ -588,7 +588,37 @@ async function main() {
   process.exit(failed > 0 ? 0 : 0); // don't fail CI for now; this is diagnostic
 }
 
-main().catch((err) => {
-  console.error('Benchmark failed:', err);
-  process.exit(1);
-});
+/**
+ * Programmatic entry point used by `seed-prediction-benchmark.ts`.
+ *
+ * Runs all 7 structural tests against the local DB and returns the in-memory
+ * RESULTS array — no console output, no process.exit. The seeder then persists
+ * this array (plus the 4 v3 case replays) into the PredictionBenchmarkRun
+ * table so the admin UI can render it.
+ */
+export async function runStructuralBenchmarkProgrammatic(): Promise<{
+  results: TestResult[];
+  passed: number;
+  total: number;
+}> {
+  // Clear any prior state from a previous call (RESULTS is module-level)
+  RESULTS.length = 0;
+
+  await testCdsBandConsistency();
+  await testRoundElasticity();
+  await testMonotonicity();
+  await testSanityBounds();
+  await testHookElasticity();
+  await testReproducibility();
+  await testDistributionHealth();
+
+  const passed = RESULTS.filter((r) => r.passed).length;
+  return { results: [...RESULTS], passed, total: RESULTS.length };
+}
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Benchmark failed:', err);
+    process.exit(1);
+  });
+}

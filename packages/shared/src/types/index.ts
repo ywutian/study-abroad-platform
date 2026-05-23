@@ -5,6 +5,7 @@ export * from './auth';
 export * from './profile';
 export * from './school';
 export * from './prediction';
+export * from './prediction-benchmark';
 export * from './recommendation';
 export * from './chat';
 export * from './report';
