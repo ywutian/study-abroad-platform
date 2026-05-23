@@ -34,6 +34,7 @@ import {
   Menu,
   MessageSquareWarning,
   Database,
+  Gauge,
   Key,
   Palette,
   Activity,
@@ -182,6 +183,12 @@ export function AdminSidebar() {
           href: '/admin/prediction-feedback',
           icon: MessageSquareWarning,
           label: t('sidebar.predictionFeedback'),
+          requiredPermission: 'system:calibration',
+        },
+        {
+          href: '/admin/prediction-benchmark',
+          icon: Gauge,
+          label: t('sidebar.predictionBenchmark'),
           requiredPermission: 'system:calibration',
         },
         {

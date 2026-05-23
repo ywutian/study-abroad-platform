@@ -710,6 +710,9 @@ model User {
   // Notification preferences
   notificationPreference UserNotificationPreference?
 
+  // Prediction benchmark co-review comments authored by this user
+  benchmarkComments PredictionBenchmarkComment[] @relation("PredictionBenchmarkCommentAuthor")
+
   // Referral system
   referralCode String? @unique
   referredById String?
@@ -1777,6 +1780,57 @@ model GlobalAdmitBaseline {
   updatedAt DateTime @updatedAt
 
   @@index([metric])
+}
+
+// ============================================
+// M3 Prediction Benchmark — Admin co-review
+// ============================================
+// Each row captures one structural + case-replay benchmark run.
+// `summary` holds aggregated counters (passed/failed/total); `tests` is the
+// full 7 structural results; `cases` is the 4 v3 case replay results.
+// The admin /admin/prediction-benchmark page reads from here and lets multiple
+// admins post review comments.
+model PredictionBenchmarkRun {
+  id           String   @id @default(cuid())
+  ranAt        DateTime @default(now())
+  // Optional human label, e.g. "post-T100-seed", "pre-v5-rollout"
+  label        String?
+  // M3 engine version string at run-time (e.g. git SHA + tier weights signature)
+  engineVersion String?
+  // Aggregated counters
+  testsPassed  Int
+  testsTotal   Int
+  // Detailed JSON payloads — flexible to accommodate engine evolution
+  summary      Json     // { passed, total, casesAdmittedMeanProb, ... }
+  tests        Json     // [{ name, passed, details, metrics, failures }]
+  cases        Json     // [{ school, round, expected, predicted, contributions[] }]
+  notes        String?  // free-form context from the runner
+
+  comments     PredictionBenchmarkComment[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([ranAt(sort: Desc)])
+}
+
+// Co-review comment thread on a benchmark run. Free-form text; no
+// approve/reject lifecycle — the user chose "comments only".
+model PredictionBenchmarkComment {
+  id        String   @id @default(cuid())
+  runId     String
+  run       PredictionBenchmarkRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("PredictionBenchmarkCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String   @db.Text
+  // Optional pointer to a specific test or case being commented on.
+  // e.g. testId='gpa-monotonicity' or caseId='stanford-rea'. Null = top-level.
+  anchor    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([runId, createdAt])
+  @@index([authorId])
 }
 
 model PredictionPolicyVersion {

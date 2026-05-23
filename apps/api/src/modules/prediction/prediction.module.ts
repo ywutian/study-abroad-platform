@@ -26,6 +26,7 @@ import { PredictionHookModifiersService } from './prediction-hook-modifiers.serv
 import { DistillationModule } from './distillation/distillation.module';
 import { CounselorEngineModule } from './counselor/counselor-engine.module';
 import { OutcomeModule } from './outcome/outcome.module';
+import { PredictionBenchmarkModule } from './benchmark/benchmark.module';
 import { NotificationModule } from '../notification/notification.module';
 import { forwardRef } from '@nestjs/common';
 
@@ -64,6 +65,9 @@ import { forwardRef } from '@nestjs/common';
     // endpoints + service。与 PredictionService 解耦（OutcomeService 只读
     // PredictionResult 验证所属关系，不耦合预测引擎）。
     OutcomeModule,
+    // M3 benchmark co-review — admin surface showing structural test + v3
+    // case replay results, free-form review comments from multiple admins.
+    PredictionBenchmarkModule,
     // NotificationModule transitively used by OutcomeReminderService inside
     // OutcomeModule. Listed explicitly so module-dependency-check sees the
     // import path (the integration linter doesn't follow nested re-exports).
