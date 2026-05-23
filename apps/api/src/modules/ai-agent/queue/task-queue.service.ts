@@ -87,6 +87,19 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   private concurrency = 5;
   private activeWorkers = 0;
 
+  // ── Polling cadence (Redis quota protection) ──
+  // Base poll cadence — was 1s, which costs ~172k Redis ops/day even when
+  // the queue is empty AND no module ever calls `add()`. That single value
+  // was the dominant burn on the Upstash free-tier 500k/day quota.
+  // 30s base is still snappy for the not-yet-wired async workloads this
+  // service was scaffolded for.
+  private static readonly BASE_POLL_MS = 30_000;
+  // When several polls in a row find no work, back off geometrically up to
+  // this ceiling. Resets to BASE_POLL_MS as soon as a task is picked up.
+  private static readonly MAX_POLL_MS = 5 * 60_000; // 5 min
+  private currentPollMs = TaskQueueService.BASE_POLL_MS;
+  private emptyPollStreak = 0;
+
   // Redis 键
   private readonly QUEUE_KEY = 'agent:task:queue';
   private readonly PROCESSING_KEY = 'agent:task:processing';
@@ -98,14 +111,19 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    // 仅在 Redis 可用时启动任务轮询（避免无 Redis 时频繁查询数据库耗尽连接池）
-    if (this.redis.connected) {
-      this.start();
-    } else {
-      this.logger.warn(
-        'Redis not available, task queue disabled (DB polling would exhaust connection pool)',
-      );
-    }
+    // Don't start the poll loop in onModuleInit anymore. There were ZERO
+    // callers of `taskQueue.add()` across the codebase, yet a 1s polling
+    // loop kept burning 172k Redis ops/day (the dominant contributor to
+    // the Upstash 500k/day quota exhaustion that broke the admin panel).
+    //
+    // Now polling is lazy: `register()` starts it on first handler. Until
+    // a module actually registers a task type, the queue is dormant and
+    // costs zero Redis ops. If/when async workloads come online, calling
+    // `register()` will start polling at the new 30s cadence with
+    // exponential back-off when empty.
+    this.logger.log(
+      'Task queue ready (polling will start on first handler registration)',
+    );
   }
 
   onModuleDestroy() {
@@ -116,10 +134,17 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * 注册任务处理器
+   *
+   * Side effect: bootstraps the poll loop on first registration. Until at
+   * least one module calls register(), the queue is dormant and costs 0
+   * Redis ops. See onModuleInit comment for the quota incident.
    */
   register<T, R>(type: TaskType, handler: TaskHandler<T, R>): void {
     this.handlers.set(type, handler as TaskHandler);
     this.logger.log(`Registered handler for ${type}`);
+    if (!this.isRunning && this.redis.connected) {
+      this.start();
+    }
   }
 
   /**
@@ -324,13 +349,21 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
 
   /**
    * 启动队列处理
+   *
+   * Uses adaptive setTimeout (not setInterval) so each tick re-schedules
+   * itself at currentPollMs. That way the back-off below can lengthen
+   * the cadence without restarting the interval.
    */
   start(): void {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    this.pollInterval = setInterval(() => this.poll(), 1000);
-    this.logger.log('Task queue started');
+    this.currentPollMs = TaskQueueService.BASE_POLL_MS;
+    this.emptyPollStreak = 0;
+    this.schedulePoll();
+    this.logger.log(
+      `Task queue started (base ${this.currentPollMs}ms, max ${TaskQueueService.MAX_POLL_MS}ms with exponential back-off)`,
+    );
   }
 
   /**
@@ -339,16 +372,67 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
   stop(): void {
     this.isRunning = false;
     if (this.pollInterval) {
-      clearInterval(this.pollInterval);
+      clearTimeout(this.pollInterval);
       this.pollInterval = null;
     }
     this.logger.log('Task queue stopped');
   }
 
+  private schedulePoll(): void {
+    if (!this.isRunning) return;
+    this.pollInterval = setTimeout(
+      () => void this.tickAndReschedule(),
+      this.currentPollMs,
+    );
+  }
+
+  private async tickAndReschedule(): Promise<void> {
+    try {
+      const picked = await this.poll();
+      if (picked) {
+        // Found work — reset to base cadence immediately
+        this.currentPollMs = TaskQueueService.BASE_POLL_MS;
+        this.emptyPollStreak = 0;
+      } else {
+        // Idle — back off geometrically, doubling up to MAX_POLL_MS.
+        // This protects the Redis quota during long idle stretches.
+        this.emptyPollStreak += 1;
+        this.currentPollMs = Math.min(
+          TaskQueueService.MAX_POLL_MS,
+          TaskQueueService.BASE_POLL_MS *
+            2 ** Math.min(this.emptyPollStreak, 4),
+        );
+      }
+    } catch (err) {
+      this.logger.error(`Tick error: ${String(err)}`);
+    }
+    this.schedulePoll();
+  }
+
   // ==================== 内部方法 ====================
 
-  private async poll(): Promise<void> {
-    if (!this.isRunning || this.activeWorkers >= this.concurrency) return;
+  /**
+   * Single poll tick.
+   *
+   * @returns true if a task was picked up; false if idle. The return value
+   *   drives the adaptive back-off in `tickAndReschedule()` — consecutive
+   *   idle ticks geometrically lengthen the next interval.
+   */
+  private async poll(): Promise<boolean> {
+    if (!this.isRunning || this.activeWorkers >= this.concurrency) {
+      return false;
+    }
+    // Don't bother poking Redis if there are no registered handlers — no
+    // module can possibly receive the task, so picking it would just retry-
+    // loop until maxAttempts. Saves quota during boot.
+    if (this.handlers.size === 0) {
+      return false;
+    }
+    // Also skip if Redis circuit-breaker is open; reading would just hit
+    // the quota error again and lengthen the breaker reset.
+    if (!this.redis.connected) {
+      return false;
+    }
 
     try {
       // 1. 检查延迟任务
@@ -356,15 +440,17 @@ export class TaskQueueService implements OnModuleInit, OnModuleDestroy {
 
       // 2. 获取下一个任务
       const task = await this.getNextTask();
-      if (!task) return;
+      if (!task) return false;
 
       // 3. 执行任务
       this.activeWorkers++;
       void this.executeTask(task).finally(() => {
         this.activeWorkers--;
       });
+      return true;
     } catch (err) {
       this.logger.error(`Poll error: ${String(err)}`);
+      return false;
     }
   }
 
