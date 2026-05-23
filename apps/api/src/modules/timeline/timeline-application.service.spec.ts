@@ -147,6 +147,8 @@ describe('TimelineApplicationService', () => {
             essayCount: null,
             interviewRequired: false,
             year: 2026,
+            source: 'WEB_RESEARCH_2026-05:official',
+            notes: 'source: https://admission.princeton.edu/apply',
           },
         ],
       });
@@ -174,6 +176,204 @@ describe('TimelineApplicationService', () => {
       expect(result.created[0].deadline).toEqual(
         new Date('2027-01-01T00:00:00Z'),
       );
+    });
+
+    it('creates school-specific essay tasks only from source-backed verified prompts', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.school.findUnique.mockResolvedValue({
+        id: 'school-1',
+        name: 'Princeton University',
+        nameZh: '普林斯顿大学',
+        metadata: null,
+        deadlines: [
+          {
+            id: 'dl-rd',
+            round: 'RD',
+            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+            financialAidDeadline: null,
+            essayPrompts: [
+              { prompt: 'Unsourced deadline prompt should not be used' },
+            ],
+            essayCount: 2,
+            interviewRequired: false,
+            year: 2026,
+            source: 'WEB_RESEARCH_2026-05:official',
+            notes: 'source: https://admission.princeton.edu/apply',
+          },
+        ],
+      });
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([
+        {
+          prompt: 'Please briefly elaborate on one activity.',
+          wordLimit: 150,
+        },
+      ]);
+      mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          ...mockTimeline,
+          id: 'tl-sourced-essay',
+          schoolId: data.schoolId,
+          schoolName: data.schoolName,
+          round: data.round,
+          deadline: data.deadline,
+          tasks: data.tasks.create,
+        }),
+      );
+
+      await service.generateTimelines('user-1', {
+        schoolIds: ['school-1'],
+      });
+
+      expect(mockPrisma.essayPrompt.findMany).toHaveBeenCalledWith({
+        where: {
+          schoolId: 'school-1',
+          isActive: true,
+          status: 'VERIFIED',
+          sources: { some: { sourceUrl: { not: null } } },
+        },
+        orderBy: { sortOrder: 'asc' },
+        select: { prompt: true, wordLimit: true },
+      });
+      const createdTasks =
+        mockPrisma.applicationTimeline.create.mock.calls[0][0].data.tasks
+          .create;
+      expect(
+        createdTasks.some(
+          (task: { essayPrompt?: string }) =>
+            task.essayPrompt === 'Please briefly elaborate on one activity.',
+        ),
+      ).toBe(true);
+      expect(
+        createdTasks.some(
+          (task: { essayPrompt?: string }) =>
+            task.essayPrompt === 'Unsourced deadline prompt should not be used',
+        ),
+      ).toBe(false);
+    });
+
+    it('does not create generic school-specific supplemental essay tasks without source-backed prompts', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.school.findUnique.mockResolvedValue({
+        id: 'school-1',
+        name: 'Princeton University',
+        nameZh: '普林斯顿大学',
+        metadata: null,
+        deadlines: [
+          {
+            id: 'dl-rd',
+            round: 'RD',
+            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+            financialAidDeadline: null,
+            essayPrompts: [
+              { prompt: 'Unsourced deadline prompt should not be used' },
+            ],
+            essayCount: 2,
+            interviewRequired: false,
+            year: 2026,
+            source: 'WEB_RESEARCH_2026-05:official',
+            notes: 'source: https://admission.princeton.edu/apply',
+          },
+        ],
+      });
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([]);
+      mockPrisma.applicationTimeline.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          ...mockTimeline,
+          id: 'tl-no-school-essay',
+          schoolId: data.schoolId,
+          schoolName: data.schoolName,
+          round: data.round,
+          deadline: data.deadline,
+          tasks: data.tasks.create,
+        }),
+      );
+
+      await service.generateTimelines('user-1', {
+        schoolIds: ['school-1'],
+      });
+
+      const createdTasks =
+        mockPrisma.applicationTimeline.create.mock.calls[0][0].data.tasks
+          .create;
+      expect(
+        createdTasks.some((task: { title: string; essayPrompt?: string }) =>
+          task.title.startsWith('补充文书:'),
+        ),
+      ).toBe(false);
+      expect(
+        createdTasks.some((task: { title: string }) =>
+          task.title.startsWith('完成学校补充文书'),
+        ),
+      ).toBe(false);
+      expect(
+        createdTasks.some(
+          (task: { essayPrompt?: string }) =>
+            task.essayPrompt === 'Common App Personal Statement',
+        ),
+      ).toBe(true);
+    });
+
+    it('skips metadata and default deadline fallbacks when source-backed school deadlines are unavailable', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-14T12:00:00Z'));
+      mockPrisma.school.findUnique.mockResolvedValue({
+        id: 'school-1',
+        name: 'Princeton University',
+        nameZh: '普林斯顿大学',
+        metadata: { deadlines: { rd: 'January 1' } },
+        deadlines: [
+          {
+            id: 'dl-manual',
+            round: 'RD',
+            applicationDeadline: new Date('2026-01-01T00:00:00Z'),
+            financialAidDeadline: null,
+            essayPrompts: null,
+            essayCount: null,
+            interviewRequired: false,
+            year: 2026,
+            source: 'MANUAL',
+            notes: 'source: https://admission.princeton.edu/apply',
+          },
+          {
+            id: 'dl-no-source-url',
+            round: 'EA',
+            applicationDeadline: new Date('2025-11-01T00:00:00Z'),
+            financialAidDeadline: null,
+            essayPrompts: null,
+            essayCount: null,
+            interviewRequired: false,
+            year: 2026,
+            source: 'WEB_RESEARCH_2026-05:official',
+            notes: 'reviewed locally',
+          },
+        ],
+      });
+      mockPrisma.applicationTimeline.findMany.mockResolvedValue([]);
+
+      const result = await service.generateTimelines('user-1', {
+        schoolIds: ['school-1'],
+      });
+
+      expect(mockPrisma.school.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            deadlines: expect.objectContaining({
+              where: {
+                year: 2026,
+                source: { not: 'MANUAL' },
+                notes: { not: null },
+              },
+            }),
+          }),
+        }),
+      );
+      expect(mockPrisma.applicationTimeline.create).not.toHaveBeenCalled();
+      expect(mockPrisma.essayPrompt.findMany).not.toHaveBeenCalled();
+      expect(result.created).toEqual([]);
+      expect(result.failed).toEqual([
+        { schoolId: 'school-1', reason: 'DEADLINE_SOURCE_REQUIRED' },
+      ]);
     });
   });
 
@@ -264,6 +464,38 @@ describe('TimelineApplicationService', () => {
       await expect(
         service.deleteTimeline('user-1', 'nonexistent'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('mapTaskToResponse source state', () => {
+    it('labels generic Common App essay tasks without treating them as school-specific source facts', () => {
+      const result = service.mapTaskToResponse({
+        id: 'task-common-app',
+        timelineId: 'tl-1',
+        title: '完成 Common App 主文书',
+        type: 'ESSAY',
+        completed: false,
+        sortOrder: 0,
+        essayPrompt: 'Common App Personal Statement',
+      });
+
+      expect(result.sourceStatus).toBe('generic');
+      expect(result.sourcePolicy).toContain('Generic Common App');
+    });
+
+    it('labels school-specific essay tasks as source-review required unless linked to source evidence', () => {
+      const result = service.mapTaskToResponse({
+        id: 'task-school-essay',
+        timelineId: 'tl-1',
+        title: '完成 Why Duke 文书',
+        type: 'ESSAY',
+        completed: false,
+        sortOrder: 1,
+        essayPrompt: null,
+      });
+
+      expect(result.sourceStatus).toBe('source_review_required');
+      expect(result.sourcePolicy).toContain('source-backed verified');
     });
   });
 

@@ -15,11 +15,8 @@ export class EssayPromptController {
   @Public()
   @ApiOperation({ summary: 'Get essay prompt list (public, verified only)' })
   async findAll(@Query() query: QueryEssayPromptDto) {
-    // 公开接口只返回已验证的数据
-    return this.essayPromptService.findAll({
-      ...query,
-      status: 'VERIFIED' as any,
-    });
+    // 公开接口只返回已验证且带来源证据的数据。
+    return this.essayPromptService.findAllPublic(query);
   }
 
   @Get('by-school/:schoolId')

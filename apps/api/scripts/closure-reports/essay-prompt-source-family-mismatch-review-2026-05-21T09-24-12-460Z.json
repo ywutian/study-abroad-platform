@@ -1,0 +1,237 @@
+{
+  "generatedAt": "2026-05-21T09:24:12.459Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-maryland-college-park-latest.json",
+      "generatedAt": "2026-05-21T09:23:55.111Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "University of Maryland, College Park official prompt-context pages did not match 2 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+        "schoolName": "University of Maryland, College Park",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+    "schoolName": "University of Maryland, College Park",
+    "sourceSearchPromptRows": 2,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 5,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 5,
+    "promptMatchCount": 0,
+    "promptRows": 2,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 2,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of Maryland, College Park has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+    "schoolName": "University of Maryland, College Park",
+    "topEssayPromptId": "cmorxidfh00bbeiz61ad7uuew",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxidfh00bbeiz61ad7uuew",
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxidfh00bbeiz61ad7uuew",
+      "promptSnippet": "Something you might not know about me is…",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.umd.edu/apply/essay-questions",
+          "https://admissions.umd.edu/apply/freshman-applicants",
+          "https://admissions.umd.edu/apply/freshman-application-faqs",
+          "https://admissions.umd.edu/apply/application-faqs",
+          "https://www.commonapp.org/explore/university-maryland"
+        ],
+        "finalUrls": [
+          "https://admissions.umd.edu/apply/essay-questions",
+          "https://admissions.umd.edu/apply/freshman-applicants",
+          "https://admissions.umd.edu/apply/freshman-application-faqs",
+          "https://admissions.umd.edu/apply/application-faqs",
+          "https://www.commonapp.org/explore/university-maryland/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay questions",
+          "essay question",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2027",
+          "2024",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "Office of Undergraduate Admissions | Essay Questions Skip to main content Undergraduate Admissions Visit UMD Apply Now Connect Search Academics All Programs Colleges & Schools Programs by Interest Limited Enrollment Programs LEP Admission for Current Students Living-Learning & Special Programs Want more information about our majors? Academics Student Life Want to learn more about life as a Terp? Student Life Housing & Dining Student Support & Safety Get Involved on Campus Find Your Community How To Apply Freshman Applicants Transfer Applicants Maryland Transfer Advantage Program Maryland Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admis",
+          "Office of Undergraduate Admissions | Essay Questions Skip to main content Undergraduate Admissions Visit UMD Apply Now Connect Search Academics All Programs Colleges & Schools Programs by Interest Limited Enrollment Programs LEP Admission for Current Students Living-Learning & Special Programs Want more information about our majors? Academics Student Life Want to learn more about life as a Terp? Student Life Housing & Dining Student Support & Safety Get Involved on Campus Find Your Community How To Apply Freshman Applicants Transfer Applicants Maryland Transfer Advantage Program Maryland Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admi",
+          "essay questions",
+          "essay question",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Freshman Applicants Apply to the University of Maryland (UMD) as a freshman using the Common App or ApplyWeb platform. Common App Apply through the Common App ApplyWeb Apply through ApplyWeb Home Freshman Applicants APPLY AS A FRESHMAN If you are a high school student or a student with fewer than 12 semester hours or 18 quarter hours of university-level credit beyond secondary school, you should app",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Freshman Applicants Apply to the University of Maryland (UMD) as a freshman using the Common App or ApplyWeb platform. Common App Apply through the Common App ApplyWeb Apply through ApplyWeb Home Freshman Applicants APPLY AS A FRESHMAN If you are a high school student or a student with fewer than 12 semester hours or 18 quarter hours of university-level credit beyond secondary school, you should ap",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Freshman Application FAQs Freshman Application FAQs Have questions about the University of Maryland (UMD) application process? We have answers. Save time by reviewing these frequently asked questions about the freshman application before contacting the Office of Undergraduate Admissions. Applying to UMD How can I apply to UMD? Freshman students applying to UMD can do so using e",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Freshman Application FAQs Freshman Application FAQs Have questions about the University of Maryland (UMD) application process? We have answers. Save time by reviewing these frequently asked questions about the freshman application before contacting the Office of Undergraduate Admissions. Applying to UMD How can I apply to UMD? Freshman students applying to UMD can do so using",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Application FAQs Have questions about applying to the University of Maryland? You've come to the right place. We know applying to college is a lot of work, so we'll do everything we can to make it as stress-free as possible. Use the links below for the quickest answers to many of the common questions we receive. Freshman Application FAQs Applying as a freshman? Save time by rev",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Application FAQs Have questions about applying to the University of Maryland? You've come to the right place. We know applying to college is a lot of work, so we'll do everything we can to make it as stress-free as possible. Use the links below for the quickest answers to many of the common questions we receive. Freshman Application FAQs Applying as a freshman? Save time by re",
+          "site admissions.umd.edu/ Financial aid website financialaid.umd.edu Undocumented or DACA students stamp.umd.edu/engagement/immigrant_undocumented_student_life Region Mid-Atlantic View more in this region Follow University of Maryland Facebook icon Twitter icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxidfa00b9eiz6qlu2dv07",
+      "schoolId": "cmn1htkq60019vqf2lmijsj2s",
+      "schoolName": "University of Maryland, College Park",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxidfa00b9eiz6qlu2dv07",
+      "promptSnippet": "In addition to my major, my academic interests include…",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.umd.edu/apply/essay-questions",
+          "https://admissions.umd.edu/apply/freshman-applicants",
+          "https://admissions.umd.edu/apply/freshman-application-faqs",
+          "https://admissions.umd.edu/apply/application-faqs",
+          "https://www.commonapp.org/explore/university-maryland"
+        ],
+        "finalUrls": [
+          "https://admissions.umd.edu/apply/essay-questions",
+          "https://admissions.umd.edu/apply/freshman-applicants",
+          "https://admissions.umd.edu/apply/freshman-application-faqs",
+          "https://admissions.umd.edu/apply/application-faqs",
+          "https://www.commonapp.org/explore/university-maryland/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay questions",
+          "essay question",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2027",
+          "2024",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "Office of Undergraduate Admissions | Essay Questions Skip to main content Undergraduate Admissions Visit UMD Apply Now Connect Search Academics All Programs Colleges & Schools Programs by Interest Limited Enrollment Programs LEP Admission for Current Students Living-Learning & Special Programs Want more information about our majors? Academics Student Life Want to learn more about life as a Terp? Student Life Housing & Dining Student Support & Safety Get Involved on Campus Find Your Community How To Apply Freshman Applicants Transfer Applicants Maryland Transfer Advantage Program Maryland Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admis",
+          "Office of Undergraduate Admissions | Essay Questions Skip to main content Undergraduate Admissions Visit UMD Apply Now Connect Search Academics All Programs Colleges & Schools Programs by Interest Limited Enrollment Programs LEP Admission for Current Students Living-Learning & Special Programs Want more information about our majors? Academics Student Life Want to learn more about life as a Terp? Student Life Housing & Dining Student Support & Safety Get Involved on Campus Find Your Community How To Apply Freshman Applicants Transfer Applicants Maryland Transfer Advantage Program Maryland Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admi",
+          "essay questions",
+          "essay question",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Freshman Applicants Apply to the University of Maryland (UMD) as a freshman using the Common App or ApplyWeb platform. Common App Apply through the Common App ApplyWeb Apply through ApplyWeb Home Freshman Applicants APPLY AS A FRESHMAN If you are a high school student or a student with fewer than 12 semester hours or 18 quarter hours of university-level credit beyond secondary school, you should app",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Freshman Applicants Apply to the University of Maryland (UMD) as a freshman using the Common App or ApplyWeb platform. Common App Apply through the Common App ApplyWeb Apply through ApplyWeb Home Freshman Applicants APPLY AS A FRESHMAN If you are a high school student or a student with fewer than 12 semester hours or 18 quarter hours of university-level credit beyond secondary school, you should ap",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Freshman Application FAQs Freshman Application FAQs Have questions about the University of Maryland (UMD) application process? We have answers. Save time by reviewing these frequently asked questions about the freshman application before contacting the Office of Undergraduate Admissions. Applying to UMD How can I apply to UMD? Freshman students applying to UMD can do so using e",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Freshman Application FAQs Freshman Application FAQs Have questions about the University of Maryland (UMD) application process? We have answers. Save time by reviewing these frequently asked questions about the freshman application before contacting the Office of Undergraduate Admissions. Applying to UMD How can I apply to UMD? Freshman students applying to UMD can do so using",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Application FAQs Have questions about applying to the University of Maryland? You've come to the right place. We know applying to college is a lot of work, so we'll do everything we can to make it as stress-free as possible. Use the links below for the quickest answers to many of the common questions we receive. Freshman Application FAQs Applying as a freshman? Save time by rev",
+          "land Transfer Advantage Program FAQs International Applicants English Language Proficiency Obtaining a Visa Financial Certification Shady Grove Applicants Application Deadlines Admission Review Process & Factors Application FAQs Freshman Application FAQs Transfer Application FAQ Essay Questions Submitting Documents Ready to apply? How to Apply Tuition & Aid Need more information on cost of attendance at UMD, financing your education and merit scholarships? Tuition & Aid Cost of Attendance Freshman Merit Scholarships Transfer Merit Scholarships Frederick Douglass Scholarship Office of Student Financial Aid Home Application FAQs Application FAQs Have questions about applying to the University of Maryland? You've come to the right place. We know applying to college is a lot of work, so we'll do everything we can to make it as stress-free as possible. Use the links below for the quickest answers to many of the common questions we receive. Freshman Application FAQs Applying as a freshman? Save time by re",
+          "site admissions.umd.edu/ Financial aid website financialaid.umd.edu Undocumented or DACA students stamp.umd.edu/engagement/immigrant_undocumented_student_life Region Mid-Atlantic View more in this region Follow University of Maryland Facebook icon Twitter icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 5,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,395 @@
+{
+  "generatedAt": "2026-05-22T11:21:04.124Z",
+  "mode": "read-only-essay-prompt-source-approval-monitor",
+  "status": "ESSAY_PROMPT_SOURCE_APPROVAL_MONITOR_COMPLETE",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "reviewQueue": {
+      "path": "scripts/closure-reports/essay-prompt-review-queue-2026-05-22T11-19-30-379Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:19:30.391Z",
+      "status": "ESSAY_PROMPT_REVIEW_QUEUE_READY",
+      "summary": {
+        "reviewQueueRows": 11,
+        "schoolsWithReviewRows": 4,
+        "promptIds": 11,
+        "sourceFamilyMismatchRows": 5,
+        "validatedSourceReviewRows": 0,
+        "validatedSourceBlockedRows": 0,
+        "identityConflictRows": 6,
+        "blockedRows": 0,
+        "reviewRows": 11,
+        "allRowsHaveConsumerPolicy": true,
+        "byQueueType": {
+          "identity_conflict_review": 6,
+          "source_family_mismatch_review": 5
+        },
+        "byQueueState": {
+          "review": 11
+        },
+        "byRecommendedAction": {
+          "review-official-source-and-reassign-or-reject": 5,
+          "review-merge-school-rows-or-add-alias-before-source-approval": 1,
+          "review-prompt-owner-and-reject-reassign-or-terminalize": 5
+        },
+        "bySourceQuality": {
+          "none": 6,
+          "official-context-no-match": 5
+        },
+        "topSchools": [
+          {
+            "schoolName": "Princeton University",
+            "rowCount": 5
+          },
+          {
+            "schoolName": "Williams College",
+            "rowCount": 3
+          },
+          {
+            "schoolName": "Pennsylvania State University",
+            "rowCount": 2
+          },
+          {
+            "schoolName": "Saint Louis University",
+            "rowCount": 1
+          }
+        ],
+        "sourceSearchCampaignStatus": "ESSAY_PROMPT_SOURCE_SEARCH_CAMPAIGN_READY",
+        "sourceSearchRemainingActions": {
+          "manual-deep-search-official-application-page": 4,
+          "validate-ranked-linked-source-candidates": 2,
+          "retry-blocked-candidates-or-external-source-search": 1,
+          "manual-official-source-search-or-terminal": 66,
+          "review-source-family-mismatch-before-source-approval": 1,
+          "resolve-identity-conflicts-before-source-approval": 3
+        },
+        "sourceReviewStagingStatus": "PASS_NO_VALIDATED_CANDIDATES",
+        "sourceReviewStagingSummary": {
+          "validatedCandidateRows": 0,
+          "validationValidatedCandidateRows": 0,
+          "manualCheckValidatedCandidateRows": 0,
+          "stagingRows": 0,
+          "acceptedForReviewerQueue": 0,
+          "blockedFromReviewerQueue": 0,
+          "stagedSourceRows": 0,
+          "sourceUrls": 0,
+          "promptIds": 0,
+          "bySourceQuality": {},
+          "bySnapshotStatus": {},
+          "blockerReasons": {},
+          "reviewFlags": {},
+          "canonicalDuplicatePromptGroups": 0
+        },
+        "sourceReviewApprovalStatus": "PASS_NO_REVIEW_CANDIDATES",
+        "sourceWritePlanStatus": "BLOCKED_APPROVAL_MISSING",
+        "identityConflictResolutionStatus": "ESSAY_PROMPT_IDENTITY_CONFLICT_RESOLUTION_READY",
+        "sourceFamilyMismatchArtifactCount": 1
+      }
+    },
+    "reviewAction": {
+      "path": "../../../../../../tmp/essay-prompt-review-action-latest.json",
+      "found": true,
+      "generatedAt": "2026-05-22T10:46:55.826Z",
+      "status": "ESSAY_PROMPT_REVIEW_ACTION_READY",
+      "summary": {
+        "targetRows": 6,
+        "selectionOffset": 0,
+        "selectionLimit": 6,
+        "perQueueTypeLimit": null,
+        "checkedSources": 60,
+        "candidateUrls": 60,
+        "sourceRecoveryCandidateUrls": 48,
+        "targetsWithSourceRecoveryCandidates": 6,
+        "targetsWithoutCandidateUrls": 0,
+        "reachableSources": 60,
+        "officialPromptMatches": 8,
+        "matchedSchoolOfficialPromptMatches": 0,
+        "assignedSchoolOfficialPromptMatches": 8,
+        "crossSchoolOfficialPromptMatches": 0,
+        "officialContextNoMatchSources": 10,
+        "targetsWithCheckedSources": 6,
+        "targetsWithoutCheckedSources": 0,
+        "targetsWithOfficialPromptMatches": 4,
+        "targetsWithMatchedSchoolOfficialPromptMatches": 0,
+        "targetsWithAssignedSchoolOfficialPromptMatches": 4,
+        "targetsWithCrossSchoolOfficialPromptMatches": 0,
+        "checkedSourceTargetLinks": 6,
+        "allCheckedSourcesLinkedToTargets": true,
+        "blockedSources": 0,
+        "textMatchesWithoutPromptContext": 0,
+        "matchedSchoolTextMatchesWithoutPromptContext": 0,
+        "consumerGateClosed": false,
+        "recommendedOutcome": "keep_assigned_prompt_with_source_candidate",
+        "nextAction": "review-validated-source-before-write",
+        "byRecommendedOutcome": {
+          "keep_assigned_prompt_with_source_candidate": 4,
+          "reject_reassign_or_terminalize_candidate": 2
+        },
+        "byQueueType": {
+          "validated_source_review": 6
+        },
+        "reviewerApprovalReady": false
+      }
+    },
+    "approval": {
+      "path": "scripts/closure-reports/essay-prompt-source-review-approval-2026-05-22T11-19-30-380Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:19:30.381Z",
+      "status": "PASS_NO_REVIEW_CANDIDATES",
+      "summary": {
+        "reviewerQueueRows": 0,
+        "reviewerQueueSourceRows": 0,
+        "unconstrainedReviewerQueueRows": 0,
+        "unconstrainedReviewerQueueSourceRows": 0,
+        "reviewActionConstraintApplied": false,
+        "reviewActionStatus": null,
+        "reviewActionEligibleSourceRows": null,
+        "reviewActionEligiblePromptIds": null,
+        "reviewActionExcludedSourceRows": null,
+        "approvalRequestRows": 0,
+        "approvalRequestPromptIds": 0,
+        "approvalRequestSourceUrls": 0,
+        "approvedSourceRows": 0,
+        "approvedPromptIds": 0,
+        "approvedSourceUrls": 0,
+        "missingRequiredInputs": 9,
+        "missingRequiredInputKeys": [
+          "decision",
+          "reviewerId",
+          "approvedWorkflow",
+          "operatorAck",
+          "sourceFamilyConfirmed",
+          "cycleYearConfirmed",
+          "rawSnapshotReviewed",
+          "promptFieldsReviewed",
+          "noConflictsConfirmed"
+        ],
+        "bySourceType": {},
+        "bySchool": {}
+      }
+    },
+    "writePlan": {
+      "path": "scripts/closure-reports/essay-prompt-source-write-plan-2026-05-22T11-19-30-378Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:19:30.381Z",
+      "status": "BLOCKED_APPROVAL_MISSING",
+      "summary": {
+        "approvedSourceRows": 0,
+        "uniqueWriteCandidates": 0,
+        "duplicateWriteCandidateKeys": 0,
+        "promptIds": 0,
+        "sourceUrls": 0,
+        "pendingApprovalRequestRows": 0,
+        "pendingApprovalUniqueCandidates": 0,
+        "pendingApprovalPromptIds": 0,
+        "pendingApprovalSourceUrls": 0,
+        "pendingApprovalSchemaBlocked": false,
+        "schemaWorklistStatus": "BLOCKED",
+        "schemaMissingTables": 1,
+        "schemaMissingColumns": 0,
+        "unappliedRepoMigrations": 1,
+        "appliedMigrationsMissingFromRepo": 5
+      }
+    },
+    "disposition": {
+      "path": "scripts/closure-reports/essay-prompt-disposition-2026-05-22T11-18-13-837Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:18:13.843Z",
+      "status": "ESSAY_PROMPT_DISPOSITION_READY",
+      "summary": {
+        "totalRows": 499,
+        "emittedRows": 499,
+        "allRowsHaveDisposition": true,
+        "unmappedRows": 0,
+        "blockedRows": 0,
+        "truncatedRows": 0,
+        "artifactInputErrors": 0,
+        "sourceGapRows": 194,
+        "auditLogReviewRows": 231,
+        "rawEvidenceReviewRows": 37,
+        "oldCycleTerminalRows": 37,
+        "approvedSourceRows": 0,
+        "dbSchemaBlockedRows": 0,
+        "sourceSearchRows": 194,
+        "reviewRows": 268,
+        "terminalRows": 37,
+        "trustedRows": 0,
+        "byGap": {
+          "source.rows_missing": 194,
+          "audit.log_missing": 231,
+          "prompt.not_current_year": 37,
+          "source.raw_content_missing": 37
+        },
+        "byAction": {
+          "source-search": 194,
+          "audit-log-review": 231,
+          "refresh-source": 37,
+          "raw-evidence-review": 37
+        },
+        "byClosureState": {
+          "source_search": 194,
+          "review": 268,
+          "terminal": 37
+        },
+        "byDisposition": {
+          "source_search_required": 194,
+          "review_missing_prompt_audit_log": 231,
+          "terminal_not_current_application_year": 37,
+          "review_source_raw_content_missing": 37
+        },
+        "topReviewGroups": [
+          {
+            "key": "audit.log_missing:audit-log-review:review_missing_prompt_audit_log",
+            "count": 231
+          },
+          {
+            "key": "source.rows_missing:source-search:source_search_required",
+            "count": 194
+          },
+          {
+            "key": "source.raw_content_missing:raw-evidence-review:review_source_raw_content_missing",
+            "count": 37
+          }
+        ]
+      }
+    }
+  },
+  "summary": {
+    "reviewQueueRows": 11,
+    "reviewQueueBlockedRows": 0,
+    "reviewQueueAllRowsHaveConsumerPolicy": true,
+    "reviewActionTargetRows": 6,
+    "reviewActionCheckedSources": 60,
+    "reviewActionOfficialPromptMatches": 8,
+    "reviewActionKeepAssignedSourceCandidates": 4,
+    "reviewActionConsumerGateClosed": false,
+    "approvalStatus": "PASS_NO_REVIEW_CANDIDATES",
+    "approvalRequestRows": 0,
+    "approvalRequestPromptIds": 0,
+    "approvalRequestSourceUrls": 0,
+    "approvedSourceRows": 0,
+    "approvedForWriteWorkflow": false,
+    "writePlanStatus": "BLOCKED_APPROVAL_MISSING",
+    "writePlanPendingApprovalCandidates": 0,
+    "writePlanPendingApprovalRequestRows": 0,
+    "writePlanSchemaBlocked": true,
+    "dispositionStatus": "ESSAY_PROMPT_DISPOSITION_READY",
+    "dispositionDbSchemaBlockedRows": 0,
+    "pendingRows": 0,
+    "uniquePromptIds": 0,
+    "uniqueSourceUrls": 0,
+    "schoolsWithPendingRows": 0,
+    "topPendingSchoolName": null,
+    "topPendingSourceUrl": null,
+    "rowsWithRawContent": 0,
+    "failedChecks": 0,
+    "warningChecks": 0,
+    "passedChecks": 8
+  },
+  "monitorContract": {
+    "writesEssayPromptSources": false,
+    "approvesReviewerWorkflow": false,
+    "storesRawContent": false,
+    "carriesOnlyRawContentHashes": true,
+    "consumersRemainHiddenUntilSourceRowsExist": true,
+    "completionSignal": "pendingRows reaches 0 after approval requests are approved/rejected and the write plan no longer carries non-writeable pending candidates"
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_next_source_review_slice",
+    "reason": "No pending approval rows remain; regenerate the review queue and approval gate to select the next essay source slice."
+  },
+  "checks": [
+    {
+      "id": "review_queue_consumer_policy_present",
+      "status": "pass",
+      "summary": "Reviewer queue rows must carry consumer-hide policy before approval monitoring.",
+      "evidence": [
+        "status=ESSAY_PROMPT_REVIEW_QUEUE_READY",
+        "allRowsHaveConsumerPolicy=true"
+      ],
+      "missing": []
+    },
+    {
+      "id": "review_action_present_and_consumer_gate_open",
+      "status": "pass",
+      "summary": "Reviewer action packet should exist while public/timeline consumers remain source-gated.",
+      "evidence": [
+        "status=ESSAY_PROMPT_REVIEW_ACTION_READY",
+        "consumerGateClosed=false",
+        "validatedSourceReviewRows=0"
+      ],
+      "missing": []
+    },
+    {
+      "id": "approval_request_rows_pending",
+      "status": "pass",
+      "summary": "Approval gate should expose reviewer handoff rows without approving write workflow.",
+      "evidence": [
+        "status=PASS_NO_REVIEW_CANDIDATES",
+        "approvalRequestRows=0",
+        "validatedSourceReviewRows=0",
+        "approvedSourceRows=0",
+        "approvedForWriteWorkflow=false"
+      ],
+      "missing": []
+    },
+    {
+      "id": "write_plan_non_writeable_pending_candidates",
+      "status": "pass",
+      "summary": "Write plan must carry pending approval rows as non-writeable preflight candidates.",
+      "evidence": [
+        "status=BLOCKED_APPROVAL_MISSING",
+        "destructiveDbWriteAllowedByThisPlan=false",
+        "pendingApprovalUniqueCandidates=0",
+        "validatedSourceReviewRows=0"
+      ],
+      "missing": []
+    },
+    {
+      "id": "approval_write_plan_alignment",
+      "status": "pass",
+      "summary": "Approval request rows and deduplicated write-plan pending candidates should align.",
+      "evidence": [
+        "approvalRequestRows=0",
+        "approvalUniqueWriteRows=0",
+        "writePlanPendingRows=0",
+        "pendingApprovalRequestRows=0",
+        "monitorRows=0",
+        "validatedSourceReviewRows=0"
+      ],
+      "missing": []
+    },
+    {
+      "id": "db_schema_still_blocks_essay_source_writes",
+      "status": "pass",
+      "summary": "The monitor must preserve the global DB schema blocker instead of creating write permission.",
+      "evidence": [
+        "schemaBlocksWrites=true",
+        "pendingApprovalSchemaBlocked=false",
+        "schemaWorklistStatus=BLOCKED"
+      ],
+      "missing": []
+    },
+    {
+      "id": "monitor_rows_hash_only",
+      "status": "pass",
+      "summary": "Monitor rows must carry raw-content hashes only, never raw source bodies.",
+      "evidence": [
+        "monitorRows=0"
+      ],
+      "missing": []
+    },
+    {
+      "id": "consumer_policy_remains_hidden",
+      "status": "pass",
+      "summary": "Essay public/timeline/chat consumers must remain hidden until source rows exist and the audit is rerun.",
+      "evidence": [
+        "hiddenRows=0",
+        "sourceGapRows=194"
+      ],
+      "missing": []
+    }
+  ],
+  "rows": []
+}

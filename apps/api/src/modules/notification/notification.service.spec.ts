@@ -7,6 +7,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 describe('NotificationService', () => {
   let service: NotificationService;
   let redis: RedisService;
+  let prisma: PrismaService;
   let mockEventEmitter: { emit: jest.Mock };
 
   beforeEach(async () => {
@@ -46,6 +47,10 @@ describe('NotificationService', () => {
             schoolListItem: {
               findMany: jest.fn().mockResolvedValue([]),
             },
+            userNotificationPreference: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              upsert: jest.fn(),
+            },
           },
         },
       ],
@@ -53,6 +58,7 @@ describe('NotificationService', () => {
 
     service = module.get<NotificationService>(NotificationService);
     redis = module.get<RedisService>(RedisService);
+    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -212,6 +218,135 @@ describe('NotificationService', () => {
         'notification_push_tokens:user-1',
         60 * 60 * 24 * 90,
       );
+    });
+  });
+
+  describe('preferences', () => {
+    it('returns conservative readiness defaults before a user preference row exists', async () => {
+      const result = await service.getPreferences('user-1');
+
+      expect(
+        (prisma as any).userNotificationPreference.findUnique,
+      ).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+      });
+      expect(result).toEqual({
+        source: 'default',
+        readiness: {
+          inAppSurface: true,
+          redisNotificationFeed: false,
+          remotePush: false,
+          email: false,
+        },
+        updatedAt: null,
+      });
+    });
+
+    it('updates only provided readiness preference fields', async () => {
+      (
+        (prisma as any).userNotificationPreference.upsert as jest.Mock
+      ).mockResolvedValue({
+        userId: 'user-1',
+        readinessInAppSurface: true,
+        readinessRedisNotificationFeed: true,
+        readinessRemotePush: false,
+        readinessEmail: false,
+        updatedAt: new Date('2026-05-20T19:00:00.000Z'),
+      });
+
+      const result = await service.updatePreferences('user-1', {
+        readinessRedisNotificationFeed: true,
+      });
+
+      expect(
+        (prisma as any).userNotificationPreference.upsert,
+      ).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+        create: {
+          userId: 'user-1',
+          readinessRedisNotificationFeed: true,
+        },
+        update: {
+          readinessRedisNotificationFeed: true,
+        },
+      });
+      expect(result).toEqual({
+        source: 'user',
+        readiness: {
+          inAppSurface: true,
+          redisNotificationFeed: true,
+          remotePush: false,
+          email: false,
+        },
+        updatedAt: '2026-05-20T19:00:00.000Z',
+      });
+    });
+
+    it('returns live channel consent as opt-out by default', async () => {
+      const result = await service.getReadinessLiveChannelConsent('user-1');
+
+      expect(
+        (prisma as any).userNotificationPreference.findUnique,
+      ).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+      });
+      expect(redis.smembers).toHaveBeenCalledWith(
+        'notification_push_tokens:user-1',
+      );
+      expect(result.channels).toEqual({
+        redis_notification_feed: {
+          allowed: false,
+          preference: false,
+          reason: 'default_opt_out',
+        },
+        remote_push: {
+          allowed: false,
+          preference: false,
+          reason: 'default_opt_out',
+          pushTokenCount: 0,
+        },
+        email: {
+          allowed: false,
+          preference: false,
+          reason: 'default_opt_out',
+        },
+      });
+    });
+
+    it('allows readiness push only with explicit preference and a valid token', async () => {
+      (
+        (prisma as any).userNotificationPreference.findUnique as jest.Mock
+      ).mockResolvedValue({
+        userId: 'user-1',
+        readinessInAppSurface: true,
+        readinessRedisNotificationFeed: true,
+        readinessRemotePush: true,
+        readinessEmail: false,
+        updatedAt: new Date('2026-05-20T19:30:00.000Z'),
+      });
+      (redis.smembers as jest.Mock).mockResolvedValue([
+        'not-an-expo-token',
+        'ExponentPushToken[ready-user-token]',
+      ]);
+
+      const result = await service.getReadinessLiveChannelConsent('user-1');
+
+      expect(result.channels.redis_notification_feed).toEqual({
+        allowed: true,
+        preference: true,
+        reason: 'user_opted_in',
+      });
+      expect(result.channels.remote_push).toEqual({
+        allowed: true,
+        preference: true,
+        reason: 'user_opted_in_with_push_token',
+        pushTokenCount: 1,
+      });
+      expect(result.channels.email).toEqual({
+        allowed: false,
+        preference: false,
+        reason: 'user_opted_out',
+      });
     });
   });
 

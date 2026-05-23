@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorwlagf007xnoojyb7we9n7","cmn1htkoz000uvqf2rnozc3fe","University of Southern California","SHORT_ANSWER","critical","/admin/essay-prompts/cmorwlagf007xnoojyb7we9n7","Once you’ve caught the reader’s attention and communicated what your unique background is, explain how that has positioned you to bring something special to the USC community. It’s","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

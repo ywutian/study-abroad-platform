@@ -237,7 +237,7 @@ export class ProfileReadinessService {
           'profile.major',
         ].includes(gap),
       ),
-      ...(schoolList.length === 0 ? ['school_list.min_count'] : []),
+      ...(schoolList.length === 0 ? ['school_list.add_first'] : []),
     ];
     const warnings = [
       ...profileCompleteness.gaps.filter((gap) => !blockers.includes(gap)),
@@ -594,8 +594,14 @@ export class ProfileReadinessService {
         clampScore(schoolListScore * 4),
         '/profile?tab=targets',
         [
-          ...(args.schoolList.count < 6 ? ['school_list.min_count'] : []),
-          ...(!args.schoolList.balanced ? ['school_list.balance'] : []),
+          ...(args.schoolList.count === 0
+            ? ['school_list.add_first']
+            : args.schoolList.count < 6
+              ? ['school_list.min_count']
+              : []),
+          ...(args.schoolList.count > 0 && !args.schoolList.balanced
+            ? ['school_list.balance']
+            : []),
           ...(args.schoolList.missingRoundCount > 0
             ? ['school_list.round_missing']
             : []),

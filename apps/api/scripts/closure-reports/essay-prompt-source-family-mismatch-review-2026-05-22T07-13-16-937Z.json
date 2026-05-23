@@ -1,0 +1,287 @@
+{
+  "generatedAt": "2026-05-22T07:13:16.936Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-savannah-latest.json",
+      "generatedAt": "2026-05-22T07:13:01.057Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Savannah College of Art and Design official prompt-context pages did not match 3 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+        "schoolName": "Savannah College of Art and Design",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+    "schoolName": "Savannah College of Art and Design",
+    "sourceSearchPromptRows": 3,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 11,
+    "reachableHtmlUrls": 4,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 1,
+    "officialContextNoPromptMatchUrls": 1,
+    "promptMatchCount": 3,
+    "promptRows": 3,
+    "matchedPromptRows": 3,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 3,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 3,
+    "byMismatchDisposition": {
+      "review_cross_school_prompt_owner_conflict": 3
+    },
+    "byRecommendedAction": {
+      "review-cross-school-prompt-owner-and-reassign-or-reject": 3
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Savannah College of Art and Design has 3 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+    "schoolName": "Savannah College of Art and Design",
+    "topEssayPromptId": "cmor7yomh002j1jbwhgwqzlho",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor7yomh002j1jbwhgwqzlho",
+      "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+      "schoolName": "Savannah College of Art and Design",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7yomh002j1jbwhgwqzlho",
+      "promptSnippet": "Reflect on your membership in a community to which you feel connected. Why is this community meaningful to you? You may define community however you like.",
+      "closureState": "review",
+      "mismatchDisposition": "review_cross_school_prompt_owner_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/savannah-college-art-and-design/",
+          "https://admissions.yale.edu/essays"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/savannah-college-art-and-design/",
+          "https://admissions.yale.edu/essays"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.yale.edu/essays"
+        ],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "short answer questions"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "students Admissions website www.scad.edu/admission Financial aid website www.scad.edu/admission/financial-aid-and-scholarships/financial-aid Region South View more in this region Follow Savannah College of Art and Design Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Reflect on your membership in a community to which you feel connected. Why is this community meaningful to you? You may define community however you like.",
+          "Reflect on a time you discussed an issue important to you with someone holding an opposing view. Why did you find the experience meaningful?",
+          "Reflect on an element of your personal experience that you feel will enrich your college. How has it shaped you?",
+          "that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college course, write a book, or create an original piece of art of any kind, what would it be",
+          "essays should retain your own voice, but others may be able to catch mistakes that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college cour",
+          "short answer questions"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 3
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer confirms whether the matched prompt belongs to another institution before reject, reassign, or source approval actions"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor7yome002h1jbw92qdcfha",
+      "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+      "schoolName": "Savannah College of Art and Design",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7yome002h1jbw92qdcfha",
+      "promptSnippet": "Reflect on a time you discussed an issue important to you with someone holding an opposing view. Why did you find the experience meaningful?",
+      "closureState": "review",
+      "mismatchDisposition": "review_cross_school_prompt_owner_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/savannah-college-art-and-design/",
+          "https://admissions.yale.edu/essays"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/savannah-college-art-and-design/",
+          "https://admissions.yale.edu/essays"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.yale.edu/essays"
+        ],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "short answer questions"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "students Admissions website www.scad.edu/admission Financial aid website www.scad.edu/admission/financial-aid-and-scholarships/financial-aid Region South View more in this region Follow Savannah College of Art and Design Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Reflect on your membership in a community to which you feel connected. Why is this community meaningful to you? You may define community however you like.",
+          "Reflect on a time you discussed an issue important to you with someone holding an opposing view. Why did you find the experience meaningful?",
+          "Reflect on an element of your personal experience that you feel will enrich your college. How has it shaped you?",
+          "that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college course, write a book, or create an original piece of art of any kind, what would it be",
+          "essays should retain your own voice, but others may be able to catch mistakes that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college cour",
+          "short answer questions"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 3
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer confirms whether the matched prompt belongs to another institution before reject, reassign, or source approval actions"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor7yomk002l1jbwsvz2v6gl",
+      "schoolId": "cmnwr8ivz004rz0tik286u7ol",
+      "schoolName": "Savannah College of Art and Design",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor7yomk002l1jbwsvz2v6gl",
+      "promptSnippet": "Reflect on an element of your personal experience that you feel will enrich your college. How has it shaped you?",
+      "closureState": "review",
+      "mismatchDisposition": "review_cross_school_prompt_owner_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/savannah-college-art-and-design/",
+          "https://admissions.yale.edu/essays"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/savannah-college-art-and-design/",
+          "https://admissions.yale.edu/essays"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.yale.edu/essays"
+        ],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "short answer questions"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "students Admissions website www.scad.edu/admission Financial aid website www.scad.edu/admission/financial-aid-and-scholarships/financial-aid Region South View more in this region Follow Savannah College of Art and Design Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Reflect on your membership in a community to which you feel connected. Why is this community meaningful to you? You may define community however you like.",
+          "Reflect on a time you discussed an issue important to you with someone holding an opposing view. Why did you find the experience meaningful?",
+          "Reflect on an element of your personal experience that you feel will enrich your college. How has it shaped you?",
+          "that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college course, write a book, or create an original piece of art of any kind, what would it be",
+          "essays should retain your own voice, but others may be able to catch mistakes that you missed and help suggest areas to cut if you are over the word limit. Yale-specific essay topics for the 2025-26 admissions cycle Short answers Applicants submitting the Coalition Application , Common Application , or QuestBridge Application will respond to the following short answer questions: As of this moment, what academic areas seem to fit your interests or goals most comfortably? Please indicate up to three . Tell us about a topic or idea that excites you and is related to one or more academic areas you selected above. Why are you drawn to it? (200 words or fewer) Reflect on how your interests, values, and/or experiences have drawn you to Yale. (125 words or fewer) Short takes Applicants submitting the Coalition Application or Common Application will also respond to the following short answer questions, in no more than 200 characters (approximately 35 words): What inspires you? If you could teach any college cour",
+          "short answer questions"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 3
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer confirms whether the matched prompt belongs to another institution before reject, reassign, or source approval actions"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

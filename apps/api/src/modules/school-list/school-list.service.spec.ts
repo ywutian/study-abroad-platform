@@ -154,6 +154,30 @@ describe('SchoolListService', () => {
       expect(result[0].notes).toBeUndefined();
       expect(result[0].school.nameZh).toBeUndefined();
     });
+
+    it('counts only source-backed verified essay prompts', async () => {
+      (prisma.schoolListItem.findMany as jest.Mock).mockResolvedValue([
+        mockListItem,
+      ]);
+      (prisma.essayPrompt.groupBy as jest.Mock).mockResolvedValue([
+        { schoolId: 'school-1', _count: 2 },
+      ]);
+
+      const result = await service.getUserSchoolList('user-1');
+
+      expect(prisma.essayPrompt.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          by: ['schoolId'],
+          where: expect.objectContaining({
+            schoolId: { in: ['school-1'] },
+            isActive: true,
+            status: 'VERIFIED',
+            sources: { some: { sourceUrl: { not: null } } },
+          }),
+        }),
+      );
+      expect(result[0].essayPromptCount).toBe(2);
+    });
   });
 
   describe('addSchool', () => {
@@ -176,6 +200,27 @@ describe('SchoolListService', () => {
       expect(result.schoolId).toBe('school-1');
       expect(prisma.schoolListItem.create).toHaveBeenCalled();
       expect(cacheInvalidation.onProfileChange).toHaveBeenCalledWith('user-1');
+    });
+
+    it('counts only source-backed verified essay prompts in the response', async () => {
+      (prisma.school.findUnique as jest.Mock).mockResolvedValue(mockSchool);
+      (prisma.schoolListItem.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.schoolListItem.create as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+      (prisma.essayPrompt.count as jest.Mock).mockResolvedValue(3);
+
+      const result = await service.addSchool('user-1', dto);
+
+      expect(prisma.essayPrompt.count).toHaveBeenCalledWith({
+        where: {
+          schoolId: 'school-1',
+          isActive: true,
+          status: 'VERIFIED',
+          sources: { some: { sourceUrl: { not: null } } },
+        },
+      });
+      expect(result.essayPromptCount).toBe(3);
     });
 
     it('should throw NotFoundException if school does not exist', async () => {
@@ -217,6 +262,29 @@ describe('SchoolListService', () => {
       const result = await service.updateItem('user-1', 'item-1', updateDto);
       expect(result).toBeDefined();
       expect(cacheInvalidation.onProfileChange).toHaveBeenCalledWith('user-1');
+    });
+
+    it('counts only source-backed verified essay prompts in the response', async () => {
+      (prisma.schoolListItem.findFirst as jest.Mock).mockResolvedValue(
+        mockListItem,
+      );
+      (prisma.schoolListItem.update as jest.Mock).mockResolvedValue({
+        ...mockListItem,
+        ...updateDto,
+      });
+      (prisma.essayPrompt.count as jest.Mock).mockResolvedValue(4);
+
+      const result = await service.updateItem('user-1', 'item-1', updateDto);
+
+      expect(prisma.essayPrompt.count).toHaveBeenCalledWith({
+        where: {
+          schoolId: 'school-1',
+          isActive: true,
+          status: 'VERIFIED',
+          sources: { some: { sourceUrl: { not: null } } },
+        },
+      });
+      expect(result.essayPromptCount).toBe(4);
     });
 
     it('should throw NotFoundException if item not found', async () => {

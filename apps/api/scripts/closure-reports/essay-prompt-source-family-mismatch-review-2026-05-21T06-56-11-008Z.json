@@ -1,0 +1,244 @@
+{
+  "generatedAt": "2026-05-21T06:56:11.006Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-caltech-latest.json",
+      "generatedAt": "2026-05-21T06:55:42.770Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "California Institute of Technology official prompt-context pages did not match 3 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmn1htkne0006vqf2quzi0v6h",
+        "schoolName": "California Institute of Technology",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmn1htkne0006vqf2quzi0v6h",
+    "schoolName": "California Institute of Technology",
+    "sourceSearchPromptRows": 3,
+    "sourceSearchRecommendedAction": "retry-blocked-candidates-or-external-source-search"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 6,
+    "validatedSourceUrls": 0,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 0,
+    "promptRows": 3,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 3,
+    "emittedRows": 3,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 3,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 3
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 3
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "California Institute of Technology has 3 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmn1htkne0006vqf2quzi0v6h",
+    "schoolName": "California Institute of Technology",
+    "topEssayPromptId": "cmorx20tm003n8vvhordemiln",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorx20tm003n8vvhordemiln",
+      "schoolId": "cmn1htkne0006vqf2quzi0v6h",
+      "schoolName": "California Institute of Technology",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorx20tm003n8vvhordemiln",
+      "promptSnippet": "You have 250 words total to answer two of the four questions below. It’s up to you how you use your 250 words, whether that means you use exactly 125 words for each answer or you t",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays",
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays/ethical-use-of-ai-guidelines-for-fall-applicants",
+          "https://www.commonapp.org/explore/california-institute-technology-caltech"
+        ],
+        "finalUrls": [
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays",
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays/ethical-use-of-ai-guidelines-for-fall-applicants",
+          "https://www.commonapp.org/explore/california-institute-technology-caltech/"
+        ],
+        "promptLanguageSignals": [
+          "supplemental essays",
+          "supplemental questions",
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorx20tl003l8vvhbix67n0r",
+      "schoolId": "cmn1htkne0006vqf2quzi0v6h",
+      "schoolName": "California Institute of Technology",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorx20tl003l8vvhbix67n0r",
+      "promptSnippet": "The creativity, inventiveness, and innovation of Caltech’s students, faculty, and researchers have won Nobel Prizes and put rovers on Mars. But Techers also imagine smaller-scale i",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays",
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays/ethical-use-of-ai-guidelines-for-fall-applicants",
+          "https://www.commonapp.org/explore/california-institute-technology-caltech"
+        ],
+        "finalUrls": [
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays",
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays/ethical-use-of-ai-guidelines-for-fall-applicants",
+          "https://www.commonapp.org/explore/california-institute-technology-caltech/"
+        ],
+        "promptLanguageSignals": [
+          "supplemental essays",
+          "supplemental questions",
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorx20ti003j8vvhrhpbkplz",
+      "schoolId": "cmn1htkne0006vqf2quzi0v6h",
+      "schoolName": "California Institute of Technology",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorx20ti003j8vvhrhpbkplz",
+      "promptSnippet": "Tell us about a STEM-related experience from the last few years and share how and why it inspired your curiosity.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays",
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays/ethical-use-of-ai-guidelines-for-fall-applicants",
+          "https://www.commonapp.org/explore/california-institute-technology-caltech"
+        ],
+        "finalUrls": [
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays",
+          "https://www.admissions.caltech.edu/apply/first-year-applicants/supplemental-application-essays/ethical-use-of-ai-guidelines-for-fall-applicants",
+          "https://www.commonapp.org/explore/california-institute-technology-caltech/"
+        ],
+        "promptLanguageSignals": [
+          "supplemental essays",
+          "supplemental questions",
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

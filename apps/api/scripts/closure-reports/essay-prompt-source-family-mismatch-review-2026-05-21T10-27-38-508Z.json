@@ -1,0 +1,152 @@
+{
+  "generatedAt": "2026-05-21T10:27:38.506Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-georgia-state-latest.json",
+      "generatedAt": "2026-05-21T10:25:25.929Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Georgia State University has untrusted prompt matches but official prompt-context pages did not match assigned prompt snippets; review source family before approval.",
+        "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+        "schoolName": "Georgia State University",
+        "recommendedAction": "review-untrusted-context-or-find-official-source"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+    "schoolName": "Georgia State University",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 7,
+    "reachableHtmlUrls": 7,
+    "validatedSourceUrls": 1,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 1,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 1,
+    "promptMatchCount": 1,
+    "promptRows": 1,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_untrusted_source_or_official_conflict": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Georgia State University has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+    "schoolName": "Georgia State University",
+    "topEssayPromptId": "cmorxucc300m5eiz6hgnx41vr",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxucc300m5eiz6hgnx41vr",
+      "schoolId": "cmnwr8ita003iz0ti7ezibmu3",
+      "schoolName": "Georgia State University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxucc300m5eiz6hgnx41vr",
+      "promptSnippet": "Please list your primary extracurricular and community service activities. Describe one community service activity that you have participated in that has changed your view on a par",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/georgia-state-university/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/georgia-state-university-supplemental-essay-prompt-guide/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/georgia-state-university/",
+          "https://www.collegeessayadvisors.com/supplemental-essay/georgia-state-university-supplemental-essay-prompt-guide/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://www.collegeessayadvisors.com/supplemental-essay/georgia-state-university-supplemental-essay-prompt-guide/"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "supplemental essays",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "ber (404) 413-2500 For first-year students Admissions website admissions.gsu.edu/bachelors-degree/apply/high-school/ Financial aid website sfs.gsu.edu Region South View more in this region Follow Georgia State University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "common application",
+          "Please list your primary extracurricular and community service activities. Describe one community service activity that you have participated in that has changed your view on a par",
+          "r How did you find CEA? Internet Search Podcast New York Times Guidance counselor/school Social Media YouTube Friend Special Event Delehey College Consulting Perks at Work Repeat Client Other I am potentially interested in (select all that apply): Common App and Coalition Essays Supplemental Essays University of California Essays University of Texas Essays BSMD Essays Resume Review Graduate Essays (Law, Biz, Med, etc.) Private School Essays General College Counseling Other GPA: School list with priorities noted: Anything else we should know? Phone This field is for validation purposes and should be left unchanged. &#916; School Stats: State: Georgia Acceptance Rate: 52% Undergrad Population: 27,610 Out-of-State Tuition: $15,010 In-State Tuition: $5,830 Supplemental Essay Prompt Guides: Agnes Scott College Alvernia University American University Amherst College Appalachian State University Babson College Bard College Barnard College Baylor University Berry College Bethany College Bishop’s University Bosto",
+          "Started Georgia State University 2025-26 Supplemental Essay Prompt Guide No Time To Lose! The Georgia State University Deadline Countdown is on: Regular Decision Deadline: Apr 1 You Have: We can help you draft in time for submission! Georgia State University 2025-26 Application Essay Question Explanations The Requirements: 1 essay of 350 words Supplemental Essay Type(s): Activity , Community Please list your primary extracurricular and community service activities. Describe one community service activity that you have participated in that has changed your view on a particular social issue. Discuss the social issue and how your experience changed your way of thinking about it. (350 words) You’ve most likely done some community service at some point in your life, and this prompt asks you to reflect on that experience and how it changed your view on a particular social issue. Since you only have 350 words to describe your community service involvement and the impact it had on your perspective, this is",
+          "ught so. Sign up for free instructional videos, guides, worksheets and more! One-On-One Advising Learn more » Common App Essay Prompt Guide Learn more » Supplemental Essay Prompt Guide Learn more » YouTube Tutorials Learn more » Contact us for rates and more! One-On-One Advising Common Application Essay Supplemental Essays UC Essays Postgrad Essays Assessments and Revisions Resources Common App Guide Supplemental Essay Guide UC Essay Guide Notification Dates Sitemap FAQ Reviews Careers Partnerships CEA Gives Back Press Contact Join the VIP List Get admissions news, writing tips, and insight into our advising process. Be Social Watch, Listen and Learn Privacy Policy | Terms of Use | Cookie Policy © 2026 College Essay Advisors. All Rights Reserved. Home Book College EssAI About Why CEA? Meet The Founder Meet the Team Uncommon College Essay Process Testimonials Where Our Students Get In CEA’s Take on AI Press FAQ One-On-One Advising Undergraduate Admissions Graduate Admissions Medical School Admissions Bus",
+          "supplemental essays",
+          "essay question"
+        ],
+        "officialContextNoPromptMatchUrls": 1,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

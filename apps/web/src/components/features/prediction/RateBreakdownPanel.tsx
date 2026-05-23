@@ -4,9 +4,11 @@
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Info } from 'lucide-react';
+import { Database, Info } from 'lucide-react';
 import type { MajorBreakdown } from '@study-abroad/shared/types';
 import { formatPercentValue, resolveContextualBaseline } from './benchmark-utils';
+
+type SchoolTestingPolicy = 'REQUIRED' | 'OPTIONAL' | 'BLIND' | 'UNKNOWN';
 
 interface RateBreakdownPanelProps {
   schoolMeta?: {
@@ -20,6 +22,17 @@ interface RateBreakdownPanelProps {
     satAvg?: number;
     sat25?: number;
     sat75?: number;
+    act25?: number;
+    act75?: number;
+    testingPolicy?: SchoolTestingPolicy;
+    dataQuality?: {
+      officialFields: string[];
+      heuristicFields: string[];
+      terminalFields: string[];
+      staleFields: string[];
+      impactedFields: string[];
+      summary: 'strong' | 'mixed' | 'limited';
+    };
   };
   majorBreakdown?: MajorBreakdown;
   communityInsight?: {
@@ -94,6 +107,9 @@ export function RateBreakdownPanel({
   roundContext,
 }: RateBreakdownPanelProps) {
   const t = useTranslations('prediction');
+  const testingPolicyT = useTranslations('applicationAnalysis.policy.testing');
+  const sourceQuality = schoolMeta?.dataQuality;
+  const provenance = sourceQuality;
   const contextualBaseline = resolveContextualBaseline({
     schoolMeta,
     isInternational,
@@ -104,6 +120,10 @@ export function RateBreakdownPanel({
   const hasAnyData =
     schoolMeta?.acceptanceRate != null ||
     schoolMeta?.intlAcceptanceRate != null ||
+    schoolMeta?.sat25 != null ||
+    schoolMeta?.sat75 != null ||
+    schoolMeta?.act25 != null ||
+    schoolMeta?.act75 != null ||
     majorBreakdown != null ||
     contextualBaseline != null;
 
@@ -229,6 +249,29 @@ export function RateBreakdownPanel({
             })}
           </Badge>
         )}
+        {schoolMeta?.testingPolicy && schoolMeta.testingPolicy !== 'UNKNOWN' && (
+          <Badge variant="secondary" className="text-xs">
+            {t('rateBreakdown.testingPolicy', {
+              policy: testingPolicyT(schoolMeta.testingPolicy),
+            })}
+          </Badge>
+        )}
+        {(schoolMeta?.sat25 != null || schoolMeta?.sat75 != null) && (
+          <Badge variant="outline" className="text-xs">
+            {t('rateBreakdown.satRange', {
+              low: schoolMeta.sat25 ?? t('rateBreakdown.na'),
+              high: schoolMeta.sat75 ?? t('rateBreakdown.na'),
+            })}
+          </Badge>
+        )}
+        {(schoolMeta?.act25 != null || schoolMeta?.act75 != null) && (
+          <Badge variant="outline" className="text-xs">
+            {t('rateBreakdown.actRange', {
+              low: schoolMeta.act25 ?? t('rateBreakdown.na'),
+              high: schoolMeta.act75 ?? t('rateBreakdown.na'),
+            })}
+          </Badge>
+        )}
         {majorBreakdown && (
           <Badge
             variant="secondary"
@@ -246,6 +289,39 @@ export function RateBreakdownPanel({
           </Badge>
         )}
       </div>
+
+      {provenance && sourceQuality && (
+        <div className="rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+              <Database className="h-3.5 w-3.5" />
+              {t('rateBreakdown.sourceSupport', {
+                status: t(`dataQuality.summary.${sourceQuality.summary}`),
+              })}
+            </span>
+            <Badge variant="secondary" className="text-2xs">
+              {t('rateBreakdown.officialSourceCount', {
+                count: sourceQuality.officialFields.length,
+              })}
+            </Badge>
+            {sourceQuality.heuristicFields.length > 0 && (
+              <Badge variant="outline" className="text-2xs">
+                {t('rateBreakdown.heuristicSourceCount', {
+                  count: sourceQuality.heuristicFields.length,
+                })}
+              </Badge>
+            )}
+            {sourceQuality.staleFields.length > 0 && (
+              <Badge variant="outline" className="text-2xs">
+                {t('rateBreakdown.staleSourceCount', {
+                  count: sourceQuality.staleFields.length,
+                })}
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1.5">{t('rateBreakdown.provenanceNote')}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,582 @@
+{
+  "generatedAt": "2026-05-21T09:18:51.161Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-pennsylvania-state-latest.json",
+      "generatedAt": "2026-05-21T09:18:37.100Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Pennsylvania State University official prompt-context pages did not match 7 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+        "schoolName": "Pennsylvania State University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+    "schoolName": "Pennsylvania State University",
+    "sourceSearchPromptRows": 7,
+    "sourceSearchRecommendedAction": "resolve-identity-conflicts-before-source-approval"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 4,
+    "reachableHtmlUrls": 4,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 1,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 1,
+    "promptRows": 7,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 6,
+    "emittedRows": 7,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 7,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 6,
+      "review_cross_school_prompt_owner_conflict": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 6,
+      "review-cross-school-prompt-owner-and-reassign-or-reject": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Pennsylvania State University has 7 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+    "schoolName": "Pennsylvania State University",
+    "topEssayPromptId": "cmorxkbpl00e5eiz6hmyklai2",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxkbpl00e5eiz6hmyklai2",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkbpl00e5eiz6hmyklai2",
+      "promptSnippet": "Where would you like to go in the world, outside of the United States (and outside where you are now, if it’s not the United States), and why?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxkbpm00e7eiz6vm9zedky",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkbpm00e7eiz6vm9zedky",
+      "promptSnippet": "How do you see yourself improving society and the lives of others in the future, and what do you hope to get at Penn State as a Schreyer Scholar to help you accomplish your goals?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxamtt00e98vvh8fgzy7tf",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxamtt00e98vvh8fgzy7tf",
+      "promptSnippet": "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn.",
+      "closureState": "review",
+      "mismatchDisposition": "review_cross_school_prompt_owner_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-cross-school-prompt-owner-and-reassign-or-reject",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer confirms whether the matched prompt belongs to another institution before reject, reassign, or source approval actions"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxkbp600dteiz64omewnew",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkbp600dteiz64omewnew",
+      "promptSnippet": "Please use this space to list or discuss your activities other than academic work during the last several years (for example: school organizations, jobs, athletics, the arts, commu",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxkbpd00dzeiz6mal12guf",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkbpd00dzeiz6mal12guf",
+      "promptSnippet": "Describe what you think your strongest qualities are as well as weaknesses that you would like to improve upon.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxkbpi00e3eiz6qwoa098m",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxkbpi00e3eiz6qwoa098m",
+      "promptSnippet": "Tell us about your high school record — not what’s in it, since we have it already, but why you took some of the courses you took, and what your experience was, especially for clas",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorwoig500dhnoojojykszwt",
+      "schoolId": "cmnwr8imx000lz0tiez2ik9eg",
+      "schoolName": "Pennsylvania State University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwoig500dhnoojojykszwt",
+      "promptSnippet": "Discuss your connection to the language you would pursue as part of the Huntsman Program. Cover your background with the language, your motivation for studying it, and your authent",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "finalUrls": [
+          "https://www.shc.psu.edu/admissions/first-year/",
+          "https://www.psu.edu/admission/undergraduate/how-to-apply/first-year-students",
+          "https://www.psu.edu/resources/first-year-students/steps-to-apply",
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [
+          "https://admissions.upenn.edu/how-to-apply/preparing-your-application/writing"
+        ],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025"
+        ],
+        "evidenceSnippets": [
+          "is no right or wrong essay answer - just answer the question to the best of your ability. Our essay question is designed to push you to think, do some research, and apply your knowledge. Be honest, be genuine, and allow your character and personality shine through your writing. Short Answer Questions The Schreyer Honors College asks a handful of short answer questions to obtain information regarding honors and achievements, leadership positions, activities and service. These questions have a 200 word limit and may change without notice, so please be sure to check back before starting your application. 2026 Short Answer Questions One of the Schreyer Honors College values is Empowered Growth. What values, beliefs or experiences have empowered you to grow intellectually and/or personally? If you were able to go anywhere in the world, outside of the country you currently reside in, where would you go and why? List your extracurricular activities over the last four years. This can include school and non-school",
+          "r the better. We offer highly motivated high school students a rigorous undergraduate academic experience that combines all of the resources of one of the country's largest research institutions with all the benefits of a small liberal arts college. Apply MyPennState Application Common Application More Than A Test Score Application Components Application Essay Short Answers Recommendations Academic Record Application To apply to the Schreyer Honors College, you'll need to complete two separate applications: the Penn State undergraduate application and the Schreyer Honors College application. We suggest you work on both applications at the same time, submitting the Penn State application first, and the Schreyer Honors College application second. You can find the short answer and essay prompts for the Schreyer application in the corresponding tabs above. Application Platforms The link to the Schreyer Honors College application will be displayed in the application portal once you indicate your interest in",
+          "short answer questions",
+          "essay prompts",
+          "common application",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Before You Apply Two important considerations before you begin your application: What do you want to study? Research our more than 275 majors to narrow down your choices or apply undecided. Undergraduate Majors Where do you want to study? Research all of our campus locations to find out which one is best for you. Undergraduate Campuses Penn Staters Make an Impact On campus, off campus, and after they leave campus, Penn Staters are dedicated, involved, and ready to use our vast resources to make an impact. Top 30 U.S. research university. 800K+ Alumni network that connects you for life. 1,200+ Student clubs and organizations. linkOut icon Additional Information To help you complete your Penn State application,",
+          "PennState Log in to MyPennState to access the online application and start on your path to becoming a Nittany Lion! MyPennState Application Common App Penn State is one of more than 800 colleges across the United States accepting applications through the Common App. Apply on the Common Application Nittany Lion Shield Penn State Mark Penn State Word Mark The Pennsylvania State University 201 Old Main University Park, PA 16802 Phone: 1-814-865-4700 instagram icon facebook icon linkedIn icon youtube icon tiktok icon Explore News Careers Colleges Campuses Penn State Health Contact Us Student Support Registrar Bursar Student Affairs Housing and Food Services Quick Links Maps Directory Libraries Academic Calendar LionPATH Corporate Partners Resources Prospective Students Current Students International Students Business and Industry Veterans and Military Visitors Faculty and Staff Alumni Media Stay Connected Emails / Headlines Emergency Notifications Penn State Go Strategic Communications Report Misconduct Pol",
+          "How will you explore community at Penn? Consider how Penn will help shape your perspective, and how your experiences and perspective will help shape Penn."
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

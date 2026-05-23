@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-05-22T11:18:22.053Z",
+  "mode": "read-only-essay-prompt-source-search-campaign",
+  "status": "BLOCKED_SOURCE_SEARCH_INPUTS_MISSING",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "missingInputs": [
+    {
+      "label": "--source-validation",
+      "path": null,
+      "found": false
+    }
+  ],
+  "summary": {
+    "sourceSearchPromptRows": 0,
+    "emittedSchools": 0,
+    "blockedRows": 1
+  },
+  "rows": []
+}

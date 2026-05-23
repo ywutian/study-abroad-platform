@@ -21,7 +21,6 @@ import type {
   SchoolTestingPolicy,
 } from '../ai/ai.types';
 import { formatHighSchoolContext } from '../ai-agent/tools/helpers/education-context.helper';
-import { resolveSchoolTestingPolicyValue } from '@study-abroad/shared/utils';
 import type { CaseComparisonResult } from '../prediction/prediction-historical.service';
 
 export const MAX_FOCUS_SCHOOLS = 5;
@@ -343,14 +342,12 @@ export function buildPolicyCard(
   const deadlineEvidence = evidence?.OTHER;
 
   const testingPolicy =
-    resolveEvidenceTestingPolicy(testingEvidence?.policyValue) ??
-    resolveSchoolTestingPolicy(item);
+    resolveEvidenceTestingPolicy(testingEvidence?.policyValue) ?? 'UNKNOWN';
   const intlAidPolicy =
-    resolveEvidenceIntlAidPolicy(intlAidEvidence?.policyValue) ??
-    resolveSchoolIntlAidPolicy(item, profile);
+    resolveEvidenceIntlAidPolicy(intlAidEvidence?.policyValue) ?? 'UNKNOWN';
   const roundContext =
     resolveEvidenceRoundContext(roundEvidence?.policyValue) ??
-    resolveSchoolRoundContext(item, profile);
+    resolveFirstPartyRoundContext(item, profile);
 
   const pushSource = (
     source: ApprovedPolicyEvidence | undefined,
@@ -384,7 +381,6 @@ export function buildPolicyCard(
   }
   if (roundContext === 'UNKNOWN') unknowns.push('roundContext');
 
-  const metadata = isRecord(item.school.metadata) ? item.school.metadata : null;
   const card: ApplicationAnalysisPolicyCard = {
     testingPolicy,
     intlAidPolicy,
@@ -397,15 +393,7 @@ export function buildPolicyCard(
       intlAidPolicy,
       roundContext,
     ),
-    standardDeadline:
-      readStringMetadata(metadata, ['standardDeadline', 'regularDeadline']) ??
-      deadlineEvidence?.policyValue ??
-      undefined,
-    earlyDeadlinePolicy:
-      readStringMetadata(metadata, [
-        'earlyDeadlinePolicy',
-        'earlyActionPolicy',
-      ]) ?? undefined,
+    standardDeadline: deadlineEvidence?.policyValue ?? undefined,
     evidenceIds: [...new Set(evidenceIds)],
     sources,
     unknowns,
@@ -818,28 +806,7 @@ function resolveEvidenceRoundContext(
   }
 }
 
-function resolveSchoolTestingPolicy(
-  item: LoadedSchoolListItem,
-): SchoolTestingPolicy {
-  return resolveSchoolTestingPolicyValue({
-    testingPolicy: item.school.testingPolicy,
-    testOptional: item.school.testOptional,
-  });
-}
-
-function resolveSchoolIntlAidPolicy(
-  item: LoadedSchoolListItem,
-  profile: LoadedProfile,
-): SchoolIntlAidPolicy {
-  if (resolveApplicantTypeFromProfile(profile) !== 'international') {
-    return 'UNKNOWN';
-  }
-  if (item.school.needBlindInternational === true) return 'NEED_BLIND';
-  if (item.school.needBlindInternational === false) return 'NEED_AWARE';
-  return 'UNKNOWN';
-}
-
-function resolveSchoolRoundContext(
+function resolveFirstPartyRoundContext(
   item: LoadedSchoolListItem,
   profile: LoadedProfile,
 ): SchoolRoundContext {
@@ -856,7 +823,7 @@ function resolveSchoolRoundContext(
     case 'UC':
       return normalized;
     default:
-      return item.school.testingPolicy === 'BLIND' ? 'UC' : 'UNKNOWN';
+      return 'UNKNOWN';
   }
 }
 

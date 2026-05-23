@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-05-21T02:12:25.300Z",
+  "mode": "read-only-profile-readiness-live-delivery-gate",
+  "sourcePackage": "/Users/yitianwu/Documents/study-abroad-platform/apps/api/scripts/closure-reports/profile-readiness-admin-delivery-2026-05-21T02-12-25-222Z.json",
+  "policyFile": "/Users/yitianwu/Documents/study-abroad-platform/apps/api/scripts/data/profile-readiness-delivery-policy.json",
+  "status": "BLOCKED_FOR_LIVE_DELIVERY",
+  "summary": {
+    "candidateRows": 1720,
+    "candidateRecipients": 173,
+    "includesUserIds": false,
+    "readyChannels": [],
+    "blockedChannels": [
+      "redis_notification_feed",
+      "remote_push",
+      "email"
+    ],
+    "blockers": [
+      "channel_disabled_by_policy",
+      "recipient_user_ids_redacted"
+    ]
+  },
+  "codeEvidence": {
+    "hasNotificationPreferenceModel": true,
+    "hasNotificationPreferenceFields": true,
+    "hasNotificationPreferenceApi": true,
+    "hasSharedPreferenceRoute": true,
+    "hasPushTokenEndpoint": true,
+    "hasEmailIdentity": true,
+    "hasEmailVerified": true,
+    "notificationServiceUsesRedisFeed": true,
+    "pushTokenStorageIsRedis": true,
+    "hasReadinessLiveChannelConsentJoin": true
+  },
+  "gates": [
+    {
+      "channel": "redis_notification_feed",
+      "status": "BLOCKED",
+      "candidateRows": 1720,
+      "candidateRecipients": 173,
+      "blockers": [
+        "channel_disabled_by_policy",
+        "recipient_user_ids_redacted"
+      ],
+      "evidence": {
+        "policyEnabled": false,
+        "consentBasis": "requires_future_notification_preference",
+        "writesNotificationFeed": true
+      }
+    },
+    {
+      "channel": "remote_push",
+      "status": "BLOCKED",
+      "candidateRows": 1720,
+      "candidateRecipients": 173,
+      "blockers": [
+        "channel_disabled_by_policy",
+        "recipient_user_ids_redacted"
+      ],
+      "evidence": {
+        "policyEnabled": false,
+        "consentBasis": "requires_push_token_and_future_notification_preference",
+        "writesNotificationFeed": false
+      }
+    },
+    {
+      "channel": "email",
+      "status": "BLOCKED",
+      "candidateRows": 1720,
+      "candidateRecipients": 173,
+      "blockers": [
+        "channel_disabled_by_policy",
+        "recipient_user_ids_redacted"
+      ],
+      "evidence": {
+        "policyEnabled": false,
+        "consentBasis": "requires_future_email_preference",
+        "writesNotificationFeed": false
+      }
+    }
+  ]
+}

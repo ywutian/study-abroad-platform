@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorxpfv700iteiz6ktsl45kk","cmnwr8ip3001mz0til7q2dopw","University of Oklahoma","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxpfv700iteiz6ktsl45kk","Please briefly explain your meaningful international experience.","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

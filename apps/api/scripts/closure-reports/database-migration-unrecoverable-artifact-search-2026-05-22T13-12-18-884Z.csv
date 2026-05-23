@@ -1,0 +1,2 @@
+migration,dbChecksum,dbAppliedAt,nextAction,filesScanned,archivesScanned,archiveEntriesScanned,exactMatches
+20260428120000_add_mbti_and_personality_tags,cedbe8993cf570c0011ffcc3a5769445fe55c69285939873710d73bffeaffa66,2026-04-29T05:10:10.777Z,request-external-artifact-or-nonproduction-baseline-review,0,32,3,0

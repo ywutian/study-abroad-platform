@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmor88o7n00bh1jbw5h9sxlwe","cmnwr8ilt0000z0ticnudxg0y","University of Rochester","SHORT_ANSWER","critical","/admin/essay-prompts/cmor88o7n00bh1jbw5h9sxlwe","Are you interested in pursuing research while enrolled at the University of Rochester? If Yes, what field/area of study are you interested in researching?","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

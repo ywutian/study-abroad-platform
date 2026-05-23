@@ -18,6 +18,7 @@ import { CurrentUser } from '../../common/decorators';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { ThrottleRelaxed } from '../../common/decorators/throttle.decorator';
 import { RegisterPushTokenDto } from './dto/register-push-token.dto';
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 
 @ApiTags('notifications')
 @ApiBearerAuth()
@@ -62,6 +63,21 @@ export class NotificationController {
       body.platform,
     );
     return { success: true };
+  }
+
+  @Get('preferences')
+  @ApiOperation({ summary: 'Get notification preferences' })
+  async getPreferences(@CurrentUser() user: CurrentUserPayload) {
+    return this.notificationService.getPreferences(user.id);
+  }
+
+  @Post('preferences')
+  @ApiOperation({ summary: 'Update notification preferences' })
+  async updatePreferences(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: UpdateNotificationPreferencesDto,
+  ) {
+    return this.notificationService.updatePreferences(user.id, body);
   }
 
   @Post(':id/read')

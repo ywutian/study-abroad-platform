@@ -73,7 +73,9 @@ export function ChatContextPanel({
     <aside className={cn('hidden min-h-0 border-l bg-card/80 lg:flex lg:flex-col', className)}>
       <div className="border-b px-4 py-3">
         <p className="text-sm font-semibold">{t('chat.contextTitle')}</p>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">{title}</p>
+        <p className="mt-0.5 line-clamp-2 break-words text-xs text-muted-foreground">
+          {title}
+        </p>
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
@@ -87,8 +89,8 @@ export function ChatContextPanel({
                   <Users className="h-5 w-5 text-primary" />
                 )}
               </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{title}</p>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 break-words text-sm font-medium">{title}</p>
                 <p className="text-xs text-muted-foreground">
                   {isDirect
                     ? t('chat.directConversation')

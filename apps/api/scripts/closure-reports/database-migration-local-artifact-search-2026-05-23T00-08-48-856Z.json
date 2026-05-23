@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-05-23T00:08:48.859Z",
+  "mode": "read-only-database-migration-local-artifact-search",
+  "status": "BLOCKED_EXACT_SQL_NOT_FOUND",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "sourceChecksumReview": "scripts/closure-reports/database-migration-checksum-review-2026-05-23T00-08-46-313Z.json",
+  "sourceUnrecoverableArtifactSearch": "scripts/closure-reports/database-migration-unrecoverable-artifact-search-2026-05-23T00-08-46-986Z.json",
+  "target": {
+    "migration": "20260428120000_add_mbti_and_personality_tags",
+    "targetSha256": "cedbe8993cf570c0011ffcc3a5769445fe55c69285939873710d73bffeaffa66",
+    "selectedRecoveredSqlSha256": null,
+    "sourceKind": "unrecoverable_migration"
+  },
+  "searchConfig": {
+    "candidateRoots": [],
+    "maxFileBytes": 5242880,
+    "maxFiles": 50000,
+    "pathFilter": "Only files named migration.sql or .sql files whose path includes the migration name are read."
+  },
+  "summary": {
+    "candidateFilesRead": 0,
+    "exactMatches": 0,
+    "nonMatchingCandidates": 0
+  },
+  "candidates": [],
+  "recommendedSequence": [
+    "Continue external artifact recovery from deployment artifacts, backups, or teammate clones.",
+    "Drop any candidate directory locally and rerun this script with --candidate-root <dir>.",
+    "If exact SQL cannot be recovered, use the non-production baseline/resolve decision gate."
+  ],
+  "nextCampaign": {
+    "id": "database_migration_external_artifact_recovery",
+    "reason": "No exact SQL artifact found in controlled local roots; continue external artifact recovery or baseline review."
+  }
+}

@@ -364,6 +364,123 @@ describe('SchoolMediaService', () => {
     expect(result.approved).toBe(1);
   });
 
+  it('rejects architectural drawings (landscape/master/site plans, blueprints) and prefers campus photos', async () => {
+    const { service, prisma } = makeService({ nodeEnv: 'production' });
+    prisma.school.findMany.mockResolvedValueOnce([
+      {
+        id: 'school-uf',
+        name: 'University of Florida',
+        aliases: [],
+        website: 'https://www.ufl.edu',
+        mediaAssets: [],
+      },
+    ]);
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      response({
+        json: jest.fn().mockResolvedValue({
+          query: {
+            pages: {
+              '1': {
+                title: 'File:UF Historic Landscape Plan.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/uf-landscape-plan.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:UF_Historic_Landscape_Plan.jpg',
+                    mime: 'image/jpeg',
+                    width: 3200,
+                    height: 2400,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'University of Florida Archives' },
+                    },
+                  },
+                ],
+              },
+              '2': {
+                title: 'File:University of Florida Master Plan 1925.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/uf-master-plan.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:University_of_Florida_Master_Plan_1925.jpg',
+                    mime: 'image/jpeg',
+                    width: 4000,
+                    height: 3000,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'University of Florida Archives' },
+                    },
+                  },
+                ],
+              },
+              '3': {
+                title: 'File:UF Architectural Blueprint Library Hall.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/uf-blueprint.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:UF_Architectural_Blueprint_Library_Hall.jpg',
+                    mime: 'image/jpeg',
+                    width: 3000,
+                    height: 2000,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'University of Florida Archives' },
+                    },
+                  },
+                ],
+              },
+              '4': {
+                title: 'File:University of Florida Century Tower campus.jpg',
+                imageinfo: [
+                  {
+                    url: 'https://upload.wikimedia.org/uf-century-tower.jpg',
+                    descriptionurl:
+                      'https://commons.wikimedia.org/wiki/File:University_of_Florida_Century_Tower_campus.jpg',
+                    mime: 'image/jpeg',
+                    width: 4080,
+                    height: 3072,
+                    extmetadata: {
+                      LicenseShortName: { value: 'CC BY-SA 4.0' },
+                      Artist: { value: 'Example Photographer' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      }),
+    );
+
+    const result = await service.discoverMedia({
+      limit: 1,
+      source: 'wikimedia',
+      dryRun: false,
+    });
+
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledTimes(1);
+    expect(prisma.schoolMediaAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: 'https://upload.wikimedia.org/uf-century-tower.jpg',
+          status: SchoolMediaStatus.APPROVED,
+        }),
+      }),
+    );
+    expect(prisma.schoolMediaAsset.create).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          originalUrl: expect.stringMatching(
+            /landscape-plan|master-plan|blueprint/,
+          ),
+        }),
+      }),
+    );
+    expect(result.approved).toBe(1);
+  });
+
   it('matches common school aliases such as Caltech', async () => {
     const { service, prisma } = makeService({ nodeEnv: 'production' });
     prisma.school.findMany.mockResolvedValueOnce([

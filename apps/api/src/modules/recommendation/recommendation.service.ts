@@ -14,7 +14,7 @@ import { LLMService } from '../ai-agent/core/llm.service';
 import { extractJsonFromLlm } from '../../common/utils/llm-json.util';
 import { RedisService } from '../../common/redis/redis.service';
 import { MemoryManagerService } from '../ai-agent/memory';
-import { MemoryType, EntityType, EssayStatus } from '@prisma/client';
+import { MemoryType, EntityType } from '@prisma/client';
 import {
   SchoolRecommendationRequestDto,
   SchoolRecommendationResponseDto,
@@ -23,7 +23,6 @@ import {
 } from './dto';
 import { CaseIncentiveService, PointAction } from '../points/incentive.service';
 import { safeRefund } from '../points/refund.helper';
-import { clampPercentRate } from '../../common/utils/percent.util';
 import {
   extractProfileMetrics,
   extractSchoolMetrics,
@@ -32,7 +31,8 @@ import {
 } from '../../common/utils/scoring';
 import {
   RECOMMENDATION_SCHOOL_SELECT,
-  mapSchoolMeta,
+  getRecommendationMetricValue,
+  mapSourcedSchoolMeta,
   type RecommendationSchoolResult,
 } from './recommendation.constants';
 import {
@@ -40,6 +40,12 @@ import {
   buildRecommendationUserPrompt,
 } from './recommendation.prompts';
 import { PredictionHistoricalService } from '../prediction/prediction-historical.service';
+
+const SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE = {
+  isActive: true,
+  status: 'VERIFIED',
+  sources: { some: { sourceUrl: { not: null } } },
+} as const;
 
 @Injectable()
 export class RecommendationService {
@@ -580,7 +586,7 @@ export class RecommendationService {
       return {
         ...r,
         schoolId: matched?.id || undefined,
-        schoolMeta: matched ? mapSchoolMeta(matched) : undefined,
+        schoolMeta: matched ? mapSourcedSchoolMeta(matched) : undefined,
       };
     });
   }
@@ -614,6 +620,8 @@ export class RecommendationService {
         graduationRate: true,
         retentionRate: true,
         percentNeedMet: true,
+        metadata: true,
+        updatedAt: true,
       },
     });
 
@@ -627,21 +635,15 @@ export class RecommendationService {
       if (!school) continue;
 
       const schoolMetrics = extractSchoolMetrics({
-        acceptanceRate:
-          school.acceptanceRate != null
-            ? clampPercentRate(school.acceptanceRate)
-            : undefined,
+        acceptanceRate: getRecommendationMetricValue(school, 'acceptanceRate'),
         usNewsRank: school.usNewsRank ?? undefined,
-        satAvg: school.satAvg ?? undefined,
-        sat25: school.sat25 ?? undefined,
-        sat75: school.sat75 ?? undefined,
-        actAvg: school.actAvg ?? undefined,
-        act25: school.act25 ?? undefined,
-        act75: school.act75 ?? undefined,
-        graduationRate:
-          school.graduationRate != null
-            ? Number(school.graduationRate)
-            : undefined,
+        satAvg: getRecommendationMetricValue(school, 'satAvg'),
+        sat25: getRecommendationMetricValue(school, 'sat25'),
+        sat75: getRecommendationMetricValue(school, 'sat75'),
+        actAvg: getRecommendationMetricValue(school, 'actAvg'),
+        act25: getRecommendationMetricValue(school, 'act25'),
+        act75: getRecommendationMetricValue(school, 'act75'),
+        graduationRate: getRecommendationMetricValue(school, 'graduationRate'),
       });
 
       const overallScore = calculateOverallScore(profileMetrics, schoolMetrics);
@@ -679,16 +681,14 @@ export class RecommendationService {
         by: ['schoolId'],
         where: {
           schoolId: { in: matchedIds },
-          isActive: true,
-          status: EssayStatus.VERIFIED,
+          ...SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE,
         },
         _count: true,
       }),
       this.prisma.essayPrompt.findMany({
         where: {
           schoolId: { in: matchedIds },
-          isActive: true,
-          status: EssayStatus.VERIFIED,
+          ...SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE,
           type: 'WHY_SCHOOL',
         },
         select: { schoolId: true },

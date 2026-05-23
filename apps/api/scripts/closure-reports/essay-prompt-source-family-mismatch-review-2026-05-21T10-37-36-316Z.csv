@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmor8opge00ll1jbw4ck1smo9","cmnwr8isu003dz0tijwn1m0s0","University of Texas at Arlington","SHORT_ANSWER","critical","/admin/essay-prompts/cmor8opge00ll1jbw4ck1smo9","Explain your motivation for choosing your major, what sparked your interest, and how it aligns with your future goals.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

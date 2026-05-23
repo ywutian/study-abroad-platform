@@ -1,0 +1,199 @@
+{
+  "generatedAt": "2026-05-21T09:51:22.401Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-yeshiva-latest.json",
+      "generatedAt": "2026-05-21T09:48:21.160Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Yeshiva University official prompt-context pages did not match 2 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+        "schoolName": "Yeshiva University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+    "schoolName": "Yeshiva University",
+    "sourceSearchPromptRows": 2,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 5,
+    "reachableHtmlUrls": 4,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 0,
+    "promptRows": 2,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 2,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 2,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Yeshiva University has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+    "schoolName": "Yeshiva University",
+    "topEssayPromptId": "cmorxl52h00ezeiz6j32tqzgv",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxl52h00ezeiz6j32tqzgv",
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxl52h00ezeiz6j32tqzgv",
+      "promptSnippet": "Pick one of the three words below and write a short essay on it that gives us insight into your character. KINDNESS, TRUST, TIME",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://apply.yu.edu/honors",
+          "https://www.yu.edu/admissions/honors"
+        ],
+        "finalUrls": [
+          "https://apply.yu.edu/honors"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "short essay",
+          "essay prompts"
+        ],
+        "cycleSignals": [],
+        "evidenceSnippets": [
+          "d how you responded. Short Answer Essay (Pick 1): 150 words Pick one of the three words below and write a short essay on it that gives us insight into your character. Essay should be uploaded to the applicant’s application portal in either PDF or Word format. KINDNESS TRUST TIME Short Answer Questions (Pick 4): 25 words Try to be as specific, creative, personal and original as possible. Responses should be uploaded to the applicant’s application portal in either PDF or Word format. My approach to managing rejection is... I feel most responsible when... I discovered my own resilience when... The greatest chessed I ever did was... People say I am honest because... ___________ brings me joy. Resume or Extracurricular Activity List Highlight your involvement in school, internships, work experience, and community activities. Official High School Transcript Must be sent directly from your high school to the Office of Undergraduate Admissions. Two Letters of Recommendation Select a teacher or administrator who kno",
+          "nse as a PDF or Word document: Option 1: You just completed your 1000-page autobiography, please submit page 613. Option 2: Discuss a challenge to one of your core beliefs and how you responded. Short Answer Essay (Pick 1): 150 words Pick one of the three words below and write a short essay on it that gives us insight into your character. Essay should be uploaded to the applicant’s application portal in either PDF or Word format. KINDNESS TRUST TIME Short Answer Questions (Pick 4): 25 words Try to be as specific, creative, personal and original as possible. Responses should be uploaded to the applicant’s application portal in either PDF or Word format. My approach to managing rejection is... I feel most responsible when... I discovered my own resilience when... The greatest chessed I ever did was... People say I am honest because... ___________ brings me joy. Resume or Extracurricular Activity List Highlight your involvement in school, internships, work experience, and community activities. Offic",
+          "short answer questions",
+          "short essay",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmor8bv6b00eb1jbwk8gk31k2",
+      "schoolId": "cmnwr8itt003rz0tizqmu1u5h",
+      "schoolName": "Yeshiva University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor8bv6b00eb1jbwk8gk31k2",
+      "promptSnippet": "Pick one of the three words below and write a short essay on it that gives us insight into your character. KINDNESS TRUST TIME",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://apply.yu.edu/honors",
+          "https://www.yu.edu/admissions/honors"
+        ],
+        "finalUrls": [
+          "https://apply.yu.edu/honors"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "short answer questions",
+          "short essay",
+          "essay prompts"
+        ],
+        "cycleSignals": [],
+        "evidenceSnippets": [
+          "d how you responded. Short Answer Essay (Pick 1): 150 words Pick one of the three words below and write a short essay on it that gives us insight into your character. Essay should be uploaded to the applicant’s application portal in either PDF or Word format. KINDNESS TRUST TIME Short Answer Questions (Pick 4): 25 words Try to be as specific, creative, personal and original as possible. Responses should be uploaded to the applicant’s application portal in either PDF or Word format. My approach to managing rejection is... I feel most responsible when... I discovered my own resilience when... The greatest chessed I ever did was... People say I am honest because... ___________ brings me joy. Resume or Extracurricular Activity List Highlight your involvement in school, internships, work experience, and community activities. Official High School Transcript Must be sent directly from your high school to the Office of Undergraduate Admissions. Two Letters of Recommendation Select a teacher or administrator who kno",
+          "nse as a PDF or Word document: Option 1: You just completed your 1000-page autobiography, please submit page 613. Option 2: Discuss a challenge to one of your core beliefs and how you responded. Short Answer Essay (Pick 1): 150 words Pick one of the three words below and write a short essay on it that gives us insight into your character. Essay should be uploaded to the applicant’s application portal in either PDF or Word format. KINDNESS TRUST TIME Short Answer Questions (Pick 4): 25 words Try to be as specific, creative, personal and original as possible. Responses should be uploaded to the applicant’s application portal in either PDF or Word format. My approach to managing rejection is... I feel most responsible when... I discovered my own resilience when... The greatest chessed I ever did was... People say I am honest because... ___________ brings me joy. Resume or Extracurricular Activity List Highlight your involvement in school, internships, work experience, and community activities. Offic",
+          "short answer questions",
+          "short essay",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

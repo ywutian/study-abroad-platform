@@ -1,0 +1,191 @@
+{
+  "generatedAt": "2026-05-21T06:09:31.537Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-wake-forest-latest.json",
+      "generatedAt": "2026-05-21T06:08:11.157Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_review",
+        "reason": "Wake Forest University has 1 manually checked source URLs with prompt matches; stage source rows for reviewer approval.",
+        "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+        "schoolName": "Wake Forest University",
+        "recommendedAction": "stage-source-row-for-review"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+    "schoolName": "Wake Forest University",
+    "sourceSearchPromptRows": 4,
+    "sourceSearchRecommendedAction": "manual-inspect-reachable-prompt-language-pages"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 5,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 1,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 2,
+    "promptRows": 4,
+    "matchedPromptRows": 2,
+    "unmatchedPromptRows": 2,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 4,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Wake Forest University has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+    "schoolName": "Wake Forest University",
+    "topEssayPromptId": "cmorx8q4p00c98vvhyfxrljg7",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorx8q4p00c98vvhyfxrljg7",
+      "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+      "schoolName": "Wake Forest University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorx8q4p00c98vvhyfxrljg7",
+      "promptSnippet": "List five books you’ve read that intrigued you. Include the title, author, and whether it was required or not.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.wfu.edu/2025/06/a-message-for-rising-seniors-co2030/",
+          "https://admissions.wfu.edu/apply/",
+          "https://www.commonapp.org/explore/wake-forest-university/"
+        ],
+        "finalUrls": [
+          "https://admissions.wfu.edu/2025/06/a-message-for-rising-seniors-co2030/",
+          "https://admissions.wfu.edu/apply/",
+          "https://www.commonapp.org/explore/wake-forest-university/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "supplemental questions",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2030",
+          "2025",
+          "2026",
+          "2024"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 2
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxiqen00bveiz69o03rbk6",
+      "schoolId": "cmn1htkqj001dvqf2n8mczcpn",
+      "schoolName": "Wake Forest University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxiqen00bveiz69o03rbk6",
+      "promptSnippet": "List five books you’ve read that intrigued you. (Include the title, author, and whether it was required or not)",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.wfu.edu/2025/06/a-message-for-rising-seniors-co2030/",
+          "https://admissions.wfu.edu/apply/",
+          "https://www.commonapp.org/explore/wake-forest-university/"
+        ],
+        "finalUrls": [
+          "https://admissions.wfu.edu/2025/06/a-message-for-rising-seniors-co2030/",
+          "https://admissions.wfu.edu/apply/",
+          "https://www.commonapp.org/explore/wake-forest-university/"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "supplemental questions",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2030",
+          "2025",
+          "2026",
+          "2024"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 2
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

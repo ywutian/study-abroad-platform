@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-05-22T13:41:35.908Z",
+  "mode": "read-only-database-migration-checksum-variant-analysis",
+  "status": "PASS_NO_CHECKSUM_MISMATCH",
+  "sourceChecksumReview": "scripts/closure-reports/database-migration-checksum-review-2026-05-22T13-41-26-447Z.json",
+  "checksumReviewGeneratedAt": "2026-05-22T13:41:26.453Z",
+  "checksumReviewStatus": "PASS",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "writesToPrismaMigrationDir": false,
+  "summary": {
+    "checksumMismatchRows": 0,
+    "sourceSqlCandidates": 0,
+    "sourceReadErrors": 0,
+    "variantChecks": 0,
+    "uniqueVariantHashes": 0,
+    "exactVariantMatches": 0,
+    "unresolvedAfterVariantAnalysis": 0
+  },
+  "variantFamilies": [
+    "original",
+    "line-ending-normalization",
+    "final-newline-normalization",
+    "bom-prefix-toggle",
+    "trim-trailing-whitespace-per-line",
+    "strip-leading-sql-comment-block",
+    "strip-sql-line-comments",
+    "collapse-blank-line-runs"
+  ],
+  "rows": [],
+  "recommendedSequence": [
+    "Rerun migration reconciliation and schema alignment planning."
+  ],
+  "nextCampaign": {
+    "id": "database_migration_history_reconciliation",
+    "reason": "No checksum mismatch rows remain."
+  }
+}

@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorxo2k900ifeiz6cw8ezo21","cmnwr8iob001dz0ti3go71xpz","University of Utah","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxo2k900ifeiz6cw8ezo21","Dealing with Adversity: Describe the most significant challenge you have faced and the steps you have taken to address this challenge. Include whether you turned to anyone in facin","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

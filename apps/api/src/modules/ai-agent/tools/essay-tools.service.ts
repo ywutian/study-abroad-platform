@@ -10,11 +10,25 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { EssayStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { LLMService } from '../core/llm.service';
 import { EssayAiService } from '../../essay/essay-ai.service';
 import { extractJsonFromLlm } from '../../../common/utils/llm-json.util';
 import { ToolHandler, IToolHandlerProvider } from './tool-handler.interface';
+
+const SOURCE_BACKED_VERIFIED_PROMPT_WHERE: Prisma.EssayPromptWhereInput = {
+  isActive: true,
+  status: EssayStatus.VERIFIED,
+  sources: { some: { sourceUrl: { not: null } } },
+};
+
+type PromptSourceSummaryInput = {
+  sourceType?: string | null;
+  sourceUrl?: string | null;
+  scrapedAt?: Date | string | null;
+  confidence?: number | null;
+};
 
 @Injectable()
 export class EssayToolsService implements IToolHandlerProvider {
@@ -146,13 +160,29 @@ export class EssayToolsService implements IToolHandlerProvider {
         // for more targeted, prompt-aware review feedback
         if ((essay as any).essayPromptId) {
           try {
-            const essayPrompt = await this.prisma.essayPrompt.findUnique({
-              where: { id: (essay as any).essayPromptId },
-              include: { school: { select: { name: true, nameZh: true } } },
+            const essayPrompt = await this.prisma.essayPrompt.findFirst({
+              where: {
+                id: (essay as any).essayPromptId,
+                ...SOURCE_BACKED_VERIFIED_PROMPT_WHERE,
+              },
+              include: {
+                school: { select: { name: true, nameZh: true } },
+                sources: {
+                  select: {
+                    sourceType: true,
+                    sourceUrl: true,
+                    scrapedAt: true,
+                    confidence: true,
+                  },
+                },
+              },
             });
             if (essayPrompt) {
               const isZh = locale === 'zh';
               const parts: string[] = [];
+              const sourceSummary = this.buildSourceSummary(
+                essayPrompt.sources ?? [],
+              );
               if (essayPrompt.type) {
                 parts.push(
                   isZh
@@ -179,6 +209,13 @@ export class EssayToolsService implements IToolHandlerProvider {
                   isZh
                     ? `目标学校：${essayPrompt.school.nameZh || essayPrompt.school.name}`
                     : `Target school: ${essayPrompt.school.name}`,
+                );
+              }
+              if (sourceSummary.sourceUrls.length > 0) {
+                parts.push(
+                  isZh
+                    ? `题目来源：${sourceSummary.sourceUrls.join(', ')}`
+                    : `Prompt source: ${sourceSummary.sourceUrls.join(', ')}`,
                 );
               }
               // Use the official prompt text if available
@@ -285,8 +322,7 @@ export class EssayToolsService implements IToolHandlerProvider {
     }
 
     const where: Record<string, any> = {
-      isActive: true,
-      status: 'VERIFIED',
+      ...SOURCE_BACKED_VERIFIED_PROMPT_WHERE,
       ...(resolvedSchoolId && { schoolId: resolvedSchoolId }),
       ...(type && { type }),
       ...(year && { year: +year }),
@@ -294,7 +330,17 @@ export class EssayToolsService implements IToolHandlerProvider {
 
     const prompts = await this.prisma.essayPrompt.findMany({
       where,
-      include: { school: { select: { name: true, nameZh: true } } },
+      include: {
+        school: { select: { name: true, nameZh: true } },
+        sources: {
+          select: {
+            sourceType: true,
+            sourceUrl: true,
+            scrapedAt: true,
+            confidence: true,
+          },
+        },
+      },
       orderBy: { sortOrder: 'asc' },
       take: 20,
     });
@@ -323,6 +369,7 @@ export class EssayToolsService implements IToolHandlerProvider {
         wordLimit: p.wordLimit,
         isRequired: p.isRequired,
         aiTips: p.aiTips,
+        sourceSummary: this.buildSourceSummary(p.sources ?? []),
       })),
     };
   }
@@ -383,5 +430,54 @@ Return in JSON format:
     );
 
     return extractJsonFromLlm(result, 'outline');
+  }
+
+  private buildSourceSummary(sources: PromptSourceSummaryInput[]) {
+    const sourceUrls = Array.from(
+      new Set(
+        sources
+          .map((source) => source.sourceUrl?.trim())
+          .filter((url): url is string => Boolean(url)),
+      ),
+    );
+    const sourceTypes = Array.from(
+      new Set(
+        sources
+          .map((source) => source.sourceType?.trim())
+          .filter((sourceType): sourceType is string => Boolean(sourceType)),
+      ),
+    );
+    const scrapedAtValues = sources
+      .map((source) => source.scrapedAt)
+      .filter(Boolean)
+      .map((value) => new Date(value as string | Date))
+      .filter((date) => Number.isFinite(date.getTime()));
+    const confidenceValues = sources
+      .map((source) => source.confidence)
+      .filter(
+        (confidence): confidence is number =>
+          typeof confidence === 'number' && Number.isFinite(confidence),
+      );
+
+    return {
+      hasSourceEvidence: sourceUrls.length > 0,
+      sourceUrls,
+      sourceTypes,
+      sourceQuality: sourceTypes.some((type) =>
+        ['OFFICIAL', 'COMMON_APP', 'UC'].includes(type.toUpperCase()),
+      )
+        ? 'official'
+        : sourceTypes.length > 0
+          ? 'secondary'
+          : 'unknown',
+      latestScrapedAt:
+        scrapedAtValues.length > 0
+          ? new Date(
+              Math.max(...scrapedAtValues.map((date) => date.getTime())),
+            ).toISOString()
+          : null,
+      minConfidence:
+        confidenceValues.length > 0 ? Math.min(...confidenceValues) : null,
+    };
   }
 }

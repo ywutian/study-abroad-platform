@@ -1,4 +1,5 @@
 // Recommendation
+import type { SchoolFieldSource } from './school-provenance';
 
 export interface SchoolMeta {
   nameZh?: string;
@@ -15,6 +16,8 @@ export interface SchoolMeta {
   retentionRate?: number;
   logoUrl?: string;
   website?: string;
+  fieldSources?: Record<string, SchoolFieldSource | null>;
+  weakFields?: Record<string, string>;
 }
 
 export interface CohortStats {

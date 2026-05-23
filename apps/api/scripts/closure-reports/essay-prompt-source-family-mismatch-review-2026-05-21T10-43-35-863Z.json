@@ -1,0 +1,159 @@
+{
+  "generatedAt": "2026-05-21T10:43:35.862Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-utah-latest.json",
+      "generatedAt": "2026-05-21T10:43:23.904Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "University of Utah official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8iob001dz0ti3go71xpz",
+        "schoolName": "University of Utah",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iob001dz0ti3go71xpz",
+    "schoolName": "University of Utah",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "retry-blocked-candidates-or-external-source-search"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 8,
+    "reachableHtmlUrls": 7,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 4,
+    "promptMatchCount": 0,
+    "promptRows": 1,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of Utah has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iob001dz0ti3go71xpz",
+    "schoolName": "University of Utah",
+    "topEssayPromptId": "cmorxo2k900ifeiz6cw8ezo21",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxo2k900ifeiz6cw8ezo21",
+      "schoolId": "cmnwr8iob001dz0ti3go71xpz",
+      "schoolName": "University of Utah",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxo2k900ifeiz6cw8ezo21",
+      "promptSnippet": "Dealing with Adversity: Describe the most significant challenge you have faced and the steps you have taken to address this challenge. Include whether you turned to anyone in facin",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.honors.utah.edu/admissions/",
+          "https://admissions.utah.edu/apply/freshman-students/undergraduate-admissions-standards/",
+          "https://www.commonapp.org/explore/university-utah/",
+          "https://www.commonapp.org/apply/first-year-students/"
+        ],
+        "finalUrls": [
+          "https://www.honors.utah.edu/admissions/",
+          "https://admissions.utah.edu/apply/freshman-students/undergraduate-admissions-standards/",
+          "https://www.commonapp.org/explore/university-utah/",
+          "https://www.commonapp.org/apply/first-year-students/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay questions",
+          "essay question",
+          "essay prompts",
+          "common application",
+          "writing supplement",
+          "short answer questions"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "oming Transfer Applicant Current Upper-Division Student How to Apply Incoming first-year and transfer students apply through the University of Utah general admissions application. The Honors College has two essay options and students should respond to one of the two prompts. The essay questions are provided within the application. To be considered for the Honors College, students must submit a completed application (including transcripts and essay) to the University by the application deadline. Students who apply to the University of Utah before the December 1 deadline, but missed submitting for Honors, may amend their application to apply for Honors prior to January 4. Incoming Freshman applications are only accepted to start in Fall and Summer semesters. Fall Deadline December 1 Summer Deadline December 1 Decisions Released February 15 APPLY TODAY TRACK YOUR APPLICATION Application Materials Completed University of Utah Application Honors Essay Letter of Recommendation (optional) Test Scores (optio",
+          "oming Transfer Applicant Current Upper-Division Student How to Apply Incoming first-year and transfer students apply through the University of Utah general admissions application. The Honors College has two essay options and students should respond to one of the two prompts. The essay questions are provided within the application. To be considered for the Honors College, students must submit a completed application (including transcripts and essay) to the University by the application deadline. Students who apply to the University of Utah before the December 1 deadline, but missed submitting for Honors, may amend their application to apply for Honors prior to January 4. Incoming Freshman applications are only accepted to start in Fall and Summer semesters. Fall Deadline December 1 Summer Deadline December 1 Decisions Released February 15 APPLY TODAY TRACK YOUR APPLICATION Application Materials Completed University of Utah Application Honors Essay Letter of Recommendation (optional) Test Scores (opti",
+          "essay questions",
+          "essay question",
+          "re? Yes. University merit scholarships do not require test scores for consideration. More information on scholarship consideration can be found here . Are test scores required for admission into the Honors College? ACT/SAT scores are not required. Follow the essay prompts in the Common Application or Beehive Application to apply to the Honors College. Are international students still required to submit an English language proficiency test? All international applicants must provide proof of English proficiency. We know that our international students have the greatest potential for success when they have an effective comprehension of the English language. View approved ways to demonstrate English language proficiency . What is considered an official test score? An official test score is one that comes directly from the testing agency to the Office of Admissions. Test scores listed on transcripts or sent by anyone other than the testing agency are not considered official by the University of Utah. I think",
+          "essay prompts",
+          "common application",
+          "y/freshman-students/ Financial aid website financialaid.utah.edu/types-of-aid/prospective-freshman-guide.php Undocumented or DACA students dream.utah.edu Region West View more in this region Follow The University of Utah Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "this task more manageable. Common App Personal Essay Colleges can either make the personal essay optional or required. In the writing section of My Common Application , you will see a table that lists each college's requirements. College-specific questions Many colleges include short answer questions or essay prompts within this section. You can find specific information about each college's individual writing prompts here . Writing supplements Some colleges use a separate writing supplement. Not all colleges have a writing supplement. Some colleges only request this supplement based on your answers to other questions. You can find more information about writing supplements in My Colleges . 7 . Submit your application Review and submit your application Submission is a three-step process: Need help? Contact our Solutions Center. Request support The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Co",
+          "reate an account Get started at any time Creating a Common App account is easy and should only take a few minutes. Account rollover Common App accounts can roll over from year to year! With account rollover , you can start exploring Common App and save answers to questions in My Common Application at any time. 3 . Add colleges Start building your My Colleges list Once you’ve created your account and explored the colleges that accept the Common App, you&#x27;re ready to start adding colleges. Fee Waiver A request to the college to remove the application fee. Using either the Common App fee waiver, which your counselor must confirm, or a college-specific fee waiver, you will not be required to pay the fee to submit your application. Coed Coed is a term used to describe a college or university that offers the integrated education of male and female students in the same environment. 4 . Engage supporters Collaborate with counselors, teachers, and more All colleges need things like official school forms. Man",
+          "writing supplement",
+          "short answer questions"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

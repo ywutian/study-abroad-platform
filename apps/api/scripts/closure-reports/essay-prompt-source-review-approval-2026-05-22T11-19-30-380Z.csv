@@ -1,0 +1,1 @@
+approvalRequestId,essayPromptId,schoolId,schoolName,applicationYear,sourceType,sourceQuality,sourceUrl,finalUrl,confidence,rawContentSha256,scrapedAt,matchKind,promptSnippetSha256,evidenceSnippetSha256,reviewStatus,reviewReason,consumerPolicy

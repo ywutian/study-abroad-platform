@@ -144,6 +144,51 @@ describe('EssayPromptService', () => {
         }),
       );
     });
+
+    it('should return only source-backed verified prompts for public queries', async () => {
+      mockPrisma.essayPrompt.findMany.mockResolvedValue([
+        {
+          id: 'p1',
+          prompt: 'Prompt 1',
+          status: 'VERIFIED',
+          school: { name: 'MIT' },
+          sources: [
+            {
+              sourceType: 'OFFICIAL',
+              sourceUrl: 'https://mit.edu/apply/essays',
+              scrapedAt: new Date('2026-01-01T00:00:00Z'),
+              confidence: 0.92,
+            },
+          ],
+        },
+      ]);
+      mockPrisma.essayPrompt.count.mockResolvedValue(1);
+
+      const result = await service.findAllPublic({
+        page: 1,
+        pageSize: 20,
+      });
+
+      expect(mockPrisma.essayPrompt.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            isActive: true,
+            status: 'VERIFIED',
+            sources: { some: { sourceUrl: { not: null } } },
+          }),
+        }),
+      );
+      const publicPrompt = result.data[0] as any;
+      expect(publicPrompt).not.toHaveProperty('sources');
+      expect(publicPrompt.sourceSummary).toEqual(
+        expect.objectContaining({
+          hasSourceEvidence: true,
+          sourceUrls: ['https://mit.edu/apply/essays'],
+          sourceQuality: 'official',
+          minConfidence: 0.92,
+        }),
+      );
+    });
   });
 
   describe('findOne', () => {
@@ -172,7 +217,7 @@ describe('EssayPromptService', () => {
 
   describe('findOnePublic', () => {
     it('should return essay prompt without auditLogs and sources', async () => {
-      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+      mockPrisma.essayPrompt.findFirst.mockResolvedValue({
         id: 'p1',
         schoolId: 'school-1',
         type: 'COMMON_APP',
@@ -187,6 +232,14 @@ describe('EssayPromptService', () => {
           nameZh: '麻省理工',
           usNewsRank: 1,
         },
+        sources: [
+          {
+            sourceType: 'OFFICIAL',
+            sourceUrl: 'https://mit.edu/apply/essays',
+            scrapedAt: new Date('2026-01-01T00:00:00Z'),
+            confidence: 0.9,
+          },
+        ],
       });
 
       const result = await service.findOnePublic('p1');
@@ -197,10 +250,16 @@ describe('EssayPromptService', () => {
       // Must NOT contain auditLogs or sources
       expect(result).not.toHaveProperty('auditLogs');
       expect(result).not.toHaveProperty('sources');
+      expect(result.sourceSummary).toEqual(
+        expect.objectContaining({
+          hasSourceEvidence: true,
+          sourceUrls: ['https://mit.edu/apply/essays'],
+        }),
+      );
     });
 
     it('should throw NotFoundException when essay prompt does not exist', async () => {
-      mockPrisma.essayPrompt.findUnique.mockResolvedValue(null);
+      mockPrisma.essayPrompt.findFirst.mockResolvedValue(null);
 
       await expect(service.findOnePublic('nonexistent')).rejects.toThrow(
         NotFoundException,
@@ -208,7 +267,7 @@ describe('EssayPromptService', () => {
     });
 
     it('should use select (not include) to exclude sensitive fields at query level', async () => {
-      mockPrisma.essayPrompt.findUnique.mockResolvedValue({
+      mockPrisma.essayPrompt.findFirst.mockResolvedValue({
         id: 'p1',
         schoolId: 'school-1',
         type: 'COMMON_APP',
@@ -223,16 +282,32 @@ describe('EssayPromptService', () => {
           nameZh: '麻省理工',
           usNewsRank: 1,
         },
+        sources: [{ sourceType: 'OFFICIAL', sourceUrl: 'https://example.com' }],
       });
 
       await service.findOnePublic('p1');
 
-      // Verify the query uses select (not include) — which means auditLogs
-      // and sources are excluded at the database query level
-      const callArgs = mockPrisma.essayPrompt.findUnique.mock.calls[0][0];
+      // Verify the query uses select (not include) and only exposes
+      // public-safe source metadata needed for provenance.
+      const callArgs = mockPrisma.essayPrompt.findFirst.mock.calls[0][0];
       expect(callArgs).toHaveProperty('select');
       expect(callArgs.select).not.toHaveProperty('auditLogs');
-      expect(callArgs.select).not.toHaveProperty('sources');
+      expect(callArgs.select.sources).toEqual({
+        select: {
+          sourceType: true,
+          sourceUrl: true,
+          scrapedAt: true,
+          confidence: true,
+        },
+      });
+      expect(callArgs.where).toEqual(
+        expect.objectContaining({
+          id: 'p1',
+          isActive: true,
+          status: 'VERIFIED',
+          sources: { some: { sourceUrl: { not: null } } },
+        }),
+      );
     });
   });
 
@@ -252,6 +327,7 @@ describe('EssayPromptService', () => {
             isActive: true,
             status: 'VERIFIED',
             year: 2025,
+            sources: { some: { sourceUrl: { not: null } } },
           }),
         }),
       );

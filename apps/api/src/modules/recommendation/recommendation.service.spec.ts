@@ -239,6 +239,61 @@ describe('RecommendationService', () => {
       expect(prisma.school.findMany).toHaveBeenCalled();
     });
 
+    it('should hide recommendation schoolMeta anchor fields without provenance', async () => {
+      (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
+
+      const result = await service.generateRecommendation('user-1', dto);
+
+      expect(result.recommendations[0].schoolMeta).toEqual(
+        expect.objectContaining({
+          acceptanceRate: undefined,
+          retentionRate: undefined,
+          weakFields: expect.objectContaining({
+            acceptanceRate: 'hidden_until_field_provenance_exists',
+            retentionRate: 'hidden_until_field_provenance_exists',
+          }),
+        }),
+      );
+      expect(prisma.school.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          select: expect.objectContaining({
+            acceptanceRate: true,
+            metadata: true,
+            updatedAt: true,
+          }),
+        }),
+      );
+    });
+
+    it('should enrich recommendation essay counts from source-backed verified prompts only', async () => {
+      (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
+
+      await service.generateRecommendation('user-1', dto);
+
+      expect(prisma.essayPrompt.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            schoolId: { in: ['school-1'] },
+            isActive: true,
+            status: 'VERIFIED',
+            sources: { some: { sourceUrl: { not: null } } },
+          }),
+        }),
+      );
+      expect(prisma.essayPrompt.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            schoolId: { in: ['school-1'] },
+            isActive: true,
+            status: 'VERIFIED',
+            sources: { some: { sourceUrl: { not: null } } },
+            type: 'WHY_SCHOOL',
+          }),
+          distinct: ['schoolId'],
+        }),
+      );
+    });
+
     it('should refund and throw on non-JSON AI response', async () => {
       (prisma.profile.findFirst as jest.Mock).mockResolvedValue(mockProfile);
       (llmService.chatSimpleGuarded as jest.Mock).mockResolvedValue(

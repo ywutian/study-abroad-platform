@@ -1,0 +1,217 @@
+{
+  "generatedAt": "2026-05-21T09:58:22.175Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-ucf-latest.json",
+      "generatedAt": "2026-05-21T09:58:17.720Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_review",
+        "reason": "University of Central Florida has 1 manually checked source URLs with prompt matches; stage source rows for reviewer approval.",
+        "schoolId": "cmnwr8iqk0027z0ti3qm7r15o",
+        "schoolName": "University of Central Florida",
+        "recommendedAction": "stage-source-row-for-review"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iqk0027z0ti3qm7r15o",
+    "schoolName": "University of Central Florida",
+    "sourceSearchPromptRows": 2,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 5,
+    "reachableHtmlUrls": 4,
+    "validatedSourceUrls": 1,
+    "trustedValidatedSourceUrls": 1,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 1,
+    "promptRows": 2,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "University of Central Florida has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iqk0027z0ti3qm7r15o",
+    "schoolName": "University of Central Florida",
+    "topEssayPromptId": "cmorxfxr200kj8vvhjwitkvce",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxfxr200kj8vvhjwitkvce",
+      "schoolId": "cmnwr8iqk0027z0ti3qm7r15o",
+      "schoolName": "University of Central Florida",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxfxr200kj8vvhjwitkvce",
+      "promptSnippet": "What qualities or unique characteristics do you possess that will allow you to contribute to the UCF community?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.ucf.edu/admissions/undergraduate/question/does-ucf-have-specific-essay-or-personal-statement-topics/",
+          "https://analytics.ucf.edu/wp-content/uploads/2026/03/Common-Data-Set-2025-2026.pdf",
+          "https://www.commonapp.org/explore/university-central-florida"
+        ],
+        "finalUrls": [
+          "https://www.ucf.edu/admissions/undergraduate/question/does-ucf-have-specific-essay-or-personal-statement-topics/",
+          "https://analytics.ucf.edu/wp-content/uploads/2026/03/Common-Data-Set-2025-2026.pdf",
+          "https://www.commonapp.org/explore/university-central-florida/"
+        ],
+        "trustedValidatedSourceUrls": [
+          "https://www.ucf.edu/admissions/undergraduate/question/does-ucf-have-specific-essay-or-personal-statement-topics/"
+        ],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026",
+          "2024",
+          "2027"
+        ],
+        "evidenceSnippets": [
+          "What qualities or unique characteristics do you possess that will allow you to contribute to the UCF community?",
+          "ent after No admission? If yes, maximum period of postponement: C19 Early admission of high school students Yes or No Does your institution allow high school students to enroll as full-time, first- Yes time, first-year students one year or more before high school graduation? C20 Common Application: Question removed from CDS. (Initiated during 2006-2007 cycle) C21-C22: Early Decision and Early Action Plans C21 Early Decision Yes or No Does your institution offer an early decision plan (an admission plan that No If “yes,” please complete the following: First or only early decision plan closing date First or only early decision plan notification date Other early decision plan closing date Other early decision plan notification date For the Fall 2025 entering class: Number of early decision applications received by your institution Number of applicants admitted under early decision plan Please provide significant details about your early decision plan: C22 Early action Yes or No Do you have a nonbinding ear",
+          "common application",
+          "an Applicants. International First Year: For complete information regarding academic documents required for admission consideration, please visit our web page for International Applicants. Transfer The University of Central Florida is currently accepting applications through the Common Application for First Year students only. All other applicants, please visit our website regarding admission requirements and to submit an application. Image icon View image gallery Visit us Apply for first-year Admissions office Visit us Address P.O. Box 160111 Orlando , FL 32816-0111 , United States of America Email admission@ucf.edu Phone number (407) 823-3000 For first-year students Admissions website www.ucf.edu/admissions/undergraduate/ Financial aid website finaid.ucf.edu/ Region South View more in this region Follow University of Central Florida Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Be",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxqt1f00kneiz6xyptz8ej",
+      "schoolId": "cmnwr8iqk0027z0ti3qm7r15o",
+      "schoolName": "University of Central Florida",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxqt1f00kneiz6xyptz8ej",
+      "promptSnippet": "Please briefly elaborate on one of your extracurricular activities or work experiences.",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.ucf.edu/admissions/undergraduate/question/does-ucf-have-specific-essay-or-personal-statement-topics/",
+          "https://analytics.ucf.edu/wp-content/uploads/2026/03/Common-Data-Set-2025-2026.pdf",
+          "https://www.commonapp.org/explore/university-central-florida"
+        ],
+        "finalUrls": [
+          "https://www.ucf.edu/admissions/undergraduate/question/does-ucf-have-specific-essay-or-personal-statement-topics/",
+          "https://analytics.ucf.edu/wp-content/uploads/2026/03/Common-Data-Set-2025-2026.pdf",
+          "https://www.commonapp.org/explore/university-central-florida/"
+        ],
+        "trustedValidatedSourceUrls": [
+          "https://www.ucf.edu/admissions/undergraduate/question/does-ucf-have-specific-essay-or-personal-statement-topics/"
+        ],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026",
+          "2024",
+          "2027"
+        ],
+        "evidenceSnippets": [
+          "What qualities or unique characteristics do you possess that will allow you to contribute to the UCF community?",
+          "ent after No admission? If yes, maximum period of postponement: C19 Early admission of high school students Yes or No Does your institution allow high school students to enroll as full-time, first- Yes time, first-year students one year or more before high school graduation? C20 Common Application: Question removed from CDS. (Initiated during 2006-2007 cycle) C21-C22: Early Decision and Early Action Plans C21 Early Decision Yes or No Does your institution offer an early decision plan (an admission plan that No If “yes,” please complete the following: First or only early decision plan closing date First or only early decision plan notification date Other early decision plan closing date Other early decision plan notification date For the Fall 2025 entering class: Number of early decision applications received by your institution Number of applicants admitted under early decision plan Please provide significant details about your early decision plan: C22 Early action Yes or No Do you have a nonbinding ear",
+          "common application",
+          "an Applicants. International First Year: For complete information regarding academic documents required for admission consideration, please visit our web page for International Applicants. Transfer The University of Central Florida is currently accepting applications through the Common Application for First Year students only. All other applicants, please visit our website regarding admission requirements and to submit an application. Image icon View image gallery Visit us Apply for first-year Admissions office Visit us Address P.O. Box 160111 Orlando , FL 32816-0111 , United States of America Email admission@ucf.edu Phone number (407) 823-3000 For first-year students Admissions website www.ucf.edu/admissions/undergraduate/ Financial aid website finaid.ucf.edu/ Region South View more in this region Follow University of Central Florida Facebook icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Be",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

@@ -91,9 +91,15 @@ describe('ProfileReadinessService', () => {
         'profile.gpa_anchor',
         'profile.test_strategy',
         'profile.major',
-        'school_list.min_count',
+        'school_list.add_first',
       ]),
     );
+    expect(readiness.overall.blockers).not.toContain('school_list.min_count');
+    expect(
+      readiness.workflowReadiness.items.find(
+        (item) => item.key === 'school_list',
+      )?.gaps,
+    ).toEqual(['school_list.add_first']);
     expect(readiness.overall.canRunPrediction).toBe(false);
     expect(readiness.applicationAnalysis.state).toBe('insufficientProfileData');
   });

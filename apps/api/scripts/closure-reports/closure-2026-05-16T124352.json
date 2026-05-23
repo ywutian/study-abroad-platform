@@ -1,0 +1,354 @@
+{
+  "generatedAt": "2026-05-16T12:43:52.296Z",
+  "threshold": 0.9,
+  "floor": 0.85,
+  "totals": {
+    "totalSchools": 240,
+    "excluded": 12,
+    "scope": 228
+  },
+  "closure": {
+    "closed": false,
+    "blockingFields": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "edAcceptanceRate",
+      "eaAcceptanceRate"
+    ],
+    "floorViolations": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "edAcceptanceRate",
+      "eaAcceptanceRate"
+    ]
+  },
+  "fields": {
+    "acceptanceRate": {
+      "eligible": 228,
+      "filled": 228,
+      "closed": 9,
+      "closure": 0.0395,
+      "gapsCount": 219
+    },
+    "sat25": {
+      "eligible": 228,
+      "filled": 226,
+      "closed": 61,
+      "closure": 0.2675,
+      "gapsCount": 167
+    },
+    "sat75": {
+      "eligible": 228,
+      "filled": 226,
+      "closed": 61,
+      "closure": 0.2675,
+      "gapsCount": 167
+    },
+    "intlAcceptanceRate": {
+      "eligible": 228,
+      "filled": 228,
+      "closed": 17,
+      "closure": 0.0746,
+      "gapsCount": 211
+    },
+    "oosAcceptanceRate": {
+      "eligible": 136,
+      "filled": 136,
+      "closed": 9,
+      "closure": 0.0662,
+      "gapsCount": 127
+    },
+    "edAcceptanceRate": {
+      "eligible": 201,
+      "filled": 73,
+      "closed": 123,
+      "closure": 0.6119,
+      "gapsCount": 78
+    },
+    "eaAcceptanceRate": {
+      "eligible": 71,
+      "filled": 71,
+      "closed": 10,
+      "closure": 0.1408,
+      "gapsCount": 61
+    }
+  },
+  "topGaps": [
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat25",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "SECONDARY_AGGREGATOR"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmn1htkn30001vqf2nozenmj6",
+      "name": "Massachusetts Institute of Technology",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iut0044z0tie7749l79",
+      "name": "Swarthmore College",
+      "rank": 3,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iuv0045z0tiq1lprcv8",
+      "name": "Pomona College",
+      "rank": 4,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmnwr8ivx004qz0ti7xo8qk4m",
+      "name": "ArtCenter College of Design",
+      "rank": 5,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmnwr8is1002xz0ti23uxhu2j",
+      "name": "California Polytechnic State University, San Luis Obispo",
+      "rank": 5,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iux0046z0tilggqkjw6",
+      "name": "Wellesley College",
+      "rank": 5,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmn1htkna0004vqf2erll9srp",
+      "name": "Yale University",
+      "rank": 5,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    }
+  ]
+}

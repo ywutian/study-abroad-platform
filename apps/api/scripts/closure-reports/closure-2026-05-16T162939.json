@@ -1,0 +1,365 @@
+{
+  "generatedAt": "2026-05-16T16:29:39.132Z",
+  "threshold": 0.9,
+  "floor": 0.85,
+  "totals": {
+    "totalSchools": 240,
+    "excluded": 16,
+    "scope": 224
+  },
+  "closure": {
+    "closed": false,
+    "blockingFields": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "eaAcceptanceRate"
+    ],
+    "floorViolations": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate"
+    ]
+  },
+  "fields": {
+    "acceptanceRate": {
+      "eligible": 224,
+      "filled": 224,
+      "closed": 117,
+      "officialPure": 117,
+      "closure": 0.5223,
+      "officialPurity": 0.5223,
+      "gapsCount": 107
+    },
+    "sat25": {
+      "eligible": 224,
+      "filled": 212,
+      "closed": 173,
+      "officialPure": 172,
+      "closure": 0.7723,
+      "officialPurity": 0.7679,
+      "gapsCount": 51
+    },
+    "sat75": {
+      "eligible": 224,
+      "filled": 212,
+      "closed": 173,
+      "officialPure": 172,
+      "closure": 0.7723,
+      "officialPurity": 0.7679,
+      "gapsCount": 51
+    },
+    "intlAcceptanceRate": {
+      "eligible": 224,
+      "filled": 198,
+      "closed": 124,
+      "officialPure": 124,
+      "closure": 0.5536,
+      "officialPurity": 0.5536,
+      "gapsCount": 100
+    },
+    "oosAcceptanceRate": {
+      "eligible": 132,
+      "filled": 127,
+      "closed": 45,
+      "officialPure": 45,
+      "closure": 0.3409,
+      "officialPurity": 0.3409,
+      "gapsCount": 87
+    },
+    "edAcceptanceRate": {
+      "eligible": 224,
+      "filled": 63,
+      "closed": 210,
+      "officialPure": 210,
+      "closure": 0.9375,
+      "officialPurity": 0.9375,
+      "gapsCount": 14
+    },
+    "eaAcceptanceRate": {
+      "eligible": 224,
+      "filled": 30,
+      "closed": 191,
+      "officialPure": 191,
+      "closure": 0.8527,
+      "officialPurity": 0.8527,
+      "gapsCount": 33
+    }
+  },
+  "topGaps": [
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "POLICY_DETERMINATION"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8ing000vz0tizgajtqeo",
+      "name": "University of Colorado Boulder",
+      "rank": 74,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8ing000vz0tizgajtqeo",
+      "name": "University of Colorado Boulder",
+      "rank": 74,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8ing000vz0tizgajtqeo",
+      "name": "University of Colorado Boulder",
+      "rank": 74,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8ing000vz0tizgajtqeo",
+      "name": "University of Colorado Boulder",
+      "rank": 74,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmnwr8ing000vz0tizgajtqeo",
+      "name": "University of Colorado Boulder",
+      "rank": 74,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8imr000hz0tik9lqym4i",
+      "name": "Fordham University",
+      "rank": 79,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8ink000xz0tivm4enckb",
+      "name": "Drexel University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8inq0011z0tims8lt244",
+      "name": "Temple University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8io40019z0ti0z11pe98",
+      "name": "University of California, Riverside",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iud003yz0tinuqfaa54",
+      "name": "University of Denver",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8ink000xz0tivm4enckb",
+      "name": "Drexel University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8inq0011z0tims8lt244",
+      "name": "Temple University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8io40019z0ti0z11pe98",
+      "name": "University of California, Riverside",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iud003yz0tinuqfaa54",
+      "name": "University of Denver",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8ink000xz0tivm4enckb",
+      "name": "Drexel University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8inq0011z0tims8lt244",
+      "name": "Temple University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8io40019z0ti0z11pe98",
+      "name": "University of California, Riverside",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iud003yz0tinuqfaa54",
+      "name": "University of Denver",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8ink000xz0tivm4enckb",
+      "name": "Drexel University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8inq0011z0tims8lt244",
+      "name": "Temple University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8io40019z0ti0z11pe98",
+      "name": "University of California, Riverside",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmnwr8inq0011z0tims8lt244",
+      "name": "Temple University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmnwr8io40019z0ti0z11pe98",
+      "name": "University of California, Riverside",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8ink000xz0tivm4enckb",
+      "name": "Drexel University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iud003yz0tinuqfaa54",
+      "name": "University of Denver",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iu0003uz0ti43l07p17",
+      "name": "Worcester Polytechnic Institute",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8inq0011z0tims8lt244",
+      "name": "Temple University",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "TAVILY_ENRICHMENT"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iud003yz0tinuqfaa54",
+      "name": "University of Denver",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iu0003uz0ti43l07p17",
+      "name": "Worcester Polytechnic Institute",
+      "rank": 90,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    }
+  ]
+}

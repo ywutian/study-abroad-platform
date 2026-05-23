@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { SchoolPublicMedia } from '@study-abroad/shared';
+import type {
+  SchoolFieldSource,
+  SchoolPublicMedia,
+} from '@study-abroad/shared';
 import {
   IsOptional,
   IsArray,
@@ -147,6 +150,8 @@ export class RecommendedSchoolDto {
     logoUrl?: string;
     media?: SchoolPublicMedia;
     website?: string;
+    fieldSources?: Record<string, SchoolFieldSource | null>;
+    weakFields?: Record<string, string>;
     sourceUrls?: {
       collegeScorecardUrl?: string;
       ipedsUrl?: string;

@@ -1,0 +1,5322 @@
+{
+  "generatedAt": "2026-05-22T11:17:33.254Z",
+  "mode": "read-only-school-data-consumer-visibility-worklist",
+  "status": "PASS",
+  "nextAction": "accept",
+  "destructiveWriteAllowedByThisPlan": false,
+  "summary": {
+    "surfaces": 6,
+    "fields": 24,
+    "rows": 57,
+    "acceptedRows": 57,
+    "reviewRows": 0,
+    "criticalReviewRows": 0,
+    "missingConsumerReferences": 0,
+    "missingProvenanceVisibility": 0,
+    "missingWeakStateVisibility": 0,
+    "highRiskReviewRows": 0,
+    "p0ReviewRows": 0
+  },
+  "surfaces": [
+    {
+      "id": "api_school_detail",
+      "label": "API school detail/search/admin data-health surface",
+      "priority": "P0",
+      "highRiskConsumer": false,
+      "roots": [
+        "apps/api/src/modules/school"
+      ],
+      "scannedFiles": 54,
+      "expectedFields": [
+        "acceptanceRate",
+        "intlAcceptanceRate",
+        "sat25",
+        "sat75",
+        "act25",
+        "act75",
+        "gpaDistribution",
+        "testingPolicy",
+        "testOptional",
+        "deadlines",
+        "essayPrompts",
+        "programRates",
+        "campusCover"
+      ]
+    },
+    {
+      "id": "prediction_engine",
+      "label": "Prediction engine and statistical/counselor surfaces",
+      "priority": "P0",
+      "highRiskConsumer": true,
+      "roots": [
+        "apps/api/src/modules/prediction",
+        "packages/shared/src/scoring"
+      ],
+      "scannedFiles": 127,
+      "expectedFields": [
+        "acceptanceRate",
+        "intlAcceptanceRate",
+        "oosAcceptanceRate",
+        "transferAcceptanceRate",
+        "edAcceptanceRate",
+        "eaAcceptanceRate",
+        "sat25",
+        "sat75",
+        "act25",
+        "act75",
+        "gpaDistribution",
+        "cdsAdmitBands",
+        "testingPolicy",
+        "needBlindInternational",
+        "programRates"
+      ]
+    },
+    {
+      "id": "web_school_pages",
+      "label": "Web school search/detail/recommendation cards",
+      "priority": "P0",
+      "highRiskConsumer": false,
+      "roots": [
+        "apps/web/src/app/[locale]/(main)/schools",
+        "apps/web/src/components/features/schools",
+        "apps/web/src/components/features/school-selector.tsx"
+      ],
+      "scannedFiles": 49,
+      "expectedFields": [
+        "acceptanceRate",
+        "sat25",
+        "sat75",
+        "testingPolicy",
+        "deadlines",
+        "essayPrompts",
+        "tuition",
+        "averageNetPrice",
+        "graduationRate",
+        "studentFacultyRatio",
+        "description",
+        "campusCover"
+      ]
+    },
+    {
+      "id": "web_prediction_results",
+      "label": "Web prediction result and AI context surfaces",
+      "priority": "P0",
+      "highRiskConsumer": true,
+      "roots": [
+        "apps/web/src/components/features/prediction",
+        "apps/web/src/hooks/use-prediction.ts"
+      ],
+      "scannedFiles": 31,
+      "expectedFields": [
+        "acceptanceRate",
+        "intlAcceptanceRate",
+        "sat25",
+        "sat75",
+        "act25",
+        "act75",
+        "testingPolicy",
+        "needBlindInternational"
+      ]
+    },
+    {
+      "id": "essay_ai_context",
+      "label": "Essay AI school-context surface",
+      "priority": "P0",
+      "highRiskConsumer": true,
+      "roots": [
+        "apps/api/src/modules/essay"
+      ],
+      "scannedFiles": 42,
+      "expectedFields": [
+        "acceptanceRate",
+        "testingPolicy",
+        "essayPrompts"
+      ]
+    },
+    {
+      "id": "agent_chat_context",
+      "label": "Agent chat context and school recommendation cards",
+      "priority": "P1",
+      "highRiskConsumer": true,
+      "roots": [
+        "apps/api/src/modules/ai",
+        "apps/api/src/modules/ai-agent",
+        "apps/web/src/components/features/agent-chat",
+        "apps/web/src/app/[locale]/(main)/chat"
+      ],
+      "scannedFiles": 204,
+      "expectedFields": [
+        "acceptanceRate",
+        "testingPolicy",
+        "deadlines",
+        "essayPrompts",
+        "programRates",
+        "campusCover"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "acceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "agent_chat_context",
+      "surfaceLabel": "Agent chat context and school recommendation cards",
+      "surfacePriority": "P1",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 204,
+        "fieldFiles": 12,
+        "fieldMentions": 40,
+        "provenanceFiles": 8,
+        "weakStateFiles": 10
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/ai/BRIEF.md",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/ai/profile-ai.prompts.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai/profile-ai.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/core/orchestrator.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 13,
+            "weakStateMentions": 28
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/core/workflow-engine.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 14
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/case-tools.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/helpers/school-lookup.helper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/prediction-tools.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 6,
+            "weakStateMentions": 13
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/prediction-tools.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 6,
+            "weakStateMentions": 14
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/recommendation-tools.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.spec.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 27,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 44,
+            "weakStateMentions": 19
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "acceptanceRate has a code reference plus provenance or weak-state visibility signals in Agent chat context and school recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "campusCover",
+      "fieldPriority": "P1",
+      "surfaceId": "agent_chat_context",
+      "surfaceLabel": "Agent chat context and school recommendation cards",
+      "surfacePriority": "P1",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 204,
+        "fieldFiles": 2,
+        "fieldMentions": 6,
+        "provenanceFiles": 2,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 27,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 44,
+            "weakStateMentions": 19
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "campusCover has a code reference plus provenance or weak-state visibility signals in Agent chat context and school recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "deadlines",
+      "fieldPriority": "P0",
+      "surfaceId": "agent_chat_context",
+      "surfaceLabel": "Agent chat context and school recommendation cards",
+      "surfacePriority": "P1",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 204,
+        "fieldFiles": 11,
+        "fieldMentions": 92,
+        "provenanceFiles": 7,
+        "weakStateFiles": 8
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/ai-agent/config/agents.config.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 1,
+            "weakStateMentions": 5
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/core/fallback.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 13
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/core/memory.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/core/workflow-engine.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 14
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/services/web-search.service.spec.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 6,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.spec.ts",
+            "fieldMentions": 23,
+            "provenanceMentions": 27,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+            "fieldMentions": 9,
+            "provenanceMentions": 44,
+            "weakStateMentions": 19
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.spec.ts",
+            "fieldMentions": 19,
+            "provenanceMentions": 8,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+            "fieldMentions": 11,
+            "provenanceMentions": 9,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/agent-chat/agent-workspace.test.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/web/src/components/features/agent-chat/tool-call-card.test.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "deadlines has a code reference plus provenance or weak-state visibility signals in Agent chat context and school recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "essayPrompts",
+      "fieldPriority": "P0",
+      "surfaceId": "agent_chat_context",
+      "surfaceLabel": "Agent chat context and school recommendation cards",
+      "surfacePriority": "P1",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 204,
+        "fieldFiles": 4,
+        "fieldMentions": 36,
+        "provenanceFiles": 4,
+        "weakStateFiles": 4
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 5,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts",
+            "fieldMentions": 21,
+            "provenanceMentions": 15,
+            "weakStateMentions": 9
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.spec.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 27,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 44,
+            "weakStateMentions": 19
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "essayPrompts has a code reference plus provenance or weak-state visibility signals in Agent chat context and school recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "programRates",
+      "fieldPriority": "P1",
+      "surfaceId": "agent_chat_context",
+      "surfaceLabel": "Agent chat context and school recommendation cards",
+      "surfacePriority": "P1",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 204,
+        "fieldFiles": 2,
+        "fieldMentions": 17,
+        "provenanceFiles": 2,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.spec.ts",
+            "fieldMentions": 9,
+            "provenanceMentions": 27,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 44,
+            "weakStateMentions": 19
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "programRates has a code reference plus provenance or weak-state visibility signals in Agent chat context and school recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testingPolicy",
+      "fieldPriority": "P0",
+      "surfaceId": "agent_chat_context",
+      "surfaceLabel": "Agent chat context and school recommendation cards",
+      "surfacePriority": "P1",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 204,
+        "fieldFiles": 3,
+        "fieldMentions": 22,
+        "provenanceFiles": 3,
+        "weakStateFiles": 3
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/ai/ai.types.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.spec.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 27,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+            "fieldMentions": 12,
+            "provenanceMentions": 44,
+            "weakStateMentions": 19
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testingPolicy has a code reference plus provenance or weak-state visibility signals in Agent chat context and school recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "acceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 14,
+        "fieldMentions": 47,
+        "provenanceFiles": 14,
+        "weakStateFiles": 9
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/BRIEF.md",
+            "fieldMentions": 1,
+            "provenanceMentions": 6,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/college-catalog.seed.spec.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 23,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 4,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 5,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 27,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.spec.ts",
+            "fieldMentions": 11,
+            "provenanceMentions": 23,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 13,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "apps/api/src/modules/school/scrapers/appily.scraper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 11
+          },
+          {
+            "file": "apps/api/src/modules/school/scrapers/bigfuture.scraper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 7
+          },
+          {
+            "file": "apps/api/src/modules/school/urban-institute-data.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 8
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "acceptanceRate has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "act25",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 6,
+        "fieldMentions": 9,
+        "provenanceFiles": 6,
+        "weakStateFiles": 4
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 4,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 5,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/scrapers/bigfuture.scraper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 7
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "act25 has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "act75",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 6,
+        "fieldMentions": 9,
+        "provenanceFiles": 6,
+        "weakStateFiles": 4
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 4,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 5,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/scrapers/bigfuture.scraper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 7
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "act75 has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "campusCover",
+      "fieldPriority": "P1",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 3,
+        "fieldMentions": 59,
+        "provenanceFiles": 3,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/school-media.service.spec.ts",
+            "fieldMentions": 27,
+            "provenanceMentions": 12,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-media.service.ts",
+            "fieldMentions": 29,
+            "provenanceMentions": 6,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "campusCover has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "deadlines",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 9,
+        "fieldMentions": 187,
+        "provenanceFiles": 8,
+        "weakStateFiles": 4
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/BRIEF.md",
+            "fieldMentions": 3,
+            "provenanceMentions": 6,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/college-catalog.seed.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 23,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/deadline-refresh.scheduler.spec.ts",
+            "fieldMentions": 19,
+            "provenanceMentions": 17,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/deadline-refresh.scheduler.ts",
+            "fieldMentions": 12,
+            "provenanceMentions": 10,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/school/ipeds-data.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 3,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 54,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school-scraper.service.spec.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-scraper.service.ts",
+            "fieldMentions": 80,
+            "provenanceMentions": 5,
+            "weakStateMentions": 5
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "deadlines has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "essayPrompts",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 3,
+        "fieldMentions": 28,
+        "provenanceFiles": 3,
+        "weakStateFiles": 3
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 14,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school-scraper.service.ts",
+            "fieldMentions": 12,
+            "provenanceMentions": 5,
+            "weakStateMentions": 5
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "essayPrompts has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "gpaDistribution",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 1,
+        "fieldMentions": 2,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "gpaDistribution has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "intlAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 3,
+        "fieldMentions": 4,
+        "provenanceFiles": 3,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/college-catalog.seed.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 23,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "intlAcceptanceRate has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "programRates",
+      "fieldPriority": "P1",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "programRates has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat25",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 7,
+        "fieldMentions": 12,
+        "provenanceFiles": 7,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 4,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 5,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "apps/api/src/modules/school/scrapers/bigfuture.scraper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 7
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat25 has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat75",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 7,
+        "fieldMentions": 12,
+        "provenanceFiles": 7,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 4,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 5,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "apps/api/src/modules/school/scrapers/bigfuture.scraper.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 7
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat75 has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testingPolicy",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 8,
+        "fieldMentions": 38,
+        "provenanceFiles": 8,
+        "weakStateFiles": 6
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/dto/school-query.dto.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school-write.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 8,
+            "weakStateMentions": 7
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.spec.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 23,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 13,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testingPolicy has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testOptional",
+      "fieldPriority": "P0",
+      "surfaceId": "api_school_detail",
+      "surfaceLabel": "API school detail/search/admin data-health surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 54,
+        "fieldFiles": 8,
+        "fieldMentions": 28,
+        "provenanceFiles": 8,
+        "weakStateFiles": 6
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/school/dto/create-school.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/dto/school-query.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/school/school-data-merger.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 32,
+            "weakStateMentions": 8
+          },
+          {
+            "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 20
+          },
+          {
+            "file": "apps/api/src/modules/school/school-write.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 8,
+            "weakStateMentions": 7
+          },
+          {
+            "file": "apps/api/src/modules/school/school.controller.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 27,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.spec.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 23,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/school/school.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 37,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testOptional has a code reference plus provenance or weak-state visibility signals in API school detail/search/admin data-health surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "acceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "essay_ai_context",
+      "surfaceLabel": "Essay AI school-context surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 42,
+        "fieldFiles": 2,
+        "fieldMentions": 8,
+        "provenanceFiles": 1,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/essay/essay-ai.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-ai.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 6,
+            "weakStateMentions": 6
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "acceptanceRate has a code reference plus provenance or weak-state visibility signals in Essay AI school-context surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "essayPrompts",
+      "fieldPriority": "P0",
+      "surfaceId": "essay_ai_context",
+      "surfaceLabel": "Essay AI school-context surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 42,
+        "fieldFiles": 11,
+        "fieldMentions": 151,
+        "provenanceFiles": 7,
+        "weakStateFiles": 6
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/essay/BRIEF.md",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/essay/constants/essay-gallery.constants.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-gallery.service.spec.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-gallery.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-prompt.service.spec.ts",
+            "fieldMentions": 33,
+            "provenanceMentions": 12,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+            "fieldMentions": 37,
+            "provenanceMentions": 24,
+            "weakStateMentions": 13
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-scraper.controller.ts",
+            "fieldMentions": 10,
+            "provenanceMentions": 6,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-scraper.service.spec.ts",
+            "fieldMentions": 50,
+            "provenanceMentions": 17,
+            "weakStateMentions": 51
+          },
+          {
+            "file": "apps/api/src/modules/essay/essay-scraper.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 27,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "apps/api/src/modules/essay/strategies/collegevine.strategy.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/essay/strategies/llm.strategy.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 6
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "essayPrompts has a code reference plus provenance or weak-state visibility signals in Essay AI school-context surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testingPolicy",
+      "fieldPriority": "P0",
+      "surfaceId": "essay_ai_context",
+      "surfaceLabel": "Essay AI school-context surface",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 42,
+        "fieldFiles": 1,
+        "fieldMentions": 12,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/essay/essay-ai.service.ts",
+            "fieldMentions": 12,
+            "provenanceMentions": 6,
+            "weakStateMentions": 6
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testingPolicy has a code reference plus provenance or weak-state visibility signals in Essay AI school-context surface."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "acceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 36,
+        "fieldMentions": 252,
+        "provenanceFiles": 18,
+        "weakStateFiles": 31
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 7,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 36,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 14,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 15,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 12,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/cds-bands-ingestion.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 30,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/compliant-distillation.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/expanded-teachers.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/major-selectivity-teacher.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 11
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-ai-engine.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-explanation.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 3,
+            "weakStateMentions": 14
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.spec.ts",
+            "fieldMentions": 22,
+            "provenanceMentions": 13,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 8,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-policy.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "acceptanceRate has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "act25",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 11,
+        "fieldMentions": 35,
+        "provenanceFiles": 5,
+        "weakStateFiles": 10
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 11
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "act25 has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "act75",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 11,
+        "fieldMentions": 35,
+        "provenanceFiles": 5,
+        "weakStateFiles": 10
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 11
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "act75 has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "cdsAdmitBands",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 11,
+        "fieldMentions": 44,
+        "provenanceFiles": 8,
+        "weakStateFiles": 9
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/BRIEF.md",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 7,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 12,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/cds-bands-ingestion.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 30,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/prediction-distillation.controller.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 1,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/cds-bands-teacher.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/expanded-teachers.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 4,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "cdsAdmitBands has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "eaAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 6,
+        "fieldMentions": 11,
+        "provenanceFiles": 2,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "eaAcceptanceRate has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "edAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 8,
+        "fieldMentions": 21,
+        "provenanceFiles": 4,
+        "weakStateFiles": 7
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.spec.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 13,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 8,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "edAcceptanceRate has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "gpaDistribution",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 7,
+        "fieldMentions": 18,
+        "provenanceFiles": 3,
+        "weakStateFiles": 6
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "gpaDistribution has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "intlAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 22,
+        "fieldMentions": 73,
+        "provenanceFiles": 10,
+        "weakStateFiles": 20
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/expanded-teachers.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 4,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/intl-pool-teacher.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 13,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 8,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-policy.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-policy.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-statistical-engine.service.spec.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 9
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-statistical-engine.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.controller.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 6,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 11,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/contextual-baseline.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "intlAcceptanceRate has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "needBlindInternational",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 18,
+        "fieldMentions": 180,
+        "provenanceFiles": 9,
+        "weakStateFiles": 18
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 17,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 29,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 46,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/expanded-teachers.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/intl-pool-teacher.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.spec.ts",
+            "fieldMentions": 11,
+            "provenanceMentions": 13,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.ts",
+            "fieldMentions": 9,
+            "provenanceMentions": 8,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-statistical-engine.service.spec.ts",
+            "fieldMentions": 9,
+            "provenanceMentions": 0,
+            "weakStateMentions": 9
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-statistical-engine.service.ts",
+            "fieldMentions": 18,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.controller.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 6,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 9,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "needBlindInternational has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "oosAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 10,
+        "fieldMentions": 22,
+        "provenanceFiles": 5,
+        "weakStateFiles": 9
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-policy.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "oosAcceptanceRate has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "programRates",
+      "fieldPriority": "P1",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 14,
+        "fieldMentions": 42,
+        "provenanceFiles": 8,
+        "weakStateFiles": 12
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.module.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/expanded-teachers.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/major-selectivity-teacher.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-statistical-engine.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-workflow.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 3,
+            "weakStateMentions": 32
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-workflow.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 5,
+            "weakStateMentions": 23
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/major-lookup.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "programRates has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat25",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 19,
+        "fieldMentions": 102,
+        "provenanceFiles": 9,
+        "weakStateFiles": 17
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 7,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 23,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 24,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 11
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 13,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 14,
+            "weakStateMentions": 5
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/features.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat25 has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat75",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 19,
+        "fieldMentions": 98,
+        "provenanceFiles": 9,
+        "weakStateFiles": 17
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.spec.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/anchor-resolver.service.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 7,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-backfill.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.spec.ts",
+            "fieldMentions": 28,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-engine.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 9,
+            "weakStateMentions": 24
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 6,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 19,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.spec.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/distillation/teachers/scorecard-teacher.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 11
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-hook-modifiers.service.spec.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 13,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 14,
+            "weakStateMentions": 5
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 7,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.spec.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/features.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat75 has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testingPolicy",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 10,
+        "fieldMentions": 28,
+        "provenanceFiles": 5,
+        "weakStateFiles": 9
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.spec.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/api/src/modules/prediction/counselor/counselor-modifiers.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 2,
+            "weakStateMentions": 26
+          },
+          {
+            "file": "apps/api/src/modules/prediction/dto/prediction-response.dto.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 8,
+            "weakStateMentions": 16
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-statistical-engine.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 8,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.service.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 16,
+            "weakStateMentions": 53
+          },
+          {
+            "file": "packages/shared/src/scoring/features.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "packages/shared/src/scoring/score.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 18
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testingPolicy has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "transferAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "prediction_engine",
+      "surfaceLabel": "Prediction engine and statistical/counselor surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 127,
+        "fieldFiles": 3,
+        "fieldMentions": 7,
+        "provenanceFiles": 1,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 10
+          },
+          {
+            "file": "apps/api/src/modules/prediction/prediction.prompts.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 38
+          },
+          {
+            "file": "packages/shared/src/scoring/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "transferAcceptanceRate has a code reference plus provenance or weak-state visibility signals in Prediction engine and statistical/counselor surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "acceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 7,
+        "fieldMentions": 17,
+        "provenanceFiles": 6,
+        "weakStateFiles": 6
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/AiContextActions.test.tsx",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/web/src/components/features/prediction/AiContextActions.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 6,
+            "weakStateMentions": 6
+          },
+          {
+            "file": "apps/web/src/components/features/prediction/PredictionResultCard.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 3,
+            "weakStateMentions": 14
+          },
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          },
+          {
+            "file": "apps/web/src/components/features/prediction/SchoolSelectorCard.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/components/features/prediction/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/hooks/use-prediction.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 5,
+            "weakStateMentions": 9
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "acceptanceRate has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "act25",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "act25 has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "act75",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "act75 has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "intlAcceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "intlAcceptanceRate has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "needBlindInternational",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "needBlindInternational has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat25",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat25 has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat75",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 4,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat75 has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testingPolicy",
+      "fieldPriority": "P0",
+      "surfaceId": "web_prediction_results",
+      "surfaceLabel": "Web prediction result and AI context surfaces",
+      "surfacePriority": "P0",
+      "highRiskConsumer": true,
+      "counts": {
+        "scannedFiles": 31,
+        "fieldFiles": 1,
+        "fieldMentions": 5,
+        "provenanceFiles": 1,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/components/features/prediction/RateBreakdownPanel.tsx",
+            "fieldMentions": 5,
+            "provenanceMentions": 11,
+            "weakStateMentions": 3
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testingPolicy has a code reference plus provenance or weak-state visibility signals in Web prediction result and AI context surfaces."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "acceptanceRate",
+      "fieldPriority": "P0",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 18,
+        "fieldMentions": 57,
+        "provenanceFiles": 10,
+        "weakStateFiles": 8
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-academics-tab.tsx",
+            "fieldMentions": 6,
+            "provenanceMentions": 13,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.test.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 2,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 4,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 6,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/page.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 21,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/BrowseTab.tsx",
+            "fieldMentions": 6,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/ResultsView.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolCard.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 20,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolFilterBar.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/schools-types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/page.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/school-display-utils.test.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 8,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/components/features/schools/school-filters.test.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/school-filters.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/school-recommendation.types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/school-selector.tsx",
+            "fieldMentions": 5,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "acceptanceRate has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "averageNetPrice",
+      "fieldPriority": "P1",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 4,
+        "fieldMentions": 10,
+        "provenanceFiles": 2,
+        "weakStateFiles": 4
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/schools-types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "averageNetPrice has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "campusCover",
+      "fieldPriority": "P1",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 2,
+        "fieldMentions": 30,
+        "provenanceFiles": 2,
+        "weakStateFiles": 1
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-hero-header.tsx",
+            "fieldMentions": 16,
+            "provenanceMentions": 3,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolCard.tsx",
+            "fieldMentions": 14,
+            "provenanceMentions": 20,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "campusCover has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "deadlines",
+      "fieldPriority": "P0",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 3,
+        "fieldMentions": 38,
+        "provenanceFiles": 3,
+        "weakStateFiles": 3
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-academics-tab.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 13,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 32,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "deadlines has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "description",
+      "fieldPriority": "P1",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 13,
+        "fieldMentions": 42,
+        "provenanceFiles": 4,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-cases-tab.tsx",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-community-rating-card.tsx",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 7,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/page.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 21,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/BrowseTab.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/ResultsView.tsx",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolFilterBar.tsx",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolGrid.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/page.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/page.tsx",
+            "fieldMentions": 8,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/AdvancedSchoolFilter.tsx",
+            "fieldMentions": 7,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/SchoolRecommendation.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "description has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "essayPrompts",
+      "fieldPriority": "P0",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 3,
+        "fieldMentions": 40,
+        "provenanceFiles": 3,
+        "weakStateFiles": 2
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-academics-tab.tsx",
+            "fieldMentions": 23,
+            "provenanceMentions": 13,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/page.tsx",
+            "fieldMentions": 14,
+            "provenanceMentions": 21,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "essayPrompts has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "graduationRate",
+      "fieldPriority": "P1",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 5,
+        "fieldMentions": 21,
+        "provenanceFiles": 4,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.test.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 13,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "graduationRate has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat25",
+      "fieldPriority": "P0",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 5,
+        "fieldMentions": 10,
+        "provenanceFiles": 4,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.test.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat25 has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "sat75",
+      "fieldPriority": "P0",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 5,
+        "fieldMentions": 10,
+        "provenanceFiles": 4,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.test.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 2,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-ai-context.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 4,
+            "weakStateMentions": 4
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "sat75 has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "studentFacultyRatio",
+      "fieldPriority": "P1",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 3,
+        "fieldMentions": 10,
+        "provenanceFiles": 2,
+        "weakStateFiles": 3
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 5,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "studentFacultyRatio has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "testingPolicy",
+      "fieldPriority": "P0",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 6,
+        "fieldMentions": 15,
+        "provenanceFiles": 4,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-hero-header.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 3,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 5,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolCard.tsx",
+            "fieldMentions": 1,
+            "provenanceMentions": 20,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/schools-types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "testingPolicy has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    },
+    {
+      "domain": "school_data_consumer_visibility",
+      "severity": "info",
+      "status": "ACCEPTED",
+      "action": "accept",
+      "blocker": "none",
+      "field": "tuition",
+      "fieldPriority": "P1",
+      "surfaceId": "web_school_pages",
+      "surfaceLabel": "Web school search/detail/recommendation cards",
+      "surfacePriority": "P0",
+      "highRiskConsumer": false,
+      "counts": {
+        "scannedFiles": 49,
+        "fieldFiles": 11,
+        "fieldMentions": 33,
+        "provenanceFiles": 6,
+        "weakStateFiles": 5
+      },
+      "evidence": {
+        "files": [
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/school-overview-tab.tsx",
+            "fieldMentions": 5,
+            "provenanceMentions": 111,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/_components/types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 1,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/[id]/page.tsx",
+            "fieldMentions": 4,
+            "provenanceMentions": 21,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/BrowseTab.tsx",
+            "fieldMentions": 6,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolFilterBar.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/SchoolToolbar.tsx",
+            "fieldMentions": 2,
+            "provenanceMentions": 8,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/_components/schools-types.ts",
+            "fieldMentions": 1,
+            "provenanceMentions": 0,
+            "weakStateMentions": 1
+          },
+          {
+            "file": "apps/web/src/app/[locale]/(main)/schools/compare/_components/compare-fields.ts",
+            "fieldMentions": 4,
+            "provenanceMentions": 0,
+            "weakStateMentions": 2
+          },
+          {
+            "file": "apps/web/src/components/features/schools/AdvancedSchoolFilter.tsx",
+            "fieldMentions": 3,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/school-filters.test.ts",
+            "fieldMentions": 3,
+            "provenanceMentions": 1,
+            "weakStateMentions": 0
+          },
+          {
+            "file": "apps/web/src/components/features/schools/school-filters.ts",
+            "fieldMentions": 2,
+            "provenanceMentions": 0,
+            "weakStateMentions": 0
+          }
+        ],
+        "provenanceSignals": [
+          "provenance",
+          "sourceUrl",
+          "sourceQuality",
+          "trustTier",
+          "verifiedAt",
+          "verifiedBy",
+          "dataSupport",
+          "sourceLabel",
+          "source"
+        ],
+        "weakStateSignals": [
+          "unknown",
+          "fallback",
+          "missing",
+          "unavailable",
+          "confidence",
+          "confidenceReason",
+          "dataSupport",
+          "N/A",
+          "not available",
+          "weak"
+        ]
+      },
+      "rationale": "tuition has a code reference plus provenance or weak-state visibility signals in Web school search/detail/recommendation cards."
+    }
+  ],
+  "recommendedSequence": [
+    "Keep this report attached to the platform closure audit as consumer evidence.",
+    "Continue with DB-backed school data coverage once schema compatibility clears."
+  ],
+  "nextCampaign": {
+    "id": "school_data_coverage_backfill",
+    "reason": "Consumer visibility has static evidence; continue field coverage and provenance closure."
+  }
+}

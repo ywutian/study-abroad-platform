@@ -1,0 +1,723 @@
+{
+  "generatedAt": "2026-05-22T11:18:05.278Z",
+  "mode": "read-only-profile-readiness-campaign-stack-monitor",
+  "status": "READINESS_CAMPAIGN_STACK_MONITOR_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "disposition": {
+      "path": "scripts/closure-reports/profile-readiness-disposition-2026-05-22T11-17-32-982Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:17:32.996Z",
+      "status": "READINESS_DISPOSITION_PACKET_READY",
+      "summary": {
+        "openRows": 500,
+        "dispositionRows": 500,
+        "unmappedRows": 0,
+        "blockedRows": 0,
+        "allOpenRowsHaveDisposition": true,
+        "adminDeliveryBlockedRows": 0,
+        "adminDeliveryIncludesUserIds": false,
+        "dispatchBatches": null,
+        "dispatchBlockedBatches": null,
+        "inAppSurfaceReadyBatches": null,
+        "liveGateStatus": "BLOCKED_FOR_LIVE_DELIVERY",
+        "liveGateBlockedChannels": [
+          "redis_notification_feed",
+          "remote_push",
+          "email"
+        ],
+        "liveGateBlockers": [
+          "channel_disabled_by_policy",
+          "recipient_user_ids_redacted"
+        ],
+        "byDisposition": {
+          "user_prompt": 492,
+          "system_generation": 6,
+          "operator_review": 2
+        },
+        "byRequiredActor": {
+          "user": 492,
+          "system": 6,
+          "operator": 2
+        },
+        "byDomain": {
+          "profile": 325,
+          "school_list": 167,
+          "application_analysis": 1,
+          "deadline": 2,
+          "prediction": 5
+        },
+        "byGap": {
+          "profile.gpa_anchor": 128,
+          "profile.major": 99,
+          "profile.missing": 4,
+          "profile.test_strategy": 94,
+          "school_list.add_first": 167,
+          "application_analysis.predictions_required": 1,
+          "deadline.round_missing": 2,
+          "prediction.missing": 5
+        },
+        "bySeverity": {
+          "critical": 492,
+          "warning": 8
+        },
+        "topDispositionGroups": [
+          {
+            "key": "school_list:prompt-user:school_list.add_first",
+            "count": 167,
+            "score": 835,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 167,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.gpa_anchor",
+            "count": 128,
+            "score": 640,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 128,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.major",
+            "count": 99,
+            "score": 495,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 99,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.test_strategy",
+            "count": 94,
+            "score": 470,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 94,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "profile:prompt-user:profile.missing",
+            "count": 4,
+            "score": 20,
+            "disposition": "user_prompt",
+            "requiredActor": "user",
+            "highestSeverity": "critical",
+            "bySeverity": {
+              "critical": 4,
+              "warning": 0,
+              "info": 0
+            }
+          },
+          {
+            "key": "prediction:run-prediction:prediction.missing",
+            "count": 5,
+            "score": 15,
+            "disposition": "system_generation",
+            "requiredActor": "system",
+            "highestSeverity": "warning",
+            "bySeverity": {
+              "critical": 0,
+              "warning": 5,
+              "info": 0
+            }
+          },
+          {
+            "key": "deadline:review-deadline-source:deadline.round_missing",
+            "count": 2,
+            "score": 6,
+            "disposition": "operator_review",
+            "requiredActor": "operator",
+            "highestSeverity": "warning",
+            "bySeverity": {
+              "critical": 0,
+              "warning": 2,
+              "info": 0
+            }
+          },
+          {
+            "key": "application_analysis:run-prediction:application_analysis.predictions_required",
+            "count": 1,
+            "score": 3,
+            "disposition": "system_generation",
+            "requiredActor": "system",
+            "highestSeverity": "warning",
+            "bySeverity": {
+              "critical": 0,
+              "warning": 1,
+              "info": 0
+            }
+          }
+        ]
+      }
+    },
+    "adminDelivery": {
+      "path": "scripts/closure-reports/profile-readiness-admin-delivery-2026-05-22T11-17-43-541Z.json",
+      "found": true,
+      "generatedAt": "2026-05-22T11:17:43.545Z",
+      "status": null,
+      "summary": {
+        "openRows": 500,
+        "uniqueRecipients": 171,
+        "byQueue": {
+          "user_prompt": 492,
+          "system_generation": 6,
+          "operator_review": 2
+        },
+        "byStatus": {
+          "ready_for_in_app_admin_delivery": 492,
+          "ready_for_system_generation": 6,
+          "ready_for_operator_review": 2
+        },
+        "bySeverity": {
+          "critical": 492,
+          "warning": 8
+        },
+        "campaignGroups": 8
+      }
+    },
+    "consumerClosure": {
+      "path": "../../../../../../tmp/profile-readiness-consumer-closure-latest.json",
+      "found": true,
+      "generatedAt": "2026-05-22T10:47:31.926Z",
+      "status": "READINESS_CONSUMER_CLOSURE_REVIEW",
+      "summary": {
+        "totalChecks": 13,
+        "passedChecks": 12,
+        "warningChecks": 1,
+        "failedChecks": 0,
+        "userPromptGaps": 5,
+        "missingCopyGaps": [],
+        "schoolListAddFirstRows": 167,
+        "schoolListAddFirstReadyRows": 167,
+        "schoolListAddFirstRouteRows": 167,
+        "topCampaignGroup": "school_list:prompt-user:school_list.add_first",
+        "topCampaignDeliveryRows": 167,
+        "topCampaignReadyRows": 167,
+        "topCampaignAnonymized": true,
+        "topCampaignAllowedChannels": [
+          "dashboard",
+          "in_app_readiness_surface"
+        ],
+        "topCampaignLiveChannelsDisabled": [
+          "email",
+          "redis_notification_feed",
+          "remote_push"
+        ],
+        "topCampaignStatusCounts": {
+          "ready_for_in_app_admin_delivery": 167
+        },
+        "topDispositionCampaign": {
+          "id": "profile_readiness_user_prompt_delivery",
+          "reason": "167 rows are ready for user-prompt disposition in school_list:prompt-user:school_list.add_first; weighted readiness score 835 with highest severity critical.",
+          "group": "school_list:prompt-user:school_list.add_first",
+          "score": 835,
+          "highestSeverity": "critical"
+        },
+        "liveGateStatus": "BLOCKED_FOR_LIVE_DELIVERY",
+        "liveGateBlockers": [
+          "channel_disabled_by_policy",
+          "recipient_user_ids_redacted"
+        ]
+      }
+    },
+    "deliveryMonitor": {
+      "path": "../../../../../../tmp/profile-readiness-delivery-monitor-latest.json",
+      "found": true,
+      "generatedAt": "2026-05-22T10:47:41.082Z",
+      "status": "READINESS_DELIVERY_MONITOR_ACTIVE",
+      "summary": {
+        "topCampaignGroup": "school_list:prompt-user:school_list.add_first",
+        "targetCampaignGroups": [
+          "school_list:prompt-user:school_list.add_first"
+        ],
+        "targetMonitorCount": 1,
+        "activeTopCampaignGroup": "school_list:prompt-user:school_list.add_first",
+        "campaignSelectionSource": "consumer-closure-top-campaign",
+        "targetMonitorSelectionSources": [
+          "consumer-closure-top-campaign"
+        ],
+        "monitorsActiveTopCampaign": true,
+        "topCampaignDomain": "school_list",
+        "topCampaignAction": "prompt-user",
+        "topCampaignGap": "school_list.add_first",
+        "currentWorklistRows": 167,
+        "deliveryPreviewRows": 167,
+        "readyPreviewRows": 167,
+        "uniquePreviewRecipients": 167,
+        "pendingRows": 167,
+        "targetMonitorPendingRows": 167,
+        "completedRows": 0,
+        "topCampaignAnonymized": true,
+        "targetMonitorAnonymizedFailures": 0,
+        "allowedChannels": [
+          "dashboard",
+          "in_app_readiness_surface"
+        ],
+        "liveChannelsDisabled": [
+          "email",
+          "redis_notification_feed",
+          "remote_push"
+        ],
+        "rowsWithSuppression": 167,
+        "failedChecks": 0,
+        "warningChecks": 0,
+        "passedChecks": 8
+      }
+    },
+    "targetDeliveryMonitors": []
+  },
+  "summary": {
+    "dispositionOpenRows": 500,
+    "dispositionRows": 500,
+    "adminDeliveryRows": 500,
+    "trackedGroups": 8,
+    "trackedDispositionRows": 500,
+    "trackedDeliveryRows": 500,
+    "trackedReadyRows": 500,
+    "trackedRecipientSlots": 496,
+    "userPromptGroups": 5,
+    "criticalGroups": 5,
+    "activeTopCampaignGroup": "school_list:prompt-user:school_list.add_first",
+    "activeTopCampaignTracked": true,
+    "activeTopCampaignDeliveryRows": 167,
+    "activeTopCampaignReadyRows": 167,
+    "activeMonitorPendingRows": 167,
+    "targetDeliveryMonitorCount": 0,
+    "targetDeliveryMonitorGroups": [],
+    "targetMonitoredGroups": 0,
+    "monitoredCampaignGroups": 1,
+    "unmonitoredCampaignGroups": 7,
+    "targetMonitoredRows": 0,
+    "activeAndTargetMonitoredRows": 167,
+    "readyParallelUserPromptGroups": 4,
+    "readyUnmonitoredParallelUserPromptGroups": 4,
+    "readyUnmonitoredParallelUserPromptRows": 325,
+    "nextParallelReadyGroup": "profile:prompt-user:profile.gpa_anchor",
+    "nextParallelReadyRows": 128,
+    "groupsMissingDeliveryRows": 0,
+    "groupsWithMismatchedDeliveryRows": 0,
+    "groupsWithAllRowsReady": 8,
+    "failedChecks": 0,
+    "warningChecks": 0,
+    "passedChecks": 8
+  },
+  "monitorContract": {
+    "firstPartyFactsAreUserProvided": true,
+    "writesFirstPartyFacts": false,
+    "sendsNotifications": false,
+    "exposesRawUserIds": false,
+    "approvedUserPromptSurfaces": [
+      "in_app_readiness_surface",
+      "dashboard"
+    ],
+    "liveChannelsRemainDisabled": [
+      "redis_notification_feed",
+      "remote_push",
+      "email"
+    ],
+    "purpose": "Track the readiness campaign stack so active delivery and next prompt groups stay visible without inferring user facts or sending live notifications."
+  },
+  "nextCampaign": {
+    "id": "profile_readiness_parallel_user_prompt_preflight",
+    "reason": "128 anonymized in-app/dashboard rows are ready for profile:prompt-user:profile.gpa_anchor while school_list:prompt-user:school_list.add_first remains monitored.",
+    "group": "profile:prompt-user:profile.gpa_anchor",
+    "activeGroup": "school_list:prompt-user:school_list.add_first",
+    "recommendedAction": "keep active monitor running and preflight the next critical user-prompt campaign in-app/dashboard only"
+  },
+  "checks": [
+    {
+      "id": "disposition_stack_ready",
+      "status": "pass",
+      "summary": "Campaign stack requires a ready disposition packet with every open row mapped.",
+      "evidence": [
+        "status=READINESS_DISPOSITION_PACKET_READY",
+        "blockedRows=0",
+        "allOpenRowsHaveDisposition=true"
+      ],
+      "missing": []
+    },
+    {
+      "id": "top_groups_present",
+      "status": "pass",
+      "summary": "Disposition packet should expose ranked campaign groups to monitor.",
+      "evidence": [
+        "trackedGroups=8"
+      ],
+      "missing": []
+    },
+    {
+      "id": "admin_delivery_anonymized",
+      "status": "pass",
+      "summary": "Campaign stack monitor must use anonymized delivery rows by default.",
+      "evidence": [
+        "statusRows=500",
+        "includesUserIds=false"
+      ],
+      "missing": []
+    },
+    {
+      "id": "stack_group_delivery_alignment",
+      "status": "pass",
+      "summary": "Every tracked campaign group should align one-for-one with admin delivery rows.",
+      "evidence": [
+        "mismatchedGroups=0"
+      ],
+      "missing": []
+    },
+    {
+      "id": "stack_rows_ready",
+      "status": "pass",
+      "summary": "Every tracked campaign group should have rows ready for its actor-specific queue.",
+      "evidence": [
+        "readyGroups=8",
+        "trackedGroups=8"
+      ],
+      "missing": []
+    },
+    {
+      "id": "user_prompt_live_channels_disabled",
+      "status": "pass",
+      "summary": "User-prompt campaign groups must keep Redis, push, and email disabled.",
+      "evidence": [
+        "disabledChannels=redis_notification_feed,remote_push,email"
+      ],
+      "missing": []
+    },
+    {
+      "id": "user_prompt_suppression_rules_present",
+      "status": "pass",
+      "summary": "User-prompt campaign groups need suppression rules before display.",
+      "evidence": [
+        "groupsWithoutFullSuppression=0"
+      ],
+      "missing": []
+    },
+    {
+      "id": "active_top_campaign_monitor_aligned",
+      "status": "pass",
+      "summary": "The active top campaign should be covered by the delivery monitor before parallel groups are considered.",
+      "evidence": [
+        "consumerTopCampaign=school_list:prompt-user:school_list.add_first",
+        "deliveryMonitorTopCampaign=school_list:prompt-user:school_list.add_first",
+        "pendingRows=167",
+        "activeDeliveryRows=167"
+      ],
+      "missing": []
+    }
+  ],
+  "rows": [
+    {
+      "rank": 1,
+      "group": "school_list:prompt-user:school_list.add_first",
+      "domain": "school_list",
+      "action": "prompt-user",
+      "gap": "school_list.add_first",
+      "disposition": "user_prompt",
+      "requiredActor": "user",
+      "highestSeverity": "critical",
+      "score": 835,
+      "dispositionRows": 167,
+      "deliveryRows": 167,
+      "readyRows": 167,
+      "uniqueRecipients": 167,
+      "expectedDeliveryStatus": "ready_for_in_app_admin_delivery",
+      "campaignIds": [
+        "school-list-prompt-user-school-list-add-first"
+      ],
+      "routes": [
+        "/schools"
+      ],
+      "allowedChannels": [
+        "dashboard",
+        "in_app_readiness_surface"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 167,
+      "activeTopCampaign": true,
+      "monitoredTargetCampaign": false,
+      "monitorKind": "active_delivery_monitor",
+      "monitoredPendingRows": 167,
+      "stackState": "active_campaign_monitored"
+    },
+    {
+      "rank": 2,
+      "group": "profile:prompt-user:profile.gpa_anchor",
+      "domain": "profile",
+      "action": "prompt-user",
+      "gap": "profile.gpa_anchor",
+      "disposition": "user_prompt",
+      "requiredActor": "user",
+      "highestSeverity": "critical",
+      "score": 640,
+      "dispositionRows": 128,
+      "deliveryRows": 128,
+      "readyRows": 128,
+      "uniqueRecipients": 128,
+      "expectedDeliveryStatus": "ready_for_in_app_admin_delivery",
+      "campaignIds": [
+        "profile-prompt-user-profile-gpa-anchor"
+      ],
+      "routes": [
+        "/profile?tab=gpa"
+      ],
+      "allowedChannels": [
+        "dashboard",
+        "in_app_readiness_surface"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 128,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_parallel_in_app_dashboard_preflight"
+    },
+    {
+      "rank": 3,
+      "group": "profile:prompt-user:profile.major",
+      "domain": "profile",
+      "action": "prompt-user",
+      "gap": "profile.major",
+      "disposition": "user_prompt",
+      "requiredActor": "user",
+      "highestSeverity": "critical",
+      "score": 495,
+      "dispositionRows": 99,
+      "deliveryRows": 99,
+      "readyRows": 99,
+      "uniqueRecipients": 99,
+      "expectedDeliveryStatus": "ready_for_in_app_admin_delivery",
+      "campaignIds": [
+        "profile-prompt-user-profile-major"
+      ],
+      "routes": [
+        "/profile?tab=basic"
+      ],
+      "allowedChannels": [
+        "dashboard",
+        "in_app_readiness_surface"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 99,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_parallel_in_app_dashboard_preflight"
+    },
+    {
+      "rank": 4,
+      "group": "profile:prompt-user:profile.test_strategy",
+      "domain": "profile",
+      "action": "prompt-user",
+      "gap": "profile.test_strategy",
+      "disposition": "user_prompt",
+      "requiredActor": "user",
+      "highestSeverity": "critical",
+      "score": 470,
+      "dispositionRows": 94,
+      "deliveryRows": 94,
+      "readyRows": 94,
+      "uniqueRecipients": 94,
+      "expectedDeliveryStatus": "ready_for_in_app_admin_delivery",
+      "campaignIds": [
+        "profile-prompt-user-profile-test-strategy"
+      ],
+      "routes": [
+        "/profile?tab=scores"
+      ],
+      "allowedChannels": [
+        "dashboard",
+        "in_app_readiness_surface"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 94,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_parallel_in_app_dashboard_preflight"
+    },
+    {
+      "rank": 5,
+      "group": "profile:prompt-user:profile.missing",
+      "domain": "profile",
+      "action": "prompt-user",
+      "gap": "profile.missing",
+      "disposition": "user_prompt",
+      "requiredActor": "user",
+      "highestSeverity": "critical",
+      "score": 20,
+      "dispositionRows": 4,
+      "deliveryRows": 4,
+      "readyRows": 4,
+      "uniqueRecipients": 4,
+      "expectedDeliveryStatus": "ready_for_in_app_admin_delivery",
+      "campaignIds": [
+        "profile-prompt-user-profile-missing"
+      ],
+      "routes": [
+        "/profile"
+      ],
+      "allowedChannels": [
+        "dashboard",
+        "in_app_readiness_surface"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 4,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_parallel_in_app_dashboard_preflight"
+    },
+    {
+      "rank": 6,
+      "group": "prediction:run-prediction:prediction.missing",
+      "domain": "prediction",
+      "action": "run-prediction",
+      "gap": "prediction.missing",
+      "disposition": "system_generation",
+      "requiredActor": "system",
+      "highestSeverity": "warning",
+      "score": 15,
+      "dispositionRows": 5,
+      "deliveryRows": 5,
+      "readyRows": 5,
+      "uniqueRecipients": 1,
+      "expectedDeliveryStatus": "ready_for_system_generation",
+      "campaignIds": [
+        "prediction-run-prediction-prediction-missing"
+      ],
+      "routes": [
+        "/prediction"
+      ],
+      "allowedChannels": [
+        "admin_queue"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 5,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_system_generation_queue"
+    },
+    {
+      "rank": 7,
+      "group": "deadline:review-deadline-source:deadline.round_missing",
+      "domain": "deadline",
+      "action": "review-deadline-source",
+      "gap": "deadline.round_missing",
+      "disposition": "operator_review",
+      "requiredActor": "operator",
+      "highestSeverity": "warning",
+      "score": 6,
+      "dispositionRows": 2,
+      "deliveryRows": 2,
+      "readyRows": 2,
+      "uniqueRecipients": 2,
+      "expectedDeliveryStatus": "ready_for_operator_review",
+      "campaignIds": [
+        "deadline-review-deadline-source-deadline-round-missing"
+      ],
+      "routes": [
+        "/timeline"
+      ],
+      "allowedChannels": [
+        "admin_queue"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 2,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_operator_review_queue"
+    },
+    {
+      "rank": 8,
+      "group": "application_analysis:run-prediction:application_analysis.predictions_required",
+      "domain": "application_analysis",
+      "action": "run-prediction",
+      "gap": "application_analysis.predictions_required",
+      "disposition": "system_generation",
+      "requiredActor": "system",
+      "highestSeverity": "warning",
+      "score": 3,
+      "dispositionRows": 1,
+      "deliveryRows": 1,
+      "readyRows": 1,
+      "uniqueRecipients": 1,
+      "expectedDeliveryStatus": "ready_for_system_generation",
+      "campaignIds": [
+        "application-analysis-run-prediction-application-analysis-predictions-required"
+      ],
+      "routes": [
+        "/prediction"
+      ],
+      "allowedChannels": [
+        "admin_queue"
+      ],
+      "liveChannelsDisabled": [
+        "email",
+        "redis_notification_feed",
+        "remote_push"
+      ],
+      "rowsWithSuppression": 1,
+      "activeTopCampaign": false,
+      "monitoredTargetCampaign": false,
+      "monitorKind": null,
+      "monitoredPendingRows": null,
+      "stackState": "ready_system_generation_queue"
+    }
+  ]
+}
