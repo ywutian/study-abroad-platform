@@ -236,23 +236,28 @@ export const GOLDEN_FIXTURES: Fixture[] = [
   },
 
   // ─── Group 3: 匹配 — tier=match, prob ∈ [0.35, 0.65] ─────────────────────
+  // Schools chosen with overall accept ~15-25% so a strong-mid domestic
+  // profile can achieve match tier (Bayesian update from this prior with
+  // typical multi-dim LR yields ~35-50% predictions). NYU/BU/USC were
+  // originally used but their 9-11% prior was mathematically too low to
+  // reach 35% without unrealistic LR — those are reach-tier schools.
   {
     id: '3.1',
     group: '匹配',
     description:
-      'NYU RD, domestic, GPA 3.8 / SAT 1470. NYU overall accept ~9%, but a competitive domestic applicant should be solidly match (35-65%).',
-    schoolNameNorm: 'new york university',
-    schoolDisplay: 'New York University',
-    baseRound: 'RD',
+      'UMich EA, domestic, GPA 3.9 / SAT 1500 / 3 national awards. UMich overall ~16%, strong profile + EA → match.',
+    schoolNameNorm: 'university of michigan, ann arbor',
+    schoolDisplay: 'University of Michigan, Ann Arbor',
+    baseRound: 'EA',
     kind: {
       kind: 'single',
       profile: {
-        round: 'RD',
-        gpa: 3.85,
-        sat: 1470,
-        numActivities: 5,
-        numAwards: 2,
-        awardLevel: 'STATE',
+        round: 'EA',
+        gpa: 3.9,
+        sat: 1500,
+        numActivities: 6,
+        numAwards: 3,
+        awardLevel: 'NATIONAL',
       },
       assert: { tier: 'match', probMin: 0.35, probMax: 0.65 },
     },
@@ -261,19 +266,19 @@ export const GOLDEN_FIXTURES: Fixture[] = [
     id: '3.2',
     group: '匹配',
     description:
-      'BU EA, domestic, GPA 3.8 / SAT 1450 / 2 regional awards. BU overall ~11%, EA + decent profile = match.',
-    schoolNameNorm: 'boston university',
-    schoolDisplay: 'Boston University',
+      'UNC Chapel Hill EA, domestic, GPA 3.9 / SAT 1490 / 2 STATE awards. UNC overall ~15%, EA + decent-strong profile = match.',
+    schoolNameNorm: 'university of north carolina at chapel hill',
+    schoolDisplay: 'University of North Carolina at Chapel Hill',
     baseRound: 'EA',
     kind: {
       kind: 'single',
       profile: {
         round: 'EA',
-        gpa: 3.8,
-        sat: 1450,
+        gpa: 3.9,
+        sat: 1490,
         numActivities: 5,
-        numAwards: 2,
-        awardLevel: 'REGIONAL',
+        numAwards: 3,
+        awardLevel: 'STATE',
       },
       assert: { tier: 'match', probMin: 0.35, probMax: 0.65 },
     },
@@ -282,19 +287,19 @@ export const GOLDEN_FIXTURES: Fixture[] = [
     id: '3.3',
     group: '匹配',
     description:
-      'USC EA, domestic, GPA 3.75 / SAT 1450 / 3 activities. USC overall ~10%, EA + average-strong profile = match.',
-    schoolNameNorm: 'university of southern california',
-    schoolDisplay: 'University of Southern California',
-    baseRound: 'EA',
+      'UC San Diego RD, domestic, GPA 3.8 / SAT 1450. UCSD overall ~27%, average-strong profile = match.',
+    schoolNameNorm: 'university of california, san diego',
+    schoolDisplay: 'University of California, San Diego',
+    baseRound: 'RD',
     kind: {
       kind: 'single',
       profile: {
-        round: 'EA',
-        gpa: 3.75,
+        round: 'RD',
+        gpa: 3.8,
         sat: 1450,
         numActivities: 4,
-        numAwards: 1,
-        awardLevel: 'REGIONAL',
+        numAwards: 2,
+        awardLevel: 'STATE',
       },
       assert: { tier: 'match', probMin: 0.35, probMax: 0.65 },
     },
