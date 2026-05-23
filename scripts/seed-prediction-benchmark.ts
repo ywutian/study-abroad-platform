@@ -17,6 +17,7 @@ import { PrismaClient } from '@prisma/client';
 import { execSync } from 'node:child_process';
 
 import { predict, type PredictionOutput } from './m3-bayesian-engine';
+import { runGoldenFixtures, type FixtureResult } from './m3-golden-fixtures';
 import { runStructuralBenchmarkProgrammatic } from './m3-structural-benchmark';
 
 const prisma = new PrismaClient();
@@ -362,6 +363,10 @@ async function main() {
   const structural = await runStructuralBenchmarkProgrammatic();
   console.log(`  ${structural.passed}/${structural.total} tests passed`);
 
+  console.log('Running M3 golden fixtures (20 cases)...');
+  const fixtures = await runGoldenFixtures();
+  console.log(`  ${fixtures.passed}/${fixtures.total} fixtures passed`);
+
   console.log('Running 4 v3 ADMITTED case replays...');
   const { cases, profileSource } = await runV3Cases();
   console.log(`  ${cases.length} cases replayed (profile source: ${profileSource})`);
@@ -374,9 +379,46 @@ async function main() {
     `  Data tier breakdown: HIGH=${dataSources.byTier.HIGH}, MEDIUM=${dataSources.byTier.MEDIUM}, LOW=${dataSources.byTier.LOW}, UNFLAGGED=${dataSources.byTier.UNFLAGGED}`
   );
 
+  // Convert FixtureResult → same shape as structural TestResult so the admin
+  // UI renders them in the same `tests` list. The fixture id + group prefix
+  // makes the source identifiable when scanning the UI.
+  const fixtureTestEntries = fixtures.results.map((fx: FixtureResult) => ({
+    name: `Fixture ${fx.id} (${fx.group}) — ${fx.schoolDisplay} (${fx.baseRound})`,
+    passed: fx.passed,
+    details: fx.details,
+    metrics: {
+      group: fx.group,
+      school: fx.schoolDisplay,
+      round: fx.baseRound,
+      primaryProb: `${(fx.outputs.primary.probability * 100).toFixed(1)}%`,
+      primaryTier: fx.outputs.primary.tier,
+      primaryConfidence: fx.outputs.primary.confidence,
+      ...(fx.outputs.secondary
+        ? {
+            secondaryLabel: fx.outputs.secondary.label,
+            secondaryProb: `${(fx.outputs.secondary.probability * 100).toFixed(1)}%`,
+            secondaryTier: fx.outputs.secondary.tier,
+          }
+        : {}),
+    },
+    failures: fx.failures.length > 0 ? fx.failures : undefined,
+  }));
+
+  // Group fixtures by scenario for the summary card.
+  const fixturesByGroup: Record<string, { passed: number; total: number }> = {};
+  for (const fx of fixtures.results) {
+    const g = fixturesByGroup[fx.group] ?? { passed: 0, total: 0 };
+    g.total += 1;
+    if (fx.passed) g.passed += 1;
+    fixturesByGroup[fx.group] = g;
+  }
+
   const summary = {
     structuralTestsPassed: structural.passed,
     structuralTestsTotal: structural.total,
+    fixturesPassed: fixtures.passed,
+    fixturesTotal: fixtures.total,
+    fixturesByGroup,
     casesReplayed: cases.length,
     casesAdmittedMeanProb:
       cases.length > 0 ? cases.reduce((a, c) => a + c.predictedProbability, 0) / cases.length : 0,
@@ -385,14 +427,16 @@ async function main() {
     dataSources,
   };
 
+  const allTests = [...structural.results, ...fixtureTestEntries];
+
   const run = await prisma.predictionBenchmarkRun.create({
     data: {
       label,
       engineVersion: `m3-${gitSha()}`,
-      testsPassed: structural.passed,
-      testsTotal: structural.total,
+      testsPassed: structural.passed + fixtures.passed,
+      testsTotal: structural.total + fixtures.total,
       summary: summary as any,
-      tests: structural.results as any,
+      tests: allTests as any,
       cases: cases as any,
       notes,
     },
