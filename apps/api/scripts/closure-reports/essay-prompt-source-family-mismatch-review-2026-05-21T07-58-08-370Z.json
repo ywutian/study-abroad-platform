@@ -1,0 +1,218 @@
+{
+  "generatedAt": "2026-05-21T07:58:08.369Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-colgate-latest.json",
+      "generatedAt": "2026-05-21T07:57:59.432Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Colgate University official prompt-context pages did not match 2 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+        "schoolName": "Colgate University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+    "schoolName": "Colgate University",
+    "sourceSearchPromptRows": 2,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "officialContextNoPromptMatchUrls": 4,
+    "promptMatchCount": 0,
+    "promptRows": 2,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 2,
+    "emittedRows": 2,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 2,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 2
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 2
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Colgate University has 2 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+    "schoolName": "Colgate University",
+    "topEssayPromptId": "cmorxeozs0055eiz6yj8abx2j",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxeozs0055eiz6yj8abx2j",
+      "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+      "schoolName": "Colgate University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxeozs0055eiz6yj8abx2j",
+      "promptSnippet": "A great institution is diverse. It brings students of different socioeconomic backgrounds, races, ethnicities, and religions to campus. Colgate recognizes this and exposes students",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.colgate.edu/admission-aid/apply/regular-decision",
+          "https://www.colgate.edu/admission-aid/apply/early-decision",
+          "https://www.colgate.edu/admission-aid/apply",
+          "https://www.commonapp.org/explore/colgate-university"
+        ],
+        "finalUrls": [
+          "https://www.colgate.edu/admission-aid/apply/regular-decision",
+          "https://www.colgate.edu/admission-aid/apply/early-decision",
+          "https://www.colgate.edu/admission-aid/apply",
+          "https://www.commonapp.org/explore/colgate-university/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "promptLanguageSignals": [
+          "250 words or less",
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2029"
+        ],
+        "evidenceSnippets": [
+          "er 15 Early Decision II and Regular Decision: February 1 Prompt 1: On Colgate’s campus, students engage with individuals from a variety of socioeconomic backgrounds, races, ethnicities, religions, and perspectives during the course of their educational and social experiences. In 250 words or less, please share the benefits you see in engaging with a diverse body of students, faculty, and staff as part of your Colgate experience. Prompt 2: Colgate students immerse themselves in social and intellectual pursuits that inspire them. Tell us in 250 words or less what inspires you and why you want to pursue that at Colgate. Prompt 3: Please complete the following so we can learn a bit more about you. Each response should be no more than 13 words. I am fascinated by… My favorite book, movie, or television show is… The person I admire most is… In the future, I hope to … One historical figure I would like to meet is… My favorite food is… One thing I would change is… My favorite place is… I am the best version of",
+          "body in perpetual motion. Use the quick links here to find important information, or contact the Office of Admission for specific questions. Quick Links Apply Visit Request More Information First-year Applicant Checklist Required Application Materials Application Apply using the Common Application , Coalition on Scoir , or Questbridge Application , which all include the personal statement. Apply Now Common Application Coalition on Scoir Questbridge Application Application fee Colgate's application fee is $60 Colgate will waive the application fee for any student who is applying for financial aid and qualifies for any fee waiver per the guidelines set by either the Common Application or Coalition on Scoir without requiring further verification. The application fee is waived for non-U.S. citizens (does not apply to U.S. dual citizens or permanent residents). The application fee is waived for all U.S. military veterans. Colgate accepts official fee waivers from the College Board, the National Association f",
+          "250 words or less",
+          "common application",
+          "first choice. Both options are binding, which means admitted students must agree to withdraw all other applications and attend Colgate. Quick Links Apply Visit Request More Information Early Decision Applicant Checklist Required Application Materials Application Apply using the Common Application , Coalition on Scoir , or Questbridge Application , which all include the personal statement. Apply Now Common Application Coalition on Scoir Questbridge Application Application fee Colgate's application fee is $60. Colgate will waive the application fee for any student who is applying for financial aid and qualifies for any fee waiver per the guidelines set by either the Common Application or Coalition on Scoir without requiring further verification. The application fee is waived for non-U.S. citizens (does not apply to U.S. dual citizens or permanent residents). The application fee is waived for all U.S. military veterans. Colgate accepts official fee waivers from the College Board, the National Association",
+          "ants Deferred Enrollment Requests Publications & Resources Master of Arts in Teaching Colgate’s admission process is designed to identify individuals of academic skill, intellectual and cultural diversity, and wide-ranging interests and backgrounds. Apply Now Colgate accepts the Common Application, Coalition Application on Scoir, and QuestBridge Application. Submission of SAT and ACT scores are optional for Colgate applicants. With Colgate’s holistic application review, students have the flexibility to choose how their individual strengths are best represented. Common Application Coalition on Scoir QuestBridge Application Applicant Portal Applicants may check the status of their application through the applicant portal. Applicant Portal Application Deadlines Early Decision I : November 1 Early Decision II & Regular Decision : January 15 Challenges in obtaining required application items Any student experiencing difficulty obtaining a required application item or meeting an application deadline as a resu",
+          "transfer students Admissions website www.colgate.edu/admission-aid/apply Financial aid website www.colgate.edu/admission-financial-aid/financial-aid Region Mid-Atlantic View more in this region Follow Colgate University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxeozr0053eiz6ao22uros",
+      "schoolId": "cmnwr8ivd004fz0tiwbcr93y2",
+      "schoolName": "Colgate University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxeozr0053eiz6ao22uros",
+      "promptSnippet": "Colgate cultivates a skilled and engaged student body. Through their achievements, our students reflect the University’s reputation as a great place to pursue one’s academic intere",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.colgate.edu/admission-aid/apply/regular-decision",
+          "https://www.colgate.edu/admission-aid/apply/early-decision",
+          "https://www.colgate.edu/admission-aid/apply",
+          "https://www.commonapp.org/explore/colgate-university"
+        ],
+        "finalUrls": [
+          "https://www.colgate.edu/admission-aid/apply/regular-decision",
+          "https://www.colgate.edu/admission-aid/apply/early-decision",
+          "https://www.colgate.edu/admission-aid/apply",
+          "https://www.commonapp.org/explore/colgate-university/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "promptLanguageSignals": [
+          "250 words or less",
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2029"
+        ],
+        "evidenceSnippets": [
+          "er 15 Early Decision II and Regular Decision: February 1 Prompt 1: On Colgate’s campus, students engage with individuals from a variety of socioeconomic backgrounds, races, ethnicities, religions, and perspectives during the course of their educational and social experiences. In 250 words or less, please share the benefits you see in engaging with a diverse body of students, faculty, and staff as part of your Colgate experience. Prompt 2: Colgate students immerse themselves in social and intellectual pursuits that inspire them. Tell us in 250 words or less what inspires you and why you want to pursue that at Colgate. Prompt 3: Please complete the following so we can learn a bit more about you. Each response should be no more than 13 words. I am fascinated by… My favorite book, movie, or television show is… The person I admire most is… In the future, I hope to … One historical figure I would like to meet is… My favorite food is… One thing I would change is… My favorite place is… I am the best version of",
+          "body in perpetual motion. Use the quick links here to find important information, or contact the Office of Admission for specific questions. Quick Links Apply Visit Request More Information First-year Applicant Checklist Required Application Materials Application Apply using the Common Application , Coalition on Scoir , or Questbridge Application , which all include the personal statement. Apply Now Common Application Coalition on Scoir Questbridge Application Application fee Colgate's application fee is $60 Colgate will waive the application fee for any student who is applying for financial aid and qualifies for any fee waiver per the guidelines set by either the Common Application or Coalition on Scoir without requiring further verification. The application fee is waived for non-U.S. citizens (does not apply to U.S. dual citizens or permanent residents). The application fee is waived for all U.S. military veterans. Colgate accepts official fee waivers from the College Board, the National Association f",
+          "250 words or less",
+          "common application",
+          "first choice. Both options are binding, which means admitted students must agree to withdraw all other applications and attend Colgate. Quick Links Apply Visit Request More Information Early Decision Applicant Checklist Required Application Materials Application Apply using the Common Application , Coalition on Scoir , or Questbridge Application , which all include the personal statement. Apply Now Common Application Coalition on Scoir Questbridge Application Application fee Colgate's application fee is $60. Colgate will waive the application fee for any student who is applying for financial aid and qualifies for any fee waiver per the guidelines set by either the Common Application or Coalition on Scoir without requiring further verification. The application fee is waived for non-U.S. citizens (does not apply to U.S. dual citizens or permanent residents). The application fee is waived for all U.S. military veterans. Colgate accepts official fee waivers from the College Board, the National Association",
+          "ants Deferred Enrollment Requests Publications & Resources Master of Arts in Teaching Colgate’s admission process is designed to identify individuals of academic skill, intellectual and cultural diversity, and wide-ranging interests and backgrounds. Apply Now Colgate accepts the Common Application, Coalition Application on Scoir, and QuestBridge Application. Submission of SAT and ACT scores are optional for Colgate applicants. With Colgate’s holistic application review, students have the flexibility to choose how their individual strengths are best represented. Common Application Coalition on Scoir QuestBridge Application Applicant Portal Applicants may check the status of their application through the applicant portal. Applicant Portal Application Deadlines Early Decision I : November 1 Early Decision II & Regular Decision : January 15 Challenges in obtaining required application items Any student experiencing difficulty obtaining a required application item or meeting an application deadline as a resu",
+          "transfer students Admissions website www.colgate.edu/admission-aid/apply Financial aid website www.colgate.edu/admission-financial-aid/financial-aid Region Mid-Atlantic View more in this region Follow Colgate University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

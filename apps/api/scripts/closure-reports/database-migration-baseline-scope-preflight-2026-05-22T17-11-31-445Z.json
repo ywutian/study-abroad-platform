@@ -1,0 +1,180 @@
+{
+  "generatedAt": "2026-05-22T17:11:37.309Z",
+  "mode": "read-only-database-migration-baseline-scope-preflight",
+  "status": "BLOCKED_DATABASE_UNAVAILABLE",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "prismaResolveOrDeployExecuted": false,
+  "operatorApprovalGranted": false,
+  "sourceArtifacts": {
+    "schemaWorklist": {
+      "path": "scripts/closure-reports/database-schema-compatibility-worklist-2026-05-22T17-11-09-306Z.json",
+      "exists": true,
+      "status": "BLOCKED",
+      "summary": {
+        "missingTables": 1,
+        "missingColumns": 0,
+        "unappliedRepoMigrations": 1,
+        "appliedMigrationsMissingFromRepo": 5,
+        "extraDbTables": 1,
+        "extraDbColumns": 29
+      },
+      "error": null
+    },
+    "baselineProposal": {
+      "path": "scripts/closure-reports/database-migration-baseline-proposal-2026-05-22T16-46-18-909Z.json",
+      "exists": true,
+      "status": "BASELINE_PROPOSAL_READY_REVIEW_REQUIRED",
+      "summary": {
+        "schemaWorklistStatus": "BLOCKED",
+        "schemaRows": 37,
+        "missingTables": 1,
+        "missingColumns": 0,
+        "unappliedRepoMigrations": 1,
+        "appliedMigrationsMissingFromRepo": 5,
+        "openMigrationBlockers": 7,
+        "reconciliationStatus": "BLOCKED_UNRECOVERABLE_MIGRATION_HISTORY",
+        "recoverableFromGit": 4,
+        "unrecoverableRows": 1,
+        "checksumMatchedRows": 4,
+        "checksumMismatchRows": 0,
+        "restoreBundleStatus": "STAGED_RESTORE_CANDIDATES_WITH_BLOCKERS",
+        "stagedRestoreCandidates": 4,
+        "restoreBundleBlockedRows": 1,
+        "checksumReviewStatus": "PASS",
+        "unresolvedChecksumMismatches": 0,
+        "checksumVariantAnalysisStatus": "PASS_NO_CHECKSUM_MISMATCH",
+        "checksumVariantChecks": 0,
+        "checksumVariantExactMatches": 0,
+        "checksumVariantUnresolved": 0,
+        "unrecoverableArtifactSearchStatus": "UNRECOVERABLE_ARTIFACT_SEARCH_READY_NO_MATCH",
+        "unrecoverableArtifactMatches": 0,
+        "unrecoverableArtifactsScanned": 0,
+        "unrecoverableArchivesScanned": 31,
+        "unrecoverableArchiveEntriesScanned": 3,
+        "localArtifactSearchStatus": "BLOCKED_EXACT_SQL_NOT_FOUND",
+        "localCandidateFilesRead": 0,
+        "externalArtifactPacketStatus": "BLOCKED_EXTERNAL_ARTIFACT_REQUIRED",
+        "externalFilesScanned": 1201,
+        "externalArchivesScanned": 0,
+        "externalArchiveEntriesScanned": 0,
+        "externalCandidateIntakeStatus": "waiting_for_external_candidate_artifact",
+        "externalCandidateIntakeRoot": "apps/api/scripts/closure-reports/database-migration-external-candidate-intake",
+        "externalCandidateVerificationCommand": "pnpm --filter api audit:database-migration-external-artifact-packet -- --candidate-root apps/api/scripts/closure-reports/database-migration-external-candidate-intake --scan-archives",
+        "externalCandidateAcceptedArchiveNames": [
+          "<artifact>.zip containing migration.sql",
+          "<artifact>.tar or <artifact>.tar.gz containing migration.sql",
+          "<artifact>.tgz containing migration.sql",
+          "<artifact>.sql.gz containing the exact SQL bytes"
+        ],
+        "externalCandidateVerificationChecklist": [
+          "Place external candidates only under the suggested candidate root.",
+          "Keep original artifact packaging where possible; archive candidates are read-only scanned with --scan-archives.",
+          "Pass only if the packet reports exactArtifactMatches > 0 with the required SHA-256.",
+          "Do not restore, copy, resolve, deploy, or baseline from an unverified candidate."
+        ],
+        "externalCandidateSearchedRoots": [
+          "apps/api/prisma/migrations",
+          "apps/api/scripts/closure-reports",
+          "apps/api/scripts/closure-reports/database-migration-external-candidate-intake"
+        ],
+        "exactSqlArtifactMatches": 0,
+        "baselineResolutionStatus": "BLOCKED_UNRECOVERABLE_MIGRATION_REQUIRED",
+        "baselineDecision": "continue-external-search",
+        "baselineTargetScope": null,
+        "baselineApprovalReady": false,
+        "baselineMissingRequiredFields": 1,
+        "baselineDbWriteAllowed": false,
+        "baselineScopePreflightStatus": "BLOCKED_BACKUP_EVIDENCE_REQUIRED",
+        "baselineScopeEffectiveTarget": "local-existing",
+        "baselineScopeMissingInputs": 1,
+        "baselineScopeBackupEvidenceProvided": false,
+        "backupEvidencePacketStatus": "BLOCKED_BACKUP_EVIDENCE_REQUIRED",
+        "backupEvidenceReady": false,
+        "backupEvidenceMissingInputs": 1,
+        "backupArtifactExists": false,
+        "baselineApprovalRequestStatus": "BLOCKED_BACKUP_EVIDENCE_NOT_READY",
+        "baselineApprovalRequestReady": false,
+        "baselineApprovalMissingInputs": 2,
+        "baselineRequiredFields": [
+          "external exact SQL artifact for unrecoverable migration history, or explicit baseline/resolve decision"
+        ]
+      },
+      "error": null
+    }
+  },
+  "databaseTarget": {
+    "sanitizedUrl": "postgresql://REDACTED:REDACTED@localhost:5433/study_abroad?schema=public",
+    "parsed": {
+      "protocol": "postgresql",
+      "host": "localhost",
+      "port": "5433",
+      "database": "study_abroad",
+      "isLocalHost": true
+    },
+    "fingerprint": {
+      "ok": false,
+      "error": "Can't reach database server at `localhost:5433`\n\nPlease make sure your database server is running at `localhost:5433`."
+    }
+  },
+  "summary": {
+    "schemaWorklistStatus": "BLOCKED",
+    "baselineProposalStatus": "BASELINE_PROPOSAL_READY_REVIEW_REQUIRED",
+    "inferredTargetScope": "local-existing",
+    "inferredTargetReason": "DATABASE_URL host is local",
+    "requestedTargetScope": null,
+    "effectiveTargetScope": "local-existing",
+    "productionSignalCount": 0,
+    "backupEvidenceProvided": false,
+    "dbReadable": false,
+    "dataBearing": false,
+    "publicTableCount": 0,
+    "estimatedRowCount": 0,
+    "prismaMigrationCount": null,
+    "missingRequiredInputs": 2
+  },
+  "productionSignals": [],
+  "missingRequiredInputs": [
+    {
+      "key": "readable-database-fingerprint",
+      "required": true,
+      "provided": false,
+      "expected": "read-only pg_catalog fingerprint",
+      "actual": "unavailable"
+    },
+    {
+      "key": "backup-or-disposable-target-evidence",
+      "required": true,
+      "provided": false,
+      "expected": "backup path, disposable DB note, or staging clone evidence",
+      "actual": null
+    }
+  ],
+  "baselineResolutionInputHint": {
+    "readyForApprovalGate": false,
+    "auditOnlyCommandTemplate": "pnpm --filter api audit:database-migration-baseline-resolution -- --checksum-review /tmp/database-migration-checksum-review-latest.json --external-artifact-packet /tmp/database-migration-external-artifact-packet-archive-latest.json --decision baseline-resolve-local-only --target-scope local-existing --approved-operator-workflow <approved workflow id> --operator-ack APPROVED_DATABASE_MIGRATION_BASELINE_RESOLVE --rationale <why exact SQL cannot be recovered and why this target may be resolved> --backup-evidence <backup/disposable/staging clone evidence>"
+  },
+  "operatorGuardrails": {
+    "productionScopeAllowed": false,
+    "supportedTargetScopes": [
+      "local-existing",
+      "local-disposable",
+      "staging-clone"
+    ],
+    "requiresSeparateApprovalGate": "audit:database-migration-baseline-resolution",
+    "writeCommandsIntentionallyOmitted": [
+      "prisma migrate resolve",
+      "prisma migrate deploy",
+      "prisma db push",
+      "SQL restore",
+      "pg_dump data export"
+    ]
+  },
+  "recommendedSequence": [
+    "Make the target database reachable before a baseline scope can be evaluated.",
+    "Rerun this preflight before any baseline-resolution approval attempt."
+  ],
+  "nextCampaign": {
+    "id": "database_migration_external_artifact_or_baseline_approval",
+    "reason": "Exact SQL is still absent and baseline scope is not yet ready for approval."
+  }
+}

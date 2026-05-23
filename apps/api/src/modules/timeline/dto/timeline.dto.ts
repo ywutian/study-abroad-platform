@@ -257,6 +257,16 @@ export class TaskResponseDto {
   @ApiProperty()
   wordLimit?: number;
 
+  @ApiPropertyOptional()
+  sourceStatus?:
+    | 'generic'
+    | 'source_backed'
+    | 'source_review_required'
+    | 'first_party';
+
+  @ApiPropertyOptional()
+  sourcePolicy?: string;
+
   @ApiProperty()
   sortOrder: number;
 }

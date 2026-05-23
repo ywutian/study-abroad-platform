@@ -1,0 +1,3 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorxidfh00bbeiz61ad7uuew","cmn1htkq60019vqf2lmijsj2s","University of Maryland, College Park","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxidfh00bbeiz61ad7uuew","Something you might not know about me is…","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"
+"cmorxidfa00b9eiz6qlu2dv07","cmn1htkq60019vqf2lmijsj2s","University of Maryland, College Park","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxidfa00b9eiz6qlu2dv07","In addition to my major, my academic interests include…","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

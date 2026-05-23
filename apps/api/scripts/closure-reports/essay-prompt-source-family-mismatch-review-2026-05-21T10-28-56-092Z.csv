@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmor8f0ka00gr1jbwr5l5sneo","cmnwr8iu3003vz0tig0fa53lf","Howard University","ACTIVITY","critical","/admin/essay-prompts/cmor8f0ka00gr1jbwr5l5sneo","Please briefly elaborate on one of your extracurricular activities or work experiences. You may express why this activity is important to you, lessons learned from said activity, o","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

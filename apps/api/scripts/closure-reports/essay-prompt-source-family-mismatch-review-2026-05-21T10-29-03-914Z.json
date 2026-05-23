@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-05-21T10:29:03.913Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-pepperdine-latest.json",
+      "generatedAt": "2026-05-21T10:28:57.088Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Pepperdine University official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+        "schoolName": "Pepperdine University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+    "schoolName": "Pepperdine University",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 7,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 0,
+    "promptRows": 1,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Pepperdine University has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+    "schoolName": "Pepperdine University",
+    "topEssayPromptId": "cmorxk04v00dneiz6l1p433ow",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxk04v00dneiz6l1p433ow",
+      "schoolId": "cmnwr8imn000fz0ti5zassqtj",
+      "schoolName": "Pepperdine University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxk04v00dneiz6l1p433ow",
+      "promptSnippet": "Subconsciously building your own bubble is an easy thing to do in our modern world. Describe ways in which you seek to step outside of your bubble, challenge the worldviews you hol",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.commonapp.org/explore/pepperdine-university/",
+          "https://seaver.pepperdine.edu/admission/application/undergraduate/firstyear.htm",
+          "https://healthscience.pepperdine.edu/bsn/application/"
+        ],
+        "finalUrls": [
+          "https://www.commonapp.org/explore/pepperdine-university/",
+          "https://seaver.pepperdine.edu/admission/application/undergraduate/firstyear.htm",
+          "https://healthscience.pepperdine.edu/bsn/application/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application",
+          "writing supplement",
+          "essay question"
+        ],
+        "cycleSignals": [
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "itary/Veteran Services On-Campus Housing Religious Affiliation Study Abroad Undergraduate Research Veteran Fee Waiver Application information Find out about requirements, fees, and deadlines First-year First-year applicants will submit their application to Pepperdine through the Common Application, which is available each year on August 1. The following must be submitted: Completed Common Application ($70 application fee, common application personal essay, Pepperdine essay) Official High School Transcripts Academic Letter of Recommendation SAT or ACT scores (optional) For full descriptions of the application requirements, please reference Pepperdine's first-year admission requirements . Transfer Students who have graduated from high school and completed any number of college units at the time of applying must apply as a transfer applicant. Transfer applicants will submit the Pepperdine transfer application which is available each year on August 1. The following must be submitted: Completed Pepperdine tr",
+          "essay prompts",
+          "common application",
+          "r to be considered by the Admission Committee. Application Requirements Common Application Please be aware that there are multiple steps to complete your Pepperdine application via the Common Application . $70 Application Fee (Non-Refundable) Common App Personal Essay Pepperdine Essay Question In addition to the Common App Personal Essay, applicants are required to submit a written response via the Common App to the following Pepperdine question: Pepperdine is a Christian university where all are welcomed and encouraged to challenge each other in the pursuit of truth. Students, faculty, and staff members from all backgrounds participate in conversations of faith inside and outside of the classroom. Considering that Pepperdine is a Christian university, why are you interested in attending and how would you contribute to conversations of faith on campus? (300-500 words) Official High School Transcripts Official high school transcripts are required of all prospective first-year students who have not ye",
+          "Application Resources FAQ Financial Aid First-Year Applicants Definition Prospective first-year applicants are students who have not graduated from high school at the time of application. How to Apply First-year applicants will submit their application to Pepperdine through the Common Application . The Common Application is available each year on August 1. Applying to Pepperdine is a multi-step process, so be sure to review the process and requirements sections below. When to Apply Spring Term Priority application deadline: October 1 Final application deadline: November 1 FAFSA deadline: October 15 Decisions sent: Rolling Basis Enrollment deadline: December 1 Fall Term - Early Action and Early Decision Application deadline: November 1 FAFSA deadline: November 1 Decisions sent: January 10 Enrollment deadline: May 1 Fall Term - Regular Decision Application deadline: January 15 FAFSA deadline: February 15 Decisions sent: April 1 Enrollment deadline: May 1 Additional Information International Students Firs",
+          "writing supplement",
+          "essay question",
+          "r to be considered by the Admission Committee. Application Requirements Common Application Please be aware that there are multiple steps to complete your Pepperdine application via the Common Application . $65 Application Fee (Non-Refundable) Common App Personal Essay Pepperdine Essay Question In addition to the Common App Personal Essay, applicants are required to submit a written response via the Common App to the following Pepperdine question: Pepperdine is a Christian university where all are welcomed and encouraged to challenge each other in the pursuit of truth. Students, faculty, and staff members from all backgrounds participate in conversations of faith inside and outside of the classroom. Considering that Pepperdine is a Christian university, why are you interested in attending and how would you contribute to conversations of faith on campus? (300-500 words) Official High School Transcripts Official high school transcripts are required of all prospective first-year students who have not ye",
+          "ts are students who have not graduated from high school at the time of application. Please Note: Students who have already obtained a bachelor's degree are not eligible for the BSN program How to Apply First-year applicants will submit their application to Pepperdine through the Common Application. The Common Application is available each year on August 1. Applying to Pepperdine is a multi-step process, so be sure to review the process and requirements sections below. When to Apply Fall Term - Regular Decision Application deadline: January 15 FAFSA deadline: February 15 Decisions sent: April 1 Application Process STEP 1: Submit All Parts of the Common Application The Common Application is a multipart process that includes submission of the Common Application, the Pepperdine Questions, and Pepperdine Writing Supplement. All parts must be submitted through the Common Application website. Be sure to review your Common App dashboard to ensure that all parts have been submitted successfully. Important: You w"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

@@ -32,6 +32,12 @@ export function SchoolHeroHeader({
   const [coverFailed, setCoverFailed] = useState(false);
   const campusCover = school.media?.campusCover;
   const campusCoverUrl = campusCover?.url && !coverFailed ? campusCover.url : null;
+  const campusCoverSourceUrl = campusCover?.sourcePageUrl ?? campusCover?.originalUrl ?? null;
+  const campusCoverSourceQuality = campusCoverSourceUrl
+    ? 'approved_media_source'
+    : campusCoverUrl
+      ? 'approved_media_source_unavailable'
+      : 'missing_media_source';
   const logoUrl = school.media?.logo?.url ?? school.logoUrl;
   const schoolName = getSchoolName(school, locale);
   const schoolSubName = getSchoolSubName(school, locale);
@@ -50,7 +56,10 @@ export function SchoolHeroHeader({
             loading="eager"
             decoding="async"
             onError={() => setCoverFailed(true)}
-            title={campusCover?.sourceType}
+            title={campusCoverSourceUrl ?? campusCover?.sourceType}
+            data-source-url={campusCoverSourceUrl ?? undefined}
+            data-source-quality={campusCoverSourceQuality}
+            data-source-type={campusCover?.sourceType ?? undefined}
             className="h-full w-full object-cover"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />

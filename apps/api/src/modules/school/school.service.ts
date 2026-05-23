@@ -1133,6 +1133,8 @@ export class SchoolService {
       acceptanceRate:
         clampPercentRate(schoolBase.acceptanceRate) ??
         schoolBase.acceptanceRate,
+      gpaDistribution: schoolBase.gpaDistribution ?? null,
+      programRates: schoolBase.programRates ?? null,
       graduationRate:
         clampPercentRate(schoolBase.graduationRate) ??
         schoolBase.graduationRate,

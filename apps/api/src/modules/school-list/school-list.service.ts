@@ -21,7 +21,6 @@ import {
   calculateTier,
 } from '../../common/utils/scoring';
 import { clampPercentRate } from '../../common/utils/percent.util';
-import { EssayStatus } from '@prisma/client';
 import {
   SCHOOL_LIST_SCHOOL_SELECT,
   AI_RECOMMENDATION_SCHOOL_SELECT,
@@ -30,6 +29,12 @@ import {
   SCHOOL_TIER_SORT_RANK,
 } from './school-list.constants';
 import { CacheInvalidationService } from '../../common/redis/cache-invalidation.service';
+
+const SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE = {
+  isActive: true,
+  status: 'VERIFIED',
+  sources: { some: { sourceUrl: { not: null } } },
+} as const;
 
 @Injectable()
 export class SchoolListService {
@@ -262,9 +267,8 @@ export class SchoolListService {
       const counts = await this.prisma.essayPrompt.groupBy({
         by: ['schoolId'],
         where: {
+          ...SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE,
           schoolId: { in: items.map((i) => i.schoolId) },
-          isActive: true,
-          status: EssayStatus.VERIFIED,
         },
         _count: true,
       });
@@ -405,9 +409,8 @@ export class SchoolListService {
 
     const essayCount = await this.prisma.essayPrompt.count({
       where: {
+        ...SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE,
         schoolId: item.schoolId,
-        isActive: true,
-        status: EssayStatus.VERIFIED,
       },
     });
 
@@ -477,9 +480,8 @@ export class SchoolListService {
 
     const essayCount = await this.prisma.essayPrompt.count({
       where: {
+        ...SOURCE_BACKED_VERIFIED_ESSAY_PROMPT_WHERE,
         schoolId: updated.schoolId,
-        isActive: true,
-        status: EssayStatus.VERIFIED,
       },
     });
 

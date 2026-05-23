@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-05-21T09:53:58.635Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-vanderbilt-latest.json",
+      "generatedAt": "2026-05-21T09:53:38.493Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Vanderbilt University official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmn1htko5000ivqf28d3x9557",
+        "schoolName": "Vanderbilt University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmn1htko5000ivqf28d3x9557",
+    "schoolName": "Vanderbilt University",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 5,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 4,
+    "promptMatchCount": 0,
+    "promptRows": 1,
+    "matchedPromptRows": 0,
+    "unmatchedPromptRows": 1,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Vanderbilt University has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmn1htko5000ivqf28d3x9557",
+    "schoolName": "Vanderbilt University",
+    "topEssayPromptId": "cmorxfjp7006zeiz62o64qekh",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxfjp7006zeiz62o64qekh",
+      "schoolId": "cmn1htko5000ivqf28d3x9557",
+      "schoolName": "Vanderbilt University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxfjp7006zeiz62o64qekh",
+      "promptSnippet": "Vanderbilt offers a community where students find balance between their academic and social experiences. Please briefly elaborate on how one of your extracurricular activities or w",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://admissions.vanderbilt.edu/apply/personal-essay-and-short-answer-prompts/",
+          "https://admissions.vanderbilt.edu/apply/",
+          "https://admissions.vanderbilt.edu/apply/first-year-process",
+          "https://www.commonapp.org/explore/vanderbilt-university"
+        ],
+        "finalUrls": [
+          "https://admissions.vanderbilt.edu/apply/personal-essay-and-short-answer-prompts/",
+          "https://admissions.vanderbilt.edu/apply/",
+          "https://admissions.vanderbilt.edu/apply/first-year-process",
+          "https://www.commonapp.org/explore/vanderbilt-university/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "essay prompts",
+          "common application"
+        ],
+        "cycleSignals": [
+          "2026",
+          "2025",
+          "2027"
+        ],
+        "evidenceSnippets": [
+          "nal Essay and Short Answer Prompts On this page Personal Essay Prompts To help us get to know you in the application review process, you are required to submit a personal essay. For insight and advice about how to approach writing your personal essay, see our Expert Advice page. Common Application first-year essay prompts Common App transfer essay prompt: Please provide a personal essay that addresses your reasons for transferring and the objectives you hope to achieve. Coalition, powered by Scoir first-year and transfer essay prompts Short Answer Question For both first-year and transfer applicants, we ask you to complete a short answer essay (approximately 250 words) based on the following prompt: Vanderbilt University’s motto, Crescere aude , is Latin for “dare to grow.” In your response, reflect on how one or more aspects of your identity, culture, or background has played a role in your personal growth, and how it will contribute to our campus community as you dare to grow at Vanderbilt. Vanderbilt",
+          "essay prompts",
+          "common application",
+          "ful applicants have taken a very rigorous course load and have challenged themselves at the highest levels of the available curriculum. Note that Vanderbilt does not consider demonstrated interest in the admissions review process. Three Ways to Apply: Coalition, powered by Scoir Common Application QuestBridge Choose the application system that is right for you - we do not prefer one over the others. Do not submit an application through more than one system. Choose one application, and submit all required materials through that method. Please note: In addition to submitting the application for admission, applicants to Blair also submit the Blair School of Music Application , which includes a pre-screening video. Access & Belonging In the spirit of Vanderbilt admissions, we consider each application within the context of a high volume, highly selective admissions process. Every applicant is treated with dignity and respect, and we train our readers to find reasons to admit each candidate rather than reaso",
+          "News & Events Vanderbilt News Research News Vanderbilt Magazine Events Application Process: First-year Apply Application Process: First-year Application Process: Transfer Testing Policies Expert Advice MyAppVU On this page Required Application Materials All required parts of the Common Application or Coalition, powered by Scoir, including the personal essay and short answer $50 nonrefundable application fee, or fee waiver for qualified students Official high school transcript Counselor letter of recommendation Two academic teacher letters of recommendation Optional Materials In addition to the required materials, applicants may wish to submit these optional items. These items are not required for admission consideration. However, you may choose to submit optional materials if you feel they provide valuable information that is not captured in the required application materials. SAT or ACT scores For students applying for fall 2026 and 2027 entry, SAT or ACT scores are optional. Vanderbilt's SAT code is 1",
+          "ite www.vanderbilt.edu/financialaid/undergraduate/index.php Undocumented or DACA students www.vanderbilt.edu/financialaid/undergraduate/international.php Region South View more in this region Follow Vanderbilt University Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc"
+        ],
+        "officialContextNoPromptMatchUrls": 4,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

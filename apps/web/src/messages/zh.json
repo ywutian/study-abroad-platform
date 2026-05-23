@@ -605,7 +605,10 @@
     },
     "hero": {
       "eyebrow": "Lumni Command Center · GPT-5 驱动",
-      "headline": ["照亮你的", "录取路线"],
+      "headline": [
+        "照亮你的",
+        "录取路线"
+      ],
       "subtitle": "从选校、文书、时间线到提交，Lumni 把复杂申请拆成清晰、可执行的计划，并用真实录取数据持续校准每一步。",
       "features": [
         "2 分钟生成首版录取路线图",
@@ -622,7 +625,12 @@
       },
       "aiDisclosure": {
         "trigger": "查看模型依据",
-        "inputs": ["学术档案强度", "学校历史录取结果", "文书与材料完成度", "时间线与截止日期压力"],
+        "inputs": [
+          "学术档案强度",
+          "学校历史录取结果",
+          "文书与材料完成度",
+          "时间线与截止日期压力"
+        ],
         "confidence": "中等",
         "limitations": [
           "学校当年的临时招生偏好无法被直接观测。",
@@ -638,7 +646,13 @@
         "profileLabel": "Amy Z. · 12 年级",
         "profileMeta": "GPA 3.92 · SAT 1540 · 计算机科学",
         "termLabel": "2026 秋季 · CS",
-        "sections": ["总览", "选校 · 6", "文书 · 14", "时间线", "组队"],
+        "sections": [
+          "总览",
+          "选校 · 6",
+          "文书 · 14",
+          "时间线",
+          "组队"
+        ],
         "title": "录取路线中枢",
         "assistantBadge": "AI 助理",
         "assistantMessages": [
@@ -647,7 +661,11 @@
           "Purdue 的申请材料已齐套，今晚是最稳妥的提交窗口。"
         ],
         "tasksLabel": "今日 · 3 个任务",
-        "tasks": ["完成 GT Why-Essay v2", "提醒 Ms. Chen 上传推荐信", "确认 Purdue 提交窗口"],
+        "tasks": [
+          "完成 GT Why-Essay v2",
+          "提醒 Ms. Chen 上传推荐信",
+          "确认 Purdue 提交窗口"
+        ],
         "askAnything": "继续问 AI",
         "statusReady": "分析就绪",
         "statusLive": "实时录取信号 · 已同步",
@@ -705,7 +723,16 @@
               "tone": "reach",
               "probability": 18,
               "deadline": "1月2日",
-              "spark": [4, 5, 6, 5, 7, 8, 9, 10]
+              "spark": [
+                4,
+                5,
+                6,
+                5,
+                7,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "卡内基梅隆 · SCS",
@@ -713,7 +740,16 @@
               "tone": "reach",
               "probability": 24,
               "deadline": "12月1日",
-              "spark": [3, 4, 5, 7, 6, 8, 9, 10]
+              "spark": [
+                3,
+                4,
+                5,
+                7,
+                6,
+                8,
+                9,
+                10
+              ]
             },
             {
               "name": "加州伯克利 · EECS",
@@ -721,7 +757,16 @@
               "tone": "target",
               "probability": 42,
               "deadline": "11月30日",
-              "spark": [5, 6, 5, 7, 8, 7, 9, 10]
+              "spark": [
+                5,
+                6,
+                5,
+                7,
+                8,
+                7,
+                9,
+                10
+              ]
             },
             {
               "name": "佐治亚理工",
@@ -729,7 +774,16 @@
               "tone": "target",
               "probability": 58,
               "deadline": "10月15日",
-              "spark": [6, 7, 8, 7, 8, 9, 9, 10]
+              "spark": [
+                6,
+                7,
+                8,
+                7,
+                8,
+                9,
+                9,
+                10
+              ]
             },
             {
               "name": "密歇根 · CSE",
@@ -737,7 +791,16 @@
               "tone": "safety",
               "probability": 71,
               "deadline": "11月1日",
-              "spark": [7, 7, 8, 9, 8, 9, 10, 10]
+              "spark": [
+                7,
+                7,
+                8,
+                9,
+                8,
+                9,
+                10,
+                10
+              ]
             }
           ]
         },
@@ -945,7 +1008,14 @@
       "visuals": {
         "signalNoise": {
           "label": "碎片化信息流",
-          "tabs": ["小红书", "College Confidential", "Reddit", "一亩三分地", "US News", "官网 FAQ"],
+          "tabs": [
+            "小红书",
+            "College Confidential",
+            "Reddit",
+            "一亩三分地",
+            "US News",
+            "官网 FAQ"
+          ],
           "notes": [
             "MIT 还看 AP Physics C 吗？",
             "夏校值不值得花 8 万？",
@@ -1044,7 +1114,11 @@
             "patience is a virtue",
             "recipes are really stories told in flavors"
           ],
-          "chips": ["声音更真", "节奏更紧", "结尾偏弱"]
+          "chips": [
+            "声音更真",
+            "节奏更紧",
+            "结尾偏弱"
+          ]
         },
         "timeline": {
           "label": "申请节奏",
@@ -1108,7 +1182,11 @@
         "mentor": {
           "label": "专家把关",
           "quote": "AI 负责拉齐全局节奏，真人只在不可逆的判断点出手。",
-          "points": ["选校结构复核", "最终文书方向确认", "提交前风险检查"]
+          "points": [
+            "选校结构复核",
+            "最终文书方向确认",
+            "提交前风险检查"
+          ]
         }
       }
     },
@@ -1142,12 +1220,24 @@
         "eyebrow": "Lumni 工作台",
         "title": "从资料到递交，一屏看清优先级",
         "note": "申请矩阵 · 文书任务 · AI 追踪",
-        "cards": ["选校清单", "文书排期", "协作提醒"],
+        "cards": [
+          "选校清单",
+          "文书排期",
+          "协作提醒"
+        ],
         "assistantBadge": "AI 助理",
         "tip": "AI 正在比对 MIT / CMU 文书重合度",
         "tasksLabel": "今日推进",
-        "tasks": ["完善申请画像", "完成 GT Why Essay", "确认 Purdue 提交"],
-        "columns": ["学校", "档位", "进度"]
+        "tasks": [
+          "完善申请画像",
+          "完成 GT Why Essay",
+          "确认 Purdue 提交"
+        ],
+        "columns": [
+          "学校",
+          "档位",
+          "进度"
+        ]
       }
     },
     "social": {
@@ -1204,7 +1294,10 @@
     },
     "cta": {
       "eyebrow": "现在开始 · 免费",
-      "title": ["别再把时间", "浪费在信息差上"],
+      "title": [
+        "别再把时间",
+        "浪费在信息差上"
+      ],
       "subtitle": "注册只要 30 秒。两分钟后，你就能看到属于自己的第一版申请矩阵和下一步优先级。",
       "primary": "免费创建账号",
       "secondary": "预约 1v1 咨询",
@@ -1215,19 +1308,41 @@
       "columns": [
         {
           "title": "产品",
-          "links": ["AI 选校", "文书工作台", "三年时间线", "录取预测", "组队社区"]
+          "links": [
+            "AI 选校",
+            "文书工作台",
+            "三年时间线",
+            "录取预测",
+            "组队社区"
+          ]
         },
         {
           "title": "资源",
-          "links": ["学员案例", "帮助中心", "关于我们", "免费开始", "服务条款"]
+          "links": [
+            "学员案例",
+            "帮助中心",
+            "关于我们",
+            "免费开始",
+            "服务条款"
+          ]
         },
         {
           "title": "公司",
-          "links": ["关于团队", "学生社区", "联系支持", "隐私保护", "注册账号"]
+          "links": [
+            "关于团队",
+            "学生社区",
+            "联系支持",
+            "隐私保护",
+            "注册账号"
+          ]
         },
         {
           "title": "法律",
-          "links": ["隐私政策", "服务条款", "帮助文档"]
+          "links": [
+            "隐私政策",
+            "服务条款",
+            "帮助文档"
+          ]
         }
       ],
       "copyright": "© 2026 Lumni · 让录取不再是黑箱。",
@@ -2540,6 +2655,14 @@
       "deltaNear": "与基线接近",
       "needBlind": "对国际生Need-Blind",
       "intlPercent": "{pct}%国际生",
+      "testingPolicy": "标化：{policy}",
+      "satRange": "SAT {low}-{high}",
+      "actRange": "ACT {low}-{high}",
+      "sourceSupport": "来源支持：{status}",
+      "officialSourceCount": "{count} 个官方字段",
+      "heuristicSourceCount": "{count} 个启发式字段",
+      "staleSourceCount": "{count} 个过期字段",
+      "provenanceNote": "这些学校输入会使用当前来源追踪与数据质量摘要；缺失或过期字段会继续以较弱证据显示。",
       "competitiveness": {
         "1": "较低竞争",
         "2": "竞争较低",
@@ -4895,7 +5018,12 @@
         "name": "免费版",
         "period": "永久",
         "description": "基础功能，适合初次体验",
-        "features": ["浏览学校信息", "查看公开案例", "基础 AI 对话 (每日5次)", "档案管理"]
+        "features": [
+          "浏览学校信息",
+          "查看公开案例",
+          "基础 AI 对话 (每日5次)",
+          "档案管理"
+        ]
       },
       "pro": {
         "name": "专业版",

@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorxj17j00cdeiz6ibex4drl","cmnwr8iun0041z0tin8tw3f6b","Villanova University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxj17j00cdeiz6ibex4drl","Villanovans are known for “holding doors open” because inclusion is at the core of who we are. Take us on a journey through your background and describe how your life experience ha","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

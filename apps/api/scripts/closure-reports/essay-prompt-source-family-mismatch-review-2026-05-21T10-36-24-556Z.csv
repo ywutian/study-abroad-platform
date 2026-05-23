@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmorxm72c00gjeiz6oc16osdn","cmnwr8ins0012z0ti4o8njwhn","Stony Brook University","SHORT_ANSWER","critical","/admin/essay-prompts/cmorxm72c00gjeiz6oc16osdn","Please briefly elaborate on one of your extracurricular activities or work experiences.","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

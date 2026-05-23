@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-05-21T10:42:37.425Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-rit-latest.json",
+      "generatedAt": "2026-05-21T10:42:26.507Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Rochester Institute of Technology has untrusted prompt matches but official prompt-context pages did not match assigned prompt snippets; review source family before approval.",
+        "schoolId": "cmnwr8iu6003wz0tio3oagiri",
+        "schoolName": "Rochester Institute of Technology",
+        "recommendedAction": "review-untrusted-context-or-find-official-source"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iu6003wz0tio3oagiri",
+    "schoolName": "Rochester Institute of Technology",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "manual-official-source-search-or-terminal"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": false,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 7,
+    "reachableHtmlUrls": 6,
+    "validatedSourceUrls": 1,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 1,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 1,
+    "promptRows": 1,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_untrusted_source_or_official_conflict": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Rochester Institute of Technology has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iu6003wz0tio3oagiri",
+    "schoolName": "Rochester Institute of Technology",
+    "topEssayPromptId": "cmor8ephs00gh1jbwaxfyhh3z",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmor8ephs00gh1jbwaxfyhh3z",
+      "schoolId": "cmnwr8iu6003wz0tio3oagiri",
+      "schoolName": "Rochester Institute of Technology",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmor8ephs00gh1jbwaxfyhh3z",
+      "promptSnippet": "Please provide a brief statement about why you are you interested in being considered for the RIT Honors Program.",
+      "closureState": "review",
+      "mismatchDisposition": "review_untrusted_source_or_official_conflict",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.rit.edu/honors/overview",
+          "https://www.rit.edu/honors/admissions-process",
+          "https://www.commonapp.org/explore/rochester-institute-technology/",
+          "https://www.collegevine.com/schools/rochester-institute-of-technology-rit/essay-prompts"
+        ],
+        "finalUrls": [
+          "https://www.rit.edu/honors/overview",
+          "https://www.rit.edu/honors/admissions-process",
+          "https://www.commonapp.org/explore/rochester-institute-technology/",
+          "https://www.collegevine.com/schools/rochester-institute-of-technology-rit/essay-prompts"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [
+          "https://www.collegevine.com/schools/rochester-institute-of-technology-rit/essay-prompts"
+        ],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "common application",
+          "short essay",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2030",
+          "2026",
+          "2024"
+        ],
+        "evidenceSnippets": [
+          "demic activity each year and accumulate at least 15 Honors points by graduation, complete 20 hours of Complementary Learning annually, and maintain a strong GPA. Admissions Process Students indicate that they would like to be considered for the Honors Program when completing the Common Application to RIT. Students must check a box and write a short paragraph outlining why they are interested in Honors and what makes them a great fit for the program. The Office of Undergraduate Admissions then reviews all submitted materials by each student and issues invitations to a small fraction of accepted students. Current students at RIT who are entering their second year at RIT can apply to the Honors Program through the Internal Admission process that takes place each fall. Students with an exceptional academic record and considerable co-curricular involvement over their first two semesters are invited to apply by their individual college and if accepted begin their Honors journey later that semester. Learn more",
+          "common application",
+          "their professors and lifelong bonds with their peers. Entering as a First Year Student The Office of Undergraduate Admissions reviews the records of admitted students who expressed interest in being considered for the Honors Program on their admission application and provided a short essay response (1-2 paragraphs) for Honors Program consideration. Invitations are sent to a select number of candidates 4-6 weeks after they receive admission to the university. If you have questions, about the application process please contact admissions@rit.edu . If you have questions about what it means to be an Honors student and how we support student success please contact honors@rit.edu . Honors students at RIT represent approximately the top 5% of RIT’s admitted students and less than 1% of all applicants. We look for these characteristics in student applications: The ability and motivation to take full advantage of the academic, professional, and experiential opportunities that the program provides Excelle",
+          "short essay",
+          "ssions/aid For transfer students Admissions website www.rit.edu/admissions/first-year Financial aid website www.rit.edu/admissions/aid Region Mid-Atlantic View more in this region Follow Rochester Institute of Technology Facebook icon Twitter icon Youtube icon Instagram icon The Common Application About Guiding principles Leadership Next Chapter Partners Reports and insights Contact News and updates Become a member Help Careers Events Connect with #commonapp Facebook icon Twitter icon LinkedIn icon Youtube icon Instagram icon Terms of use Privacy policy Fraud policy Cookie notice Accessibility statement ® 2026 The Common Application, Inc",
+          "essay prompts",
+          "Please provide a brief statement about why you are you interested in being considered for the RIT Honors Program."
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer compares third-party prompt matches against official/Common App no-match evidence before any source row can be approved"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

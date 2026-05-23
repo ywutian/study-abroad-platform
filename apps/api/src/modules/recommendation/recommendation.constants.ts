@@ -5,10 +5,15 @@ import {
   SchoolMediaType,
 } from '@prisma/client';
 import type {
+  SchoolFieldSource,
   SchoolPublicMedia,
   SchoolPublicMediaAsset,
 } from '@study-abroad/shared';
-import { toLegacyTestOptionalFlag } from '@study-abroad/shared/utils';
+import {
+  normalizeSchoolProvenance,
+  toLegacyTestOptionalFlag,
+  toSchoolFieldSource,
+} from '@study-abroad/shared/utils';
 import { SCHOOL_BASIC_SELECT } from '../../common/constants/prisma-selects';
 import { clampPercentRate } from '../../common/utils/percent.util';
 import { toPublicSchoolMediaAsset } from '../../common/utils/school-public-media.util';
@@ -24,12 +29,14 @@ const RECOMMENDATION_PUBLIC_MEDIA_SOURCE_TYPES: SchoolMediaSourceType[] = [
 
 /**
  * School fields for recommendation matching (matchSchoolIds).
- * When adding fields here, also update mapSchoolMeta() below.
+ * When adding fields here, also update mapSourcedSchoolMeta() below.
  */
 export const RECOMMENDATION_SCHOOL_SELECT = {
   ...SCHOOL_BASIC_SELECT,
   aliases: true,
   isPrivate: true,
+  metadata: true,
+  updatedAt: true,
   hasEarlyDecision: true,
   retentionRate: true,
   roomAndBoard: true,
@@ -64,7 +71,7 @@ export type RecommendationSchoolResult = Prisma.SchoolGetPayload<{
 }>;
 
 /** Mapped school metadata shape for recommendation responses. */
-export type RecommendationSchoolMeta = ReturnType<typeof mapSchoolMeta>;
+export type RecommendationSchoolMeta = ReturnType<typeof mapSourcedSchoolMeta>;
 
 type RecommendationMediaAsset =
   RecommendationSchoolResult['mediaAssets'][number];
@@ -93,12 +100,23 @@ function mapSchoolMedia(
 /**
  * Maps matched school to schoolMeta for recommendation response.
  */
-export function mapSchoolMeta(school: RecommendationSchoolResult) {
+export function mapSourcedSchoolMeta(school: RecommendationSchoolResult) {
+  const fieldSources = {
+    acceptanceRate: getRecommendationFieldSource(school, 'acceptanceRate'),
+    retentionRate: getRecommendationFieldSource(school, 'retentionRate'),
+    testingPolicy: getRecommendationFieldSource(school, 'testingPolicy'),
+  };
+  const weakFields = Object.fromEntries(
+    Object.entries(fieldSources)
+      .filter(([, source]) => !source)
+      .map(([field]) => [field, 'hidden_until_field_provenance_exists']),
+  );
+
   return {
     nameZh: school.nameZh,
     usNewsRank: school.usNewsRank,
     rankings: school.rankings,
-    acceptanceRate: clampPercentRate(school.acceptanceRate),
+    acceptanceRate: getRecommendationMetricValue(school, 'acceptanceRate'),
     city: school.city,
     state: school.state,
     tuition: school.tuition,
@@ -109,8 +127,7 @@ export function mapSchoolMeta(school: RecommendationSchoolResult) {
       testOptional: school.testOptional,
     }),
     hasEarlyDecision: school.hasEarlyDecision ?? undefined,
-    retentionRate:
-      school.retentionRate != null ? Number(school.retentionRate) : undefined,
+    retentionRate: getRecommendationMetricValue(school, 'retentionRate'),
     roomAndBoard: school.roomAndBoard ?? undefined,
     studentOrgsCount: school.studentOrgsCount ?? undefined,
     countriesRepresented: school.countriesRepresented ?? undefined,
@@ -121,6 +138,8 @@ export function mapSchoolMeta(school: RecommendationSchoolResult) {
     logoUrl: school.logoUrl || undefined,
     media: mapSchoolMedia(school.mediaAssets),
     website: school.website || undefined,
+    fieldSources,
+    weakFields,
     sourceUrls: {
       collegeScorecardUrl: school.scorecardId
         ? `https://collegescorecard.ed.gov/school/?${school.scorecardId}`
@@ -131,4 +150,56 @@ export function mapSchoolMeta(school: RecommendationSchoolResult) {
       websiteUrl: school.website || undefined,
     },
   };
+}
+
+export function getRecommendationFieldSource(
+  school: Pick<RecommendationSchoolResult, 'metadata'>,
+  field: string,
+): SchoolFieldSource | null {
+  const provenance = normalizeSchoolProvenance(
+    ((school.metadata as Record<string, unknown> | null | undefined)
+      ?.provenance ?? {}) as Record<string, unknown>,
+  );
+  const source = provenance[field]
+    ? toSchoolFieldSource(provenance[field]!)
+    : null;
+  if (!source) return null;
+  if (!source.predictionEligible) return null;
+  if (source.staleness === 'STALE') return null;
+  if (
+    source.realDataStatus &&
+    [
+      'MANUAL_REVIEW',
+      'OFFICIAL_BLANK',
+      'OFFICIAL_BLOCKED',
+      'NO_PUBLIC_REAL_DATA',
+    ].includes(source.realDataStatus)
+  ) {
+    return null;
+  }
+  return source;
+}
+
+export function getRecommendationMetricValue(
+  school: Record<string, unknown> &
+    Pick<RecommendationSchoolResult, 'metadata'>,
+  field: string,
+): number | undefined {
+  const source = getRecommendationFieldSource(school, field);
+  if (!source) return undefined;
+  if (field === 'acceptanceRate' || field === 'graduationRate') {
+    return clampPercentRate(school[field]);
+  }
+  return numberOrUndefined(school[field]);
+}
+
+function numberOrUndefined(value: unknown): number | undefined {
+  if (value == null || value === '') return undefined;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (value && typeof value === 'object' && 'toNumber' in value) {
+    const maybe = (value as { toNumber: () => number }).toNumber();
+    return Number.isFinite(maybe) ? maybe : undefined;
+  }
+  const next = Number(value);
+  return Number.isFinite(next) ? next : undefined;
 }

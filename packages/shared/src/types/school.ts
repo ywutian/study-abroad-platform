@@ -102,4 +102,12 @@ export interface EssayPrompt {
   wordLimit?: number;
   isRequired?: boolean;
   sortOrder?: number;
+  sourceSummary?: {
+    hasSourceEvidence: boolean;
+    sourceUrls: string[];
+    sourceTypes: string[];
+    sourceQuality: 'official' | 'secondary' | 'unknown';
+    latestScrapedAt?: string | null;
+    minConfidence?: number | null;
+  };
 }

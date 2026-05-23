@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmor8qbd100m91jbwu01c8qgi","cmnwr8iwq0055z0tivbkk0qbk","University of North Carolina Wilmington","SHORT_ANSWER","critical","/admin/essay-prompts/cmor8qbd100m91jbwu01c8qgi","Reflect on your identity, including your background and experiences, and how you envision your identity contributing to the UNCW community.","review","review_untrusted_source_or_official_conflict","review-prompt-owner-and-reject-reassign-or-terminalize"

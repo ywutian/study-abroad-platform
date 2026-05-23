@@ -6,7 +6,7 @@ import { EssayAiService } from '../../essay/essay-ai.service';
 
 describe('EssayToolsService', () => {
   let service: EssayToolsService;
-  let prisma: { essay: { findMany: jest.Mock } };
+  let prisma: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -16,14 +16,22 @@ describe('EssayToolsService', () => {
           provide: PrismaService,
           useValue: {
             profile: { findUnique: jest.fn().mockResolvedValue(null) },
-            essay: { findMany: jest.fn().mockResolvedValue([]) },
-            essayPrompt: { findMany: jest.fn().mockResolvedValue([]) },
+            school: { findFirst: jest.fn().mockResolvedValue(null) },
+            essay: {
+              findMany: jest.fn().mockResolvedValue([]),
+              findFirst: jest.fn().mockResolvedValue(null),
+            },
+            essayPrompt: {
+              findMany: jest.fn().mockResolvedValue([]),
+              findFirst: jest.fn().mockResolvedValue(null),
+            },
           },
         },
         {
           provide: LLMService,
           useValue: {
             chatSimple: jest.fn().mockResolvedValue('{"outline":[]}'),
+            chatSimpleGuarded: jest.fn().mockResolvedValue('{"outline":[]}'),
           },
         },
         {
@@ -32,6 +40,13 @@ describe('EssayToolsService', () => {
             polish: jest.fn().mockResolvedValue({ result: 'polished' }),
             review: jest.fn().mockResolvedValue({ result: 'reviewed' }),
             brainstorm: jest.fn().mockResolvedValue({ ideas: [] }),
+            polishEssayDirect: jest
+              .fn()
+              .mockResolvedValue({ result: 'polished' }),
+            reviewEssayDirect: jest
+              .fn()
+              .mockResolvedValue({ result: 'reviewed' }),
+            brainstormDirect: jest.fn().mockResolvedValue({ ideas: [] }),
           },
         },
       ],
@@ -76,5 +91,68 @@ describe('EssayToolsService', () => {
     const result = await service.getEssays('user-1', 'en');
     expect(result).toHaveProperty('count', 1);
     expect(result).toHaveProperty('essays');
+  });
+
+  it('should require source-backed verified prompts in AI prompt search', async () => {
+    prisma.essayPrompt.findMany.mockResolvedValue([]);
+
+    await service.searchEssayPrompts(
+      { schoolId: 'school-1', type: 'SUPPLEMENTAL', year: 2026 },
+      'en',
+    );
+
+    expect(prisma.essayPrompt.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          isActive: true,
+          status: 'VERIFIED',
+          schoolId: 'school-1',
+          type: 'SUPPLEMENTAL',
+          year: 2026,
+          sources: { some: { sourceUrl: { not: null } } },
+        }),
+      }),
+    );
+  });
+
+  it('should expose source summary without raw sources in AI prompt search results', async () => {
+    prisma.essayPrompt.findMany.mockResolvedValue([
+      {
+        id: 'p1',
+        school: { name: 'MIT', nameZh: '麻省理工' },
+        type: 'SUPPLEMENTAL',
+        year: 2026,
+        prompt: 'Describe the world you come from.',
+        promptZh: null,
+        wordLimit: 250,
+        isRequired: true,
+        aiTips: 'Be specific.',
+        sources: [
+          {
+            sourceType: 'OFFICIAL',
+            sourceUrl: 'https://mit.edu/apply/essays',
+            scrapedAt: new Date('2026-01-01T00:00:00Z'),
+            confidence: 0.92,
+          },
+        ],
+      },
+    ]);
+
+    const result = await service.searchEssayPrompts(
+      { schoolId: 'school-1' },
+      'en',
+    );
+
+    expect(result.count).toBe(1);
+    expect(result.prompts[0]).not.toHaveProperty('sources');
+    expect(result.prompts[0].sourceSummary).toEqual(
+      expect.objectContaining({
+        hasSourceEvidence: true,
+        sourceUrls: ['https://mit.edu/apply/essays'],
+        sourceTypes: ['OFFICIAL'],
+        sourceQuality: 'official',
+        minConfidence: 0.92,
+      }),
+    );
   });
 });

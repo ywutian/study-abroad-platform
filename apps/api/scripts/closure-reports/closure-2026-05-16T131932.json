@@ -1,0 +1,368 @@
+{
+  "generatedAt": "2026-05-16T13:19:32.321Z",
+  "threshold": 0.9,
+  "floor": 0.85,
+  "totals": {
+    "totalSchools": 240,
+    "excluded": 12,
+    "scope": 228
+  },
+  "closure": {
+    "closed": false,
+    "blockingFields": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "edAcceptanceRate",
+      "eaAcceptanceRate"
+    ],
+    "floorViolations": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "edAcceptanceRate",
+      "eaAcceptanceRate"
+    ]
+  },
+  "fields": {
+    "acceptanceRate": {
+      "eligible": 228,
+      "filled": 228,
+      "closed": 11,
+      "officialPure": 11,
+      "closure": 0.0482,
+      "officialPurity": 0.0482,
+      "gapsCount": 217
+    },
+    "sat25": {
+      "eligible": 228,
+      "filled": 226,
+      "closed": 63,
+      "officialPure": 63,
+      "closure": 0.2763,
+      "officialPurity": 0.2763,
+      "gapsCount": 165
+    },
+    "sat75": {
+      "eligible": 228,
+      "filled": 226,
+      "closed": 63,
+      "officialPure": 63,
+      "closure": 0.2763,
+      "officialPurity": 0.2763,
+      "gapsCount": 165
+    },
+    "intlAcceptanceRate": {
+      "eligible": 228,
+      "filled": 228,
+      "closed": 19,
+      "officialPure": 19,
+      "closure": 0.0833,
+      "officialPurity": 0.0833,
+      "gapsCount": 209
+    },
+    "oosAcceptanceRate": {
+      "eligible": 136,
+      "filled": 136,
+      "closed": 9,
+      "officialPure": 9,
+      "closure": 0.0662,
+      "officialPurity": 0.0662,
+      "gapsCount": 127
+    },
+    "edAcceptanceRate": {
+      "eligible": 228,
+      "filled": 73,
+      "closed": 124,
+      "officialPure": 124,
+      "closure": 0.5439,
+      "officialPurity": 0.5439,
+      "gapsCount": 104
+    },
+    "eaAcceptanceRate": {
+      "eligible": 228,
+      "filled": 71,
+      "closed": 156,
+      "officialPure": 156,
+      "closure": 0.6842,
+      "officialPurity": 0.6842,
+      "gapsCount": 72
+    }
+  },
+  "topGaps": [
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "POLICY_DETERMINATION"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iwe004zz0tilegv5ian",
+      "name": "Harvey Mudd College",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iwg0050z0tiyrfhaavh",
+      "name": "Rose-Hulman Institute of Technology",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iup0042z0tieqofvyfn",
+      "name": "Williams College",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htkn30001vqf2nozenmj6",
+      "name": "Massachusetts Institute of Technology",
+      "rank": 2,
+      "filled": false,
+      "tier": "SEED",
+      "source": "POLICY_DETERMINATION"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iur0043z0tie8ndrb65",
+      "name": "Amherst College",
+      "rank": 2,
+      "filled": true,
+      "tier": "SEED",
+      "source": "SECONDARY_AGGREGATOR"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8iwi0051z0tidfdrzv7w",
+      "name": "Cooper Union",
+      "rank": 2,
+      "filled": false,
+      "tier": "SEED",
+      "source": "TERMINAL"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htkn80003vqf29zl0f9lr",
+      "name": "Stanford University",
+      "rank": 3,
+      "filled": false,
+      "tier": "SEED",
+      "source": "POLICY_DETERMINATION"
+    }
+  ]
+}

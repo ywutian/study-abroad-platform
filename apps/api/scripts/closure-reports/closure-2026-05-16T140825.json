@@ -1,0 +1,368 @@
+{
+  "generatedAt": "2026-05-16T14:08:25.253Z",
+  "threshold": 0.9,
+  "floor": 0.85,
+  "totals": {
+    "totalSchools": 240,
+    "excluded": 13,
+    "scope": 227
+  },
+  "closure": {
+    "closed": false,
+    "blockingFields": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "edAcceptanceRate",
+      "eaAcceptanceRate"
+    ],
+    "floorViolations": [
+      "acceptanceRate",
+      "sat25",
+      "sat75",
+      "intlAcceptanceRate",
+      "oosAcceptanceRate",
+      "edAcceptanceRate",
+      "eaAcceptanceRate"
+    ]
+  },
+  "fields": {
+    "acceptanceRate": {
+      "eligible": 227,
+      "filled": 227,
+      "closed": 36,
+      "officialPure": 36,
+      "closure": 0.1586,
+      "officialPurity": 0.1586,
+      "gapsCount": 191
+    },
+    "sat25": {
+      "eligible": 227,
+      "filled": 224,
+      "closed": 88,
+      "officialPure": 87,
+      "closure": 0.3877,
+      "officialPurity": 0.3833,
+      "gapsCount": 139
+    },
+    "sat75": {
+      "eligible": 227,
+      "filled": 224,
+      "closed": 88,
+      "officialPure": 87,
+      "closure": 0.3877,
+      "officialPurity": 0.3833,
+      "gapsCount": 139
+    },
+    "intlAcceptanceRate": {
+      "eligible": 227,
+      "filled": 218,
+      "closed": 44,
+      "officialPure": 44,
+      "closure": 0.1938,
+      "officialPurity": 0.1938,
+      "gapsCount": 183
+    },
+    "oosAcceptanceRate": {
+      "eligible": 135,
+      "filled": 135,
+      "closed": 10,
+      "officialPure": 10,
+      "closure": 0.0741,
+      "officialPurity": 0.0741,
+      "gapsCount": 125
+    },
+    "edAcceptanceRate": {
+      "eligible": 227,
+      "filled": 72,
+      "closed": 143,
+      "officialPure": 143,
+      "closure": 0.63,
+      "officialPurity": 0.63,
+      "gapsCount": 84
+    },
+    "eaAcceptanceRate": {
+      "eligible": 227,
+      "filled": 68,
+      "closed": 162,
+      "officialPure": 162,
+      "closure": 0.7137,
+      "officialPurity": 0.7137,
+      "gapsCount": 65
+    }
+  },
+  "topGaps": [
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htkmy0000vqf2src2zcb5",
+      "name": "Princeton University",
+      "rank": 1,
+      "filled": false,
+      "tier": "SEED",
+      "source": "POLICY_DETERMINATION"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmn1htkno000bvqf209819ok4",
+      "name": "Columbia University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmn1htknq000cvqf2sogobdg1",
+      "name": "Cornell University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmn1htkns000dvqf2a150rn2s",
+      "name": "University of Chicago",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8iv9004dz0tirpo4zq16",
+      "name": "Vassar College",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmn1htkno000bvqf209819ok4",
+      "name": "Columbia University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmn1htknq000cvqf2sogobdg1",
+      "name": "Cornell University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmn1htkns000dvqf2a150rn2s",
+      "name": "University of Chicago",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8iv9004dz0tirpo4zq16",
+      "name": "Vassar College",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmn1htkno000bvqf209819ok4",
+      "name": "Columbia University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmn1htknq000cvqf2sogobdg1",
+      "name": "Cornell University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmn1htkns000dvqf2a150rn2s",
+      "name": "University of Chicago",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8iv9004dz0tirpo4zq16",
+      "name": "Vassar College",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmn1htkno000bvqf209819ok4",
+      "name": "Columbia University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmn1htknq000cvqf2sogobdg1",
+      "name": "Cornell University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmn1htkns000dvqf2a150rn2s",
+      "name": "University of Chicago",
+      "rank": 12,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8iv9004dz0tirpo4zq16",
+      "name": "Vassar College",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htkno000bvqf209819ok4",
+      "name": "Columbia University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmn1htknq000cvqf2sogobdg1",
+      "name": "Cornell University",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8iv9004dz0tirpo4zq16",
+      "name": "Vassar College",
+      "rank": 12,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "acceptanceRate",
+      "id": "cmnwr8ivb004ez0tiduer8l0n",
+      "name": "Grinnell College",
+      "rank": 13,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "sat25",
+      "id": "cmnwr8ivb004ez0tiduer8l0n",
+      "name": "Grinnell College",
+      "rank": 13,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "sat75",
+      "id": "cmnwr8ivb004ez0tiduer8l0n",
+      "name": "Grinnell College",
+      "rank": 13,
+      "filled": true,
+      "tier": "SEED",
+      "source": "HEURISTIC:PR-15"
+    },
+    {
+      "field": "intlAcceptanceRate",
+      "id": "cmnwr8ivb004ez0tiduer8l0n",
+      "name": "Grinnell College",
+      "rank": 13,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    },
+    {
+      "field": "edAcceptanceRate",
+      "id": "cmnwr8ivb004ez0tiduer8l0n",
+      "name": "Grinnell College",
+      "rank": 13,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmn1htknv000evqf29yjvrstt",
+      "name": "University of California, Berkeley",
+      "rank": 15,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmn1htkny000fvqf2jlmz8ej1",
+      "name": "University of California, Los Angeles",
+      "rank": 15,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmnwr8ivg004hz0ti8c1ggiw8",
+      "name": "Smith College",
+      "rank": 16,
+      "filled": true,
+      "tier": "SEED",
+      "source": "TAVILY_ENRICHMENT"
+    },
+    {
+      "field": "eaAcceptanceRate",
+      "id": "cmn1htko7000jvqf22r0n55p2",
+      "name": "University of Notre Dame",
+      "rank": 20,
+      "filled": true,
+      "tier": "SEED",
+      "source": "LEGACY_DB_VALUE"
+    },
+    {
+      "field": "oosAcceptanceRate",
+      "id": "cmn1htkoa000kvqf2oqm36hw5",
+      "name": "University of Michigan, Ann Arbor",
+      "rank": 21,
+      "filled": true,
+      "tier": "INFERRED",
+      "source": "PERMANENT_HEURISTIC"
+    }
+  ]
+}

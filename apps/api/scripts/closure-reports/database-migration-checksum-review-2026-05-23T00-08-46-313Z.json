@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-05-23T00:08:46.315Z",
+  "mode": "read-only-database-migration-checksum-review",
+  "status": "PASS",
+  "sourceReconciliation": "scripts/closure-reports/database-migration-history-reconciliation-2026-05-23T00-08-45-318Z.json",
+  "reconciliationGeneratedAt": "2026-05-23T00:08:45.597Z",
+  "reconciliationStatus": "BLOCKED_UNRECOVERABLE_MIGRATION_HISTORY",
+  "searchScope": {
+    "currentWorkspace": true,
+    "gitPathHistory": true,
+    "gitStashes": true,
+    "unreachableBlobs": false
+  },
+  "summary": {
+    "checksumMismatchRows": 0,
+    "exactMatchLocations": 0,
+    "unresolvedMismatches": 0
+  },
+  "rows": [],
+  "recommendedSequence": [
+    "Rerun migration reconciliation and schema alignment planning."
+  ],
+  "nextCampaign": {
+    "id": "database_migration_history_reconciliation",
+    "reason": "No checksum mismatch rows remain; rerun reconciliation and alignment planning."
+  }
+}

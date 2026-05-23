@@ -1,0 +1,152 @@
+{
+  "generatedAt": "2026-05-21T09:42:44.865Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-bowdoin-latest.json",
+      "generatedAt": "2026-05-21T09:42:28.269Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Bowdoin College official prompt-context pages did not match 1 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmnwr8iuy0047z0tijtdlowua",
+        "schoolName": "Bowdoin College",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmnwr8iuy0047z0tijtdlowua",
+    "schoolName": "Bowdoin College",
+    "sourceSearchPromptRows": 1,
+    "sourceSearchRecommendedAction": "validate-ranked-linked-source-candidates"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "fullSourceFamilyMismatchReview": true,
+    "partialSourceFamilyMismatchReview": false,
+    "untrustedValidatedSourceReview": false,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 6,
+    "reachableHtmlUrls": 5,
+    "validatedSourceUrls": 0,
+    "trustedValidatedSourceUrls": 0,
+    "untrustedValidatedSourceUrls": 0,
+    "crossSchoolPromptMatchUrls": 0,
+    "officialContextNoPromptMatchUrls": 3,
+    "promptMatchCount": 1,
+    "promptRows": 1,
+    "matchedPromptRows": 1,
+    "unmatchedPromptRows": 0,
+    "emittedRows": 1,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 1,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 1
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 1
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Bowdoin College has 1 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmnwr8iuy0047z0tijtdlowua",
+    "schoolName": "Bowdoin College",
+    "topEssayPromptId": "cmorxd5qz002neiz69rojmwjq",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorxd5qz002neiz69rojmwjq",
+      "schoolId": "cmnwr8iuy0047z0tijtdlowua",
+      "schoolName": "Bowdoin College",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxd5qz002neiz69rojmwjq",
+      "promptSnippet": "How did you first learn about Bowdoin?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www.bowdoin.edu/admissions/apply/index.html",
+          "https://admissions.bowdoin.edu/register/contact#Get%20in%20touch%20with%20your%20questions",
+          "https://www.commonapp.org/explore/bowdoin-college"
+        ],
+        "finalUrls": [
+          "https://www.bowdoin.edu/admissions/apply/index.html",
+          "https://admissions.bowdoin.edu/register/contact",
+          "https://www.commonapp.org/explore/bowdoin-college/"
+        ],
+        "trustedValidatedSourceUrls": [],
+        "untrustedValidatedSourceUrls": [],
+        "crossSchoolPromptMatchSourceUrls": [],
+        "promptLanguageSignals": [
+          "short essay",
+          "essay question",
+          "common application",
+          "essay prompts"
+        ],
+        "cycleSignals": [
+          "2025",
+          "2026"
+        ],
+        "evidenceSnippets": [
+          "t a fee waiver; it is automatically granted during the application process for the situations above. If you choose to pay the application fee, it is non-refundable. Bowdoin Supplement The Bowdoin Supplement includes a variety of Bowdoin-specific questions, including two optional short essays (which are further explained in the optional application questions section below). The method by which you complete the supplement depends on which application you choose: Your writing should reflect your own ideas, experiences, and perspective. The strongest applications are personal and genuine. Read our guidance on the use of AI in your application.&#160; Common Application &#8212; the Bowdoin Supplement is the \"Questions\" section of the Common Application and automatically included when you submit your application. Coalition on Scoir &#8212; the Bowdoin Supplement is a separate form on Bowdoin&#8217;s website. You will be directed to the form once you submit your Coalition on Scoir application. You will a",
+          "t your own ideas, experiences, and perspective. The strongest applications are personal and genuine. Read our guidance on the use of AI in your application.&#160; Navigating through Differences Essay This optional essay (max 250 words) is available in the Bowdoin Supplement. The essay question reads as follows.&#160;Your writing should reflect your own ideas, experiences, and perspective.&#160; Bowdoin believes that its broadly diverse and inclusive campus community prepares graduates to be contributing and useful citizens of the world. Every graduate of this institution should be confident in their preparation to be able to navigate through differences and in all sorts of situations. A Bowdoin education does not guarantee these skills, but it does impart a set of tools necessary to bravely enter unfamiliar conditions with the confidence to deal effectively with ambiguity. If you wish, you may share anything about the unique experiences and perspectives that you would bring with you to the Bowdoin c",
+          "ng to Bowdoin: What's required and what's optional? We'll break it all down for you in three minutes. Let's get started: A step-by-step guide to your Bowdoin application Expand for more details 1. Choose an application type and add Bowdoin Application Options Bowdoin accepts the Common Application ,&#160; the Coalition on Scoir application, and is a QuestBridge &#160;partner.&#160; All applications are treated equally, regardless of source. Applications open on August 1 for first-year students. The $65 application fee is &#160;automatically waived if you are applying for financial aid and/or are a first-generation to college student. Options to begin your application to Bowdoin: Common Application Create your account at CommonApp.org &#160;and&#160; add Bowdoin College to your &#8220;My Colleges&#8221; list . (Transfer applicants must apply through the Common App.) Coalition on Scoir Create your account at app.scoir.com/signin and start your application to Bowdoin . QuestBridge QuestBridge supports&#160",
+          "short essay",
+          "essay question",
+          "common application",
+          "nt and what you hope to learn during that time. During your gap year you may not apply to or enroll at any another institution as a degree seeking student or take courses at another college or university for credit. What applications do you accept? Bowdoin accepts both the&#xA0; Common Application and the Coalition on Scoir . All applications are treated equally, regardless of source. We also partner with Questbridge , a nonprofit organization that matches high-achieving, low-income students with opportunities in higher education. Learn more on our apply page .&#xA0; How do I get an application fee waiver? Your application fee will be automatically waived within the Common Application and Coalition Application if you are&#xA0; applying for financial aid and/or&#xA0; first-generation-to-college student &#xA0;(neither parent graduated from a four-year college or university). You do not need to request a waiver prior to applying as the fee waiver happens automatically. Learn more about our fee waiver polic",
+          "re applying for financial aid or who are first-generation-to-college (neither parent graduated from a four-year college or university). Transfer Any student who has been enrolled in a degree-granting program must apply as a transfer student. Transfer applicants should submit the Common Application by the March 3 deadline. Bowdoin requires both high school and college transcripts for admission as well as the College Report and two academic evaluations from faculty at your current institution. Transfer admission to Bowdoin is extremely competitive. We generally receive between 150-200 transfer applications, and we admit five to twenty candidates. Bowdoin offers a fall transfer program. Image icon View image gallery Additional Information Visit us Campus Tours and Information Sessions Campus tours, led by current students, are available with advance registration. Self-guided campus tours and virtual tours are also available. Read more Apply for first-year Apply for transfer Admissions office Visit us Addre",
+          "essay prompts"
+        ],
+        "officialContextNoPromptMatchUrls": 3,
+        "promptMatchCount": 1
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat partial same-school prompt matches as proof for unmatched prompt snippets"
+      ]
+    }
+  ]
+}

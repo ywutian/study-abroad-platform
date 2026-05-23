@@ -1,0 +1,432 @@
+{
+  "generatedAt": "2026-05-21T05:20:13.970Z",
+  "mode": "read-only-essay-prompt-source-family-mismatch-review",
+  "status": "ESSAY_PROMPT_SOURCE_FAMILY_MISMATCH_REVIEW_READY",
+  "destructiveDbWriteAllowedByThisPlan": false,
+  "notificationAllowedByThisPlan": false,
+  "sourceArtifacts": {
+    "manualCheck": {
+      "path": "../../../../../../tmp/essay-prompt-source-manual-check-lehigh-latest.json",
+      "generatedAt": "2026-05-21T05:19:57.505Z",
+      "status": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+      "nextCampaign": {
+        "id": "essay_prompt_source_family_mismatch_review",
+        "reason": "Lehigh University official prompt-context pages did not match 7 assigned prompt snippets; review assignment, reject, or terminalize before further source approval.",
+        "schoolId": "cmn1htkq9001avqf25ziy94gn",
+        "schoolName": "Lehigh University",
+        "recommendedAction": "review-assigned-prompt-family-mismatch-or-terminal"
+      }
+    }
+  },
+  "target": {
+    "schoolId": "cmn1htkq9001avqf25ziy94gn",
+    "schoolName": "Lehigh University",
+    "sourceSearchPromptRows": 7,
+    "sourceSearchRecommendedAction": "manual-deep-search-official-application-page"
+  },
+  "summary": {
+    "sourceFamilyMismatchReview": true,
+    "manualCheckStatus": "ESSAY_PROMPT_SOURCE_MANUAL_CHECK_READY",
+    "checkedUrls": 3,
+    "reachableHtmlUrls": 3,
+    "validatedSourceUrls": 0,
+    "officialContextNoPromptMatchUrls": 2,
+    "promptMatchCount": 0,
+    "promptRows": 7,
+    "emittedRows": 7,
+    "allRowsHaveDisposition": true,
+    "blockedRows": 0,
+    "duplicatePromptSnippetRows": 0,
+    "terminalCandidateRows": 0,
+    "reviewRows": 7,
+    "byMismatchDisposition": {
+      "review_prompt_owner_or_reject": 7
+    },
+    "byRecommendedAction": {
+      "review-prompt-owner-and-reject-reassign-or-terminalize": 7
+    }
+  },
+  "reviewContract": {
+    "mismatchReviewDoesNotApproveSources": true,
+    "mismatchReviewDoesNotWriteDb": true,
+    "candidateEvidenceStatus": "official_context_no_prompt_match_review_only",
+    "acceptedResolutionRequires": [
+      "reviewer confirms whether assigned school truly owns these prompts",
+      "reviewer records official prompt source URL, raw evidence hash, cycle year, and rationale before source approval",
+      "reviewer rejects, reassigns, or terminalizes prompt rows when official source family does not match"
+    ],
+    "prohibitedActions": [
+      "do not create EssayPromptSource rows from official context/no-match evidence",
+      "do not expose mismatched prompts to public essay, timeline, or chat consumers",
+      "do not infer the correct school or terminal status without reviewer workflow evidence"
+    ]
+  },
+  "nextCampaign": {
+    "id": "essay_prompt_source_family_mismatch_reviewer_queue",
+    "reason": "Lehigh University has 7 prompt rows whose checked official prompt-context URLs did not match assigned prompt snippets.",
+    "schoolId": "cmn1htkq9001avqf25ziy94gn",
+    "schoolName": "Lehigh University",
+    "topEssayPromptId": "cmorwbipe00bd44lkqmgoelwz",
+    "sourceFamilyMismatchReview": true,
+    "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize"
+  },
+  "rows": [
+    {
+      "essayPromptId": "cmorwbipe00bd44lkqmgoelwz",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwbipe00bd44lkqmgoelwz",
+      "promptSnippet": "How did you first learn about Lehigh University and what motivated you to apply?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorwmtul00apnoojb68xqw3c",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "ACTIVITY",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwmtul00apnoojb68xqw3c",
+      "promptSnippet": "Performing Arts and Snyder Marching Band Instrumental Scholarships or Choral Arts Scholarships Applicants: Write a statement outlining your musical experiences and your interests i",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorxig3800bfeiz6p1n4muma",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorxig3800bfeiz6p1n4muma",
+      "promptSnippet": "At Lehigh, we believe in pausing to celebrate the good—meaningful moments that bring joy, pride or motivation. What’s something great happening in your life right now? It could be ",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorw208b00aprazu54zw3aeh",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorw208b00aprazu54zw3aeh",
+      "promptSnippet": "Computer Science and Business Program Applicants: What makes the Computer Science and Business (CSB) program the best fit for your academic and/or professional goals?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorw208a00anrazutfw9l0x0",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorw208a00anrazutfw9l0x0",
+      "promptSnippet": "Integrated Degree in Engineering, Arts & Sciences Program Applicants: What makes the Integrated Degree in Engineering, Arts & Sciences (IDEAS) program the best fit for your academi",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorw208400alrazuhcf01zst",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorw208400alrazuhcf01zst",
+      "promptSnippet": "Integrated Business & Engineering Honors Program Applicants: What makes the Integrated Business & Engineering program the best fit for your academic and/or professional goals?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    },
+    {
+      "essayPromptId": "cmorwbiph00bh44lkczpe70u9",
+      "schoolId": "cmn1htkq9001avqf25ziy94gn",
+      "schoolName": "Lehigh University",
+      "type": "SHORT_ANSWER",
+      "severity": "critical",
+      "route": "/admin/essay-prompts/cmorwbiph00bh44lkczpe70u9",
+      "promptSnippet": "How will the unique combination of college, program, major and/or 4+1 program that you selected above allow you to achieve your educational or professional goals?",
+      "closureState": "review",
+      "mismatchDisposition": "review_prompt_owner_or_reject",
+      "reviewerQueue": "essay_prompt_source_family_mismatch_review",
+      "recommendedAction": "review-prompt-owner-and-reject-reassign-or-terminalize",
+      "consumerPolicy": {
+        "publicEssayPrompts": "hide_until_source_family_resolved",
+        "timelineTasks": "hide_until_source_family_resolved",
+        "chatContext": "do_not_use_as_school_prompt_fact",
+        "adminReview": "show_official_context_no_prompt_match"
+      },
+      "candidateOnlyEvidence": {
+        "checkedUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "finalUrls": [
+          "https://www2.lehigh.edu/admissions/apply",
+          "https://www2.lehigh.edu/admissions/admissions-requirements"
+        ],
+        "promptLanguageSignals": [
+          "common application",
+          "writing supplement"
+        ],
+        "cycleSignals": [
+          "2029",
+          "2026"
+        ],
+        "officialContextNoPromptMatchUrls": 2,
+        "promptMatchCount": 0
+      },
+      "requiredReviewerChecks": [
+        "official prompt source family is confirmed for the assigned school and application cycle",
+        "prompt text, word limit, and required/optional status are verified against raw source evidence",
+        "reviewer workflow ID and rationale are recorded before any prompt/source write",
+        "consumer source gates remain active until review closes",
+        "reviewer decides whether each prompt belongs to another source family, should be rejected, or should be terminalized"
+      ],
+      "prohibitedActions": [
+        "do not approve this source family without prompt text match or reviewer rationale",
+        "do not publish this prompt through essay/timeline/chat consumers while source-family review is open",
+        "do not treat UC PIQ context as proof for unrelated short-answer snippets"
+      ]
+    }
+  ]
+}

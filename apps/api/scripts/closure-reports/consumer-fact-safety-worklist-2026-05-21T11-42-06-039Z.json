@@ -1,0 +1,2160 @@
+{
+  "generatedAt": "2026-05-21T11:42:06.056Z",
+  "mode": "read-only-consumer-fact-safety-worklist",
+  "status": "CONSUMER_FACT_SAFETY_REVIEW",
+  "destructiveWriteAllowedByThisPlan": false,
+  "runtimeConsumerChangesAllowedByThisPlan": false,
+  "summary": {
+    "totalRows": 11,
+    "trustedRows": 8,
+    "reviewRows": 3,
+    "blockedRows": 0,
+    "highRiskRows": 11,
+    "highRiskBlockedRows": 0,
+    "missingSourceGateRows": 0,
+    "missingFreshnessGateRows": 0,
+    "missingConflictGateRows": 0,
+    "missingWeakStateGateRows": 0,
+    "unsafeSignalRows": 3,
+    "byConsumer": {
+      "application-analysis": 1,
+      "chat": 3,
+      "essay": 1,
+      "prediction": 1,
+      "recommendation": 2,
+      "school-list": 1,
+      "timeline": 2
+    },
+    "byState": {
+      "review": 3,
+      "trusted": 8
+    },
+    "byMissingGate": {}
+  },
+  "reviewContract": {
+    "readOnly": true,
+    "scope": "Static runtime consumer safety worklist for P0/P1 facts used by prediction, recommendation, essay, timeline, chat, school-list, and application analysis.",
+    "acceptedResolutionRequires": [
+      "source/provenance gates are present for externally sourced facts",
+      "freshness/cycle-year gates are present for cycle-sensitive facts",
+      "conflict/review/terminal states prevent authoritative consumption",
+      "weak-state or unknown state is visible when data support is incomplete"
+    ],
+    "prohibitedActions": [
+      "do not treat static detection as proof that runtime values are safe",
+      "do not expose source-less essay prompts through chat, timeline, recommendation, or school-list counts",
+      "do not use metadata/default deadline fallbacks as authoritative application deadlines",
+      "do not use raw school anchors in prediction or recommendation without provenance policy"
+    ]
+  },
+  "nextCampaign": {
+    "id": "consumer_fact_safety_runtime_gate",
+    "reason": "application-analysis application analysis policy card has review fact-safety row application_analysis_policy_evidence_gate; first action: separate-approved-evidence-from-review-only-fallbacks.",
+    "firstRowId": "application_analysis_policy_evidence_gate",
+    "consumer": "application-analysis",
+    "surface": "application analysis policy card",
+    "rowState": "review",
+    "missingGates": [],
+    "unsafeSignals": [
+      "raw_policy_fallback",
+      "metadata_standard_deadline_fallback"
+    ],
+    "recommendedAction": "separate-approved-evidence-from-review-only-fallbacks"
+  },
+  "rows": [
+    {
+      "id": "application_analysis_policy_evidence_gate",
+      "priority": "P0",
+      "consumer": "application-analysis",
+      "surface": "application analysis policy card",
+      "fields": [
+        "SchoolPolicyEvidence",
+        "School.testingPolicy",
+        "School.metadata.deadlines",
+        "international aid policy"
+      ],
+      "rowState": "review",
+      "severity": "warning",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "present",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [
+        {
+          "id": "raw_policy_fallback",
+          "description": "Application analysis falls back to raw school policy fields when approved evidence is absent.",
+          "blockWhenMatched": false,
+          "hits": [
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 347,
+              "signal": "resolveSchoolTestingPolicy(item)",
+              "text": "resolveSchoolTestingPolicy(item);"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 350,
+              "signal": "resolveSchoolIntlAidPolicy(item, profile)",
+              "text": "resolveSchoolIntlAidPolicy(item, profile);"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 353,
+              "signal": "resolveSchoolRoundContext(item, profile)",
+              "text": "resolveSchoolRoundContext(item, profile);"
+            }
+          ]
+        },
+        {
+          "id": "metadata_standard_deadline_fallback",
+          "description": "Application analysis can emit standard deadlines from metadata without approved evidence.",
+          "blockWhenMatched": false,
+          "hits": [
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 401,
+              "signal": "readStringMetadata(metadata",
+              "text": "readStringMetadata(metadata, ['standardDeadline', 'regularDeadline']) ??"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 405,
+              "signal": "readStringMetadata(metadata",
+              "text": "readStringMetadata(metadata, ["
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 400,
+              "signal": "standardDeadline",
+              "text": "standardDeadline:"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 401,
+              "signal": "standardDeadline",
+              "text": "readStringMetadata(metadata, ['standardDeadline', 'regularDeadline']) ??"
+            }
+          ]
+        }
+      ],
+      "consumerPolicy": "Application analysis may use approved policy evidence directly; raw fallback facts must stay unknown/review or visibly weak-state.",
+      "recommendedAction": "separate-approved-evidence-from-review-only-fallbacks",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark application analysis policy card closed solely because SchoolPolicyEvidence, School.testingPolicy, School.metadata.deadlines, international aid policy values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 84,
+              "signal": "ApprovedPolicyEvidence",
+              "text": "export type ApprovedPolicyEvidence = Prisma.SchoolPolicyEvidenceGetPayload<{"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 99,
+              "signal": "ApprovedPolicyEvidence",
+              "text": "Record<SchoolPolicyDimension, ApprovedPolicyEvidence>"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 356,
+              "signal": "ApprovedPolicyEvidence",
+              "text": "source: ApprovedPolicyEvidence | undefined,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 633,
+              "signal": "ApprovedPolicyEvidence",
+              "text": "evidences: ApprovedPolicyEvidence[],"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 91,
+              "signal": "sourceUrl",
+              "text": "sourceUrl: true;"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 368,
+              "signal": "sourceUrl",
+              "text": "sourceUrl: source.sourceUrl ?? undefined,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1092,
+              "signal": "sourceUrl",
+              "text": "sourceUrl: source.sourceUrl,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 337,
+              "signal": "evidenceIds",
+              "text": "const evidenceIds: string[] = [];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 361,
+              "signal": "evidenceIds",
+              "text": "evidenceIds.push(source.id);"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 409,
+              "signal": "evidenceIds",
+              "text": "evidenceIds: [...new Set(evidenceIds)],"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 443,
+              "signal": "evidenceIds",
+              "text": "const evidenceIds = [...new Set(policyCard.evidenceIds)];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 479,
+              "signal": "evidenceIds",
+              "text": "evidenceIds,"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 92,
+              "signal": "sourcePublishedAt",
+              "text": "sourcePublishedAt: true;"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 369,
+              "signal": "sourcePublishedAt",
+              "text": "sourcePublishedAt: source.sourcePublishedAt?.toISOString(),"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1093,
+              "signal": "sourcePublishedAt",
+              "text": "sourcePublishedAt: source.sourcePublishedAt,"
+            }
+          ],
+          "conflict": [
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 105,
+              "signal": "unknowns",
+              "text": "unknowns: string[];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 338,
+              "signal": "unknowns",
+              "text": "const unknowns: string[] = [];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 378,
+              "signal": "unknowns",
+              "text": "if (testingPolicy === 'UNKNOWN') unknowns.push('testingPolicy');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 383,
+              "signal": "unknowns",
+              "text": "unknowns.push('intlAidPolicy');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 385,
+              "signal": "unknowns",
+              "text": "if (roundContext === 'UNKNOWN') unknowns.push('roundContext');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 411,
+              "signal": "unknowns",
+              "text": "unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 414,
+              "signal": "unknowns",
+              "text": "return { card, unknowns };"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 480,
+              "signal": "unknowns",
+              "text": "unknowns: [...policyCard.unknowns],"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 574,
+              "signal": "unknowns",
+              "text": "unknowns: string[];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 595,
+              "signal": "unknowns",
+              "text": "...input.unknowns.map((unknown) =>"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 613,
+              "signal": "unknowns",
+              "text": "input.unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 621,
+              "signal": "unknowns",
+              "text": "unknowns: input.unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1064,
+              "signal": "unknowns",
+              "text": "unknowns: string[],"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1110,
+              "signal": "unknowns",
+              "text": "...unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1111,
+              "signal": "unknowns",
+              "text": "...schools.flatMap((school) => school.policyCard.unknowns),"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1136,
+              "signal": "unknowns",
+              "text": "unknowns: string[];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1152,
+              "signal": "unknowns",
+              "text": "input.unknowns.length > 0"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1154,
+              "signal": "unknowns",
+              "text": "? `未确认项：${input.unknowns.length}`"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1155,
+              "signal": "unknowns",
+              "text": ": `Unknowns: ${input.unknowns.length}`"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1158,
+              "signal": "unknowns",
+              "text": ": 'No additional unknowns are currently blocking the analysis.',"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1170,
+              "signal": "unknowns",
+              "text": "input.unknowns.length <= Math.max(1, input.schools.length) &&"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1185,
+              "signal": "unknowns",
+              "text": ": 'The current verdict is directionally usable, but the remaining unknowns should still be closed.'"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 378,
+              "signal": "UNKNOWN",
+              "text": "if (testingPolicy === 'UNKNOWN') unknowns.push('testingPolicy');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 381,
+              "signal": "UNKNOWN",
+              "text": "intlAidPolicy === 'UNKNOWN'"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 385,
+              "signal": "UNKNOWN",
+              "text": "if (roundContext === 'UNKNOWN') unknowns.push('roundContext');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 835,
+              "signal": "UNKNOWN",
+              "text": "return 'UNKNOWN';"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 839,
+              "signal": "UNKNOWN",
+              "text": "return 'UNKNOWN';"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 859,
+              "signal": "UNKNOWN",
+              "text": "return item.school.testingPolicy === 'BLIND' ? 'UC' : 'UNKNOWN';"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 868,
+              "signal": "UNKNOWN",
+              "text": "): 'REVIEWED' | 'DERIVED' | 'UNKNOWN' {"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 871,
+              "signal": "UNKNOWN",
+              "text": "testingPolicy !== 'UNKNOWN' ||"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 872,
+              "signal": "UNKNOWN",
+              "text": "intlAidPolicy !== 'UNKNOWN' ||"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 873,
+              "signal": "UNKNOWN",
+              "text": "roundContext !== 'UNKNOWN'"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 877,
+              "signal": "UNKNOWN",
+              "text": "return 'UNKNOWN';"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1115,
+              "signal": "UNKNOWN",
+              "text": "type: 'UNKNOWN' as const,"
+            }
+          ],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 392,
+              "signal": "policySourceQuality",
+              "text": "policySourceQuality: resolvePolicySourceQuality("
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 105,
+              "signal": "unknowns",
+              "text": "unknowns: string[];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 338,
+              "signal": "unknowns",
+              "text": "const unknowns: string[] = [];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 378,
+              "signal": "unknowns",
+              "text": "if (testingPolicy === 'UNKNOWN') unknowns.push('testingPolicy');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 383,
+              "signal": "unknowns",
+              "text": "unknowns.push('intlAidPolicy');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 385,
+              "signal": "unknowns",
+              "text": "if (roundContext === 'UNKNOWN') unknowns.push('roundContext');"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 411,
+              "signal": "unknowns",
+              "text": "unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 414,
+              "signal": "unknowns",
+              "text": "return { card, unknowns };"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 480,
+              "signal": "unknowns",
+              "text": "unknowns: [...policyCard.unknowns],"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 574,
+              "signal": "unknowns",
+              "text": "unknowns: string[];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 595,
+              "signal": "unknowns",
+              "text": "...input.unknowns.map((unknown) =>"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 613,
+              "signal": "unknowns",
+              "text": "input.unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 621,
+              "signal": "unknowns",
+              "text": "unknowns: input.unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1064,
+              "signal": "unknowns",
+              "text": "unknowns: string[],"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1110,
+              "signal": "unknowns",
+              "text": "...unknowns,"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1111,
+              "signal": "unknowns",
+              "text": "...schools.flatMap((school) => school.policyCard.unknowns),"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1136,
+              "signal": "unknowns",
+              "text": "unknowns: string[];"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1152,
+              "signal": "unknowns",
+              "text": "input.unknowns.length > 0"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1154,
+              "signal": "unknowns",
+              "text": "? `未确认项：${input.unknowns.length}`"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1155,
+              "signal": "unknowns",
+              "text": ": `Unknowns: ${input.unknowns.length}`"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1158,
+              "signal": "unknowns",
+              "text": ": 'No additional unknowns are currently blocking the analysis.',"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1170,
+              "signal": "unknowns",
+              "text": "input.unknowns.length <= Math.max(1, input.schools.length) &&"
+            },
+            {
+              "file": "apps/api/src/modules/profile/profile-application-analysis-v2.helpers.ts",
+              "line": 1185,
+              "signal": "unknowns",
+              "text": ": 'The current verdict is directionally usable, but the remaining unknowns should still be closed.'"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "prediction_school_anchor_trust_gate",
+      "priority": "P0",
+      "consumer": "prediction",
+      "surface": "prediction school anchor transformer",
+      "fields": [
+        "School.acceptanceRate",
+        "School.testingPolicy",
+        "School.provenance",
+        "TrustTier"
+      ],
+      "rowState": "review",
+      "severity": "warning",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "present",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [
+        {
+          "id": "missing_provenance_allows_value",
+          "description": "Prediction transformer allows raw values through when field provenance is absent.",
+          "blockWhenMatched": false,
+          "hits": [
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 62,
+              "signal": "if (!provenance)",
+              "text": "if (!provenance) {"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 63,
+              "signal": "return { value: transform",
+              "text": "return { value: transform ? transform(value) : (value as unknown as R) };"
+            }
+          ]
+        },
+        {
+          "id": "heuristic_inferred_exception",
+          "description": "Prediction transformer permits inferred heuristic values with weight instead of hard exclusion.",
+          "blockWhenMatched": false,
+          "hits": [
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 66,
+              "signal": "isHeuristicFallback",
+              "text": "const isHeuristicFallback ="
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 69,
+              "signal": "isHeuristicFallback",
+              "text": "const weight = isHeuristicFallback"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 73,
+              "signal": "isHeuristicFallback",
+              "text": "!isHeuristicFallback &&"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 67,
+              "signal": "provenance.tier === 'INFERRED'",
+              "text": "provenance.tier === 'INFERRED' &&"
+            }
+          ]
+        }
+      ],
+      "consumerPolicy": "Prediction can use weighted sourced anchors, but missing provenance, stale values, and inferred heuristics need explicit policy review.",
+      "recommendedAction": "harden-prediction-provenance-fallback-policy",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark prediction school anchor transformer closed solely because School.acceptanceRate, School.testingPolicy, School.provenance, TrustTier values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+          "packages/shared/src/utils/school-provenance.ts",
+          "apps/api/src/modules/school/school-provenance.helpers.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 24,
+              "signal": "getNormalizedFieldProvenance",
+              "text": "import { getNormalizedFieldProvenance } from '../school/school-provenance.helpers';"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 61,
+              "signal": "getNormalizedFieldProvenance",
+              "text": "const provenance = getNormalizedFieldProvenance(school, field);"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 19,
+              "signal": "isPredictionEligibleTrustTier",
+              "text": "isPredictionEligibleTrustTier,"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 74,
+              "signal": "isPredictionEligibleTrustTier",
+              "text": "!isPredictionEligibleTrustTier(provenance.tier)"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 18,
+              "signal": "TRUST_TIER_PREDICTION_WEIGHT",
+              "text": "TRUST_TIER_PREDICTION_WEIGHT,"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 71,
+              "signal": "TRUST_TIER_PREDICTION_WEIGHT",
+              "text": ": TRUST_TIER_PREDICTION_WEIGHT[provenance.tier];"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 43,
+              "signal": "isPredictionEligibleTrustTier",
+              "text": "export function isPredictionEligibleTrustTier(tier: TrustTier): boolean {"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 262,
+              "signal": "isPredictionEligibleTrustTier",
+              "text": "predictionEligible: isPredictionEligibleTrustTier(provenance.tier),"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 33,
+              "signal": "TRUST_TIER_PREDICTION_WEIGHT",
+              "text": "export const TRUST_TIER_PREDICTION_WEIGHT: Record<TrustTier, number> = {"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 44,
+              "signal": "TRUST_TIER_PREDICTION_WEIGHT",
+              "text": "return TRUST_TIER_PREDICTION_WEIGHT[tier] > 0;"
+            },
+            {
+              "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+              "line": 462,
+              "signal": "getNormalizedFieldProvenance",
+              "text": "export function getNormalizedFieldProvenance("
+            }
+          ],
+          "freshness": [
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 170,
+              "signal": "staleness",
+              "text": "staleness: deriveProvenanceStaleness(fetchedAt, now),"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 200,
+              "signal": "staleness",
+              "text": "): Omit<FieldProvenance, 'staleness'> {"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 237,
+              "signal": "staleness",
+              "text": "const staleness = provenance.staleness ?? deriveProvenanceStaleness(provenance.fetchedAt, now);"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 257,
+              "signal": "staleness",
+              "text": "staleness,"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 109,
+              "signal": "deriveProvenanceStaleness",
+              "text": "export function deriveProvenanceStaleness("
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 170,
+              "signal": "deriveProvenanceStaleness",
+              "text": "staleness: deriveProvenanceStaleness(fetchedAt, now),"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 237,
+              "signal": "deriveProvenanceStaleness",
+              "text": "const staleness = provenance.staleness ?? deriveProvenanceStaleness(provenance.fetchedAt, now);"
+            }
+          ],
+          "conflict": [
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 153,
+              "signal": "realDataStatus",
+              "text": "const realDataStatus = normalizeRealDataStatus(entry.realDataStatus);"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 171,
+              "signal": "realDataStatus",
+              "text": "...(realDataStatus ? { realDataStatus } : {}),"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 211,
+              "signal": "realDataStatus",
+              "text": "...(provenance.realDataStatus ? { realDataStatus: provenance.realDataStatus } : {}),"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 249,
+              "signal": "realDataStatus",
+              "text": "...(provenance.realDataStatus ? { realDataStatus: provenance.realDataStatus } : {}),"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 14,
+              "signal": "MANUAL_REVIEW",
+              "text": "'MANUAL_REVIEW',"
+            },
+            {
+              "file": "packages/shared/src/utils/school-provenance.ts",
+              "line": 101,
+              "signal": "MANUAL_REVIEW",
+              "text": "normalized === 'MANUAL_REVIEW' ||"
+            },
+            {
+              "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+              "line": 374,
+              "signal": "realDataStatus",
+              "text": "realDataStatus?: RealDataStatus;"
+            },
+            {
+              "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+              "line": 399,
+              "signal": "realDataStatus",
+              "text": "...(params.realDataStatus ? { realDataStatus: params.realDataStatus } : {}),"
+            },
+            {
+              "file": "apps/api/src/modules/school/school-provenance.helpers.ts",
+              "line": 425,
+              "signal": "realDataStatus",
+              "text": "realDataStatus?: RealDataStatus;"
+            }
+          ],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 87,
+              "signal": "fieldTrustWeights",
+              "text": ".map((field) => school.fieldTrustWeights?.[field])"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 102,
+              "signal": "fieldTrustWeights",
+              "text": "const weights = Object.values(school.fieldTrustWeights ?? {}).filter("
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 399,
+              "signal": "fieldTrustWeights",
+              "text": "const fieldTrustWeights: Record<string, number> = {};"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 412,
+              "signal": "fieldTrustWeights",
+              "text": "fieldTrustWeights[field] = resolved.weight;"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 537,
+              "signal": "fieldTrustWeights",
+              "text": "fieldTrustWeights,"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 539,
+              "signal": "fieldTrustWeights",
+              "text": "Object.keys(fieldTrustWeights).length > 0"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 540,
+              "signal": "fieldTrustWeights",
+              "text": "? Object.values(fieldTrustWeights).reduce("
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 543,
+              "signal": "fieldTrustWeights",
+              "text": ") / Object.values(fieldTrustWeights).length"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 98,
+              "signal": "averagePredictionWeight",
+              "text": "if (typeof school.averagePredictionWeight === 'number') {"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 99,
+              "signal": "averagePredictionWeight",
+              "text": "return school.averagePredictionWeight;"
+            },
+            {
+              "file": "apps/api/src/modules/prediction/prediction-transformer.service.ts",
+              "line": 538,
+              "signal": "averagePredictionWeight",
+              "text": "averagePredictionWeight:"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "timeline_essay_task_source_gate",
+      "priority": "P0",
+      "consumer": "timeline",
+      "surface": "ApplicationTask essay prompt generation",
+      "fields": [
+        "ApplicationTask.essayPrompt",
+        "EssayPromptSource.sourceUrl"
+      ],
+      "rowState": "review",
+      "severity": "warning",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "not_required",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [
+        {
+          "id": "generic_school_essay_task",
+          "description": "Generic school essay tasks can appear without mapping to a source-backed EssayPrompt.",
+          "blockWhenMatched": false,
+          "hits": [
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 35,
+              "signal": "完成学校补充文书",
+              "text": "{ title: '完成学校补充文书', type: TaskType.ESSAY },"
+            }
+          ]
+        }
+      ],
+      "consumerPolicy": "School-specific essay tasks need source-backed prompt linkage or an explicit generic weak-state label.",
+      "recommendedAction": "link-generated-essay-tasks-to-source-backed-prompts",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark ApplicationTask essay prompt generation closed solely because ApplicationTask.essayPrompt, EssayPromptSource.sourceUrl values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/timeline/timeline-application.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 156,
+              "signal": "sources: { some: { sourceUrl: { not: null } } }",
+              "text": "sources: { some: { sourceUrl: { not: null } } },"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 121,
+              "signal": "year",
+              "text": "year: applicationYear,"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 125,
+              "signal": "year",
+              "text": "orderBy: [{ year: 'desc' }, { applicationDeadline: 'asc' }],"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 207,
+              "signal": "year",
+              "text": "T extends { year?: number; source?: string | null; notes?: string | null },"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 213,
+              "signal": "year",
+              "text": "deadline.year === applicationYear &&"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 518,
+              "signal": "year",
+              "text": "async getGlobalEvents(year?: number): Promise<GlobalEvent[]> {"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 521,
+              "signal": "year",
+              "text": "if (typeof year === 'number') {"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 525,
+              "signal": "year",
+              "text": "year,"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 110,
+              "signal": "applicationYear",
+              "text": "const applicationYear ="
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 121,
+              "signal": "applicationYear",
+              "text": "year: applicationYear,"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 144,
+              "signal": "applicationYear",
+              "text": "this.isSourceBackedCurrentYearDeadline(deadline, applicationYear),"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 208,
+              "signal": "applicationYear",
+              "text": ">(deadline: T, applicationYear: number): boolean {"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 213,
+              "signal": "applicationYear",
+              "text": "deadline.year === applicationYear &&"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 340,
+              "signal": "applicationYear",
+              "text": "parseMetadataDate(dateStr: string, applicationYear: number): Date | null {"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 387,
+              "signal": "applicationYear",
+              "text": "const dateYear = monthNum >= 8 ? applicationYear - 1 : applicationYear;"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 396,
+              "signal": "applicationYear",
+              "text": "const dateYear = monthNum >= 7 ? applicationYear - 1 : applicationYear;"
+            }
+          ],
+          "conflict": [],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 35,
+              "signal": "补充文书",
+              "text": "{ title: '完成学校补充文书', type: TaskType.ESSAY },"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 303,
+              "signal": "补充文书",
+              "text": "const prompt = typeof ep === 'string' ? ep : ep?.prompt || '补充文书';"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 306,
+              "signal": "补充文书",
+              "text": "title: `补充文书: ${prompt.substring(0, 60)}${prompt.length > 60 ? '...' : ''}`,"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 32,
+              "signal": "Common App Personal Statement",
+              "text": "essayPrompt: 'Common App Personal Statement',"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 296,
+              "signal": "Common App Personal Statement",
+              "text": "essayPrompt: 'Common App Personal Statement',"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ai_essay_tools_prompt_source_gate",
+      "priority": "P0",
+      "consumer": "chat",
+      "surface": "AI essay prompt search and review context",
+      "fields": [
+        "EssayPrompt.prompt",
+        "EssayPromptSource.sourceUrl"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "not_required",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "AI essay tools must not quote source-less verified prompts into chat or review context.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark AI essay prompt search and review context closed solely because EssayPrompt.prompt, EssayPromptSource.sourceUrl values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts",
+              "line": 23,
+              "signal": "sources: { some: { sourceUrl: { not: null } } }",
+              "text": "sources: { some: { sourceUrl: { not: null } } },"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts",
+              "line": 299,
+              "signal": "year",
+              "text": "const { schoolName, schoolId, type, year } = params;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts",
+              "line": 328,
+              "signal": "year",
+              "text": "...(year && { year: +year }),"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts",
+              "line": 366,
+              "signal": "year",
+              "text": "year: p.year,"
+            }
+          ],
+          "conflict": [],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/essay-tools.service.ts",
+              "line": 354,
+              "signal": "No matching essay prompts found",
+              "text": ": 'No matching essay prompts found',"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ai_school_tools_fact_source_gate",
+      "priority": "P0",
+      "consumer": "chat",
+      "surface": "AI school details and school comparison tools",
+      "fields": [
+        "School.acceptanceRate",
+        "School.testingPolicy",
+        "School.metadata.deadlines",
+        "EssayPrompt.prompt"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "not_required",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "Chat tools should return sourced facts with weak-state labels, not raw school metadata or source-less prompts.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark AI school details and school comparison tools closed solely because School.acceptanceRate, School.testingPolicy, School.metadata.deadlines, EssayPrompt.prompt values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/ai-agent/tools/school-tools.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 122,
+              "signal": "sourceUrl: true",
+              "text": "sourceUrl: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 225,
+              "signal": "sourceUrl: true",
+              "text": "sourceUrl: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 261,
+              "signal": "sourceUrl: true",
+              "text": "sourceUrl: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 116,
+              "signal": "rankings",
+              "text": "rankings: {"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 161,
+              "signal": "rankings",
+              "text": "rankings: fullSchool.rankings,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 255,
+              "signal": "rankings",
+              "text": "rankings: {"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 278,
+              "signal": "rankings",
+              "text": "rankings: s.rankings,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 28,
+              "signal": "sources: { some",
+              "text": "sources: { some: { sourceUrl: { not: null } } },"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 121,
+              "signal": "year",
+              "text": "year: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 137,
+              "signal": "year",
+              "text": "year: applicationYear,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 144,
+              "signal": "year",
+              "text": "year: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 205,
+              "signal": "year",
+              "text": ": 'no_source_backed_current_year_deadlines',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 221,
+              "signal": "year",
+              "text": "year: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 260,
+              "signal": "year",
+              "text": "year: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 356,
+              "signal": "year",
+              "text": "year: number;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 371,
+              "signal": "year",
+              "text": "year: number;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 385,
+              "signal": "year",
+              "text": "year: number;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 403,
+              "signal": "year",
+              "text": "year: deadline.year,"
+            }
+          ],
+          "conflict": [],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 96,
+              "signal": "N/A",
+              "text": "tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 180,
+              "signal": "N/A",
+              "text": ": 'N/A',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 183,
+              "signal": "N/A",
+              "text": ": 'N/A',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 200,
+              "signal": "N/A",
+              "text": ": 'N/A',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 290,
+              "signal": "N/A",
+              "text": "tuition: s.tuition ? `$${s.tuition.toLocaleString()}` : 'N/A',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 291,
+              "signal": "N/A",
+              "text": "avgSalary: s.avgSalary ? `$${s.avgSalary.toLocaleString()}` : 'N/A',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/school-tools.service.ts",
+              "line": 334,
+              "signal": "N/A",
+              "text": "displayValue: typeof value === 'number' ? `${value}%` : 'N/A',"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ai_timeline_deadline_source_gate",
+      "priority": "P0",
+      "consumer": "chat",
+      "surface": "AI timeline deadline tool",
+      "fields": [
+        "School.metadata.deadlines",
+        "SchoolDeadline.source"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "not_required",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "AI timeline tools must cite sourced current-year deadlines or return a review/unknown state.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark AI timeline deadline tool closed solely because School.metadata.deadlines, SchoolDeadline.source values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 89,
+              "signal": "sourceUrl",
+              "text": "sourceUrl: string | null;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 109,
+              "signal": "sourceUrl",
+              "text": "sourceUrl: this.extractSourceUrl(row.notes),"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 62,
+              "signal": "source",
+              "text": "source: { not: 'MANUAL' },"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 63,
+              "signal": "source",
+              "text": "notes: { contains: 'source:' },"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 73,
+              "signal": "source",
+              "text": "source: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 88,
+              "signal": "source",
+              "text": "source: string;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 89,
+              "signal": "source",
+              "text": "sourceUrl: string | null;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 94,
+              "signal": "source",
+              "text": "sourcePolicy: string;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 103,
+              "signal": "source",
+              "text": "sourcePolicy: 'source_backed_current_year_deadlines',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 108,
+              "signal": "source",
+              "text": "source: row.source,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 109,
+              "signal": "source",
+              "text": "sourceUrl: this.extractSourceUrl(row.notes),"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 118,
+              "signal": "source",
+              "text": "sourcePolicy:"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 120,
+              "signal": "source",
+              "text": "? 'source_backed_current_year_deadlines'"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 121,
+              "signal": "source",
+              "text": ": 'no_source_backed_current_year_deadlines',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 197,
+              "signal": "source",
+              "text": "const match = /source:\\s*(https?:\\/\\/\\S+)/i.exec(notes);"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 61,
+              "signal": "year",
+              "text": "year: applicationYear,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 69,
+              "signal": "year",
+              "text": "year: true,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 87,
+              "signal": "year",
+              "text": "year: number;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 103,
+              "signal": "year",
+              "text": "sourcePolicy: 'source_backed_current_year_deadlines',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 107,
+              "signal": "year",
+              "text": "year: row.year,"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 120,
+              "signal": "year",
+              "text": "? 'source_backed_current_year_deadlines'"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 121,
+              "signal": "year",
+              "text": ": 'no_source_backed_current_year_deadlines',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 230,
+              "signal": "eventDate",
+              "text": "eventDate: e.eventDate?.toISOString(),"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 247,
+              "signal": "eventDate",
+              "text": "eventDate?: string;"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 355,
+              "signal": "eventDate",
+              "text": "// Validate deadline is not in the past (eventDate is allowed to be past for historical records)"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 380,
+              "signal": "eventDate",
+              "text": "eventDate: args.eventDate ? new Date(args.eventDate) : undefined,"
+            }
+          ],
+          "conflict": [],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 52,
+              "signal": "error",
+              "text": "error: locale === 'zh' ? '请提供学校ID' : 'Please provide school IDs',"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 255,
+              "signal": "error",
+              "text": "error: isZh"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 360,
+              "signal": "error",
+              "text": "error:"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 366,
+              "signal": "error",
+              "text": "error:"
+            },
+            {
+              "file": "apps/api/src/modules/ai-agent/tools/timeline-tools.service.ts",
+              "line": 52,
+              "signal": "Please provide school IDs",
+              "text": "error: locale === 'zh' ? '请提供学校ID' : 'Please provide school IDs',"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "essay_public_prompt_source_gate",
+      "priority": "P0",
+      "consumer": "essay",
+      "surface": "public essay prompt endpoints",
+      "fields": [
+        "EssayPrompt.prompt",
+        "EssayPromptSource.sourceUrl"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "present",
+        "weakState": "not_required"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "Public essay prompt consumers may expose only verified prompts with sourceUrl evidence.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark public essay prompt endpoints closed solely because EssayPrompt.prompt, EssayPromptSource.sourceUrl values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/essay/essay-prompt.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 29,
+              "signal": "sources: { some: { sourceUrl: { not: null } } }",
+              "text": "sources: { some: { sourceUrl: { not: null } } },"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 104,
+              "signal": "year",
+              "text": "year,"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 117,
+              "signal": "year",
+              "text": "...(year && { year }),"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 218,
+              "signal": "year",
+              "text": "year: true,"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 246,
+              "signal": "year",
+              "text": "async findBySchool(schoolId: string, year?: number) {"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 252,
+              "signal": "year",
+              "text": "...(year && { year }),"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 401,
+              "signal": "year",
+              "text": "async getStats(year?: number) {"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 404,
+              "signal": "year",
+              "text": "...(year && { year }),"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 483,
+              "signal": "year",
+              "text": "// Dedup: same school + year + type + prompt prefix"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 488,
+              "signal": "year",
+              "text": "year: item.year,"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 513,
+              "signal": "year",
+              "text": "year: item.year,"
+            }
+          ],
+          "conflict": [
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 207,
+              "signal": "status: EssayStatus.VERIFIED",
+              "text": "status: EssayStatus.VERIFIED,"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 250,
+              "signal": "status: EssayStatus.VERIFIED",
+              "text": "status: EssayStatus.VERIFIED,"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 412,
+              "signal": "status: EssayStatus.VERIFIED",
+              "text": "where: { ...where, status: EssayStatus.VERIFIED },"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 420,
+              "signal": "status: EssayStatus.VERIFIED",
+              "text": "where: { ...where, status: EssayStatus.VERIFIED },"
+            },
+            {
+              "file": "apps/api/src/modules/essay/essay-prompt.service.ts",
+              "line": 451,
+              "signal": "status: EssayStatus.VERIFIED",
+              "text": "status: EssayStatus.VERIFIED,"
+            }
+          ],
+          "weakState": []
+        }
+      }
+    },
+    {
+      "id": "recommendation_essay_prompt_source_gate",
+      "priority": "P0",
+      "consumer": "recommendation",
+      "surface": "recommendation essayPromptCount and hasWhySchool",
+      "fields": [
+        "EssayPrompt.status",
+        "EssayPromptSource.sourceUrl"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "not_required",
+        "conflict": "not_required",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "Recommendation essay counts must use the same source-backed gate as public essay and timeline consumers.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark recommendation essayPromptCount and hasWhySchool closed solely because EssayPrompt.status, EssayPromptSource.sourceUrl values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/recommendation/recommendation.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.service.ts",
+              "line": 47,
+              "signal": "sources: { some: { sourceUrl: { not: null } } }",
+              "text": "sources: { some: { sourceUrl: { not: null } } },"
+            }
+          ],
+          "freshness": [],
+          "conflict": [],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.service.ts",
+              "line": 704,
+              "signal": "essayPromptCount",
+              "text": "(rec as any).essayPromptCount = countMap.get(rec.schoolId) || 0;"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.service.ts",
+              "line": 669,
+              "signal": "hasWhySchool",
+              "text": "* Enrich matched recommendations with essay prompt counts and hasWhySchool flag."
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.service.ts",
+              "line": 705,
+              "signal": "hasWhySchool",
+              "text": "(rec as any).hasWhySchool = whySchoolSet.has(rec.schoolId);"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "recommendation_school_meta_source_gate",
+      "priority": "P0",
+      "consumer": "recommendation",
+      "surface": "recommendation schoolMeta and probability anchors",
+      "fields": [
+        "School.acceptanceRate",
+        "School.testingPolicy",
+        "School.satAvg",
+        "School.actAvg",
+        "School.retentionRate"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "present",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "Recommendations should not use raw school anchors unless provenance, freshness, conflict, and weak-state support are explicit.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark recommendation schoolMeta and probability anchors closed solely because School.acceptanceRate, School.testingPolicy, School.satAvg, School.actAvg, School.retentionRate values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/recommendation/recommendation.constants.ts",
+          "apps/api/src/modules/recommendation/recommendation.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 105,
+              "signal": "getRecommendationFieldSource",
+              "text": "acceptanceRate: getRecommendationFieldSource(school, 'acceptanceRate'),"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 106,
+              "signal": "getRecommendationFieldSource",
+              "text": "retentionRate: getRecommendationFieldSource(school, 'retentionRate'),"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 107,
+              "signal": "getRecommendationFieldSource",
+              "text": "testingPolicy: getRecommendationFieldSource(school, 'testingPolicy'),"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 155,
+              "signal": "getRecommendationFieldSource",
+              "text": "export function getRecommendationFieldSource("
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 188,
+              "signal": "getRecommendationFieldSource",
+              "text": "const source = getRecommendationFieldSource(school, field);"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 13,
+              "signal": "normalizeSchoolProvenance",
+              "text": "normalizeSchoolProvenance,"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 159,
+              "signal": "normalizeSchoolProvenance",
+              "text": "const provenance = normalizeSchoolProvenance("
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 15,
+              "signal": "toSchoolFieldSource",
+              "text": "toSchoolFieldSource,"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 164,
+              "signal": "toSchoolFieldSource",
+              "text": "? toSchoolFieldSource(provenance[field]!)"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 167,
+              "signal": "predictionEligible",
+              "text": "if (!source.predictionEligible) return null;"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 168,
+              "signal": "staleness",
+              "text": "if (source.staleness === 'STALE') return null;"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 39,
+              "signal": "updatedAt",
+              "text": "updatedAt: true,"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.service.ts",
+              "line": 624,
+              "signal": "updatedAt",
+              "text": "updatedAt: true,"
+            }
+          ],
+          "conflict": [
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 170,
+              "signal": "realDataStatus",
+              "text": "source.realDataStatus &&"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 176,
+              "signal": "realDataStatus",
+              "text": "].includes(source.realDataStatus)"
+            }
+          ],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 143,
+              "signal": "sourceUrls",
+              "text": "sourceUrls: {"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 109,
+              "signal": "weakFields",
+              "text": "const weakFields = Object.fromEntries("
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 142,
+              "signal": "weakFields",
+              "text": "weakFields,"
+            },
+            {
+              "file": "apps/api/src/modules/recommendation/recommendation.constants.ts",
+              "line": 112,
+              "signal": "hidden_until_field_provenance_exists",
+              "text": ".map(([field]) => [field, 'hidden_until_field_provenance_exists']),"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "school_list_essay_count_source_gate",
+      "priority": "P0",
+      "consumer": "school-list",
+      "surface": "school-list essayPromptCount",
+      "fields": [
+        "EssayPrompt.status",
+        "EssayPromptSource.sourceUrl"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "not_required",
+        "weakState": "present"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "School-list essay counts must align with the source-backed essay prompt consumer gate.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark school-list essayPromptCount closed solely because EssayPrompt.status, EssayPromptSource.sourceUrl values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/school-list/school-list.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 33,
+              "signal": "sources: { some: { sourceUrl: { not: null } } }",
+              "text": "sources: { some: { sourceUrl: { not: null } } },"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 242,
+              "signal": "applicationYear",
+              "text": "const applicationYear ="
+            },
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 247,
+              "signal": "applicationYear",
+              "text": "year: applicationYear,"
+            },
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 247,
+              "signal": "year",
+              "text": "year: applicationYear,"
+            }
+          ],
+          "conflict": [],
+          "weakState": [
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 284,
+              "signal": "essayPromptCount",
+              "text": "essayPromptCount: essayCountMap.get(item.schoolId) || 0,"
+            },
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 361,
+              "signal": "essayPromptCount",
+              "text": "essayPromptCount: essayCount,"
+            },
+            {
+              "file": "apps/api/src/modules/school-list/school-list.service.ts",
+              "line": 419,
+              "signal": "essayPromptCount",
+              "text": "essayPromptCount: essayCount,"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "timeline_deadline_generation_source_gate",
+      "priority": "P0",
+      "consumer": "timeline",
+      "surface": "ApplicationTimeline generation from SchoolDeadline/metadata",
+      "fields": [
+        "SchoolDeadline.source",
+        "School.metadata.deadlines",
+        "ApplicationTimeline.deadline"
+      ],
+      "rowState": "trusted",
+      "severity": "info",
+      "highRisk": true,
+      "gateStatus": {
+        "source": "present",
+        "freshness": "present",
+        "conflict": "not_required",
+        "weakState": "not_required"
+      },
+      "missingGates": [],
+      "unsafeSignals": [],
+      "consumerPolicy": "Timeline generation must distinguish sourced current-year deadlines from metadata/default heuristics before user-facing execution.",
+      "recommendedAction": "accept",
+      "requiredEvidence": [
+        "keep the existing source/freshness/conflict/weak-state gate covered by tests"
+      ],
+      "prohibitedActions": [
+        "do not mark ApplicationTimeline generation from SchoolDeadline/metadata closed solely because SchoolDeadline.source, School.metadata.deadlines, ApplicationTimeline.deadline values exist",
+        "do not replace source gates with comments or UI-only copy",
+        "do not write DB facts from this static worklist"
+      ],
+      "evidence": {
+        "files": [
+          "apps/api/src/modules/timeline/timeline-application.service.ts"
+        ],
+        "missingFiles": [],
+        "gateHits": {
+          "source": [
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 122,
+              "signal": "source:",
+              "text": "source: { not: 'MANUAL' },"
+            }
+          ],
+          "freshness": [
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 121,
+              "signal": "year: applicationYear",
+              "text": "year: applicationYear,"
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 142,
+              "signal": "selectEffectiveDeadlines",
+              "text": "const effectiveDeadlines = this.selectEffectiveDeadlines("
+            },
+            {
+              "file": "apps/api/src/modules/timeline/timeline-application.service.ts",
+              "line": 220,
+              "signal": "selectEffectiveDeadlines",
+              "text": "private selectEffectiveDeadlines<"
+            }
+          ],
+          "conflict": [],
+          "weakState": []
+        }
+      }
+    }
+  ]
+}

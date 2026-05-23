@@ -107,6 +107,9 @@
 
 | 文档                                                                   | 说明                                                          |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md)         | **技术总览** — 架构摘要、AI 三层模型、MMFM 现状、PDF 栈、量化指标、难点与对外表述 |
+| [PROJECT_FORECAST_2026.md](PROJECT_FORECAST_2026.md)                   | **2026 路线预估** — 主/次/低概率情景、量化区间、人周与成本量级、决策树 |
+| [PROJECT_EXPECTED_OUTCOMES_2026.md](PROJECT_EXPECTED_OUTCOMES_2026.md) | **2026 完整预计结果** — 基线→年末中性/保守/乐观全表、季度里程碑、边界与资源 |
 | [ONBOARDING.md](ONBOARDING.md)                                         | 新人入职指南 (3 天上手)                                       |
 | [QUICK_REFERENCE.md](QUICK_REFERENCE.md)                               | 一页速查手册（命令、端口、目录结构等）                        |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md)                               | 开发环境常见问题排障指南                                      |
@@ -137,6 +140,8 @@
 
 | 日期       | 变更                                                                                                                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-05-20 | 新增 PROJECT_TECHNICAL_OVERVIEW、PROJECT_FORECAST_2026、PROJECT_EXPECTED_OUTCOMES_2026 三份规划文档 |
+| 2026-05-20 | 新增 [PROJECT_TECHNICAL_OVERVIEW.md](PROJECT_TECHNICAL_OVERVIEW.md) — 整合项目梳理、技术难点、MMFM/Claude Code/Codex 与线上 AI 区分、PDF 栈与量化指标 |
 | 2026-04-10 | 补齐申请分析跨端闭环：新增 mobile canonical consumer（`/profile` 摘要卡、`/profile/analysis`、`/prediction` CTA），同步收口 API / Architecture / Research / Prediction SOP / Journey log / Full Surface Registry / memory 文档                                                                         |
 | 2026-04-02 | 新增全产品面审计资产：FULL_SURFACE_REGISTRY.md、FULL_SURFACE_REUSE_PLAYBOOK.md、FULL_SURFACE_GAP_CHECKLIST.md、三份 full-surface 模板、`MEMORY.md`、`scripts/release-gate/full-surface-registry.ts` 与 `generate-full-surface-audit.ts`；为后续 Codex / Claude / Cursor 复用同一审计事实源做准备       |
 | 2026-04-01 | 新增 AI-first 发版门禁文档集：RELEASE_GATE_ONE_PAGER.md、QA_RELEASE_GATE_SOP.md、CODEX_E2E_RUNBOOK.md、人工任务卡、问题提报模板、门禁总表模板；测试清单与旅程审计模板同步升级到 `execution_owner / validation_type` 口径                                                                               |
@@ -151,4 +156,4 @@
 
 ---
 
-_最后更新: 2026-04-10_
+_最后更新: 2026-05-20_

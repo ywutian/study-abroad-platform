@@ -1,0 +1,2 @@
+essayPromptId,schoolId,schoolName,type,severity,route,promptSnippet,closureState,mismatchDisposition,recommendedAction
+"cmor82jos00691jbwg1mwwxwo","cmnwr8ivi004iz0tinveg964v","Washington and Lee University","SHORT_ANSWER","critical","/admin/essay-prompts/cmor82jos00691jbwg1mwwxwo","Share the story and significance of your name. Use specific anecdotes or memories to illustrate its importance, and be honest about your feelings towards your name, whether positiv","review","review_prompt_owner_or_reject","review-prompt-owner-and-reject-reassign-or-terminalize"

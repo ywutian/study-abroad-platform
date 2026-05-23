@@ -22,6 +22,8 @@ import { AdminSchoolDataCoverageService } from './admin-school-data-coverage.ser
 import { AdminSchoolDataHealthService } from './admin-school-data-health.service';
 import { AdminThemeStyleController } from './admin-theme-style.controller';
 import { AdminCacheHealthController } from './admin-cache-health.controller';
+import { AdminProfileReadinessDeliveryController } from './admin-profile-readiness-delivery.controller';
+import { AdminProfileReadinessDeliveryService } from './admin-profile-readiness-delivery.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { RedisModule } from '../../common/redis/redis.module';
@@ -55,6 +57,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminSchoolDataPipelineController,
     AdminThemeStyleController,
     AdminCacheHealthController,
+    AdminProfileReadinessDeliveryController,
   ],
   providers: [
     AdminService,
@@ -66,6 +69,7 @@ import { ProfileModule } from '../profile/profile.module';
     AdminSchoolRatesService,
     AdminSchoolDataCoverageService,
     AdminSchoolDataHealthService,
+    AdminProfileReadinessDeliveryService,
     AuditLogService,
     PermissionGuard,
   ],
