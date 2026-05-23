@@ -592,6 +592,9 @@ model User {
   // Permissions (per-user overrides)
   userPermissions UserPermission[]
 
+  // Notification preferences
+  notificationPreference UserNotificationPreference?
+
   // Referral system
   referralCode String? @unique
   referredById String?
@@ -626,6 +629,25 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model UserNotificationPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // First-party readiness surfaces are safe by default; live channels require
+  // explicit future policy enablement and user preference.
+  readinessInAppSurface          Boolean @default(true)
+  readinessRedisNotificationFeed Boolean @default(false)
+  readinessRemotePush            Boolean @default(false)
+  readinessEmail                 Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_notification_preferences")
 }
 
 model McpApiKey {
@@ -1269,6 +1291,30 @@ model School {
   // Search aliases (abbreviations, short names, nicknames)
   aliases String[] @default([]) // e.g. ["MIT", "麻省理工", "Mass Tech"]
 
+  // ─── M3 v2 Bayesian Engine: Hook & EC Profile Fields ──────────
+  // Hook % of admitted class (from CDS C9 / school class profile / Crimson)
+  // Example: legacyClassPct = 0.16 means 16% of admits are legacies
+  legacyClassPct           Decimal? @db.Decimal(5, 4)
+  athleteClassPct          Decimal? @db.Decimal(5, 4)
+  firstGenClassPct         Decimal? @db.Decimal(5, 4)
+  // Per-school hook admit multiplier (admit_rate_hooked / admit_rate_overall)
+  // Example: legacyAdmitMultiplier = 5.5 means legacy admit rate = 5.5× overall
+  legacyAdmitMultiplier    Decimal? @db.Decimal(5, 2)
+  athleteAdmitMultiplier   Decimal? @db.Decimal(5, 2)
+
+  // Activities/Awards/Research profile of admits (MEDIUM tier from Crimson etc.)
+  admitsWithNationalAwardPct Decimal? @db.Decimal(5, 4)
+  admitsWithLeadershipPct    Decimal? @db.Decimal(5, 4)
+  admitsAvgActivityCount     Decimal? @db.Decimal(4, 2)
+  admitsWithSpikePct         Decimal? @db.Decimal(5, 4)
+  admitsWithResearchPct      Decimal? @db.Decimal(5, 4)
+
+  // Provenance for the above hook + EC fields
+  admitProfileSource         String?
+  admitProfileConfidenceTier String? // HIGH | MEDIUM | LOW
+  admitProfileUpdatedAt      DateTime?
+  admitProfileCycleYear      Int?
+
   // Data enrichment — review tracking
   lastDataReviewAt DateTime?
   dataReviewStatus DataReviewStatus @default(AUTO_APPROVED)
@@ -1513,6 +1559,26 @@ model SchoolCalibration {
   reason     String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// ============================================
+// M3 v2 Bayesian Engine: Global Baselines
+// ============================================
+// Cross-school applicant-pool aggregates (NACAC / Common App / Cornell L@S paper)
+// Used as the denominator in Bayesian update: P(category|admit) / P(category|apply)
+// Example metric: 'legacy_apply_rate' → 0.06 (6% of all applicants are legacies)
+model GlobalAdmitBaseline {
+  id        String   @id @default(cuid())
+  metric    String   @unique // 'legacy_apply_rate', 'athlete_apply_rate', 'firstgen_apply_rate', 'national_award_apply_rate', 'intl_apply_rate_us_top_pct'
+  value     Decimal  @db.Decimal(5, 4)
+  source    String   // citation URL or paper reference
+  cycleYear Int
+  confidenceTier String @default("LOW") // HIGH | MEDIUM | LOW
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([metric])
 }
 
 model PredictionPolicyVersion {
